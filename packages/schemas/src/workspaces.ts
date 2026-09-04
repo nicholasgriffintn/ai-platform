@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { conversationTypeSchema } from "./chat";
+import { modelRouterModeSchema } from "./chat-completions";
 import { projectFlowSchema } from "./project-tasks";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
@@ -66,6 +67,7 @@ export const projectSummarySchema = z.object({
   updatedAt: z.string().nullable(),
   conversationCount: z.number().int().nonnegative().default(0),
   capabilityCount: z.number().int().nonnegative().default(0),
+  defaultRouterMode: modelRouterModeSchema.optional(),
   codingEnvironment: projectCodingEnvironmentSchema.nullable(),
 });
 
@@ -111,6 +113,7 @@ export const updateWorkspaceSchema = z
   });
 
 const projectFields = {
+  defaultRouterMode: modelRouterModeSchema.optional(),
   name: z.string().trim().min(2).max(100),
   description: z.string().trim().max(1000),
   instructions: z.string().trim().max(8000),

@@ -14,9 +14,8 @@ import {
 } from "~/services/apps/recipes/catalog";
 import { resolveProjectSkillGrants } from "~/services/skills/scope";
 import type { CoreChatOptions } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
-import { requireProjectAccess } from "./access";
+import { resolveChatProjectAccess } from "./chatProjectAccess";
 import { resolveProjectRecipeConnectorScope } from "./projectRecipeConnectorScope";
 import { resolveProjectTools } from "./projectTools";
 
@@ -67,36 +66,14 @@ export async function resolveProjectChatContext(
   context: ServiceContext,
   options: Pick<CoreChatOptions, "completion_id" | "enabled_tools" | "metadata" | "options">,
 ): Promise<ProjectChatContext | null> {
-  const conversation = options.completion_id
-    ? await context.repositories.conversations.getConversation(options.completion_id)
-    : null;
-  const storedProjectId =
-    typeof conversation?.project_id === "string" ? conversation.project_id : undefined;
-  const requestedProjectId = options.metadata?.project_id;
+  const access = await resolveChatProjectAccess(context, options);
 
-  if (conversation && !storedProjectId && requestedProjectId) {
-    throw new AssistantError(
-      "Start a new conversation to work inside a project",
-      ErrorType.CONFLICT_ERROR,
-      409,
-    );
-  }
-
-  if (storedProjectId && requestedProjectId && storedProjectId !== requestedProjectId) {
-    throw new AssistantError(
-      "The conversation belongs to a different project",
-      ErrorType.CONFLICT_ERROR,
-      409,
-    );
-  }
-
-  const projectId = storedProjectId ?? requestedProjectId;
-
-  if (!projectId) {
+  if (!access) {
     return null;
   }
 
-  const { project } = await requireProjectAccess(context, projectId);
+  const { project } = access;
+  const projectId = project.id;
   const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
   const projectTools = resolveProjectTools(capabilities);
   const codingEnvironment = projectCodingEnvironmentSchema.safeParse({

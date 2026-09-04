@@ -340,7 +340,9 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .describe("The provider to use when the model name is shared by multiple providers."),
   model_router_mode: modelRouterModeSchema
     .optional()
-    .describe("Automatic router mode used when no explicit model is requested."),
+    .describe(
+      "Automatic router mode used when no explicit model is requested. Auto uses the saved project default in project conversations.",
+    ),
   compaction: chatCompactionModeSchema
     .optional()
     .describe(

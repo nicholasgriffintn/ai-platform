@@ -12,6 +12,14 @@ Polychat is an experimental, multi-model assistant platform. It combines persona
 
 Do not reintroduce global apps or recipes as another top-level product mode. Capabilities belong in Chat discovery or a project's library and experiences.
 
+## Set a project routing preference
+
+Choose **Automatic model preference** on the Work project overview to save a default tier for project conversations. Owners and admins can change it; all workspace members can see it. Choose **Auto — no project preference** to restore the ordinary router.
+
+Leave the composer on **Auto** to use the project preference, including when resuming a conversation or running a project recipe without an explicit model. Select another tier or a specific model to override it for that request. Tiers prefer a class of models; they do not impose a spending limit or change model access, and personal Chat keeps its existing behaviour.
+
+Project templates preserve the preference. The API exposes `defaultRouterMode` on project reads and accepts it on project creation and updates, with `auto`, `lite`, `standard`, `pro`, or `max` as values.
+
 ## Understand the repository
 
 - `apps/app`: React Router web application and PWA.

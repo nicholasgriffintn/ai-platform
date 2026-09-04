@@ -14,6 +14,7 @@ import type {
   WorkspaceMemberRow,
   WorkspaceRow,
 } from "~/repositories/WorkspaceRepository";
+import { WorkspaceRepository } from "~/repositories/WorkspaceRepository";
 import { assistantRecipes } from "~/services/apps/recipes/catalog";
 import { sendEmail } from "~/services/email";
 import { sha256Hex } from "~/utils/crypto";
@@ -23,6 +24,7 @@ import {
   acceptWorkspaceInvitation,
   addProjectCapability,
   createProject,
+  updateProject,
   deleteWorkspace,
   getProject,
   getWorkspace,
@@ -92,6 +94,7 @@ function createHarness(params?: {
     getInvitationByTokenHash: vi.fn(),
     acceptInvitation: vi.fn().mockResolvedValue(undefined),
     createProject: vi.fn().mockResolvedValue(undefined),
+    updateProject: vi.fn().mockResolvedValue(undefined),
     deleteWorkspace: vi.fn().mockResolvedValue(undefined),
     getProject: vi.fn().mockResolvedValue(project),
     listProjectCapabilities: vi.fn().mockResolvedValue([]),
@@ -303,6 +306,75 @@ describe("workspace invitation lifecycle", () => {
 });
 
 describe("workspace and project isolation", () => {
+  it("persists routing preferences through the repository update allowlist", async () => {
+    const { context } = createHarness();
+    const statement = {
+      bind: vi.fn().mockReturnThis(),
+      run: vi.fn().mockResolvedValue({ success: true, meta: { changes: 1 } }),
+      all: vi.fn(),
+      first: vi.fn(),
+      raw: vi.fn(),
+    };
+    const prepare = vi.fn().mockReturnValue(statement);
+
+    context.env.DB = {
+      prepare,
+      batch: vi.fn(),
+      exec: vi.fn(),
+      dump: vi.fn(),
+      withSession: vi.fn(),
+    };
+    const repository = new WorkspaceRepository(context.env);
+
+    await repository.updateProject(PROJECT_ID, { default_router_mode: "lite" });
+    expect(prepare).toHaveBeenCalledWith(expect.stringContaining("default_router_mode = ?"));
+    expect(statement.bind).toHaveBeenLastCalledWith("lite", PROJECT_ID);
+    expect(statement.run).toHaveBeenCalledOnce();
+
+    await repository.updateProject(PROJECT_ID, { default_router_mode: "auto" });
+    expect(statement.bind).toHaveBeenLastCalledWith("auto", PROJECT_ID);
+    expect(statement.run).toHaveBeenCalledTimes(2);
+  });
+
+  it("saves and clears the project routing preference with an audit record", async () => {
+    const { context, repositories, audit } = createHarness();
+
+    for (const defaultRouterMode of ["lite", "auto"] as const) {
+      repositories.getProject.mockResolvedValue({
+        ...project,
+        default_router_mode: defaultRouterMode,
+      });
+      const result = await updateProject(context, PROJECT_ID, { defaultRouterMode });
+
+      expect(repositories.updateProject).toHaveBeenLastCalledWith(PROJECT_ID, {
+        default_router_mode: defaultRouterMode,
+      });
+      expect(result.defaultRouterMode).toBe(defaultRouterMode);
+      expect(audit.createRecord).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          action: "project.updated",
+          metadata: { fields: ["defaultRouterMode"] },
+        }),
+      );
+    }
+
+    await updateProject(context, PROJECT_ID, { instructions: "Updated brief" });
+    expect(repositories.updateProject).toHaveBeenLastCalledWith(PROJECT_ID, {
+      instructions: "Updated brief",
+    });
+  });
+
+  it("refuses routing preference writes from ordinary members and outsiders", async () => {
+    for (const role of ["member", null] as const) {
+      const { context, repositories } = createHarness({ role });
+
+      await expect(
+        updateProject(context, PROJECT_ID, { defaultRouterMode: "max" }),
+      ).rejects.toMatchObject({ statusCode: role ? 403 : 404 });
+      expect(repositories.updateProject).not.toHaveBeenCalled();
+    }
+  });
+
   it("derives a stable colour when creating a project without one", async () => {
     const { context, repositories } = createHarness();
 
@@ -328,10 +400,11 @@ describe("workspace and project isolation", () => {
       description: "Summarise interview themes",
       instructions: "",
       colour: "#2563EB",
+      defaultRouterMode: "pro",
     });
 
     expect(repositories.createProject).toHaveBeenCalledWith(
-      expect.objectContaining({ colour: "#2563EB" }),
+      expect.objectContaining({ colour: "#2563EB", defaultRouterMode: "pro" }),
     );
   });
 

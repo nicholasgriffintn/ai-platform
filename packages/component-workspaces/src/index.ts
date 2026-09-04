@@ -28,3 +28,4 @@ export * from "./CreateTaskDialog";
 export * from "./FlowEditorDialog";
 export * from "./ProjectTasksSummary";
 export * from "./TaskDetail";
+export * from "./ProjectRoutingCard";

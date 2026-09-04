@@ -439,6 +439,7 @@ export async function createProject(
     description: input.description,
     instructions: input.instructions,
     colour: input.colour ?? deriveProjectColour(input.name, input.description),
+    defaultRouterMode: input.defaultRouterMode,
     codingEnvironment: input.codingEnvironment,
     createdBy: user.id,
   });
@@ -470,7 +471,7 @@ export async function updateProject(
 ) {
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
-  const { codingEnvironment, ...projectFields } = input;
+  const { codingEnvironment, defaultRouterMode, ...projectFields } = input;
 
   if (codingEnvironment !== undefined) {
     await validateProjectCodingEnvironment(context, user.id, codingEnvironment);
@@ -490,6 +491,7 @@ export async function updateProject(
 
   await context.repositories.workspaces.updateProject(projectId, {
     ...projectFields,
+    ...(defaultRouterMode === undefined ? {} : { default_router_mode: defaultRouterMode }),
     ...codingUpdates,
   });
   await context.repositories.audit.createRecord({
