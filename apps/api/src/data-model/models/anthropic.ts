@@ -596,5 +596,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
   		defaultEffort: "low",
   	},
+  	supportsTopP: false,
   }),
 ]);

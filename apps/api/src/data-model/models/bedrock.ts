@@ -2688,6 +2688,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     },
     family: "claude-opus",
     openWeights: false,
+  	supportsTopP: false,
   }),
 
   createModelConfig("anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2904,6 +2905,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     },
     family: "claude-opus",
     openWeights: false,
+  	supportsTopP: false,
   }),
 
   createModelConfig("eu.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2977,6 +2979,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     },
     family: "claude-opus",
     openWeights: false,
+  	supportsTopP: false,
   }),
 
   createModelConfig("global.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -3050,6 +3053,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     },
     family: "claude-opus",
     openWeights: false,
+  	supportsTopP: false,
   }),
 
   createModelConfig("jp.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
@@ -3428,6 +3432,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     },
     family: "claude-opus",
     openWeights: false,
+  	supportsTopP: false,
   }),
 
   createModelConfig("us.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -3661,6 +3666,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     family: "claude-opus",
     openWeights: false,
     knowledgeCutoffDate: "January 2026",
+  	supportsTopP: false,
   }),
 
   createModelConfig("au.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3697,6 +3703,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     family: "claude-opus",
     openWeights: false,
     knowledgeCutoffDate: "January 2026",
+  	supportsTopP: false,
   }),
 
   createModelConfig("eu.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3733,6 +3740,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     family: "claude-opus",
     openWeights: false,
     knowledgeCutoffDate: "January 2026",
+  	supportsTopP: false,
   }),
 
   createModelConfig("global.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3769,6 +3777,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     family: "claude-opus",
     openWeights: false,
     knowledgeCutoffDate: "January 2026",
+  	supportsTopP: false,
   }),
 
   createModelConfig("jp.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3805,6 +3814,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     family: "claude-opus",
     openWeights: false,
     knowledgeCutoffDate: "January 2026",
+  	supportsTopP: false,
   }),
 
   createModelConfig("us.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3841,6 +3851,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     family: "claude-opus",
     openWeights: false,
     knowledgeCutoffDate: "January 2026",
+  	supportsTopP: false,
   }),
   createModelConfig("openai.gpt-5.4", PROVIDER, {
     name: "GPT-5.4",
@@ -4016,6 +4027,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     },
     family: "claude-fable",
     openWeights: false,
+  	supportsTopP: false,
   }),
 
   createModelConfig("global.anthropic.claude-fable-5", PROVIDER, {
@@ -4051,6 +4063,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     },
     family: "claude-fable",
     openWeights: false,
+  	supportsTopP: false,
   }),
 
   createModelConfig("us.anthropic.claude-fable-5", PROVIDER, {
@@ -4086,6 +4099,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     },
     family: "claude-fable",
     openWeights: false,
+  	supportsTopP: false,
   }),
   createModelConfig("xai.grok-4.3", PROVIDER, {
     name: "Grok 4.3",
@@ -4146,6 +4160,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
 
   createModelConfig("au.anthropic.claude-sonnet-5", PROVIDER, {
@@ -4173,6 +4188,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
 
   createModelConfig("eu.anthropic.claude-sonnet-5", PROVIDER, {
@@ -4200,6 +4216,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
 
   createModelConfig("global.anthropic.claude-sonnet-5", PROVIDER, {
@@ -4227,6 +4244,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
 
   createModelConfig("jp.anthropic.claude-sonnet-5", PROVIDER, {
@@ -4254,6 +4272,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
 
   createModelConfig("us.anthropic.claude-sonnet-5", PROVIDER, {
@@ -4281,6 +4300,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
   createModelConfig("anthropic.claude-fable-5", PROVIDER, {
     name: "Claude Fable 5",
@@ -4315,6 +4335,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
       agenticIndex: 52.8,
       intelligenceIndexVersion: 4.1,
     },
+  	supportsTopP: false,
   }),
   createModelConfig("jp.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
     name: "Claude Haiku 4.5 (JP)",
@@ -4443,6 +4464,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
 
   createModelConfig("au.anthropic.claude-opus-5", PROVIDER, {
@@ -4469,6 +4491,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
 
   createModelConfig("eu.anthropic.claude-opus-5", PROVIDER, {
@@ -4495,6 +4518,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
 
   createModelConfig("global.anthropic.claude-opus-5", PROVIDER, {
@@ -4521,6 +4545,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
 
   createModelConfig("jp.anthropic.claude-opus-5", PROVIDER, {
@@ -4547,6 +4572,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
 
   createModelConfig("us.anthropic.claude-opus-5", PROVIDER, {
@@ -4573,6 +4599,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
   createModelConfig("global.openai.gpt-5.6-luna", PROVIDER, {
     name: "GPT-5.6 Luna (Global)",
@@ -4699,6 +4726,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
   		defaultEffort: "low",
   	},
+  	supportsTopP: false,
   }),
 
   createModelConfig("global.anthropic.claude-fable-5-1", PROVIDER, {
@@ -4724,6 +4752,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
   		defaultEffort: "low",
   	},
+  	supportsTopP: false,
   }),
 
   createModelConfig("us.anthropic.claude-fable-5-1", PROVIDER, {
@@ -4749,5 +4778,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
   		defaultEffort: "low",
   	},
+  	supportsTopP: false,
   }),
 ]);

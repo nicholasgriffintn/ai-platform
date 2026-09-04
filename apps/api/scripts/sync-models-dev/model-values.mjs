@@ -28,6 +28,32 @@ export function getReasoningEffortLevels(remoteModel) {
   return effortLevels;
 }
 
+export function isClaudeModel(remoteModel, modelKey) {
+  const label = `${remoteModel.family ?? ""} ${remoteModel.id ?? modelKey ?? ""} ${remoteModel.name ?? ""}`;
+
+  return /claude/i.test(label);
+}
+
+export function applyClaudeSamplingRules(values, remoteModel, modelKey) {
+  const effortLevels = values.reasoningConfig?.supportedEffortLevels;
+
+  if (!isClaudeModel(remoteModel, modelKey) || !effortLevels?.includes("xhigh")) {
+    return values;
+  }
+
+  values.supportsTemperature = false;
+  values.supportsTopP = false;
+
+  if (!effortLevels.includes("max")) {
+    values.reasoningConfig = {
+      ...values.reasoningConfig,
+      supportedEffortLevels: [...effortLevels, "max"],
+    };
+  }
+
+  return values;
+}
+
 function buildReasoningConfig(remoteModel, existingReasoningConfig, isNewEntry) {
   const effortLevels = getReasoningEffortLevels(remoteModel);
   const existingConfig =
@@ -304,6 +330,8 @@ export function buildUpdateValues(
   if (reasoningConfig) {
     values.reasoningConfig = reasoningConfig;
   }
+
+  applyClaudeSamplingRules(values, remoteModel, remoteId);
 
   return values;
 }

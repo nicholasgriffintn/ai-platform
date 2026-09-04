@@ -86,6 +86,7 @@ export const UPDATE_FIELD_ORDER = [
   "modalities",
   "supportsAttachments",
   "supportsTemperature",
+  "supportsTopP",
   "supportsToolCalls",
   "supportsToolChoice",
   "supportsResponseFormat",

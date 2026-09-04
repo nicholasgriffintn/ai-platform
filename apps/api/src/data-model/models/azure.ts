@@ -2969,6 +2969,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
     },
+  	supportsTopP: false,
   }),
   createModelConfig("claude-opus-4-7", PROVIDER, {
     name: "Claude Opus 4.7",
@@ -3029,6 +3030,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
   		defaultEffort: "low",
   	},
+  	supportsTopP: false,
   }),
 
   createModelConfig("grok-4.6", PROVIDER, {
