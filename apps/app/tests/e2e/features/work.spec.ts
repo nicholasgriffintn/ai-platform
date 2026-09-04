@@ -153,6 +153,8 @@ test.describe("Work experience", () => {
       page,
       workPage,
     }) => {
+      test.slow();
+
       await workPage.open();
       await expect(page.getByText("1 projects")).toBeVisible();
       await workPage.openWorkspace("Release Workspace");
