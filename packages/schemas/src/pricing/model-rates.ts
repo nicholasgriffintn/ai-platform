@@ -80,21 +80,31 @@ export function rateEntriesFromModelConfig(
     push("cached_input_tokens", cachedInputPerToken);
   }
 
-  const cacheWrite5mPerToken = isPositive(model.costPer1kCacheWrite5mTokens)
-    ? perTokenMicros(model.costPer1kCacheWrite5mTokens)
-    : inputPerToken !== null
-      ? inputPerToken * multipliers.cacheWrite5m
-      : null;
+  const cacheWritePerToken = isPositive(model.costPer1kCacheWriteTokens)
+    ? perTokenMicros(model.costPer1kCacheWriteTokens)
+    : null;
+
+  if (cacheWritePerToken !== null) {
+    push("cache_write_tokens", cacheWritePerToken);
+  }
+
+  const cacheWrite5mPerToken =
+    cacheWritePerToken === null && isPositive(model.costPer1kCacheWrite5mTokens)
+      ? perTokenMicros(model.costPer1kCacheWrite5mTokens)
+      : cacheWritePerToken === null && inputPerToken !== null
+        ? inputPerToken * multipliers.cacheWrite5m
+        : null;
 
   if (cacheWrite5mPerToken !== null) {
     push("cache_write_5m_tokens", cacheWrite5mPerToken);
   }
 
-  const cacheWrite1hPerToken = isPositive(model.costPer1kCacheWrite1hTokens)
-    ? perTokenMicros(model.costPer1kCacheWrite1hTokens)
-    : inputPerToken !== null
-      ? inputPerToken * multipliers.cacheWrite1h
-      : null;
+  const cacheWrite1hPerToken =
+    cacheWritePerToken === null && isPositive(model.costPer1kCacheWrite1hTokens)
+      ? perTokenMicros(model.costPer1kCacheWrite1hTokens)
+      : cacheWritePerToken === null && inputPerToken !== null
+        ? inputPerToken * multipliers.cacheWrite1h
+        : null;
 
   if (cacheWrite1hPerToken !== null) {
     push("cache_write_1h_tokens", cacheWrite1hPerToken);
@@ -146,6 +156,31 @@ export function rateEntriesFromModelConfig(
 
   if (isPositive(model.costPerRun)) {
     push("requests", usdToMicros(model.costPerRun));
+  }
+
+  const longContextPricing = model.longContextPricing;
+
+  if (
+    longContextPricing &&
+    inputPerToken !== null &&
+    cachedInputPerToken !== null &&
+    outputPerToken !== null
+  ) {
+    push("long_context_input_tokens", inputPerToken * longContextPricing.inputMultiplier);
+    push(
+      "long_context_cached_input_tokens",
+      cachedInputPerToken *
+        (longContextPricing.cachedInputMultiplier ?? longContextPricing.inputMultiplier),
+    );
+    push("long_context_output_tokens", outputPerToken * longContextPricing.outputMultiplier);
+
+    if (cacheWritePerToken !== null) {
+      push(
+        "long_context_cache_write_tokens",
+        cacheWritePerToken *
+          (longContextPricing.cacheWriteMultiplier ?? longContextPricing.inputMultiplier),
+      );
+    }
   }
 
   const tierMultipliers = model.serviceTierMultipliers;

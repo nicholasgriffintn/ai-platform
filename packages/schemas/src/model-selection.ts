@@ -338,7 +338,9 @@ export type ModelSamplingConfig = Partial<
     ModelConfigItem,
     | "family"
     | "provider"
+    | "reasoningConfig"
     | "restrictsCombinedTopPAndTemperature"
+    | "samplingSupportedReasoningEfforts"
     | "supportsFrequencyPenalty"
     | "supportsPresencePenalty"
     | "supportsTemperature"
@@ -353,6 +355,7 @@ export interface ModelSamplingCapabilities {
   supportsPresencePenalty: boolean;
   supportsTemperature: boolean;
   supportsTopP: boolean;
+  supportedReasoningEfforts?: ModelConfigItem["samplingSupportedReasoningEfforts"];
 }
 
 function getMaxTemperature(modelConfig?: ModelSamplingConfig): number {
@@ -372,6 +375,7 @@ export function getModelSamplingCapabilities(
     supportsPresencePenalty: modelConfig?.supportsPresencePenalty !== false,
     supportsTemperature: modelConfig?.supportsTemperature !== false,
     supportsTopP: modelConfig?.supportsTopP !== false,
+    supportedReasoningEfforts: modelConfig?.samplingSupportedReasoningEfforts,
   };
 }
 

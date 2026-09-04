@@ -659,6 +659,9 @@ export class MessageFormatter {
       return {
         type: role === "assistant" ? "output_text" : "input_text",
         text: part.text,
+        ...(role !== "assistant" && part.prompt_cache_breakpoint
+          ? { prompt_cache_breakpoint: part.prompt_cache_breakpoint }
+          : {}),
       };
     }
 
@@ -670,6 +673,9 @@ export class MessageFormatter {
       return {
         type: "input_image",
         image_url: part.image_url.url,
+        ...(part.prompt_cache_breakpoint
+          ? { prompt_cache_breakpoint: part.prompt_cache_breakpoint }
+          : {}),
       };
     }
 
@@ -679,12 +685,18 @@ export class MessageFormatter {
           type: "input_file",
           file_data: part.document_url.url,
           filename: part.document_url.name ?? "document.pdf",
+          ...(part.prompt_cache_breakpoint
+            ? { prompt_cache_breakpoint: part.prompt_cache_breakpoint }
+            : {}),
         };
       }
 
       return {
         type: "input_file",
         file_url: part.document_url.url,
+        ...(part.prompt_cache_breakpoint
+          ? { prompt_cache_breakpoint: part.prompt_cache_breakpoint }
+          : {}),
       };
     }
 

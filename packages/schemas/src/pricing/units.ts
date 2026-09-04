@@ -4,6 +4,7 @@ export const MODEL_TOKEN_UNITS = [
   "input_tokens",
   "output_tokens",
   "cached_input_tokens",
+  "cache_write_tokens",
   "cache_write_5m_tokens",
   "cache_write_1h_tokens",
   "reasoning_tokens",
@@ -12,6 +13,10 @@ export const MODEL_TOKEN_UNITS = [
   "image_input_tokens",
   "video_input_tokens",
   "tool_use_prompt_tokens",
+  "long_context_input_tokens",
+  "long_context_output_tokens",
+  "long_context_cached_input_tokens",
+  "long_context_cache_write_tokens",
 ] as const;
 
 export const HOSTED_TOOL_UNITS = [

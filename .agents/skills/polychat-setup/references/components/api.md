@@ -35,7 +35,9 @@ The server owns model selection policy. Provider configuration determines the vi
 
 When a chat request omits its output-token limit, resolve a workload-aware default before calling the provider: 2,048 for structured JSON, 8,192 for ordinary chat, 16,384 for agent or coding work, and 32,768 for reasoning models. An explicit `max_tokens`, `max_completion_tokens`, or `max_output_tokens` value overrides that default and is clamped only to the selected model's catalogue limit.
 
-For OpenAI text models, keep Polychat's public route independent of the upstream transport. Route models that require Responses, requests for supported OpenAI-hosted tools, and function-tool requests with a non-`none` reasoning effort through `/v1/responses`; use Chat Completions for compatible requests. Model capability metadata is the authority for which hosted tools, reasoning levels, and upstream streaming modes the UI may offer.
+For OpenAI text models, keep Polychat's public route independent of the upstream transport. Route models that require Responses, requests for supported OpenAI-hosted tools, and function-tool requests with a non-`none` reasoning effort through `/v1/responses`; prefer Responses for GPT-5.5 and GPT-5.6 reasoning requests, and always use it for GPT-6 Astra. Model capability metadata is the authority for which hosted tools, reasoning levels, and upstream streaming modes the UI may offer.
+
+Treat Astra's new controls as provider protocol, not prompt text. Preserve `async: true` on supported function definitions, pass `prompt_cache_options` and explicit content breakpoints only to GPT-5.6 or later, and accept `configuration_update` items only for Astra standard single-agent requests with application compaction off and provider truncation disabled. Astra rejects `none`, `temperature`, `top_p`, `top_logprobs`, and logprob output requests, so filter them at the adapter boundary. Polychat's chat route is SSE and does not proxy the Responses WebSocket protocol; do not advertise mid-turn steering until that authenticated transport, its continuation rules, and its recovery semantics are implemented.
 
 Import supported reasoning effort levels from models.dev `reasoning_options`. Preserve local defaults and model overrides when synchronising; models.dev does not own those product choices. Keep granular hosted-tool capabilities in the provider catalogue because models.dev exposes only general tool-calling support. models.dev gateway entries (OpenRouter, Vercel, Kilo and similar) disagree with each other and with Anthropic about Claude sampling, so the sync overrides them: any Claude model whose effort levels include `xhigh` is written with `supportsTemperature: false`, `supportsTopP: false`, and `max` in its effort levels, because Anthropic removed temperature, top-p and top-k on Claude Opus 4.7 and later, Claude Sonnet 5 and Claude Fable. The first-party `anthropic` entries on models.dev already agree with this rule.
 
@@ -81,6 +83,8 @@ denominator rather than as `used / 0` or "unlimited". Web Account and Sidebar sh
 invalidate it after a remote turn, and refresh it at the monthly boundary; the stream payload supplements
 rather than replaces that authoritative read. See
 [ADR 0041](../architecture/decisions/0041-usage-metering-and-credits.md).
+
+Keep provider cache writes disjoint from uncached input. OpenAI reports `cache_write_tokens` inside input-token details for GPT-5.6 and later, while Anthropic reports additive five-minute and one-hour write tiers. If a catalogue entry declares long-context pricing, move the whole request onto its long-context input, cached-input, cache-write, and output units once the reported input crosses the threshold; do not apply a multiplier only to the tokens above it.
 
 Text-to-speech is reachable without an account, so `apps/api/src/lib/audio/access.ts` gates it. An anonymous
 caller may only use the platform-hosted provider and spends the anonymous credit allowance; naming any

@@ -7,7 +7,7 @@ import { billableTokenQuantities } from "../billableUnits";
 import { userCreditActor } from "../creditActor";
 import { resolveCreditState } from "../creditState";
 import { applyUsageRollup, buildUsageEventRow, emitUsageEvents } from "../ledger";
-import type { NormalisedTokenUsage } from "../tokenUsage";
+import { normaliseTokenUsage, type NormalisedTokenUsage } from "../tokenUsage";
 
 const OCCURRED_AT = "2026-08-31T12:00:00.000Z";
 
@@ -250,6 +250,31 @@ describe("billableTokenQuantities", () => {
       { unit: "input_tokens", quantity: 600 },
       { unit: "output_tokens", quantity: 200 },
       { unit: "cached_input_tokens", quantity: 400 },
+    ]);
+  });
+
+  it("prices OpenAI cache writes and long-context requests as disjoint token units", () => {
+    const raw = {
+      input_tokens: 300000,
+      output_tokens: 10000,
+      input_tokens_details: { cached_tokens: 50000, cache_write_tokens: 25000 },
+    };
+    const usage = normaliseTokenUsage(raw);
+
+    if (!usage) {
+      throw new Error("Expected OpenAI usage to normalise");
+    }
+
+    expect(
+      billableTokenQuantities(usage, raw, {
+        hasGenericCacheWriteRate: true,
+        longContextThresholdTokens: 272000,
+      }),
+    ).toEqual([
+      { unit: "long_context_input_tokens", quantity: 225000 },
+      { unit: "long_context_output_tokens", quantity: 10000 },
+      { unit: "long_context_cached_input_tokens", quantity: 50000 },
+      { unit: "long_context_cache_write_tokens", quantity: 25000 },
     ]);
   });
 

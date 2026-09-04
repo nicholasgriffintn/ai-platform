@@ -191,6 +191,30 @@ describe("model catalogue rate adapter", () => {
     expect(perUnit(entries, "cached_input_tokens")).toBeCloseTo(1, 10);
   });
 
+  it("publishes generic cache-write and long-context rates when a model declares them", () => {
+    const entries = rateEntriesFromModelConfig({
+      ...model,
+      provider: "openai",
+      costPer1kInputTokens: 0.01,
+      costPer1kCachedInputTokens: 0.001,
+      costPer1kCacheWriteTokens: 0.0125,
+      costPer1kOutputTokens: 0.05,
+      longContextPricing: {
+        inputTokenThreshold: 272000,
+        inputMultiplier: 2,
+        cacheWriteMultiplier: 2,
+        outputMultiplier: 1.5,
+      },
+    });
+
+    expect(perUnit(entries, "cache_write_tokens")).toBeCloseTo(12.5, 10);
+    expect(perUnit(entries, "cache_write_5m_tokens")).toBeUndefined();
+    expect(perUnit(entries, "long_context_input_tokens")).toBeCloseTo(20, 10);
+    expect(perUnit(entries, "long_context_cached_input_tokens")).toBeCloseTo(2, 10);
+    expect(perUnit(entries, "long_context_cache_write_tokens")).toBeCloseTo(25, 10);
+    expect(perUnit(entries, "long_context_output_tokens")).toBeCloseTo(75, 10);
+  });
+
   it("publishes a tier variant that only applies to that service tier", () => {
     const entries = rateEntriesFromModelConfig({
       ...model,

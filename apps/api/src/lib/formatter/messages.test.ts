@@ -39,6 +39,35 @@ describe("OpenAI Responses history formatting", () => {
       },
     ]);
   });
+
+  it("preserves explicit prompt cache breakpoints on input content", () => {
+    expect(
+      MessageFormatter.formatOpenAIResponsesInput([
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "Stable prefix",
+              prompt_cache_breakpoint: { mode: "explicit" },
+            },
+          ],
+        },
+      ]),
+    ).toEqual([
+      {
+        type: "message",
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text: "Stable prefix",
+            prompt_cache_breakpoint: { mode: "explicit" },
+          },
+        ],
+      },
+    ]);
+  });
 });
 
 describe("Mistral reasoning history formatting", () => {

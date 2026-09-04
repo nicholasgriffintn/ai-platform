@@ -356,4 +356,25 @@ describe("createSamplingParameters", () => {
       createSamplingParameters({ top_p: 0.6, should_think: true }, { provider: "openai" }),
     ).toEqual({});
   });
+
+  it("only sends constrained sampling parameters at a supported reasoning effort", () => {
+    const samplingModelConfig = {
+      provider: "openai",
+      samplingSupportedReasoningEfforts: ["none" as const],
+      reasoningConfig: { defaultEffort: "none" as const },
+    };
+
+    expect(
+      createSamplingParameters(
+        { temperature: 0.4, top_p: 0.6, reasoning_effort: "none" },
+        samplingModelConfig,
+      ),
+    ).toEqual({ temperature: 0.4, top_p: 0.6 });
+    expect(
+      createSamplingParameters(
+        { temperature: 0.4, top_p: 0.6, reasoning_effort: "medium" },
+        samplingModelConfig,
+      ),
+    ).toEqual({});
+  });
 });

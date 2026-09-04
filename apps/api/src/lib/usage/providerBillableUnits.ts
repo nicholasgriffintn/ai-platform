@@ -26,6 +26,7 @@ export interface ProviderUsageSignals {
 
 export interface ProviderUsageOptions {
   hasRate: (unit: UsageUnit) => boolean;
+  longContextThresholdTokens?: number;
 }
 
 export interface ProviderUsageExtraction {
@@ -308,6 +309,8 @@ export function extractProviderBillableUsage(
         hasReasoningRate: options.hasRate("reasoning_tokens"),
         hasAudioRate:
           options.hasRate("audio_input_tokens") || options.hasRate("audio_output_tokens"),
+        hasGenericCacheWriteRate: options.hasRate("cache_write_tokens"),
+        longContextThresholdTokens: options.longContextThresholdTokens,
       })
     : [];
 
