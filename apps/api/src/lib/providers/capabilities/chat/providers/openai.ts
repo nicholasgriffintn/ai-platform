@@ -475,6 +475,9 @@ export class OpenAIProvider extends BaseProvider {
       logit_bias: providerParams.logit_bias,
       n: providerParams.n,
       stop: providerParams.stop,
+      logprobs: modelConfig?.supportsLogprobs === false ? undefined : providerParams.logprobs,
+      top_logprobs:
+        modelConfig?.supportsTopLogprobs === false ? undefined : providerParams.top_logprobs,
       user: user?.email,
     };
   }

@@ -19,6 +19,7 @@ export const MODEL_ICONS: Record<string, string> = {
   mixtral: "mistral",
   leanstral: "mistral",
   qwen: "qwen",
+  "gpt-6-astra": "openai",
   "gpt-": "openai",
   o1: "openai",
   o3: "openai",

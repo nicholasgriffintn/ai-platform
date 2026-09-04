@@ -69,6 +69,17 @@ function requestsFunctionToolsWithReasoning(params: ChatCompletionParameters): b
   return hasEnabledFunctionTool || isAgentExecutionMode(params.mode);
 }
 
+function requestsPreferredReasoningApi(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+): boolean {
+  return (
+    modelConfig.prefersResponsesApiForReasoning === true &&
+    params.reasoning_effort !== undefined &&
+    params.reasoning_effort !== "none"
+  );
+}
+
 function containsDocumentInput(params: ChatCompletionParameters): boolean {
   return (params.messages || []).some(
     (message) =>
@@ -91,6 +102,7 @@ export function shouldUseOpenAIResponsesApi(
 
   return (
     params.use_responses === true ||
+    requestsPreferredReasoningApi(params, modelConfig) ||
     containsDocumentInput(params) ||
     requestsSupportedHostedTool(params, modelConfig) ||
     requestsFunctionToolsWithReasoning(params)
@@ -164,6 +176,45 @@ function buildResponsesInput(
   return Array.isArray(extraInputItems) ? [...fallbackInput, ...extraInputItems] : fallbackInput;
 }
 
+function containsConfigurationUpdate(params: ChatCompletionParameters): boolean {
+  const inputItems = [
+    ...(Array.isArray(params.input) ? params.input : []),
+    ...(Array.isArray(params.input_items) ? params.input_items : []),
+  ];
+
+  return inputItems.some((item) => isRecord(item) && item.type === "configuration_update");
+}
+
+function assertConfigurationUpdateCompatibility(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+): void {
+  if (!containsConfigurationUpdate(params)) {
+    return;
+  }
+
+  if (!modelConfig.supportsReasoningConfigurationUpdates) {
+    throw new AssistantError(
+      `${modelConfig.name || modelConfig.matchingModel} does not support configuration_update items.`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
+  if (isAgentExecutionMode(params.mode)) {
+    throw new AssistantError(
+      "OpenAI configuration_update items are only supported in standard single-agent requests.",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
+  if (params.compaction !== "off" || params.truncation === "auto") {
+    throw new AssistantError(
+      "OpenAI configuration_update items require compaction=off and truncation=disabled.",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+}
+
 function buildResponsesTextFormat(responseFormat: unknown): unknown {
   if (!isRecord(responseFormat)) {
     return responseFormat;
@@ -220,6 +271,7 @@ function buildResponsesReasoningParams(
     ...requestReasoningOptions,
     ...(effort ? { effort } : {}),
     ...(effort &&
+    effort !== "none" &&
     toolReasoningOptions.summary === undefined &&
     toolReasoningOptions.generate_summary === undefined
       ? { summary: "auto" }
@@ -268,6 +320,10 @@ function buildResponsesInclude(
   const includeDefaults = params.include_defaults !== false;
   const store = getResponsesStoreValue(params, options);
 
+  if (modelConfig.supportsLogprobs === false) {
+    include.delete("message.output_text.logprobs");
+  }
+
   if (
     params.include_encrypted_reasoning ||
     (includeDefaults && !store && hasProviderReasoningOptions(modelConfig))
@@ -313,6 +369,15 @@ export function buildOpenAIResponsesBody(
   functionTools: any[] = [],
   streamingParams: Record<string, any> = {},
 ): Record<string, any> {
+  assertConfigurationUpdateCompatibility(params, modelConfig);
+
+  if (params.prompt_cache_options && !modelConfig.supportsPromptCacheOptions) {
+    throw new AssistantError(
+      `${modelConfig.name || modelConfig.matchingModel} does not support prompt_cache_options.`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
   const toolOptions = readOptionBag(params.tool_options);
   const tools = buildOpenAIResponsesTools(params, modelConfig, functionTools);
   const store = getResponsesStoreValue(params, toolOptions);
@@ -355,7 +420,11 @@ export function buildOpenAIResponsesBody(
     ...(typeof background === "boolean" ? { background } : {}),
     prompt_cache_key: params.prompt_cache_key,
     prompt_cache_retention: params.prompt_cache_retention,
+    prompt_cache_options: params.prompt_cache_options,
     service_tier: params.service_tier,
+    ...(modelConfig.supportsTopLogprobs !== false && params.top_logprobs !== undefined
+      ? { top_logprobs: params.top_logprobs }
+      : {}),
     max_tool_calls: params.max_tool_calls,
     stream_options: params.stream_options,
     safety_identifier: params.safety_identifier || params.context?.user?.id?.toString(),

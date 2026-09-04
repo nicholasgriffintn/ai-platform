@@ -14,6 +14,17 @@ import { messageSchema } from "./shared";
 import { toolIdsSchema, toolSelectionModeSchema } from "./tools";
 
 const recordSchema = z.record(z.string(), z.unknown());
+const promptCacheBreakpointSchema = z
+  .object({ mode: z.literal("explicit") })
+  .strict()
+  .describe("An exact prompt cache boundary.");
+const promptCacheOptionsSchema = z
+  .object({
+    mode: z.enum(["implicit", "explicit"]).optional(),
+    ttl: z.literal("30m").optional(),
+    comparison_response_id: z.string().optional(),
+  })
+  .strict();
 
 export const modelRouterModeSchema = z.enum(["auto", "lite", "standard", "pro", "max"]);
 export const chatCompactionModeSchema = z.enum(["auto", "off"]);
@@ -98,6 +109,7 @@ export const chatMessageContentPartSchema = z
       .object({ type: z.literal("ephemeral").describe("Cache control type.") })
       .optional()
       .describe("Provider cache control settings."),
+    prompt_cache_breakpoint: promptCacheBreakpointSchema.optional(),
     document_url: z
       .object({
         url: z.url().describe("Document URL."),
@@ -258,6 +270,11 @@ export const chatCompletionToolSchema = z.object({
       description: z.string().optional().describe("Function description shown to the model."),
       parameters: recordSchema.optional().prefault({}).describe("Function parameters JSON schema."),
       required: z.array(z.string()).optional().describe("Required function parameter names."),
+      strict: z.boolean().optional().describe("Whether arguments must match the schema exactly."),
+      async: z
+        .boolean()
+        .optional()
+        .describe("Whether an Astra tool call may complete after the response continues."),
     })
     .describe("Function tool definition."),
 });
@@ -541,6 +558,9 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .string()
     .optional()
     .describe("Prompt cache retention for compatible providers."),
+  prompt_cache_options: promptCacheOptionsSchema
+    .optional()
+    .describe("Prompt cache policy for GPT-5.6 and later OpenAI models."),
   max_output_tokens: z
     .number()
     .optional()

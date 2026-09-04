@@ -54,6 +54,8 @@ const CACHE_CREATION_FIELDS = [
   "cacheWriteInputTokenCount",
 ] as const;
 
+const CACHE_WRITE_SUBSET_FIELDS = ["cache_write_tokens"] as const;
+
 const REASONING_TOKEN_FIELDS = ["reasoning_tokens", "thoughtsTokenCount"] as const;
 
 const AUDIO_TOKEN_FIELD = "audio_tokens";
@@ -171,7 +173,9 @@ export function normaliseTokenUsage(value: unknown): NormalisedTokenUsage | null
   const rawTotal = readAlias(sources, TOTAL_TOKEN_FIELDS);
   const cachedSubset = readAlias([...inputDetails, ...sources], CACHED_INPUT_SUBSET_FIELDS);
   const cachedAdditional = readAlias(sources, CACHED_INPUT_ADDITIONAL_FIELDS);
-  const cacheCreation = sumCacheCreation(sources);
+  const additionalCacheCreation = sumCacheCreation(sources);
+  const cacheWriteSubset = readAlias(inputDetails, CACHE_WRITE_SUBSET_FIELDS);
+  const cacheCreation = additionalCacheCreation ?? cacheWriteSubset;
   const reasoning = readAlias([...outputDetails, ...sources], REASONING_TOKEN_FIELDS);
   const audioInput = readAlias(inputDetails, [AUDIO_TOKEN_FIELD]);
   const audioOutput = readAlias(outputDetails, [AUDIO_TOKEN_FIELD]);
@@ -188,7 +192,7 @@ export function normaliseTokenUsage(value: unknown): NormalisedTokenUsage | null
 
   const inputTokens = rawInput ?? 0;
   const outputTokens = rawOutput ?? 0;
-  const uncountedInput = (cachedAdditional ?? 0) + (cacheCreation ?? 0);
+  const uncountedInput = (cachedAdditional ?? 0) + (additionalCacheCreation ?? 0);
   const totalTokens = Math.max(rawTotal ?? 0, inputTokens + outputTokens + uncountedInput);
   const cachedInput = cachedAdditional ?? cachedSubset;
 

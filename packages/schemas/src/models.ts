@@ -108,6 +108,14 @@ const modelArtificialAnalysisSchema = z.object({
     .optional(),
 });
 
+const modelLongContextPricingSchema = z.object({
+  inputTokenThreshold: z.number().int().positive(),
+  inputMultiplier: z.number().positive(),
+  cachedInputMultiplier: z.number().positive().optional(),
+  cacheWriteMultiplier: z.number().positive().optional(),
+  outputMultiplier: z.number().positive(),
+});
+
 const modelStatusSchema = z.enum(["alpha", "beta", "deprecated"]);
 
 export const modelConfigItemSchema = z.object({
@@ -158,6 +166,7 @@ export const modelConfigItemSchema = z.object({
   costPer1kSearches: z.number().optional(),
   costPerRun: z.number().optional(),
   costPer1kCachedInputTokens: z.number().optional(),
+  costPer1kCacheWriteTokens: z.number().optional(),
   costPer1kCacheWrite5mTokens: z.number().optional(),
   costPer1kCacheWrite1hTokens: z.number().optional(),
   costPer1kAudioInputTokens: z.number().optional(),
@@ -172,6 +181,7 @@ export const modelConfigItemSchema = z.object({
   costPerPage: z.number().optional(),
   hostedToolCosts: z.record(z.string(), z.number()).optional(),
   serviceTierMultipliers: z.record(z.string(), z.number()).optional(),
+  longContextPricing: modelLongContextPricingSchema.optional(),
   supportsToolCalls: z.boolean().optional(),
   supportsToolChoice: z.boolean().optional(),
   supportsResponseFormat: z.boolean().optional(),
@@ -198,6 +208,9 @@ export const modelConfigItemSchema = z.object({
   supportsRealtimeTranslationSession: z.boolean().optional(),
   supportsTemperature: z.boolean().optional(),
   supportsTopP: z.boolean().optional(),
+  supportsLogprobs: z.boolean().optional(),
+  supportsTopLogprobs: z.boolean().optional(),
+  samplingSupportedReasoningEfforts: z.array(reasoningEffortSchema).optional(),
   supportsTokenCounting: z.boolean().optional(),
   supportsRepetitionPenalty: z.boolean().optional(),
   supportsFrequencyPenalty: z.boolean().optional(),
@@ -205,6 +218,7 @@ export const modelConfigItemSchema = z.object({
   restrictsCombinedTopPAndTemperature: z.boolean().optional(),
   apiOperation: z.string().optional(),
   requiresResponsesApi: z.boolean().optional(),
+  prefersResponsesApiForReasoning: z.boolean().optional(),
   bedrockApiOperation: z.string().optional(),
   bedrockStreamingApiOperation: z.string().optional(),
   timeout: z.number().optional(),
@@ -212,6 +226,9 @@ export const modelConfigItemSchema = z.object({
   inputSchema: inputSchemaDescriptorSchema.optional(),
   inputFormat: z.enum(["json", "multipart"]).optional(),
   supportsPromptCaching: z.boolean().optional(),
+  supportsPromptCacheOptions: z.boolean().optional(),
+  supportsAsyncToolCalls: z.boolean().optional(),
+  supportsReasoningConfigurationUpdates: z.boolean().optional(),
   promptTemplate: z.string().optional(),
   reasoningConfig: modelReasoningConfigSchema.optional(),
   verbosityConfig: modelVerbosityConfigSchema.optional(),

@@ -44,6 +44,23 @@ describe("normaliseTokenUsage", () => {
     });
   });
 
+  it("normalises OpenAI cache writes without adding subset tokens to the total", () => {
+    expect(
+      normaliseTokenUsage({
+        input_tokens: 1000,
+        output_tokens: 100,
+        total_tokens: 1100,
+        input_tokens_details: { cached_tokens: 200, cache_write_tokens: 300 },
+      }),
+    ).toMatchObject({
+      input_tokens: 1000,
+      output_tokens: 100,
+      total_tokens: 1100,
+      cached_input_tokens: 200,
+      cache_creation_tokens: 300,
+    });
+  });
+
   it("counts anthropic cache tokens on top of input tokens", () => {
     expect(
       normaliseTokenUsage({
