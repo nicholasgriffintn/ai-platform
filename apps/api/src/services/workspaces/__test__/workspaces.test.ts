@@ -30,6 +30,7 @@ import {
   listWorkspaces,
   removeProjectCapability,
 } from "../index";
+import { getWorkspaceUsageSummary } from "../usage";
 
 const NOW = new Date("2026-08-10T12:00:00.000Z");
 const WORKSPACE_ID = "workspace-1";
@@ -99,15 +100,16 @@ function createHarness(params?: {
     removeProjectCapability: vi.fn().mockResolvedValue(undefined),
     listProjectConversations: vi.fn().mockResolvedValue([]),
   };
+  const usageEvents = { summariseWorkspacePeriodBy: vi.fn().mockResolvedValue([]) };
   const audit = { createRecord: vi.fn().mockResolvedValue(undefined) };
   const outputs = { listWorkspaceOutputRoots: vi.fn().mockResolvedValue([]) };
   const context = {
     env: { APP_BASE_URL: "https://work.polychat.test/" },
     requireUser: vi.fn().mockReturnValue(user),
-    repositories: { workspaces: repositories, audit, outputs },
+    repositories: { workspaces: repositories, audit, outputs, usageEvents },
   } as unknown as ServiceContext;
 
-  return { context, repositories, audit, outputs };
+  return { context, repositories, audit, outputs, usageEvents };
 }
 
 describe("Work entitlement", () => {
@@ -496,5 +498,60 @@ describe("project capability ownership", () => {
         createdBy: 3,
       }),
     );
+  });
+});
+
+describe("workspace spend visibility", () => {
+  it.each(["owner", "admin"] as const)("shows only attributed spend to %s", async (role) => {
+    const { context, usageEvents } = createHarness({ role });
+    const row = { key: "model", cost_micros: 10000, credit_micros: 1000000, event_count: 2 };
+
+    usageEvents.summariseWorkspacePeriodBy.mockResolvedValue([row]);
+    const summary = await getWorkspaceUsageSummary(context, WORKSPACE_ID, { period: "2026-09" });
+
+    expect(summary.totals).toEqual({
+      cost_micros: 10000,
+      credit_micros: 1000000,
+      credits: 1,
+      event_count: 2,
+    });
+    expect(summary.by_project).toEqual([{ ...row, credits: 1 }]);
+    expect(usageEvents.summariseWorkspacePeriodBy).toHaveBeenCalledWith(
+      WORKSPACE_ID,
+      "2026-09",
+      "source",
+    );
+    expect(usageEvents.summariseWorkspacePeriodBy).toHaveBeenCalledWith(
+      WORKSPACE_ID,
+      "2026-09",
+      "vendor",
+    );
+    expect(usageEvents.summariseWorkspacePeriodBy).toHaveBeenCalledWith(
+      WORKSPACE_ID,
+      "2026-09",
+      "project",
+    );
+  });
+
+  it.each(["member", null] as const)("does not query spend for role %s", async (role) => {
+    const { context, usageEvents } = createHarness({ role });
+
+    await expect(getWorkspaceUsageSummary(context, WORKSPACE_ID, {})).rejects.toMatchObject({
+      statusCode: role ? 403 : 404,
+    });
+    expect(usageEvents.summariseWorkspacePeriodBy).not.toHaveBeenCalled();
+  });
+
+  it("reports an empty period without manufacturing an allowance", async () => {
+    const { context } = createHarness();
+    const summary = await getWorkspaceUsageSummary(context, WORKSPACE_ID, { period: "2026-01" });
+
+    expect(summary).toEqual({
+      period: "2026-01",
+      totals: { cost_micros: 0, credit_micros: 0, credits: 0, event_count: 0 },
+      by_source: [],
+      by_vendor: [],
+      by_project: [],
+    });
   });
 });
