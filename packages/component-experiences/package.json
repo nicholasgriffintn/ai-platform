@@ -51,7 +51,7 @@
     "@ngriffin_uk/polychat-component-ui": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
-    "lucide-react": "1.34.0",
+    "lucide-react": "1.35.0",
     "sonner": "2.0.8"
   },
   "devDependencies": {
