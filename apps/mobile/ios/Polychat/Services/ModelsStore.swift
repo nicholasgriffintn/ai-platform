@@ -40,7 +40,9 @@ class ModelsStore: ObservableObject {
                     isDeprecated: model.isDeprecated,
                     isDefault: model.isDefault,
                     isExecutable: model.isExecutable,
-                    status: model.status
+                    status: model.status,
+                    supportedServiceTiers: model.supportedServiceTiers,
+                    serviceTierMultipliers: model.serviceTierMultipliers
                 )
             }
 

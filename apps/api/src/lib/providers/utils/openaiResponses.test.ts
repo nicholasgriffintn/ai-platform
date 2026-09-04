@@ -163,6 +163,23 @@ describe("current OpenAI model capabilities", () => {
     }
   });
 
+  it("exposes Fast processing only on supported OpenAI models", () => {
+    for (const modelId of [
+      "gpt-5.6",
+      "gpt-5.6-luna",
+      "gpt-5.6-sol",
+      "gpt-5.6-terra",
+      "gpt-6-astra",
+    ]) {
+      expect(openaiModelConfig[modelId].supportedServiceTiers, modelId).toEqual([
+        "default",
+        "fast",
+      ]);
+    }
+
+    expect(openaiModelConfig["gpt-5.5"].supportedServiceTiers).toBeUndefined();
+  });
+
   it("keeps pro-model hosted tool restrictions accurate", () => {
     expect(openaiModelConfig["gpt-5.4-pro"]).toMatchObject({
       supportsCodeExecution: false,

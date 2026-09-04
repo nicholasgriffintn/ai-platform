@@ -25,6 +25,7 @@ public struct ChatCompletionRequest: Encodable {
     let reasoning: ReasoningSettings?
     let reasoningEffort: String?
     let verbosity: String?
+    let serviceTier: String?
     let enabledTools: [String]?
     let toolSelectionMode: String
     let modelRouterMode: String?
@@ -37,6 +38,7 @@ public struct ChatCompletionRequest: Encodable {
         case presencePenalty = "presence_penalty"
         case frequencyPenalty = "frequency_penalty"
         case reasoningEffort = "reasoning_effort"
+        case serviceTier = "service_tier"
         case enabledTools = "enabled_tools"
         case toolSelectionMode = "tool_selection_mode"
         case modelRouterMode = "model_router_mode"
@@ -68,6 +70,7 @@ public struct ChatCompletionRequest: Encodable {
         self.reasoning = settings?.reasoningEffort.map { ReasoningSettings(effort: $0.rawValue) }
         self.reasoningEffort = settings?.reasoningEffort?.rawValue
         self.verbosity = settings?.verbosity?.rawValue
+        self.serviceTier = settings?.serviceTier?.rawValue
         self.enabledTools = settings?.enabledTools.isEmpty == false ? settings?.enabledTools : nil
         self.toolSelectionMode = "managed"
         self.modelRouterMode = model == nil ? "auto" : nil
@@ -180,6 +183,8 @@ public struct ModelConfigItem: Codable, Identifiable {
     public let isExecutable: Bool?
     public let status: String?
     public let reasoningConfig: ReasoningConfig?
+    public let supportedServiceTiers: [String]?
+    public let serviceTierMultipliers: [String: Double]?
     
     public struct ReasoningConfig: Codable {
         public let supportedEffortLevels: [String]?
@@ -203,7 +208,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         case name, provider, description, strengths, contextWindow, pricing, modalities, supportsFunctions, multimodal
         case isFeatured, featured, isDefault, isExecutable, status
         case isDeprecated, deprecated
-        case reasoningConfig
+        case reasoningConfig, supportedServiceTiers, serviceTierMultipliers
     }
     
     public init(
@@ -222,7 +227,9 @@ public struct ModelConfigItem: Codable, Identifiable {
         isDefault: Bool? = nil,
         isExecutable: Bool? = nil,
         status: String? = nil,
-        reasoningConfig: ReasoningConfig? = nil
+        reasoningConfig: ReasoningConfig? = nil,
+        supportedServiceTiers: [String]? = nil,
+        serviceTierMultipliers: [String: Double]? = nil
     ) {
         self.id = id
         self.name = name
@@ -240,6 +247,8 @@ public struct ModelConfigItem: Codable, Identifiable {
         self.isExecutable = isExecutable
         self.status = status
         self.reasoningConfig = reasoningConfig
+        self.supportedServiceTiers = supportedServiceTiers
+        self.serviceTierMultipliers = serviceTierMultipliers
     }
 
     public init(from decoder: Decoder) throws {
@@ -262,6 +271,8 @@ public struct ModelConfigItem: Codable, Identifiable {
         isExecutable = try container.decodeIfPresent(Bool.self, forKey: .isExecutable)
         status = try container.decodeIfPresent(String.self, forKey: .status)
         reasoningConfig = try container.decodeIfPresent(ReasoningConfig.self, forKey: .reasoningConfig)
+        supportedServiceTiers = try container.decodeIfPresent([String].self, forKey: .supportedServiceTiers)
+        serviceTierMultipliers = try container.decodeIfPresent([String: Double].self, forKey: .serviceTierMultipliers)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -282,6 +293,8 @@ public struct ModelConfigItem: Codable, Identifiable {
         try container.encodeIfPresent(isExecutable, forKey: .isExecutable)
         try container.encodeIfPresent(status, forKey: .status)
         try container.encodeIfPresent(reasoningConfig, forKey: .reasoningConfig)
+        try container.encodeIfPresent(supportedServiceTiers, forKey: .supportedServiceTiers)
+        try container.encodeIfPresent(serviceTierMultipliers, forKey: .serviceTierMultipliers)
     }
 }
 

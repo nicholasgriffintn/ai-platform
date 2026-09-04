@@ -10,6 +10,7 @@ import type {
   ChatHostedToolSettings as SchemaHostedToolSettings,
   ConversationModeMetadata,
   MessageRole as SchemaMessageRole,
+  ModelServiceTier,
   ReasoningEffort,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -34,6 +35,7 @@ export interface ChatSettings {
   enabled_tools?: string[];
   reasoning?: ChatReasoningSettings;
   verbosity?: VerbosityLevel;
+  service_tier?: ModelServiceTier;
   tool_options?: HostedToolSettings;
 }
 

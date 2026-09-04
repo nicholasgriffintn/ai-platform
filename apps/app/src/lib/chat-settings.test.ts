@@ -14,6 +14,7 @@ describe("chat response token defaults", () => {
         max_tokens: 65_536,
         temperature: 0.7,
         reasoning: { effort: "high" },
+        service_tier: "fast",
         verbosity: "low",
       }),
     ).toEqual({ max_tokens: 65_536, temperature: 0.7 });

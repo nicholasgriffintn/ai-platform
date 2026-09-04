@@ -7,6 +7,7 @@ public struct ChatSettings: Codable, Equatable {
     public var frequencyPenalty: Double?
     public var reasoningEffort: ReasoningEffort?
     public var verbosity: VerbosityLevel?
+    public var serviceTier: ServiceTier?
     public var enabledTools: [String]
     public var toolOptions: [String: JSONValue]
 
@@ -68,6 +69,20 @@ public struct ChatSettings: Codable, Equatable {
         }
     }
 
+    public enum ServiceTier: String, Codable, CaseIterable {
+        case `default` = "default"
+        case fast = "fast"
+
+        public var displayName: String {
+            switch self {
+            case .default:
+                return "Standard"
+            case .fast:
+                return "Fast"
+            }
+        }
+    }
+
     public static let `default` = ChatSettings(
         temperature: nil,
         topP: nil,
@@ -76,6 +91,7 @@ public struct ChatSettings: Codable, Equatable {
         frequencyPenalty: nil,
         reasoningEffort: nil,
         verbosity: nil,
+        serviceTier: nil,
         enabledTools: [],
         toolOptions: [:]
     )
@@ -88,6 +104,7 @@ public struct ChatSettings: Codable, Equatable {
         frequencyPenalty: Double? = nil,
         reasoningEffort: ReasoningEffort? = nil,
         verbosity: VerbosityLevel? = nil,
+        serviceTier: ServiceTier? = nil,
         enabledTools: [String] = [],
         toolOptions: [String: JSONValue] = [:]
     ) {
@@ -98,6 +115,7 @@ public struct ChatSettings: Codable, Equatable {
         self.frequencyPenalty = frequencyPenalty
         self.reasoningEffort = reasoningEffort
         self.verbosity = verbosity
+        self.serviceTier = serviceTier
         self.enabledTools = enabledTools
         self.toolOptions = toolOptions
     }

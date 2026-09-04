@@ -116,6 +116,8 @@ const modelLongContextPricingSchema = z.object({
   outputMultiplier: z.number().positive(),
 });
 
+export const modelServiceTierSchema = z.enum(["default", "fast"]);
+
 const modelStatusSchema = z.enum(["alpha", "beta", "deprecated"]);
 
 export const modelConfigItemSchema = z.object({
@@ -181,6 +183,7 @@ export const modelConfigItemSchema = z.object({
   costPerPage: z.number().optional(),
   hostedToolCosts: z.record(z.string(), z.number()).optional(),
   serviceTierMultipliers: z.record(z.string(), z.number()).optional(),
+  supportedServiceTiers: z.array(modelServiceTierSchema).optional(),
   longContextPricing: modelLongContextPricingSchema.optional(),
   supportsToolCalls: z.boolean().optional(),
   supportsToolChoice: z.boolean().optional(),
@@ -325,6 +328,7 @@ export type ModelModalities = z.infer<typeof modelModalitiesSchema>;
 export type ModelStatus = z.infer<typeof modelStatusSchema>;
 export type ModelReasoningConfig = z.infer<typeof modelReasoningConfigSchema>;
 export type ModelVerbosityConfig = z.infer<typeof modelVerbosityConfigSchema>;
+export type ModelServiceTier = z.infer<typeof modelServiceTierSchema>;
 export type ModelConfigItem = z.infer<typeof modelConfigItemSchema>;
 export type ModelConfig = Record<string, ModelConfigItem>;
 export type ArtificialAnalysisScores = z.infer<typeof artificialAnalysisScoresSchema>;

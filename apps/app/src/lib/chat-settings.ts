@@ -58,7 +58,12 @@ export function migrateLegacyMaxOutputTokens(persistedState: unknown, version: n
 }
 
 export function clearModelResponseSettings(settings: ChatSettings): ChatSettings {
-  const { reasoning: _reasoning, verbosity: _verbosity, ...rest } = settings;
+  const {
+    reasoning: _reasoning,
+    service_tier: _serviceTier,
+    verbosity: _verbosity,
+    ...rest
+  } = settings;
 
   return rest;
 }

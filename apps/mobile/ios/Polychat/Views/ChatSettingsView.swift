@@ -9,6 +9,11 @@ struct ChatSettingsView: View {
         ChatSettings.ReasoningEffort.supportedLevels(for: modelConfig)
     }
 
+    private var serviceTierOptions: [ChatSettings.ServiceTier] {
+        let supported = Set(modelConfig?.supportedServiceTiers ?? [])
+        return ChatSettings.ServiceTier.allCases.filter { supported.contains($0.rawValue) }
+    }
+
     var body: some View {
         NavigationView {
             Form {
@@ -25,6 +30,19 @@ struct ChatSettingsView: View {
                         ForEach(ChatSettings.VerbosityLevel.allCases, id: \.rawValue) { level in
                             Text(level.displayName).tag(level.rawValue)
                         }
+                    }
+
+                    if serviceTierOptions.contains(.fast) {
+                        Picker("Processing", selection: serviceTierSelection) {
+                            Text("Automatic").tag("")
+                            ForEach(serviceTierOptions, id: \.rawValue) { tier in
+                                Text(serviceTierLabel(tier)).tag(tier.rawValue)
+                            }
+                        }
+
+                        Text(serviceTierDescription)
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
                     }
 
                     automaticSlider(
@@ -146,6 +164,35 @@ struct ChatSettingsView: View {
                 settings.verbosity = value.isEmpty ? nil : ChatSettings.VerbosityLevel(rawValue: value)
             }
         )
+    }
+
+    private var serviceTierSelection: Binding<String> {
+        Binding(
+            get: { settings.serviceTier?.rawValue ?? "" },
+            set: { value in
+                settings.serviceTier = value.isEmpty ? nil : ChatSettings.ServiceTier(rawValue: value)
+            }
+        )
+    }
+
+    private var serviceTierDescription: String {
+        let multiplier = modelConfig?.serviceTierMultipliers?[ChatSettings.ServiceTier.fast.rawValue]
+        let price = multiplier.map { " at \($0.formatted())× token price" } ?? ""
+        let base = "Automatic follows the OpenAI project default. Fast targets lower latency\(price)."
+
+        guard modelConfig?.id.hasPrefix("gpt-6-astra") == true else {
+            return base
+        }
+
+        return "\(base) Astra Fast is unavailable with EU data residency."
+    }
+
+    private func serviceTierLabel(_ tier: ChatSettings.ServiceTier) -> String {
+        guard let multiplier = modelConfig?.serviceTierMultipliers?[tier.rawValue] else {
+            return tier.displayName
+        }
+
+        return "\(tier.displayName) (\(multiplier.formatted())×)"
     }
 }
 

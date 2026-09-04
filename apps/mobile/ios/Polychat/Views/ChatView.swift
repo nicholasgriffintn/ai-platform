@@ -126,6 +126,7 @@ struct ChatView: View {
         .sheet(isPresented: $showingModelSelector) {
             ModelSelectorView { modelId in
                 conversationManager.setModelForCurrentConversation(modelId)
+                chatSettings.serviceTier = nil
             }
         }
         .sheet(isPresented: $showingChatSettings) {

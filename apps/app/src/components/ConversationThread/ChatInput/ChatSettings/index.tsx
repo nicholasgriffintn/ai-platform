@@ -28,9 +28,14 @@ type NumericChatSettingKey =
   | "frequency_penalty";
 
 type ChatCompactionMode = NonNullable<ChatSettingsType["compaction"]>;
+type ChatServiceTier = NonNullable<ChatSettingsType["service_tier"]>;
 
 function isChatCompactionMode(value: string): value is ChatCompactionMode {
   return value === "auto" || value === "off";
+}
+
+function isChatServiceTier(value: string): value is ChatServiceTier {
+  return value === "default" || value === "fast";
 }
 
 export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
@@ -52,6 +57,11 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
   const verbosityOptions = getVerbosityOptions(selectedModelConfig);
   const defaultVerbosity = getDefaultVerbosity(selectedModelConfig);
   const showMultiModelToggle = isPro && !model && chatMode === "remote";
+  const fastTierMultiplier = selectedModelConfig?.serviceTierMultipliers?.fast;
+  const fastTierPrice = fastTierMultiplier ? ` at ${fastTierMultiplier}× token price` : "";
+  const serviceTierDescription = selectedModelConfig?.matchingModel.startsWith("gpt-6-astra")
+    ? `Automatic follows the OpenAI project default. Fast targets lower latency${fastTierPrice}, but is unavailable for Astra with EU data residency.`
+    : `Automatic follows the OpenAI project default. Fast targets lower latency${fastTierPrice}.`;
 
   const handleNumericSettingChange = (key: NumericChatSettingKey, value: string) => {
     if (value.trim() === "") {
@@ -83,6 +93,26 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
     setChatSettings({
       ...chatSettings,
       compaction: value,
+    });
+  };
+
+  const handleServiceTierChange = (value: string) => {
+    if (value === "auto") {
+      const nextSettings = { ...chatSettings };
+
+      delete nextSettings.service_tier;
+      setChatSettings(nextSettings);
+
+      return;
+    }
+
+    if (!isChatServiceTier(value) || !selectedModelConfig?.supportedServiceTiers?.includes(value)) {
+      return;
+    }
+
+    setChatSettings({
+      ...chatSettings,
+      service_tier: value,
     });
   };
 
@@ -146,6 +176,8 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
       }
       onCompactionChange={handleCompactionChange}
       onReasoningEffortChange={handleReasoningEffortChange}
+      onServiceTierChange={handleServiceTierChange}
+      serviceTierDescription={serviceTierDescription}
       onVerbosityChange={handleVerbosityChange}
     />
   );
