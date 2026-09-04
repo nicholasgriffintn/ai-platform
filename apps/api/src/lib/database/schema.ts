@@ -389,6 +389,9 @@ export const project = sqliteTable(
     description: text().default("").notNull(),
     instructions: text().default("").notNull(),
     colour: text().default("#2563EB").notNull(),
+    default_router_mode: text({ enum: ["auto", "lite", "standard", "pro", "max"] })
+      .default("auto")
+      .notNull(),
     coding_enabled: integer({ mode: "boolean" }).default(false).notNull(),
     coding_installation_id: integer(),
     coding_repository: text(),

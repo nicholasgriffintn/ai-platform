@@ -1,5 +1,6 @@
 import type {
   ConversationType,
+  ModelRouterMode,
   ProjectCapabilityKind,
   ProjectCodingEnvironment,
   WorkspaceRole,
@@ -71,6 +72,7 @@ export interface ProjectRow {
   description: string;
   instructions: string;
   colour: string;
+  default_router_mode?: ModelRouterMode;
   coding_enabled?: number;
   coding_installation_id?: number | null;
   coding_repository?: string | null;
@@ -444,6 +446,7 @@ export class WorkspaceRepository extends BaseRepository {
     description: string;
     instructions: string;
     colour: string;
+    defaultRouterMode?: ModelRouterMode;
     codingEnvironment?: ProjectCodingEnvironment | null;
     createdBy: number;
   }): Promise<void> {
@@ -451,8 +454,8 @@ export class WorkspaceRepository extends BaseRepository {
       `INSERT INTO project
 				(id, workspace_id, name, description, instructions, colour,
 				 coding_enabled, coding_installation_id, coding_repository,
-				 coding_prompt_strategy, coding_should_commit, coding_timeout_seconds, created_by)
-				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				 coding_prompt_strategy, coding_should_commit, coding_timeout_seconds, created_by, default_router_mode)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         params.id,
         params.workspaceId,
@@ -467,6 +470,7 @@ export class WorkspaceRepository extends BaseRepository {
         params.codingEnvironment?.shouldCommit ?? true,
         params.codingEnvironment?.timeoutSeconds ?? 900,
         params.createdBy,
+        params.defaultRouterMode ?? "auto",
       ],
     );
   }
@@ -492,8 +496,8 @@ export class WorkspaceRepository extends BaseRepository {
           `INSERT INTO project
 					 (id, workspace_id, name, description, instructions, colour,
 					  coding_enabled, coding_installation_id, coding_repository,
-					  coding_prompt_strategy, coding_should_commit, coding_timeout_seconds, created_by)
-					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					  coding_prompt_strategy, coding_should_commit, coding_timeout_seconds, created_by, default_router_mode)
+					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           params.id,
@@ -509,6 +513,7 @@ export class WorkspaceRepository extends BaseRepository {
           params.codingEnvironment?.shouldCommit ?? true,
           params.codingEnvironment?.timeoutSeconds ?? 900,
           params.createdBy,
+          params.defaultRouterMode ?? "auto",
         ),
       ...capabilities.map((capability) =>
         database
@@ -578,6 +583,7 @@ export class WorkspaceRepository extends BaseRepository {
         "description",
         "instructions",
         "colour",
+        "default_router_mode",
         "coding_enabled",
         "coding_installation_id",
         "coding_repository",

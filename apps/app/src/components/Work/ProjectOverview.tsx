@@ -19,6 +19,7 @@ import { ProjectBriefCard } from "./ProjectBriefCard";
 import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard";
 import { ProjectConversationStarter } from "./ProjectConversationStarter";
 import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard";
+import { ProjectRoutingCard } from "./ProjectRoutingCard";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard";
 import { ProjectTasksCard } from "./ProjectTasksCard";
 import { useWorkData } from "./WorkDataContext";
@@ -80,6 +81,7 @@ export function ProjectOverview({
             description: project.description,
             instructions: project.instructions,
             colour: project.colour,
+            defaultRouterMode: project.defaultRouterMode,
             codingEnvironment: project.codingEnvironment,
           },
           capabilities: project.capabilities.map((capability) => ({
@@ -141,6 +143,7 @@ export function ProjectOverview({
                 instructions={project.instructions}
                 projectId={projectId}
               />
+              <ProjectRoutingCard canManage={canManage} project={project} />
               <ProjectKnowledgeCard
                 embedded
                 workspaceId={workspaceId}

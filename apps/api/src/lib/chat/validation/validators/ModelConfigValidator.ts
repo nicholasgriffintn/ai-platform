@@ -1,5 +1,6 @@
 import { getAllAttachments } from "~/lib/chat/messages/attachments";
 import { selectModels } from "~/lib/chat/policy/model-access";
+import { resolveProjectRouterMode } from "~/lib/chat/policy/project-routing";
 import type {
   ValidationContext,
   Validator,
@@ -22,7 +23,6 @@ export class ModelConfigValidator implements Validator {
       model: requestedModel,
       models: requestedModels,
       provider: requestedProvider,
-      model_router_mode,
       completion_id,
       use_multi_model = false,
       budget_constraint,
@@ -53,6 +53,8 @@ export class ModelConfigValidator implements Validator {
 
     const { allAttachments } = getAllAttachments(lastMessageContent);
 
+    const routerMode = await resolveProjectRouterMode(options);
+
     try {
       const selectedModels = await selectModels(
         env,
@@ -65,7 +67,7 @@ export class ModelConfigValidator implements Validator {
         use_multi_model,
         requestedModels,
         requestedProvider,
-        model_router_mode,
+        routerMode,
       );
 
       logger.info("Selected models", { selectedModels });
