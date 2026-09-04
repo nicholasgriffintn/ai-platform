@@ -15,7 +15,7 @@ catalog:
   react-dom: 19.2.8
   tsup: 8.5.1
   typescript: 6.0.3
-  vitest: 4.1.11
+  vitest: 5.0.0
   wrangler: 4.127.1
   zod: 4.5.1
 
