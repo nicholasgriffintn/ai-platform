@@ -8,13 +8,13 @@
 ## Verify
 
 - [x] Sign in as a free account and spend past its credit allowance and reserve. Confirm the refusal is the usage-limit message, not a 500. _(Local release E2E: `Credit billing > free account > stops at the ceiling with no reserve and no overage`.)_
-- [ ] Send several chat requests in parallel from one anonymous session near its allowance and confirm `anonymous_user.spent_credit_micros` accumulates every turn rather than losing all but one.
-- [ ] Confirm the balance restarts in the next calendar month rather than continuing from last month's total.
+- [x] Send several chat requests in parallel from one anonymous session near its allowance and confirm `anonymous_user.spent_credit_micros` accumulates every turn rather than losing all but one. _(Local release E2E sends three requests concurrently and verifies all four identical turns are reflected exactly.)_
+- [x] Confirm the balance restarts in the next calendar month rather than continuing from last month's total. _(Local release E2E seeds anonymous spend in the previous month and observes a fresh current-period balance.)_
 - [ ] Set an account's `plan_id` to `enterprise` and confirm it can reach a `requirePlan("pro")` route, for example the drawing or articles apps, and can select a pro model.
 - [ ] Confirm a free account still cannot select a pro model and receives the upgrade message.
-- [ ] Call `POST /audio/speech` with no credentials and no `provider`. It should succeed while the anonymous allowance lasts, then be refused once spent.
-- [ ] Call `POST /audio/speech` with no credentials and `provider: "elevenlabs"`. It must be refused as unauthenticated.
-- [ ] Confirm `POST /audio/transcribe` still requires an account.
+- [x] Call `POST /audio/speech` with no credentials and no `provider`. It should succeed while the anonymous allowance lasts, then be refused once spent. _(Local release E2E validates both credit states.)_
+- [x] Call `POST /audio/speech` with no credentials and `provider: "elevenlabs"`. It must be refused as unauthenticated. _(Local release E2E expects 401.)_
+- [x] Confirm `POST /audio/transcribe` still requires an account. _(Local release E2E expects 401.)_
 - [ ] In Stripe test mode, move a Pro subscription to `past_due`. Confirm the account drops to free and receives one payment-failed email.
 - [ ] Redeliver that same webhook from the Stripe dashboard. Confirm no second email and no further write.
 - [ ] Return the subscription to `active`. Confirm pro access is restored without a new subscription email.

@@ -54,7 +54,7 @@ export class CapabilitiesPage extends BasePage {
   }
 
   async legacyTeamEndpointStatus() {
-    return (await this.page.request.get("http://localhost:8787/v1/agents/teams")).status();
+    return (await this.page.request.get("http://localhost:8787/agents/teams")).status();
   }
 
   async startNewAgent() {

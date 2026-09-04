@@ -25,8 +25,8 @@ const E2E_PLANS = [
     name: "Signed out",
     description: "Demo allowance for visitors who have not signed in",
     price: 0,
-    includedCredits: 20,
-    graceCredits: 0,
+    includedCredits: null,
+    graceCredits: null,
     stripePriceId: null,
     stripeMeterId: null,
     overagePriceId: null,
@@ -36,8 +36,8 @@ const E2E_PLANS = [
     name: "Free",
     description: "Default plan for signed in accounts",
     price: 0,
-    includedCredits: 100,
-    graceCredits: 0,
+    includedCredits: null,
+    graceCredits: null,
     stripePriceId: null,
     stripeMeterId: null,
     overagePriceId: null,
@@ -47,8 +47,8 @@ const E2E_PLANS = [
     name: "Pro",
     description: "Frontier models, generation, live voice, sandboxed runs and Work",
     price: 8,
-    includedCredits: 500,
-    graceCredits: 50,
+    includedCredits: null,
+    graceCredits: null,
     stripePriceId: stripeProPriceId,
     stripeMeterId: "mtr_e2e_pro",
     overagePriceId: stripeProOveragePriceId,
@@ -91,6 +91,26 @@ export class MockAi extends WorkerEntrypoint {
   }
 
 	async run(model, body) {
+		if (
+			body?.response_format?.json_schema?.name === "prompt_requirements" ||
+			body?.messages?.some(
+				(message) =>
+					typeof message?.content === "string" && message.content.includes('"expectedComplexity"'),
+			)
+		) {
+			return {
+				response: JSON.stringify({
+					expectedComplexity: 2,
+					requiredStrengths: [],
+					criticalStrengths: [],
+					estimatedInputTokens: 32,
+					estimatedOutputTokens: 64,
+					needsFunctions: false,
+					benefitsFromMultipleModels: false,
+					modelComparisonReason: "",
+				}),
+			};
+		}
 		if (String(model).includes("bge-large-en-v1.5")) {
 			return { data: [[0.25, 0.5, 0.75, 1]] };
 		}
@@ -105,11 +125,23 @@ export class MockAi extends WorkerEntrypoint {
 				68, 174, 66, 96, 130,
 			]).buffer;
 		}
-    if (body?.stream) {
-      throw new Error("Unexpected streaming Workers AI model call during E2E");
-    }
     const content = body?.messages?.at(-1)?.content;
     const prompt = typeof content === "string" ? content : JSON.stringify(content ?? "");
+    if (body?.stream) {
+      const chunks = [
+        { response: "E2E response: " + prompt },
+        {
+          response: "",
+          usage: { prompt_tokens: 8, completion_tokens: 4, total_tokens: 12 },
+        },
+      ];
+      const streamBody =
+        chunks.map((chunk) => "data: " + JSON.stringify(chunk) + "\\n\\n").join("") +
+        "data: [DONE]\\n\\n";
+      return new Response(streamBody, {
+        headers: { "content-type": "text/event-stream; charset=utf-8" },
+      }).body;
+    }
     return {
       response: "E2E response: " + prompt,
       usage: { prompt_tokens: 8, completion_tokens: 4, total_tokens: 12 },
@@ -427,11 +459,47 @@ function mockStripeSubscription(subscriptionId) {
   };
 }
 
-function mockStripeRequest(request, url) {
+async function mockStripeRequest(request, url) {
   const subscriptionMatch = /^\/v1\/subscriptions\/([^/]+)$/.exec(url.pathname);
 
   if (request.method === "GET" && subscriptionMatch) {
     return Response.json(mockStripeSubscription(decodeURIComponent(subscriptionMatch[1])));
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/customers") {
+    return Response.json({ id: "cus_e2e_checkout", object: "customer" });
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/checkout/sessions") {
+    const form = await request.formData();
+
+    if (
+      form.get("allow_promotion_codes") !== "true" ||
+      form.get("line_items[0][price]") !== stripeProPriceId ||
+      form.get("line_items[0][quantity]") !== "1"
+    ) {
+      throw new Error("Stripe Checkout request is missing promotion codes or the Pro Price");
+    }
+
+    return Response.json({
+      id: "cs_e2e_pro",
+      object: "checkout.session",
+      url: "https://checkout.stripe.com/c/pay/cs_e2e_pro",
+    });
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/billing_portal/sessions") {
+    const form = await request.formData();
+
+    if (form.get("return_url") !== "http://localhost:5173/profile?tab=billing") {
+      throw new Error("Stripe portal request did not preserve the allowed return URL");
+    }
+
+    return Response.json({
+      id: "bps_e2e_pro",
+      object: "billing_portal.session",
+      url: "https://billing.stripe.com/p/session/bps_e2e_pro",
+    });
   }
 
   throw new Error(`Unexpected Stripe request during E2E: ${request.method} ${url.pathname}`);
@@ -515,6 +583,29 @@ async function mockExternalRequest(request) {
 
   const body = await request.json();
 
+  if (
+    body?.response_format?.json_schema?.name === "prompt_requirements" ||
+    body?.messages?.some(
+      (message) =>
+        typeof message?.content === "string" && message.content.includes('"expectedComplexity"'),
+    )
+  ) {
+    return Response.json(
+      openAiResponse(
+        JSON.stringify({
+          expectedComplexity: 2,
+          requiredStrengths: [],
+          criticalStrengths: [],
+          estimatedInputTokens: 32,
+          estimatedOutputTokens: 64,
+          needsFunctions: false,
+          benefitsFromMultipleModels: false,
+          modelComparisonReason: "",
+        }),
+      ),
+    );
+  }
+
   if (request.method === "POST" && url.pathname.endsWith("/v1/predictions")) {
     const isVideo = body.version === "bytedance/seedance-2.0";
 
@@ -531,6 +622,13 @@ async function mockExternalRequest(request) {
   }
 
   if (request.method === "POST" && url.pathname.endsWith("/responses")) {
+    if (
+      body.model === "gpt-6-astra" &&
+      ["temperature", "top_p", "top_logprobs"].some((field) => field in body)
+    ) {
+      throw new Error("GPT-6 Astra received an unsupported sampling or logprobs field");
+    }
+
     if (body.background === true) {
       return Response.json({
         id: "e2e-background-response",
@@ -842,9 +940,9 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 					}
 
 					const PERSONA_ALLOWANCE = {
-						anonymous: { included: 20, grace: 0 },
-						free: { included: 100, grace: 0 },
-						pro: { included: 500, grace: 50 },
+						anonymous: { included: 15, grace: 7.5 },
+						free: { included: 150, grace: 50 },
+						pro: { included: 1500, grace: 150 },
 					};
 
 					function creditMicros(credits) {
@@ -858,7 +956,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 					function ledgerStatements(env, identity, userId, period, ledger) {
 						return ledger.map((entry, index) =>
 							env.DB.prepare(
-								"INSERT INTO usage_event (id, idempotency_key, user_id, occurred_at, period, source, vendor, resource, unit, quantity, cost_micros, credit_micros, billable, byok, estimated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, 0)"
+								"INSERT INTO usage_event (id, idempotency_key, user_id, occurred_at, period, source, vendor, resource, unit, quantity, cost_micros, credit_micros, billable, byok, estimated, project_id, workspace_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)"
 							).bind(
 								"e2e-usage-event-" + identity + "-" + index,
 								"e2e-usage-key-" + identity + "-" + index,
@@ -872,13 +970,16 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 								entry.quantity,
 								Math.round(entry.costMicros || 0),
 								creditMicros(entry.credits),
+								entry.source === "model" && entry.byok ? 0 : 1,
 								entry.byok ? 1 : 0,
+								entry.projectId || null,
+								entry.workspaceId || null,
 							),
 						);
 					}
 
 					function accountBillingStatements(env, identity, userId, persona, billing) {
-						const period = currentUsagePeriod();
+						const period = billing.period || currentUsagePeriod();
 						const allowance = PERSONA_ALLOWANCE[persona];
 						const ledger = Array.isArray(billing.ledger) ? billing.ledger : [];
 						const statements = [
@@ -936,7 +1037,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 			await env.DB.prepare(
 				"UPDATE anonymous_user SET credit_period = ?, spent_credit_micros = ?, reserved_credit_micros = ? WHERE id = ?"
 			).bind(
-				currentUsagePeriod(),
+				billingState.period || currentUsagePeriod(),
 				creditMicros(billingState.spentCredits),
 				creditMicros(billingState.reservedCredits),
 				anonymousId,
@@ -999,12 +1100,32 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 						return new Response(null, { status: 204 });
 					}
 
+					async function readAnonymousState(request, env) {
+						const cookie = request.headers.get("cookie") || "";
+						const anonymousId = cookie.match(/(?:^|;\\s*)anon_id=([^;]+)/)?.[1];
+						const completionId = new URL(request.url).searchParams.get("completion_id");
+						if (!anonymousId || !completionId) {
+							return Response.json({ error: "Missing anonymous state key" }, { status: 400 });
+						}
+						const state = await env.DB.prepare(
+							"SELECT credit_period, spent_credit_micros, reserved_credit_micros FROM anonymous_user WHERE id = ?"
+						).bind(decodeURIComponent(anonymousId)).first();
+						const ledger = await env.DB.prepare(
+							"SELECT COUNT(*) AS event_count FROM usage_event WHERE conversation_id = ?"
+						).bind(completionId).first();
+
+						return Response.json({ ...state, event_count: Number(ledger?.event_count || 0) });
+					}
+
 					export default {
 						async fetch(request, env) {
 							try {
 								const url = new URL(request.url);
 								if (request.method === "POST" && url.pathname === "/__e2e-persona") {
 									return provisionPersona(request, env);
+								}
+								if (request.method === "GET" && url.pathname === "/__e2e-persona-state") {
+									return readAnonymousState(request, env);
 								}
 								const session = await env.DB.prepare(
 									"SELECT user_id FROM session WHERE id = ?"
@@ -1018,7 +1139,11 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 				`,
         compatibilityDate,
         d1Databases: { DB: "polychat-e2e" },
-        routes: ["http://localhost:8787/__e2e-ready", "http://localhost:8787/__e2e-persona"],
+        routes: [
+          "http://localhost:8787/__e2e-ready",
+          "http://localhost:8787/__e2e-persona",
+          "http://localhost:8787/__e2e-persona-state*",
+        ],
       },
     ],
   };

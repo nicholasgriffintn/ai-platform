@@ -229,9 +229,23 @@ describe("admitTurn", () => {
 });
 
 describe("resolvePlanAllowanceCredits", () => {
-  it("reports a plan row with no configured credits as unmetered", () => {
-    expect(resolvePlanAllowanceCredits("free", null, null)).toBeNull();
-    expect(resolvePlanAllowanceCredits("anonymous", null, null)).toBeNull();
+  it("uses the built-in allowance and derived reserve when plan credits are unconfigured", () => {
+    expect(resolvePlanAllowanceCredits("anonymous", null, null)).toEqual({
+      includedCredits: 15,
+      graceCredits: 7.5,
+    });
+    expect(resolvePlanAllowanceCredits("free", null, null)).toEqual({
+      includedCredits: 150,
+      graceCredits: 50,
+    });
+    expect(resolvePlanAllowanceCredits("pro", null, null)).toEqual({
+      includedCredits: 1500,
+      graceCredits: 150,
+    });
+    expect(resolvePlanAllowanceCredits("enterprise", null, null)).toEqual({
+      includedCredits: 15_000,
+      graceCredits: 1500,
+    });
   });
 
   it("derives the reserve from the configured allowance for paid plans", () => {

@@ -1,3 +1,4 @@
+import { requiresAuthenticatedSpeechProvider } from "~/lib/audio/access";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { getAudioProvider } from "~/lib/providers/capabilities/audio";
@@ -86,7 +87,14 @@ export const handleTextToSpeech = async (
 
   const speechSettings = await resolveSpeechSettings({ env, user, provider, model });
 
-  if (user?.plan_id !== "pro") {
+  if (!user?.id && requiresAuthenticatedSpeechProvider(speechSettings.provider)) {
+    throw new AssistantError(
+      `Speech generation with ${speechSettings.provider} requires an authenticated account.`,
+      ErrorType.AUTHENTICATION_ERROR,
+    );
+  }
+
+  if (user?.id && user.plan_id !== "pro") {
     if (!(await hasUserProviderApiKey({ env, user, providerName: speechSettings.provider }))) {
       throw new AssistantError(
         `Speech generation requires a configured ${speechSettings.provider} provider key`,

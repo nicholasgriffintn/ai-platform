@@ -1,4 +1,5 @@
-import { expect, test } from "../fixtures/polychat-test";
+import { PolychatApi } from "../fixtures/polychat-api";
+import { expect, provisionPersonaSession, test } from "../fixtures/polychat-test";
 import { createSilentWavFixture, TEXT_MESSAGE_CASES } from "../fixtures/test-data";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
@@ -8,7 +9,7 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
   test.describe(`Chat as ${persona}`, () => {
     test.use({ persona });
 
-    test("sends representative text messages", async ({ homePage, page }) => {
+    test("sends representative text messages", async ({ homePage, page, polychatApi }) => {
       await homePage.navigate("/chat");
       await homePage.selectModel(TEXT_MODEL);
 
@@ -20,6 +21,35 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
           await homePage.waitForChatResponse(previousCount);
           await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
         });
+      }
+
+      if (persona !== "logged-out") {
+        await expect
+          .poll(async () => (await polychatApi.getAccountUsageEvents({ limit: 100 })).events.length)
+          .toBeGreaterThan(0);
+        const events = (await polychatApi.getAccountUsageEvents({ limit: 100 })).events;
+
+        expect(events).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              unit: "input_tokens",
+              estimated: false,
+              billable: true,
+              byok: false,
+            }),
+            expect.objectContaining({
+              unit: "output_tokens",
+              estimated: false,
+              billable: true,
+              byok: false,
+            }),
+          ]),
+        );
+        expect(
+          events
+            .filter(({ source }) => source === "model")
+            .every(({ credit_micros }) => credit_micros > 0),
+        ).toBe(true);
       }
 
       await captureVisualSnapshots(
@@ -332,6 +362,43 @@ test.describe("Response controls as pro", () => {
     });
   });
 
+  test("streams a multimodal GPT-6 Astra turn at its supported reasoning bounds", async ({
+    homePage,
+    page,
+  }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT-6 Astra");
+    await page.getByRole("button", { name: /^Reasoning depth:/ }).click();
+    await expect(page.getByRole("menuitemradio", { name: "None", exact: true })).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await homePage.configureResponseControls("Low", "Medium");
+    await homePage.uploadFile({
+      name: "astra-release-image.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    });
+    const lowRequest = await homePage.sendMessageAndRequireCompletion(
+      "Inspect this image with Astra at low reasoning",
+    );
+
+    expect(lowRequest.model).toBe("gpt-6-astra");
+    expect(lowRequest.reasoning).toEqual({ effort: "low" });
+    await homePage.waitForChatResponse(0);
+
+    await homePage.configureResponseControls("Max", "Medium");
+    const maxRequest = await homePage.sendMessageAndRequireCompletion(
+      "Now check the result at maximum reasoning",
+    );
+
+    expect(maxRequest.model).toBe("gpt-6-astra");
+    expect(maxRequest.reasoning).toEqual({ effort: "max" });
+    await homePage.waitForChatResponse(1);
+    await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+  });
+
   test("enables a hosted tool for a message", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
     await homePage.selectModel("GPT-5.4");
@@ -501,21 +568,102 @@ test.describe("Pro message attachments", () => {
     });
   });
 
-  test("shares, unshares and branches a conversation", async ({ homePage, page }) => {
+  test("shares, unshares and navigates a conversation branch family", async ({
+    browser,
+    homePage,
+    page,
+    polychatApi,
+  }, testInfo) => {
     await homePage.navigate("/chat");
     await homePage.selectModel(TEXT_MODEL);
-    await homePage.sendMessage("Create a conversation for lifecycle actions");
+    const parentRequest = await homePage.sendMessageAndRequireCompletion(
+      "Create a conversation for lifecycle actions",
+    );
+
     await homePage.waitForChatResponse(0);
+    const parentId = homePage.completionIdFromRequest(parentRequest);
 
     await homePage.shareConversation();
     await expect(page.getByLabel("Share link")).toHaveValue(/\/s\//);
     await homePage.stopSharingConversation();
     await homePage.branchFromLatestAssistantMessage();
     await expect(homePage.originalConversationButton).toBeVisible();
+    const childId = (await polychatApi.getConversationBranches(parentId)).branches.find(
+      ({ id }) => id !== parentId,
+    )?.id;
+
+    if (!childId) {
+      throw new Error("Assistant-message branch was not added to the branch family");
+    }
 
     await homePage.returnToOriginalConversation();
     await homePage.branchFromLatestUserMessageWithModel("Llama 4 Scout 17B", "Groq");
     await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+    const siblingId = (await polychatApi.getConversationBranches(parentId)).branches.find(
+      ({ id }) => id !== parentId && id !== childId,
+    )?.id;
+
+    if (!siblingId) {
+      throw new Error("User-message branch was not added to the branch family");
+    }
+
+    await polychatApi.updateConversation(parentId, { title: "Release branch parent" });
+    await polychatApi.updateConversation(childId, {
+      title: "Release branch child",
+      archived: true,
+    });
+    await polychatApi.updateConversation(siblingId, { title: "Release branch sibling" });
+    const branchFamily = await polychatApi.getConversationBranches(siblingId);
+
+    expect(branchFamily.branches.map(({ id }) => id).sort()).toEqual(
+      [parentId, childId, siblingId].sort(),
+    );
+    await homePage.openConversationBranches();
+    await expect(homePage.conversationBranch("Release branch sibling")).toContainText("Current");
+    await expect(homePage.conversationBranch("Release branch child")).toContainText("Archived");
+    await homePage.selectConversationBranch("Release branch child");
+    await homePage.openConversationBranches();
+    await expect(homePage.conversationBranch("Release branch child")).toContainText(
+      "Archived · Current",
+    );
+    await homePage.selectConversationBranch("Release branch parent");
+    await homePage.openConversationBranches();
+    await expect(homePage.conversationBranch("Release branch parent")).toContainText("Current");
+    await homePage.selectConversationBranch("Release branch sibling");
+    await homePage.openConversationBranches();
+    await expect(homePage.conversationBranch("Release branch sibling")).toContainText("Current");
+    await homePage.closeConversationBranches();
+    await homePage.reload();
+    await homePage.openConversation("Release branch sibling");
+    await homePage.openConversationBranches();
+    await expect(homePage.conversationBranch("Release branch sibling")).toContainText("Current");
+    await homePage.closeConversationBranches();
+
+    const otherUser = await provisionPersonaSession(
+      "pro",
+      `${testInfo.testId}:branch-outsider:${testInfo.retry}`,
+    );
+    const otherContext = await browser.newContext();
+
+    try {
+      await otherContext.addCookies([
+        {
+          name: "session",
+          value: otherUser.sessionToken,
+          domain: "localhost",
+          path: "/",
+          httpOnly: true,
+          sameSite: "Lax",
+          secure: false,
+        },
+      ]);
+      expect(await new PolychatApi(otherContext.request).conversationBranchesStatus(parentId)).toBe(
+        404,
+      );
+    } finally {
+      await otherContext.close();
+    }
+
     await captureVisualSnapshots(page, "release-chat-branching", {
       ...DEFAULT_VISUAL_CHECKPOINTS,
       viewports: [{ name: "desktop", width: 1280, height: 720 }],
@@ -571,6 +719,86 @@ test.describe("Cold conversation history as pro", () => {
     await homePage.waitForConversationInHistory(title);
 
     await expect.poll(() => homePage.conversationCountInHistory(title)).toBe(1);
+  });
+
+  test("updates a warm conversation list in place without duplicates or refetches", async ({
+    homePage,
+    page,
+  }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+    await homePage.sendMessage("Warm sidebar conversation one");
+    await homePage.waitForChatResponse(0);
+    await homePage.waitForConversationInHistory(
+      /Warm sidebar conversation one|Release validation chat/,
+    );
+    await homePage.renameConversation(
+      /Warm sidebar conversation one|Release validation chat/,
+      "Warm sidebar one",
+    );
+
+    let listRefetches = 0;
+
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+
+      if (request.method() === "GET" && url.pathname === "/chat/completions") {
+        listRefetches += 1;
+      }
+    });
+
+    for (const [prompt, title] of [
+      ["Warm sidebar conversation two", "Warm sidebar two"],
+      ["Warm sidebar conversation three", "Warm sidebar three"],
+    ] as const) {
+      await homePage.startNewChat();
+      await homePage.selectModel(TEXT_MODEL);
+      await homePage.sendMessage(prompt);
+      await homePage.waitForChatResponse(0);
+      await homePage.waitForConversationInHistory(new RegExp(`${prompt}|Release validation chat`));
+      await homePage.renameConversation(new RegExp(`${prompt}|Release validation chat`), title);
+    }
+
+    for (const title of ["Warm sidebar one", "Warm sidebar two", "Warm sidebar three"]) {
+      await expect.poll(() => homePage.conversationCountInHistory(title)).toBe(1);
+    }
+
+    expect(listRefetches).toBe(0);
+  });
+
+  test("keeps conversation row actions and overlays keyboard reachable", async ({
+    homePage,
+    page,
+  }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+    await homePage.sendMessage("Keyboard conversation actions");
+    await homePage.waitForChatResponse(0);
+    const conversation = page
+      .getByRole("listitem")
+      .filter({ hasText: /Keyboard conversation actions|Release validation chat/ })
+      .first();
+    const conversationButton = conversation
+      .getByRole("button")
+      .filter({ hasText: /Keyboard conversation actions|Release validation chat/ })
+      .first();
+
+    await conversationButton.focus();
+    await page.keyboard.press("Tab");
+    await expect(
+      conversation.getByRole("button", { name: "Edit conversation title" }),
+    ).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(conversation.getByRole("button", { name: "Delete", exact: true })).toBeFocused();
+
+    const options = page.getByRole("button", { name: "Conversation list options" });
+
+    await options.focus();
+    await options.press("Enter");
+    await expect(page.getByRole("menu")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("menu")).toHaveCount(0);
+    await expect(options).toBeFocused();
   });
 });
 

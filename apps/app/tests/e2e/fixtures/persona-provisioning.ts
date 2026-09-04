@@ -14,9 +14,12 @@ export interface UsageLedgerSeed {
   costMicros: number;
   credits: number;
   byok?: boolean;
+  projectId?: string;
+  workspaceId?: string;
 }
 
 export interface BillingSeed {
+  period?: string;
   spentCredits?: number;
   reservedCredits?: number;
   overrunCredits?: number;

@@ -8,14 +8,14 @@
 ## Verify
 
 - [ ] With `included_credits` still null on your plan, confirm the `usage_limits` stream event carries a `credits` object with a non-zero `included` drawn from the built-in allowance.
-- [ ] Set `included_credits` to a small value (for example 1) on your plan, spend past it, and send another message. Expect the turn to be admitted and to finish while the balance is inside the grace reserve, and the `usage_limits` event to carry `credits.state: "reserve"`.
-- [ ] Spend past included plus grace with overage off. Expect the next turn to be refused at the request boundary with a calm message about credits being spent — not an error mid-stream — and `credits.state: "exhausted"`.
+- [x] Set `included_credits` to a small value (for example 1) on your plan, spend past it, and send another message. Expect the turn to be admitted and to finish while the balance is inside the grace reserve, and the `usage_limits` event to carry `credits.state: "reserve"`. _(Local release E2E seeds Pro inside its reserve, completes the turn, and shows the reserve state and banner.)_
+- [x] Spend past included plus grace with overage off. Expect the next turn to be refused at the request boundary with a calm message about credits being spent — not an error mid-stream — and `credits.state: "exhausted"`. _(Local release E2Es cover Free, Pro, and anonymous refusal without a provider turn.)_
 - [ ] While a long agent turn is running, confirm it is not truncated at the reserve boundary: the answer completes, and spend past the ceiling appears in `usage_balance.overrun_credit_micros` rather than blocking anything.
 - [ ] Force the runaway path (tiny `included_credits`, long multi-step agent turn): the turn ends with a final answer and a `usage_limit_reached` finish reason, not a dropped stream.
-- [ ] After a settled turn, check `usage_balance.reserved_credit_micros` returns to its pre-turn value — a value that only ever grows means releases are being lost.
-- [ ] Set `overage_enabled` on the balance row, spend past the reserve, and confirm turns are still admitted with `credits.state: "overage"` and spend accruing to `overage_credit_micros`.
+- [x] After a settled turn, check `usage_balance.reserved_credit_micros` returns to its pre-turn value — a value that only ever grows means releases are being lost. _(Local release E2E inspects the settled anonymous actor row and expects zero reserved micros.)_
+- [x] Set `overage_enabled` on the balance row, spend past the reserve, and confirm turns are still admitted with `credits.state: "overage"` and spend accruing to `overage_credit_micros`. _(Local release E2E seeds overage, verifies the UI state and completes another turn.)_
 - [ ] With a BYOK key stored for the model's provider, confirm turns neither reserve nor spend credits for model usage.
-- [ ] Signed out, confirm the anonymous allowance is enforced: `usage_limits` carries credits, spend accumulates on `anonymous_user.spent_credit_micros`, and turns are refused once the reserve is spent.
+- [x] Signed out, confirm the anonymous allowance is enforced: `usage_limits` carries credits, spend accumulates on `anonymous_user.spent_credit_micros`, and turns are refused once the reserve is spent. _(Local release E2E covers the stream contract, direct D1 state, concurrency, rollover, and exhaustion.)_
 - [ ] Mint a realtime session and confirm it still succeeds, returns `max_session_seconds`, and enqueues a scheduled `realtime_reconciliation` task — the task type was missing from the shared enum until this change.
 
 **Stop and report if:** any admitted turn is cut off mid-stream for balance, or a user with credits remaining is refused a turn. Both invert the product promise this phase implements.

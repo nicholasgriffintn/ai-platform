@@ -71,4 +71,8 @@ export class BillingPage extends BasePage {
     await this.clickElement(this.ledgerFilters.getByRole("button", { name: filter, exact: true }));
     await this.activeLedgerFilter().filter({ hasText: filter }).waitFor();
   }
+
+  async showMoreLedgerEntries() {
+    await this.clickElement(this.ledgerCard.getByRole("button", { name: "Show more" }));
+  }
 }

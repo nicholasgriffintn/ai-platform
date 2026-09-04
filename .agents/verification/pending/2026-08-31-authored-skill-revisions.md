@@ -13,8 +13,8 @@
 - [ ] Create a new authored skill, attach a resource file, save, and confirm it appears in the scope you created it in and nowhere else.
 - [ ] Edit it and confirm the update takes effect in a new chat.
 - [ ] Ask a chat something that should use the skill. Confirm it loads, and that the turn records which revision ran.
-- [ ] Exercise the lifecycle through the API, as there is no UI for it yet: `GET /v1/skills/documents/:id/revisions/:revisionId`, `POST .../promote`, `POST .../rollback`. Confirm promote only moves stable to the current draft, and that rollback creates a new revision rather than moving the pointer backwards.
-- [ ] Archive a skill, then create a new one with the same name in the same scope. Confirm the name is free and the archived revisions still exist.
-- [ ] As a project member who is not an owner or administrator, confirm you see the stable document only, and cannot read drafts or history.
+- [x] Exercise the lifecycle through the API, as there is no UI for it yet: `GET /v1/skills/documents/:id/revisions/:revisionId`, `POST .../promote`, `POST .../rollback`. Confirm promote only moves stable to the current draft, and that rollback creates a new revision rather than moving the pointer backwards. _(Local release E2Es cover personal and project documents, exact revisions, resources, promote and immutable rollback.)_
+- [x] Archive a skill, then create a new one with the same name in the same scope. Confirm the name is free and the archived revisions still exist. _(Local release E2Es cover personal and project scopes.)_
+- [x] As a project member who is not an owner or administrator, confirm you see the stable document only, and cannot read drafts or history. _(Local release E2E verifies the stable document and 403 responses for history and exact revisions.)_
 
 **Stop and report if:** a skill that used to load no longer does and republishing does not fix it, or a revision read fails its digest check.

@@ -16,8 +16,8 @@
 
 - [ ] Clear the local Pro Price ID, choose **Upgrade to Pro** under **Profile > Billing**, and confirm the API
       reports a service configuration error without creating a new Stripe Customer.
-- [ ] Submit Checkout with a success or cancellation URL on another origin and confirm the API rejects it
-      before creating a new Stripe Customer.
+- [x] Submit Checkout with a success or cancellation URL on another origin and confirm the API rejects it
+      before creating a new Stripe Customer. _(Local release E2E uses a lookalike foreign origin; the isolated Stripe boundary receives no customer request.)_
 - [ ] Restore the test Pro Price ID, choose **Upgrade to Pro**, and confirm Stripe Checkout opens with the
       promotion-code control and the expected recurring £8/month Pro product.
 - [ ] Complete local Checkout without forwarding the completion webhook, reload **Profile > Billing**, and

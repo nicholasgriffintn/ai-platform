@@ -37,6 +37,7 @@ export class WorkPage extends BasePage {
 
   async openProject(name: string) {
     await this.page.getByRole("link", { name, exact: true }).first().click();
+    await this.page.waitForURL(/\/projects\/[^/]+$/);
     await this.page.getByRole("heading", { name, exact: true }).waitFor();
   }
 
@@ -217,6 +218,36 @@ export class WorkPage extends BasePage {
     await this.page.getByText(instructions, { exact: true }).waitFor();
   }
 
+  async setProjectRoutingPreference(mode: "auto" | "lite" | "standard" | "pro" | "max") {
+    await this.page.getByLabel("Project default", { exact: true }).selectOption(mode);
+    await this.page.getByRole("button", { name: "Save preference" }).click();
+    await this.page.getByRole("button", { name: "Save preference" }).waitFor({ state: "hidden" });
+  }
+
+  projectRoutingPreference() {
+    return this.page.getByLabel("Project default", { exact: true });
+  }
+
+  currentProjectId() {
+    const match = new URL(this.page.url()).pathname.match(/\/projects\/([^/]+)$/u);
+
+    if (!match?.[1]) {
+      throw new Error(`Current route is not a project overview: ${this.page.url()}`);
+    }
+
+    return match[1];
+  }
+
+  currentWorkspaceId() {
+    const match = new URL(this.page.url()).pathname.match(/^\/work\/([^/]+)/u);
+
+    if (!match?.[1]) {
+      throw new Error(`Current route is not inside a workspace: ${this.page.url()}`);
+    }
+
+    return match[1];
+  }
+
   async saveUseAndDeleteProjectTemplate(projectName: string) {
     await this.clickElement(this.page.getByRole("button", { name: "More project actions" }));
     await this.clickElement(this.page.getByRole("menuitem", { name: "Save template" }));
@@ -244,6 +275,8 @@ export class WorkPage extends BasePage {
 
     await this.page.waitForURL(/\/projects\/[^/]+$/);
     await this.page.getByRole("heading", { name: projectName, exact: true }).waitFor();
+    const instantiatedRoutingMode = await this.projectRoutingPreference().inputValue();
+
     await this.openProjectSurface("Governance");
 
     const savedTemplate = this.page
@@ -256,6 +289,8 @@ export class WorkPage extends BasePage {
     await confirmation.getByRole("button", { name: "Delete template" }).click();
     await confirmation.waitFor({ state: "hidden" });
     await savedTemplate.waitFor({ state: "detached" });
+
+    return instantiatedRoutingMode;
   }
 
   private capabilityCard(name: string): Locator {

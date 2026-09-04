@@ -12,11 +12,12 @@ const GRACE_FLOOR_CREDIT_MICROS = creditMicrosFromCredits(50);
 export const ANONYMOUS_PLAN_ID = "anonymous";
 export const DEFAULT_USER_PLAN_ID = "free";
 
-const PLANS_WITHOUT_GRACE = new Set([ANONYMOUS_PLAN_ID, "free"]);
-
-function planEarnsGrace(planId: string): boolean {
-  return !PLANS_WITHOUT_GRACE.has(planId);
-}
+export const DEFAULT_PLAN_INCLUDED_CREDITS: Readonly<Record<string, number>> = {
+  [ANONYMOUS_PLAN_ID]: 15,
+  [DEFAULT_USER_PLAN_ID]: 150,
+  pro: 1500,
+  enterprise: 15_000,
+};
 
 export type UsagePlanResolution = "allowance" | "none" | "unavailable";
 
@@ -61,14 +62,12 @@ export function resolvePlanAllowanceCredits(
   configuredGraceCredits?: unknown,
 ): PlanAllowanceCredits | null {
   const includedCredits =
-    typeof configuredIncludedCredits === "number" ? configuredIncludedCredits : null;
+    typeof configuredIncludedCredits === "number"
+      ? configuredIncludedCredits
+      : (DEFAULT_PLAN_INCLUDED_CREDITS[planId] ?? null);
 
   if (includedCredits === null || includedCredits <= 0) {
     return null;
-  }
-
-  if (!planEarnsGrace(planId)) {
-    return { includedCredits, graceCredits: 0 };
   }
 
   return {

@@ -9,9 +9,9 @@
 ## Verify
 
 - [ ] Open Profile → Pets. Confirm your existing assignments still resolve to the companions you expect.
-- [ ] Add a rule for a maker, save, and confirm a chat on one of that maker's models shows the assigned companion.
-- [ ] Remove that rule and confirm the companion reverts rather than sticking.
-- [ ] Chat on a model from a maker you have set no rule for. Confirm the fallback looks deliberate rather than empty.
-- [ ] Check a model whose provider differs from its maker — an Anthropic model through Bedrock, say — and confirm it is attributed to the maker, not the gateway.
+- [x] Add a rule for a maker, save, and confirm a chat on one of that maker's models shows the assigned companion. _(Local release E2E assigns Ash to OpenAI and observes it in Chat.)_
+- [x] Remove that rule and confirm the companion reverts rather than sticking. _(Local release E2E returns the model to Pip.)_
+- [x] Chat on a model from a maker you have set no rule for. Confirm the fallback looks deliberate rather than empty. _(Local release E2E checks the Meta fallback.)_
+- [x] Check a model whose provider differs from its maker — an Anthropic model through Bedrock, say — and confirm it is attributed to the maker, not the gateway. _(Local release E2E checks the OpenAI-made GPT OSS model through Groq.)_
 
 **Stop and report if:** a saved assignment disappeared, or a model resolves to a companion from the wrong maker.

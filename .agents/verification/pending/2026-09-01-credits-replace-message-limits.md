@@ -7,14 +7,14 @@
 
 ## Verify
 
-- [ ] Signed out, send a message and confirm the `usage_limits` stream event carries a `credits` object with `included: 15` and no `daily` field.
-- [ ] Keep sending as the same anonymous visitor and confirm `anonymous_user.spent_credit_micros` grows, that `credit_period` is the current `YYYY-MM`, and that turns are refused once included plus reserve is spent.
-- [ ] Set `credit_period` on that row to last month, send one message, and confirm the balance restarts from that turn rather than continuing.
-- [ ] Call `POST /audio/speech` with no credentials and no `provider` while the anonymous allowance lasts, then again once it is spent: the first succeeds, the second is refused as a usage limit.
-- [ ] Sign in as a free account with `plans.included_credits` still null and confirm the sidebar popover shows a credits meter with a non-zero allowance, not an empty section.
-- [ ] Sign in as Pro and confirm the sidebar, Profile > Billing, and `/pricing` all agree on the allowance.
-- [ ] Confirm no surface anywhere still says "messages a day": sidebar, composer banners, Profile > Account, Profile > Billing, `/pricing`.
-- [ ] Confirm a signed-in turn still writes `usage_event` rows, and that an anonymous turn writes none while still moving the anonymous balance.
+- [x] Signed out, send a message and confirm the `usage_limits` stream event carries a `credits` object with `included: 15` and no `daily` field. _(Local release E2E inspects the completed SSE body.)_
+- [x] Keep sending as the same anonymous visitor and confirm `anonymous_user.spent_credit_micros` grows, that `credit_period` is the current `YYYY-MM`, and that turns are refused once included plus reserve is spent. _(Local release E2E reads the anonymous balance before seeding the ceiling and confirms a usage refusal.)_
+- [x] Set `credit_period` on that row to last month, send one message, and confirm the balance restarts from that turn rather than continuing. _(Local release E2E seeds 20 credits in the previous month and observes only the new turn in the current period.)_
+- [x] Call `POST /audio/speech` with no credentials and no `provider` while the anonymous allowance lasts, then again once it is spent: the first succeeds, the second is refused as a usage limit. _(Local release E2E validates the default speech path before and after exhaustion.)_
+- [x] Sign in as a free account with `plans.included_credits` still null and confirm the sidebar popover shows a credits meter with a non-zero allowance, not an empty section. _(The release harness deliberately leaves plan credit columns null; local release E2Es expect the built-in 150-credit allowance.)_
+- [x] Sign in as Pro and confirm the sidebar, Profile > Billing, and `/pricing` all agree on the allowance. _(Local release E2Es expect 1,500 credits on all three surfaces.)_
+- [x] Confirm no surface anywhere still says "messages a day": sidebar, composer banners, Profile > Account, Profile > Billing, `/pricing`. _(Local release E2E visits each named surface.)_
+- [x] Confirm a signed-in turn still writes `usage_event` rows, and that an anonymous turn writes none while still moving the anonymous balance. _(Local release E2Es validate signed-in events and inspect test D1 directly for a moving anonymous row with zero events for its completion.)_
 
 **Stop and report if:** anonymous visitors behind a shared IP are refused on their first message, or if an anonymous session is never refused however much it spends. Both mean the actor resolution or the period rollover is wrong.
 

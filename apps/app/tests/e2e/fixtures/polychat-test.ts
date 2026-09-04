@@ -17,6 +17,7 @@ import {
   provisionPersonaSession,
   reseedPersonaBilling,
 } from "./persona-provisioning";
+import { PolychatApi } from "./polychat-api";
 
 export type { BillingSeed, Persona, UsageLedgerSeed } from "./persona-provisioning";
 export { provisionPersonaSession } from "./persona-provisioning";
@@ -37,6 +38,7 @@ interface PolychatFixtures {
   homePage: HomePage;
   pricingPage: PricingPage;
   profilePage: ProfilePage;
+  polychatApi: PolychatApi;
   workPage: WorkPage;
 }
 
@@ -97,6 +99,7 @@ export const test = base.extend<PolychatFixtures>({
   homePage: async ({ page }, use) => use(new HomePage(page)),
   pricingPage: async ({ page }, use) => use(new PricingPage(page)),
   profilePage: async ({ page }, use) => use(new ProfilePage(page)),
+  polychatApi: async ({ page }, use) => use(new PolychatApi(page.request)),
   workPage: async ({ page }, use) => use(new WorkPage(page)),
 });
 

@@ -66,6 +66,61 @@ export class ProfilePage extends BasePage {
       .waitFor({ state: "hidden" });
   }
 
+  private waitForSettingsUpdate() {
+    return this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "PUT" &&
+        new URL(response.url()).pathname.endsWith("/user/settings"),
+    );
+  }
+
+  async addPetMakerRule(maker: string, pet: string) {
+    await this.clickElement(this.page.getByRole("button", { name: "Add a rule" }));
+    const dialog = this.page.getByRole("dialog", { name: "Add a companion rule" });
+    const makers = dialog
+      .getByText("Makers", { exact: true })
+      .locator("xpath=following-sibling::ul[1]");
+
+    await makers.getByRole("button").filter({ hasText: maker }).click();
+    await dialog
+      .getByRole("list", { name: "Pet" })
+      .getByRole("button")
+      .filter({ hasText: pet })
+      .click();
+    const updated = this.waitForSettingsUpdate();
+
+    await dialog.getByRole("button", { name: "Add rule", exact: true }).click();
+    if (!(await updated).ok()) {
+      throw new Error("Pet maker rule could not be saved");
+    }
+
+    await dialog.waitFor({ state: "hidden" });
+  }
+
+  async removePetMakerRule(maker: string) {
+    const updated = this.waitForSettingsUpdate();
+
+    await this.clickElement(
+      this.page.getByRole("button", { name: `Use default pet for ${maker}` }),
+    );
+    if (!(await updated).ok()) {
+      throw new Error("Pet maker rule could not be removed");
+    }
+  }
+
+  async enablePetTravel() {
+    const travel = this.page.getByLabel("Let your pet follow you", { exact: true });
+
+    if (!(await travel.isChecked())) {
+      const updated = this.waitForSettingsUpdate();
+
+      await this.page.getByText("Let your pet follow you", { exact: true }).click();
+      if (!(await updated).ok()) {
+        throw new Error("Pet travel preference could not be saved");
+      }
+    }
+  }
+
   async logout() {
     await this.clickElement(this.page.getByRole("button", { name: "Logout", exact: true }));
   }

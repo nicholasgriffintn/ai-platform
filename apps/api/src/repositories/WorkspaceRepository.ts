@@ -312,6 +312,13 @@ export class WorkspaceRepository extends BaseRepository {
         .bind(workspaceId),
       database
         .prepare(
+          `UPDATE usage_event
+					 SET workspace_id = NULL, project_id = NULL
+					 WHERE workspace_id = ?`,
+        )
+        .bind(workspaceId),
+      database
+        .prepare(
           `UPDATE conversation
 					 SET parent_conversation_id = NULL, parent_message_id = NULL
 					 WHERE parent_conversation_id IN (${conversationIds})`,

@@ -11,7 +11,7 @@
 - [ ] `GET /plans` shows the credit columns you set, and `overage_available: true` only for the plan with an `overage_price_id`.
 - [ ] With a test-mode subscription and saved card, `POST /stripe/overage {"enabled": true}` succeeds, the subscription in the Stripe dashboard gains the metered item, and repeating the call adds nothing. `{"enabled": false}` removes the item again.
 - [ ] `POST /stripe/overage {"enabled": true}` on an account without a payment method is refused with a clear message, not a Stripe error.
-- [ ] `POST /stripe/portal` with a `return_url` on the app origin returns a working portal URL; a foreign origin (including `https://<app-host>.evil.example`) is rejected with a 400.
+- [x] `POST /stripe/portal` with a `return_url` on the app origin returns a working portal URL; a foreign origin (including `https://<app-host>.evil.example`) is rejected with a 400. _(Local release E2E validates both paths against the isolated Stripe boundary.)_
 - [ ] Seed overage: set `overage_enabled` and a few million `overage_credit_micros` on the current period's balance row for the test user, wait for (or run) the top-of-hour sync, and confirm exactly one meter event arrives in Stripe test mode with the whole-credit value and identifier `<customerId>:<hourIso>`.
 - [ ] Confirm `stripe_synced_overage_credit_micros` advanced by exactly the whole credits sent times 1,000,000, leaving any sub-credit remainder pending.
 - [ ] Run the sync twice for the same hour and confirm Stripe still shows one event and the mark did not advance twice.

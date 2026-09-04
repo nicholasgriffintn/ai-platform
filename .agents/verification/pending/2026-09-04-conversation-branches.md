@@ -8,10 +8,10 @@
 
 ## Verify
 
-- [ ] Open the parent, choose Branches, and select a child. The selected child opens and is marked Current when Branches is reopened. Return to the parent and a sibling the same way.
+- [x] Open the parent, choose Branches, and select a child. The selected child opens and is marked Current when Branches is reopened. Return to the parent and a sibling the same way. _(Local release E2E navigates all three and reopens the persisted sibling from history.)_
 - [ ] Repeat in a Work project where different members created branches. All current members can navigate the family, with project context preserved.
-- [ ] Archive a branch. It stays visible and labelled Archived. Close the browser without selecting anything and confirm the current conversation stays selected.
-- [ ] Request `GET /chat/completions/<id>/branches` as another personal user or someone removed from the project's workspace. Expect 404 without branch titles or IDs.
+- [x] Archive a branch. It stays visible and labelled Archived. Close the browser without selecting anything and confirm the current conversation stays selected. _(Local release E2E checks Archived and Archived · Current states, then closes without navigation.)_
+- [x] Request `GET /chat/completions/<id>/branches` as another personal user or someone removed from the project's workspace. Expect 404 without branch titles or IDs. _(Local release E2E verifies a different personal account receives 404.)_
 - [ ] Simulate a failed branches request. Expect an error with Retry, rather than a stale branch list.
 
 **Stop and report if:** a personal family includes someone else's conversation or a Work family leaves its project.

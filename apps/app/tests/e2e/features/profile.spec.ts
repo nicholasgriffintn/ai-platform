@@ -75,8 +75,8 @@ test.describe("Profile experience", () => {
         await expect(billingPage.creditsMeter).toHaveAttribute(
           "aria-label",
           persona === "pro"
-            ? /of 500 included credits used, 550 of reserve remaining$/
-            : /of 100 included credits used, 100 of reserve remaining$/,
+            ? /of 1,500 included credits used, 1,650 of reserve remaining$/
+            : /of 150 included credits used, 200 of reserve remaining$/,
         );
         await expect(billingPage.creditState).toHaveText("On track");
         await captureVisualSnapshots(page, `release-profile-${persona}-billing`, {
@@ -233,6 +233,60 @@ test.describe("Connector configuration", () => {
 
 test.describe("Account-owned resources", () => {
   test.use({ persona: "pro" });
+
+  test("revises, promotes, rolls back and archives an authored skill", async ({ polychatApi }) => {
+    const result = await polychatApi.exercisePersonalSkillRevisionLifecycle({
+      name: "release-skill-lifecycle",
+      initialInstructions: "Answer with the stable release procedure.",
+      revisedInstructions: "Answer with the revised release procedure.",
+      resourceContent: "Release evidence belongs in the verification queue.",
+    });
+
+    expect(result.draft.revision.revision).toBeGreaterThan(result.initialRevision.revision);
+    expect(result.promoted.state.stableRevisionId).toBe(result.draft.revision.id);
+    expect(result.rolledBack.revision.revision).toBeGreaterThan(result.promoted.revision.revision);
+    expect(result.rolledBack.content).toContain("stable release procedure");
+    expect(result.retrieved.resources).toEqual([
+      {
+        path: "references/evidence.md",
+        content: "Release evidence belongs in the verification queue.",
+      },
+    ]);
+    expect(result.archivedStatus).toBe(404);
+    expect(result.recreated.name).toBe("release-skill-lifecycle");
+  });
+
+  test("applies and removes a model-maker pet rule with a deliberate fallback", async ({
+    homePage,
+    page,
+    profilePage,
+  }) => {
+    await profilePage.openTab("pets", "Your pet");
+    await expect(page.getByRole("button", { name: /^Pip/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await profilePage.addPetMakerRule("OpenAI", "Ash");
+    await expect(page.getByLabel("Pet for OpenAI", { exact: true })).toHaveValue("preset:ash");
+    await profilePage.enablePetTravel();
+
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT-5.5");
+    await expect(page.getByRole("button", { name: /^Ash\./ })).toBeVisible();
+    await homePage.selectModel("GPT OSS 120B");
+    await expect(page.getByRole("button", { name: /^Ash\./ })).toBeVisible();
+    await homePage.selectModel("Llama 4 Scout 17B");
+    await expect(page.getByRole("button", { name: /^Pip\./ })).toBeVisible();
+
+    await profilePage.openTab("pets", "Your pet");
+    await profilePage.removePetMakerRule("OpenAI");
+    await expect(
+      page.getByText("No rules yet, so every model gets your default pet."),
+    ).toBeVisible();
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT OSS 120B");
+    await expect(page.getByRole("button", { name: /^Pip\./ })).toBeVisible();
+  });
 
   test("creates and revokes an application API key", async ({ page, profilePage }) => {
     await profilePage.createAndDeleteApiKey("Release validation key");

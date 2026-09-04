@@ -196,5 +196,9 @@ describe("WorkspaceRepository", () => {
     expect(statements[0]?.query).toContain("DELETE FROM capability_configuration");
     expect(statements[0]?.query).toContain("scope_type = 'project'");
     expect(statements[0]?.params).toEqual(["workspace-1"]);
+    const usageUpdate = statements.find(({ query }) => query.includes("UPDATE usage_event"));
+
+    expect(usageUpdate?.query).toContain("workspace_id = NULL, project_id = NULL");
+    expect(usageUpdate?.params).toEqual(["workspace-1"]);
   });
 });

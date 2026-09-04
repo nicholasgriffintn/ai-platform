@@ -50,6 +50,29 @@ export class HomePage extends BasePage {
     return response.request().postDataJSON() as Record<string, unknown>;
   }
 
+  async sendMessageAndReadCompletionStream(message: string) {
+    const completionResponse = this.waitForCompletionRequest();
+
+    await this.sendMessage(message);
+    const response = await completionResponse;
+
+    await response.finished();
+
+    return {
+      status: response.status(),
+      body: await response.text(),
+      request: response.request().postDataJSON() as Record<string, unknown>,
+    };
+  }
+
+  completionIdFromRequest(request: Record<string, unknown>) {
+    if (typeof request.completion_id !== "string" || request.completion_id.length === 0) {
+      throw new Error("Completion request has no conversation id");
+    }
+
+    return request.completion_id;
+  }
+
   async selectModel(modelName: string) {
     await this.clickElement(this.modelSelector);
     const modelsTab = this.page.getByRole("tab", { name: "Models", exact: true });
@@ -74,6 +97,17 @@ export class HomePage extends BasePage {
     const named = options.filter({ has: this.page.getByText(modelName, { exact: true }) }).first();
 
     await this.clickElement((await named.count()) > 0 ? named : candidate);
+  }
+
+  async selectAutomaticMode(mode: "Auto" | "Lite" | "Standard" | "Pro" | "Max") {
+    await this.clickElement(this.modelSelector);
+    const autoTab = this.page.getByRole("tab", { name: "Auto", exact: true });
+
+    if (await autoTab.isVisible()) {
+      await autoTab.click();
+    }
+
+    await this.clickElement(this.page.getByRole("option", { name: `${mode} automatic mode` }));
   }
 
   chatModeCommand(mode: "Chat" | "Live") {
@@ -677,10 +711,18 @@ export class HomePage extends BasePage {
   async configureResponseControls(reasoning: string, verbosity: string) {
     await this.page.getByRole("button", { name: /^Reasoning depth:/ }).click();
     await this.page.getByRole("menuitemradio", { name: reasoning, exact: true }).click();
+    await this.page.getByRole("button", { name: `Reasoning depth: ${reasoning}` }).waitFor();
+    const selectedVerbosity = this.page.getByRole("button", {
+      name: `Verbosity: ${verbosity}`,
+    });
+
+    if (await selectedVerbosity.isVisible()) {
+      return;
+    }
+
     await this.page.getByRole("button", { name: /^Verbosity:/ }).click();
     await this.page.getByRole("menuitemradio", { name: verbosity, exact: true }).click();
-    await this.page.getByRole("button", { name: `Reasoning depth: ${reasoning}` }).waitFor();
-    await this.page.getByRole("button", { name: `Verbosity: ${verbosity}` }).waitFor();
+    await selectedVerbosity.waitFor();
   }
 
   async configureDetailedGenerationSettings() {
@@ -742,6 +784,11 @@ export class HomePage extends BasePage {
 
   async branchFromLatestUserMessageWithModel(modelName: string, providerName: string) {
     const responsePromise = this.waitForCompletionRequest();
+    const titleResponsePromise = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname.endsWith("/generate-title"),
+    );
 
     await this.getLatestUserMessage().getByRole("button", { name: "Branch conversation" }).click();
     await this.page.getByPlaceholder("Search other models").fill(modelName);
@@ -759,7 +806,17 @@ export class HomePage extends BasePage {
       );
     }
 
+    const titleResponse = await titleResponsePromise;
+
+    if (!titleResponse.ok()) {
+      throw new Error(
+        `Branched title generation failed with ${titleResponse.status()}: ${await titleResponse.text()}`,
+      );
+    }
+
     await this.originalConversationButton.waitFor();
+
+    return response.request().postDataJSON() as Record<string, unknown>;
   }
 
   async shareConversation() {
@@ -800,5 +857,28 @@ export class HomePage extends BasePage {
   async returnToOriginalConversation() {
     await this.clickElement(this.originalConversationButton);
     await this.page.getByRole("region", { name: "Conversation messages" }).waitFor();
+  }
+
+  async openConversationBranches() {
+    await this.page.getByRole("button", { name: "Browse conversation branches" }).click();
+    await this.page.getByRole("dialog", { name: "Conversation branches" }).waitFor();
+  }
+
+  conversationBranch(title: string) {
+    return this.page
+      .getByRole("dialog", { name: "Conversation branches" })
+      .getByRole("button", { name: title });
+  }
+
+  async selectConversationBranch(title: string) {
+    await this.conversationBranch(title).click();
+    await this.page.getByRole("region", { name: "Conversation messages" }).waitFor();
+  }
+
+  async closeConversationBranches() {
+    await this.page.keyboard.press("Escape");
+    await this.page
+      .getByRole("dialog", { name: "Conversation branches" })
+      .waitFor({ state: "hidden" });
   }
 }
