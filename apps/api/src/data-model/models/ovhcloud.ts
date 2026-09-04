@@ -344,6 +344,8 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	supportsToolCalls: false,
   	contextWindow: 32768,
   	maxTokens: 16384,
+  	costPer1kInputTokens: 0,
+  	costPer1kOutputTokens: 0,
   }),
 
   createModelConfig("qwen3guard-gen-8b", PROVIDER, {
@@ -361,5 +363,31 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	supportsToolCalls: false,
   	contextWindow: 32768,
   	maxTokens: 16384,
+  	costPer1kInputTokens: 0,
+  	costPer1kOutputTokens: 0,
+  }),
+  createModelConfig("qwen3.8-27b", PROVIDER, {
+  	name: "Qwen3.8-27B",
+  	matchingModel: "qwen3.8-27b",
+  	family: "qwen",
+  	openWeights: true,
+  	releaseDate: "September 2, 2026",
+  	lastUpdated: "September 2, 2026",
+  	modalities: {
+  		input: ["text", "image"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: true,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 262144,
+  	maxTokens: 262144,
+  	costPer1kInputTokens: 0,
+  	costPer1kOutputTokens: 0,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
+  		defaultEffort: "none",
+  	},
   }),
 ]);

@@ -19,7 +19,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 200000,
-    maxTokens: 200000,
+    maxTokens: 64000,
     costPer1kInputTokens: 0.002989,
     costPer1kOutputTokens: 0.014945,
     reasoningConfig: {
@@ -55,7 +55,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 1000000,
-    maxTokens: 1000000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.003196,
     costPer1kOutputTokens: 0.01594,
     reasoningConfig: {
@@ -91,7 +91,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 200000,
-    maxTokens: 200000,
+    maxTokens: 64000,
     costPer1kInputTokens: 0.000996,
     costPer1kOutputTokens: 0.004982,
     reasoningConfig: {
@@ -117,7 +117,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 200000,
-    maxTokens: 200000,
+    maxTokens: 64000,
     costPer1kInputTokens: 0.005313,
     costPer1kOutputTokens: 0.026568,
     reasoningConfig: {
@@ -153,7 +153,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 1000000,
-    maxTokens: 1000000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.005313,
     costPer1kOutputTokens: 0.026561,
     reasoningConfig: {
@@ -190,7 +190,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTopP: false,
     supportsToolCalls: true,
     contextWindow: 1000000,
-    maxTokens: 1000000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.005437,
     costPer1kOutputTokens: 0.027186,
     reasoningConfig: {
@@ -226,7 +226,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 200000,
-    maxTokens: 200000,
+    maxTokens: 65000,
     costPer1kInputTokens: 0.002898,
     costPer1kOutputTokens: 0.014493,
     family: "claude-sonnet",
@@ -408,10 +408,10 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: false,
     supportsTemperature: true,
     supportsToolCalls: true,
-    contextWindow: 262000,
-    maxTokens: 262000,
-    costPer1kInputTokens: 0.000446,
-    costPer1kOutputTokens: 0.002228,
+    contextWindow: 256000,
+    maxTokens: 256000,
+    costPer1kInputTokens: 0.000478,
+    costPer1kOutputTokens: 0.002392,
     openWeights: true,
     family: "devstral",
     supportsResponseFormat: true,
@@ -566,7 +566,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 202752,
-    maxTokens: 198000,
+    maxTokens: 202752,
     costPer1kInputTokens: 0.00078,
     costPer1kOutputTokens: 0.002785,
     reasoningConfig: {
@@ -708,11 +708,11 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 1047576,
-    maxTokens: 1047576,
+    maxTokens: 32768,
     costPer1kInputTokens: 0.002192,
     costPer1kOutputTokens: 0.008769,
     strengths: ["vision", "tool_use", "document"],
-    contextComplexity: 5,
+    contextComplexity: 4,
     reliability: 1,
     speed: 4,
     artificialAnalysis: {
@@ -740,7 +740,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 131000,
-    maxTokens: 128000,
+    maxTokens: 131000,
     costPer1kInputTokens: 0.000089,
     costPer1kOutputTokens: 0.000446,
     strengths: ["tool_use"],
@@ -889,7 +889,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 262144,
-    maxTokens: 256000,
+    maxTokens: 262144,
     costPer1kInputTokens: 0.000495,
     costPer1kOutputTokens: 0.002768,
     reasoningConfig: {
@@ -924,7 +924,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 262144,
-    maxTokens: 256000,
+    maxTokens: 262144,
     costPer1kInputTokens: 0.000773,
     costPer1kOutputTokens: 0.00338,
     reasoningConfig: {
@@ -1013,7 +1013,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 400000,
-    maxTokens: 400000,
+    maxTokens: 196000,
     costPer1kInputTokens: 0.000349,
     costPer1kOutputTokens: 0.001405,
     reasoningConfig: {
@@ -1082,8 +1082,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: false,
     supportsTemperature: true,
     supportsToolCalls: true,
-    contextWindow: 196680,
-    maxTokens: 196608,
+    contextWindow: 196000,
+    maxTokens: 196000,
     costPer1kInputTokens: 0.000296,
     costPer1kOutputTokens: 0.001186,
     reasoningConfig: {
@@ -1119,7 +1119,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 196608,
-    maxTokens: 196072,
+    maxTokens: 196608,
     costPer1kInputTokens: 0.000668,
     costPer1kOutputTokens: 0.002674,
     reasoningConfig: {
@@ -1186,7 +1186,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: false,
     contextWindow: 32000,
-    maxTokens: 32000,
+    maxTokens: 4096,
     costPer1kInputTokens: 0.000488,
     costPer1kOutputTokens: 0.000758,
     reasoningConfig: {
@@ -1236,7 +1236,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 300000,
-    maxTokens: 5000,
+    maxTokens: 10000,
     costPer1kInputTokens: 0.000918,
     costPer1kOutputTokens: 0.003671,
     family: "nova-pro",
@@ -1292,7 +1292,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 262000,
-    maxTokens: 131000,
+    maxTokens: 262000,
     costPer1kInputTokens: 0.000069,
     costPer1kOutputTokens: 0.000455,
     reasoningConfig: {
@@ -1364,7 +1364,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 262144,
-    maxTokens: 262000,
+    maxTokens: 262144,
     costPer1kInputTokens: 0.000067,
     costPer1kOutputTokens: 0.000245,
     reasoningConfig: {
@@ -1538,7 +1538,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 262000,
-    maxTokens: 250000,
+    maxTokens: 262000,
     costPer1kInputTokens: 0.000668,
     costPer1kOutputTokens: 0.00401,
     reasoningConfig: {
@@ -1652,7 +1652,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTopP: false,
     supportsToolCalls: true,
     contextWindow: 1000000,
-    maxTokens: 1000000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.005437,
     costPer1kOutputTokens: 0.027186,
     reasoningConfig: {
@@ -1688,7 +1688,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 1048576,
-    maxTokens: 1048576,
+    maxTokens: 65535,
     costPer1kInputTokens: 0.001649,
     costPer1kOutputTokens: 0.009899,
     reasoningConfig: {
@@ -1696,7 +1696,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     	defaultEffort: "low",
     },
     strengths: ["vision", "audio", "document", "tool_use", "coding"],
-    contextComplexity: 5,
+    contextComplexity: 4,
     reliability: 3,
     speed: 3,
     artificialAnalysis: {
@@ -1724,7 +1724,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 1048576,
-    maxTokens: 1048576,
+    maxTokens: 65535,
     costPer1kInputTokens: 0.000272,
     costPer1kOutputTokens: 0.001631,
     reasoningConfig: {
@@ -1732,7 +1732,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
       defaultEffort: "none",
     },
     strengths: ["vision", "audio", "document", "tool_use"],
-    contextComplexity: 5,
+    contextComplexity: 4,
     reliability: 1,
     speed: 4,
     artificialAnalysis: {
@@ -1782,7 +1782,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 262000,
-    maxTokens: 262000,
+    maxTokens: 32768,
     costPer1kInputTokens: 0.000167,
     costPer1kOutputTokens: 0.000557,
     reasoningConfig: {
@@ -1885,7 +1885,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 262000,
-    maxTokens: 262000,
+    maxTokens: 81920,
     costPer1kInputTokens: 0.000111,
     costPer1kOutputTokens: 0.000557,
     reasoningConfig: {
@@ -1944,7 +1944,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: true,
     contextWindow: 300000,
-    maxTokens: 300000,
+    maxTokens: 65536,
     costPer1kInputTokens: 0.000059,
     costPer1kOutputTokens: 0.000237,
     reasoningConfig: {
@@ -1968,7 +1968,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 1050000,
-    maxTokens: 1050000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.002898,
     costPer1kOutputTokens: 0.015453,
     reasoningConfig: {
@@ -2092,7 +2092,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 262144,
-    maxTokens: 262144,
+    maxTokens: 256000,
     costPer1kInputTokens: 0.000143,
     costPer1kOutputTokens: 0.000568,
     reasoningConfig: {
@@ -2280,7 +2280,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: true,
     contextWindow: 1000000,
-    maxTokens: 1000000,
+    maxTokens: 65535,
     costPer1kInputTokens: 0.000373,
     costPer1kOutputTokens: 0.003144,
     reasoningConfig: {
@@ -2389,7 +2389,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 400000,
-    maxTokens: 400000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.001375,
     costPer1kOutputTokens: 0.01096,
     reasoningConfig: {
@@ -2513,7 +2513,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: true,
     contextWindow: 400000,
-    maxTokens: 400000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.001375,
     costPer1kOutputTokens: 0.01096,
     reasoningConfig: {
@@ -2628,7 +2628,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: false,
     contextWindow: 32000,
-    maxTokens: 32000,
+    maxTokens: 8192,
     costPer1kInputTokens: 0.000159,
     costPer1kOutputTokens: 0.000219,
     openWeights: false,
@@ -2692,7 +2692,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 1047576,
-    maxTokens: 1047576,
+    maxTokens: 32768,
     costPer1kInputTokens: 0.000434,
     costPer1kOutputTokens: 0.001704,
     reasoningConfig: {
@@ -2700,7 +2700,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
       defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
-    contextComplexity: 5,
+    contextComplexity: 4,
     reliability: 1,
     speed: 3,
     artificialAnalysis: {
@@ -2728,7 +2728,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 1047576,
-    maxTokens: 1047576,
+    maxTokens: 32768,
     costPer1kInputTokens: 0.000111,
     costPer1kOutputTokens: 0.000434,
     reasoningConfig: {
@@ -2736,7 +2736,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
       defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
-    contextComplexity: 5,
+    contextComplexity: 4,
     reliability: 1,
     speed: 5,
     artificialAnalysis: {
@@ -2764,7 +2764,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: true,
     contextWindow: 128000,
-    maxTokens: 128000,
+    maxTokens: 10000,
     costPer1kInputTokens: 0.00004,
     costPer1kOutputTokens: 0.000159,
     reasoningConfig: {
@@ -2788,7 +2788,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: true,
     contextWindow: 300000,
-    maxTokens: 300000,
+    maxTokens: 10000,
     costPer1kInputTokens: 0.000069,
     costPer1kOutputTokens: 0.000275,
     reasoningConfig: {
@@ -2922,7 +2922,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 1048576,
-    maxTokens: 1048576,
+    maxTokens: 65535,
     costPer1kInputTokens: 0.000299,
     costPer1kOutputTokens: 0.002491,
     reasoningConfig: {
@@ -2930,7 +2930,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
       defaultEffort: "none",
     },
     strengths: ["vision", "audio", "document", "tool_use"],
-    contextComplexity: 5,
+    contextComplexity: 4,
     reliability: 1,
     speed: 5,
     artificialAnalysis: {
@@ -2958,7 +2958,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: false,
     contextWindow: 131000,
-    maxTokens: 131000,
+    maxTokens: 110000,
     costPer1kInputTokens: 0.000099,
     costPer1kOutputTokens: 0.000299,
     reasoningConfig: {
@@ -3006,7 +3006,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 128000,
-    maxTokens: 128000,
+    maxTokens: 16000,
     costPer1kInputTokens: 0.002659,
     costPer1kOutputTokens: 0.010635,
     reasoningConfig: {
@@ -3014,7 +3014,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
       defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
-    contextComplexity: 4,
+    contextComplexity: 3,
     reliability: 1,
     speed: 4,
     artificialAnalysis: {
@@ -3042,7 +3042,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: true,
     contextWindow: 400000,
-    maxTokens: 400000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.000279,
     costPer1kOutputTokens: 0.002192,
     reasoningConfig: {
@@ -3078,7 +3078,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: true,
     contextWindow: 400000,
-    maxTokens: 400000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.00006,
     costPer1kOutputTokens: 0.000439,
     reasoningConfig: {
@@ -3114,7 +3114,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: true,
     contextWindow: 128000,
-    maxTokens: 128000,
+    maxTokens: 4096,
     costPer1kInputTokens: 0.000223,
     costPer1kOutputTokens: 0.000223,
     reasoningConfig: {
@@ -3158,7 +3158,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsToolCalls: true,
     contextWindow: 128000,
-    maxTokens: 131072,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.000145,
     costPer1kOutputTokens: 0.000145,
     openWeights: false,
@@ -3202,7 +3202,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: true,
     supportsToolCalls: true,
     contextWindow: 128000,
-    maxTokens: 128000,
+    maxTokens: 16000,
     costPer1kInputTokens: 0.000159,
     costPer1kOutputTokens: 0.000638,
     reasoningConfig: {
@@ -3210,7 +3210,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
       defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
-    contextComplexity: 4,
+    contextComplexity: 3,
     reliability: 1,
     speed: 3,
     artificialAnalysis: {
@@ -3298,7 +3298,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1048576,
-    maxTokens: 1048576,
+    maxTokens: 1000000,
     costPer1kInputTokens: 0.0012,
     costPer1kOutputTokens: 0.0042,
     reasoningConfig: {
@@ -3408,8 +3408,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.014999,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("apertus-70b", PROVIDER, {
@@ -3427,7 +3427,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: false,
     contextWindow: 65536,
-    maxTokens: 65536,
+    maxTokens: 16384,
     costPer1kInputTokens: 0.001393,
     costPer1kOutputTokens: 0.002228,
     reasoningConfig: {
@@ -3455,7 +3455,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
-    maxTokens: 1000000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.0055,
     costPer1kOutputTokens: 0.027498,
     reasoningConfig: {
@@ -3482,7 +3482,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
-    maxTokens: 1000000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.0022,
     costPer1kOutputTokens: 0.011,
     reasoningConfig: {
@@ -3533,7 +3533,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1050000,
-    maxTokens: 1050000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.000219,
     costPer1kOutputTokens: 0.00132,
     reasoningConfig: {
@@ -3559,7 +3559,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1050000,
-    maxTokens: 1050000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.0055,
     costPer1kOutputTokens: 0.032998,
     reasoningConfig: {
@@ -3585,7 +3585,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1050000,
-    maxTokens: 1050000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0.0022,
     costPer1kOutputTokens: 0.013199,
     reasoningConfig: {
@@ -3610,7 +3610,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1048576,
-    maxTokens: 1048576,
+    maxTokens: 65535,
     costPer1kInputTokens: 0.00033,
     costPer1kOutputTokens: 0.002749,
     reasoningConfig: {
@@ -3659,7 +3659,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1048576,
-    maxTokens: 1048576,
+    maxTokens: 65535,
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.00375,
     reasoningConfig: {
@@ -3685,7 +3685,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1048576,
-    maxTokens: 1048576,
+    maxTokens: 65535,
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.00375,
     reasoningConfig: {
@@ -3759,8 +3759,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
   	supportsResponseFormat: true,
   	contextWindow: 1048576,
   	maxTokens: 1048576,
-  	costPer1kInputTokens: 0.00175,
-  	costPer1kOutputTokens: 0.004499,
+  	costPer1kInputTokens: 0.0014,
+  	costPer1kOutputTokens: 0.004399,
   	reasoningConfig: {
   		supportedEffortLevels: ["low", "high", "max"],
   		defaultEffort: "low",
@@ -3783,7 +3783,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
   	supportsToolCalls: true,
   	supportsResponseFormat: true,
   	contextWindow: 1048576,
-  	maxTokens: 64000,
+  	maxTokens: 1048576,
   	costPer1kInputTokens: 0.000201,
   	costPer1kOutputTokens: 0.0005,
   	reasoningConfig: {
