@@ -18,6 +18,10 @@ const composioAccounts = new Map();
 const stripeSecretKey = "sk_test_polychat_e2e";
 const stripeProPriceId = "price_e2e_pro";
 const stripeProOveragePriceId = "price_e2e_pro_overage";
+const apiPort = Number(process.env.POLYCHAT_E2E_API_PORT ?? "8787");
+const appPort = Number(process.env.POLYCHAT_E2E_APP_PORT ?? "5173");
+const apiBaseUrl = `http://localhost:${apiPort}`;
+const appBaseUrl = `http://localhost:${appPort}`;
 
 const E2E_PLANS = [
   {
@@ -278,15 +282,16 @@ function resolveToolCallTrigger(prompt) {
   };
 }
 
-function streamingResponse(content) {
+function streamingResponse(content, delayedContent) {
+  const contentChunks = [content, ...(delayedContent ? [delayedContent] : [])];
   const chunks = [
-    {
+    ...contentChunks.map((chunk) => ({
       id: "e2e-completion",
       object: "chat.completion.chunk",
       created: 0,
       model: "e2e-model",
-      choices: [{ index: 0, delta: { role: "assistant", content }, finish_reason: null }],
-    },
+      choices: [{ index: 0, delta: { role: "assistant", content: chunk }, finish_reason: null }],
+    })),
     {
       id: "e2e-completion",
       object: "chat.completion.chunk",
@@ -296,7 +301,34 @@ function streamingResponse(content) {
       usage: { prompt_tokens: 8, completion_tokens: 4, total_tokens: 12 },
     },
   ];
-  const body = `${chunks.map((chunk) => `data: ${JSON.stringify(chunk)}\n\n`).join("")}data: [DONE]\n\n`;
+
+  if (!delayedContent) {
+    const body = `${chunks.map((chunk) => `data: ${JSON.stringify(chunk)}\n\n`).join("")}data: [DONE]\n\n`;
+
+    return new Response(body, {
+      headers: { "content-type": "text/event-stream; charset=utf-8" },
+    });
+  }
+
+  let index = 0;
+  const encoder = new TextEncoder();
+  const body = new ReadableStream({
+    async pull(controller) {
+      if (index === 1) {
+        await new Promise((resolve) => setTimeout(resolve, 2_500));
+      }
+
+      if (index < chunks.length) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunks[index])}\n\n`));
+        index += 1;
+
+        return;
+      }
+
+      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+      controller.close();
+    },
+  });
 
   return new Response(body, {
     headers: { "content-type": "text/event-stream; charset=utf-8" },
@@ -491,7 +523,7 @@ async function mockStripeRequest(request, url) {
   if (request.method === "POST" && url.pathname === "/v1/billing_portal/sessions") {
     const form = await request.formData();
 
-    if (form.get("return_url") !== "http://localhost:5173/profile?tab=billing") {
+    if (form.get("return_url") !== `${appBaseUrl}/profile?tab=billing`) {
       throw new Error("Stripe portal request did not preserve the allowed return URL");
     }
 
@@ -695,6 +727,13 @@ async function mockExternalRequest(request) {
         });
   }
 
+  if (body.stream && prompt.includes("Recover this interrupted stream")) {
+    return streamingResponse(
+      "E2E response: recovery data so far",
+      " and the interrupted stream completed",
+    );
+  }
+
   return body.stream ? streamingResponse(content) : Response.json(openAiResponse(content));
 }
 
@@ -832,8 +871,8 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
           ACCOUNT_ID: "e2e-account",
           AI_GATEWAY_TOKEN: "e2e-gateway-token",
           ALWAYS_ENABLED_PROVIDERS: "google-ai-studio,groq,mistral,openai,replicate,workers-ai",
-          API_BASE_URL: "http://localhost:8787",
-          APP_BASE_URL: "http://localhost:5173",
+          API_BASE_URL: apiBaseUrl,
+          APP_BASE_URL: appBaseUrl,
           COMPOSIO_USER_NAMESPACE: "e2e",
           COMPOSIO_API_KEY: "e2e-composio-api-key",
           ENV: "development",
@@ -1140,9 +1179,9 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
         compatibilityDate,
         d1Databases: { DB: "polychat-e2e" },
         routes: [
-          "http://localhost:8787/__e2e-ready",
-          "http://localhost:8787/__e2e-persona",
-          "http://localhost:8787/__e2e-persona-state*",
+          `${apiBaseUrl}/__e2e-ready`,
+          `${apiBaseUrl}/__e2e-persona`,
+          `${apiBaseUrl}/__e2e-persona-state*`,
         ],
       },
     ],
@@ -1350,13 +1389,13 @@ async function start() {
   );
   const seedMaterial = await createPersonaSeedMaterial();
 
-  runtime = new Miniflare(createRuntimeOptions(apiBundle, trainingBundle, 8787, seedMaterial));
+  runtime = new Miniflare(createRuntimeOptions(apiBundle, trainingBundle, apiPort, seedMaterial));
   await runtime.ready;
   const database = await runtime.getD1Database("DB", "api");
 
   await applyMigrations(database);
   await seedPersonas(database, seedMaterial);
-  console.log("Polychat E2E API ready at http://localhost:8787");
+  console.log(`Polychat E2E API ready at ${apiBaseUrl}`);
 }
 
 async function stop(exitCode = 0) {

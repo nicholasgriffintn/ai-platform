@@ -242,6 +242,7 @@ export interface Conversation {
   created_at?: string;
   updated_at?: string;
   last_message_at?: string;
+  has_branches?: boolean;
   parent_conversation_id?: string;
   parent_message_id?: string;
   project_id?: string | null;

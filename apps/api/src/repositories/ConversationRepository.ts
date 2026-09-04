@@ -87,11 +87,20 @@ export class ConversationRepository extends BaseRepository {
   }
 
   public async getConversation(conversationId: string): Promise<Record<string, unknown> | null> {
-    const { query, values } = this.buildSelectQuery("conversation", {
-      id: conversationId,
-    });
+    const conversation = await this.runQuery<Record<string, unknown>>(
+      `SELECT c.*, EXISTS (
+         SELECT 1 FROM conversation related
+         WHERE (related.id = c.parent_conversation_id OR related.parent_conversation_id = c.id)
+           AND related.id != c.id
+           AND related.project_id IS c.project_id
+           AND (c.project_id IS NOT NULL OR related.user_id = c.user_id)
+       ) AS has_branches
+       FROM conversation c WHERE c.id = ?`,
+      [conversationId],
+      true,
+    );
 
-    return this.runQuery<Record<string, unknown>>(query, values, true);
+    return conversation ? { ...conversation, has_branches: conversation.has_branches === 1 } : null;
   }
 
   public async listConversationBranches(

@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
 
+import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "./apps/app/tests/e2e/support/environment";
+
 const configDir = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ path: path.resolve(configDir, ".env"), quiet: true });
@@ -16,7 +18,7 @@ export default defineConfig({
   testDir: "./apps/app/tests/e2e",
   use: {
     actionTimeout: 10 * 1000,
-    baseURL: "http://localhost:5173",
+    baseURL: E2E_APP_BASE_URL,
     permissions: ["clipboard-read", "clipboard-write"],
     trace: "on-first-retry",
     viewport: { width: 1280, height: 720 },
@@ -26,13 +28,13 @@ export default defineConfig({
   webServer: [
     {
       command: "node apps/app/tests/e2e/runtime/server.mjs",
-      url: "http://localhost:8787/__e2e-ready",
+      url: `${E2E_API_BASE_URL}/__e2e-ready`,
       timeout: 120 * 1000,
       reuseExistingServer: false,
     },
     {
       command: "pnpm --filter @assistant/app serve:e2e",
-      url: "http://localhost:5173/chat",
+      url: `${E2E_APP_BASE_URL}/chat`,
       timeout: 120 * 1000,
       reuseExistingServer: false,
     },

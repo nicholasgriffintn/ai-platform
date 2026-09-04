@@ -8,11 +8,11 @@
 
 ## Verify
 
-- [ ] In Chat and Work on the web, select GPT-6 Astra, open Chat settings, and confirm Processing offers Automatic, Standard, and Fast with the 2× price and EU residency note.
-- [ ] Select Fast, send a message, and confirm the request succeeds and its usage is charged from the provider-reported service tier.
-- [ ] Return Processing to Automatic, send another message, and confirm no explicit `service_tier` is sent.
-- [ ] Select Standard, send another message, and confirm the request uses `service_tier: default`.
-- [ ] Change to a model without Fast support and confirm the Processing selector disappears and the previous choice is cleared.
+- [x] In Chat and Work on the web, select GPT-6 Astra, open Chat settings, and confirm Processing offers Automatic, Standard, and Fast with the 2× price and EU residency note. _(Local release E2Es cover both scopes.)_
+- [x] Select Fast, send a message, and confirm the request succeeds and its usage is charged from the provider-reported service tier. _(Local release E2Es assert Fast reaches the provider boundary; usage extraction and pricing tests assert the response tier controls the rate.)_
+- [x] Return Processing to Automatic, send another message, and confirm no explicit `service_tier` is sent. _(Local release E2E asserts omission at the API and provider boundaries.)_
+- [x] Select Standard, send another message, and confirm the request uses `service_tier: default`. _(Local release E2E asserts the API and provider request.)_
+- [x] Change to a model without Fast support and confirm the Processing selector disappears and the previous choice is cleared. _(Local release E2E switches away and back to verify both states.)_
 - [ ] Repeat the Fast and Automatic checks in the iOS Chat settings sheet.
 - [ ] With a GPT-6 Astra key bound to EU data residency, request Fast and confirm the provider refusal is surfaced as a single failed turn rather than silently reported as Fast.
 

@@ -6,39 +6,62 @@ import { useChat } from "~/hooks/useChat";
 import { getConversationBranches } from "~/lib/api/conversation-branches";
 import { useChatStore } from "~/state/stores/chatStore";
 
-export function ConversationBranchNavigation() {
-  const { currentConversationId, isAuthenticated, setCurrentConversationId } = useChatStore();
-  const conversation = useChat(currentConversationId);
+function BranchPicker({
+  conversationId,
+  userId,
+  onSelect,
+}: {
+  conversationId: string;
+  userId?: number;
+  onSelect: (id: string) => void;
+}) {
   const [open, setOpen] = useState(false);
-  const enabled = Boolean(
-    isAuthenticated && currentConversationId && conversation.data && !conversation.data.isLocalOnly,
-  );
   const query = useQuery({
-    queryKey: ["conversation-branches", currentConversationId],
-    queryFn: () => getConversationBranches(currentConversationId ?? ""),
-    enabled: enabled && open,
-    staleTime: 0,
+    queryKey: ["conversation-branches", userId, conversationId],
+    queryFn: () => getConversationBranches(conversationId),
+    enabled: open,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
-
-  if (!enabled || !currentConversationId) {
-    return null;
-  }
 
   return (
     <ConversationBranchesButton
       open={open}
       onOpenChange={setOpen}
-      currentId={currentConversationId}
+      currentId={conversationId}
       data={query.data}
-      isLoading={query.isFetching}
+      isLoading={query.isFetching && !query.data}
       errorMessage={query.error?.message}
       onRetry={() => {
         void query.refetch();
       }}
       onSelect={(id) => {
         setOpen(false);
-        setCurrentConversationId(id);
+        onSelect(id);
       }}
+    />
+  );
+}
+
+export function ConversationBranchNavigation() {
+  const { currentConversationId, isAuthenticated, user, setCurrentConversationId } = useChatStore();
+  const { data: conversation } = useChat(currentConversationId);
+
+  if (
+    !isAuthenticated ||
+    !currentConversationId ||
+    !conversation?.has_branches ||
+    conversation.isLocalOnly
+  ) {
+    return null;
+  }
+
+  return (
+    <BranchPicker
+      key={`${user?.id}:${currentConversationId}`}
+      conversationId={currentConversationId}
+      userId={user?.id}
+      onSelect={setCurrentConversationId}
     />
   );
 }

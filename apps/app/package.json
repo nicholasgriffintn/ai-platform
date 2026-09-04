@@ -16,7 +16,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "pnpm oxlint",
-    "serve:e2e": "wrangler dev --config tests/e2e/runtime/app-wrangler.jsonc --env-file tests/e2e/runtime/app.env --port 5173 --log-level warn",
+    "serve:e2e": "wrangler dev --config tests/e2e/runtime/app-wrangler.jsonc --env-file tests/e2e/runtime/app.env --port ${POLYCHAT_E2E_APP_PORT:-5173} --log-level warn",
     "start": "wrangler dev",
     "sync": "npx cap sync",
     "test": "vitest run",

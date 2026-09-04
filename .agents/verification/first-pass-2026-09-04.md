@@ -26,7 +26,7 @@ The local release suite runs the built web app against the real bundled API Work
 | `2026-08-31-server-managed-tool-selection.md` | 0/6 | Judge automatic discovery and multi-tool ordering, verify explicit API lists and repeat on iOS. Hosted-tool submission has baseline E2E coverage. |
 | `2026-08-31-shieldstral-guardrails.md` | 0/6 | Audit stored production values and exercise configured/unconfigured live guardrail providers and reversal. |
 | `2026-08-31-team-agents-retired.md` | 3/7 | Preserve the pre-migration team inventory, confirm agent survival, rebuild required flows and clear legacy stage permissions. |
-| `2026-08-31-turn-reliability-and-performance.md` | 0/9 | Stress long streams, stop/reload/background behaviour, atomic replacement, large history, compaction and concurrent turns. Ordinary edit/retry/history journeys have baseline E2E coverage. |
+| `2026-08-31-turn-reliability-and-performance.md` | 2/10 | E2E covers switching away and full browser restart during a stream, including partial restoration and final reconciliation. Stress long streams, stop/reload behaviour, atomic replacement, large history, compaction and concurrent turns remain for manual review. |
 | `2026-08-31-usage-enforcement-and-billing-state.md` | 6/15 | Exercise enterprise rank, Stripe lifecycle/idempotency, Analytics Engine queries and price-drift logs. Anonymous concurrency and audio boundaries are locally covered. |
 | `2026-08-31-usage-metering-ledger.md` | 4/13 | Inspect the migration, prompt caching, ensembles/panels, failed-batch idempotency, monthly live refresh, iOS decoding and real-rate scale. |
 | `2026-09-01-billing-and-pricing-surfaces.md` | 3/7 | Exercise unavailable/configured Stripe controls, dismiss/reload banner behaviour and signed-in pricing CTA state. |
@@ -40,9 +40,12 @@ The local release suite runs the built web app against the real bundled API Work
 | `2026-09-02-account-tasks-hide-credit-accounting.md` | 2/4 | Trigger a real memory synthesis and inspect internal roll-up task persistence. |
 | `2026-09-02-connector-oauth-popup-completion.md` | 2/7 | Exercise real cross-site consent, manual close/wait states and deployed callback headers. The popup message path is covered against the Composio boundary double. |
 | `2026-09-02-new-conversation-appears-in-sidebar.md` | 3/4 | Stress several near-simultaneous creations during a cold history load. Warm-cache insertion/refetch behaviour is covered. |
+| `2026-09-04-branch-picker.md` | 1/3 | E2E covers the hidden unbranched state without a branches request, then creates a branch and navigates the family. Confirm picker reset and responsive visual alignment manually. |
 | `2026-09-04-conversation-branches.md` | 3/5 | Exercise cross-member Work branches and the visible Retry state for a failed branch request. |
+| `2026-09-04-fast-mode-selector.md` | 5/7 | Repeat Fast and Automatic in the iOS settings sheet, then exercise the real Astra EU-residency refusal. Web Chat/Work and the provider request, response-tier extraction and pricing boundaries are covered locally. |
 | `2026-09-04-openai-astra-model-support.md` | 0/7 | Exercise Astra in Work and the advanced Responses/function/cache/long-context contracts with an enabled live OpenAI account. Local Chat covers multimodal streaming, low/max effort, selector bounds and unsupported field omission. |
 | `2026-09-04-project-routing-preference.md` | 5/7 | Inspect the selected model and resume behaviour for saved Lite and ordinary Auto pools. Persistence, explicit overrides, templates, authorisation and personal isolation are covered. |
+| `2026-09-04-tool-result-compaction.md` | 2/2 | No manual gap remains in this item; provider projection, stored history and edge cases are covered by the API integration suite. |
 | `2026-09-04-workspace-usage.md` | 5/6 | Remove an administrator after they load Governance, then refresh and confirm cached spend disappears. |
 
 ## Review rule

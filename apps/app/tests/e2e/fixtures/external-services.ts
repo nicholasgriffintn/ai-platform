@@ -1,5 +1,7 @@
 import type { Page } from "@playwright/test";
 
+import { E2E_API_BASE_URL } from "../support/environment";
+
 const ONE_PIXEL_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
   "base64",
@@ -43,7 +45,7 @@ export class ExternalServices {
       await route.fulfill({
         status: 302,
         headers: {
-          location: `http://localhost:8787/apps/connectors/composio/verify?status=success&connected_account_id=${encodeURIComponent(accountId)}`,
+          location: `${E2E_API_BASE_URL}/apps/connectors/composio/verify?status=success&connected_account_id=${encodeURIComponent(accountId)}`,
         },
       });
     });

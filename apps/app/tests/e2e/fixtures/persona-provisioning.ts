@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
 
+import { E2E_API_BASE_URL } from "../support/environment";
+
 export type Persona = "logged-out" | "free" | "pro";
 export type AuthenticatedPersona = Exclude<Persona, "logged-out">;
 
@@ -29,7 +31,7 @@ export interface BillingSeed {
   ledger?: UsageLedgerSeed[];
 }
 
-const PERSONA_ENDPOINT = "http://localhost:8787/__e2e-persona";
+const PERSONA_ENDPOINT = `${E2E_API_BASE_URL}/__e2e-persona`;
 
 export function personaIdentity(seed: string) {
   return createHash("sha256").update(seed).digest("hex");

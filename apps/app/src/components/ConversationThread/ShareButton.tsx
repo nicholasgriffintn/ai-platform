@@ -25,7 +25,7 @@ export const ShareButton = ({
       onShare={async (id) => apiService.shareConversation(id)}
       onUnshare={async (id) => apiService.unshareConversation(id)}
       getShareUrl={(shareId) => `${window.location.origin}/s/${shareId}`}
-      collapseLabel={compactOnMobile}
+      collapseLabel={compactOnMobile ? "container" : false}
       className={className}
     />
   );

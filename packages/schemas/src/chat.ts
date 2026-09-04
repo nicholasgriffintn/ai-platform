@@ -186,6 +186,7 @@ export const getSharedConversationParamsSchema = z.object({
 
 export const getChatCompletionResponseSchema = z.object({
   id: z.string(),
+  has_branches: z.boolean().optional(),
   type: conversationTypeSchema,
   title: z.string().nullable(),
   created_at: z.string(),

@@ -61,12 +61,10 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
         localScope: getLocalChatScope(user?.id),
       });
 
-      if (isLocalOnly) {
-        await localChatService.saveLocalChat({
-          ...updatedConversation,
-          isLocalOnly: true,
-        });
-      }
+      await localChatService.saveLocalChat({
+        ...updatedConversation,
+        isLocalOnly,
+      });
     },
     [queryClient, determineStorageMode, requestOptions?.options?.recipe, user?.id],
   );

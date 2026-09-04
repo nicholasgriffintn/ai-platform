@@ -66,7 +66,7 @@ export function ProductModeHeader({
         showProductModeSwitch ? (
           <ProductModeSwitch
             activeMode={pathname.startsWith("/work") ? "work" : "chat"}
-            className="w-auto shrink-0 sm:w-44 sm:justify-self-center"
+            className="w-auto shrink-0 @min-[40rem]:w-44"
             destinations={{ chat: "/chat", work: "/work" }}
           />
         ) : null

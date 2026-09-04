@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
+import { E2E_API_BASE_URL } from "../support/environment";
 import { BasePage } from "./BasePage";
 
 export interface AgentModelSettings {
@@ -54,7 +55,7 @@ export class CapabilitiesPage extends BasePage {
   }
 
   async legacyTeamEndpointStatus() {
-    return (await this.page.request.get("http://localhost:8787/agents/teams")).status();
+    return (await this.page.request.get(`${E2E_API_BASE_URL}/agents/teams`)).status();
   }
 
   async startNewAgent() {

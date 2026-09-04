@@ -57,7 +57,7 @@ export function ConversationList({
                   data-id={conversation.id}
                   isActive={isConversationRoute && activeConversationId === conversation.id}
                   badge={
-                    <>
+                    <span className="inline-flex items-center gap-1">
                       {conversation.isStreaming && (
                         <LoaderCircle
                           size={16}
@@ -74,7 +74,7 @@ export function ConversationList({
                       )}
                       {(conversation.isLocalOnly || localOnlyMode) && (
                         <span className="text-xs text-blue-500 dark:text-blue-400 inline-flex items-center">
-                          <CloudOff size={14} className="mr-1" />
+                          <CloudOff size={14} />
                           <span className="sr-only">Local only</span>
                         </span>
                       )}
@@ -89,10 +89,10 @@ export function ConversationList({
                             onSelect(conversation.parentConversationId ?? undefined);
                           }}
                         >
-                          <GitBranch size={14} className="mr-1" />
+                          <GitBranch size={14} />
                         </button>
                       )}
-                    </>
+                    </span>
                   }
                   label={
                     <span data-dynamic-copy="">{conversation.title || "New conversation"}</span>

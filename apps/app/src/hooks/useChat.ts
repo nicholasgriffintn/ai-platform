@@ -138,7 +138,10 @@ export function useChat(completion_id: string | undefined) {
           markConversationRemoteAvailable(completion_id);
         }
 
-        return preserveOptimisticMessages(remoteChat || localChat, getCachedConversation());
+        return preserveOptimisticMessages(
+          remoteChat || localChat,
+          getCachedConversation() || localChat,
+        );
       } catch (error) {
         if (error instanceof ApiError || !localChat) {
           throw error;
@@ -159,15 +162,7 @@ export function useChat(completion_id: string | undefined) {
         return false;
       }
 
-      const pendingMessages = data.messages.filter((message) => {
-        if (message.status !== "in_progress") {
-          return false;
-        }
-
-        const asyncInvocation = message.data?.asyncInvocation;
-
-        return Boolean(asyncInvocation?.provider);
-      });
+      const pendingMessages = data.messages.filter((message) => message.status === "in_progress");
 
       if (!pendingMessages.length) {
         return false;

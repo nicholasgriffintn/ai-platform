@@ -75,6 +75,14 @@
       display: inline;
     }
   }
+  @container (width < 40rem) {
+    .polychat-navigation-header-center .polychat-navigation-mode-control {
+      gap: 0;
+    }
+    .polychat-navigation-header-center .polychat-navigation-mode-label {
+      display: none;
+    }
+  }
   .dark .polychat-navigation-mode-switch,
   [data-polychat-theme="dark"] .polychat-navigation-mode-switch {
     background: #27272a;

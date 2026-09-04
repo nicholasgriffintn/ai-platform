@@ -34,7 +34,7 @@ export function AgentTraceButton({ entries, compactOnMobile = false }: AgentTrac
         <Button
           variant="ghost"
           size="sm"
-          collapseLabel={compactOnMobile}
+          collapseLabel={compactOnMobile ? "container" : false}
           className="flex-shrink-0 text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
           title="View conversation trace"
           aria-label="View conversation trace"

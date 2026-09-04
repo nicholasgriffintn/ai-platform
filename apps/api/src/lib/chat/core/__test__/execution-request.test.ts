@@ -66,6 +66,14 @@ describe("createChatExecutionRequest", () => {
     });
   });
 
+  it("preserves an explicit provider service tier", () => {
+    const input = createInput();
+
+    input.chatOptions.service_tier = "fast";
+
+    expect(createChatExecutionRequest(input).providerRequest().service_tier).toBe("fast");
+  });
+
   it("uses the prepared server-authoritative request options downstream", () => {
     const input = createInput();
 

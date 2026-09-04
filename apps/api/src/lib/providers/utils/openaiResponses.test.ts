@@ -180,6 +180,15 @@ describe("current OpenAI model capabilities", () => {
     expect(openaiModelConfig["gpt-5.5"].supportedServiceTiers).toBeUndefined();
   });
 
+  it("forwards the selected service tier to the Responses API", () => {
+    const body = buildOpenAIResponsesBody(
+      { ...baseParams, service_tier: "fast" },
+      openaiModelConfig["gpt-6-astra"],
+    );
+
+    expect(body.service_tier).toBe("fast");
+  });
+
   it("keeps pro-model hosted tool restrictions accurate", () => {
     expect(openaiModelConfig["gpt-5.4-pro"]).toMatchObject({
       supportsCodeExecution: false,

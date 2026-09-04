@@ -147,6 +147,32 @@ describe("handleCreateChatCompletions", () => {
         }),
       );
     });
+
+    it("preserves an explicit provider service tier", async () => {
+      mockProcessChatRequest.mockResolvedValue({
+        response: { response: "Hello!" },
+        selectedModel: "gpt-6-astra",
+      });
+      mockFormatAssistantMessage.mockReturnValue({
+        content: "Hello!",
+        model: "gpt-6-astra",
+        finish_reason: "stop",
+      });
+
+      await handleCreateChatCompletions({
+        env: mockEnv,
+        request: {
+          messages: [{ role: "user", content: "Hello" }],
+          model: "gpt-6-astra",
+          service_tier: "fast",
+        },
+        user: mockUser,
+      });
+
+      expect(mockProcessChatRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ service_tier: "fast" }),
+      );
+    });
   });
 
   describe("connector approval continuation", () => {

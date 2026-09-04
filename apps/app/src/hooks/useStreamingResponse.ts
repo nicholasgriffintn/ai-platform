@@ -129,12 +129,10 @@ export function useStreamingResponse(
       const assistantMessageData = options?.assistantMessageData;
       let shouldRefreshStoredConversation = false;
 
-      const placeholderMessage = await addAssistantMessage(
-        conversationId,
-        "",
-        undefined,
-        assistantMessageData,
-      );
+      const placeholderMessage = await addAssistantMessage(conversationId, "", undefined, {
+        ...assistantMessageData,
+        status: "in_progress",
+      });
       let activeAssistantMessage: Message | undefined = placeholderMessage;
       let activeAssistantMessagePromise: Promise<Message> | null =
         Promise.resolve(placeholderMessage);
@@ -252,6 +250,7 @@ export function useStreamingResponse(
           const updatedAssistantMessage = withAssistantMessageData({
             ...assistantMessage,
             content,
+            status: "in_progress",
           });
 
           pendingMessageTasks.push(

@@ -262,6 +262,14 @@ export function useConversationActions(
         }
 
         await updateConversation(newConversationId, () => branchConversation);
+        queryClient.setQueryData<Conversation>(
+          [CHATS_QUERY_KEY, currentConversationId],
+          (parent) => (parent && shouldStore ? { ...parent, has_branches: true } : parent),
+        );
+        void queryClient.invalidateQueries({
+          queryKey: ["conversation-branches"],
+          refetchType: "none",
+        });
         setCurrentConversationId(newConversationId);
 
         if (branchPoint.shouldGenerateResponse) {

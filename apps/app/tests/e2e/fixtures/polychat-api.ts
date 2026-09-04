@@ -12,8 +12,10 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import type { APIRequestContext, APIResponse } from "@playwright/test";
 
-const API_BASE_URL = "http://localhost:8787";
-const BROWSER_REQUEST_HEADERS = { origin: "http://localhost:5173" };
+import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
+
+const API_BASE_URL = E2E_API_BASE_URL;
+const BROWSER_REQUEST_HEADERS = { origin: E2E_APP_BASE_URL };
 
 async function requireSuccessfulResponse(response: APIResponse, operation: string): Promise<void> {
   if (response.ok()) {

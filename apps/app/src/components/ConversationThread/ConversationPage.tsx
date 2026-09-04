@@ -28,7 +28,7 @@ export function ConversationPage({
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {!embedded && <ConversationProductHeader />}
       {embedded && (
-        <div className="flex justify-end px-3">
+        <div className="@container flex justify-end px-3">
           <ConversationBranchNavigation />
         </div>
       )}

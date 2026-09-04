@@ -11,7 +11,8 @@
 - [ ] Send a long streaming response. Confirm text arrives smoothly, code blocks are highlighted where the language is known, and nothing is dropped or duplicated at the end.
 - [ ] Paste a code block with no language marker. Confirm it renders plainly rather than breaking — autodetection is gone on purpose.
 - [ ] Press stop mid-response on the web. Confirm the response stops, the partial message is kept, and reloading shows the same partial content rather than a fuller or emptier one.
-- [ ] Close the tab mid-response, then reopen the conversation. Confirm the turn either completed in the background or was truncated cleanly, with no duplicate assistant message.
+- [x] Switch to a new conversation mid-response, then return. Confirm the conversation opens with the response data received so far and continues to completion if the turn is still streaming, with no missing or duplicate assistant message.
+- [x] Close the tab or browser mid-response, then reopen the conversation. Confirm it opens with the response data received so far and continues to completion if the turn is still streaming, with no missing or duplicate assistant message.
 - [ ] Do the same on iOS with the new build.
 - [ ] Edit or regenerate a message in a long conversation. Confirm the replacement is atomic — no window where the conversation shows both versions or neither.
 - [ ] Open the conversation list with your largest account and note the load time. It should be no slower than before, and ideally faster.

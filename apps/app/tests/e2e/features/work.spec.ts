@@ -273,6 +273,30 @@ test.describe("Work experience", () => {
       });
     });
 
+    test("offers Fast processing inside a Work conversation", async ({ homePage, workPage }) => {
+      await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+      const projectId = workPage.currentProjectId();
+
+      await workPage.openNewProjectConversation();
+      await homePage.selectModel("GPT-6 Astra");
+      const settings = await homePage.openChatSettings();
+
+      await expect(settings.getByLabel("Processing", { exact: true })).toHaveValue("auto");
+      await expect(settings).toContainText("Fast (2×)");
+      await settings.getByRole("button", { name: "Done", exact: true }).click();
+      await homePage.configureProcessingTier("fast");
+      const request = await homePage.sendMessageAndRequireCompletion(
+        "Use Fast processing in this Work conversation",
+      );
+
+      expect(request).toMatchObject({
+        service_tier: "fast",
+        metadata: { project_id: projectId },
+      });
+      await homePage.waitForChatResponse(0);
+      await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+    });
+
     test("submits saved Auto routing while explicit tiers and models remain authoritative", async ({
       homePage,
       polychatApi,

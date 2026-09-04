@@ -20,12 +20,12 @@ export function ProductHeaderShell({
     <header
       ref={headerRef}
       data-content-scrolled={isScrolled || undefined}
-      className="relative z-20 flex h-[53px] shrink-0 items-center gap-1 bg-off-white px-2 dark:bg-zinc-900 min-[769px]:px-4 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-2"
+      className="@container relative z-20 grid h-[53px] shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(max-content,1fr)] items-center gap-1 bg-off-white px-2 dark:bg-zinc-900 min-[769px]:px-4 sm:gap-2"
     >
       <div className="flex min-w-0 flex-1 items-center gap-1 sm:justify-self-stretch sm:gap-2">
         {start}
       </div>
-      <div className="flex justify-center">{center}</div>
+      <div className="polychat-navigation-header-center flex justify-center">{center}</div>
       <div className="flex min-w-0 items-center justify-end sm:justify-self-end">{end}</div>
       <div
         aria-hidden="true"

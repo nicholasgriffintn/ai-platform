@@ -51,7 +51,7 @@ const getOriginHost = (origin: string) => {
   }
 };
 
-const isAllowedOrigin = (origin: string, environment: string) => {
+const isAllowedOrigin = (origin: string, environment: string, appBaseUrl?: string) => {
   const host = getOriginHost(origin);
 
   if (!host) {
@@ -63,17 +63,19 @@ const isAllowedOrigin = (origin: string, environment: string) => {
   }
 
   if (environment === "development") {
-    return host === LOCAL_HOST || host === METRICS_LOCAL_HOST;
+    const configuredAppHost = appBaseUrl ? getOriginHost(appBaseUrl) : "";
+
+    return host === LOCAL_HOST || host === configuredAppHost || host === METRICS_LOCAL_HOST;
   }
 
   return false;
 };
 
 const corsOrigin = (origin: string, c: Context) =>
-  origin && isAllowedOrigin(origin, c.env.ENV) ? origin : "";
+  origin && isAllowedOrigin(origin, c.env.ENV, c.env.APP_BASE_URL) ? origin : "";
 
 const csrfOrigin = (origin: string, c: Context) =>
-  Boolean(origin && isAllowedOrigin(origin, c.env.ENV));
+  Boolean(origin && isAllowedOrigin(origin, c.env.ENV, c.env.APP_BASE_URL));
 
 const csrfMiddleware = csrf({
   origin: csrfOrigin,

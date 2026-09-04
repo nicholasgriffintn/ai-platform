@@ -8,7 +8,7 @@
 
 ## Verify
 
-- [ ] Run a chat turn that returns formatted JSON from a tool. Confirm the model receives compact JSON and completes the turn, while the stored tool result retains its original content.
-- [ ] Confirm JSON string whitespace and tool-call identifiers remain intact, and malformed or mixed-media results remain unchanged.
+- [x] Run a chat turn that returns formatted JSON from a tool. Confirm the model receives compact JSON and completes the turn, while the stored tool result retains its original content. _(The provider-mapping integration suite verifies the provider projection and the unchanged stored message.)_
+- [x] Confirm JSON string whitespace and tool-call identifiers remain intact, and malformed or mixed-media results remain unchanged. _(The provider-mapping integration suite covers numeric lexemes, duplicate keys, escaped strings, identifiers, malformed JSON, text, oversized values and mixed media.)_
 
 **Stop and report if:** values, stored history, or tool-call continuation change.

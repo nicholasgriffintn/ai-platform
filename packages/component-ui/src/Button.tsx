@@ -16,7 +16,7 @@ export type ButtonVariant =
 
 export type ButtonSize = "xs" | "sm" | "md" | "lg" | "icon";
 
-export type ButtonCollapseBreakpoint = "sm" | "xl";
+export type ButtonCollapseBreakpoint = "sm" | "xl" | "container";
 
 export type ButtonCollapse = boolean | ButtonCollapseBreakpoint;
 
@@ -75,6 +75,13 @@ const iconSizeStyles: Record<ButtonSize, string> = {
 };
 
 const collapsedSizeStyles: Record<ButtonCollapseBreakpoint, Record<ButtonSize, string>> = {
+  container: {
+    xs: "min-h-7 min-w-7 p-1 text-xs @min-[40rem]:min-w-0 @min-[40rem]:px-2 @min-[40rem]:py-1",
+    sm: "min-h-8 min-w-8 p-1.5 text-sm @min-[40rem]:min-w-0 @min-[40rem]:px-3 @min-[40rem]:py-1.5",
+    md: "min-h-9 min-w-9 p-2 text-sm @min-[40rem]:min-w-0 @min-[40rem]:px-4 @min-[40rem]:py-2",
+    lg: "min-h-10 min-w-10 p-2.5 text-base @min-[40rem]:min-w-0 @min-[40rem]:px-5 @min-[40rem]:py-2.5",
+    icon: "min-h-9 min-w-9 p-2",
+  },
   sm: {
     xs: "min-h-7 min-w-7 p-1 text-xs sm:min-w-0 sm:px-2 sm:py-1",
     sm: "min-h-8 min-w-8 p-1.5 text-sm sm:min-w-0 sm:px-3 sm:py-1.5",
@@ -92,6 +99,7 @@ const collapsedSizeStyles: Record<ButtonCollapseBreakpoint, Record<ButtonSize, s
 };
 
 const collapsedLabelStyles: Record<ButtonCollapseBreakpoint, string> = {
+  container: "hidden @min-[40rem]:inline",
   sm: "hidden sm:inline",
   xl: "hidden xl:inline",
 };

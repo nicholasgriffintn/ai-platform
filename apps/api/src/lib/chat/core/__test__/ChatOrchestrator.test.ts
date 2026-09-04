@@ -292,6 +292,26 @@ describe("ChatOrchestrator", () => {
         });
       });
 
+      it("preserves an explicit provider service tier through orchestration", async () => {
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
+
+        const result = await orchestrator.process({
+          ...mockOptions,
+          service_tier: "fast",
+          stream: true,
+        });
+
+        if (!("stream" in result)) {
+          throw new Error("Expected streamed result");
+        }
+
+        await readStream(result.stream);
+
+        expect(mockGetAIResponse).toHaveBeenCalledWith(
+          expect.objectContaining({ service_tier: "fast" }),
+        );
+      });
+
       it("returns the compaction marker for non-streaming automatic compaction", async () => {
         const compactionMessage = {
           id: "snapshot-1-compaction",

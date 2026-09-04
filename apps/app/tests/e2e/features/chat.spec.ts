@@ -1,6 +1,8 @@
 import { PolychatApi } from "../fixtures/polychat-api";
 import { expect, provisionPersonaSession, test } from "../fixtures/polychat-test";
 import { createSilentWavFixture, TEXT_MESSAGE_CASES } from "../fixtures/test-data";
+import { HomePage } from "../page-objects";
+import { E2E_APP_BASE_URL } from "../support/environment";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
 const TEXT_MODEL = "GPT OSS 120B";
@@ -399,6 +401,52 @@ test.describe("Response controls as pro", () => {
     await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
   });
 
+  test("sends explicit Fast and Standard processing while Automatic stays implicit", async ({
+    homePage,
+    page,
+  }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT-6 Astra");
+    const settings = await homePage.openChatSettings();
+    const processing = settings.getByLabel("Processing", { exact: true });
+
+    await expect(processing.locator("option")).toHaveText(["Automatic", "Standard", "Fast (2×)"]);
+    await expect(settings).toContainText("unavailable for Astra with EU data residency");
+    await settings.getByRole("button", { name: "Done", exact: true }).click();
+
+    await homePage.configureProcessingTier("fast");
+    const fastRequest = await homePage.sendMessageAndRequireCompletion(
+      "Use Fast processing for this release check",
+    );
+
+    expect(fastRequest.service_tier).toBe("fast");
+    await homePage.waitForChatResponse(0);
+
+    await homePage.configureProcessingTier("auto");
+    const automaticRequest = await homePage.sendMessageAndRequireCompletion(
+      "Use Automatic processing for this release check",
+    );
+
+    expect(automaticRequest.service_tier).toBeUndefined();
+    await homePage.waitForChatResponse(1);
+
+    await homePage.configureProcessingTier("default");
+    const standardRequest = await homePage.sendMessageAndRequireCompletion(
+      "Use Standard processing for this release check",
+    );
+
+    expect(standardRequest.service_tier).toBe("default");
+    await homePage.waitForChatResponse(2);
+
+    await homePage.selectModel(TEXT_MODEL);
+    await expect((await homePage.openChatSettings()).getByLabel("Processing")).toHaveCount(0);
+    await page.getByRole("button", { name: "Done", exact: true }).click();
+    await homePage.selectModel("GPT-6 Astra");
+    await expect(
+      (await homePage.openChatSettings()).getByLabel("Processing", { exact: true }),
+    ).toHaveValue("auto");
+  });
+
   test("enables a hosted tool for a message", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
     await homePage.selectModel("GPT-5.4");
@@ -568,12 +616,101 @@ test.describe("Pro message attachments", () => {
     });
   });
 
+  test("continues a streaming conversation after switching away and returning", async ({
+    homePage,
+    page,
+  }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+    const request = await homePage.sendMessageAndRequireCompletion(
+      "Recover this interrupted stream after switching conversations",
+    );
+    const completionId = homePage.completionIdFromRequest(request);
+
+    await expect(homePage.getLatestAssistantMessage()).toContainText("recovery data so far");
+    await homePage.startNewChat();
+    await expect(page).toHaveURL(/\/chat$/);
+    await homePage.openConversation(/Recover this interrupted stream|Release validation chat/);
+    await expect(page).toHaveURL(new RegExp(`/chat/${completionId}$`));
+    await expect(homePage.getLatestAssistantMessage()).toContainText("recovery data so far");
+    await expect(homePage.getLatestAssistantMessage()).toContainText(
+      "the interrupted stream completed",
+      { timeout: 10_000 },
+    );
+  });
+
+  test("continues a streaming conversation after the browser closes and returns", async ({
+    browser,
+  }, testInfo) => {
+    const persona = await provisionPersonaSession(
+      "pro",
+      `${testInfo.testId}:browser-recovery:${testInfo.retry}`,
+    );
+    const firstContext = await browser.newContext({ baseURL: E2E_APP_BASE_URL });
+
+    await firstContext.addCookies([
+      {
+        name: "session",
+        value: persona.sessionToken,
+        domain: "localhost",
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax",
+        secure: false,
+      },
+    ]);
+
+    const firstPage = await firstContext.newPage();
+    const firstHomePage = new HomePage(firstPage);
+
+    await firstHomePage.navigate("/chat");
+    await firstHomePage.selectModel(TEXT_MODEL);
+    const request = await firstHomePage.sendMessageAndRequireCompletion(
+      "Recover this interrupted stream after closing the browser",
+    );
+    const completionId = firstHomePage.completionIdFromRequest(request);
+
+    await expect(firstHomePage.getLatestAssistantMessage()).toContainText("recovery data so far");
+    const storageState = await firstContext.storageState({ indexedDB: true });
+
+    await firstContext.close();
+
+    const returnedContext = await browser.newContext({
+      baseURL: E2E_APP_BASE_URL,
+      storageState,
+    });
+
+    try {
+      const returnedPage = await returnedContext.newPage();
+      const returnedHomePage = new HomePage(returnedPage);
+
+      await returnedHomePage.navigate(`/chat/${completionId}`);
+      await expect(returnedHomePage.getLatestAssistantMessage()).toContainText(
+        "recovery data so far",
+      );
+      await expect(returnedHomePage.getLatestAssistantMessage()).toContainText(
+        "the interrupted stream completed",
+        { timeout: 25_000 },
+      );
+    } finally {
+      await returnedContext.close();
+    }
+  });
+
   test("shares, unshares and navigates a conversation branch family", async ({
     browser,
     homePage,
     page,
     polychatApi,
   }, testInfo) => {
+    const branchRequests: string[] = [];
+
+    page.on("request", (request) => {
+      if (new URL(request.url()).pathname.endsWith("/branches")) {
+        branchRequests.push(request.url());
+      }
+    });
+
     await homePage.navigate("/chat");
     await homePage.selectModel(TEXT_MODEL);
     const parentRequest = await homePage.sendMessageAndRequireCompletion(
@@ -582,6 +719,9 @@ test.describe("Pro message attachments", () => {
 
     await homePage.waitForChatResponse(0);
     const parentId = homePage.completionIdFromRequest(parentRequest);
+
+    await expect(page.getByRole("button", { name: "Browse conversation branches" })).toHaveCount(0);
+    expect(branchRequests).toHaveLength(0);
 
     await homePage.shareConversation();
     await expect(page.getByLabel("Share link")).toHaveValue(/\/s\//);
@@ -623,9 +763,8 @@ test.describe("Pro message attachments", () => {
     await expect(homePage.conversationBranch("Release branch child")).toContainText("Archived");
     await homePage.selectConversationBranch("Release branch child");
     await homePage.openConversationBranches();
-    await expect(homePage.conversationBranch("Release branch child")).toContainText(
-      "Archived · Current",
-    );
+    await expect(homePage.conversationBranch("Release branch child")).toContainText("Archived");
+    await expect(homePage.conversationBranch("Release branch child")).toContainText("Current");
     await homePage.selectConversationBranch("Release branch parent");
     await homePage.openConversationBranches();
     await expect(homePage.conversationBranch("Release branch parent")).toContainText("Current");

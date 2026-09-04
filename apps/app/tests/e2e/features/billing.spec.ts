@@ -4,6 +4,7 @@ import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
 import { PolychatApi } from "../fixtures/polychat-api";
 import type { UsageLedgerSeed } from "../fixtures/polychat-test";
 import { expect, provisionPersonaSession, test } from "../fixtures/polychat-test";
+import { E2E_APP_BASE_URL } from "../support/environment";
 
 const MODEL = "GPT OSS 120B";
 
@@ -250,15 +251,15 @@ test.describe("Credit billing", () => {
         await polychatApi.checkoutStatus({
           planId: "pro",
           successUrl: "https://localhost.evil.example/success",
-          cancelUrl: "http://localhost:5173/pricing",
+          cancelUrl: `${E2E_APP_BASE_URL}/pricing`,
         }),
       ).toBe(400);
 
       await expect(
         polychatApi.createCheckoutSession({
           planId: "pro",
-          successUrl: "http://localhost:5173/profile?tab=billing",
-          cancelUrl: "http://localhost:5173/pricing",
+          successUrl: `${E2E_APP_BASE_URL}/profile?tab=billing`,
+          cancelUrl: `${E2E_APP_BASE_URL}/pricing`,
         }),
       ).resolves.toEqual({
         session_id: "cs_e2e_pro",
@@ -392,7 +393,7 @@ test.describe("Credit billing", () => {
         await polychatApi.billingPortalStatus("https://localhost.evil.example/profile?tab=billing"),
       ).toBe(400);
       await expect(
-        polychatApi.createBillingPortalSession("http://localhost:5173/profile?tab=billing"),
+        polychatApi.createBillingPortalSession(`${E2E_APP_BASE_URL}/profile?tab=billing`),
       ).resolves.toEqual({ url: "https://billing.stripe.com/p/session/bps_e2e_pro" });
     });
 

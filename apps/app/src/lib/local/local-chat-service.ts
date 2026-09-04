@@ -154,7 +154,7 @@ class LocalChatService {
   public async saveLocalChat(chat: Conversation): Promise<void> {
     const chatWithFlag = {
       ...chat,
-      isLocalOnly: true,
+      isLocalOnly: chat.isLocalOnly ?? true,
       localOwnerScope: this.getCurrentScope(),
       parent_conversation_id: chat.parent_conversation_id,
       parent_message_id: chat.parent_message_id,

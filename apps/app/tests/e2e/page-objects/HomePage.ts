@@ -725,9 +725,25 @@ export class HomePage extends BasePage {
     await selectedVerbosity.waitFor();
   }
 
-  async configureDetailedGenerationSettings() {
+  async openChatSettings() {
     await this.page.getByRole("button", { name: "Open chat settings" }).click();
     const settings = this.page.getByRole("dialog", { name: "Chat settings" });
+
+    await settings.waitFor();
+
+    return settings;
+  }
+
+  async configureProcessingTier(tier: "auto" | "default" | "fast") {
+    const settings = await this.openChatSettings();
+
+    await settings.getByLabel("Processing", { exact: true }).selectOption(tier);
+    await settings.getByRole("button", { name: "Done", exact: true }).click();
+    await settings.waitFor({ state: "hidden" });
+  }
+
+  async configureDetailedGenerationSettings() {
+    const settings = await this.openChatSettings();
 
     await settings.getByLabel("Temperature", { exact: true }).fill("0.4");
     await settings.getByRole("tab", { name: "Advanced", exact: true }).click();

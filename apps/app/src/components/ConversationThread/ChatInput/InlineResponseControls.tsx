@@ -1,4 +1,5 @@
 import { InlineSettingSelect } from "@ngriffin_uk/polychat-component-conversation";
+import { ShortcutTooltip, Toggle } from "@ngriffin_uk/polychat-component-ui";
 import {
   formatVerbosityLabel,
   getDefaultVerbosity,
@@ -11,7 +12,7 @@ import {
   getDefaultReasoningEffort,
   getReasoningOptions,
 } from "@ngriffin_uk/polychat-schemas";
-import { Brain, ListFilter } from "lucide-react";
+import { Brain, ListFilter, Zap } from "lucide-react";
 import { useMemo } from "react";
 
 import { useModels } from "~/hooks/useModels";
@@ -40,6 +41,10 @@ export function InlineResponseControls({ isDisabled = false }: InlineResponseCon
 
   const selectedReasoning = chatSettings.reasoning?.effort ?? "";
   const selectedVerbosity = chatSettings.verbosity ?? "";
+  const supportsFastProcessing =
+    selectedModelConfig?.supportedServiceTiers?.includes("fast") ?? false;
+  const isFastProcessing = chatSettings.service_tier === "fast";
+  const fastTierMultiplier = selectedModelConfig?.serviceTierMultipliers?.fast;
 
   const updateChatSettings = (settings: ChatSettings) => {
     setChatSettings(settings);
@@ -73,6 +78,28 @@ export function InlineResponseControls({ isDisabled = false }: InlineResponseCon
 
   return (
     <div className="flex flex-shrink-0 items-center gap-1">
+      {supportsFastProcessing && (
+        <ShortcutTooltip
+          keys={[]}
+          label={`Fast processing${fastTierMultiplier ? ` (${fastTierMultiplier}× usage)` : ""}`}
+        >
+          <Toggle
+            size="sm"
+            pressed={isFastProcessing}
+            disabled={isDisabled}
+            aria-label="Fast processing"
+            onPressedChange={(pressed) => {
+              updateChatSettings({
+                ...chatSettings,
+                service_tier: pressed ? "fast" : undefined,
+              });
+            }}
+            className="h-8 min-w-8 gap-1.5 px-2 text-xs font-normal text-zinc-700 hover:bg-off-white-highlight hover:text-zinc-900 data-[state=on]:bg-blue-100 data-[state=on]:text-blue-700 dark:text-zinc-200 dark:hover:bg-zinc-900 dark:hover:text-zinc-100 dark:data-[state=on]:bg-blue-950 dark:data-[state=on]:text-blue-300"
+          >
+            <Zap className="h-4 w-4" aria-hidden="true" />
+          </Toggle>
+        </ShortcutTooltip>
+      )}
       {reasoningOptions.length > 0 && (
         <InlineSettingSelect<ReasoningEffort>
           id="inline-reasoning"
