@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 
+import type { Message } from "~/types";
+import { compactJsonWhitespace } from "~/utils/json";
+
+import { buildMessageParts } from "../parts";
 import {
   isProviderMessage,
   toProviderMessages,
   toProviderResponseMessagePartSource,
   toProviderResponseMessages,
 } from "../provider-mapping";
+import { compactToolOutput } from "../tool-output-compaction";
 
 describe("isProviderMessage", () => {
   it("excludes compaction status messages represented by role or parts", () => {
@@ -122,5 +127,73 @@ describe("isProviderMessage", () => {
       role: "tool",
       content: "Tool result",
     });
+  });
+});
+
+describe("automatic tool-result compaction", () => {
+  it("preserves numeric lexemes, duplicate keys, escaped strings, and whitespace inside strings", () => {
+    const source = String.raw` { "large": 9007199254740993123, "value": -0, "value": 1e999, "text": " a \" b ", "slash": "\\" } `;
+    const rewritten = compactJsonWhitespace(source);
+
+    expect(rewritten).toBe(
+      String.raw`{"large":9007199254740993123,"value":-0,"value":1e999,"text":" a \" b ","slash":"\\"}`,
+    );
+  });
+
+  it("leaves malformed JSON, ordinary text, and oversized results unchanged", () => {
+    for (const content of [
+      "{ broken",
+      "  important  text  ",
+      '{"text":"' + "a".repeat(1_000_000) + '"}',
+    ]) {
+      expect(compactJsonWhitespace(content)).toBe(content);
+    }
+  });
+
+  it("rewrites only eligible tool content without changing history or protocol fields", () => {
+    const content = '{ "ok": true }';
+    const messages: Message[] = [
+      { id: "tool", role: "tool", tool_call_id: "call-1", content },
+      { role: "system", content },
+      { role: "user", content },
+      { role: "assistant", content },
+      { role: "tool", content, status: "awaiting_approval" },
+      { role: "tool", content: [{ type: "text", text: content }] },
+      { role: "tool", content, parts: [{ type: "reasoning", text: content, signature: "signed" }] },
+    ];
+    const result = messages.map(compactToolOutput);
+
+    expect(result[0]).toMatchObject({ id: "tool", tool_call_id: "call-1", content: '{"ok":true}' });
+    expect(messages[0].content).toBe(content);
+    expect(result.slice(1)).toEqual(messages.slice(1));
+  });
+
+  it("compacts real tool execution parts together without mutating the recorded result", () => {
+    const message: Message = {
+      role: "tool",
+      status: "success",
+      name: "lookup",
+      tool_call_id: "call-1",
+      content: '{ "ok": true }',
+    };
+
+    message.parts = buildMessageParts(message);
+    const rewritten = compactToolOutput(message);
+
+    expect(rewritten.content).toBe('{"ok":true}');
+    expect(rewritten.parts).toMatchObject([
+      { type: "text", text: '{"ok":true}' },
+      { type: "tool_result", content: '{"ok":true}', toolCallId: "call-1", status: "success" },
+    ]);
+    expect(message.parts).toMatchObject([
+      { type: "text", text: '{ "ok": true }' },
+      { type: "tool_result", content: '{ "ok": true }' },
+    ]);
+    const mixed: Message = {
+      ...message,
+      parts: [...(message.parts ?? []), { type: "file", url: "https://example.com/result" }],
+    };
+
+    expect(compactToolOutput(mixed)).toBe(mixed);
   });
 });

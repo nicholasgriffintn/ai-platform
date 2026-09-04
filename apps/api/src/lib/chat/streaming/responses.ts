@@ -1,4 +1,5 @@
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
+import { compactToolOutput } from "~/lib/chat/messages/tool-output-compaction";
 import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { applyModelResponseDefaults } from "~/lib/providers/models/responseDefaults";
@@ -78,7 +79,8 @@ export async function getAIResponse(request: ChatCompletionParameters) {
     );
   }
 
-  const providerMessages = toProviderMessages(messages);
+  const compactedMessages = messages.map(compactToolOutput);
+  const providerMessages = toProviderMessages(compactedMessages);
 
   const filteredMessages =
     mode === "normal"

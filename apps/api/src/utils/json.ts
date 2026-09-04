@@ -125,3 +125,45 @@ export function parseAIResponseJson<T = any>(response: string | null | undefined
     }
   }
 }
+
+/** Remove only JSON whitespace, preserving string contents and numeric lexemes exactly. */
+export function compactJsonWhitespace(content: string): string {
+  if (content.length > 1_000_000 || !/^[\t\r\n ]*[[{]/.test(content)) {
+    return content;
+  }
+
+  try {
+    JSON.parse(content);
+  } catch {
+    return content;
+  }
+
+  const characters: string[] = [];
+  let inString = false;
+  let escaped = false;
+
+  for (const character of content) {
+    if (inString) {
+      characters.push(character);
+      if (escaped) {
+        escaped = false;
+      } else if (character === "\\") {
+        escaped = true;
+      } else if (character === '"') {
+        inString = false;
+      }
+    } else if (character === '"') {
+      inString = true;
+      characters.push(character);
+    } else if (
+      character !== " " &&
+      character !== "\t" &&
+      character !== "\n" &&
+      character !== "\r"
+    ) {
+      characters.push(character);
+    }
+  }
+
+  return characters.join("");
+}
