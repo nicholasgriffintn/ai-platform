@@ -20,6 +20,7 @@ The skill is the single setup and decision-guidance entry point. Use these deepe
 - [Stripe billing runbook](operations/stripe-billing.md)
 - [OCR capability and batch lifecycle](operations/ocr.md)
 - [Loop cost controls](operations/loop-cost-controls.md)
+- [Conversation branch navigation](operations/conversation-branches.md)
 - [End-to-end test conventions](testing/e2e.md)
 
 Resources that deliberately remain outside the skill:
