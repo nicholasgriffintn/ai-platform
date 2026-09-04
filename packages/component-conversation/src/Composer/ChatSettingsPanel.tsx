@@ -14,6 +14,7 @@ import { formatVerbosityLabel } from "@ngriffin_uk/polychat-library-chat/verbosi
 import {
   formatReasoningLabel,
   getModelSamplingCapabilities,
+  type ModelServiceTier,
   type ReasoningEffort,
 } from "@ngriffin_uk/polychat-schemas";
 import { Settings } from "lucide-react";
@@ -43,6 +44,8 @@ export interface ChatSettingsPanelProps {
   onNumericSettingChange: (key: string, value: string) => void;
   onCompactionChange: (value: string) => void;
   onReasoningEffortChange: (value: string) => void;
+  onServiceTierChange?: (value: string) => void;
+  serviceTierDescription?: string;
   onVerbosityChange: (value: string) => void;
   onChatSettingsChange: (settings: Record<string, any>) => void;
 }
@@ -64,6 +67,8 @@ export function ChatSettingsPanel({
   onNumericSettingChange,
   onCompactionChange,
   onReasoningEffortChange,
+  onServiceTierChange,
+  serviceTierDescription,
   onVerbosityChange,
   onChatSettingsChange,
 }: ChatSettingsPanelProps) {
@@ -119,6 +124,33 @@ export function ChatSettingsPanel({
                   description="Controls configured thinking when the model supports it."
                 />
               )}
+              {selectedModelConfig?.supportedServiceTiers?.includes("fast") &&
+                onServiceTierChange && (
+                  <CompactSettingSelect
+                    id="service_tier"
+                    label="Processing"
+                    value={chatSettings.service_tier ?? "auto"}
+                    onChange={onServiceTierChange}
+                    disabled={isDisabled}
+                    options={[
+                      { value: "auto", label: "Automatic" },
+                      ...selectedModelConfig.supportedServiceTiers.map(
+                        (tier: ModelServiceTier) => ({
+                          value: tier,
+                          label:
+                            tier === "fast"
+                              ? `Fast${
+                                  selectedModelConfig.serviceTierMultipliers?.fast
+                                    ? ` (${selectedModelConfig.serviceTierMultipliers.fast}×)`
+                                    : ""
+                                }`
+                              : "Standard",
+                        }),
+                      ),
+                    ]}
+                    description={serviceTierDescription}
+                  />
+                )}
               <CompactSettingSelect
                 id="text_verbosity"
                 label="Verbosity"

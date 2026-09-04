@@ -88,6 +88,20 @@ describe("model schemas", () => {
     });
   });
 
+  it("accepts explicit processing tiers on model catalogue items", () => {
+    expect(
+      modelConfigItemSchema.parse({
+        matchingModel: "gpt-6-astra",
+        provider: "openai",
+        supportedServiceTiers: ["default", "fast"],
+        serviceTierMultipliers: { fast: 2 },
+      }),
+    ).toMatchObject({
+      supportedServiceTiers: ["default", "fast"],
+      serviceTierMultipliers: { fast: 2 },
+    });
+  });
+
   it("uses only the server-published active default", () => {
     expect(
       getDefaultModelId({

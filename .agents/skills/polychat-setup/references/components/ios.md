@@ -44,6 +44,7 @@ Native iOS client for the Polychat AI platform.
 - Siri integration via App Intents
 - Authentication
 - Optional max-output-token override without a client-side 32,768-token ceiling; leave it disabled to use the API's workload-aware default
+- Model-aware Processing picker for Automatic, Standard, and Fast service tiers. Show it only when the catalogue declares Fast support, display the catalogue price multiplier, omit the tier for Automatic, and clear an explicit tier when the model changes.
 - Decode the optional monthly credit summary in `usage_limits` alongside the daily abuse-guard fields. Preserve it as display state only; the API does not enforce credit exhaustion mid-turn.
 
 ## Deployment

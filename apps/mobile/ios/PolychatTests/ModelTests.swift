@@ -304,6 +304,19 @@ struct ModelTests {
         #expect(json["model_router_mode"] as? String == "auto")
     }
 
+    @Test func chatCompletionRequestSendsSelectedProcessingTier() throws {
+        let request = ChatCompletionRequest(
+            messages: [ChatMessage(role: "user", content: "Hi")],
+            model: "gpt-6-astra",
+            settings: ChatSettings(serviceTier: .fast)
+        )
+
+        let data = try JSONEncoder().encode(request)
+        let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        #expect(json["service_tier"] as? String == "fast")
+    }
+
     @Test func chatCompletionRequestExcludesCompactionMarkers() throws {
         let userMessage = ChatMessage(id: "user-1", role: "user", content: "Continue")
         let compactionMessage = try JSONDecoder().decode(ChatMessage.self, from: Data("""

@@ -1,4 +1,8 @@
-import type { InputSchemaInputSchemaDescriptor, ModelConfig } from "@ngriffin_uk/polychat-schemas";
+import type {
+  InputSchemaInputSchemaDescriptor,
+  ModelConfig,
+  ModelConfigItem,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
@@ -123,12 +127,13 @@ const openaiPromptCacheOptions = {
 };
 
 const openaiFlexibleServiceTiers = {
+  supportedServiceTiers: ["default", "fast"],
   serviceTierMultipliers: {
     flex: 0.5,
     fast: 2,
     priority: 2,
   },
-};
+} satisfies Pick<ModelConfigItem, "serviceTierMultipliers" | "supportedServiceTiers">;
 
 export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("o3", PROVIDER, {
