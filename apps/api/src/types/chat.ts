@@ -85,6 +85,9 @@ export type MessageContent = {
   cache_control?: {
     type: "ephemeral";
   };
+  prompt_cache_breakpoint?: {
+    mode: "explicit";
+  };
 };
 
 export type Attachment = {

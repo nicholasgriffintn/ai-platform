@@ -43,6 +43,41 @@ describe("chat completions schema", () => {
     ).toThrow();
   });
 
+  it("accepts Astra async tools and explicit prompt-cache controls", () => {
+    expect(
+      createChatCompletionsJsonSchema.parse({
+        model: "gpt-6-astra",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Use the stable context",
+                prompt_cache_breakpoint: { mode: "explicit" },
+              },
+            ],
+          },
+        ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "slow_lookup",
+              parameters: { type: "object" },
+              strict: true,
+              async: true,
+            },
+          },
+        ],
+        prompt_cache_options: { mode: "explicit", ttl: "30m" },
+      }),
+    ).toMatchObject({
+      tools: [{ function: { strict: true, async: true } }],
+      prompt_cache_options: { mode: "explicit", ttl: "30m" },
+    });
+  });
+
   it("accepts a structured tool interaction resolution", () => {
     expect(
       createChatCompletionsJsonSchema.parse({

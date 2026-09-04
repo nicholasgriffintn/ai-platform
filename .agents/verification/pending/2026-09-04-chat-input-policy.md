@@ -2,9 +2,9 @@
 
 - **Change:** Add opt-in JSON whitespace compaction with preview and revision history in personal settings and project overview.
 - **Surfaces:** API, web Chat and Work; iOS chat inherits server behaviour.
-- **Prerequisites:** Deploy API and web together. No new migration or secret. This branch includes the project-routing prerequisite.
+- **Prerequisites:** Deploy API and web together. No new migration or secret. The project-routing prerequisite is already merged.
 - **Risk if wrong:** Changed tool meaning, incorrect policy scope, lost administrator edits, or rewritten stored history.
-- **Commits:** See the chat input policy PR.
+- **Commits:** `d07a38d95` (chat input policy PR).
 
 ## Verify
 

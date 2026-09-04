@@ -4,6 +4,7 @@ import type { ReasoningEffortLevel } from "~/types";
 
 const PROVIDER_REASONING_EFFORTS = new Set<ReasoningEffortLevel>([
   "default",
+  "none",
   "minimal",
   "low",
   "medium",
@@ -11,7 +12,10 @@ const PROVIDER_REASONING_EFFORTS = new Set<ReasoningEffortLevel>([
   "xhigh",
   "max",
 ]);
-const PROMPT_ONLY_REASONING_EFFORTS = new Set<ReasoningEffortLevel>(["none", "simulated-thinking"]);
+const NON_THINKING_REASONING_EFFORTS = new Set<ReasoningEffortLevel>([
+  "none",
+  "simulated-thinking",
+]);
 
 export type AdaptiveThinkingEffort = Extract<
   ReasoningEffortLevel,
@@ -46,7 +50,7 @@ export function isConfiguredReasoningEffort(
 export function hasProviderReasoningOptions(modelConfig: ModelConfigItem | undefined): boolean {
   return (
     modelConfig?.reasoningConfig?.supportedEffortLevels?.some(
-      (level) => !PROMPT_ONLY_REASONING_EFFORTS.has(level),
+      (level) => !NON_THINKING_REASONING_EFFORTS.has(level),
     ) ?? false
   );
 }
@@ -54,7 +58,7 @@ export function hasProviderReasoningOptions(modelConfig: ModelConfigItem | undef
 export function shouldSendProviderReasoningEffort(
   modelConfig: ModelConfigItem | undefined,
   reasoningEffort: ReasoningEffortLevel | undefined,
-): reasoningEffort is Exclude<ReasoningEffortLevel, "none" | "simulated-thinking" | "thinking"> {
+): reasoningEffort is Exclude<ReasoningEffortLevel, "simulated-thinking" | "thinking"> {
   if (!reasoningEffort || !PROVIDER_REASONING_EFFORTS.has(reasoningEffort)) {
     return false;
   }
@@ -68,7 +72,7 @@ export function shouldEnableProviderThinking(
 ): boolean {
   return (
     !!reasoningEffort &&
-    !PROMPT_ONLY_REASONING_EFFORTS.has(reasoningEffort) &&
+    !NON_THINKING_REASONING_EFFORTS.has(reasoningEffort) &&
     isConfiguredReasoningEffort(modelConfig, reasoningEffort)
   );
 }
@@ -96,7 +100,7 @@ export function resolveReasoningModel(
   modelConfig: ModelConfigItem | undefined,
   reasoningEffort: ReasoningEffortLevel | undefined,
 ): string | undefined {
-  if (!reasoningEffort || PROMPT_ONLY_REASONING_EFFORTS.has(reasoningEffort)) {
+  if (!reasoningEffort || NON_THINKING_REASONING_EFFORTS.has(reasoningEffort)) {
     return undefined;
   }
 

@@ -156,12 +156,24 @@ export function resolveEffectiveTemperature(
 }
 
 export function createSamplingParameters(
-  params: Pick<ChatCompletionParameters, "temperature" | "top_p" | "should_think">,
+  params: Pick<
+    ChatCompletionParameters,
+    "temperature" | "top_p" | "should_think" | "reasoning_effort"
+  >,
   modelConfig: ModelSamplingConfig,
 ): { temperature?: number; top_p?: number } {
   const capabilities = getModelSamplingCapabilities(modelConfig);
-  const temperature = resolveEffectiveTemperature(params.temperature, modelConfig);
+  const effectiveReasoningEffort =
+    params.reasoning_effort ?? modelConfig.reasoningConfig?.defaultEffort;
+  const allowsSampling =
+    !capabilities.supportedReasoningEfforts ||
+    (effectiveReasoningEffort !== undefined &&
+      capabilities.supportedReasoningEfforts.includes(effectiveReasoningEffort));
+  const temperature = allowsSampling
+    ? resolveEffectiveTemperature(params.temperature, modelConfig)
+    : undefined;
   const allowsTopP =
+    allowsSampling &&
     capabilities.supportsTopP &&
     !params.should_think &&
     !(capabilities.restrictsCombinedTopPAndTemperature && temperature !== undefined);

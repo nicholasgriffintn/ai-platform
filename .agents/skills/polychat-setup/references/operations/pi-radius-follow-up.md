@@ -11,7 +11,7 @@ The first implementation covered only project routing preferences. Review the ad
 | First-class session branches                  | Add authorised, bounded branch-family discovery and navigation in web Chat and Work. Keep personal ownership and project membership boundaries, mark archived conversations, and handle cycles.                                     | [PR 2239](https://github.com/nicholasgriffintn/ai-platform/pull/2239) |
 | Safe input rewriting, simulation, and restore | Add opt-in lossless JSON whitespace compaction for tool results, a read-only preview, revision comparison, bounded history, and restore controls in personal and project settings.                                                  | Chat input policy PR; [operator guide](chat-input-policy.md)          |
 
-Keep these changes in separate worktrees and PRs. The chat input policy branch is based on the routing branch because both use the same authorised conversation/project resolver; review and merge the routing prerequisite first. The other two PRs target main independently.
+These changes were developed in separate worktrees and PRs. PRs 2234, 2236, and 2239 are now merged. The input-policy branch incorporates current main and reuses the merged authorised conversation/project resolver.
 
 ## Existing capabilities retained
 

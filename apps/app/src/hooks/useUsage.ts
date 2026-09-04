@@ -1,6 +1,11 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { getUsageBalance, getUsageSummary, listUsageEvents } from "~/lib/api/usage";
+import {
+  getUsageBalance,
+  getUsageSummary,
+  listUsageEvents,
+  getWorkspaceUsageSummary,
+} from "~/lib/api/usage";
 import { getNextUsageEventsPageParam } from "~/lib/usage-ledger";
 
 export const USAGE_QUERY_KEYS = {
@@ -62,5 +67,14 @@ export function useUsageEvents(
     getNextPageParam: getNextUsageEventsPageParam,
     staleTime: USAGE_STALE_TIME,
     enabled: options.enabled ?? true,
+  });
+}
+
+export function useWorkspaceUsage(workspaceId: string, period: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["usage", "workspace", workspaceId, period],
+    queryFn: () => getWorkspaceUsageSummary(workspaceId, period),
+    enabled,
+    staleTime: USAGE_STALE_TIME,
   });
 }

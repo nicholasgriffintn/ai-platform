@@ -1,4 +1,6 @@
 import {
+  usageSummaryQuerySchema,
+  workspaceUsageSummaryResponseSchema,
   createProjectSchema,
   createWorkspaceInvitationSchema,
   createWorkspaceSchema,
@@ -33,6 +35,7 @@ import {
   updateWorkspaceMember,
   updateWorkspace,
 } from "~/services/workspaces";
+import { getWorkspaceUsageSummary } from "~/services/workspaces/usage";
 
 const app = new Hono();
 const workspaceParams = z.object({ workspaceId: z.string().min(1) });
@@ -81,6 +84,19 @@ addRoute(app, "get", "/:workspaceId", {
   paramSchema: workspaceParams,
   responses: { 200: { description: "Workspace details", schema: workspaceDetailSchema } },
   handler: ({ serviceContext, params }) => getWorkspace(serviceContext, params.workspaceId),
+});
+
+addRoute(app, "get", "/:workspaceId/usage", {
+  auth: true,
+  tags: ["workspaces"],
+  summary: "Summarise recorded workspace spend for an owner or administrator",
+  paramSchema: workspaceParams,
+  querySchema: usageSummaryQuerySchema,
+  responses: {
+    200: { description: "Attributed workspace usage", schema: workspaceUsageSummaryResponseSchema },
+  },
+  handler: ({ serviceContext, params, query }) =>
+    getWorkspaceUsageSummary(serviceContext, params.workspaceId, query),
 });
 
 addRoute(app, "get", "/:workspaceId/audit", {

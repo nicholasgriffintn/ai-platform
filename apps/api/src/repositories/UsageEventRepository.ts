@@ -242,6 +242,26 @@ export class UsageEventRepository extends BaseRepository {
     );
   }
 
+  async summariseWorkspacePeriodBy(
+    workspaceId: string,
+    period: string,
+    dimension: "source" | "vendor" | "project",
+  ): Promise<UsageEventGroupRow[]> {
+    const column = dimension === "project" ? "COALESCE(project_id, '')" : dimension;
+
+    return this.runQuery<UsageEventGroupRow>(
+      `SELECT ${column} AS key,
+              COALESCE(SUM(cost_micros), 0) AS cost_micros,
+              COALESCE(SUM(credit_micros), 0) AS credit_micros,
+              COUNT(*) AS event_count
+       FROM usage_event
+       WHERE workspace_id = ? AND period = ?
+       GROUP BY ${column}
+       ORDER BY credit_micros DESC, key ASC`,
+      [workspaceId, period],
+    );
+  }
+
   async summariseInfrastructureDay(
     day: string,
   ): Promise<Array<{ resource: string; unit: UsageUnit; quantity: number; cost_micros: number }>> {

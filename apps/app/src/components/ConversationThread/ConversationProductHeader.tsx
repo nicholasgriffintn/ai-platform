@@ -9,6 +9,7 @@ import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { useChat } from "~/hooks/useChat";
 import { useChatStore } from "~/state/stores/chatStore";
 
+import { ConversationBranchNavigation } from "./ConversationBranchNavigation";
 import { ShareButton } from "./ShareButton";
 
 interface ConversationProductHeaderProps {
@@ -41,6 +42,7 @@ export function ConversationProductHeader({
       }
       actions={
         <div className="flex shrink-0 items-center gap-0.5">
+          <ConversationBranchNavigation />
           <AgentTraceButton entries={traceEntries} compactOnMobile />
           {!conversation?.isLocalOnly &&
             !conversation?.project_id &&

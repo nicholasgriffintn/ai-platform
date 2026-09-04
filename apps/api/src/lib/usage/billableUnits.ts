@@ -13,6 +13,8 @@ export interface BillableQuantity {
 export interface BillableUnitOptions {
   hasReasoningRate?: boolean;
   hasAudioRate?: boolean;
+  hasGenericCacheWriteRate?: boolean;
+  longContextThresholdTokens?: number;
 }
 
 const ADDITIONAL_CACHE_READ_FIELDS = [
@@ -22,6 +24,7 @@ const ADDITIONAL_CACHE_READ_FIELDS = [
 ] as const;
 
 const SUBSET_REASONING_FIELDS = ["reasoning_tokens"] as const;
+const SUBSET_CACHE_WRITE_FIELDS = ["cache_write_tokens"] as const;
 
 function isAdditionalCacheRead(raw: unknown): boolean {
   return findNumericFieldDeep(raw, ADDITIONAL_CACHE_READ_FIELDS) !== undefined;
@@ -29,6 +32,10 @@ function isAdditionalCacheRead(raw: unknown): boolean {
 
 function isSubsetReasoning(raw: unknown): boolean {
   return findNumericFieldDeep(raw, SUBSET_REASONING_FIELDS) !== undefined;
+}
+
+function isSubsetCacheWrite(raw: unknown): boolean {
+  return findNumericFieldDeep(raw, SUBSET_CACHE_WRITE_FIELDS) !== undefined;
 }
 
 function positive(value: number | undefined): number {
@@ -76,6 +83,10 @@ export function billableTokenQuantities(
     inputTokens = Math.max(0, inputTokens - cachedInput);
   }
 
+  if (cacheWrite > 0 && options.hasGenericCacheWriteRate === true && isSubsetCacheWrite(raw)) {
+    inputTokens = Math.max(0, inputTokens - cacheWrite);
+  }
+
   const chargeReasoningSeparately = options.hasReasoningRate === true && reasoning > 0;
 
   if (chargeReasoningSeparately && isSubsetReasoning(raw)) {
@@ -97,13 +108,18 @@ export function billableTokenQuantities(
     }
   };
 
-  const cacheWriteSplit = splitCacheWriteTiers(raw, cacheWrite);
-
   push("input_tokens", inputTokens);
   push("output_tokens", outputTokens);
   push("cached_input_tokens", cachedInput);
-  push("cache_write_5m_tokens", cacheWriteSplit.fiveMinute);
-  push("cache_write_1h_tokens", cacheWriteSplit.oneHour);
+
+  if (options.hasGenericCacheWriteRate) {
+    push("cache_write_tokens", cacheWrite);
+  } else {
+    const cacheWriteSplit = splitCacheWriteTiers(raw, cacheWrite);
+
+    push("cache_write_5m_tokens", cacheWriteSplit.fiveMinute);
+    push("cache_write_1h_tokens", cacheWriteSplit.oneHour);
+  }
 
   if (chargeReasoningSeparately) {
     push("reasoning_tokens", reasoning);
@@ -114,5 +130,21 @@ export function billableTokenQuantities(
     push("audio_output_tokens", audioOutput);
   }
 
-  return quantities;
+  const longContextThreshold = options.longContextThresholdTokens;
+
+  if (longContextThreshold === undefined || positive(usage.input_tokens) <= longContextThreshold) {
+    return quantities;
+  }
+
+  const longContextUnits: Partial<Record<UsageUnit, UsageUnit>> = {
+    input_tokens: "long_context_input_tokens",
+    output_tokens: "long_context_output_tokens",
+    cached_input_tokens: "long_context_cached_input_tokens",
+    cache_write_tokens: "long_context_cache_write_tokens",
+  };
+
+  return quantities.map((quantity) => ({
+    unit: longContextUnits[quantity.unit] ?? quantity.unit,
+    quantity: quantity.quantity,
+  }));
 }

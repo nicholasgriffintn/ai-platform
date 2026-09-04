@@ -307,6 +307,9 @@ class OpenAIResponsesToolBuilder {
         description: tool.function.description,
         parameters: tool.function.parameters,
         ...(tool.function.strict !== undefined ? { strict: tool.function.strict } : {}),
+        ...(this.modelConfig.supportsAsyncToolCalls && tool.function.async !== undefined
+          ? { async: tool.function.async }
+          : {}),
       };
     });
   }

@@ -1,4 +1,5 @@
 import {
+  conversationBranchesResponseSchema,
   cancelChatCompletionResponseSchema,
   compactChatCompletionResponseSchema,
   goalResponseSchema,
@@ -58,6 +59,7 @@ import { handleCancelChatCompletion } from "~/services/completions/cancelChatCom
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCompactChatCompletion } from "~/services/completions/compactChatCompletion";
+import { getConversationBranches } from "~/services/completions/conversationBranches";
 import {
   handleGetConversationGoal,
   handleSetConversationGoal,
@@ -389,6 +391,18 @@ addRoute(app, "get", "/completions/:completion_id", {
 
       return ResponseFactory.success(context, data);
     })(raw),
+});
+
+addRoute(app, "get", "/completions/:completion_id/branches", {
+  auth: true,
+  tags: ["chat"],
+  summary: "List the authorised conversation branch family",
+  paramSchema: getChatCompletionParamsSchema,
+  responses: {
+    200: { description: "Conversation branches", schema: conversationBranchesResponseSchema },
+  },
+  handler: ({ serviceContext, params }) =>
+    getConversationBranches(serviceContext, params.completion_id),
 });
 
 addRoute(app, "get", "/completions/:completion_id/messages", {

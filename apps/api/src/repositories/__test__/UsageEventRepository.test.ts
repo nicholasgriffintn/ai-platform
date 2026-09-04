@@ -150,6 +150,18 @@ describe("listUserEvents filtering", () => {
     };
   }
 
+  it.each(["source", "vendor", "project"] as const)(
+    "bounds workspace %s summaries to the saved attribution and period",
+    async (dimension) => {
+      const { repository, queries } = queryHarness();
+
+      await repository.summariseWorkspacePeriodBy("workspace-1", "2026-09", dimension);
+      expect(queries[0]?.query).toContain("WHERE workspace_id = ? AND period = ?");
+      expect(queries[0]?.values).toEqual(["workspace-1", "2026-09"]);
+      expect(queries[0]?.query).not.toContain("user_id =");
+    },
+  );
+
   it("filters by source and keeps the cursor bindings in order", async () => {
     const { repository, queries } = queryHarness();
 

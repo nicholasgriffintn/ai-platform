@@ -1,4 +1,9 @@
-import type { UsageEventRecord, UsageEventsResponse } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ProjectSummary,
+  WorkspaceUsageSummaryResponse,
+  UsageEventRecord,
+  UsageEventsResponse,
+} from "@ngriffin_uk/polychat-schemas";
 
 export function getNextUsageEventsPageParam(lastPage: UsageEventsResponse): string | undefined {
   return lastPage.next_cursor ?? undefined;
@@ -24,4 +29,18 @@ export function flattenUsageEventPages(
   }
 
   return events;
+}
+
+export function workspaceProjectUsageRows(
+  summary: WorkspaceUsageSummaryResponse,
+  projects: ProjectSummary[],
+) {
+  const names = new Map(projects.map((project) => [project.id, project.name]));
+
+  return summary.by_project.map((row) => ({
+    ...row,
+    label: row.key
+      ? (names.get(row.key) ?? "Project no longer listed")
+      : "Unassigned workspace usage",
+  }));
 }

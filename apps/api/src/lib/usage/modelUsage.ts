@@ -65,7 +65,10 @@ export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): 
         structuredData: params.structuredData,
         serviceTier: params.tier,
       },
-      { hasRate: (unit) => rates.some((rate) => rate.unit === unit) },
+      {
+        hasRate: (unit) => rates.some((rate) => rate.unit === unit),
+        longContextThresholdTokens: modelConfig?.longContextPricing?.inputTokenThreshold,
+      },
     );
 
     if (extraction.units.length === 0) {
