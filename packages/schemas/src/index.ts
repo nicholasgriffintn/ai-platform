@@ -132,6 +132,4 @@ export * from "./research";
 export * from "./recipe-trigger-configuration";
 export * from "./strudel";
 
-export * from "./chat-input-policy";
-
 export * from "./conversation-branches";

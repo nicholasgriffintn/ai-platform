@@ -1,9 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { rewriteChatInput } from "~/lib/chat/policy/input-rewriting";
 import { resolveProjectRouterMode } from "~/lib/chat/policy/project-routing";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getChatInputPolicy, updateChatInputPolicy } from "~/services/chat-input-policy";
 import { getConversationBranches } from "~/services/completions/conversationBranches";
 import { ErrorType } from "~/utils/errors";
 
@@ -21,10 +19,6 @@ function createContext({
   membership?: { role: "owner" | "admin" | "member" } | null;
 } = {}) {
   const repositories = {
-    capabilityConfigurations: {
-      list: vi.fn().mockResolvedValue([]),
-      saveWithRevision: vi.fn().mockResolvedValue(true),
-    },
     conversations: {
       getConversation: vi.fn().mockResolvedValue(conversation),
       listConversationBranches: vi.fn().mockResolvedValue([]),
@@ -46,7 +40,6 @@ function createContext({
     },
   };
   const context = {
-    user: { id: 7 },
     requireUser: vi.fn().mockReturnValue({
       id: 7,
       email: "member@example.com",
@@ -346,144 +339,6 @@ describe("project chat context", () => {
         metadata: { project_id: "project-1" },
       }),
     ).rejects.toMatchObject({ type: ErrorType.NOT_FOUND, statusCode: 404 });
-  });
-});
-
-describe("governed chat input policies", () => {
-  it("defaults personal and project rewriting on, persists disabling, and restores it as a new revision", async () => {
-    const { context, repositories } = createContext({ membership: { role: "admin" } });
-    const initial = await getChatInputPolicy(context, "project-1");
-
-    expect(initial).toEqual({
-      revision: 0,
-      policy: { toolOutputRewriting: "compact_json" },
-      history: [],
-    });
-    expect(await getChatInputPolicy(context)).toEqual(initial);
-    const first = await updateChatInputPolicy(
-      context,
-      { expectedRevision: 0, policy: { toolOutputRewriting: "off" } },
-      "project-1",
-    );
-
-    expect(first.history).toEqual([
-      expect.objectContaining({
-        revision: 1,
-        changedBy: 7,
-        policy: { toolOutputRewriting: "off" },
-      }),
-    ]);
-    repositories.capabilityConfigurations.list.mockResolvedValue([
-      { capabilityId: "default", configuration: first },
-    ]);
-    expect((await getChatInputPolicy(context, "project-1")).policy.toolOutputRewriting).toBe("off");
-    const second = await updateChatInputPolicy(
-      context,
-      { expectedRevision: 1, policy: initial.policy },
-      "project-1",
-    );
-
-    expect(second.revision).toBe(2);
-    expect(second.history).toHaveLength(2);
-    expect(second.policy.toolOutputRewriting).toBe("compact_json");
-    expect(repositories.capabilityConfigurations.saveWithRevision).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        scope: { type: "project", id: "project-1" },
-        capabilityKind: "chat_input_policy",
-      }),
-      1,
-    );
-  });
-
-  it("keeps personal policy out of project reads and refuses member changes", async () => {
-    const { context, repositories } = createContext();
-
-    await getChatInputPolicy(context, "project-1");
-    expect(repositories.capabilityConfigurations.list).toHaveBeenCalledExactlyOnceWith(
-      { type: "project", id: "project-1" },
-      "chat_input_policy",
-    );
-    await expect(
-      updateChatInputPolicy(
-        context,
-        { expectedRevision: 0, policy: { toolOutputRewriting: "compact_json" } },
-        "project-1",
-      ),
-    ).rejects.toMatchObject({ statusCode: 403 });
-    expect(repositories.capabilityConfigurations.saveWithRevision).not.toHaveBeenCalled();
-    await getChatInputPolicy(context);
-    expect(repositories.capabilityConfigurations.list).toHaveBeenLastCalledWith(
-      { type: "user", id: 7 },
-      "chat_input_policy",
-    );
-  });
-
-  it("rejects stale edits and concurrent writes without overwriting policy", async () => {
-    const { context, repositories } = createContext();
-
-    await expect(
-      updateChatInputPolicy(context, {
-        expectedRevision: 1,
-        policy: { toolOutputRewriting: "compact_json" },
-      }),
-    ).rejects.toMatchObject({ statusCode: 409 });
-    expect(repositories.capabilityConfigurations.saveWithRevision).not.toHaveBeenCalled();
-    repositories.capabilityConfigurations.saveWithRevision.mockResolvedValue(false);
-    await expect(
-      updateChatInputPolicy(context, {
-        expectedRevision: 0,
-        policy: { toolOutputRewriting: "compact_json" },
-      }),
-    ).rejects.toMatchObject({ statusCode: 409 });
-  });
-
-  it("re-resolves current project policy at provider time and fails closed on invalid policy or revoked access", async () => {
-    const { context, repositories } = createContext({ conversation: { project_id: "project-1" } });
-    const request = {
-      context,
-      completion_id: "conversation-1",
-      messages: [{ role: "tool" as const, status: "success", content: '{ "ok": true }' }],
-    };
-
-    repositories.capabilityConfigurations.list.mockResolvedValue([
-      {
-        capabilityId: "default",
-        configuration: {
-          revision: 1,
-          policy: { toolOutputRewriting: "compact_json" },
-          history: [],
-        },
-      },
-    ]);
-    expect((await rewriteChatInput(request))[0].content).toBe('{"ok":true}');
-    expect(repositories.capabilityConfigurations.list).toHaveBeenLastCalledWith(
-      { type: "project", id: "project-1" },
-      "chat_input_policy",
-    );
-    repositories.capabilityConfigurations.list.mockResolvedValue([
-      {
-        capabilityId: "default",
-        configuration: { revision: 2, policy: { toolOutputRewriting: "off" }, history: [] },
-      },
-    ]);
-    expect((await rewriteChatInput(request))[0].content).toBe('{ "ok": true }');
-    repositories.capabilityConfigurations.list.mockResolvedValue([]);
-    expect((await rewriteChatInput(request))[0].content).toBe('{"ok":true}');
-    repositories.capabilityConfigurations.list.mockResolvedValue([
-      { capabilityId: "default", configuration: { policy: "broken" } },
-    ]);
-    await expect(rewriteChatInput(request)).rejects.toMatchObject({ statusCode: 503 });
-    repositories.workspaces.getMembership.mockResolvedValue(null);
-    await expect(rewriteChatInput(request)).rejects.toMatchObject({ statusCode: 404 });
-  });
-
-  it("withholds policy and history after membership is revoked", async () => {
-    const { context, repositories } = createContext({ membership: null });
-
-    await expect(getChatInputPolicy(context, "project-1")).rejects.toMatchObject({
-      statusCode: 404,
-    });
-    expect(repositories.capabilityConfigurations.list).not.toHaveBeenCalled();
   });
 });
 

@@ -1,5 +1,5 @@
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
-import { rewriteChatInput } from "~/lib/chat/policy/input-rewriting";
+import { compactToolOutput } from "~/lib/chat/messages/tool-output-compaction";
 import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { applyModelResponseDefaults } from "~/lib/providers/models/responseDefaults";
@@ -79,8 +79,8 @@ export async function getAIResponse(request: ChatCompletionParameters) {
     );
   }
 
-  const rewrittenMessages = await rewriteChatInput(request);
-  const providerMessages = toProviderMessages(rewrittenMessages);
+  const compactedMessages = messages.map(compactToolOutput);
+  const providerMessages = toProviderMessages(compactedMessages);
 
   const filteredMessages =
     mode === "normal"
