@@ -1,106 +1,33 @@
-# End-to-end test structure
+# End-to-end verification
 
-Use Playwright end-to-end tests as the release-validation suite for user-facing Polychat behaviour. Keep tests under `apps/app/tests/e2e` and write every browser interaction through a Page Object.
+Use Playwright to exercise the real web app and API together with isolated D1 data and deterministic logged-out, Free and Pro personas. Keep browser interactions in Page Objects under `apps/app/tests/e2e`; specs assert user outcomes.
 
-## Test boundary
+Mock only outbound third-party services, never Polychat routes. Unexpected external calls fail the test. Use the existing fixtures, including `test.use({ billing })` and `billingState`, for per-identity credit state. Disable external telemetry and captcha in the E2E build.
 
-Exercise the Polychat app and API together. The release command builds the app in a production-optimised E2E mode, serves its Cloudflare Worker locally, builds the API Worker, applies its migrations to an isolated D1 database, and seeds deterministic logged-out, Free, and Pro personas. The E2E app Worker has no production bindings or secrets and connects to the local API on the documented port.
+## Preserve release journeys
 
-Mock only outbound third-party services at their boundary. Do not intercept or replace Polychat API routes in the browser. An unexpected outbound request must fail the test so new integrations cannot silently reach a live service.
+| Surface             | Behaviour to preserve                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| Chat                | Messages, local/synced history, attachments, sharing, branching and sign-in boundaries |
+| Work                | Entitlement, workspaces, projects, members, governance, project chat and sub-surfaces  |
+| Live                | Entry, muted session and cleanup for an eligible account                               |
+| Account and billing | Protected tabs, plan state, credit reserve/exhaustion, overage and ledger              |
+| Configuration       | Provider, connector, key and source lifecycles in their permitted scopes               |
+| Recovery            | Provider failure, missing resources and continued use after failure                    |
+| Responsive          | Navigation and layout-sensitive controls at mobile widths                              |
 
-Disable browser telemetry and captcha in the E2E build because they are outbound third-party integrations, not part of the Polychat app/API boundary under release validation.
+Keep representative text, Unicode, code, image, document and audio inputs. Test relevant transitions rather than static copy. A failed journey is product evidence: do not skip it, weaken its outcome, mock an internal route or alter fixtures to hide the defect.
 
-A test can place its own persona at a point in the billing cycle with `test.use({ billing })`, and move it during a journey with the `billingState` fixture. Credit state is seeded per identity, so parallel tests do not share a balance.
+Use one isolated identity per independent test, deterministic responses and observable waits rather than fixed sleeps. Desktop Chromium carries the full matrix; mobile-width tests focus on layout-sensitive journeys.
 
-## Release failures
+## Run
 
-Treat a failed user journey as release evidence, not a reason to reduce coverage.
+These commands launch the test runtime. Keep ports 8787 and 5173 free and build the E2E app first:
 
-- Keep the failing test enabled with its complete user outcome.
-- Correct the test only when its Page Object, boundary, or expectation is demonstrably inaccurate.
-- Do not delete or skip the journey, weaken the assertion, substitute an internal API mock, or alter fixtures to hide a product defect.
-- Fix product behaviour only within the authorised task scope, then rerun the complete release suite.
-
-## Page Object Model
-
-Each Page Object extends `BasePage` and owns:
-
-- Page-specific locators
-- Browser interactions and multi-step workflows
-- Waiting for user-visible completion states
-
-Keep assertions in the feature spec when they describe the user outcome. Add or extend a Page Object instead of placing clicks, form entry, or navigation sequences directly in a spec.
-
-```typescript
-await homePage.navigate("/chat");
-await homePage.selectModel("Compound Mini");
-await homePage.sendMessage("Hello");
-await homePage.waitForChatResponse(0);
-await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
-```
-
-## Required coverage
-
-Treat a user-facing feature as incomplete until its E2E impact has been considered. Cover the relevant state transitions, not static copy.
-
-| Surface       | Logged out                                                | Free account                                     | Pro account                                                                           |
-| ------------- | --------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| Chat          | Local history, messages, public navigation, sign-in entry | Local history, messages, account limits          | Synced history, messages, attachments, sharing and branching                          |
-| Live          | Not offered                                               | Not offered                                      | Mode entry, a muted session, and its cleanup                                          |
-| Work          | Sign-in boundaries on overview and deep links             | Pro entitlement and return to Chat               | Workspaces, projects, members, governance, project chat and every project sub-surface |
-| Account       | Every profile tab is protected                            | Every profile tab loads with Free billing state  | Every profile tab loads with Pro billing state                                        |
-| Billing       | Public pricing and the signed-out credit allowance        | Balance, ledger and the hard stop at the ceiling | Reserve, overage and the pause past the reserve                                       |
-| Configuration | Sign-in entry                                             | AI and messaging provider lifecycles             | Connectors, API keys, sources and Work configuration lifecycles                       |
-| Recovery      | Missing routes and unavailable shared links               | Missing routes and unavailable shared links      | Provider failures, missing resources and continued use after failure                  |
-
-For messages, include representative plain text, multiline and Unicode, code and special characters, image, document/code, and audio inputs. Add another case when a new message or attachment type becomes user-facing.
-
-For responsive behaviour, keep the full behavioural matrix on desktop Chromium and add focused mobile-width journeys for navigation and layout-sensitive controls. Add another browser only when a browser-specific product contract requires it.
-
-## Keeping the suite fast
-
-- Group closely related assertions into one journey per persona where isolation is not required.
-- Run independent tests fully in parallel and provision one isolated identity per test.
-- Use deterministic third-party responses with no fixed sleeps.
-- Wait on accessible UI state or a completed workflow, not network idle.
-- Run Chromium only by default and shard the full suite in CI.
-- Retain traces, screenshots, and videos only for failures or retries.
-
-## Main-branch smoke coverage
-
-Keep the push-to-`main` smoke suite compact, but require meaningful app/API journeys rather than page-load checks. Run one independent journey for each persona:
-
-- Logged out: complete a Chat response and verify the Work sign-in boundary.
-- Free: complete a Chat response, verify the Work entitlement boundary, and synchronise the provider catalogue.
-- Pro: open a seeded Work project and complete a project-scoped Chat response.
-
-Use the same production-optimised app Worker, actual API Worker, isolated D1 database, and outbound third-party mocks as the full release suite. Add another smoke outcome only when it protects a new top-level release-critical path; keep exhaustive states and lifecycles in the complete release suite.
-
-## Running tests
-
-Install Chromium once:
-
-```bash
+```sh
 pnpm exec playwright install chromium
-```
-
-Run the complete release-validation suite:
-
-```bash
+pnpm build:e2e
 pnpm test:e2e:release
 ```
 
-Run the fast smoke suite:
-
-```bash
-pnpm test:e2e:smoke
-```
-
-Run a focused file or test name:
-
-```bash
-pnpm test:e2e apps/app/tests/e2e/features/chat.spec.ts
-pnpm test:e2e --grep "provider failure"
-```
-
-The root `release:check` command includes the complete E2E suite. CI runs that suite in two shards for pull requests, runs the smoke suite after pushes to `main`, and uploads failure artefacts.
+Use `pnpm test:e2e:smoke` for the compact logged-out, Free and Pro app/API journeys, or `pnpm test:e2e <spec-path>` for a focused change. `playwright.config.ts` owns runtime startup; do not start alternate servers or reuse a live development database. Root `release:check` is broad release validation, not the default feedback loop.

@@ -4,7 +4,7 @@
 - **Surfaces:** web, API
 - **Prerequisites:** the `REALTIME_PROXY_COORDINATOR` binding and its `v3` migration tag, from the prerequisites item.
 - **Risk if wrong:** realtime is the most stateful thing in the product and fails in ways static checks cannot see — sessions that never start, audio that never arrives, or a proxy that holds a connection open and bills for it.
-- **Commits:** `cfb34f60` (#2155), `1cec6e37` (#2164), `56a8343d` (#2154), `fdd5585b` (#2153). See ADR 0031.
+- **Commits:** `cfb34f60` (#2155), `1cec6e37` (#2164), `56a8343d` (#2154), `fdd5585b` (#2153). See ADR 0030.
 
 ## Verify
 

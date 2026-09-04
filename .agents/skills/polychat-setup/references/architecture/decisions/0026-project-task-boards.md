@@ -1,53 +1,23 @@
-# ADR 0026: Project agent operations
+# ADR 0026: Run project tasks through governed flows
 
-## Status
+Status: Accepted.
 
-Accepted
-
-## Context
-
-Work had every noun except the one that matters most. A project owned instructions, capabilities, sources, outputs, conversations, activity, and audit — transcripts and results, with nothing between them holding intent in progress. Wanting the assistant to do five things meant opening five conversations, and the state of each lived in scrollback somebody had to remember to reopen.
-
-The runtime for this already existed and was mostly idle. A goal (ADR 0022's finish gate, `evaluateGoalContinuation`) is already an objective an agent works towards autonomously, with an iteration ledger, evidence entries, and one shared stall rule — but it hides inside a single conversation and is invisible to everyone else in the project. Turns already outlive the connection (ADR 0024). `RecipeExecutionHandler` and the inbound channel service already run a turn from a queue entry, as a specific user, in a project conversation.
-
-Approvals were the sharpest version of the problem. Connector operation receipts, `request_approval`, and `AGENT_MODE_CONFIGS.requiresApprovalFor` all surface inside one thread. Five runs in flight means five silently blocked threads and nothing telling anybody.
-
-Two prior attempts at multi-agent work stopped short of this. `runPanel` (ADR 0021) already routes between named roles with a hard turn budget and a routing contract that stops rather than guessing. `TeamDelegation` already has team roles, cycle detection, depth limits, and a rate limit. Neither persists a run: a council debate is a tool result inside one message, and a delegation is a nested `getAIResponse` folded into the caller's turn. Both call the provider directly rather than going through the turn engine.
+Give agent work a durable conversation and explicit hand-offs instead of a separate team-delegation runtime.
 
 ## Decision
 
-Make the unit of work in Work a **task**: a durable, project-scoped objective that carries its own conversation and goal.
+A `project_task` owns an objective, conversation and goal. A project's optional flow names stages, agents, skills, modes, budgets and approval rules. Run each dispatch through ordinary project chat; do not add a second turn engine.
 
-Persist it as `project_task`, namespaced to avoid the existing `tasks` queue table. Present it as an operations queue rather than a configurable project-management board: lifecycle state, agent activity, pipeline progress, and work needing attention are the primary information. A project may define one **flow** whose ordered stages name instructions, an agent, zero or more attached skills, a mode, an approval policy, and an advance rule. A completed automatic stage approves its completion snapshot and queues its successor, or finishes the task when it is final; a human-gated stage stops with a pending approval job. [ADR 0027](0027-project-flow-approval-authority.md) supersedes the original mode-policy union: the saved task-stage approval list is authoritative during a task run.
+The runner is the person who starts the task, not the assignee or workspace. Revalidate their membership, project and connections at dispatch. Bind and claim the exact task/project/runner/dispatch tuple; duplicate deliveries must not create another run, and recovery resumes the same conversation.
 
-Project conversations receive the task tools as part of the Work contract rather than as optional project-library tools. They may create, inspect, list, and update work, but only a person may accept a reviewed task as done. A task run receives the same tools so its conversation can inspect its exact task and leave the queue in a truthful state; normal permission and approval policy still applies to writes.
+Intersect agent tools and skills with project grants. Stage and task approval lists are the complete tool approval policy for the run; mode supplies instructions and step limits, not additional hidden approvals or denials. Account, membership, capability and connector checks still apply.
 
-**The model never queues work or sets `done`.** Queueing creates a real internal dispatch, and only the execution service may perform that transition. A completed goal either advances under the stage's automatic approval policy, completes under that policy when no stage remains, or projects to `review` for a person. `PROJECT_TASK_ACTOR_TRANSITIONS` encodes this at the tool and service boundaries.
+Only the execution service queues work. Models cannot set `queued` or `done`. Completed stages persist output, evidence and approval snapshots. Automatic stages advance or finish under the saved policy; human-gated stages create a pending review action. Do not imitate a review gate with `ask_user`.
 
-**Runner identity is the person who starts the run**, never the assignee and never the workspace. Connector authority is user-owned (ADR 0012), so a task needing an unconnected provider blocks with a message naming the person who must connect it rather than borrowing another member's credentials. The queue handler re-resolves that user, their current workspace membership, and the project before it runs anything, because a queue entry is not proof of authorisation.
+Project `awaiting_input` and `awaiting_approval` only from exact durable pending interactions. Answers resolve that interaction once and resume the same task. A failed or abandoned dispatch must close or classify its goal rather than leave phantom running work.
 
-A run is an ordinary project conversation turn through `handleCreateChatCompletions` with `metadata.project_id`. There is no second way to run a turn (ADR 0022): the goal gate, tool execution, approvals, usage limits, and cancellation all apply unchanged. Before enqueueing, the repository binds one generated dispatch id to the project task. The handler claims only the exact task, project, runner identity, and dispatch tuple, so stale or duplicated deliveries cannot run a different task. The operations surface only sets work up and projects its result.
+Use project flows for durable multi-agent sequencing. Team-agent fields and nested delegation are retired. Personal Chat retains bounded `run_council` and `second_opinion` within the caller's turn.
 
-Every completed stage stores a completion snapshot with its output, evidence, and approval state. `on_goal_complete` is an automated approval policy: it approves the snapshot and either hands off to the next stage or completes the task. `on_human_accept` creates a pending approval job on the task; only the explicit approval action resolves it. Agents must not emulate either policy by asking the user to confirm their output through `ask_user`.
+## Trade-off
 
-When missing information prevents progress, the runner calls `ask_user` with one to three structured questions rather than ending with questions in prose. A pending question is a deliberate goal boundary: the goal becomes blocked, the task projects `awaiting_input`, and the task conversation shows the same durable questionnaire above its composer and in the message history. The response endpoint validates that the answers belong to the latest pending interaction, records them as a user message, resolves the tool result, and queues the same task and conversation to resume. The recent-conversation list and task actions project this state as “waiting for your answers”; they do not infer it from assistant text.
-
-A queue dispatch is synchronous from the runner's perspective even though it was started in the background. Once that dispatch returns, its goal must be terminal or intentionally blocked. Provider and execution failures close the goal before the task becomes retryable, and an otherwise active goal is marked stalled rather than being left as phantom work.
-
-Make agents a project capability kind. A flow stage naming an agent reuses a persona that already has a table, an editor, and a marketplace, rather than inventing a parallel role concept. An attached agent keeps its persona but not its tool authority: `enabled_tools` are **intersected** with the project's effective tools, never unioned, so attaching a personal agent cannot widen what a workspace reaches. Only an agent's owner may attach it.
-
-Aggregate attention. `/workspaces/attention` returns blocked, in-review, and self-assigned tasks across every workspace the caller belongs to, resolved from their memberships rather than any client-supplied id.
-
-## Trade-offs
-
-Unattended agent loops are a spend multiplier, and an operations queue makes it easy to start many. A per-project concurrency cap and a per-task token budget ship with the first runnable version rather than later; usage exhaustion moves a task to `blocked` instead of burning quietly. This is the risk to watch, not a theoretical one.
-
-An operations queue can drift into generic project management. There are deliberately no due dates, estimates, reports, or swimlanes: this is about what agents are doing, and a task with no runner is only captured intent.
-
-One flow per project, stored as JSON on `project` and captured by project templates. Multiple flows would need a table; if that arrives, this column becomes a migration.
-
-No Durable Object. ADR 0024 kept them out of chat deliberately, so the operations surface polls with React Query — every two seconds while something runs and every 30 seconds otherwise. Mutation results update the cache immediately. Live push is the first thing to revisit, and `ConversationCoordinator` is where that would live.
-
-`runPanel` and `TeamDelegation` still bypass the turn engine. That is real ADR 0022 debt, but coupling its repair to this task system would double the risk of both. It stands, named, as separate work.
-
-The sandbox and recipe runners are specified in `projectTaskRunnerKindSchema` as a single `conversation` variant for now. The goal owner union already accepts a sandbox run id, so the second runner is a small addition rather than a redesign — but it is not built, and neither is a personal-scope task system under Chat.
+One flow per project is deliberately limited. Former team groupings cannot be migrated automatically into ordered stages. Concurrency caps, token budgets and usage admission must bound unattended work.
