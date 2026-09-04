@@ -77,6 +77,8 @@ Credit admission reads persisted plan allowances; missing allowances refuse work
 
 `apps/app/src/lib/api/fetch-wrapper.ts` owns credentials, CSRF, timeouts and API error handling. React Query hooks own remote/local coordination and invalidation; the authenticated store owns hydrated user/settings state. `lib/local/local-chat-service.ts` owns local conversation persistence.
 
+Keep customisation drafts in `component-account` as field-level edits over hydrated settings. Refresh untouched controls as settings arrive, preserve local edits until the server returns matching values, and discard drafts when the settings identity changes.
+
 Chat and Work compose the same `ConversationThread` and scoped capability surfaces. Keep backend catalogue metadata authoritative and project request metadata intact. Automatic routing admits text-response chat models, excluding media generation, realtime and specialist extraction models; multimodal chat inputs remain eligible. Failed AI prompt analysis falls back to keyword requirements before scoring eligible models. Host controllers supply resolved links and actions to render packages through their existing providers.
 
 Use shared UI primitives for buttons, dialogs, focus, overlays and reduced motion. Tool messages and parts share `ToolResultView`; declared renderers and payload shape choose the body. Stream rendering coalesces text updates while preserving event order. API and iOS share contract semantics even where their presentation differs.

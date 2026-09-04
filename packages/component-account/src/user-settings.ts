@@ -4,6 +4,8 @@ import {
   type PetModelOverrides,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { resolveSpeechSettings, resolveTranscriptionSettings } from "./transcription-settings";
+
 export function resolveGuardrailsProviderId(value: string): GuardrailsProviderId {
   return guardrailsProviderIds.find((provider) => provider === value) ?? "llamaguard";
 }
@@ -52,4 +54,45 @@ export function prepareUserSettingsPayload(settings: Partial<UserSettings>): Par
   }
 
   return payload;
+}
+
+export function buildUserSettingsFormData(userSettings: UserSettings | null) {
+  const transcriptionSettings = resolveTranscriptionSettings(
+    userSettings?.transcription_provider,
+    userSettings?.transcription_model,
+  );
+  const speechSettings = resolveSpeechSettings(
+    userSettings?.speech_provider,
+    userSettings?.speech_model,
+  );
+
+  return {
+    nickname: userSettings?.nickname || "",
+    job_role: userSettings?.job_role || "",
+    traits: userSettings?.traits || "",
+    preferences: userSettings?.preferences || "",
+    guardrails_enabled: userSettings?.guardrails_enabled || false,
+    guardrails_provider: userSettings?.guardrails_provider || "llamaguard",
+    bedrock_guardrail_id: userSettings?.bedrock_guardrail_id || "",
+    bedrock_guardrail_version: userSettings?.bedrock_guardrail_version || "1",
+    embedding_provider:
+      userSettings?.embedding_provider === "s3vectors" ? "s3vectors" : "vectorize",
+    bedrock_knowledge_base_id: userSettings?.bedrock_knowledge_base_id || "",
+    bedrock_knowledge_base_custom_data_source_id:
+      userSettings?.bedrock_knowledge_base_custom_data_source_id || "",
+    s3vectors_bucket_name: userSettings?.s3vectors_bucket_name || "",
+    s3vectors_index_name: userSettings?.s3vectors_index_name || "",
+    s3vectors_region: userSettings?.s3vectors_region || "us-east-1",
+    memories_save_enabled: userSettings?.memories_save_enabled || false,
+    memories_chat_history_enabled: userSettings?.memories_chat_history_enabled || false,
+    temporary_chats_default: userSettings?.temporary_chats_default || false,
+    memory_provider: userSettings?.memory_provider || "built-in",
+    tracking_enabled: userSettings?.tracking_enabled ?? true,
+    transcription_provider: transcriptionSettings.transcription_provider,
+    transcription_model: transcriptionSettings.transcription_model,
+    speech_provider: speechSettings.speech_provider,
+    speech_model: speechSettings.speech_model,
+    search_provider: userSettings?.search_provider || "",
+    sandbox_model: userSettings?.sandbox_model || "",
+  };
 }

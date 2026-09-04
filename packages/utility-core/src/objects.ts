@@ -2,6 +2,21 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+export function omitMatchingProperties<T extends object>(
+  values: Partial<T>,
+  baseline: T,
+): Partial<T> {
+  const remaining = { ...values };
+
+  for (const key in remaining) {
+    if (Object.is(remaining[key], baseline[key])) {
+      delete remaining[key];
+    }
+  }
+
+  return remaining;
+}
+
 export function deepMergeRecords(
   base: Record<string, unknown>,
   next: Record<string, unknown>,

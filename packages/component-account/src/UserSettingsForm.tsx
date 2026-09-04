@@ -7,23 +7,22 @@ import {
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import { useAnalytics } from "@ngriffin_uk/polychat-library-react";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 
 import {
   getSpeechModelOptions,
   getTranscriptionModelOptions,
-  resolveSpeechSettings,
-  resolveTranscriptionSettings,
+  getSpeechProviderOption,
+  getTranscriptionProviderOption,
   speechProviderOptions,
-  type SpeechProviderId,
   transcriptionProviderOptions,
-  type TranscriptionProviderId,
 } from "./transcription-settings";
 import {
   prepareUserSettingsPayload,
   resolveGuardrailsProviderId,
   type UserSettings,
 } from "./user-settings";
+import { useUserSettingsForm } from "./useUserSettingsForm";
 
 export interface UserSettingsFormProps {
   userSettings: UserSettings | null;
@@ -35,116 +34,33 @@ export interface UserSettingsFormProps {
   onSaveError?: (error: unknown) => void;
 }
 
-function buildUserSettingsFormData(userSettings: UserSettings | null) {
-  const transcriptionSettings = resolveTranscriptionSettings(
-    userSettings?.transcription_provider,
-    userSettings?.transcription_model,
-  );
-  const speechSettings = resolveSpeechSettings(
-    userSettings?.speech_provider,
-    userSettings?.speech_model,
-  );
-
-  return {
-    nickname: userSettings?.nickname || "",
-    job_role: userSettings?.job_role || "",
-    traits: userSettings?.traits || "",
-    preferences: userSettings?.preferences || "",
-    guardrails_enabled: userSettings?.guardrails_enabled || false,
-    guardrails_provider: userSettings?.guardrails_provider || "llamaguard",
-    bedrock_guardrail_id: userSettings?.bedrock_guardrail_id || "",
-    bedrock_guardrail_version: userSettings?.bedrock_guardrail_version || "1",
-    embedding_provider:
-      userSettings?.embedding_provider === "s3vectors" ? "s3vectors" : "vectorize",
-    bedrock_knowledge_base_id: userSettings?.bedrock_knowledge_base_id || "",
-    bedrock_knowledge_base_custom_data_source_id:
-      userSettings?.bedrock_knowledge_base_custom_data_source_id || "",
-    s3vectors_bucket_name: userSettings?.s3vectors_bucket_name || "",
-    s3vectors_index_name: userSettings?.s3vectors_index_name || "",
-    s3vectors_region: userSettings?.s3vectors_region || "us-east-1",
-    memories_save_enabled: userSettings?.memories_save_enabled || false,
-    memories_chat_history_enabled: userSettings?.memories_chat_history_enabled || false,
-    temporary_chats_default: userSettings?.temporary_chats_default || false,
-    memory_provider: userSettings?.memory_provider || "built-in",
-    tracking_enabled: userSettings?.tracking_enabled ?? true,
-    transcription_provider: transcriptionSettings.transcription_provider,
-    transcription_model: transcriptionSettings.transcription_model,
-    speech_provider: speechSettings.speech_provider,
-    speech_model: speechSettings.speech_model,
-    search_provider: userSettings?.search_provider || "",
-    sandbox_model: userSettings?.sandbox_model || "",
-  };
-}
-
-function areUserSettingsFormDataEqual(
-  left: ReturnType<typeof buildUserSettingsFormData>,
-  right: ReturnType<typeof buildUserSettingsFormData>,
-) {
-  return Object.keys(left).every(
-    (key) => left[key as keyof typeof left] === right[key as keyof typeof right],
-  );
-}
-
 export function UserSettingsForm({
   userSettings,
   isAuthenticated,
-  isPro = false,
   isSaving = false,
   onSignIn,
   onSave,
   onSaveError,
 }: UserSettingsFormProps) {
   const analytics = useAnalytics();
-  const trackEvent = analytics.track;
-  const [formData, setFormData] = useState(() => buildUserSettingsFormData(userSettings));
-  const [hasLocalChanges, setHasLocalChanges] = useState(false);
-  const [pendingSavedFormData, setPendingSavedFormData] = useState<ReturnType<
-    typeof buildUserSettingsFormData
-  > | null>(null);
+  const { formData, updateFormData: updateDraft } = useUserSettingsForm(userSettings);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
 
-  useEffect(() => {
-    const nextFormData = buildUserSettingsFormData(userSettings);
-
-    if (pendingSavedFormData) {
-      if (!areUserSettingsFormDataEqual(nextFormData, pendingSavedFormData)) {
-        return;
-      }
-
-      setFormData(nextFormData);
-      setHasLocalChanges(false);
-      setPendingSavedFormData(null);
-
-      return;
-    }
-
-    if (hasLocalChanges) {
-      return;
-    }
-
-    setFormData(nextFormData);
-  }, [hasLocalChanges, pendingSavedFormData, userSettings]);
-
-  const updateFormData = (
-    updater: typeof formData | ((previous: typeof formData) => typeof formData),
-  ) => {
-    setHasLocalChanges(true);
-    setPendingSavedFormData(null);
+  const updateFormData = (patch: Partial<typeof formData>) => {
     setSaveSuccess(false);
     setSaveError("");
-    setFormData((previous) => (typeof updater === "function" ? updater(previous) : updater));
+    updateDraft(patch);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
-    updateFormData((prev) => ({
-      ...prev,
+    updateFormData({
       [name]: value,
-    }));
+    });
 
-    trackEvent({
+    analytics.track({
       name: "setting_field_edited",
       category: "ui_interaction",
       properties: {
@@ -155,16 +71,15 @@ export function UserSettingsForm({
   };
 
   const handleTranscriptionProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newProvider = e.target.value as TranscriptionProviderId;
+    const newProvider = getTranscriptionProviderOption(e.target.value).id;
     const [firstModelForProvider] = getTranscriptionModelOptions(newProvider);
 
-    updateFormData((prev) => ({
-      ...prev,
+    updateFormData({
       transcription_provider: newProvider,
       transcription_model: firstModelForProvider.id,
-    }));
+    });
 
-    trackEvent({
+    analytics.track({
       name: "transcription_provider_changed",
       category: "ui_interaction",
       properties: {
@@ -175,16 +90,15 @@ export function UserSettingsForm({
   };
 
   const handleSpeechProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newProvider = e.target.value as SpeechProviderId;
+    const newProvider = getSpeechProviderOption(e.target.value).id;
     const [firstModelForProvider] = getSpeechModelOptions(newProvider);
 
-    updateFormData((prev) => ({
-      ...prev,
+    updateFormData({
       speech_provider: newProvider,
       speech_model: firstModelForProvider.id,
-    }));
+    });
 
-    trackEvent({
+    analytics.track({
       name: "speech_provider_changed",
       category: "ui_interaction",
       properties: {
@@ -199,7 +113,7 @@ export function UserSettingsForm({
     setSaveSuccess(false);
     setSaveError("");
 
-    trackEvent({
+    analytics.track({
       name: "settings_save_attempt",
       category: "user_journey",
       properties: {
@@ -210,44 +124,12 @@ export function UserSettingsForm({
     });
 
     try {
-      const settingsPayload = prepareUserSettingsPayload(
-        isPro
-          ? formData
-          : {
-              nickname: formData.nickname,
-              job_role: formData.job_role,
-              traits: formData.traits,
-              preferences: formData.preferences,
-              guardrails_enabled: formData.guardrails_enabled,
-              guardrails_provider: formData.guardrails_provider,
-              bedrock_guardrail_id: formData.bedrock_guardrail_id,
-              bedrock_guardrail_version: formData.bedrock_guardrail_version,
-              embedding_provider: formData.embedding_provider,
-              bedrock_knowledge_base_id: formData.bedrock_knowledge_base_id,
-              bedrock_knowledge_base_custom_data_source_id:
-                formData.bedrock_knowledge_base_custom_data_source_id,
-              s3vectors_bucket_name: formData.s3vectors_bucket_name,
-              s3vectors_index_name: formData.s3vectors_index_name,
-              s3vectors_region: formData.s3vectors_region,
-              memories_save_enabled: formData.memories_save_enabled,
-              memories_chat_history_enabled: formData.memories_chat_history_enabled,
-              temporary_chats_default: formData.temporary_chats_default,
-              memory_provider: formData.memory_provider,
-              tracking_enabled: formData.tracking_enabled,
-              transcription_provider: formData.transcription_provider,
-              transcription_model: formData.transcription_model,
-              speech_provider: formData.speech_provider,
-              speech_model: formData.speech_model,
-              search_provider: formData.search_provider,
-              sandbox_model: formData.sandbox_model,
-            },
-      );
+      const settingsPayload = prepareUserSettingsPayload(formData);
 
       await onSave(settingsPayload);
-      setPendingSavedFormData(formData);
       setSaveSuccess(true);
 
-      trackEvent({
+      analytics.track({
         name: "settings_saved",
         category: "user_journey",
         properties: {
@@ -276,7 +158,12 @@ export function UserSettingsForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form
+      onSubmit={(event) => {
+        void handleSubmit(event);
+      }}
+      className="space-y-6"
+    >
       <div>
         <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
           Personalised responses
@@ -372,12 +259,11 @@ export function UserSettingsForm({
             name="sandbox_model"
             value={formData.sandbox_model}
             onChange={(e) => {
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 sandbox_model: e.target.value,
-              }));
+              });
 
-              trackEvent({
+              analytics.track({
                 name: "sandbox_model_changed",
                 category: "ui_interaction",
                 properties: {
@@ -406,10 +292,9 @@ export function UserSettingsForm({
             id="guardrails_enabled"
             checked={formData.guardrails_enabled}
             onChange={(e) =>
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 guardrails_enabled: e.target.checked,
-              }))
+              })
             }
           />
         </div>
@@ -425,10 +310,9 @@ export function UserSettingsForm({
             name="guardrails_provider"
             value={formData.guardrails_provider}
             onChange={(e) =>
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 guardrails_provider: resolveGuardrailsProviderId(e.target.value),
-              }))
+              })
             }
           >
             <option value="llamaguard">LlamaGuard</option>
@@ -502,10 +386,9 @@ export function UserSettingsForm({
             name="embedding_provider"
             value={formData.embedding_provider}
             onChange={(e) =>
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 embedding_provider: e.target.value,
-              }))
+              })
             }
           >
             <option value="vectorize">Vectorize</option>
@@ -560,10 +443,9 @@ export function UserSettingsForm({
                 name="s3vectors_region"
                 value={formData.s3vectors_region}
                 onChange={(e) =>
-                  updateFormData((prev) => ({
-                    ...prev,
+                  updateFormData({
                     s3vectors_region: e.target.value,
-                  }))
+                  })
                 }
               >
                 <option value="us-east-1">US East (N. Virginia)</option>
@@ -598,10 +480,9 @@ export function UserSettingsForm({
             name="memory_provider"
             value={formData.memory_provider}
             onChange={(e) =>
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 memory_provider: e.target.value,
-              }))
+              })
             }
           >
             <option value="built-in">Built-in</option>
@@ -624,10 +505,9 @@ export function UserSettingsForm({
             id="memories_save_enabled"
             checked={formData.memories_save_enabled}
             onChange={(e) =>
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 memories_save_enabled: e.target.checked,
-              }))
+              })
             }
           />
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -646,10 +526,9 @@ export function UserSettingsForm({
             id="memories_chat_history_enabled"
             checked={formData.memories_chat_history_enabled}
             onChange={(e) =>
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 memories_chat_history_enabled: e.target.checked,
-              }))
+              })
             }
           />
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -676,10 +555,9 @@ export function UserSettingsForm({
             id="temporary_chats_default"
             checked={formData.temporary_chats_default}
             onChange={(e) =>
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 temporary_chats_default: e.target.checked,
-              }))
+              })
             }
           />
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -699,10 +577,9 @@ export function UserSettingsForm({
             id="tracking_enabled"
             checked={formData.tracking_enabled}
             onChange={(e) =>
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 tracking_enabled: e.target.checked,
-              }))
+              })
             }
           />
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -756,10 +633,9 @@ export function UserSettingsForm({
             name="transcription_model"
             value={formData.transcription_model}
             onChange={(e) =>
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 transcription_model: e.target.value,
-              }))
+              })
             }
           >
             {getTranscriptionModelOptions(formData.transcription_provider).map((model) => (
@@ -809,10 +685,9 @@ export function UserSettingsForm({
             name="speech_model"
             value={formData.speech_model}
             onChange={(e) =>
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 speech_model: e.target.value,
-              }))
+              })
             }
           >
             {getSpeechModelOptions(formData.speech_provider).map((model) => (
@@ -844,12 +719,11 @@ export function UserSettingsForm({
             name="search_provider"
             value={formData.search_provider}
             onChange={(e) => {
-              updateFormData((prev) => ({
-                ...prev,
+              updateFormData({
                 search_provider: e.target.value,
-              }));
+              });
 
-              trackEvent({
+              analytics.track({
                 name: "search_provider_changed",
                 category: "ui_interaction",
                 properties: {
