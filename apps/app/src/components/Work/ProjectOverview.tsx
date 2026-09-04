@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
+import { ChatInputPolicySettings } from "~/components/ConversationThread/ChatInputPolicySettings";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useTemplateMutations } from "~/hooks/useGovernance";
@@ -144,6 +145,11 @@ export function ProjectOverview({
                 projectId={projectId}
               />
               <ProjectRoutingCard canManage={canManage} project={project} />
+              <ChatInputPolicySettings
+                key={projectId}
+                projectId={projectId}
+                canManage={canManage}
+              />
               <ProjectKnowledgeCard
                 embedded
                 workspaceId={workspaceId}

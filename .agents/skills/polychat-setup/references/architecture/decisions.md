@@ -42,6 +42,8 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0041](decisions/0041-usage-metering-and-credits.md): Meter work in vendor units and bill it in credits, with a write-once ledger, atomic additive balances, and rates derived from the model catalogue.
 - [0042](decisions/0042-admit-turns-once-never-cut-them-off.md): Decide a turn's credit admission once at the request boundary against a reserved estimate, and demote the per-step check to a runaway guard so an admitted turn is never cut off mid-answer.
 
+- [0043](decisions/0043-version-lossless-chat-input-rewriting.md): Keep chat input rewriting opt-in and lossless, with preview, revision comparison, and bounded scope-owned history.
+
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 
 ## Archived records

@@ -1,4 +1,5 @@
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
+import { rewriteChatInput } from "~/lib/chat/policy/input-rewriting";
 import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { applyModelResponseDefaults } from "~/lib/providers/models/responseDefaults";
@@ -78,7 +79,7 @@ export async function getAIResponse(request: ChatCompletionParameters) {
     );
   }
 
-  const providerMessages = toProviderMessages(messages);
+  const providerMessages = toProviderMessages(await rewriteChatInput(request));
 
   const filteredMessages =
     mode === "normal"

@@ -47,3 +47,5 @@ export * from "./Sandbox/repositories";
 export * from "./Sources/SourceCollectionList";
 export * from "./SignInDialog";
 export * from "./Sources/SourceListHeader";
+
+export * from "./ChatInputPolicyPanel";

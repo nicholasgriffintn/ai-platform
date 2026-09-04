@@ -27,15 +27,18 @@ import {
 } from "~/services/user/userOperations";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { chatInputPolicyRoutes } from "../chat-input-policy";
 import apiKeys from "./apiKeys";
 import exportHistoryRoute from "./export-history";
 import pets from "./pets";
 import usage from "./usage";
 
 const app = new Hono();
+
 const routeLogger = createRouteLogger("user");
 
 app.use("/*", requireAuth);
+app.route("/chat-input-policy", chatInputPolicyRoutes());
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing user route: ${c.req.path}`);

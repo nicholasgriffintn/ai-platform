@@ -10,7 +10,10 @@ export type CapabilityConfigurationScope =
   | { type: "user"; id: number }
   | { type: "project"; id: string };
 
-export type CapabilityConfigurationKind = AssistantCapabilityKind | ProjectCapabilityKind;
+export type CapabilityConfigurationKind =
+  | AssistantCapabilityKind
+  | ProjectCapabilityKind
+  | "chat_input_policy";
 
 export interface CapabilityConfigurationRow {
   id: string;
@@ -166,6 +169,42 @@ export class CapabilityConfigurationRepository extends BaseRepository {
     const rows = await this.runQuery<CapabilityConfigurationRow>(query, values);
 
     return rows.map(formatConfiguration);
+  }
+
+  async saveWithRevision(
+    params: SaveCapabilityConfigurationParams,
+    expectedRevision: number,
+  ): Promise<boolean> {
+    const values = buildCapabilityConfigurationValues(params);
+    const result = await this.executeRun(
+      `INSERT INTO capability_configuration (id, scope_type, scope_id, capability_kind, capability_id, configuration)
+       SELECT ?, ?, ?, ?, ?, ?
+       WHERE ? = 0 OR EXISTS (
+         SELECT 1 FROM capability_configuration
+         WHERE scope_type = ? AND scope_id = ? AND capability_kind = ? AND capability_id = ?
+           AND json_extract(configuration, '$.revision') = ?
+       )
+       ON CONFLICT(scope_type, scope_id, capability_kind, capability_id) DO UPDATE SET
+         configuration = excluded.configuration, updated_at = CURRENT_TIMESTAMP
+       WHERE json_extract(capability_configuration.configuration, '$.revision') = ?`,
+      [
+        values.id,
+        values.scope_type,
+        values.scope_id,
+        values.capability_kind,
+        values.capability_id,
+        values.configuration,
+        expectedRevision,
+        values.scope_type,
+        values.scope_id,
+        values.capability_kind,
+        values.capability_id,
+        expectedRevision,
+        expectedRevision,
+      ],
+    );
+
+    return result.meta.changes > 0;
   }
 
   async save(params: SaveCapabilityConfigurationParams): Promise<CapabilityConfigurationRecord> {

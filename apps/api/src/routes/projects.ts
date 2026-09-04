@@ -62,7 +62,11 @@ import {
   updateProject,
 } from "~/services/workspaces";
 
+import { chatInputPolicyRoutes } from "./chat-input-policy";
+
 const app = new Hono();
+
+app.route("/:projectId/chat-input-policy", chatInputPolicyRoutes(true));
 const projectParams = z.object({ projectId: z.string().min(1) });
 
 addRoute(app, "get", "/:projectId", {

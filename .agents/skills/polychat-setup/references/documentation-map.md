@@ -19,6 +19,8 @@ The skill is the single setup and decision-guidance entry point. Use these deepe
 - [Composio operator runbook](operations/composio-connectors.md)
 - [Stripe billing runbook](operations/stripe-billing.md)
 - [OCR capability and batch lifecycle](operations/ocr.md)
+- [Pi and Radius implementation follow-up](operations/pi-radius-follow-up.md)
+- [Chat input rewriting](operations/chat-input-policy.md)
 - [Loop cost controls](operations/loop-cost-controls.md)
 - [End-to-end test conventions](testing/e2e.md)
 
