@@ -39,9 +39,9 @@ export function ChatInputPolicyPanel({
       <div>
         <h2 className="text-sm font-semibold">Tool output rewriting</h2>
         <p className="text-xs leading-5 text-zinc-500">
-          Compact JSON tool results before sending them to the model. Keep the original history and
-          all JSON values. Ordinary text, malformed JSON, and structured or signed parts stay
-          unchanged.
+          Compact JSON tool results by default before sending them to the model. Keep the original
+          history and all JSON values. Ordinary text, malformed JSON, and structured or signed parts
+          stay unchanged.
         </p>
       </div>
       <FormSelect

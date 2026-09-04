@@ -1,4 +1,8 @@
-import type { ChatInputPolicy, ChatInputPolicyPreview } from "@ngriffin_uk/polychat-schemas";
+import {
+  DEFAULT_CHAT_INPUT_POLICY,
+  type ChatInputPolicy,
+  type ChatInputPolicyPreview,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { estimateTextTokens } from "~/lib/messageTokens";
 import { getChatInputPolicy } from "~/services/chat-input-policy";
@@ -78,7 +82,7 @@ export async function rewriteChatInput(
   const messages = request.messages ?? [];
 
   if (!request.context?.user) {
-    return messages;
+    return rewriteToolMessages(messages, DEFAULT_CHAT_INPUT_POLICY);
   }
 
   const access = await resolveChatProjectAccess(request.context, request);

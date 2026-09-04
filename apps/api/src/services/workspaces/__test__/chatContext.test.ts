@@ -350,14 +350,19 @@ describe("project chat context", () => {
 });
 
 describe("governed chat input policies", () => {
-  it("starts off, records revisions, and restores a previous policy as a new revision", async () => {
+  it("defaults personal and project rewriting on, persists disabling, and restores it as a new revision", async () => {
     const { context, repositories } = createContext({ membership: { role: "admin" } });
     const initial = await getChatInputPolicy(context, "project-1");
 
-    expect(initial).toEqual({ revision: 0, policy: { toolOutputRewriting: "off" }, history: [] });
+    expect(initial).toEqual({
+      revision: 0,
+      policy: { toolOutputRewriting: "compact_json" },
+      history: [],
+    });
+    expect(await getChatInputPolicy(context)).toEqual(initial);
     const first = await updateChatInputPolicy(
       context,
-      { expectedRevision: 0, policy: { toolOutputRewriting: "compact_json" } },
+      { expectedRevision: 0, policy: { toolOutputRewriting: "off" } },
       "project-1",
     );
 
@@ -365,12 +370,13 @@ describe("governed chat input policies", () => {
       expect.objectContaining({
         revision: 1,
         changedBy: 7,
-        policy: { toolOutputRewriting: "compact_json" },
+        policy: { toolOutputRewriting: "off" },
       }),
     ]);
     repositories.capabilityConfigurations.list.mockResolvedValue([
       { capabilityId: "default", configuration: first },
     ]);
+    expect((await getChatInputPolicy(context, "project-1")).policy.toolOutputRewriting).toBe("off");
     const second = await updateChatInputPolicy(
       context,
       { expectedRevision: 1, policy: initial.policy },
@@ -379,7 +385,7 @@ describe("governed chat input policies", () => {
 
     expect(second.revision).toBe(2);
     expect(second.history).toHaveLength(2);
-    expect(second.policy.toolOutputRewriting).toBe("off");
+    expect(second.policy.toolOutputRewriting).toBe("compact_json");
     expect(repositories.capabilityConfigurations.saveWithRevision).toHaveBeenLastCalledWith(
       expect.objectContaining({
         scope: { type: "project", id: "project-1" },
@@ -454,8 +460,15 @@ describe("governed chat input policies", () => {
       { type: "project", id: "project-1" },
       "chat_input_policy",
     );
-    repositories.capabilityConfigurations.list.mockResolvedValue([]);
+    repositories.capabilityConfigurations.list.mockResolvedValue([
+      {
+        capabilityId: "default",
+        configuration: { revision: 2, policy: { toolOutputRewriting: "off" }, history: [] },
+      },
+    ]);
     expect((await rewriteChatInput(request))[0].content).toBe('{ "ok": true }');
+    repositories.capabilityConfigurations.list.mockResolvedValue([]);
+    expect((await rewriteChatInput(request))[0].content).toBe('{"ok":true}');
     repositories.capabilityConfigurations.list.mockResolvedValue([
       { capabilityId: "default", configuration: { policy: "broken" } },
     ]);

@@ -42,3 +42,7 @@ export type ChatInputPolicyState = z.infer<typeof chatInputPolicyStateSchema>;
 export type UpdateChatInputPolicy = z.infer<typeof updateChatInputPolicySchema>;
 export type ChatInputPolicyPreview = z.infer<typeof chatInputPolicyPreviewSchema>;
 export type PreviewChatInputPolicy = z.infer<typeof previewChatInputPolicySchema>;
+
+export const DEFAULT_CHAT_INPUT_POLICY: ChatInputPolicy = {
+  toolOutputRewriting: "compact_json",
+};

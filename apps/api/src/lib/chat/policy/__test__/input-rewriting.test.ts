@@ -4,11 +4,18 @@ import { buildMessageParts } from "~/lib/chat/messages/parts";
 import type { Message } from "~/types";
 import { compactJsonWhitespace } from "~/utils/json";
 
-import { previewInputRewrite, rewriteToolMessages } from "../input-rewriting";
+import { previewInputRewrite, rewriteChatInput, rewriteToolMessages } from "../input-rewriting";
 
 const compact = { toolOutputRewriting: "compact_json" } as const;
 
 describe("lossless tool-result rewriting", () => {
+  it("applies the default rewrite to chat calls without a saved user scope", async () => {
+    const messages: Message[] = [{ role: "tool", status: "success", content: '{ "ok": true }' }];
+
+    expect((await rewriteChatInput({ messages }))[0].content).toBe('{"ok":true}');
+    expect(messages[0].content).toBe('{ "ok": true }');
+  });
+
   it("preserves numeric lexemes, duplicate keys, escaped strings, and whitespace inside strings", () => {
     const source = String.raw` { "large": 9007199254740993123, "value": -0, "value": 1e999, "text": " a \" b ", "slash": "\\" } `;
     const rewritten = compactJsonWhitespace(source);

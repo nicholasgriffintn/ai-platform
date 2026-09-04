@@ -1,5 +1,6 @@
 import {
   chatInputPolicyStateSchema,
+  DEFAULT_CHAT_INPUT_POLICY,
   type ChatInputPolicyState,
   type UpdateChatInputPolicy,
 } from "@ngriffin_uk/polychat-schemas";
@@ -37,7 +38,7 @@ async function readPolicy(
   const record = rows.find((row) => row.capabilityId === "default");
 
   if (!record) {
-    return { revision: 0, policy: { toolOutputRewriting: "off" }, history: [] };
+    return { revision: 0, policy: { ...DEFAULT_CHAT_INPUT_POLICY }, history: [] };
   }
 
   const parsed = chatInputPolicyStateSchema.safeParse(record.configuration);
