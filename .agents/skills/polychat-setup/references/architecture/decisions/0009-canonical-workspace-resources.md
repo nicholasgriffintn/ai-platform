@@ -1,38 +1,21 @@
-# ADR 0009: Canonical workspace resources
+# ADR 0009: Use scoped resources and explicit authority
 
-## Status
+Status: Accepted.
 
-Accepted
-
-## Context
-
-Personal chat and Work accumulated separate persistence models for app data, dynamic app responses, uploaded assets, memories, recipe installations, connector credentials, and sandbox runs. Similar records had different access rules and response shapes, while project capabilities needed collaboration, governance, and eventual desktop access without another parallel model.
-
-Keeping compatibility repositories or dual writes would preserve ambiguous ownership and make migrations impossible to reason about. Raw public app-data share tokens also could not be migrated safely into a hashed-token model.
+Avoid parallel stores and inconsistent access rules for the same inputs, results and configuration.
 
 ## Decision
 
-Use one vocabulary across personal and project contexts:
+Use **sources** for durable inputs, **outputs** for results, **templates** for reusable configuration, **activity** for execution history, and immutable **audit records** for governed workspace changes. A source or output is personal without a project and collaborative with one. Conversation links are provenance, not authority.
 
-- store generated and user-authored results as **outputs**;
-- store files, memories, URLs, text, connected records, and repositories as **sources**;
-- store encrypted external authority as user-owned **provider connections**;
-- store reusable personal or workspace configuration as **templates**;
-- project execution history into **activity records**; and
-- record governed workspace mutations as immutable **audit records**.
+Keep file bytes private. Authorise source/output access on the server; output shares use hashed, expiring, revocable tokens. Do not publish project conversations through personal conversation sharing. Use the owning service's creator and administrator mutation rules rather than inferring write permission from read access.
 
-Outputs and sources are personal when `project_id` is null and collaborative when it is set. A conversation link adds provenance, not authority. Project membership controls project reads; creators may mutate their own project resources, while admins and owners may govern all project resources. File bytes remain private and are exposed only through authorised source/output routes or an active output share.
+Store validated settings in `capability_configuration`, keyed by scope, capability kind and ID. Configuration does not enable a capability. `project_capability` owns project associations; app and recipe associations are member-created and creator-managed, while project tools remain administrator-managed.
 
-Output shares use random tokens whose SHA-256 hashes are persisted. Shares may expire or be revoked, and project share changes are audited. Public conversation access may expose conversation-linked files, but project conversations cannot use personal conversation publishing.
+Keep recipe installations user-owned, including their project ID and creator. Members can see project installations; only their creator changes them. Scheduled execution retains user and project scope and resolves that person's current connections. Owners and administrators curate the reserved project context collection; the memory service owns memory retrieval and writes.
 
-Project templates validate capability references and tool configuration against the current catalogues before creating the project and all associations in one database batch. Workspace ownership transfer changes both memberships atomically, and an owner cannot leave before transfer.
+Validate project templates against current catalogues before atomic creation. Transfer workspace ownership atomically and require transfer before an owner leaves. Retain workspace audit history after deletion; record the deletion request before removing collaborative content and memberships.
 
-Migrate legacy data through temporary staging tables, populate the canonical tables, then remove `app_data`, `stored_asset`, memories, memory groups, recipe-installation records, legacy connection records, and their runtime repositories/routes. Retire legacy raw-token app shares instead of preserving unsafe token material. Do not add compatibility APIs or dual-write paths.
+## Trade-off
 
-## Trade-offs
-
-This is a deliberate breaking replacement. Old app-data and asset URLs, response fields, and raw app share links stop working after migration. Existing records remain available through their canonical resource type, but callers must adopt the new contracts.
-
-Connections remain user-owned even when used inside Work because upstream consent and credentials belong to a person. Workspace-owned service accounts would require a separate secrets and consent decision.
-
-Activity is a user-facing projection rather than an immutable compliance log; audit records serve governance history. Desktop clients can later consume the same contracts without changing ownership semantics.
+Polymorphic scopes and separate D1/R2 stores require explicit cleanup. Retained audit records may reference deleted workspaces. Provider connections remain personal; shared credentials must not emerge accidentally from project configuration.

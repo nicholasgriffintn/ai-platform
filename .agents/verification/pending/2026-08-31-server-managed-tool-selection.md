@@ -4,7 +4,7 @@
 - **Surfaces:** web, iOS, API
 - **Prerequisites:** none beyond the release prerequisites.
 - **Risk if wrong:** tools quietly stop being offered to the model, so capabilities look missing rather than broken. Or the opposite: everything is offered, and answers get worse and more expensive.
-- **Commits:** `b1fc99f8` (#2144), `4f31a0f7`, `e50e9c04` (#2183). See ADR 0028 and ADR 0029.
+- **Commits:** `b1fc99f8` (#2144), `4f31a0f7`, `e50e9c04` (#2183). See ADR 0029.
 
 ## Verify
 

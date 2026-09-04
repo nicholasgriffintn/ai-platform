@@ -4,7 +4,7 @@
 - **Surfaces:** web, API
 - **Prerequisites:** migrations `0011`, `0012` (backfills owner scope from `user_id`), and `0013`.
 - **Risk if wrong:** an existing agent loses its tools, its servers, or its owner, and a project flow that names it stops running.
-- **Commits:** `a7342e67` (#2179), `bf9cd2d2` (#2180), `db886b1f` (#2182). See ADR 0034 and ADR 0036.
+- **Commits:** `a7342e67` (#2179), `bf9cd2d2` (#2180), `db886b1f` (#2182). See ADR 0036.
 
 ## Verify
 

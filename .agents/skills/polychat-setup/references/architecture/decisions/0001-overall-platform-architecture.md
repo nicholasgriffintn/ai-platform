@@ -1,23 +1,18 @@
-# ADR 0001: Overall platform architecture
+# ADR 0001: Keep implementation behind app and package boundaries
 
-Status: accepted
+Status: Accepted.
 
-Polychat is a pnpm monorepo with a React Router frontend, a Hono API Worker, focused Cloudflare Workers for sandbox and training execution, a small metrics frontend, an iOS client, and shared package modules for schemas and agent execution. We keep the main frontend and API Worker as orchestration surfaces, while deeper modules own persistence, provider capability adapters, local conversation storage, realtime connections, sandbox runs, and training provider execution.
+Separate deployable responsibilities without turning every large module into a package.
 
 ## Decision
 
-- Keep `apps/app` as the primary browser interface. Page modules route and compose, React Query hooks own server/local data coordination, Zustand stores own durable UI/session preferences, `apps/app/src/lib/api` owns HTTP interfaces, and feature modules own rendering and interaction.
-- Keep `apps/api` as the public backend interface. `src/index.ts` owns Worker-level middleware, OpenAPI setup, route mounting, scheduled events, queue events, and Durable Object export. Route modules validate and orchestrate through `addRoute`, `ServiceContext`, repositories, and deeper domain modules.
-- Keep provider execution behind capability seams in `apps/api/src/lib/providers`. Each capability can have multiple provider adapters, so the registry is a real seam rather than a speculative abstraction.
-- Keep D1 access behind repository modules. Backend modules should use `ServiceContext.repositories` or `ServiceContext.database` instead of constructing ad hoc database access at call sites.
-- Keep `packages/schemas` as the shared contract module for Zod schemas and TypeScript types used across frontend, backend, sandbox, and training workspaces.
-- Keep `packages/library-agent-core` as the reusable agent-loop module. Sandbox-worker code adapts it to Cloudflare Sandbox, task profiles, GitHub tokens, command approval, cancellation, and SSE progress.
-- Keep sandbox and training execution in separate Workers. The API Worker coordinates user-facing auth, records, and routes; the focused Workers own risky or provider-specific execution.
+- Keep the web and public API as orchestration surfaces. Web controllers bind routes, queries and stores to presentation; API routes validate and delegate through `routeBuilder`, `ServiceContext` and repositories.
+- Keep provider execution behind the API capability registry. Sandbox and training Workers own their specialised execution, while the API owns public access and dispatch.
+- Put wire contracts in `packages/schemas`. Extract reusable runtime code only when a second consumer exists; use `library-agent-core`, `library-tool-runtime`, `library-registry` and `library-client` for their existing responsibilities.
+- Keep `component-*` packages independent of routers, stores and API clients. Pass data and typed actions from the host. Publish built ESM, declarations and explicit CSS exports, with React as a peer dependency.
+- Keep tool descriptors under `services/functions/definitions` separate from executable registrations. Provider implementations consume descriptor data and must not import the provider registry through the tool-execution barrel; that creates an initialisation cycle.
+- Render tool messages and assistant tool-result parts through the same `ToolResultView`. Use a declared renderer or infer presentation from payload shape, check failure status first, and keep `renderer` separate from `responseType`. Specialised views are registered React components; tool-authored HTML is not a presentation contract.
 
-## Consequences
+## Trade-off
 
-- Cross-app changes often start in `packages/schemas`, then flow into API route validation, frontend clients/hooks, and Worker request handling.
-- New backend behaviour should choose the narrowest existing seam before adding another one: route builder, service context, repository, provider capability, task runner, or training provider adapter.
-- New frontend behaviour should keep page modules thin and place reusable parsing, serialisation, fetch, state, and formatting logic under `src/lib`, `src/hooks`, or existing state modules.
-- The API Worker can remain broad because it is the public interface, but feature internals should not accumulate in `apps/api/src/index.ts` or route files.
-- The main trade-off is extra indirection. The benefit is locality: provider swaps, persistence changes, sandbox execution changes, and frontend data-flow changes can be verified at their existing interfaces instead of across many callers.
+These boundaries add indirection but keep provider, storage and presentation changes local. Module size alone does not justify another package, and a second implementation does not justify copying a registry or turn engine.

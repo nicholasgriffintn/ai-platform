@@ -4,7 +4,7 @@
 - **Surfaces:** web, API
 - **Prerequisites:** migration `0014_gigantic_vapor`, which drops the columns. There is no automatic migration from a team to a flow — the shapes do not correspond.
 - **Risk if wrong:** anyone who built a team loses the sequencing, and any client still sending the removed request fields gets a rejection.
-- **Commits:** part of `db886b1f` (#2182). See ADR 0037.
+- **Commits:** part of `db886b1f` (#2182). See ADR 0026.
 
 ## Verify
 
