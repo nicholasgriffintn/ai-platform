@@ -620,4 +620,28 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "minimal",
 		},
 	}),
+	createModelConfig("gemini-3.8-flash", PROVIDER, {
+		name: "Gemini 3.8 Flash",
+		matchingModel: "gemini-3.8-flash",
+		family: "gemini-flash",
+		openWeights: false,
+		releaseDate: "September 2, 2026",
+		lastUpdated: "September 2, 2026",
+		modalities: {
+			input: ["text", "image", "video", "audio", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1048576,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.00075,
+		costPer1kOutputTokens: 0.00375,
+		reasoningConfig: {
+			supportedEffortLevels: ["low", "medium", "high"],
+			defaultEffort: "low",
+		},
+	}),
 ]);

@@ -1252,8 +1252,8 @@ export const fireworksModelConfig: ModelConfig = {
   	supportsResponseFormat: true,
   	contextWindow: 1000000,
   	maxTokens: 384000,
-  	costPer1kInputTokens: 0.00014,
-  	costPer1kOutputTokens: 0.00028,
+  	costPer1kInputTokens: 0.00022,
+  	costPer1kOutputTokens: 0.00066,
   	reasoningConfig: {
   		supportedEffortLevels: ["low", "high", "max"],
   		defaultEffort: "low",
@@ -1334,6 +1334,31 @@ export const fireworksModelConfig: ModelConfig = {
   	reasoningConfig: {
   		supportedEffortLevels: ["high", "max"],
   		defaultEffort: "high",
+  	},
+  },
+  "accounts/fireworks/models/deepseek-v4-flash-vision-exp": {
+  	name: "DeepSeek V4 Flash Vision Exp",
+  	matchingModel: "accounts/fireworks/models/deepseek-v4-flash-vision-exp",
+  	provider: "fireworks",
+  	family: "deepseek-flash",
+  	openWeights: false,
+  	releaseDate: "August 21, 2026",
+  	lastUpdated: "August 21, 2026",
+  	modalities: {
+  		input: ["text", "image"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: true,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 1000000,
+  	maxTokens: 384000,
+  	costPer1kInputTokens: 0.00022,
+  	costPer1kOutputTokens: 0.00066,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   },
 };
