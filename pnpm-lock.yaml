@@ -196,8 +196,8 @@ importers:
         specifier: ^5.48.1
         version: 5.51.4
       stripe:
-        specifier: 22.5.0
-        version: 22.5.0(@types/node@26.4.0)
+        specifier: 22.6.0
+        version: 22.6.0(@types/node@26.4.0)
       yaml:
         specifier: 2.9.0
         version: 2.9.0
@@ -7030,8 +7030,8 @@ packages:
     resolution: {integrity: sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ==}
     engines: {node: '>=8'}
 
-  stripe@22.5.0:
-    resolution: {integrity: sha512-QVwMwriC0bbySx6R4dpsvJ0W//GojC1kwWVS6rPSoVqDUIZX4Hy3TaUrd2AZeXEAaKbfWIjQjvo3vKAReHZ0vQ==}
+  stripe@22.6.0:
+    resolution: {integrity: sha512-Ezk+WYEEwX2DLxFrKfb6coznlCMZvCaCYMNPXNHFSZkBIEzF5Hgm7RLb38q/0h9Ol5jsUJGJRorvhzAvckgfhw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@types/node': '>=18'
@@ -13087,7 +13087,7 @@ snapshots:
     dependencies:
       min-indent: 1.0.1
 
-  stripe@22.5.0(@types/node@26.4.0):
+  stripe@22.6.0(@types/node@26.4.0):
     optionalDependencies:
       '@types/node': 26.4.0
 
