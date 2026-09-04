@@ -4,6 +4,7 @@ import type {
   UsageBalanceResponse,
   UsageEventsResponse,
   UsageSummaryResponse,
+  WorkspaceUsageSummaryResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service";
@@ -116,4 +117,20 @@ export async function setOverageEnabled(enabled: boolean): Promise<{ enabled: bo
   const data = await returnFetchedData<{ overage_enabled?: boolean }>(response);
 
   return { enabled: data.overage_enabled ?? enabled };
+}
+
+export async function getWorkspaceUsageSummary(
+  workspaceId: string,
+  period: string,
+): Promise<WorkspaceUsageSummaryResponse> {
+  const params = new URLSearchParams({ period });
+  const response = await fetchApiOrThrow(
+    `/workspaces/${encodeURIComponent(workspaceId)}/usage?${params}`,
+    {
+      method: "GET",
+      headers: await authHeaders(),
+    },
+  );
+
+  return returnFetchedData(response);
 }

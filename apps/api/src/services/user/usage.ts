@@ -13,20 +13,10 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { resolveUsageBalanceSnapshot } from "~/lib/usage/balanceSnapshot";
 import type { CreditActor } from "~/lib/usage/creditActor";
 import { usageCreditsFromBalance } from "~/lib/usage/creditSummary";
-import type { UsageEventGroupRow } from "~/repositories/UsageEventRepository";
+import { toSummaryGroups, totalUsageGroups } from "~/lib/usage/summary";
 import { decodeCompositeCursor, encodeCompositeCursor } from "~/utils/cursor";
 
 const DEFAULT_EVENT_PAGE_SIZE = 25;
-
-function toSummaryGroups(rows: UsageEventGroupRow[]) {
-  return rows.map((row) => ({
-    key: row.key,
-    cost_micros: row.cost_micros,
-    credit_micros: row.credit_micros,
-    credits: creditsFromCreditMicros(row.credit_micros),
-    event_count: row.event_count,
-  }));
-}
 
 export async function getUsageBalance(
   context: ServiceContext,
@@ -79,14 +69,7 @@ export async function getUsageSummary(
     context.repositories.usageEvents.summariseUserPeriodBy(userId, period, "vendor"),
   ]);
 
-  const totals = bySource.reduce(
-    (accumulator, row) => ({
-      cost_micros: accumulator.cost_micros + row.cost_micros,
-      credit_micros: accumulator.credit_micros + row.credit_micros,
-      event_count: accumulator.event_count + row.event_count,
-    }),
-    { cost_micros: 0, credit_micros: 0, event_count: 0 },
-  );
+  const totals = totalUsageGroups(bySource);
 
   return {
     period,

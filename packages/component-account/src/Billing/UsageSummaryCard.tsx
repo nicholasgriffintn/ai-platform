@@ -10,6 +10,7 @@ import { humaniseIdentifier, humaniseUsageSource } from "./usage-display";
 
 export interface UsageSummaryCardProps {
   summary: UsageSummaryResponse;
+  projectRows?: SummaryRow[];
 }
 
 interface SummaryRow {
@@ -60,7 +61,7 @@ function SummaryGroup({
   );
 }
 
-export function UsageSummaryCard({ summary }: UsageSummaryCardProps) {
+export function UsageSummaryCard({ summary, projectRows }: UsageSummaryCardProps) {
   const totalCredits = summary.totals.credits;
 
   const sourceRows = summary.by_source.map((group) => ({
@@ -93,6 +94,9 @@ export function UsageSummaryCard({ summary }: UsageSummaryCardProps) {
         <div className="mt-4 grid gap-6 sm:grid-cols-2">
           <SummaryGroup title="By source" rows={sourceRows} totalCredits={totalCredits} />
           <SummaryGroup title="By vendor" rows={vendorRows} totalCredits={totalCredits} />
+          {projectRows && (
+            <SummaryGroup title="By project" rows={projectRows} totalCredits={totalCredits} />
+          )}
         </div>
       )}
     </Card>

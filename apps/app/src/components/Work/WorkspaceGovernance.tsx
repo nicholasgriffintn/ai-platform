@@ -15,6 +15,7 @@ import {
 } from "~/hooks/useGovernance";
 
 import { useWorkData } from "./WorkDataContext";
+import { WorkspaceUsage } from "./WorkspaceUsage";
 
 export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
     <PageShell.Content className="max-w-6xl">
       <PageShell.Header title="Governance" />
       <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-        Manage reusable project templates and review workspace changes.
+        Review workspace spend, manage reusable project templates, and review workspace changes.
       </p>
 
       {workspaceQuery.isLoading ? (
@@ -42,29 +43,36 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
           className="min-h-[240px]"
         />
       ) : (
-        <div className="grid gap-8 lg:grid-cols-2">
-          <WorkspaceTemplateList
-            templates={projectTemplates}
-            isLoading={templates.isLoading}
-            errorMessage={templates.error?.message}
-            instantiatingTemplateId={
-              mutations.instantiate.isPending ? mutations.instantiate.variables : null
-            }
-            onUse={async (templateId) => {
-              const project = await mutations.instantiate.mutateAsync(templateId);
-
-              toast.success("Project created from template");
-              void navigate(`/work/${workspaceId}/projects/${project.id}`);
-            }}
-            onDelete={setTemplateIdToDelete}
+        <>
+          <WorkspaceUsage
+            key={workspaceId}
+            workspaceId={workspaceId}
+            projects={workspaceQuery.data?.projects ?? []}
           />
+          <div className="grid gap-8 lg:grid-cols-2">
+            <WorkspaceTemplateList
+              templates={projectTemplates}
+              isLoading={templates.isLoading}
+              errorMessage={templates.error?.message}
+              instantiatingTemplateId={
+                mutations.instantiate.isPending ? mutations.instantiate.variables : null
+              }
+              onUse={async (templateId) => {
+                const project = await mutations.instantiate.mutateAsync(templateId);
 
-          <WorkspaceAuditList
-            records={audit.data ?? []}
-            isLoading={audit.isLoading}
-            errorMessage={audit.error?.message}
-          />
-        </div>
+                toast.success("Project created from template");
+                void navigate(`/work/${workspaceId}/projects/${project.id}`);
+              }}
+              onDelete={setTemplateIdToDelete}
+            />
+
+            <WorkspaceAuditList
+              records={audit.data ?? []}
+              isLoading={audit.isLoading}
+              errorMessage={audit.error?.message}
+            />
+          </div>
+        </>
       )}
 
       <ConfirmationDialog

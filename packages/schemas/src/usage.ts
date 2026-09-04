@@ -149,3 +149,9 @@ export const usageLimitsSchema = z.object({
 });
 
 export type UsageLimitsPayload = z.infer<typeof usageLimitsSchema>;
+
+export const workspaceUsageSummaryResponseSchema = usageSummaryResponseSchema.extend({
+  by_project: z.array(usageSummaryGroupSchema),
+});
+
+export type WorkspaceUsageSummaryResponse = z.infer<typeof workspaceUsageSummaryResponseSchema>;
