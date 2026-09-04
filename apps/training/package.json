@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock": "3.1118.0",
+    "@aws-sdk/client-bedrock": "3.1120.0",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "zod": "catalog:"
   },
