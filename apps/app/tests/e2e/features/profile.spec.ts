@@ -103,6 +103,18 @@ test.describe("Profile experience", () => {
         await expect(page.getByLabel("Search Provider", { exact: true })).toHaveValue(
           settings.searchProvider,
         );
+
+        await profilePage.selectPresetPet("Ash");
+        await profilePage.openTab("customisation", "Customise Chat");
+        await expect(page.getByLabel("Nickname", { exact: true })).toHaveValue(settings.nickname);
+        await expect(page.getByLabel("Job Role", { exact: true })).toHaveValue(settings.jobRole);
+        await expect(page.getByLabel("Preferences", { exact: true })).toHaveValue(
+          settings.preferences,
+        );
+        await expect(page.getByLabel("Search Provider", { exact: true })).toHaveValue(
+          settings.searchProvider,
+        );
+
         await captureVisualSnapshots(page, `release-profile-${persona}-customisation`, {
           ...DEFAULT_VISUAL_CHECKPOINTS,
           viewports: [{ name: "desktop", width: 1280, height: 720 }],

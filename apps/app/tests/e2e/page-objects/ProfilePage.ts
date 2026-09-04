@@ -372,6 +372,20 @@ export class ProfilePage extends BasePage {
     await this.page.getByText("Settings saved successfully!", { exact: true }).waitFor();
   }
 
+  async selectPresetPet(name: string) {
+    await this.openTab("pets", "Your pet");
+    const response = this.waitForSettingsUpdate();
+
+    await this.page
+      .getByRole("button")
+      .filter({ has: this.page.getByText(name, { exact: true }) })
+      .click();
+
+    if (!(await response).ok()) {
+      throw new Error("Pet selection could not be saved");
+    }
+  }
+
   async createSourceCollectionWithSource(
     collectionName: string,
     sourceTitle: string,

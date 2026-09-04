@@ -226,6 +226,42 @@ describe("UserSettingsRepository", () => {
     expect(executeRunSpy.mock.calls[0]?.[1]).not.toContain("built-in");
   });
 
+  it("leaves customisation fields untouched when saving a pet preference", async () => {
+    const { prepare, repository } = createProvisioningRepository([]);
+
+    await repository.updateUserSettings(42, { pet_animation_enabled: true });
+
+    expect(prepare).toHaveBeenCalledOnce();
+    expect(prepare.mock.calls[0][0]).toBe(
+      "UPDATE user_settings SET pet_animation_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
+    );
+  });
+
+  it("allows explicit clearing and false values without updating omitted fields", async () => {
+    const { prepare, repository } = createProvisioningRepository([]);
+
+    await repository.updateUserSettings(42, {
+      nickname: null,
+      preferences: "",
+      tracking_enabled: false,
+      search_provider: undefined,
+    });
+
+    expect(prepare).toHaveBeenCalledExactlyOnceWith(
+      "UPDATE user_settings SET nickname = ?, preferences = ?, tracking_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
+    );
+    expect(prepare.mock.results[0].value.bind).toHaveBeenCalledWith(null, "", 0, 42);
+  });
+
+  it("ignores empty and unsupported settings updates", async () => {
+    const { prepare, repository } = createProvisioningRepository([]);
+
+    await repository.updateUserSettings(42, {});
+    await repository.updateUserSettings(42, { user_id: 7, private_key: "unsupported" });
+
+    expect(prepare).not.toHaveBeenCalled();
+  });
+
   it("persists temporary chat defaults as a boolean setting", async () => {
     const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
     const executeRunSpy = vi

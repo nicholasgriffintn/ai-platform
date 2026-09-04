@@ -23,6 +23,8 @@ Never copy real secret values into documentation or tracked configuration.
 
 Configure sign-in methods together with their callback URLs, passkey origins, email delivery, cookies and allowed origins. Captcha enforcement requires matching API `HCAPTCHA_SECRET_KEY`/`HCAPTCHA_SITE_KEY` and web `VITE_CAPTCHA_SITE_KEY`; omit or disable `REQUIRE_CAPTCHA_SECRET_KEY` when captcha is not offered.
 
+Send only changed fields to `/user/settings`. Omitted fields retain their stored values, including when pet controls update the same settings record. Use explicit empty strings, supported `null` values or `false` to clear a value or turn an option off.
+
 ## Optional capabilities
 
 - **Embeddings:** use a separate stable `EMBEDDING_SCOPE_SECRET` of at least 32 characters. Rotation requires deliberate reindexing. Managed Vectorize needs its bindings; S3 Vectors needs complete bucket/index/region settings and the person's stored credential. Do not redirect historical vectors when credentials change. See [retrieval](architecture/decisions/0033-separate-embedding-runtime-and-retrieval-policy.md).
