@@ -79,7 +79,8 @@ export async function getAIResponse(request: ChatCompletionParameters) {
     );
   }
 
-  const providerMessages = toProviderMessages(await rewriteChatInput(request));
+	const rewrittenMessages = await rewriteChatInput(request);
+  const providerMessages = toProviderMessages(rewrittenMessages);
 
   const filteredMessages =
     mode === "normal"
