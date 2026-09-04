@@ -124,6 +124,23 @@ beforeEach(() => {
 });
 
 describe("capability library agent authoring", () => {
+  it("opens the shared skill editor in personal and project scope", () => {
+    const personal = renderAuthoring();
+
+    act(() => personal.result.current.authoredSkillActions.onEdit("meeting-notes"));
+    expect(navigate).toHaveBeenLastCalledWith("/chat/capabilities/skills/meeting-notes");
+
+    const project = renderAuthoring({
+      projectActions: { addCapability: vi.fn(async () => undefined), canManage: true },
+      surface: getProjectSurface("workspace-1", "project-1"),
+    });
+
+    act(() => project.result.current.authoredSkillActions.onEdit("meeting-notes"));
+    expect(navigate).toHaveBeenLastCalledWith(
+      "/work/workspace-1/projects/project-1/library/skills/meeting-notes",
+    );
+  });
+
   it("opens the personal agent editor from the library's add-agent action", () => {
     const { result } = renderAuthoring();
 

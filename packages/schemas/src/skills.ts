@@ -182,6 +182,79 @@ export const authoredSkillImportInputSchema = z.object({
   }),
 });
 
+export const authoredSkillEvaluationCaseInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(80),
+    prompt: z
+      .string()
+      .trim()
+      .min(1)
+      .max(16 * 1024),
+    expectedContains: z
+      .string()
+      .trim()
+      .min(1)
+      .max(4 * 1024)
+      .optional(),
+  })
+  .strict();
+
+export const authoredSkillEvaluationCaseSchema = authoredSkillEvaluationCaseInputSchema.extend({
+  id: z.string().min(1),
+  createdByUserId: z.number().int().positive(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const authoredSkillEvaluationCaseListSchema = z.object({
+  cases: z.array(authoredSkillEvaluationCaseSchema),
+});
+
+export const authoredSkillEvaluationRunInputSchema = z
+  .object({
+    revisionId: z.string().min(1),
+    caseId: z.string().min(1).optional(),
+    prompt: z
+      .string()
+      .trim()
+      .min(1)
+      .max(16 * 1024)
+      .optional(),
+    expectedContains: z
+      .string()
+      .trim()
+      .min(1)
+      .max(4 * 1024)
+      .optional(),
+    model: z.string().trim().min(1).max(256).optional(),
+  })
+  .strict()
+  .refine((input) => Boolean(input.caseId) !== Boolean(input.prompt), {
+    message: "Provide either caseId or prompt",
+    path: ["prompt"],
+  });
+
+export const authoredSkillEvaluationOutcomeSchema = z.enum(["passed", "failed", "unscored"]);
+
+export const authoredSkillEvaluationResultSchema = z.object({
+  id: z.string().min(1),
+  skill: skillIdSchema,
+  revisionId: z.string().min(1),
+  revision: z.number().int().positive(),
+  caseId: z.string().min(1).nullable(),
+  prompt: z.string().min(1),
+  expectedContains: z.string().min(1).nullable(),
+  response: z.string(),
+  outcome: authoredSkillEvaluationOutcomeSchema,
+  model: z.string().min(1),
+  createdByUserId: z.number().int().positive(),
+  createdAt: z.string(),
+});
+
+export const authoredSkillEvaluationResultListSchema = z.object({
+  results: z.array(authoredSkillEvaluationResultSchema),
+});
+
 export const authoredSkillListResponseSchema = z.object({
   skills: z.array(authoredSkillSchema),
 });
@@ -219,4 +292,11 @@ export type AuthoredSkillHistoryResponse = z.infer<typeof authoredSkillHistoryRe
 export type AuthoredSkillPromotionInput = z.infer<typeof authoredSkillPromotionInputSchema>;
 export type AuthoredSkillRollbackInput = z.infer<typeof authoredSkillRollbackInputSchema>;
 export type AuthoredSkillImportInput = z.infer<typeof authoredSkillImportInputSchema>;
+export type AuthoredSkillEvaluationCaseInput = z.infer<
+  typeof authoredSkillEvaluationCaseInputSchema
+>;
+export type AuthoredSkillEvaluationCase = z.infer<typeof authoredSkillEvaluationCaseSchema>;
+export type AuthoredSkillEvaluationRunInput = z.infer<typeof authoredSkillEvaluationRunInputSchema>;
+export type AuthoredSkillEvaluationOutcome = z.infer<typeof authoredSkillEvaluationOutcomeSchema>;
+export type AuthoredSkillEvaluationResult = z.infer<typeof authoredSkillEvaluationResultSchema>;
 export type LoadSkillInput = z.infer<typeof loadSkillInputSchema>;

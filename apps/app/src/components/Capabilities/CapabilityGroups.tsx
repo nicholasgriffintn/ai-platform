@@ -55,8 +55,9 @@ interface CapabilityGroupsProps {
 }
 
 export interface AuthoredSkillActions {
-  canDelete: boolean;
+  canManage: boolean;
   onDelete: (skillId: string, label: string) => void;
+  onEdit: (skillId: string) => void;
   pendingSkillId?: string;
 }
 
@@ -98,9 +99,10 @@ function resolveAuthoredCapability(
   }
 
   return {
-    canManage: authoredSkillActions.canDelete,
+    canManage: authoredSkillActions.canManage,
     isDeleting: authoredSkillActions.pendingSkillId === capabilityId,
     onDelete: () => authoredSkillActions.onDelete(capabilityId, item.label),
+    onEdit: () => authoredSkillActions.onEdit(capabilityId),
   };
 }
 

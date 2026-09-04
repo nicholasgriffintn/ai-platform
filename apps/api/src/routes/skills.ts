@@ -1,6 +1,12 @@
 import {
   authoredSkillDocumentSchema,
   authoredSkillDraftInputSchema,
+  authoredSkillEvaluationCaseInputSchema,
+  authoredSkillEvaluationCaseListSchema,
+  authoredSkillEvaluationCaseSchema,
+  authoredSkillEvaluationResultListSchema,
+  authoredSkillEvaluationResultSchema,
+  authoredSkillEvaluationRunInputSchema,
   authoredSkillHistoryResponseSchema,
   authoredSkillImportInputSchema,
   authoredSkillInputSchema,
@@ -21,6 +27,8 @@ import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
   createPersonalSkill,
+  createSkillEvaluationCase,
+  deleteSkillEvaluationCase,
   deletePersonalSkill,
   getPersonalSkill,
   getPersonalSkillHistory,
@@ -28,10 +36,13 @@ import {
   getPersonalSkillAvailability,
   importPersonalSkill,
   listPersonalSkills,
+  listSkillEvaluationCases,
+  listSkillEvaluationResults,
   setPersonalSkillEnabled,
   promotePersonalSkillDraft,
   rollbackPersonalSkill,
   savePersonalSkillDraft,
+  runSkillEvaluation,
   updatePersonalSkill,
 } from "~/services/skills";
 
@@ -210,6 +221,73 @@ addRoute(app, "post", "/documents/:id/rollback", {
   },
   handler: ({ body, params, serviceContext, user }) =>
     rollbackPersonalSkill(serviceContext, user.id, params.id, body),
+});
+
+const personalEvaluationCaseParams = z.object({
+  id: skillIdSchema,
+  caseId: z.string().min(1),
+});
+
+addRoute(app, "get", "/documents/:id/evaluation-cases", {
+  auth: true,
+  tags: ["skills"],
+  summary: "List saved evaluation cases for a personal skill",
+  paramSchema: z.object({ id: skillIdSchema }),
+  responses: {
+    200: { description: "Evaluation cases", schema: authoredSkillEvaluationCaseListSchema },
+  },
+  handler: ({ params, serviceContext, user }) =>
+    listSkillEvaluationCases(serviceContext, user.id, params.id),
+});
+
+addRoute(app, "post", "/documents/:id/evaluation-cases", {
+  auth: true,
+  tags: ["skills"],
+  summary: "Save an evaluation case for a personal skill",
+  paramSchema: z.object({ id: skillIdSchema }),
+  bodySchema: authoredSkillEvaluationCaseInputSchema,
+  responses: {
+    200: { description: "Saved evaluation case", schema: authoredSkillEvaluationCaseSchema },
+  },
+  handler: ({ body, params, serviceContext, user }) =>
+    createSkillEvaluationCase(serviceContext, user.id, params.id, body),
+});
+
+addRoute(app, "delete", "/documents/:id/evaluation-cases/:caseId", {
+  auth: true,
+  tags: ["skills"],
+  summary: "Delete a personal skill evaluation case",
+  paramSchema: personalEvaluationCaseParams,
+  handler: async ({ params, serviceContext, user }) => {
+    await deleteSkillEvaluationCase(serviceContext, user.id, params.id, params.caseId);
+
+    return { success: true };
+  },
+});
+
+addRoute(app, "get", "/documents/:id/evaluations", {
+  auth: true,
+  tags: ["skills"],
+  summary: "List personal skill evaluation results",
+  paramSchema: z.object({ id: skillIdSchema }),
+  responses: {
+    200: { description: "Evaluation results", schema: authoredSkillEvaluationResultListSchema },
+  },
+  handler: ({ params, serviceContext, user }) =>
+    listSkillEvaluationResults(serviceContext, user.id, params.id),
+});
+
+addRoute(app, "post", "/documents/:id/evaluations", {
+  auth: true,
+  tags: ["skills"],
+  summary: "Run an isolated evaluation against one personal skill revision",
+  paramSchema: z.object({ id: skillIdSchema }),
+  bodySchema: authoredSkillEvaluationRunInputSchema,
+  responses: {
+    200: { description: "Evaluation result", schema: authoredSkillEvaluationResultSchema },
+  },
+  handler: ({ body, params, serviceContext, user }) =>
+    runSkillEvaluation(serviceContext, user, params.id, body),
 });
 
 addRoute(app, "delete", "/documents/:id", {

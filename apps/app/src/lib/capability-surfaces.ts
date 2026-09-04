@@ -44,6 +44,12 @@ export function getAgentEditorPath(surface: CapabilitySurface, agentId: string):
   return `${surface.basePath}/agents/${agentId}`;
 }
 
+export function getSkillEditorPath(surface: CapabilitySurface, skillId: string): string {
+  const librarySegment = surface.projectId ? "library" : "capabilities";
+
+  return `${surface.basePath}/${librarySegment}/skills/${encodeURIComponent(skillId)}`;
+}
+
 export function getConversationPath(surface: CapabilitySurface): string {
   return surface.projectId ? `${surface.basePath}/chat` : surface.basePath;
 }

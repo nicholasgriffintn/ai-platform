@@ -8,7 +8,11 @@ import type {
   AuthoredSkillActions,
 } from "~/components/Capabilities/CapabilityGroups";
 import { useAgentCapabilityActions } from "~/components/Capabilities/useAgentCapabilityActions";
-import type { CapabilitySurface, EnabledCapability } from "~/lib/capability-surfaces";
+import {
+  getSkillEditorPath,
+  type CapabilitySurface,
+  type EnabledCapability,
+} from "~/lib/capability-surfaces";
 
 interface PendingCapabilityDeletion {
   id: string;
@@ -196,8 +200,11 @@ export function useCapabilityAuthoring({
       setOpen: setAttachAgentOpen,
     },
     authoredSkillActions: {
-      canDelete: canAuthor,
+      canManage: canAuthor,
       onDelete: (id, label) => requestDeletion({ id, kind: "skill", label }),
+      onEdit: (id) => {
+        void navigate(getSkillEditorPath(surface, id));
+      },
       pendingSkillId: skillDeletion.pendingSkillId,
     },
     canAuthor,
