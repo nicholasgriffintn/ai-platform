@@ -12,6 +12,14 @@ export function getUtf8ByteLength(value: string): number {
   return new TextEncoder().encode(value).byteLength;
 }
 
+export function truncateSingleLine(value: string, maxCharacters: number): string {
+  const normalised = value.replace(/\s+/g, " ").trim();
+
+  return normalised.length <= maxCharacters
+    ? normalised
+    : `${normalised.slice(0, Math.max(0, maxCharacters - 3))}...`;
+}
+
 export function stripSurroundingQuotes(value: string): string {
   const trimmed = value.trim();
   const isQuoted =

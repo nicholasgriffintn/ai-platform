@@ -5,6 +5,7 @@ import { BasePage } from "./BasePage";
 export class HomePage extends BasePage {
   readonly chatInput: Locator;
   readonly suggestions: Locator;
+  readonly stopResponseButton: Locator;
   private readonly sendButton: Locator;
   private readonly modelSelector: Locator;
   private readonly newChatButton: Locator;
@@ -14,6 +15,7 @@ export class HomePage extends BasePage {
     super(page);
     this.chatInput = page.getByRole("textbox", { name: "Message input" });
     this.suggestions = page.locator("[data-suggestion-id]");
+    this.stopResponseButton = page.getByRole("button", { name: "Stop generating" });
     this.sendButton = page.getByRole("button", { name: /send message/i });
     this.modelSelector = page.getByLabel("Select a model", { exact: true });
     this.newChatButton = page.getByRole("button", { name: /New Chat/i });

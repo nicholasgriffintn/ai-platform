@@ -108,6 +108,7 @@ export const groqModelConfig: ModelConfig = {
   "llama-3.3-70b-versatile": {
     name: "Llama 3.3 70B Versatile",
     matchingModel: "llama-3.3-70b-versatile",
+    status: "deprecated",
     provider: "groq",
     knowledgeCutoffDate: "December 2023",
     releaseDate: "December 6, 2024",
@@ -165,12 +166,13 @@ export const groqModelConfig: ModelConfig = {
     speed: 5,
     supportsResponseFormat: true,
     family: "llama",
-    status: "beta",
+    status: "deprecated",
     openWeights: true,
   },
   "llama-3.1-8b-instant": {
     name: "Llama 3.1 8B Instant",
     matchingModel: "llama-3.1-8b-instant",
+    status: "deprecated",
     provider: "groq",
     knowledgeCutoffDate: "December 2023",
     releaseDate: "July 23, 2024",
@@ -381,7 +383,7 @@ export const groqModelConfig: ModelConfig = {
       intelligenceIndexVersion: 4.1,
     },
     family: "qwen",
-    status: "beta",
+    status: "deprecated",
     openWeights: true,
   },
   "allam-2-7b": {

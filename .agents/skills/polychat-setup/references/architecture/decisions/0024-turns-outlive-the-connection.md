@@ -10,6 +10,8 @@ Run chat turns through `executeAgentLoop` and the API's `runAgentLoop`. A transp
 
 Keep SSE and hand the streaming run to `executionCtx.waitUntil`. Treat a disconnected reader as detachment: stop writing to it, continue finalisation, and release resources from the run's own `finally`. Send heartbeat comments while connected. Web and iOS recover transport failures by polling for the persisted answer; a definitive API error is not a recoverable disconnect.
 
+Expose the current coordinator operation through authorised conversation reads. Read operation status before history so an idle result includes completed writes. Restore web activity and poll after a full refresh; bound recovery of a local, not-yet-stored turn to three minutes.
+
 Make Stop explicit through `/chat/completions/:id/cancel` before aborting the fetch. The detached turn watches a timestamped KV cancellation flag. Background execution is not a separate product mode.
 
 Use `ConversationCoordinator` as a lease-bounded, non-reentrant lock. Every history-mutating entry point acquires it, including message replacement, compaction, interaction answers and async results. Acquire at route/service or queue entry points, never inside an already locked turn. Interactive callers receive a retryable conflict; queued or opportunistic work retries or skips as appropriate. Release a turn's lock when the run ends, before signalling completion.

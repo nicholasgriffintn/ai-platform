@@ -677,8 +677,14 @@ export function useStreamingResponse(
   );
 
   const abortStream = useCallback(() => {
-    currentStream?.controller?.abort();
-  }, [currentStream?.controller]);
+    if (currentStream?.controller) {
+      currentStream.controller.abort();
+    } else if (currentStream?.source === "remote" && currentConversationId) {
+      void apiService.cancelChatCompletion(currentConversationId).catch(() => {
+        toast.error("Could not stop the response. Please try again.");
+      });
+    }
+  }, [currentStream, currentConversationId]);
 
   return {
     streamStarted: currentStream?.status === "streaming",

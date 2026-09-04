@@ -56,6 +56,37 @@ describe("ModelRouter automatic modes", () => {
     mocks.analyzePrompt.mockResolvedValue(requirements);
   });
 
+  it.each([false, true])(
+    "ranks eligible models by score when a candidate is rejected (comparison: %s)",
+    async (compare) => {
+      mocks.analyzePrompt.mockResolvedValue({
+        ...requirements,
+        needsFunctions: true,
+        benefitsFromMultipleModels: compare,
+      });
+      mocks.getIncludedInRouterModelsForUser.mockResolvedValue({
+        "expensive-model": makeModel("expensive-model", {
+          supportsToolCalls: true,
+          contextComplexity: 5,
+          speed: 2,
+          reliability: 3,
+          costPer1kInputTokens: 0.01,
+          costPer1kOutputTokens: 0.05,
+        }),
+        "ineligible-model": makeModel("ineligible-model", { supportsToolCalls: false }),
+        "suitable-model": makeModel("suitable-model", { supportsToolCalls: true, speed: 5 }),
+      });
+
+      if (compare) {
+        await expect(ModelRouter.selectMultipleModels(env, "hello")).resolves.toEqual([
+          "suitable-model",
+        ]);
+      } else {
+        await expect(ModelRouter.selectModel(env, "hello")).resolves.toBe("suitable-model");
+      }
+    },
+  );
+
   it("uses the preferred mode pool when it has a suitable model", async () => {
     mocks.getIncludedInRouterModelsForUser.mockResolvedValue({
       "lite-model": makeModel("lite-model", {

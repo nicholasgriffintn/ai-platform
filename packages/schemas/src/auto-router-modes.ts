@@ -19,8 +19,8 @@ export const AUTO_ROUTER_MODES: readonly AutoRouterModeDefinition[] = [
     id: "auto",
     label: "Auto",
     tagline: "Let the router decide",
-    description: "Uses the full automatic router pool and keeps today's behaviour.",
-    filterSummary: "All available router models",
+    description: "Selects from eligible text-response chat models for the request.",
+    filterSummary: "Available text-response chat models",
   },
   {
     id: "lite",

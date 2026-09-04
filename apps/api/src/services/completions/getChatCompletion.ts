@@ -2,19 +2,16 @@ import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { hydrateConnectorApprovalMessageState } from "~/services/apps/connectors/approval-message-state";
-import { withThreadLockIfFree } from "~/services/conversations/coordinator/client";
+import {
+  getActiveThreadOperation,
+  withThreadLockIfFree,
+} from "~/services/conversations/coordinator/client";
 import type { Message } from "~/types";
 
 import { handleAsyncInvocation } from "./async/handler";
 
 interface GetChatCompletionOptions {
   refreshPending?: boolean;
-}
-
-function getPendingAsyncInvocation(message: Message) {
-  const asyncInvocation = (message.data as Record<string, any> | undefined)?.asyncInvocation;
-
-  return isAsyncInvocationPending(asyncInvocation) ? asyncInvocation : null;
 }
 
 async function refreshPendingMessages(
@@ -29,9 +26,9 @@ async function refreshPendingMessages(
     () =>
       Promise.all(
         messages.map(async (message) => {
-          const asyncInvocation = getPendingAsyncInvocation(message);
+          const asyncInvocation = message.data?.asyncInvocation;
 
-          if (!asyncInvocation) {
+          if (!isAsyncInvocationPending(asyncInvocation)) {
             return message;
           }
 
@@ -65,6 +62,12 @@ export const handleGetChatCompletion = async (
     env: context.env,
   });
 
+  await conversationManager.getConversationMetadata(completion_id);
+  const activeOperation = await getActiveThreadOperation({
+    env: context.env,
+    conversationId: completion_id,
+  });
+
   const conversation = await conversationManager.getConversationDetails(completion_id, {
     includeArchived: true,
     includeSnapshots: false,
@@ -86,6 +89,7 @@ export const handleGetChatCompletion = async (
 
   return {
     ...conversation,
+    active_operation: activeOperation,
     messages: await hydrateConnectorApprovalMessageState({
       messages: refreshedMessages,
       userId: user.id,

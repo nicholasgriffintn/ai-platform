@@ -13,6 +13,8 @@ import { useMemo } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { getConversationRefetchInterval } from "~/lib/chat/conversation-polling";
+import { recoverUnacknowledgedConversation } from "~/lib/chat/pending-conversation";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { localChatService } from "~/lib/local/local-chat-service";
@@ -21,6 +23,7 @@ import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, Conversation, ConversationListOptions, Message } from "~/types";
 
 import { useConversationStorage } from "./useConversationStorage";
+import { useRemoteConversationActivity } from "./useRemoteConversationActivity";
 
 const DEFAULT_CHAT_LIST_LIMIT = 30;
 const CHAT_LIST_STALE_TIME = 2 * 60 * 1000;
@@ -108,7 +111,7 @@ export function useChat(completion_id: string | undefined) {
   } = useChatStore();
   const queryClient = useQueryClient();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: [CHATS_QUERY_KEY, completion_id],
     queryFn: async () => {
       if (!completion_id) {
@@ -138,11 +141,35 @@ export function useChat(completion_id: string | undefined) {
           markConversationRemoteAvailable(completion_id);
         }
 
-        return preserveOptimisticMessages(
+        const stream = useStreamActivityStore.getState().streams[completion_id];
+
+        if (!stream || stream.source === "remote") {
+          const unacknowledged = recoverUnacknowledgedConversation(localChat, remoteChat);
+
+          if (unacknowledged) {
+            return unacknowledged;
+          }
+        }
+
+        if (remoteChat?.active_operation === null && (!stream || stream.source === "remote")) {
+          return remoteChat;
+        }
+
+        const conversation = preserveOptimisticMessages(
           remoteChat || localChat,
           getCachedConversation() || localChat,
         );
+
+        return conversation && { ...conversation, active_operation: remoteChat?.active_operation };
       } catch (error) {
+        if (error instanceof ApiError && error.status === 404) {
+          const unacknowledged = recoverUnacknowledgedConversation(localChat);
+
+          if (unacknowledged) {
+            return unacknowledged;
+          }
+        }
+
         if (error instanceof ApiError || !localChat) {
           throw error;
         }
@@ -155,35 +182,14 @@ export function useChat(completion_id: string | undefined) {
     enabled: !!completion_id,
     staleTime: CHAT_DETAIL_STALE_TIME,
     gcTime: CHAT_QUERY_GC_TIME,
-    refetchInterval: (query) => {
-      const data = query.state.data;
-
-      if (!data?.messages) {
-        return false;
-      }
-
-      const pendingMessages = data.messages.filter((message) => message.status === "in_progress");
-
-      if (!pendingMessages.length) {
-        return false;
-      }
-
-      const pollIntervals = pendingMessages
-        .map((message) => {
-          const asyncInvocation = message.data?.asyncInvocation;
-
-          return asyncInvocation?.pollIntervalMs;
-        })
-        .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
-
-      if (!pollIntervals.length) {
-        return 6000;
-      }
-
-      return Math.max(6000, Math.min(...pollIntervals));
-    },
+    refetchInterval: (currentQuery) => getConversationRefetchInterval(currentQuery.state.data),
+    refetchOnMount: "always",
     refetchIntervalInBackground: true,
   });
+
+  useRemoteConversationActivity(completion_id, query.data?.active_operation);
+
+  return query;
 }
 
 export function useDeleteChat() {

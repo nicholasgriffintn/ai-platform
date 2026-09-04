@@ -763,6 +763,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           isLoading={isStreamLoading || isModelInitializing}
           streamStarted={streamStarted}
           controller={controller}
+          onStopResponse={abortStream}
           onTranscribe={handleTranscribe}
           placeholder={modeConfig?.inputPlaceholder}
           controls={modeConfig?.inputControls}

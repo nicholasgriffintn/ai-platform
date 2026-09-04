@@ -80,4 +80,24 @@ describe("PromptAnalyzer", () => {
       }),
     );
   });
+
+  it("retains attachment and budget requirements when AI analysis fails", async () => {
+    mocks.getResponse.mockRejectedValue(
+      new Error("max completion tokens reached before generating a valid document"),
+    );
+    await expect(
+      PromptAnalyzer.analyzePrompt(
+        Object.create(null),
+        "Hello",
+        [{ type: "image", url: "https://example.com/image.png" }],
+        0.01,
+      ),
+    ).resolves.toMatchObject({
+      expectedComplexity: 2,
+      benefitsFromMultipleModels: false,
+      hasImages: true,
+      budget_constraint: 0.01,
+      needsFunctions: true,
+    });
+  });
 });

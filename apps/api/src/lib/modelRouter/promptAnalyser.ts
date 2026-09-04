@@ -10,10 +10,11 @@ import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
+import { truncateSingleLine } from "~/utils/strings";
 
 const logger = getLogger({ prefix: "lib/modelRouter/promptAnalyser" });
 
-const ANALYSIS_MAX_OUTPUT_TOKENS = 512;
+const ANALYSIS_MAX_OUTPUT_TOKENS = 2048;
 const ANALYSIS_PROMPT_SAMPLE_MAX_CHARS = 3600;
 const FUNCTION_DESCRIPTION_MAX_CHARS = 120;
 const FUNCTION_SUMMARY_MAX_CHARS = 2400;
@@ -90,11 +91,31 @@ export class PromptAnalyzer {
 
       return PromptAnalyzer.validateAndParseAnalysis(analysisResponse);
     } catch (error) {
-      throw new AssistantError(
-        `Prompt analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-        ErrorType.UNKNOWN_ERROR,
-      );
+      logger.warn("AI routing analysis failed; using keyword requirements", { error });
+
+      return PromptAnalyzer.inferRequirements(prompt);
     }
+  }
+
+  private static inferRequirements(prompt: string): PromptRequirements {
+    const strengths = getAvailableStrengths();
+    const requiredStrengths = strengths
+      .filter((strength): strength is keyof typeof PromptAnalyzer.FILTERS =>
+        Object.hasOwn(PromptAnalyzer.FILTERS, strength),
+      )
+      .filter((strength) => PromptAnalyzer.FILTERS[strength].hasKeywords(prompt));
+
+    return {
+      expectedComplexity: requiredStrengths.length ? 3 : 2,
+      requiredStrengths,
+      criticalStrengths: [],
+      estimatedInputTokens: estimateTextTokens(prompt),
+      estimatedOutputTokens: 1024,
+      needsFunctions: true,
+      hasImages: false,
+      hasDocuments: false,
+      benefitsFromMultipleModels: false,
+    };
   }
 
   private static async performAIAnalysis(
@@ -149,23 +170,13 @@ export class PromptAnalyzer {
     ].join("\n");
   }
 
-  private static truncateDescription(description: string): string {
-    const normalisedDescription = description.replace(/\s+/g, " ").trim();
-
-    if (normalisedDescription.length <= FUNCTION_DESCRIPTION_MAX_CHARS) {
-      return normalisedDescription;
-    }
-
-    return `${normalisedDescription.slice(0, FUNCTION_DESCRIPTION_MAX_CHARS - 3)}...`;
-  }
-
   private static summarizeAvailableFunctions(): string {
     const tools = listFunctionToolDefinitions();
     const summaries: string[] = [];
     let usedCharacters = 0;
 
     for (const tool of tools) {
-      const summary = `${tool.name}: ${PromptAnalyzer.truncateDescription(tool.description)}`;
+      const summary = `${tool.name}: ${truncateSingleLine(tool.description, FUNCTION_DESCRIPTION_MAX_CHARS)}`;
       const separatorLength = summaries.length > 0 ? 2 : 0;
 
       if (usedCharacters + separatorLength + summary.length > FUNCTION_SUMMARY_MAX_CHARS) {

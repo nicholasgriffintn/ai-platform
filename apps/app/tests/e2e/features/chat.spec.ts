@@ -639,6 +639,35 @@ test.describe("Pro message attachments", () => {
     );
   });
 
+  test("shows activity after an immediate refresh and loads the answer without another refresh", async ({
+    homePage,
+    page,
+  }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+    const request = await homePage.sendMessageAndRequireCompletion(
+      "Start the refresh recovery conversation",
+    );
+
+    await homePage.waitForChatResponse(0);
+    const completionId = homePage.completionIdFromRequest(request);
+
+    await homePage.navigate(`/chat/${completionId}`);
+
+    await homePage.sendMessageAndReadCompletionRequest(
+      "Recover this interrupted stream after refreshing",
+    );
+    await page.reload();
+    await expect(homePage.getLatestUserMessage()).toContainText("after refreshing");
+    await expect(homePage.stopResponseButton).toBeVisible();
+    await expect(homePage.getLatestAssistantMessage()).toContainText(
+      "the interrupted stream completed",
+      { timeout: 20_000 },
+    );
+    await expect(homePage.stopResponseButton).toBeHidden();
+    await expect(homePage.chatInput).toBeEditable();
+  });
+
   test("continues a streaming conversation after the browser closes and returns", async ({
     browser,
   }, testInfo) => {

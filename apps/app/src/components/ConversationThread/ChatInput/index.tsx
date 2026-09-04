@@ -121,6 +121,7 @@ interface ChatInputProps {
   isLoading: boolean;
   streamStarted: boolean;
   controller?: AbortController;
+  onStopResponse?: () => void;
   onTranscribe: (data: { response: { content: string } }) => void;
   placeholder?: {
     newConversation: string;
@@ -167,6 +168,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       isLoading,
       streamStarted,
       controller,
+      onStopResponse,
       onTranscribe,
       placeholder,
       controls,
@@ -752,10 +754,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             )
           }
           actions={
-            hideDefaultControls ? undefined : isLoading && streamStarted && controller ? (
+            hideDefaultControls ? undefined : isLoading &&
+              streamStarted &&
+              (onStopResponse || controller) ? (
               <Button
                 type="button"
-                onClick={() => controller.abort()}
+                onClick={() => (onStopResponse ? onStopResponse() : controller?.abort())}
                 variant="icon"
                 className="cursor-pointer p-2 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400"
                 title="Stop generating"

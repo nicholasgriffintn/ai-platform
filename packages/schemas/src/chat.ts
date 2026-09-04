@@ -3,6 +3,7 @@ import z from "zod/v4";
 import { normaliseCompactionStatusMessage } from "./compaction-status";
 import { messagePartsSchema } from "./message-parts";
 import { messageRoleSchema, messageSchema } from "./shared";
+import { threadOperationSchema } from "./thread-operations";
 
 export {
   chatCompletionMessageSchema,
@@ -186,6 +187,7 @@ export const getSharedConversationParamsSchema = z.object({
 
 export const getChatCompletionResponseSchema = z.object({
   id: z.string(),
+  active_operation: threadOperationSchema.nullable().optional(),
   has_branches: z.boolean().optional(),
   type: conversationTypeSchema,
   title: z.string().nullable(),

@@ -12,6 +12,7 @@ import type {
   MessageRole as SchemaMessageRole,
   ModelServiceTier,
   ReasoningEffort,
+  ThreadOperation,
 } from "@ngriffin_uk/polychat-schemas";
 
 export type ChatRole = SchemaMessageRole;
@@ -236,6 +237,7 @@ export interface Message {
 
 export interface Conversation {
   id?: string;
+  active_operation?: ThreadOperation | null;
   type?: SchemaConversationType;
   title: string;
   messages: Message[];

@@ -511,6 +511,7 @@ export const openrouterModelConfig: ModelConfig = {
 
   "x-ai/grok-3-mini": {
     name: "Grok 3 Mini",
+    status: "deprecated",
     matchingModel: "x-ai/grok-3-mini",
     provider: "openrouter",
     knowledgeCutoffDate: "November 2024",

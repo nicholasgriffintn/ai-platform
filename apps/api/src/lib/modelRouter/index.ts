@@ -12,6 +12,7 @@ import { resolveDefaultChatModel } from "~/lib/providers/models/policy";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { modelSupportsInput } from "~/utils/models";
 
 const logger = getLogger({ prefix: "lib/modelRouter" });
 
@@ -19,12 +20,7 @@ interface ModelScore {
   model: string;
   score: number;
   reason: string;
-  normalizedScore: number;
   provider: string;
-}
-
-function modelSupportsInput(model: ModelConfigItem, input: "image" | "pdf" | "document"): boolean {
-  return model.modalities?.input?.includes(input) ?? false;
 }
 
 export class ModelRouter {
@@ -150,7 +146,7 @@ export class ModelRouter {
     requirements: PromptRequirements,
     model: string,
     capabilities: ModelConfigItem,
-  ): Promise<Omit<ModelScore, "normalizedScore">> {
+  ): Promise<ModelScore> {
     if (!capabilities) {
       return {
         model,
@@ -323,21 +319,9 @@ export class ModelRouter {
       ),
     );
 
-    if (modelScoresRaw.length === 0) {
-      return [];
-    }
-
-    const rawScores = modelScoresRaw.map((s) => s.score);
-    const maxScore = Math.max(...rawScores);
-    const minScore = Math.min(...rawScores);
-    const scoreRange = maxScore - minScore;
-
-    const modelScoresNormalized: ModelScore[] = modelScoresRaw.map((s) => ({
-      ...s,
-      normalizedScore: scoreRange > 0 ? (s.score - minScore) / scoreRange : 1,
-    }));
-
-    return modelScoresNormalized.sort((a, b) => b.normalizedScore - a.normalizedScore);
+    return modelScoresRaw
+      .filter((candidate) => Number.isFinite(candidate.score))
+      .sort((a, b) => b.score - a.score);
   }
 
   private static async rankSuitableModels(

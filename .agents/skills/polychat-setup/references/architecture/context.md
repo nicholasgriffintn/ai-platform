@@ -57,7 +57,7 @@ Paths below are relative to `apps/api/src`.
 
 `lib/chat/core` orchestrates requests. `validation` and `preparation` establish model, scope and prompt state; `agent` runs the shared loop; `messages`, `streaming`, `tools` and `policy` own their named responsibilities. Keep feature internals out of the top-level orchestrator.
 
-Both streamed and buffered turns use common finalisation and goal policy. Turn completion owns persistence, connector cleanup and lock release. Disconnection detaches SSE; it does not finish the run. Recovery polls stored history, while explicit cancellation uses the separate stop endpoint. This is best-effort Worker continuation, not a durable event-replay system.
+Both streamed and buffered turns use common finalisation and goal policy. Turn completion owns persistence, connector cleanup and lock release. Disconnection detaches SSE; it does not finish the run. Recovery polls stored history and the coordinator’s active operation, restoring web activity after refresh or navigation. A recent local pending message bridges the period before the server stores the turn; explicit cancellation uses the separate stop endpoint. This is best-effort Worker continuation, not a durable event-replay system.
 
 `services/conversations/coordinator/client.ts` serialises history mutations at their entry points. The lock is non-reentrant and lease-bounded. Tool-result compaction removes JSON formatting whitespace before provider calls without changing values, protocol fields or stored history; it has no settings or saved policy. `lib/session` owns history compaction; display-only compaction and goal markers stay out of model input. Async provider jobs use `lib/async` and polling handlers, with terminal writes taking the same lock.
 
@@ -77,6 +77,6 @@ Credit admission reads persisted plan allowances; missing allowances refuse work
 
 `apps/app/src/lib/api/fetch-wrapper.ts` owns credentials, CSRF, timeouts and API error handling. React Query hooks own remote/local coordination and invalidation; the authenticated store owns hydrated user/settings state. `lib/local/local-chat-service.ts` owns local conversation persistence.
 
-Chat and Work compose the same `ConversationThread` and scoped capability surfaces. Keep backend catalogue metadata authoritative and project request metadata intact. Host controllers supply resolved links and actions to render packages through their existing providers.
+Chat and Work compose the same `ConversationThread` and scoped capability surfaces. Keep backend catalogue metadata authoritative and project request metadata intact. Automatic routing admits text-response chat models, excluding media generation, realtime and specialist extraction models; multimodal chat inputs remain eligible. Failed AI prompt analysis falls back to keyword requirements before scoring eligible models. Host controllers supply resolved links and actions to render packages through their existing providers.
 
 Use shared UI primitives for buttons, dialogs, focus, overlays and reduced motion. Tool messages and parts share `ToolResultView`; declared renderers and payload shape choose the body. Stream rendering coalesces text updates while preserving event order. API and iOS share contract semantics even where their presentation differs.

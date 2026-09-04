@@ -1,6 +1,13 @@
-import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+import type { ModelConfig, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 import type { Message } from "~/types";
+
+export function modelSupportsInput(
+  model: ModelConfigItem,
+  input: "image" | "pdf" | "document",
+): boolean {
+  return model.modalities?.input?.includes(input) ?? false;
+}
 
 export function getModelIdsByOutput(
   config: ModelConfig,

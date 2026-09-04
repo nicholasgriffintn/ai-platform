@@ -11,6 +11,16 @@ const advancedStrengths: ModelModality[] = [
 ];
 const PRO_MIN_INTELLIGENCE_INDEX = 35;
 const MAX_MIN_INTELLIGENCE_INDEX = 40;
+const NON_CHAT_STRENGTHS: ModelModality[] = [
+  "embedding",
+  "moderation",
+  "speech",
+  "voice-activity-detection",
+  "guardrails",
+  "reranking",
+  "ocr",
+  "transcription",
+];
 
 function combinedTokenCost(model: ModelConfigItem) {
   return (model.costPer1kInputTokens ?? 0) + (model.costPer1kOutputTokens ?? 0);
@@ -55,6 +65,11 @@ function isFlashFamily(model: ModelConfigItem) {
 export function isActiveRouterModel(model: ModelConfigItem) {
   return (
     isActiveModel(model) &&
+    model.modalities?.input.includes("text") === true &&
+    model.modalities.output?.length === 1 &&
+    model.modalities.output[0] === "text" &&
+    !model.supportsRealtimeSession &&
+    !hasAnyStrength(model, NON_CHAT_STRENGTHS) &&
     !isStealthModel(model) &&
     !isOpenRouterFreeModel(model) &&
     hasRequiredRouterScores(model)

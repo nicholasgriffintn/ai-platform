@@ -47,6 +47,10 @@ export class ConversationCoordinator extends Agent<IEnv> {
   async fetch(request: Request): Promise<Response> {
     const { pathname } = new URL(request.url);
 
+    if (pathname === "/status" && request.method === "POST") {
+      return Response.json(await this.getStatus());
+    }
+
     if (pathname === "/acquire" && request.method === "POST") {
       const body = (await request.json()) as { kind?: unknown };
       const parsed = threadOperationSchema.safeParse(body?.kind);

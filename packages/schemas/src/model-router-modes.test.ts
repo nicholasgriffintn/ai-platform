@@ -21,6 +21,32 @@ const makeModel = (id: string, overrides: Partial<ModelConfigItem> = {}): ModelC
 });
 
 describe("model router modes", () => {
+  it("limits automatic routing to text-response chat models", () => {
+    const excluded: Partial<ModelConfigItem>[] = [
+      { modalities: { input: ["text", "audio"], output: ["text", "audio"] } },
+      { modalities: { input: ["text"], output: ["text", "image"] } },
+      { modalities: { input: ["audio"], output: ["text"] } },
+      { modalities: { input: ["text"], output: ["embedding"] } },
+      { supportsRealtimeSession: true },
+      { strengths: ["transcription"] },
+      { strengths: ["ocr"] },
+      { modalities: undefined },
+    ];
+
+    for (const config of excluded) {
+      expect(isActiveRouterModel(makeModel("specialist", config))).toBe(false);
+    }
+
+    expect(
+      isActiveRouterModel(
+        makeModel("multimodal-chat", {
+          modalities: { input: ["text", "image", "audio", "pdf"], output: ["text"] },
+          strengths: ["reasoning", "vision"],
+        }),
+      ),
+    ).toBe(true);
+  });
+
   it("keeps auto as the unfiltered router pool", () => {
     expect(doesModelMatchRouterMode(makeModel("active"), "auto")).toBe(true);
   });

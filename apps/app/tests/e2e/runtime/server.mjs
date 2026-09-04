@@ -282,7 +282,7 @@ function resolveToolCallTrigger(prompt) {
   };
 }
 
-function streamingResponse(content, delayedContent) {
+function streamingResponse(content, delayedContent, delayMs = 2_500) {
   const contentChunks = [content, ...(delayedContent ? [delayedContent] : [])];
   const chunks = [
     ...contentChunks.map((chunk) => ({
@@ -315,7 +315,7 @@ function streamingResponse(content, delayedContent) {
   const body = new ReadableStream({
     async pull(controller) {
       if (index === 1) {
-        await new Promise((resolve) => setTimeout(resolve, 2_500));
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
 
       if (index < chunks.length) {
@@ -731,6 +731,7 @@ async function mockExternalRequest(request) {
     return streamingResponse(
       "E2E response: recovery data so far",
       " and the interrupted stream completed",
+      prompt.includes("after refreshing") ? 10_000 : 2_500,
     );
   }
 

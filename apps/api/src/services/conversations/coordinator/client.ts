@@ -1,4 +1,4 @@
-import type { ThreadOperation } from "@ngriffin_uk/polychat-schemas";
+import { threadStatusSchema, type ThreadOperation } from "@ngriffin_uk/polychat-schemas";
 
 import { getDurableObjectStub, postDurableObjectJson } from "~/lib/durable-objects/client";
 import type { IEnv } from "~/types";
@@ -84,6 +84,28 @@ export async function releaseThread(params: {
   conversationId: string;
 }): Promise<void> {
   await callCoordinator(params.env, params.conversationId, "/release");
+}
+
+export async function getActiveThreadOperation(params: {
+  env: IEnv | undefined;
+  conversationId: string;
+}): Promise<ThreadOperation | null | undefined> {
+  const outcome = await callCoordinator<unknown>(params.env, params.conversationId, "/status");
+
+  if (outcome.status === "unavailable") {
+    return undefined;
+  }
+
+  const parsed = outcome.status === "ok" ? threadStatusSchema.safeParse(outcome.data) : null;
+
+  if (!parsed?.success) {
+    throw new AssistantError(
+      "Conversation status is temporarily unavailable",
+      ErrorType.EXTERNAL_API_ERROR,
+    );
+  }
+
+  return parsed.data.status === "running" ? parsed.data.currentOperation : null;
 }
 
 export function threadBusyError(currentOperation?: string | null): AssistantError {

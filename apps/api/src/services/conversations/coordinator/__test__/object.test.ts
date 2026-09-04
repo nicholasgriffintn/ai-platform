@@ -57,6 +57,45 @@ function acquire(coordinator: any, kind: string) {
 }
 
 describe("ConversationCoordinator", () => {
+  it("reports a detached turn until release without taking or extending its lock", async () => {
+    const coordinator = createCoordinator();
+
+    await acquire(coordinator, "user_message");
+    const response = await coordinator.fetch(
+      new Request("https://coordinator/status", { method: "POST" }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      status: "running",
+      currentOperation: "user_message",
+    });
+    await coordinator.fetch(new Request("https://coordinator/release", { method: "POST" }));
+    const finished = await coordinator.fetch(
+      new Request("https://coordinator/status", { method: "POST" }),
+    );
+
+    expect(await finished.json()).toMatchObject({ status: "idle", currentOperation: null });
+  });
+
+  it("stops reporting abandoned turns after their lease expires", async () => {
+    vi.useFakeTimers();
+    try {
+      const coordinator = createCoordinator();
+
+      await acquire(coordinator, "user_message");
+      vi.advanceTimersByTime(5 * 60 * 1000);
+      const response = await coordinator.fetch(
+        new Request("https://coordinator/status", { method: "POST" }),
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ status: "idle", currentOperation: null });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("lets only one of two concurrent acquisitions take the thread", async () => {
     const coordinator = createCoordinator();
 

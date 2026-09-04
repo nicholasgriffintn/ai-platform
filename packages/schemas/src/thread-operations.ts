@@ -14,3 +14,8 @@ export type ThreadOperation = z.infer<typeof threadOperationSchema>;
 
 export const threadCoordinatorStatusSchema = z.enum(["idle", "running"]);
 export type ThreadCoordinatorStatus = z.infer<typeof threadCoordinatorStatusSchema>;
+
+export const threadStatusSchema = z.object({
+  status: threadCoordinatorStatusSchema,
+  currentOperation: threadOperationSchema.nullable(),
+});

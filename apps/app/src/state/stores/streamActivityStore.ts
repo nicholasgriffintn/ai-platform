@@ -7,6 +7,8 @@ import {
 } from "@ngriffin_uk/polychat-library-chat/response-stats";
 import { create } from "zustand";
 
+import { keepLatestRecordEntries } from "~/lib/collections";
+
 const MAX_TRACKED_RESPONSE_DURATIONS = 100;
 
 export interface ConversationStreamState {
@@ -16,6 +18,7 @@ export interface ConversationStreamState {
   messageStartedAt: number | null;
   requiresAction: boolean;
   status: "streaming" | "action-required";
+  source?: "local" | "remote";
 }
 
 interface StreamActivityStore {
@@ -25,6 +28,7 @@ interface StreamActivityStore {
     conversationId: string,
     controller?: AbortController,
     loadingMessage?: string,
+    source?: "local" | "remote",
   ) => void;
   recordStreamActivityState: (conversationId: string, state: string, data?: unknown) => void;
   recordStreamActivityText: (
@@ -41,20 +45,15 @@ interface StreamActivityStore {
   clearStreamStatus: (conversationId: string) => void;
 }
 
-function trimResponseDurations(durations: Record<string, number>): Record<string, number> {
-  const entries = Object.entries(durations);
-
-  if (entries.length <= MAX_TRACKED_RESPONSE_DURATIONS) {
-    return durations;
-  }
-
-  return Object.fromEntries(entries.slice(entries.length - MAX_TRACKED_RESPONSE_DURATIONS));
-}
-
 export const useStreamActivityStore = create<StreamActivityStore>()((set) => ({
   streams: {},
   responseDurations: {},
-  beginStreamActivity: (conversationId, controller, loadingMessage = "Generating response...") => {
+  beginStreamActivity: (
+    conversationId,
+    controller,
+    loadingMessage = "Generating response...",
+    source = "local",
+  ) => {
     const startedAt = Date.now();
 
     set((current) => ({
@@ -67,6 +66,7 @@ export const useStreamActivityStore = create<StreamActivityStore>()((set) => ({
           messageStartedAt: startedAt,
           requiresAction: false,
           status: "streaming",
+          source,
         },
       },
     }));
@@ -146,10 +146,13 @@ export const useStreamActivityStore = create<StreamActivityStore>()((set) => ({
 
       return {
         streams: { ...current.streams, [conversationId]: updatedStream },
-        responseDurations: trimResponseDurations({
-          ...current.responseDurations,
-          [messageId]: completedAt - startedAt,
-        }),
+        responseDurations: keepLatestRecordEntries(
+          {
+            ...current.responseDurations,
+            [messageId]: completedAt - startedAt,
+          },
+          MAX_TRACKED_RESPONSE_DURATIONS,
+        ),
       };
     }),
   updateStreamLoadingMessage: (conversationId, loadingMessage) =>
