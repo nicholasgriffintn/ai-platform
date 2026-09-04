@@ -1,4 +1,5 @@
 import type {
+  ConversationBranch,
   ConversationArchiveFilter,
   ConversationSortBy,
   ConversationType,
@@ -91,6 +92,31 @@ export class ConversationRepository extends BaseRepository {
     });
 
     return this.runQuery<Record<string, unknown>>(query, values, true);
+  }
+
+  public async listConversationBranches(
+    conversationId: string,
+    userId: number,
+    projectId: string | null,
+    limit: number,
+  ): Promise<Array<Omit<ConversationBranch, "is_archived"> & { is_archived: number }>> {
+    return this.runQuery(
+      `WITH RECURSIVE scoped AS (
+         SELECT id, parent_conversation_id FROM conversation
+         WHERE project_id IS ? AND (? IS NOT NULL OR user_id = ?)
+       ), family(id, parent_conversation_id) AS (
+         SELECT id, parent_conversation_id FROM scoped WHERE id = ?
+         UNION
+         SELECT c.id, c.parent_conversation_id FROM scoped c JOIN family f ON c.id = f.parent_conversation_id
+         UNION
+         SELECT c.id, c.parent_conversation_id FROM scoped c JOIN family f ON c.parent_conversation_id = f.id
+         LIMIT ?
+       )
+       SELECT c.id, c.title, c.parent_conversation_id, c.created_at, c.is_archived
+       FROM conversation c JOIN family f ON c.id = f.id
+       ORDER BY c.created_at ASC, c.id ASC`,
+      [projectId, projectId, userId, conversationId, limit],
+    );
   }
 
   public async getConversationByShareId(shareId: string): Promise<Record<string, unknown> | null> {

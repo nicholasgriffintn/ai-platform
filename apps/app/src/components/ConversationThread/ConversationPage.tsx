@@ -5,6 +5,7 @@ import { ChatSidebar } from "~/components/ChatSidebar";
 import { PageShell } from "~/components/Core/PageShell";
 
 import { ConversationThread, type ConversationThreadModeConfig } from ".";
+import { ConversationBranchNavigation } from "./ConversationBranchNavigation";
 import { ConversationProductHeader } from "./ConversationProductHeader";
 import { useConversationLaunchModeConfig } from "./useConversationLaunchModeConfig";
 
@@ -26,6 +27,11 @@ export function ConversationPage({
   const content = (
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {!embedded && <ConversationProductHeader />}
+      {embedded && (
+        <div className="flex justify-end px-3">
+          <ConversationBranchNavigation />
+        </div>
+      )}
       <div className="relative flex min-h-0 flex-1 flex-grow flex-row overflow-hidden">
         <div className="flex min-h-0 w-full flex-grow flex-col">
           <div className="relative min-h-0 flex-1 overflow-hidden">

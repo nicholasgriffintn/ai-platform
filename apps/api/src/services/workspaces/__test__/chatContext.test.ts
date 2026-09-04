@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { resolveProjectRouterMode } from "~/lib/chat/policy/project-routing";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { getConversationBranches } from "~/services/completions/conversationBranches";
 import { ErrorType } from "~/utils/errors";
 
 import { applyProjectCodingEnvironment, resolveProjectChatContext } from "../chatContext";
@@ -20,6 +21,7 @@ function createContext({
   const repositories = {
     conversations: {
       getConversation: vi.fn().mockResolvedValue(conversation),
+      listConversationBranches: vi.fn().mockResolvedValue([]),
     },
     workspaces: {
       getProject: vi.fn().mockResolvedValue({
@@ -337,5 +339,72 @@ describe("project chat context", () => {
         metadata: { project_id: "project-1" },
       }),
     ).rejects.toMatchObject({ type: ErrorType.NOT_FOUND, statusCode: 404 });
+  });
+});
+
+describe("conversation branch access", () => {
+  it("uses creator ownership for personal branches and membership for project branches", async () => {
+    const personal = createContext({ conversation: { id: "c1", user_id: 7, project_id: null } });
+
+    await getConversationBranches(personal.context, "c1");
+    expect(personal.repositories.conversations.listConversationBranches).toHaveBeenCalledWith(
+      "c1",
+      7,
+      null,
+      201,
+    );
+    const project = createContext({
+      conversation: { id: "c2", user_id: 99, project_id: "project-1" },
+    });
+
+    await getConversationBranches(project.context, "c2");
+    expect(project.repositories.conversations.listConversationBranches).toHaveBeenCalledWith(
+      "c2",
+      7,
+      "project-1",
+      201,
+    );
+  });
+
+  it("refuses foreign personal conversations and revoked workspace memberships", async () => {
+    const personal = createContext({ conversation: { user_id: 99, project_id: null } });
+
+    await expect(getConversationBranches(personal.context, "private")).rejects.toMatchObject({
+      statusCode: 404,
+    });
+    expect(personal.repositories.conversations.listConversationBranches).not.toHaveBeenCalled();
+    const project = createContext({
+      conversation: { user_id: 7, project_id: "project-1" },
+      membership: null,
+    });
+
+    await expect(getConversationBranches(project.context, "project-chat")).rejects.toMatchObject({
+      statusCode: 404,
+    });
+    expect(project.repositories.conversations.listConversationBranches).not.toHaveBeenCalled();
+  });
+
+  it("bounds large trees, retains the current branch, and hides omitted parent identifiers", async () => {
+    const { context, repositories } = createContext({ conversation: { id: "c200", user_id: 7 } });
+
+    repositories.conversations.listConversationBranches.mockResolvedValue(
+      Array.from({ length: 201 }, (_, index) => ({
+        id: `c${index}`,
+        title: `Branch ${index}`,
+        parent_conversation_id: "outside-scope",
+        created_at: "2026-09-01",
+        is_archived: 1,
+      })),
+    );
+    const result = await getConversationBranches(context, "c200");
+
+    expect(result.truncated).toBe(true);
+    expect(result.branches).toHaveLength(200);
+    expect(result.branches.some((branch) => branch.id === "c200")).toBe(true);
+    expect(
+      result.branches.every(
+        (branch) => branch.parent_conversation_id === null && branch.is_archived,
+      ),
+    ).toBe(true);
   });
 });
