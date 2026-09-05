@@ -36,14 +36,13 @@ struct ModelSelectionFilter {
 
     func apply(to models: [ModelConfigItem]) -> [ModelConfigItem] {
         var filtered = ModelSearch.filter(models, query: searchText)
-            .filter { $0.isExecutable != false }
 
         if showsFeaturedOnly {
             filtered = filtered.filter { $0.isFeatured == true }
         }
 
         if !showsDeprecated {
-            filtered = filtered.filter { $0.isAvailableForSelection }
+            filtered = filtered.filter { $0.isDeprecated != true && $0.status != "deprecated" }
         }
 
         if let selectedProvider {

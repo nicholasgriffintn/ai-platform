@@ -10,15 +10,18 @@ struct ConversationListView: View {
     @State private var renameTitle = ""
     let onShowSettings: () -> Void
     let onShowRecipes: () -> Void
+    let onShowInbox: () -> Void
 
     init(
         selectedConversationID: Binding<String?>,
         onShowSettings: @escaping () -> Void = {},
-        onShowRecipes: @escaping () -> Void = {}
+        onShowRecipes: @escaping () -> Void = {},
+        onShowInbox: @escaping () -> Void = {}
     ) {
         self._selectedConversationID = selectedConversationID
         self.onShowSettings = onShowSettings
         self.onShowRecipes = onShowRecipes
+        self.onShowInbox = onShowInbox
     }
 
     private var filteredConversations: [Conversation] {
@@ -119,6 +122,13 @@ struct ConversationListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 PolychatLogoView(size: 28)
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: onShowInbox) {
+                    Image(systemName: "tray")
+                }
+                .accessibilityLabel("Task inbox")
             }
 
             ToolbarItem(placement: .topBarTrailing) {

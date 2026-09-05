@@ -129,6 +129,7 @@ struct StreamingToolActivity {
                     toolCallId: result.toolCallId,
                     status: result.status,
                     content: result.content,
+                    data: result.structuredData,
                     timestamp: resultTimestamp
                 )
             ],

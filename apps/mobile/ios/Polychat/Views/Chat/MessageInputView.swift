@@ -10,14 +10,18 @@ struct MessageInputView: View {
     let voiceError: String?
     let activeModelName: String
     let activeModelProvider: String?
+    let modelReadinessMessage: String?
+    let isRunActive: Bool
+    let isCancellationPending: Bool
     let onFilesPicked: ([PickedComposerFile]) -> Void
     let onVoiceTapped: () -> Void
     let onModelTapped: () -> Void
     let onSettingsTapped: () -> Void
+    let onStopRun: () -> Void
     let sendMessage: () -> Void
 
     private var canSend: Bool {
-        (!messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedAttachments.isEmpty) && !isUploadingAttachments
+        (!messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedAttachments.isEmpty) && !isUploadingAttachments && !isRunActive && modelReadinessMessage == nil
     }
 
     var body: some View {
@@ -34,6 +38,15 @@ struct MessageInputView: View {
 
             if let inputError = uploadError ?? voiceError {
                 Text(inputError)
+                    .font(.caption)
+                    .foregroundStyle(Color.polychat.error)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+            }
+
+            if let modelReadinessMessage {
+                Text(modelReadinessMessage)
                     .font(.caption)
                     .foregroundStyle(Color.polychat.error)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -87,6 +100,7 @@ struct MessageInputView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                     .buttonStyle(.plain)
+                    .disabled(isRunActive)
                     .accessibilityLabel("Select model")
 
                     Button(action: onSettingsTapped) {
@@ -109,15 +123,28 @@ struct MessageInputView: View {
                     }
                     .disabled(isTranscribingVoice)
 
-                    Button(action: sendMessage) {
-                        Image(systemName: "paperplane.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(Color(light: .white, dark: .black))
-                            .frame(width: 38, height: 38)
-                            .background(canSend ? Color(light: .black, dark: Color.polychat.offWhite) : Color.polychat.zinc500.opacity(0.55))
-                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    if isRunActive {
+                        Button(action: onStopRun) {
+                            Image(systemName: isCancellationPending ? "hourglass" : "stop.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Color(light: .white, dark: .black))
+                                .frame(width: 38, height: 38)
+                                .background(Color(light: .black, dark: Color.polychat.offWhite))
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        }
+                        .disabled(isCancellationPending)
+                        .accessibilityLabel(isCancellationPending ? "Stop requested" : "Stop task")
+                    } else {
+                        Button(action: sendMessage) {
+                            Image(systemName: "paperplane.fill")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Color(light: .white, dark: .black))
+                                .frame(width: 38, height: 38)
+                                .background(canSend ? Color(light: .black, dark: Color.polychat.offWhite) : Color.polychat.zinc500.opacity(0.55))
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        }
+                        .disabled(!canSend)
                     }
-                    .disabled(!canSend)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)

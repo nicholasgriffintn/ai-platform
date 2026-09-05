@@ -13,6 +13,7 @@ struct ChatView: View {
     @State private var showingModelSelector = false
     @State private var showingChatSettings = false
     @State private var showingArtifacts = false
+    @State private var showingContext = false
     @State private var chatSettings = ChatSettings.default
     @StateObject private var voiceRecorder = VoiceRecorder()
     @FocusState private var isMessageInputFocused: Bool
@@ -47,6 +48,26 @@ struct ChatView: View {
         activeModelConfig?.provider
     }
 
+    private var modelReadinessMessage: String? {
+        guard activeModelId != nil else { return nil }
+        guard let activeModelConfig else {
+            return "Your selected model is no longer available to this account. Choose another model before sending."
+        }
+        if let readiness = activeModelConfig.readiness {
+            if !readiness.isFresh() {
+                return "Model readiness has expired. Refresh the model list before sending."
+            }
+            return readiness.isReady ? nil : readiness.reason
+        }
+        return activeModelConfig.isAvailableForSelection
+            ? nil
+            : "This model cannot run under the current account and provider policy."
+    }
+
+    private var currentRun: ChatRun? {
+        conversationManager.currentConversation?.latestRun
+    }
+
     private var allArtifacts: [Artifact] {
         messages.compactMap { message -> [Artifact]? in
             var mutableMessage = message
@@ -62,7 +83,48 @@ struct ChatView: View {
             MessageListView(
                 messages: messages,
                 conversationModelId: activeModelId,
+                run: currentRun,
+                taskActivity: conversationManager.currentTaskActivity,
+                taskInteraction: conversationManager.currentTaskInteraction,
+                connectorApproval: conversationManager.currentConnectorApproval,
                 isLoadingConversation: conversationManager.loadingConversationID == conversationManager.currentConversation?.id,
+                hasMoreMessages: conversationManager.currentConversation?.hasMoreMessages == true,
+                isLoadingEarlierMessages: conversationManager.isLoadingEarlierMessages,
+                onLoadEarlierMessages: {
+                    Task {
+                        await conversationManager.loadEarlierMessages()
+                    }
+                },
+                onAnswerTaskQuestions: { answers in
+                    Task {
+                        await conversationManager.answerCurrentTaskQuestions(answers)
+                    }
+                },
+                onResolveTaskApproval: { resolution in
+                    Task {
+                        await conversationManager.resolveCurrentTaskApproval(resolution)
+                    }
+                },
+                onRefreshTaskInteraction: {
+                    Task {
+                        await conversationManager.refreshCurrentTaskInteraction()
+                    }
+                },
+                onResolveConnectorApproval: { resolution in
+                    Task {
+                        await conversationManager.resolveCurrentConnectorApproval(resolution)
+                    }
+                },
+                onContinueConnectorApproval: {
+                    Task {
+                        await conversationManager.continueCurrentConnectorApproval()
+                    }
+                },
+                onRefreshConnectorApproval: {
+                    Task {
+                        await conversationManager.refreshCurrentConnectorApproval()
+                    }
+                },
                 onSuggestionSelected: { suggestion in
                     messageText = suggestion
                 },
@@ -81,6 +143,9 @@ struct ChatView: View {
                 voiceError: voiceError,
                 activeModelName: activeModelName,
                 activeModelProvider: activeModelProvider,
+                modelReadinessMessage: modelReadinessMessage,
+                isRunActive: currentRun?.isActive == true,
+                isCancellationPending: currentRun?.status == "cancelling",
                 onFilesPicked: uploadFiles,
                 onVoiceTapped: {
                     isMessageInputFocused = false
@@ -93,6 +158,11 @@ struct ChatView: View {
                 onSettingsTapped: {
                     isMessageInputFocused = false
                     showingChatSettings = true
+                },
+                onStopRun: {
+                    Task {
+                        await conversationManager.cancelCurrentRun()
+                    }
                 },
                 sendMessage: sendMessage
             )
@@ -116,6 +186,16 @@ struct ChatView: View {
             ToolbarItem(placement: .secondaryAction) {
                 Button(action: {
                     isMessageInputFocused = false
+                    showingContext = true
+                }) {
+                    Label("Context", systemImage: "book.pages")
+                }
+                .disabled(currentRun?.context == nil && currentRun?.usage == nil)
+            }
+
+            ToolbarItem(placement: .secondaryAction) {
+                Button(action: {
+                    isMessageInputFocused = false
                     showingArtifacts = true
                 }) {
                     Label("Artifacts", systemImage: "doc.text")
@@ -124,16 +204,35 @@ struct ChatView: View {
             }
         }
         .sheet(isPresented: $showingModelSelector) {
-            ModelSelectorView { modelId in
-                conversationManager.setModelForCurrentConversation(modelId)
-                chatSettings.serviceTier = nil
-            }
+            ModelSelectorView(
+                onSelectModel: { modelId in
+                    conversationManager.setModelForCurrentConversation(modelId)
+                    chatSettings.serviceTier = nil
+                },
+                validateSelection: { model in
+                    let decision = ModelContinuity.evaluate(
+                        model: model,
+                        hasConversationHistory: !messages.isEmpty,
+                        activeRun: currentRun,
+                        attachmentTypes: selectedAttachments.map(\.type)
+                    )
+                    return decision.allowsSelection ? nil : decision.reason
+                }
+            )
         }
         .sheet(isPresented: $showingChatSettings) {
             ChatSettingsView(settings: $chatSettings, modelConfig: activeModelConfig)
         }
         .sheet(isPresented: $showingArtifacts) {
             ArtifactsView(artifacts: allArtifacts)
+        }
+        .sheet(isPresented: $showingContext) {
+            if let run = currentRun {
+                ChatContextView(context: run.context, usage: run.usage)
+            }
+        }
+        .task(id: currentRun.map { "\($0.id):\($0.attempt)" }) {
+            await conversationManager.observeCurrentRun()
         }
     }
     
@@ -142,6 +241,10 @@ struct ChatView: View {
         let attachments = selectedAttachments
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachments.isEmpty else { return }
         guard !isUploadingAttachments else { return }
+        if let modelReadinessMessage {
+            uploadError = modelReadinessMessage
+            return
+        }
 
         messageText = ""
         selectedAttachments = []

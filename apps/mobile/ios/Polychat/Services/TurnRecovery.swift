@@ -21,50 +21,64 @@ enum TurnRecoveryStatus {
     static let reconnectingNotice = "\n\n_Reconnecting to the response…_"
 }
 
-@MainActor
-enum TurnRecovery {
-    static func selectRecoveredMessages(
-        _ messages: [ChatMessage],
-        knownMessageIds: Set<String>
-    ) -> [ChatMessage] {
-        let recovered = messages.filter { message in
-            message.role != "user" && !knownMessageIds.contains(message.id)
-        }
-
-        return recovered.contains { $0.role == "assistant" } ? recovered : []
+extension ChatRun {
+    var isTerminal: Bool {
+        ["succeeded", "failed", "cancelled", "interrupted"].contains(status)
     }
 
+    var isWaiting: Bool {
+        status == "awaiting_input" || status == "awaiting_approval"
+    }
+
+    var isActive: Bool {
+        !isTerminal
+    }
+}
+
+@MainActor
+enum TurnRecovery {
     static func recoverDetachedTurn(
-        completionId: String,
-        knownMessageIds: Set<String>,
+        runId initialRunId: String?,
         policy: TurnRecoveryPolicy = TurnRecoveryPolicy(),
-        fetchMessages: (String) async throws -> [ChatMessage]
-    ) async -> [ChatMessage] {
+        resolveCommand: () async throws -> String?,
+        fetchRun: (String) async throws -> ChatRunRecoveryResponse,
+        onSnapshot: ((ChatRunRecoveryResponse) -> Void)? = nil
+    ) async -> ChatRunRecoveryResponse? {
         let clock = ContinuousClock()
         let deadline = clock.now.advanced(by: policy.maxWait)
+        var runId = initialRunId
 
         while !Task.isCancelled, clock.now < deadline {
             do {
                 try await policy.sleep(policy.pollInterval)
             } catch {
-                return []
+                return nil
             }
 
             if Task.isCancelled {
                 break
             }
 
-            guard let messages = try? await fetchMessages(completionId) else {
+            do {
+                if runId == nil {
+                    runId = try await resolveCommand()
+                }
+
+                guard let runId else {
+                    continue
+                }
+
+                let snapshot = try await fetchRun(runId)
+                onSnapshot?(snapshot)
+
+                if snapshot.run.isWaiting || snapshot.run.isTerminal {
+                    return snapshot
+                }
+            } catch {
                 continue
-            }
-
-            let recovered = selectRecoveredMessages(messages, knownMessageIds: knownMessageIds)
-
-            if !recovered.isEmpty {
-                return recovered
             }
         }
 
-        return []
+        return nil
     }
 }

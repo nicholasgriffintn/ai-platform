@@ -1,5 +1,13 @@
 import Foundation
 
+struct ChatStreamBufferError: LocalizedError {
+    let maximumBytes: Int
+
+    var errorDescription: String? {
+        "Chat stream event exceeded \(maximumBytes) bytes"
+    }
+}
+
 enum ChatStreamEventParser {
     static func events(from data: String) throws -> [ChatStreamEvent] {
         guard !data.isEmpty else {
@@ -88,6 +96,11 @@ enum ChatStreamEventParser {
         case "tool_response_start", "tool_response_end":
             return []
         case "state":
+            if object["state"] as? String == "run",
+               let receipt = object["receipt"],
+               let decoded = JSONObjectDecoding.decode(ChatRunCommandReceipt.self, from: receipt) {
+                return [.run(decoded)]
+            }
             if object["state"] as? String == "compaction",
                let message = extractCompactionMessage(from: object) {
                 return [.compaction(message)]
@@ -279,11 +292,24 @@ enum ChatStreamEventParser {
 }
 
 struct ChatStreamEventChunkParser {
+    static let defaultMaximumEventBytes = 4 * 1024 * 1024
+
     private var buffer = Data()
+    private let maximumEventBytes: Int
+
+    init(maximumEventBytes: Int = Self.defaultMaximumEventBytes) {
+        self.maximumEventBytes = maximumEventBytes
+    }
 
     mutating func append(_ data: Data) throws -> [ChatStreamEvent] {
         buffer.append(data)
-        return try drainCompletedEvents()
+        let events = try drainCompletedEvents()
+
+        if buffer.count > maximumEventBytes {
+            throw ChatStreamBufferError(maximumBytes: maximumEventBytes)
+        }
+
+        return events
     }
 
     mutating func finish() throws -> [ChatStreamEvent] {
@@ -301,6 +327,11 @@ struct ChatStreamEventChunkParser {
 
         while let delimiterRange = firstEventDelimiterRange(in: buffer) {
             let eventData = buffer[..<delimiterRange.lowerBound]
+
+            if eventData.count > maximumEventBytes {
+                throw ChatStreamBufferError(maximumBytes: maximumEventBytes)
+            }
+
             buffer.removeSubrange(..<delimiterRange.upperBound)
             events.append(
                 contentsOf: try ChatStreamEventParser.events(

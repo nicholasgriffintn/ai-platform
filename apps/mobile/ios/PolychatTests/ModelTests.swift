@@ -4,6 +4,86 @@ import UIKit
 @testable import Polychat
 
 struct ModelTests {
+    @Test func taskInboxDecodesReadStateAndCurrentDeepLink() throws {
+        let inbox = try JSONDecoder().decode(TaskInboxResponse.self, from: Data("""
+        {
+            "items": [{
+                "id": "task-1:v3",
+                "kind": "approval",
+                "taskId": "task-1",
+                "projectId": "project-1",
+                "workspaceId": "workspace-1",
+                "projectName": "Launch",
+                "objective": "Approve release",
+                "detail": "Waiting for an approval",
+                "conversationId": "conversation-1",
+                "since": "2026-09-05T12:00:00.000Z",
+                "requiresAction": true,
+                "isRead": false,
+                "readAt": null,
+                "deepLink": "/work/workspace-1/projects/project-1/tasks/task-1"
+            }],
+            "total": 1,
+            "unread": 1
+        }
+        """.utf8))
+
+        #expect(inbox.unread == 1)
+        #expect(inbox.items.first?.id == "task-1:v3")
+        #expect(inbox.items.first?.requiresAction == true)
+        #expect(inbox.items.first?.isRead == false)
+    }
+
+    @Test func notificationSettingsKeepPermissionSeparateFromServerRegistration() throws {
+        let settings = try JSONDecoder().decode(TaskNotificationSettings.self, from: Data("""
+        {
+            "protocolVersion": 1,
+            "preferences": {
+                "enabled": true,
+                "decisions": true,
+                "failures": true,
+                "completions": true,
+                "assignments": false
+            },
+            "registrations": [{
+                "id": "registration-1",
+                "installationId": "installation-1",
+                "platform": "ios",
+                "state": "failed",
+                "failureCode": "endpoint_expired",
+                "updatedAt": "2026-09-05T12:00:00.000Z"
+            }],
+            "webPushPublicKey": null
+        }
+        """.utf8))
+
+        #expect(settings.preferences.enabled == true)
+        #expect(settings.registrations.first?.state == "failed")
+        #expect(settings.registrations.first?.failureCode == "endpoint_expired")
+    }
+
+    @Test func modelReadinessDecodesUnknownAndExpiresAtTheBoundary() throws {
+        let model = try JSONDecoder().decode(ModelConfigItem.self, from: Data("""
+        {
+            "name": "Unknown model",
+            "provider": "test",
+            "readiness": {
+                "protocolVersion": 1,
+                "state": "unknown",
+                "reasonCode": "check_failed",
+                "reason": "The provider check failed.",
+                "checkedAt": "2026-09-05T10:00:00.000Z",
+                "expiresAt": "2026-09-05T10:01:00.000Z",
+                "action": { "kind": "retry", "label": "Refresh models" }
+            }
+        }
+        """.utf8))
+
+        #expect(model.readiness?.state == "unknown")
+        #expect(model.readiness?.isFresh(at: try #require(AppDateParser.parse("2026-09-05T10:00:59.000Z"))) == true)
+        #expect(model.readiness?.isFresh(at: try #require(AppDateParser.parse("2026-09-05T10:01:00.000Z"))) == false)
+    }
+
     @Test func messageContentDecodesTextAndMultimodalBlocks() throws {
         let text = try JSONDecoder().decode(MessageContent.self, from: Data(#""Hello""#.utf8))
         #expect(text.textValue == "Hello")
@@ -75,6 +155,132 @@ struct ModelTests {
         let part = try #require(message.parts?.first)
         #expect(part.id == "compaction-part-1")
         #expect(part.metadata == .object(["source": .string("automatic-compaction")]))
+    }
+
+    @Test func chatMessagePreservesItsRunIdentity() throws {
+        let message = try JSONDecoder().decode(
+            ChatMessage.self,
+            from: Data(#"{"id":"assistant-1","role":"assistant","content":"Done","run_id":"run-1"}"#.utf8)
+        )
+
+        #expect(message.runId == "run-1")
+    }
+
+    @Test func chatRunDecodesVersionedContextWithoutFabricatingReportedUsage() throws {
+        let data = Data("""
+        {
+            "protocolVersion": 1,
+            "id": "run-1",
+            "conversationId": "conversation-1",
+            "projectId": "project-1",
+            "projectTaskId": "task-1",
+            "stageId": "build",
+            "initiatorUserId": 1,
+            "status": "running",
+            "attempt": 1,
+            "createdAt": "2026-09-05T10:00:00.000Z",
+            "updatedAt": "2026-09-05T10:00:00.000Z",
+            "startedAt": "2026-09-05T10:00:00.000Z",
+            "completedAt": null,
+            "terminalReason": null,
+            "lastMessageId": null,
+            "retry": {
+                "protocolVersion": 1,
+                "step": 2,
+                "attempt": 2,
+                "maxAttempts": 2,
+                "runRetry": 1,
+                "maxRunRetries": 2,
+                "phase": "waiting",
+                "classification": "rate_limited",
+                "reason": "The model provider is rate limited.",
+                "scheduledAt": "2026-09-05T09:59:59.000Z",
+                "retryAt": "2026-09-05T10:00:01.000Z"
+            },
+            "context": {
+                "protocolVersion": 1,
+                "runId": "run-1",
+                "conversationId": "conversation-1",
+                "attempt": 1,
+                "step": 2,
+                "model": "model-1",
+                "provider": "provider-1",
+                "generatedAt": "2026-09-05T10:00:00.000Z",
+                "usage": { "inputTokens": 4200, "contextWindow": 32000, "source": "estimated" },
+                "messages": { "included": 8, "omitted": 1 },
+                "sources": [],
+                "skills": [],
+                "approvals": [
+                    {
+                        "id": "approval-1",
+                        "type": "approval",
+                        "status": "approved",
+                        "toolName": "publish",
+                        "messageId": "message-2"
+                    }
+                ],
+                "summary": {
+                    "messageId": "snapshot-1",
+                    "status": "included",
+                    "text": "Keep the user's later constraint.",
+                    "representedMessageCount": 8,
+                    "candidateMessageCount": 9,
+                    "fallback": false
+                },
+                "omissions": []
+            }
+        }
+        """.utf8)
+
+        let run = try JSONDecoder().decode(ChatRun.self, from: data)
+
+        #expect(run.context?.usage.source == "estimated")
+        #expect(run.stageId == "build")
+        #expect(run.context?.messages.omitted == 1)
+        #expect(run.context?.provider == "provider-1")
+        #expect(run.context?.approvals?.first?.toolName == "publish")
+        #expect(run.context?.summary?.status == "included")
+        #expect(run.retry?.classification == "rate_limited")
+    }
+
+    @Test func cancellationRequestEncodesTheExactAttemptFence() throws {
+        let request = CancelChatRunRequest(commandId: "cancel-1", expectedAttempt: 3)
+        let object = try #require(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any]
+        )
+
+        #expect(object["command_id"] as? String == "cancel-1")
+        #expect(object["expected_attempt"] as? Int == 3)
+    }
+
+    @Test func chatMessagePreservesAndDescribesPartialCompactionCoverage() throws {
+        let data = Data("""
+        {
+            "id": "snapshot-1-compaction",
+            "role": "compaction",
+            "content": "Context compacted",
+            "parts": [
+                {
+                    "type": "compaction",
+                    "status": "completed",
+                    "coverage": {
+                        "coveredMessageIds": ["message-1", "message-2"],
+                        "coveredMessageCount": 2,
+                        "candidateMessageCount": 3,
+                        "summaryInputCharacters": 1200,
+                        "strategy": "fallback_transcript"
+                    }
+                }
+            ]
+        }
+        """.utf8)
+
+        let message = try JSONDecoder().decode(ChatMessage.self, from: data)
+        let coverage = try #require(message.parts?.first?.coverage)
+
+        #expect(coverage.coveredMessageIds == ["message-1", "message-2"])
+        #expect(coverage.summaryInputCharacters == 1200)
+        #expect(message.compactionCoverageDetail == "2 messages preserved verbatim; 1 message retained")
     }
 
     @Test func chatMessageProviderMessagesExcludeCompactionMarkers() throws {
@@ -288,6 +494,23 @@ struct ModelTests {
         #expect(json["enabled_tools"] == nil)
         #expect(json["tool_selection_mode"] as? String == "managed")
         #expect(json["model_router_mode"] == nil)
+        #expect((json["command_id"] as? String)?.isEmpty == false)
+    }
+
+    @Test func chatCompletionRequestPreservesCommandAndRunIdentity() throws {
+        let request = ChatCompletionRequest(
+            messages: [ChatMessage(role: "user", content: "Approved")],
+            model: "gpt-6-astra",
+            completionId: "conversation-1",
+            commandId: "command-1",
+            runId: "run-1"
+        )
+
+        let data = try JSONEncoder().encode(request)
+        let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        #expect(json["command_id"] as? String == "command-1")
+        #expect(json["run_id"] as? String == "run-1")
     }
 
     @Test func chatCompletionRequestUsesAutomaticRoutingWithoutAModel() throws {
@@ -452,5 +675,169 @@ struct ModelTests {
         #expect(message["created"] as? Double == 1234)
         #expect(part["id"] as? String == "compaction-part-1")
         #expect(metadata["source"] as? String == "manual-compaction")
+    }
+}
+
+extension ModelTests {
+    @Test func chatRunUsageKeepsHoldsConsumptionAndUnknownValuesDistinct() throws {
+        let run = try JSONDecoder().decode(ChatRun.self, from: Data("""
+        {
+            "protocolVersion": 1,
+            "id": "run-1",
+            "conversationId": "conversation-1",
+            "projectId": null,
+            "projectTaskId": null,
+            "stageId": "build",
+            "initiatorUserId": 7,
+            "status": "running",
+            "attempt": 2,
+            "createdAt": "2026-09-05T10:00:00.000Z",
+            "updatedAt": "2026-09-05T10:05:00.000Z",
+            "startedAt": null,
+            "completedAt": null,
+            "cancellationRequestedAt": null,
+            "terminalReason": null,
+            "lastMessageId": null,
+            "context": null,
+            "retry": null,
+            "usage": {
+                "protocolVersion": 1,
+                "runId": "run-1",
+                "currentAttempt": 2,
+                "measurement": "unknown",
+                "reservation": {
+                    "creditMicros": 50000,
+                    "status": "held",
+                    "expiresAt": "2026-09-06T10:00:00.000Z",
+                    "createdAt": "2026-09-05T10:00:00.000Z",
+                    "updatedAt": null
+                },
+                "consumption": {
+                    "status": "unknown",
+                    "eventCount": 0,
+                    "costMicros": null,
+                    "creditMicros": null,
+                    "estimatedPriceEventCount": 0,
+                    "bySource": []
+                },
+                "attempts": [],
+                "settlement": { "status": "pending", "at": null }
+            }
+        }
+        """.utf8))
+
+        #expect(run.stageId == "build")
+        #expect(run.usage?.reservation?.creditMicros == 50_000)
+        #expect(run.usage?.consumption.creditMicros == nil)
+        #expect(run.usage?.settlement.status == "pending")
+    }
+}
+
+extension ModelTests {
+    @Test func projectTaskPlanEvidenceKeepsProposalsSeparateFromAttempts() throws {
+        let data = Data("""
+        {
+            "protocolVersion": 1,
+            "id": "task-1",
+            "status": "active",
+            "stages": [
+                {
+                    "id": "task-1:build",
+                    "flowStageId": "build",
+                    "name": "Build",
+                    "status": "failed",
+                    "input": { "objective": "Ship", "acceptanceCriterionIds": [] },
+                    "completionIds": [],
+                    "outputs": [{ "id": "output-1", "title": "Draft", "kind": "report", "status": "ready" }],
+                    "attempts": [{
+                        "id": "run-1:1",
+                        "runId": "run-1",
+                        "conversationId": "conversation-1",
+                        "attempt": 1,
+                        "status": "failed",
+                        "startedAt": "2026-09-05T10:00:00.000Z",
+                        "completedAt": "2026-09-05T10:01:00.000Z",
+                        "terminalReason": "Provider failed",
+                        "completionIds": [],
+                        "outputs": [{ "id": "output-1", "title": "Draft", "kind": "report", "status": "ready" }],
+                        "provenance": {
+                            "protocolVersion": 1,
+                            "capturedAt": "2026-09-05T10:01:00.000Z",
+                            "completeness": "partial",
+                            "origin": "generated",
+                            "run": { "id": "run-1", "attempt": 1 },
+                            "model": null,
+                            "skills": [],
+                            "sources": [],
+                            "approvals": []
+                        }
+                    }]
+                },
+                {
+                    "id": "task-1:publish",
+                    "flowStageId": "publish",
+                    "name": "Publish",
+                    "status": "proposed",
+                    "input": { "objective": "Ship", "acceptanceCriterionIds": [] },
+                    "attempts": [],
+                    "completionIds": [],
+                    "outputs": []
+                }
+            ],
+            "resume": { "supported": false, "reason": "Reconcile the provider." }
+        }
+        """.utf8)
+
+        let plan = try JSONDecoder().decode(ProjectTaskPlanEvidence.self, from: data)
+
+        #expect(plan.stages[0].attempts[0].runId == "run-1")
+        #expect(plan.stages[0].outputs[0].id == "output-1")
+        #expect(plan.stages[1].status == "proposed")
+        #expect(plan.resume.supported == false)
+    }
+
+    @Test func outputHistoryDecodesRevisionAndRestoreLineage() throws {
+        let data = Data("""
+        {
+            "current": {
+                "outputId": "output-1",
+                "revision": 3,
+                "parentRevision": 2,
+                "title": "Restored draft",
+                "status": "ready",
+                "sensitivity": "personal",
+                "content": { "body": "Earlier text" },
+                "createdByUserId": 42,
+                "createdAt": "2026-09-05T13:00:00.000Z",
+                "operation": "restored",
+                "restoredFromRevision": 1,
+                "provenance": {
+                    "protocolVersion": 1,
+                    "capturedAt": "2026-09-05T12:00:00.000Z",
+                    "completeness": "complete",
+                    "origin": "generated",
+                    "run": { "id": "run-1", "attempt": 2 },
+                    "model": { "id": "model-1", "provider": "provider-1" },
+                    "skills": [],
+                    "sources": [],
+                    "approvals": []
+                }
+            },
+            "revisions": [],
+            "restore": {
+                "supported": true,
+                "reason": null,
+                "fields": ["title", "content"]
+            }
+        }
+        """.utf8)
+
+        let history = try JSONDecoder().decode(OutputHistoryResponse.self, from: data)
+
+        #expect(history.current.parentRevision == 2)
+        #expect(history.current.operation == "restored")
+        #expect(history.current.restoredFromRevision == 1)
+        #expect(history.current.provenance.model?.provider == "provider-1")
+        #expect(history.restore.fields == ["title", "content"])
     }
 }
