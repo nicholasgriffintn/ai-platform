@@ -3,7 +3,6 @@ import {
   SidebarSettingsPopover as ControlledSidebarSettingsPopover,
   type SidebarSettingsLinks,
 } from "@ngriffin_uk/polychat-component-navigation";
-import { ThemeSelect } from "@ngriffin_uk/polychat-component-ui";
 
 import { SOURCE_CODE_URL } from "~/constants";
 import { useAuthStatus } from "~/hooks/useAuth";
@@ -52,7 +51,7 @@ export function SidebarSettingsPopover() {
       links={links}
       sourceCodeIcon={<ProviderGlyph name="github" size={16} />}
       usage={getSidebarUsageItems(usageLimits, usageBalance.data?.credits)}
-      themeControl={<ThemeSelect value={themePreference} onChange={setThemePreference} />}
+      theme={{ value: themePreference, onChange: setThemePreference }}
       onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
       onSignIn={() => setShowLoginModal(true)}
     />

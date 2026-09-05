@@ -78,7 +78,8 @@
   --color-accent-slate: var(--polychat-accent-slate);
 }
 
-:root {
+:root,
+[data-polychat-theme] {
   --radius: 0.625rem;
   --background: var(--polychat-canvas);
   --foreground: var(--polychat-text);

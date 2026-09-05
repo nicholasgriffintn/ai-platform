@@ -73,11 +73,48 @@ export interface OptionsMenuOption<TValue extends string> {
   label: string;
 }
 
-export interface OptionsMenuSectionProps<TValue extends string> {
-  label: string;
+export interface OptionsMenuRadioGroupProps<TValue extends string> {
   value: TValue;
   options: readonly OptionsMenuOption<TValue>[];
   onChange: (value: TValue) => void;
+}
+
+export function OptionsMenuRadioGroup<TValue extends string>({
+  value,
+  options,
+  onChange,
+}: OptionsMenuRadioGroupProps<TValue>) {
+  return (
+    <DropdownMenuPrimitive.RadioGroup
+      value={value}
+      onValueChange={(nextValue) => {
+        const nextOption = options.find((option) => option.value === nextValue);
+
+        if (nextOption) {
+          onChange(nextOption.value);
+        }
+      }}
+    >
+      {options.map((option) => (
+        <DropdownMenuPrimitive.RadioItem
+          key={option.value}
+          value={option.value}
+          className={cn(rowClassName, "justify-between gap-4")}
+        >
+          <span className="truncate">{option.label}</span>
+          <DropdownMenuPrimitive.ItemIndicator className="text-active-work shrink-0">
+            <Check size={13} aria-hidden="true" />
+          </DropdownMenuPrimitive.ItemIndicator>
+        </DropdownMenuPrimitive.RadioItem>
+      ))}
+    </DropdownMenuPrimitive.RadioGroup>
+  );
+}
+
+export interface OptionsMenuSectionProps<
+  TValue extends string,
+> extends OptionsMenuRadioGroupProps<TValue> {
+  label: string;
 }
 
 export function OptionsMenuSection<TValue extends string>({
@@ -104,29 +141,7 @@ export function OptionsMenuSection<TValue extends string>({
           collisionPadding={8}
           className={surfaceClassName}
         >
-          <DropdownMenuPrimitive.RadioGroup
-            value={value}
-            onValueChange={(nextValue) => {
-              const nextOption = options.find((option) => option.value === nextValue);
-
-              if (nextOption) {
-                onChange(nextOption.value);
-              }
-            }}
-          >
-            {options.map((option) => (
-              <DropdownMenuPrimitive.RadioItem
-                key={option.value}
-                value={option.value}
-                className={cn(rowClassName, "justify-between gap-4")}
-              >
-                <span className="truncate">{option.label}</span>
-                <DropdownMenuPrimitive.ItemIndicator className="text-active-work shrink-0">
-                  <Check size={13} aria-hidden="true" />
-                </DropdownMenuPrimitive.ItemIndicator>
-              </DropdownMenuPrimitive.RadioItem>
-            ))}
-          </DropdownMenuPrimitive.RadioGroup>
+          <OptionsMenuRadioGroup value={value} options={options} onChange={onChange} />
         </DropdownMenuPrimitive.SubContent>
       </DropdownMenuPrimitive.Portal>
     </DropdownMenuPrimitive.Sub>

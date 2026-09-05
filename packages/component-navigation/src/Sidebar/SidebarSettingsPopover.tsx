@@ -5,6 +5,8 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  ThemeMenu,
+  type ThemePreference,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
   ChevronDown,
@@ -21,7 +23,7 @@ import {
   WalletCards,
   Wrench,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 
 export interface SidebarUsageMeter {
   id: string;
@@ -50,12 +52,20 @@ export interface SidebarSettingsLinks {
   sourceCode: string;
 }
 
+export interface SidebarThemeControl {
+  value: ThemePreference;
+  onChange: (preference: ThemePreference) => void;
+}
+
 const usageToneClasses: Record<SidebarUsageMeter["tone"], string> = {
   blue: "bg-active-work",
   emerald: "bg-success",
   amber: "bg-attention",
   violet: "bg-creative",
 };
+
+const popoverRowClassName =
+  "text-popover-foreground hover:bg-selection hover:text-foreground flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm no-underline transition-colors";
 
 function SidebarUsageSummary({
   usage,
@@ -157,10 +167,7 @@ function PopoverLink({
   children: ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      className="text-popover-foreground hover:bg-selection hover:text-foreground flex items-center gap-2 rounded-md px-2.5 py-2 text-sm no-underline transition-colors"
-    >
+    <Link href={href} className={popoverRowClassName}>
       {icon}
       <span>{children}</span>
     </Link>
@@ -175,7 +182,7 @@ export interface SidebarSettingsPopoverProps {
   links: SidebarSettingsLinks;
   sourceCodeIcon: ReactNode;
   usage: SidebarUsageMeter[];
-  themeControl?: ReactNode;
+  theme?: SidebarThemeControl;
   onShowKeyboardShortcuts: () => void;
   onSignIn: () => void;
 }
@@ -188,11 +195,12 @@ export function SidebarSettingsPopover({
   links,
   sourceCodeIcon,
   usage,
-  themeControl,
+  theme,
   onShowKeyboardShortcuts,
   onSignIn,
 }: SidebarSettingsPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const displayName = isAuthenticated && account?.name ? account.name : "Settings";
   const planLabel = isAuthenticated ? (account?.planLabel ?? "Free") : "Guest";
@@ -225,11 +233,17 @@ export function SidebarSettingsPopover({
         </button>
       </PopoverTrigger>
       <PopoverContent
+        ref={contentRef}
+        tabIndex={-1}
         align="center"
         side="top"
         sideOffset={8}
         collisionPadding={{ top: 64, right: 8, bottom: 88, left: 8 }}
         className="border-border bg-popover text-popover-foreground w-[calc(var(--radix-popover-trigger-width)-1rem)] max-w-[calc(var(--radix-popover-trigger-width)-1rem)] p-3 shadow-[var(--polychat-elevated-shadow)]"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          contentRef.current?.focus();
+        }}
       >
         <div className="space-y-3">
           <SidebarUsageSummary usage={usage} isLoading={isUsageLoading} />
@@ -271,12 +285,17 @@ export function SidebarSettingsPopover({
           </div>
 
           <div className="border-border space-y-1 border-t pt-2">
-            {themeControl && <div className="px-2.5 pb-2">{themeControl}</div>}
-            <button
-              type="button"
-              onClick={onShowKeyboardShortcuts}
-              className="text-popover-foreground hover:bg-selection hover:text-foreground flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm transition-colors"
-            >
+            {theme && (
+              <ThemeMenu
+                value={theme.value}
+                onChange={theme.onChange}
+                triggerClassName={cn(
+                  popoverRowClassName,
+                  "data-[state=open]:bg-selection data-[state=open]:text-foreground",
+                )}
+              />
+            )}
+            <button type="button" onClick={onShowKeyboardShortcuts} className={popoverRowClassName}>
               <Keyboard className="h-4 w-4" />
               <span>Keyboard shortcuts</span>
             </button>
@@ -290,7 +309,7 @@ export function SidebarSettingsPopover({
               href={links.sourceCode}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-popover-foreground hover:bg-selection hover:text-foreground flex items-center gap-2 rounded-md px-2.5 py-2 text-sm no-underline transition-colors"
+              className={popoverRowClassName}
             >
               <span aria-hidden="true">{sourceCodeIcon}</span>
               <span className="flex flex-1 items-center justify-between">
