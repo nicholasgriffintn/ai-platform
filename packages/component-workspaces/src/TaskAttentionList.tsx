@@ -40,10 +40,6 @@ function kindIcon(kind: ProjectTaskAttentionKind) {
     return <AlertTriangle className="text-attention" size={16} />;
   }
 
-  if (kind === "completion") {
-    return <CheckCircle2 className="text-success" size={16} />;
-  }
-
   return <UserCheck className="text-active-work" size={16} />;
 }
 
