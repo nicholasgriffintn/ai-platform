@@ -1,0 +1,25 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "creative"
+    ],
+    "supportsAttachments": false
+  },
+  "description": "The ideogram/V_3 family includes models that produce image.",
+  "models": {
+    "ideogram-v3": {
+      "defaults": {
+        "name": "Ideogram v3",
+        "description": "Ideogram v3 is a text-to-image model optimized for prompt fidelity, layout control, and text rendering."
+      }
+    }
+  }
+}

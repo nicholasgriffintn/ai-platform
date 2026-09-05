@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 163840,
+    "maxTokens": 163840,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "July 2025",
+    "releaseDate": "November 26, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/tngtech/tng r1t chimera:free family includes models that produce text.",
+  "models": {
+    "r1t-chimera-free": {
+      "defaults": {
+        "name": "R1T Chimera (free)",
+        "description": "R1T Chimera (free) accepts text and produces text."
+      }
+    }
+  }
+}

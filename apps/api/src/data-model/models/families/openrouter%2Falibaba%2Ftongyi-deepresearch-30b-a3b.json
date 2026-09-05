@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 131072,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "March 31, 2025",
+    "releaseDate": "September 18, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/alibaba/tongyi deepresearch 30b a3b family includes models that produce text.",
+  "models": {
+    "tongyi-deepresearch-30b-a3b": {
+      "defaults": {
+        "name": "Tongyi DeepResearch 30B A3B",
+        "description": "Tongyi DeepResearch 30B A3B accepts text and produces text."
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 8192,
+    "maxTokens": 1536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "releaseDate": "April 30, 2024",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The titan embed family includes models that produce embedding.",
+  "models": {
+    "titan-text-embeddings-v2": {
+      "defaults": {
+        "name": "Titan Text Embeddings V2",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines"
+      }
+    }
+  }
+}

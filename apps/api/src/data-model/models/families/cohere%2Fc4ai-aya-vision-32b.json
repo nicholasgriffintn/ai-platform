@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 16000,
+    "maxTokens": 4000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 4, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The cohere/c4ai aya vision 32b family includes models that produce text.",
+  "models": {
+    "aya-vision-32b": {
+      "defaults": {
+        "name": "Aya Vision 32B",
+        "description": "Open multilingual vision model for OCR, visual reasoning, and image question answering"
+      }
+    }
+  }
+}

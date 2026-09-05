@@ -1,0 +1,409 @@
+{
+  "defaults": {
+    "contextWindow": 200000,
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The claude family includes models that produce text.",
+  "models": {
+    "claude-2": {
+      "defaults": {
+        "name": "Claude 2",
+        "description": "Claude 2 accepts text and produces text.",
+        "contextWindow": 100000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 2,
+        "reliability": 1,
+        "knowledgeCutoffDate": "August 2023",
+        "releaseDate": "July 11, 2023",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 3.6,
+          "codingIndex": 12.9,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-2-1": {
+      "defaults": {
+        "name": "Claude 2.1",
+        "description": "Claude 2.1 accepts text and produces text.",
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "August 2023",
+        "releaseDate": "November 21, 2023",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 3.9,
+          "codingIndex": 14,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-3-5-haiku": {
+      "defaults": {
+        "name": "Claude 3.5 Haiku",
+        "description": "Claude 3.5 Haiku accepts text, image and produces text.",
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "chat",
+          "analysis",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "multimodal": true,
+        "knowledgeCutoffDate": "July 31, 2024",
+        "releaseDate": "November 4, 2024",
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-3-5-haiku-bedrock-us": {
+      "defaults": {
+        "name": "Claude 3.5 Haiku (Bedrock US)",
+        "description": "With fast speeds, improved instruction following, and more accurate tool use, Claude 3.5 Haiku is well suited for user-facing products, specialized sub-agent tasks, and generating personalized experiences from huge volumes of data.",
+        "contextWindow": 80000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "card": "https://www.prompthub.us/models/claude-3-5-haiku",
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "reasoning",
+          "creative",
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "multimodal": true,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "October 22, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-3-7-sonnet-bedrock-us": {
+      "defaults": {
+        "name": "Claude 3.7 Sonnet (Bedrock US)",
+        "description": "Advanced reasoning model with enhanced capabilities for complex analytical tasks.",
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "card": "https://www.prompthub.us/models/claude-3-7-sonnet",
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "coding",
+          "reasoning",
+          "creative",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "multimodal": true,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "February 19, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 23.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-3-haiku": {
+      "defaults": {
+        "name": "Claude 3 Haiku",
+        "openWeights": false,
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "August 31, 2023",
+        "releaseDate": "March 13, 2024",
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 3.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-haiku-3": {
+      "defaults": {
+        "name": "Claude Haiku 3",
+        "description": "Claude Haiku 3 accepts text, image, pdf and produces text.",
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "February 2024",
+        "releaseDate": "March 13, 2024"
+      }
+    },
+    "claude-haiku-3-5": {
+      "defaults": {
+        "name": "Claude Haiku 3.5",
+        "description": "Claude Haiku 3.5 accepts text, image, pdf and produces text.",
+        "maxTokens": 8192,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "October 22, 2024"
+      }
+    },
+    "claude-instant": {
+      "defaults": {
+        "name": "Claude Instant",
+        "description": "Claude Instant accepts text and produces text.",
+        "contextWindow": 100000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 2,
+        "reliability": 1,
+        "knowledgeCutoffDate": "August 2023",
+        "releaseDate": "March 1, 2023",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 2.1,
+          "codingIndex": 7.8,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-3": {
+      "defaults": {
+        "name": "Claude Opus 3",
+        "description": "Claude Opus 3 accepts text, image, pdf and produces text.",
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 2023",
+        "releaseDate": "February 29, 2024"
+      }
+    },
+    "claude-opus-4": {
+      "defaults": {
+        "name": "Claude Opus 4",
+        "description": "Claude Opus 4 accepts text, image and produces text.",
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "March 2025",
+        "releaseDate": "May 22, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-sonnet-3": {
+      "defaults": {
+        "name": "Claude Sonnet 3",
+        "description": "Claude Sonnet 3 accepts text, image, pdf and produces text.",
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 2023",
+        "releaseDate": "March 4, 2024"
+      }
+    },
+    "claude-sonnet-3-5": {
+      "defaults": {
+        "name": "Claude Sonnet 3.5",
+        "description": "Claude Sonnet 3.5 accepts text, image, pdf and produces text.",
+        "maxTokens": 8192,
+        "knowledgeCutoffDate": "April 2024"
+      }
+    },
+    "claude-sonnet-3-5-v2": {
+      "defaults": {
+        "name": "Claude Sonnet 3.5 v2",
+        "description": "Claude Sonnet 3.5 v2 accepts text, image, pdf and produces text.",
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "October 22, 2024"
+      }
+    },
+    "claude-sonnet-3-7": {
+      "defaults": {
+        "name": "Claude Sonnet 3.7",
+        "description": "Claude Sonnet 3.7 accepts text, image, pdf and produces text.",
+        "releaseDate": "February 19, 2025"
+      }
+    },
+    "claude-sonnet-3-7-thinking": {
+      "defaults": {
+        "name": "Claude Sonnet 3.7 Thinking",
+        "description": "Claude Sonnet 3.7 Thinking accepts text, image and produces text.",
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "February 19, 2025"
+      }
+    },
+    "claude-sonnet-4": {
+      "defaults": {
+        "name": "Claude Sonnet 4",
+        "description": "Claude's most advanced Sonnet model with enhanced reasoning capabilities and multimodal understanding.",
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 2025",
+        "releaseDate": "May 22, 2025"
+      }
+    }
+  }
+}

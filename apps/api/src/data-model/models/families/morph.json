@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "August 15, 2024",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The morph family includes models that produce text.",
+  "models": {
+    "morph-v3-fast": {
+      "defaults": {
+        "name": "Morph v3 Fast",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 16000,
+        "maxTokens": 16000
+      }
+    },
+    "morph-v3-large": {
+      "defaults": {
+        "name": "Morph v3 Large",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "contextWindow": 32000,
+        "maxTokens": 32000
+      }
+    }
+  }
+}

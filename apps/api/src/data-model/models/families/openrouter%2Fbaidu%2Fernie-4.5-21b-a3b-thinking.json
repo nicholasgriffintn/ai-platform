@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 131072,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "March 31, 2025",
+    "releaseDate": "October 9, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/baidu/ernie 4.5 21b a3b thinking family includes models that produce text.",
+  "models": {
+    "ernie-4-5-21b-a3b-thinking": {
+      "defaults": {
+        "name": "ERNIE 4.5 21B A3B Thinking",
+        "description": "ERNIE 4.5 21B A3B Thinking accepts text and produces text."
+      }
+    }
+  }
+}

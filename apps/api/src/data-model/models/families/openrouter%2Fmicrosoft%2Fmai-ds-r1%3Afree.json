@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 163840,
+    "maxTokens": 163840,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 2025",
+    "releaseDate": "April 21, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/microsoft/mai ds r1:free family includes models that produce text.",
+  "models": {
+    "mai-ds-r1-free": {
+      "defaults": {
+        "name": "MAI DS R1 (free)",
+        "description": "MAI DS R1 (free) accepts text and produces text."
+      }
+    }
+  }
+}

@@ -12,13 +12,29 @@ export function parseArgs(argv) {
     verbose: false,
     help: false,
     providers: new Set(),
-    triggerAnalysisTask: process.env.POLYCHAT_MODEL_ANALYSIS_TRIGGER === "true",
     polychatApiBaseUrl: process.env.POLYCHAT_API_BASE_URL || POLYCHAT_API_BASE_URL_DEFAULT,
     polychatApiKey: process.env.POLYCHAT_API_KEY,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
+
+    if (arg === "--snapshot" || arg === "--convert-from" || arg === "--save-snapshot") {
+      const value = argv[++i];
+
+      if (!value || value.startsWith("--")) {
+        throw new Error(`Missing value for ${arg}`);
+      }
+
+      options[
+        arg === "--snapshot"
+          ? "snapshot"
+          : arg === "--save-snapshot"
+            ? "saveSnapshot"
+            : "convertFrom"
+      ] = path.resolve(value);
+      continue;
+    }
 
     if (arg === "--write") {
       options.write = true;
@@ -89,6 +105,14 @@ export function parseArgs(argv) {
     throw new Error(`Unknown argument: ${arg}`);
   }
 
+  if (options.saveSnapshot && !options.write) {
+    throw new Error("Saving a snapshot requires --write");
+  }
+
+  if (options.convertFrom && options.providers.size) {
+    throw new Error("Conversion must include all providers");
+  }
+
   return options;
 }
 
@@ -103,11 +127,14 @@ Options:
   --provider <id>         Only process a local provider (repeatable)
   --api-url <url>         Override models.dev API URL
   --models-dir <path>     Override model config directory
+  --snapshot <path>       Read a saved models.dev API snapshot, without network access
+  --convert-from <src>    Convert original provider TypeScript sources and registry
+  --save-snapshot <path>  Save the models.dev input for replay (requires --write)
   --verbose               Print per-file details
   --help, -h              Show this help
 
 Environment:
   POLYCHAT_API_BASE_URL   Polychat API base URL (defaults to ${POLYCHAT_API_BASE_URL_DEFAULT})
-  POLYCHAT_API_KEY        API key used for cached Artificial Analysis data and the trigger
+  POLYCHAT_API_KEY        API key used to read cached Artificial Analysis data (live sync only)
 `);
 }

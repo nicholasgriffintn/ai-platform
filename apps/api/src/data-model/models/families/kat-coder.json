@@ -1,0 +1,65 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+  "models": {
+    "kat-coder-air-v2-5": {
+      "defaults": {
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+        "maxTokens": 80000,
+        "releaseDate": "July 10, 2026"
+      }
+    },
+    "kat-coder-pro": {
+      "defaults": {
+        "name": "kat-coder-pro",
+        "description": "KAT-Coder-Pro V2 by KwaiKAT is a non-reasoning model optimized for agentic coding. It delivers strong performance on reasoning-style tasks while requiring significantly fewer output tokens than peer models. With the 1210 release, it achieved a score of 64 on the Artificial Analysis Intelligence Index, placing it in the global Top 10 and ranking first among all non-reasoning models.",
+        "maxTokens": 256000,
+        "releaseDate": "March 27, 2026",
+        "supportsResponseFormat": false
+      }
+    },
+    "kat-coder-pro-v1": {
+      "defaults": {
+        "name": "KAT-Coder-Pro V1",
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+        "maxTokens": 32000,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "November 9, 2025",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kat-coder-pro-v2": {
+      "defaults": {
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+        "releaseDate": "March 27, 2026"
+      }
+    },
+    "kat-coder-pro-v2-5": {
+      "defaults": {
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+        "releaseDate": "July 10, 2026"
+      }
+    }
+  }
+}

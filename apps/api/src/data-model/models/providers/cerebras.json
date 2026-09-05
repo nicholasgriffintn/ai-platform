@@ -1,0 +1,114 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "cerebras/llama-3.3-70b": {
+      "model": "llama/cerebras-llama-3-3-70b",
+      "matchingModel": "llama-3.3-70b",
+      "overrides": {},
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls",
+        "openWeights"
+      ]
+    },
+    "cerebras/gpt-oss-120b": {
+      "model": "gpt-oss/gpt-oss-120b",
+      "matchingModel": "gpt-oss-120b",
+      "overrides": {
+        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
+        "maxTokens": 40960,
+        "strengths": [
+          "reasoning",
+          "coding",
+          "analysis",
+          "math",
+          "tool_use"
+        ],
+        "speed": 5,
+        "lastUpdated": "June 10, 2026",
+        "costPer1kInputTokens": 0.00035,
+        "costPer1kOutputTokens": 0.00075
+      }
+    },
+    "cerebras/qwen-3-32b": {
+      "model": "qwen/cerebras-qwen-3-32b",
+      "matchingModel": "qwen-3-32b",
+      "overrides": {},
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "cerebras/zai-glm-4.6": {
+      "model": "glm/cerebras-zai-glm-4-6",
+      "matchingModel": "zai-glm-4.6",
+      "overrides": {},
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls",
+        "supportsResponseFormat",
+        "openWeights"
+      ]
+    },
+    "cerebras/zai-glm-4.7": {
+      "model": "glm/z-ai-glm-4-7",
+      "matchingModel": "zai-glm-4.7",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "June 10, 2026",
+        "costPer1kInputTokens": 0.00225,
+        "costPer1kOutputTokens": 0.00275
+      }
+    },
+    "cerebras/qwen-3-235b-a22b-instruct-2507": {
+      "model": "qwen/qwen-3-235b-instruct",
+      "matchingModel": "qwen-3-235b-a22b-instruct-2507",
+      "overrides": {
+        "lastUpdated": "July 22, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0012
+      }
+    },
+    "gemma-4-31b": {
+      "model": "gemma/gemma-4-31b-it",
+      "matchingModel": "gemma-4-31b",
+      "overrides": {
+        "status": "beta",
+        "contextWindow": 131072,
+        "maxTokens": 40960,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "speed": 2,
+        "lastUpdated": "July 1, 2026",
+        "costPer1kInputTokens": 0.00099,
+        "costPer1kOutputTokens": 0.00149,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 24.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,234 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 200000,
+    "maxTokens": 64000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "February 28, 2025",
+    "releaseDate": "October 15, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+  "models": {
+    "anthropic-claude-haiku-latest": {
+      "defaults": {
+        "name": "Anthropic Claude Haiku Latest",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "releaseDate": "April 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-3-5-haiku": {
+      "defaults": {
+        "name": "Claude 3.5 Haiku",
+        "description": "Claude 3.5 Haiku accepts text, image, pdf and produces text.",
+        "maxTokens": 8192,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "July 31, 2024",
+        "releaseDate": "November 4, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-haiku-3": {
+      "defaults": {
+        "name": "Claude Haiku 3",
+        "description": "Legacy model retained for compatibility with older integrations",
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "August 31, 2023",
+        "releaseDate": "March 13, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 3.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-haiku-3-5": {
+      "defaults": {
+        "name": "Claude Haiku 3.5",
+        "description": "With fast speeds, improved instruction following, and more accurate tool use, Claude 3.5 Haiku is well suited for user-facing products, specialized sub-agent tasks, and generating personalized experiences from huge volumes of data.",
+        "maxTokens": 8192,
+        "card": "https://www.prompthub.us/models/claude-3-5-haiku",
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "reasoning",
+          "creative",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "multimodal": true,
+        "knowledgeCutoffDate": "July 31, 2024",
+        "releaseDate": "October 22, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-haiku-4-5": {
+      "defaults": {
+        "name": "Claude Haiku 4.5",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-haiku-4-5-au": {
+      "defaults": {
+        "name": "Claude Haiku 4.5 (AU)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none",
+          "thinkingApi": "budget"
+        }
+      }
+    },
+    "claude-haiku-4-5-eu": {
+      "defaults": {
+        "name": "Claude Haiku 4.5 (EU)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none",
+          "thinkingApi": "budget"
+        }
+      }
+    },
+    "claude-haiku-4-5-global": {
+      "defaults": {
+        "name": "Claude Haiku 4.5 (Global)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none",
+          "thinkingApi": "budget"
+        }
+      }
+    },
+    "claude-haiku-4-5-jp": {
+      "defaults": {
+        "name": "Claude Haiku 4.5 (JP)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none",
+          "thinkingApi": "budget"
+        }
+      }
+    },
+    "claude-haiku-4-5-latest": {
+      "defaults": {
+        "name": "Claude Haiku 4.5",
+        "description": "Fast Claude lane for lightweight agents, office tasks, and responsive chat",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-haiku-4-5-latest-eu": {
+      "defaults": {
+        "name": "Claude Haiku 4.5 (latest) (EU)",
+        "description": "Fast Claude lane for lightweight agents, office tasks, and responsive chat",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-haiku-4-5-us": {
+      "defaults": {
+        "name": "Claude Haiku 4.5 (US)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none",
+          "thinkingApi": "budget"
+        }
+      }
+    }
+  }
+}

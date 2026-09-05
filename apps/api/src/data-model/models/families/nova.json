@@ -1,0 +1,393 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": true
+  },
+  "description": "The nova family includes models that produce image, speech, text, video.",
+  "models": {
+    "amazon-nova-2-lite": {
+      "defaults": {
+        "name": "Amazon Nova 2 Lite",
+        "description": "Amazon Nova 2 Lite accepts text, image, video and produces text.",
+        "contextWindow": 1000000,
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "analysis",
+          "multilingual",
+          "vision"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "multimodal": true,
+        "supportsTemperature": true
+      }
+    },
+    "amazon-nova-2-sonic": {
+      "defaults": {
+        "name": "Amazon Nova 2 Sonic",
+        "description": "Amazon Nova 2 Sonic accepts speech and produces speech, text.",
+        "contextWindow": 1000000,
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "speech"
+          ],
+          "output": [
+            "speech",
+            "text"
+          ]
+        }
+      }
+    },
+    "amazon-nova-canvas": {
+      "defaults": {
+        "name": "Amazon Nova Canvas",
+        "description": "Amazon Nova Canvas is a state-of-the-art image generation model that creates professional grade images from text or images provided in prompts. Amazon Nova Canvas also provides features that make it easy to edit images using text inputs, controls for adjusting color scheme and layout, and built-in controls to support safe and responsible use of AI.",
+        "contextWindow": 1024,
+        "maxTokens": 1024,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "multimodal": true
+      }
+    },
+    "amazon-nova-reel": {
+      "defaults": {
+        "name": "Amazon Nova Reel",
+        "description": "Amazon Nova Reel is a state-of-the-art video generation model that allows customers to easily create high quality video from text and images. Amazon Nova Reel supports use of natural language prompts to control visual style and pacing, including camera motion control, and built-in controls to support safe and responsible use of AI.",
+        "contextWindow": 512,
+        "maxTokens": 512,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "multimodal": true
+      }
+    },
+    "deepgram-nova-3": {
+      "defaults": {
+        "name": "Deepgram Nova 3",
+        "description": "Transcribe audio using Deepgram's speech-to-text model with advanced features like language detection, speaker diarization, and sentiment analysis.",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5,
+        "releaseDate": "November 14, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": true
+      }
+    },
+    "lucidnova-rf1-100b": {
+      "defaults": {
+        "name": "LucidNova RF1 100B",
+        "openWeights": false,
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 120000,
+        "maxTokens": 8000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "September 16, 2025",
+        "releaseDate": "December 28, 2024",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nova-2-lite": {
+      "defaults": {
+        "name": "Nova 2 Lite",
+        "openWeights": false,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1000000,
+        "supportsTemperature": true
+      }
+    },
+    "nova-2-sonic": {
+      "defaults": {
+        "name": "Nova 2 Sonic",
+        "description": "Nova 2 Sonic accepts speech and produces speech, text.",
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "speech"
+          ],
+          "output": [
+            "speech",
+            "text"
+          ]
+        }
+      }
+    },
+    "nova-lite": {
+      "defaults": {
+        "name": "Nova Lite",
+        "description": "Nova Lite accepts text, image, video and produces text.",
+        "contextWindow": 300000,
+        "maxTokens": 10000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "chat",
+          "analysis",
+          "vision",
+          "summarization",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "December 3, 2024",
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "nova-lite-v1": {
+      "defaults": {
+        "name": "Nova Lite V1",
+        "openWeights": false,
+        "description": "Nova Lite is a fast, low-cost multimodal foundation model capable of reasoning over text, images, and video in 200+ languages.",
+        "contextWindow": 300000,
+        "maxTokens": 10000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 14, 2025",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nova-micro": {
+      "defaults": {
+        "name": "Nova Micro",
+        "description": "Nova Micro accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 10000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "chat",
+          "summarization",
+          "general_knowledge",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "December 3, 2024",
+        "supportsAttachments": false,
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "nova-micro-v1": {
+      "defaults": {
+        "name": "Nova Micro V1",
+        "openWeights": false,
+        "description": "Nova Micro is a multilingual text-to-text foundation model with strong reasoning capabilities and broad language coverage across 200+ languages.",
+        "contextWindow": 128000,
+        "maxTokens": 10000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 14, 2025",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nova-premier": {
+      "defaults": {
+        "name": "Nova Premier",
+        "description": "Amazon Nova Premier is the most capable multimodal model in the Nova family with advanced reasoning capabilities.",
+        "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "December 3, 2024",
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "nova-premier-1-0": {
+      "defaults": {
+        "name": "Nova Premier 1.0",
+        "openWeights": false,
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "contextWindow": 1000000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 31, 2025",
+        "supportsResponseFormat": false,
+        "supportsTemperature": true
+      }
+    },
+    "nova-pro": {
+      "defaults": {
+        "name": "Nova Pro",
+        "description": "Nova Pro accepts text, image, video and produces text.",
+        "contextWindow": 300000,
+        "maxTokens": 10000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "coding",
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "December 3, 2024",
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 7.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "nova-sonic": {
+      "defaults": {
+        "name": "Nova Sonic",
+        "description": "Nova Sonic accepts speech and produces speech, text.",
+        "modalities": {
+          "input": [
+            "speech"
+          ],
+          "output": [
+            "speech",
+            "text"
+          ]
+        }
+      }
+    }
+  }
+}

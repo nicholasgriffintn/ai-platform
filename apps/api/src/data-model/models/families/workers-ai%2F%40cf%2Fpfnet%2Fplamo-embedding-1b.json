@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "releaseDate": "September 25, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/pfnet/plamo embedding 1b family includes models that produce embedding.",
+  "models": {
+    "plamo-embedding-1b": {
+      "defaults": {
+        "name": "PLaMo Embedding 1B",
+        "description": "PLaMo Embedding 1B accepts text and produces embedding."
+      }
+    }
+  }
+}

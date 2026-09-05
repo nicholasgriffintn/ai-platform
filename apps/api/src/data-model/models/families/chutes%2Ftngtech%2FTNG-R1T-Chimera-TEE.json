@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 163840,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 29, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The chutes/tngtech/TNG R1T Chimera TEE family includes models that produce text.",
+  "models": {
+    "tng-r1t-chimera-tee": {
+      "defaults": {
+        "name": "TNG R1T Chimera TEE",
+        "description": "TNG R1T Chimera TEE accepts text and produces text."
+      }
+    }
+  }
+}

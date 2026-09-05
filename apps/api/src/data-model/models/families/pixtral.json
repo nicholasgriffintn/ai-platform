@@ -1,0 +1,66 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 4,
+    "reliability": 1,
+    "knowledgeCutoffDate": "November 2024",
+    "releaseDate": "November 1, 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 8.1,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The pixtral family includes models that produce text.",
+  "models": {
+    "pixtral-12b": {
+      "defaults": {
+        "name": "Pixtral 12B",
+        "description": "Mistral vision-language model for image understanding and multimodal chat",
+        "knowledgeCutoffDate": "September 2024",
+        "releaseDate": "September 1, 2024"
+      }
+    },
+    "pixtral-large": {
+      "defaults": {
+        "name": "Pixtral Large",
+        "description": "Pixtral Large accepts text, image and produces text.",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ]
+      }
+    },
+    "pixtral-large-latest": {
+      "defaults": {
+        "name": "Pixtral Large",
+        "description": "Mistral's larger vision model for document-heavy image understanding and chat",
+        "card": "https://www.prompthub.us/models/pixtral",
+        "strengths": [
+          "vision",
+          "analysis",
+          "multilingual",
+          "document",
+          "tool_use"
+        ],
+        "multimodal": true
+      }
+    }
+  }
+}

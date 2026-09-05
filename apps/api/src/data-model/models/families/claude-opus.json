@@ -1,0 +1,946 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 5,
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "supportsTopP": false
+  },
+  "description": "The claude opus family includes models that produce text.",
+  "models": {
+    "au-anthropic-claude-opus-4-6": {
+      "defaults": {
+        "name": "AU Anthropic Claude Opus 4.6",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "February 5, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "claude-opus-4": {
+      "defaults": {
+        "name": "Claude Opus 4",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "releaseDate": "May 22, 2025",
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-opus-4-1": {
+      "defaults": {
+        "name": "Claude Opus 4.1",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "August 5, 2025",
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-opus-4-1-latest": {
+      "defaults": {
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "August 5, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "claude-opus-4-5": {
+      "defaults": {
+        "name": "Claude Opus 4.5",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "November 24, 2025",
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-5-eu": {
+      "defaults": {
+        "name": "Claude Opus 4.5 (EU)",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "November 24, 2025",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "budget"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-5-global": {
+      "defaults": {
+        "name": "Claude Opus 4.5 (Global)",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "November 24, 2025",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "budget"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-5-latest": {
+      "defaults": {
+        "name": "Claude Opus 4.5",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "November 24, 2025",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-5-latest-eu": {
+      "defaults": {
+        "name": "Claude Opus 4.5 (latest) (EU)",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "November 24, 2025",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-5-us": {
+      "defaults": {
+        "name": "Claude Opus 4.5 (US)",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "November 24, 2025",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "budget"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-6": {
+      "defaults": {
+        "name": "Claude Opus 4.6",
+        "description": "High-end Claude for difficult coding, planning, and slower expert reasoning",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
+        "knowledgeCutoffDate": "May 31, 2025",
+        "releaseDate": "February 5, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-6-eu": {
+      "defaults": {
+        "name": "Claude Opus 4.6 (EU)",
+        "description": "High-end Claude for difficult coding, planning, and slower expert reasoning",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
+        "knowledgeCutoffDate": "May 31, 2025",
+        "releaseDate": "February 5, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-6-fast": {
+      "defaults": {
+        "name": "Claude Opus 4.6 (Fast)",
+        "description": "Claude Opus 4.6 (Fast) accepts text, image, pdf and produces text.",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
+        "releaseDate": "April 7, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-6-global": {
+      "defaults": {
+        "name": "Claude Opus 4.6 (Global)",
+        "description": "High-end Claude for difficult coding, planning, and slower expert reasoning",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
+        "knowledgeCutoffDate": "May 31, 2025",
+        "releaseDate": "February 5, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-6-us": {
+      "defaults": {
+        "name": "Claude Opus 4.6 (US)",
+        "description": "High-end Claude for difficult coding, planning, and slower expert reasoning",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
+        "knowledgeCutoffDate": "May 31, 2025",
+        "releaseDate": "February 5, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-7": {
+      "defaults": {
+        "name": "Claude Opus 4.7",
+        "description": "Stronger Opus tier for advanced software work and high-stakes reasoning",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "releaseDate": "April 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 53.5,
+          "codingIndex": 73.6,
+          "agenticIndex": 44.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-7-eu": {
+      "defaults": {
+        "name": "Claude Opus 4.7 (EU)",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "releaseDate": "April 16, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 53.5,
+          "codingIndex": 73.6,
+          "agenticIndex": 44.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-7-fast": {
+      "defaults": {
+        "name": "Claude Opus 4.7 (Fast)",
+        "description": "Claude Opus 4.7 (Fast) accepts text, image, pdf and produces text.",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "releaseDate": "April 16, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 53.5,
+          "codingIndex": 73.6,
+          "agenticIndex": 44.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-7-global": {
+      "defaults": {
+        "name": "Claude Opus 4.7 (Global)",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "releaseDate": "April 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 53.5,
+          "codingIndex": 73.6,
+          "agenticIndex": 44.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-7-jp": {
+      "defaults": {
+        "name": "Claude Opus 4.7 (JP)",
+        "description": "Stronger Opus tier for advanced software work and high-stakes reasoning",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "releaseDate": "April 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 53.5,
+          "codingIndex": 73.6,
+          "agenticIndex": 44.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-7-us": {
+      "defaults": {
+        "name": "Claude Opus 4.7 (US)",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "releaseDate": "April 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 53.5,
+          "codingIndex": 73.6,
+          "agenticIndex": 44.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-8": {
+      "defaults": {
+        "name": "Claude Opus 4.8",
+        "description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2026",
+        "releaseDate": "May 28, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 55.7,
+          "codingIndex": 74.3,
+          "agenticIndex": 47.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-8-au": {
+      "defaults": {
+        "name": "Claude Opus 4.8 (AU)",
+        "description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2026",
+        "releaseDate": "May 28, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 55.7,
+          "codingIndex": 74.3,
+          "agenticIndex": 47.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-8-eu": {
+      "defaults": {
+        "name": "Claude Opus 4.8 (EU)",
+        "description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2026",
+        "releaseDate": "May 28, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 55.7,
+          "codingIndex": 74.3,
+          "agenticIndex": 47.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-8-fast": {
+      "defaults": {
+        "name": "Claude Opus 4.8 (Fast)",
+        "description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2026",
+        "releaseDate": "May 28, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 55.7,
+          "codingIndex": 74.3,
+          "agenticIndex": 47.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-8-global": {
+      "defaults": {
+        "name": "Claude Opus 4.8 (Global)",
+        "description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2026",
+        "releaseDate": "May 28, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 55.7,
+          "codingIndex": 74.3,
+          "agenticIndex": 47.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-8-jp": {
+      "defaults": {
+        "name": "Claude Opus 4.8 (JP)",
+        "description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2026",
+        "releaseDate": "May 28, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 55.7,
+          "codingIndex": 74.3,
+          "agenticIndex": 47.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-8-us": {
+      "defaults": {
+        "name": "Claude Opus 4.8 (US)",
+        "description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2026",
+        "releaseDate": "May 28, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 55.7,
+          "codingIndex": 74.3,
+          "agenticIndex": 47.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-opus-4-us": {
+      "defaults": {
+        "name": "Claude Opus 4 (US)",
+        "description": "The Claude 4 Opus is an advanced AI model by Anthropic designed for enterprise-level applications. It offers unmatched performance in handling complex tasks, making it an ideal solution for businesses requiring high-level data processing and analysis.",
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "card": "https://www.prompthub.us/models/claude-4-opus",
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "reasoning",
+          "creative"
+        ],
+        "reliability": 5,
+        "multimodal": true,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "May 22, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "claude-opus-5": {
+      "defaults": {
+        "name": "Claude Opus 5",
+        "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "July 24, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "claude-opus-5-au": {
+      "defaults": {
+        "name": "Claude Opus 5 (AU)",
+        "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "July 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "claude-opus-5-eu": {
+      "defaults": {
+        "name": "Claude Opus 5 (EU)",
+        "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "July 24, 2026"
+      }
+    },
+    "claude-opus-5-fast": {
+      "defaults": {
+        "name": "Claude Opus 5 (Fast)",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "July 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "claude-opus-5-global": {
+      "defaults": {
+        "name": "Claude Opus 5 (Global)",
+        "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "July 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "claude-opus-5-jp": {
+      "defaults": {
+        "name": "Claude Opus 5 (JP)",
+        "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "July 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "claude-opus-5-us": {
+      "defaults": {
+        "name": "Claude Opus 5 (US)",
+        "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "July 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "claude-opus-latest": {
+      "defaults": {
+        "name": "Claude Opus Latest",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "releaseDate": "April 21, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    }
+  }
+}

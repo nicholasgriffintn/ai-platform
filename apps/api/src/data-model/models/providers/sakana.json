@@ -1,0 +1,60 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "models": {
+    "fugu": {
+      "model": "fugu/fugu",
+      "matchingModel": "fugu",
+      "overrides": {
+        "lastUpdated": "June 15, 2026"
+      }
+    },
+    "fugu-ultra": {
+      "model": "fugu/fugu-ultra",
+      "matchingModel": "fugu-ultra",
+      "overrides": {
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "June 15, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "sakana-namazu": {
+      "model": "sakana-namazu/sakana-namazu",
+      "matchingModel": "sakana-namazu",
+      "overrides": {
+        "description": "Japanese-specialized reasoning model based on Kimi K2.6 and tuned for Japanese language, culture, and business workflows",
+        "lastUpdated": "August 3, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

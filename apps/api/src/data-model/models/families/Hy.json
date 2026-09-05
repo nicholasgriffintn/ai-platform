@@ -1,0 +1,165 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+  "models": {
+    "hy-mt2-1-8b": {
+      "defaults": {
+        "name": "Hy-MT2-1.8B",
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "contextWindow": 8192,
+        "maxTokens": 4096,
+        "releaseDate": "August 20, 2026",
+        "supportsResponseFormat": false
+      }
+    },
+    "hy-mt2-30b-a3b": {
+      "defaults": {
+        "name": "Hy-MT2-30B-A3B",
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "contextWindow": 8192,
+        "maxTokens": 4096,
+        "releaseDate": "August 20, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "hy-mt2-7b": {
+      "defaults": {
+        "name": "Hy-MT2-7B",
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "contextWindow": 8192,
+        "maxTokens": 4096,
+        "releaseDate": "August 19, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "hy3": {
+      "defaults": {
+        "name": "Hy3",
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 128000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "July 6, 2026",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 33.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "hy3-preview": {
+      "defaults": {
+        "name": "Hy3 preview",
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "April 20, 2026",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 26.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "hy4-preview": {
+      "defaults": {
+        "name": "Hy4 preview",
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "maxTokens": 64000,
+        "releaseDate": "August 28, 2026",
+        "supportsToolCalls": true
+      }
+    },
+    "tencent-hy-mt2-lite": {
+      "defaults": {
+        "name": "Tencent Hy-MT2-Lite",
+        "openWeights": false,
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "contextWindow": 8000,
+        "maxTokens": 4000,
+        "releaseDate": "June 12, 2026"
+      }
+    },
+    "tencent-hy-mt2-plus": {
+      "defaults": {
+        "name": "Tencent Hy-MT2-Plus",
+        "openWeights": false,
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "contextWindow": 8000,
+        "maxTokens": 4000,
+        "releaseDate": "June 12, 2026"
+      }
+    },
+    "tencent-hy-mt2-pro": {
+      "defaults": {
+        "name": "Tencent Hy-MT2-Pro",
+        "openWeights": false,
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "contextWindow": 8000,
+        "maxTokens": 4000,
+        "releaseDate": "May 21, 2026"
+      }
+    },
+    "tencent-hy4-preview": {
+      "defaults": {
+        "name": "Tencent Hy4 Preview",
+        "description": "A next-generation productivity model with significantly enhanced Agent and complex task execution capabilities.",
+        "contextWindow": 1024000,
+        "maxTokens": 64000,
+        "releaseDate": "August 28, 2026",
+        "supportsToolCalls": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

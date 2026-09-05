@@ -1,0 +1,154 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "mistral/mistral-nemo-12b-instruct": {
+      "model": "mistral-nemo/mistral-nemo-12b-instruct",
+      "matchingModel": "mistral/mistral-nemo-12b-instruct",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "January 1, 2025",
+        "costPer1kInputTokens": 0.000038,
+        "costPer1kOutputTokens": 0.0001
+      }
+    },
+    "osmosis/osmosis-structure-0.6b": {
+      "model": "osmosis/osmosis-structure-0-6b",
+      "matchingModel": "osmosis/osmosis-structure-0.6b",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "January 1, 2025",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005
+      }
+    },
+    "google/gemma-3": {
+      "model": "gemma/google-gemma-3",
+      "matchingModel": "google/gemma-3",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "lastUpdated": "January 1, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0003,
+        "supportsAttachments": true
+      }
+    },
+    "meta/llama-3.2-1b-instruct": {
+      "model": "llama/llama-3-2-1b-instruct",
+      "matchingModel": "meta/llama-3.2-1b-instruct",
+      "overrides": {
+        "contextWindow": 16000,
+        "maxTokens": 4096,
+        "strengths": [
+          "chat",
+          "instruction"
+        ],
+        "contextComplexity": 2,
+        "reliability": 3,
+        "speed": 5,
+        "releaseDate": "January 1, 2025",
+        "lastUpdated": "January 1, 2025",
+        "costPer1kInputTokens": 0.00001,
+        "costPer1kOutputTokens": 0.00001
+      }
+    },
+    "meta/llama-3.1-8b-instruct": {
+      "model": "llama/llama-3-1-8b-instruct",
+      "matchingModel": "meta/llama-3.1-8b-instruct",
+      "overrides": {
+        "contextWindow": 16000,
+        "maxTokens": 4096,
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "coding",
+          "analysis"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "speed": 4,
+        "releaseDate": "January 1, 2025",
+        "lastUpdated": "January 1, 2025",
+        "costPer1kInputTokens": 0.000025,
+        "costPer1kOutputTokens": 0.000025
+      }
+    },
+    "meta/llama-3.2-3b-instruct": {
+      "model": "llama/llama-3-2-3b-instruct",
+      "matchingModel": "meta/llama-3.2-3b-instruct",
+      "overrides": {
+        "contextWindow": 16000,
+        "maxTokens": 4096,
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "instruction"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "speed": 4,
+        "releaseDate": "January 1, 2025",
+        "lastUpdated": "January 1, 2025",
+        "costPer1kInputTokens": 0.00002,
+        "costPer1kOutputTokens": 0.00002
+      }
+    },
+    "meta/llama-3.2-11b-vision-instruct": {
+      "model": "llama/llama-3-2-11b-vision-instruct",
+      "matchingModel": "meta/llama-3.2-11b-vision-instruct",
+      "overrides": {
+        "contextWindow": 16000,
+        "maxTokens": 4096,
+        "strengths": [
+          "vision",
+          "analysis",
+          "chat",
+          "instruction"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
+        "speed": 4,
+        "multimodal": true,
+        "isFeatured": false,
+        "releaseDate": "January 1, 2025",
+        "lastUpdated": "January 1, 2025",
+        "costPer1kInputTokens": 0.000055,
+        "costPer1kOutputTokens": 0.000055,
+        "supportsAttachments": true
+      }
+    },
+    "qwen/qwen3-embedding-4b": {
+      "model": "qwen/qwen-3-embedding-4b",
+      "matchingModel": "qwen/qwen3-embedding-4b",
+      "overrides": {
+        "strengths": [
+          "general_knowledge"
+        ],
+        "contextComplexity": 2,
+        "reliability": 4,
+        "speed": 5,
+        "lastUpdated": "January 1, 2025",
+        "costPer1kInputTokens": 0.00001,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "qwen/qwen-2.5-7b-vision-instruct": {
+      "model": "qwen/qwen-2-5-7b-vision-instruct",
+      "matchingModel": "qwen/qwen-2.5-7b-vision-instruct",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "lastUpdated": "January 1, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0002,
+        "supportsAttachments": true
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32000,
+    "maxTokens": 32000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "June 2, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The cortecs/minicpm v 4.5 family includes models that produce text.",
+  "models": {
+    "minicpm-v-4-5": {
+      "defaults": {
+        "name": "Minicpm V 4.5",
+        "description": "MiniCPM-V 4.5 is a compact, high-performance vision-language model excelling in video understanding, OCR, and multimodal reasoning with efficient deployment."
+      }
+    }
+  }
+}

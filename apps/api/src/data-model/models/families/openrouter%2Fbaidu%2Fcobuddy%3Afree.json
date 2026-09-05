@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "contextWindow": 131072,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "May 6, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/baidu/cobuddy:free family includes models that produce text.",
+  "models": {
+    "cobuddy-free": {
+      "defaults": {
+        "name": "CoBuddy (free)",
+        "description": "CoBuddy (free) accepts text and produces text."
+      }
+    }
+  }
+}

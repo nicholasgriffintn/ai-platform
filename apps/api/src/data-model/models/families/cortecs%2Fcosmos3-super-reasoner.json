@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 256000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "June 2, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The cortecs/cosmos3 super reasoner family includes models that produce text.",
+  "models": {
+    "cosmos3-super-reasoner": {
+      "defaults": {
+        "name": "Cosmos3 Super Reasoner",
+        "description": "Cosmos3 Super Reasoner is a high-capacity reasoning model designed for complex multi-agent tasks and advanced physical AI understanding."
+      }
+    }
+  }
+}

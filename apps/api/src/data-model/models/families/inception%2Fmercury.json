@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "chat",
+      "general_knowledge",
+      "analysis",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 4,
+    "knowledgeCutoffDate": "October 2023",
+    "releaseDate": "June 26, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The inception/mercury family includes models that produce text.",
+  "models": {
+    "mercury": {
+      "defaults": {
+        "name": "Mercury",
+        "description": "Mercury is a general-purpose model with strong capabilities in text generation, analysis, and tool calling."
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 256000,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "November 2025",
+    "releaseDate": "November 10, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/kwaipilot/kat coder pro:free family includes models that produce text.",
+  "models": {
+    "kat-coder-pro-free": {
+      "defaults": {
+        "name": "Kat Coder Pro (free)",
+        "description": "Kat Coder Pro (free) accepts text and produces text."
+      }
+    }
+  }
+}

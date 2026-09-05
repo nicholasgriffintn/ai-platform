@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "October 2024",
+    "releaseDate": "March 20, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/featherless/qwerky 72b family includes models that produce text.",
+  "models": {
+    "qwerky-72b": {
+      "defaults": {
+        "name": "Qwerky 72B",
+        "description": "Qwerky 72B accepts text and produces text."
+      }
+    }
+  }
+}

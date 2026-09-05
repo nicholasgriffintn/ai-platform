@@ -1,0 +1,96 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "maxTokens": 32000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "multimodal": true,
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+  "models": {
+    "embed-v1-0-6b": {
+      "defaults": {
+        "name": "Embed v1 0.6b",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 32000,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 26, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "v0-1-0-md": {
+      "defaults": {
+        "name": "v0-1.0-md",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 128000,
+        "strengths": [
+          "coding",
+          "analysis",
+          "vision"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "releaseDate": "May 22, 2025"
+      }
+    },
+    "v0-1-5-lg": {
+      "defaults": {
+        "name": "v0-1.5-lg",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 512000,
+        "strengths": [
+          "coding",
+          "analysis",
+          "vision",
+          "reasoning",
+          "creative"
+        ],
+        "contextComplexity": 5,
+        "reliability": 5,
+        "releaseDate": "June 9, 2025"
+      }
+    },
+    "v0-1-5-md": {
+      "defaults": {
+        "name": "v0-1.5-md",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 128000,
+        "strengths": [
+          "coding",
+          "analysis",
+          "vision",
+          "creative"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "releaseDate": "June 9, 2025"
+      }
+    }
+  }
+}

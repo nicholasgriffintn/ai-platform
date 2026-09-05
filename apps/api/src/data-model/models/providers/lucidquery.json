@@ -1,0 +1,44 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": true
+  },
+  "models": {
+    "lucidquery-agi-01-frontier": {
+      "model": "agi/agi-01-frontier",
+      "matchingModel": "lucidquery-agi-01-frontier",
+      "overrides": {
+        "lastUpdated": "June 16, 2026",
+        "costPer1kInputTokens": 0.0045,
+        "costPer1kOutputTokens": 0.022
+      }
+    },
+    "lucidquery-nexus-coder": {
+      "model": "lucid/lucidquery-nexus-coder",
+      "matchingModel": "lucidquery-nexus-coder",
+      "overrides": {
+        "lastUpdated": "September 1, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.005
+      }
+    },
+    "lucidnova-rf1-100b": {
+      "model": "nova/lucidnova-rf1-100b",
+      "matchingModel": "lucidnova-rf1-100b",
+      "overrides": {
+        "lastUpdated": "September 10, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.005
+      }
+    },
+    "lucidquery-agi-01-swift": {
+      "model": "agi/agi-01-swift",
+      "matchingModel": "lucidquery-agi-01-swift",
+      "overrides": {
+        "lastUpdated": "June 16, 2026",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.015
+      }
+    }
+  }
+}

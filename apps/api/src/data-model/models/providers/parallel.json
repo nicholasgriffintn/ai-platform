@@ -1,0 +1,13 @@
+{
+  "defaults": {},
+  "models": {
+    "parallel-speed": {
+      "model": "parallel/speed/parallel-speed",
+      "matchingModel": "speed",
+      "overrides": {
+        "isFree": false,
+        "isFeatured": false
+      }
+    }
+  }
+}

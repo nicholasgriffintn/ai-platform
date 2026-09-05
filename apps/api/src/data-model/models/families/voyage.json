@@ -1,0 +1,115 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 8192,
+    "maxTokens": 1536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The voyage family includes models that produce text.",
+  "models": {
+    "voyage-3-5": {
+      "defaults": {
+        "name": "voyage-3.5",
+        "description": "General-purpose chat model for instruction following, writing, and analysis",
+        "releaseDate": "May 20, 2025"
+      }
+    },
+    "voyage-3-5-lite": {
+      "defaults": {
+        "name": "voyage-3.5-lite",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "releaseDate": "May 20, 2025"
+      }
+    },
+    "voyage-3-large": {
+      "defaults": {
+        "name": "voyage-3-large",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "releaseDate": "January 7, 2025"
+      }
+    },
+    "voyage-4": {
+      "defaults": {
+        "name": "voyage-4",
+        "description": "General-purpose chat model for instruction following, writing, and analysis",
+        "contextWindow": 32000,
+        "maxTokens": 0,
+        "releaseDate": "January 15, 2026"
+      }
+    },
+    "voyage-4-large": {
+      "defaults": {
+        "name": "voyage-4-large",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "contextWindow": 32000,
+        "maxTokens": 0,
+        "releaseDate": "January 15, 2026"
+      }
+    },
+    "voyage-4-lite": {
+      "defaults": {
+        "name": "voyage-4-lite",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 32000,
+        "maxTokens": 0,
+        "releaseDate": "January 15, 2026"
+      }
+    },
+    "voyage-code-2": {
+      "defaults": {
+        "name": "voyage-code-2",
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+        "releaseDate": "January 1, 2024"
+      }
+    },
+    "voyage-code-3": {
+      "defaults": {
+        "name": "voyage-code-3",
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+        "releaseDate": "December 4, 2024"
+      }
+    },
+    "voyage-finance-2": {
+      "defaults": {
+        "name": "voyage-finance-2",
+        "description": "General-purpose chat model for instruction following, writing, and analysis",
+        "releaseDate": "June 3, 2024"
+      }
+    },
+    "voyage-law-2": {
+      "defaults": {
+        "name": "voyage-law-2",
+        "description": "General-purpose chat model for instruction following, writing, and analysis",
+        "releaseDate": "April 15, 2024"
+      }
+    },
+    "voyage-rerank-2-5": {
+      "defaults": {
+        "name": "Voyage Rerank 2.5",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "contextWindow": 32000,
+        "maxTokens": 32000,
+        "releaseDate": "August 11, 2025"
+      }
+    },
+    "voyage-rerank-2-5-lite": {
+      "defaults": {
+        "name": "Voyage Rerank 2.5 Lite",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "contextWindow": 32000,
+        "maxTokens": 32000,
+        "releaseDate": "August 11, 2025"
+      }
+    }
+  }
+}
