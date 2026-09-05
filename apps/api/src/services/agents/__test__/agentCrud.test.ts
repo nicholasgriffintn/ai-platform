@@ -1,3 +1,4 @@
+import { updateAgentSchema } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -121,6 +122,15 @@ function createContext(
 describe("agent scope authorisation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("persists clearing an agent's sampling override", async () => {
+    const { context, repositories } = createContext();
+    const input = updateAgentSchema.parse({ temperature: null });
+
+    await updateAgent(context, AGENT_ID, input);
+
+    expect(repositories.agents.updateAgent).toHaveBeenCalledWith(AGENT_ID, { temperature: null });
   });
 
   it("refuses a personal agent to anyone but its author", async () => {

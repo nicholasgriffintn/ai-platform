@@ -38,9 +38,10 @@ export const createAgentSchema = z.object({
   temperature: z
     .number()
     .min(0)
-    .max(1)
+    .max(2)
+    .nullable()
     .optional()
-    .meta({ description: "Temperature setting for the model" }),
+    .meta({ description: "Temperature override; null uses automatic sampling" }),
   max_steps: z
     .int()
     .positive()
@@ -80,9 +81,10 @@ export const updateAgentSchema = z
     temperature: z
       .number()
       .min(0)
-      .max(1)
+      .max(2)
+      .nullable()
       .optional()
-      .meta({ description: "Temperature setting for the model" }),
+      .meta({ description: "Temperature override; null restores automatic sampling" }),
     max_steps: z
       .int()
       .positive()

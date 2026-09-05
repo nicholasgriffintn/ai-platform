@@ -3,6 +3,59 @@ import { describe, expect, it } from "vitest";
 import { ResponseFormatter } from "./responses";
 import { StreamingFormatter } from "./streaming";
 
+describe("ResponseFormatter Workers AI completions", () => {
+  it("preserves buffered chat answers, reasoning, tool calls and usage", async () => {
+    const toolCalls = [
+      { id: "call-1", type: "function", function: { name: "lookup", arguments: "{}" } },
+    ];
+    const usage = { prompt_tokens: 482, completion_tokens: 1200, total_tokens: 1682 };
+    const response = await ResponseFormatter.formatResponse(
+      {
+        choices: [
+          {
+            message: {
+              content: "The answer.",
+              reasoning_content: "Consider the question.",
+              tool_calls: toolCalls,
+            },
+          },
+        ],
+        usage,
+      },
+      "workers-ai",
+    );
+
+    expect(response).toMatchObject({
+      response: "The answer.",
+      thinking: "Consider the question.",
+      tool_calls: toolCalls,
+      usage,
+    });
+  });
+
+  it("keeps reasoning-only output separate from the visible answer", async () => {
+    const response = await ResponseFormatter.formatResponse(
+      {
+        choices: [
+          {
+            message: { content: null, reasoning_content: "Still considering." },
+            finish_reason: "length",
+          },
+        ],
+      },
+      "workers-ai",
+    );
+
+    expect(response).toMatchObject({ response: "", thinking: "Still considering." });
+  });
+
+  it("continues to accept legacy Workers AI text responses", async () => {
+    expect(
+      await ResponseFormatter.formatResponse({ response: "Legacy answer." }, "workers-ai"),
+    ).toMatchObject({ response: "Legacy answer." });
+  });
+});
+
 describe("ResponseFormatter Google AI Studio tool calls", () => {
   it("normalises function calls for the shared tool renderer", async () => {
     const response = await ResponseFormatter.formatResponse(

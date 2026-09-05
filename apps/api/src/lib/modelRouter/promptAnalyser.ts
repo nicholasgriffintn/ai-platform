@@ -14,7 +14,6 @@ import { truncateSingleLine } from "~/utils/strings";
 
 const logger = getLogger({ prefix: "lib/modelRouter/promptAnalyser" });
 
-const ANALYSIS_MAX_OUTPUT_TOKENS = 2048;
 const ANALYSIS_PROMPT_SAMPLE_MAX_CHARS = 3600;
 const FUNCTION_DESCRIPTION_MAX_CHARS = 120;
 const FUNCTION_SUMMARY_MAX_CHARS = 2400;
@@ -135,7 +134,6 @@ export class PromptAnalyzer {
       context,
       model: modelToUse,
       disable_functions: true,
-      max_tokens: ANALYSIS_MAX_OUTPUT_TOKENS,
       messages: [
         {
           role: "system",

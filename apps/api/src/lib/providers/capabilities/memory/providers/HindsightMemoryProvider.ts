@@ -84,7 +84,6 @@ export class HindsightMemoryProvider extends BaseMemoryProvider {
         body: {
           query,
           budget: "low",
-          max_tokens: 1200,
           include: { facts: {} },
           tags,
           tags_match: "all_strict",

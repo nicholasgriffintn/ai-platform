@@ -982,6 +982,10 @@ export class ResponseFormatter {
       return { ...data, response: audioContent };
     }
 
+    if (Array.isArray(data.choices)) {
+      return ResponseFormatter.formatOpenAIResponse(data, options);
+    }
+
     let textContent = "";
 
     if (data.response) {

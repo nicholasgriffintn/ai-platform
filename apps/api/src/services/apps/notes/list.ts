@@ -379,8 +379,7 @@ ${note.content}`;
         env: runtimeEnv,
         context: serviceContext,
         messages,
-        temperature: 0.7,
-        max_tokens: 2048,
+        reasoning: { effort: "none" },
       },
       user.id,
     );
@@ -441,8 +440,7 @@ Return only valid JSON without any markdown formatting.`;
         env,
         context,
         messages: [{ role: "user", content: prompt }],
-        temperature: 0.3,
-        max_tokens: 500,
+        reasoning: { effort: "none" },
       },
       user.id,
     );

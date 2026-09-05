@@ -119,8 +119,6 @@ export async function generateStrudelCode({
       context: serviceContext,
       system_prompt: systemPrompt,
       messages: formattedMessages,
-      temperature: 0.7,
-      max_tokens: 8192,
       stream: false,
       store: false,
       completion_id: `strudel-${generateId()}`,
@@ -131,6 +129,7 @@ export async function generateStrudelCode({
       options: request.options || {
         cache_ttl_seconds: 0,
       },
+      reasoning: { effort: "none" },
     });
 
     const aiResponse = await provider.getResponse(requestParameters, user?.id || null);

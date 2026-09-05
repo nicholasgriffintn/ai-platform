@@ -6,6 +6,34 @@ import { prepareAgentCompletionRequest } from "../completion-request";
 import { buildAgentPersona } from "../completion-tools";
 
 describe("prepareAgentCompletionRequest", () => {
+  it.each([undefined, 0, 0.4])(
+    "preserves automatic or explicit caller sampling (%s)",
+    (temperature) => {
+      const body = createChatCompletionsJsonSchema.parse({
+        model: "mistral-large-latest",
+        messages: [{ role: "user", content: "Answer this" }],
+        temperature,
+      });
+      const request = prepareAgentCompletionRequest({
+        agent: {
+          id: "agent-123",
+          model: null,
+          temperature: null,
+          max_steps: null,
+          enabled_tools: null,
+          skill_ids: null,
+          mode: null,
+        },
+        body,
+        modelProvider: "mistral",
+        formattedTools: [],
+        persona: {},
+      });
+
+      expect(request.temperature).toBe(temperature);
+    },
+  );
+
   it("uses the Chat tool policy for saved-agent Chat runs", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",

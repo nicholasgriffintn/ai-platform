@@ -21,6 +21,14 @@ Admission reserves a turn estimate once. Normal depletion refuses new turns, whi
 
 Do not add provider work without a model-independent bound and usage emission. Acquire/release the conversation lock per operation, not per token or tool step. Detached cancellation polling is bounded by the turn lifetime.
 
+## Use automatic generation settings
+
+Leave optional output-token and sampling settings unset unless the caller explicitly supplies an override. Do not add feature-specific token ceilings, temperatures or shared response-length defaults. Providers that require an output limit use the model catalogue's declared maximum; explicit caller limits remain constrained by that maximum. See [ADR 0070](../architecture/decisions/0070-use-automatic-generation-settings.md).
+
+Keep provider protocol requirements, context retrieval budgets and execution step bounds separate from generation overrides. A saved agent's temperature is nullable: create it with automatic sampling and clear an existing override with `temperature: null`.
+
+Council members and their conclusion use the same automatic generation settings. If a member fails, try an unattempted member within the existing turn budget; count failed attempts and preserve the underlying error when nobody responds. Decode Workers AI's buffered chat-completion choices as well as its legacy text responses.
+
 ## Reconcile spend
 
 Every model-producing path, including panel and ensemble calls, uses `recordModelTurnUsage`. Capability metering wraps registered providers; infrastructure metering aggregates per request. Missing rates record estimated zero cost and must be investigated rather than mistaken for free work.

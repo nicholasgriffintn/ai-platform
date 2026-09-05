@@ -121,7 +121,7 @@ export class AgentRepository extends BaseRepository {
       avatar_url: string | null;
       servers: AgentMcpServer[];
       model: string;
-      temperature: number;
+      temperature: number | null;
       max_steps: number;
       system_prompt: string;
       few_shot_examples: AgentFewShotExample[];
