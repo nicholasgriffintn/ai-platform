@@ -1,0 +1,2240 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "models": {
+    "o3": {
+      "model": "o/o3",
+      "matchingModel": "o3",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "math",
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "multimodal": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "April 16, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.008,
+        "supportsParallelToolCalls": false,
+        "timeout": 1000000
+      }
+    },
+    "gpt-4o": {
+      "model": "gpt/gpt-4o",
+      "matchingModel": "gpt-4o",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "card": "https://www.prompthub.us/models/gpt-4o",
+        "strengths": [
+          "analysis",
+          "chat",
+          "coding",
+          "multilingual",
+          "general_knowledge",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "August 6, 2024",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": true
+      }
+    },
+    "gpt-4o-search-preview": {
+      "model": "gpt/openai-gpt-4o-search-preview",
+      "matchingModel": "gpt-4o-search-preview",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "May 13, 2024",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01,
+        "supportsToolCalls": false,
+        "supportsFrequencyPenalty": false,
+        "supportsPresencePenalty": false
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "gpt-4o-mini": {
+      "model": "gpt-mini/gpt-4o-mini",
+      "matchingModel": "gpt-4o-mini",
+      "overrides": {
+        "name": "GPT-4o mini",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "card": "https://www.prompthub.us/models/gpt-4o-mini",
+        "strengths": [
+          "analysis",
+          "chat",
+          "coding",
+          "multilingual",
+          "general_knowledge",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "July 18, 2024",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsTemperature": true
+      }
+    },
+    "gpt-4o-mini-search": {
+      "model": "gpt/openai-gpt-4o-mini-search-preview",
+      "matchingModel": "gpt-4o-mini-search-preview",
+      "overrides": {
+        "speed": 5,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "July 18, 2024",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsToolCalls": false,
+        "supportsFrequencyPenalty": false,
+        "supportsPresencePenalty": false
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "gpt-4.5": {
+      "model": "gpt/openai-gpt-4-5",
+      "matchingModel": "gpt-4.5-preview",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "November 6, 2024",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.03,
+        "supportsTemperature": true,
+        "timeout": 1000000
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "gpt-4.1": {
+      "model": "gpt/gpt-4-1",
+      "matchingModel": "gpt-4.1",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "card": "https://www.prompthub.us/models/gpt-4-1",
+        "strengths": [
+          "coding",
+          "academic",
+          "reasoning",
+          "instruction",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.008,
+        "costPer1kCachedInputTokens": 0.0005,
+        "hostedToolCosts": {
+          "web_search": 0.025,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsTemperature": true,
+        "timeout": 1000000
+      }
+    },
+    "gpt-4.1-mini": {
+      "model": "gpt-mini/gpt-4-1-mini",
+      "matchingModel": "gpt-4.1-mini",
+      "overrides": {
+        "name": "GPT-4.1 mini",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "card": "https://www.prompthub.us/models/gpt-4-1-mini",
+        "strengths": [
+          "coding",
+          "academic",
+          "instruction",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0.0004,
+        "costPer1kOutputTokens": 0.0016,
+        "hostedToolCosts": {
+          "web_search": 0.025,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsTemperature": true
+      }
+    },
+    "gpt-5": {
+      "model": "gpt/gpt-5",
+      "matchingModel": "gpt-5",
+      "overrides": {
+        "card": "https://www.prompthub.us/models/gpt-5",
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "creative",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "costPer1kCachedInputTokens": 0.000125,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5-mini": {
+      "model": "gpt-mini/gpt-5-mini",
+      "matchingModel": "gpt-5-mini",
+      "overrides": {
+        "card": "https://www.prompthub.us/models/gpt-5-mini",
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 2,
+        "multimodal": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.002,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5-nano": {
+      "model": "gpt-nano/gpt-5-nano",
+      "matchingModel": "gpt-5-nano",
+      "overrides": {
+        "card": "https://www.prompthub.us/models/gpt-5-nano",
+        "strengths": [
+          "coding",
+          "chat",
+          "general_knowledge",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "multimodal": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.0004,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.2": {
+      "model": "gpt/gpt-5-2",
+      "matchingModel": "gpt-5.2",
+      "overrides": {
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "creative",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "multimodal": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "December 11, 2025",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "costPer1kCachedInputTokens": 0.000175,
+        "supportsTemperature": true,
+        "samplingSupportedReasoningEfforts": [
+          "none"
+        ],
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.1-codex": {
+      "model": "gpt-codex/gpt-5-1-codex",
+      "matchingModel": "gpt-5.1-codex",
+      "overrides": {
+        "name": "GPT-5.1 Codex",
+        "card": "https://www.prompthub.us/models/gpt-5.1",
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTopP": false,
+        "requiresResponsesApi": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.1-codex-mini": {
+      "model": "gpt-codex/gpt-5-1-codex-mini",
+      "matchingModel": "gpt-5.1-codex-mini",
+      "overrides": {
+        "name": "GPT-5.1 Codex mini",
+        "card": "https://www.prompthub.us/models/gpt-5.1",
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.002,
+        "supportsTopP": false,
+        "requiresResponsesApi": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-image-2": {
+      "model": "gpt-image/gpt-image-2",
+      "matchingModel": "gpt-image-2",
+      "overrides": {
+        "name": "gpt-image-2",
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
+        "speed": 3,
+        "isFeatured": true,
+        "lastUpdated": "April 21, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false,
+        "supportsImageEdits": true,
+        "timeout": 1000000,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for image generation or editing.",
+              "required": true
+            },
+            {
+              "name": "size",
+              "type": "string",
+              "description": "Output size."
+            },
+            {
+              "name": "quality",
+              "type": "string",
+              "description": "Rendering quality.",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "auto"
+              ]
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Output image format.",
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
+            },
+            {
+              "name": "output_compression",
+              "type": "integer",
+              "description": "Compression level for JPEG and WebP outputs."
+            },
+            {
+              "name": "background",
+              "type": "string",
+              "description": "Background handling. Transparent backgrounds are not supported.",
+              "enum": [
+                "auto",
+                "opaque"
+              ]
+            },
+            {
+              "name": "moderation",
+              "type": "string",
+              "description": "Image moderation strictness.",
+              "enum": [
+                "auto",
+                "low"
+              ]
+            },
+            {
+              "name": "n",
+              "type": "integer",
+              "description": "Number of images to generate."
+            }
+          ],
+          "reference": "https://developers.openai.com/api/docs/guides/image-generation"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-image-1-mini": {
+      "model": "gpt-image/gpt-image-1-mini",
+      "matchingModel": "gpt-image-1-mini",
+      "overrides": {
+        "name": "gpt-image-1-mini",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
+        "contextComplexity": 4,
+        "speed": 4,
+        "isFeatured": false,
+        "releaseDate": "September 26, 2025",
+        "lastUpdated": "September 26, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.001,
+        "supportsToolCalls": false,
+        "supportsImageEdits": true,
+        "timeout": 1000000,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for image generation or editing.",
+              "required": true
+            },
+            {
+              "name": "size",
+              "type": "string",
+              "description": "Output size."
+            },
+            {
+              "name": "quality",
+              "type": "string",
+              "description": "Rendering quality.",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "auto"
+              ]
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Output image format.",
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
+            },
+            {
+              "name": "output_compression",
+              "type": "integer",
+              "description": "Compression level for JPEG and WebP outputs."
+            },
+            {
+              "name": "background",
+              "type": "string",
+              "description": "Background handling. Transparent backgrounds are not supported.",
+              "enum": [
+                "auto",
+                "opaque",
+                "transparent"
+              ]
+            },
+            {
+              "name": "moderation",
+              "type": "string",
+              "description": "Image moderation strictness.",
+              "enum": [
+                "auto",
+                "low"
+              ]
+            },
+            {
+              "name": "n",
+              "type": "integer",
+              "description": "Number of images to generate."
+            }
+          ],
+          "reference": "https://developers.openai.com/api/docs/guides/image-generation"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-image-1.5": {
+      "model": "gpt-image/gpt-image-1-5",
+      "matchingModel": "gpt-image-1.5",
+      "overrides": {
+        "name": "gpt-image-1.5",
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
+        "speed": 3,
+        "isFeatured": false,
+        "lastUpdated": "November 25, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.001,
+        "supportsToolCalls": false,
+        "supportsImageEdits": true,
+        "timeout": 1000000,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for image generation or editing.",
+              "required": true
+            },
+            {
+              "name": "size",
+              "type": "string",
+              "description": "Output size."
+            },
+            {
+              "name": "quality",
+              "type": "string",
+              "description": "Rendering quality.",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "auto"
+              ]
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Output image format.",
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
+            },
+            {
+              "name": "output_compression",
+              "type": "integer",
+              "description": "Compression level for JPEG and WebP outputs."
+            },
+            {
+              "name": "background",
+              "type": "string",
+              "description": "Background handling. Transparent backgrounds are not supported.",
+              "enum": [
+                "auto",
+                "opaque",
+                "transparent"
+              ]
+            },
+            {
+              "name": "moderation",
+              "type": "string",
+              "description": "Image moderation strictness.",
+              "enum": [
+                "auto",
+                "low"
+              ]
+            },
+            {
+              "name": "n",
+              "type": "integer",
+              "description": "Number of images to generate."
+            }
+          ],
+          "reference": "https://developers.openai.com/api/docs/guides/image-generation"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "codex-mini-latest": {
+      "model": "openai/codex-mini-latest/codex-mini",
+      "matchingModel": "codex-mini-latest",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "May 16, 2025",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.006,
+        "requiresResponsesApi": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-5-chat-latest": {
+      "model": "gpt-codex/gpt-5-chat",
+      "matchingModel": "gpt-5-chat-latest",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "supportsToolCalls": false,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "gpt-5-codex": {
+      "model": "gpt-codex/gpt-5-codex",
+      "matchingModel": "gpt-5-codex",
+      "overrides": {
+        "name": "GPT-5-Codex",
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
+        "speed": 3,
+        "deprecated": true,
+        "lastUpdated": "September 15, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": false,
+        "requiresResponsesApi": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5-pro": {
+      "model": "gpt-pro/gpt-5-pro",
+      "matchingModel": "gpt-5-pro",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "October 6, 2025",
+        "costPer1kInputTokens": 0.015,
+        "costPer1kOutputTokens": 0.12,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "requiresResponsesApi": true,
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      },
+      "unset": [
+        "strengths"
+      ]
+    },
+    "gpt-5.1": {
+      "model": "gpt/gpt-5-1",
+      "matchingModel": "gpt-5.1",
+      "overrides": {
+        "speed": 4,
+        "deprecated": true,
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "costPer1kCachedInputTokens": 0.000125,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "supportsTemperature": true,
+        "samplingSupportedReasoningEfforts": [
+          "none"
+        ],
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.1-chat-latest": {
+      "model": "gpt-codex/gpt-5-1-chat",
+      "matchingModel": "gpt-5.1-chat-latest",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsHostedShell": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "gpt-5.1-codex-max": {
+      "model": "gpt-codex/gpt-5-1-codex-max",
+      "matchingModel": "gpt-5.1-codex-max",
+      "overrides": {
+        "name": "GPT-5.1 Codex Max",
+        "deprecated": true,
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "requiresResponsesApi": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "gpt-5.2-codex": {
+      "model": "gpt-codex/gpt-5-2-codex",
+      "matchingModel": "gpt-5.2-codex",
+      "overrides": {
+        "name": "GPT-5.2 Codex",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 3,
+        "deprecated": true,
+        "lastUpdated": "December 11, 2025",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "requiresResponsesApi": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.2-pro": {
+      "model": "gpt-pro/gpt-5-2-pro",
+      "matchingModel": "gpt-5.2-pro",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "December 11, 2025",
+        "costPer1kInputTokens": 0.021,
+        "costPer1kOutputTokens": 0.168,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsResponseFormat": false,
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsHostedShell": true,
+        "requiresResponsesApi": true,
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      },
+      "unset": [
+        "strengths"
+      ]
+    },
+    "gpt-5.3-codex": {
+      "model": "gpt-codex/gpt-5-3-codex",
+      "matchingModel": "gpt-5.3-codex",
+      "overrides": {
+        "name": "GPT-5.3 Codex",
+        "speed": 2,
+        "lastUpdated": "February 5, 2026",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "costPer1kCachedInputTokens": 0.000175,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsHostedShell": true,
+        "supportsTemperature": true,
+        "supportsTopP": false,
+        "requiresResponsesApi": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.3-codex-spark": {
+      "model": "gpt-codex-spark/gpt-5-3-codex-spark",
+      "matchingModel": "gpt-5.3-codex-spark",
+      "overrides": {
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "deprecated": true,
+        "releaseDate": "February 5, 2026",
+        "lastUpdated": "February 5, 2026",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "supportsTopP": false,
+        "requiresResponsesApi": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "o3-deep-research": {
+      "model": "o/o3-deep-research",
+      "matchingModel": "o3-deep-research",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "deprecated": true,
+        "lastUpdated": "June 26, 2024",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.04,
+        "requiresResponsesApi": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "o3-pro": {
+      "model": "o-pro/o3-pro",
+      "matchingModel": "o3-pro",
+      "overrides": {
+        "name": "o3-pro",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
+        "deprecated": true,
+        "lastUpdated": "June 10, 2025",
+        "costPer1kInputTokens": 0.02,
+        "costPer1kOutputTokens": 0.08,
+        "requiresResponsesApi": true
+      }
+    },
+    "o4-mini-deep-research": {
+      "model": "o-mini/o4-mini-deep-research",
+      "matchingModel": "o4-mini-deep-research",
+      "overrides": {
+        "name": "o4-mini-deep-research",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "deprecated": true,
+        "lastUpdated": "June 26, 2024",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.008,
+        "requiresResponsesApi": true
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability",
+        "supportsResponseFormat"
+      ]
+    },
+    "text-embedding-3-large": {
+      "model": "text-embedding/text-embedding-3-large",
+      "matchingModel": "text-embedding-3-large",
+      "overrides": {
+        "knowledgeCutoffDate": "January 2024",
+        "lastUpdated": "January 25, 2024",
+        "costPer1kInputTokens": 0.00013,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "text-embedding-3-small": {
+      "model": "text-embedding/text-embedding-3-small",
+      "matchingModel": "text-embedding-3-small",
+      "overrides": {
+        "knowledgeCutoffDate": "January 2024",
+        "lastUpdated": "January 25, 2024",
+        "costPer1kInputTokens": 0.00002,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "text-embedding-ada-002": {
+      "model": "text-embedding/text-embedding-ada-002",
+      "matchingModel": "text-embedding-ada-002",
+      "overrides": {
+        "deprecated": true,
+        "knowledgeCutoffDate": "December 2022",
+        "lastUpdated": "December 15, 2022",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "chatgpt-image-latest": {
+      "model": "gpt-image/chatgpt-image-latest",
+      "matchingModel": "chatgpt-image-latest",
+      "overrides": {
+        "lastUpdated": "December 16, 2025",
+        "supportsToolCalls": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-5.4": {
+      "model": "gpt/gpt-5-4",
+      "matchingModel": "gpt-5.4",
+      "overrides": {
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "agents",
+          "tool_use",
+          "creative",
+          "multilingual",
+          "vision",
+          "document"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "lastUpdated": "March 5, 2026",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.015,
+        "costPer1kCachedInputTokens": 0.00025,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "longContextPricing": {
+          "inputTokenThreshold": 272000,
+          "inputMultiplier": 2,
+          "cachedInputMultiplier": 2,
+          "cacheWriteMultiplier": 2,
+          "outputMultiplier": 1.5
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsComputerUse": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "supportsTemperature": true,
+        "samplingSupportedReasoningEfforts": [
+          "none"
+        ],
+        "supportsPromptCaching": true,
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.4-mini": {
+      "model": "gpt-mini/gpt-5-4-mini",
+      "matchingModel": "gpt-5.4-mini",
+      "overrides": {
+        "name": "GPT-5.4 mini",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "agents",
+          "tool_use",
+          "chat",
+          "multilingual",
+          "vision",
+          "document"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "lastUpdated": "March 17, 2026",
+        "costPer1kInputTokens": 0.00075,
+        "costPer1kOutputTokens": 0.0045,
+        "costPer1kCachedInputTokens": 0.000075,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsComputerUse": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "supportsTemperature": true,
+        "samplingSupportedReasoningEfforts": [
+          "none"
+        ],
+        "supportsPromptCaching": true,
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.4-nano": {
+      "model": "gpt-nano/gpt-5-4-nano",
+      "matchingModel": "gpt-5.4-nano",
+      "overrides": {
+        "name": "GPT-5.4 nano",
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "summarization",
+          "multilingual",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "lastUpdated": "March 17, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.00125,
+        "costPer1kCachedInputTokens": 0.00002,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsHostedShell": true,
+        "supportsTemperature": true,
+        "samplingSupportedReasoningEfforts": [
+          "none"
+        ],
+        "supportsPromptCaching": true,
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.4-pro": {
+      "model": "gpt-pro/gpt-5-4-pro",
+      "matchingModel": "gpt-5.4-pro",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "agents",
+          "tool_use",
+          "academic",
+          "research",
+          "vision",
+          "document"
+        ],
+        "reliability": 5,
+        "speed": 2,
+        "multimodal": true,
+        "lastUpdated": "March 5, 2026",
+        "costPer1kInputTokens": 0.03,
+        "costPer1kOutputTokens": 0.18,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "longContextPricing": {
+          "inputTokenThreshold": 272000,
+          "inputMultiplier": 2,
+          "cachedInputMultiplier": 2,
+          "cacheWriteMultiplier": 2,
+          "outputMultiplier": 1.5
+        },
+        "supportsResponseFormat": false,
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": false,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsComputerUse": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "requiresResponsesApi": true,
+        "supportsPromptCaching": true,
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.5": {
+      "model": "gpt/gpt-5-5",
+      "matchingModel": "gpt-5.5",
+      "overrides": {
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "agents",
+          "tool_use",
+          "creative",
+          "academic",
+          "research",
+          "multilingual",
+          "vision",
+          "document"
+        ],
+        "speed": 3,
+        "multimodal": true,
+        "lastUpdated": "April 23, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "costPer1kCachedInputTokens": 0.0005,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "longContextPricing": {
+          "inputTokenThreshold": 272000,
+          "inputMultiplier": 2,
+          "cachedInputMultiplier": 2,
+          "cacheWriteMultiplier": 2,
+          "outputMultiplier": 1.5
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsComputerUse": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "supportsTopP": false,
+        "prefersResponsesApiForReasoning": true,
+        "supportsPromptCaching": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-5.5-pro": {
+      "model": "gpt-pro/gpt-5-5-pro",
+      "matchingModel": "gpt-5.5-pro",
+      "overrides": {
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "agents",
+          "tool_use",
+          "academic",
+          "research",
+          "vision",
+          "document"
+        ],
+        "reliability": 5,
+        "speed": 2,
+        "multimodal": true,
+        "lastUpdated": "April 23, 2026",
+        "costPer1kInputTokens": 0.03,
+        "costPer1kOutputTokens": 0.18,
+        "costPer1kCachedInputTokens": 0.003,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "longContextPricing": {
+          "inputTokenThreshold": 272000,
+          "inputMultiplier": 2,
+          "cachedInputMultiplier": 2,
+          "cacheWriteMultiplier": 2,
+          "outputMultiplier": 1.5
+        },
+        "supportsStreaming": false,
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsImageGenerationTool": true,
+        "supportsHostedShell": true,
+        "requiresResponsesApi": true,
+        "prefersResponsesApiForReasoning": true,
+        "supportsPromptCaching": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "high"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-realtime-2": {
+      "model": "gpt/gpt-realtime-2",
+      "matchingModel": "gpt-realtime-2",
+      "overrides": {
+        "name": "GPT Realtime 2",
+        "contextWindow": 128000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "audio",
+            "image"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "chat",
+          "reasoning",
+          "vision"
+        ],
+        "contextComplexity": 5,
+        "reliability": 5,
+        "speed": 4,
+        "multimodal": true,
+        "knowledgeCutoffDate": "September 30, 2024",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.024,
+        "supportsResponseFormat": false,
+        "supportsAudio": true,
+        "supportsRealtimeSession": true,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "gpt-realtime-translate": {
+      "model": "gpt/gpt-realtime-translate",
+      "matchingModel": "gpt-realtime-translate",
+      "overrides": {
+        "speed": 5,
+        "hiddenFromDefaultList": true,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsStreaming": true,
+        "supportsAttachments": false,
+        "supportsAudio": true,
+        "supportsRealtimeTranslationSession": true
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "gpt-realtime-mini": {
+      "model": "gpt/gpt-realtime-mini",
+      "matchingModel": "gpt-realtime-mini",
+      "overrides": {
+        "name": "GPT Realtime Mini",
+        "contextWindow": 32000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "chat",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "speed": 5,
+        "multimodal": true,
+        "deprecated": true,
+        "deprecationMessage": "GPT Realtime Mini is being retired. Use GPT Realtime 2.1 Mini instead.",
+        "replacementModel": "gpt-realtime-2.1-mini",
+        "knowledgeCutoffDate": "October 1, 2023",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024,
+        "supportsResponseFormat": false,
+        "supportsAudio": true,
+        "supportsRealtimeSession": true,
+        "supportsTemperature": true
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "gpt-audio-1.5": {
+      "model": "gpt/gpt-audio-1-5",
+      "matchingModel": "gpt-audio-1.5",
+      "overrides": {
+        "speed": 3,
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01,
+        "supportsResponseFormat": false,
+        "supportsAudio": true,
+        "supportsTemperature": true
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "gpt-audio-mini": {
+      "model": "gpt/gpt-audio-mini",
+      "matchingModel": "gpt-audio-mini",
+      "overrides": {
+        "speed": 5,
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024,
+        "supportsResponseFormat": false,
+        "supportsAudio": true,
+        "supportsTemperature": true
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "gpt-realtime-whisper": {
+      "model": "gpt/gpt-realtime-whisper",
+      "matchingModel": "gpt-realtime-whisper",
+      "overrides": {
+        "hiddenFromDefaultList": true,
+        "supportsToolCalls": false,
+        "supportsStreaming": true,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-live-transcribe": {
+      "model": "gpt/gpt-live-transcribe",
+      "matchingModel": "gpt-live-transcribe",
+      "overrides": {
+        "hiddenFromDefaultList": true,
+        "supportsToolCalls": false,
+        "supportsStreaming": true,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-transcribe": {
+      "model": "gpt/gpt-transcribe",
+      "matchingModel": "gpt-transcribe",
+      "overrides": {
+        "hiddenFromDefaultList": true,
+        "supportsToolCalls": false,
+        "supportsStreaming": true,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-4o-mini-transcribe": {
+      "model": "gpt/gpt-4o-mini-transcribe",
+      "matchingModel": "gpt-4o-mini-transcribe",
+      "overrides": {
+        "hiddenFromDefaultList": true,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-4o-transcribe": {
+      "model": "gpt/gpt-4o-transcribe",
+      "matchingModel": "gpt-4o-transcribe",
+      "overrides": {
+        "contextWindow": 16000,
+        "strengths": [
+          "transcription"
+        ],
+        "hiddenFromDefaultList": true,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
+    },
+    "openai-whisper": {
+      "model": "whisper/whisper",
+      "matchingModel": "whisper-1",
+      "overrides": {
+        "contextWindow": 448,
+        "maxTokens": 448,
+        "strengths": [
+          "transcription"
+        ],
+        "hiddenFromDefaultList": true,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-5.6": {
+      "model": "gpt-sol/gpt-5-6",
+      "matchingModel": "gpt-5.6",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "costPer1kCachedInputTokens": 0.0004,
+        "costPer1kCacheWriteTokens": 0.005,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "serviceTierMultipliers": {
+          "flex": 0.5,
+          "fast": 2,
+          "priority": 2
+        },
+        "supportedServiceTiers": [
+          "default",
+          "fast"
+        ],
+        "longContextPricing": {
+          "inputTokenThreshold": 272000,
+          "inputMultiplier": 2,
+          "cachedInputMultiplier": 2,
+          "cacheWriteMultiplier": 2,
+          "outputMultiplier": 1.5
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsComputerUse": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "prefersResponsesApiForReasoning": true,
+        "supportsPromptCaching": true,
+        "supportsPromptCacheOptions": true
+      }
+    },
+    "gpt-5.6-luna": {
+      "model": "gpt-luna/gpt-5-6-luna",
+      "matchingModel": "gpt-5.6-luna",
+      "overrides": {
+        "isFeatured": true,
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0012,
+        "costPer1kCachedInputTokens": 0.00002,
+        "costPer1kCacheWriteTokens": 0.00025,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "serviceTierMultipliers": {
+          "flex": 0.5,
+          "fast": 2,
+          "priority": 2
+        },
+        "supportedServiceTiers": [
+          "default",
+          "fast"
+        ],
+        "longContextPricing": {
+          "inputTokenThreshold": 272000,
+          "inputMultiplier": 2,
+          "cachedInputMultiplier": 2,
+          "cacheWriteMultiplier": 2,
+          "outputMultiplier": 1.5
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsComputerUse": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "prefersResponsesApiForReasoning": true,
+        "supportsPromptCaching": true,
+        "supportsPromptCacheOptions": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "medium"
+        }
+      }
+    },
+    "gpt-5.6-sol": {
+      "model": "gpt-sol/gpt-5-6-sol",
+      "matchingModel": "gpt-5.6-sol",
+      "overrides": {
+        "isFeatured": true,
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "costPer1kCachedInputTokens": 0.0004,
+        "costPer1kCacheWriteTokens": 0.005,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "serviceTierMultipliers": {
+          "flex": 0.5,
+          "fast": 2,
+          "priority": 2
+        },
+        "supportedServiceTiers": [
+          "default",
+          "fast"
+        ],
+        "longContextPricing": {
+          "inputTokenThreshold": 272000,
+          "inputMultiplier": 2,
+          "cachedInputMultiplier": 2,
+          "cacheWriteMultiplier": 2,
+          "outputMultiplier": 1.5
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsComputerUse": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "prefersResponsesApiForReasoning": true,
+        "supportsPromptCaching": true,
+        "supportsPromptCacheOptions": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "medium"
+        }
+      }
+    },
+    "gpt-5.6-terra": {
+      "model": "gpt-terra/gpt-5-6-terra",
+      "matchingModel": "gpt-5.6-terra",
+      "overrides": {
+        "isFeatured": true,
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012,
+        "costPer1kCachedInputTokens": 0.0002,
+        "costPer1kCacheWriteTokens": 0.0025,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "serviceTierMultipliers": {
+          "flex": 0.5,
+          "fast": 2,
+          "priority": 2
+        },
+        "supportedServiceTiers": [
+          "default",
+          "fast"
+        ],
+        "longContextPricing": {
+          "inputTokenThreshold": 272000,
+          "inputMultiplier": 2,
+          "cachedInputMultiplier": 2,
+          "cacheWriteMultiplier": 2,
+          "outputMultiplier": 1.5
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsComputerUse": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "prefersResponsesApiForReasoning": true,
+        "supportsPromptCaching": true,
+        "supportsPromptCacheOptions": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "medium"
+        }
+      }
+    },
+    "gpt-6-astra": {
+      "model": "gpt-astra/gpt-6-astra",
+      "matchingModel": "gpt-6-astra",
+      "overrides": {
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "agents",
+          "tool_use",
+          "academic",
+          "research",
+          "multilingual",
+          "vision",
+          "document"
+        ],
+        "contextComplexity": 5,
+        "reliability": 5,
+        "speed": 2,
+        "multimodal": true,
+        "isFeatured": true,
+        "knowledgeCutoffDate": "April 30, 2026",
+        "lastUpdated": "September 4, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "costPer1kCachedInputTokens": 0.001,
+        "costPer1kCacheWriteTokens": 0.0125,
+        "hostedToolCosts": {
+          "web_search": 0.01,
+          "file_search": 0.0025,
+          "code_interpreter": 0.03
+        },
+        "serviceTierMultipliers": {
+          "flex": 0.5,
+          "fast": 2,
+          "priority": 2
+        },
+        "supportedServiceTiers": [
+          "default",
+          "fast"
+        ],
+        "longContextPricing": {
+          "inputTokenThreshold": 272000,
+          "inputMultiplier": 2,
+          "cachedInputMultiplier": 2,
+          "cacheWriteMultiplier": 2,
+          "outputMultiplier": 1.5
+        },
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsFileSearch": true,
+        "supportsMcp": true,
+        "supportsComputerUse": true,
+        "supportsImageGenerationTool": true,
+        "supportsToolSearch": true,
+        "supportsHostedShell": true,
+        "supportsTopP": false,
+        "supportsLogprobs": false,
+        "supportsTopLogprobs": false,
+        "requiresResponsesApi": true,
+        "supportsPromptCaching": true,
+        "supportsPromptCacheOptions": true,
+        "supportsAsyncToolCalls": true,
+        "supportsReasoningConfigurationUpdates": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "medium"
+        },
+        "verbosityConfig": {
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultVerbosity": "medium"
+        }
+      }
+    },
+    "gpt-realtime-2.1": {
+      "model": "gpt/gpt-realtime-2-1",
+      "matchingModel": "gpt-realtime-2.1",
+      "overrides": {
+        "name": "GPT-Realtime-2.1",
+        "modalities": {
+          "input": [
+            "text",
+            "audio",
+            "image"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "lastUpdated": "July 6, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.024,
+        "supportsResponseFormat": false,
+        "supportsRealtimeSession": true
+      }
+    },
+    "gpt-realtime-2.1-mini": {
+      "model": "gpt/gpt-realtime-2-1-mini",
+      "matchingModel": "gpt-realtime-2.1-mini",
+      "overrides": {
+        "speed": 5,
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024,
+        "supportsResponseFormat": false,
+        "supportsRealtimeSession": true
+      }
+    }
+  }
+}

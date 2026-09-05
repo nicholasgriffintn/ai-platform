@@ -42,12 +42,13 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0066: Snapshot project flows and derive stage evidence](decisions/0066-snapshot-project-flows-and-derive-stage-evidence.md).
 - [0067: Attribute run usage and settle reservations once](decisions/0067-attribute-run-usage-and-settle-reservations-once.md).
 - [0068: Bound live streams and page durable history](decisions/0068-bound-live-streams-and-page-durable-history.md).
+- [0069: Share model definitions across provider offerings](decisions/0069-share-model-definitions-across-provider-offerings.md).
 
 ## Accepted designs awaiting implementation
 
 - [0038: Scope future model lifecycle to a provider surface](decisions/0038-provider-surface-model-lifecycle.md).
 - [0040: Resolve future provider governance before execution](decisions/0040-provider-execution-governance-policy.md).
 
-Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0069.
+Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0070.
 
 Add a record only for a durable trade-off that code alone cannot explain. State the problem, decision, implementation status and consequence; update this index. Keep rollout plans and copied schemas out of ADRs.

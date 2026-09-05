@@ -1,0 +1,107 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "maxTokens": 384000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "May 2025",
+    "releaseDate": "July 31, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
+  "models": {
+    "deepseek-v4-flash": {
+      "defaults": {
+        "name": "DeepSeek V4 Flash",
+        "description": "Fast DeepSeek V4 lane for economical reasoning, coding, and long-context work",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "releaseDate": "April 24, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 28.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v4-flash-0731": {
+      "defaults": {
+        "name": "DeepSeek V4 Flash 0731",
+        "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
+        "contextWindow": 1000000
+      }
+    },
+    "deepseek-v4-flash-0731-eu": {
+      "defaults": {
+        "name": "DeepSeek V4 Flash 0731 (EU)",
+        "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4-flash-0731-tee": {
+      "defaults": {
+        "name": "DeepSeek V4 Flash 0731 TEE",
+        "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4-flash-vision-exp": {
+      "defaults": {
+        "name": "DeepSeek V4 Flash Vision Exp",
+        "openWeights": false,
+        "description": "Experimental multimodal DeepSeek V4 Flash model for image understanding, coding, and agentic work",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 21, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    }
+  }
+}

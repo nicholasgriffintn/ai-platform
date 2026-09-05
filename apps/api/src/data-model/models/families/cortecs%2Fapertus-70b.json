@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 65536,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "September 2025",
+    "releaseDate": "September 2, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The cortecs/apertus 70b family includes models that produce text.",
+  "models": {
+    "apertus-70b": {
+      "defaults": {
+        "name": "apertus-70b",
+        "description": "Apertus 70B is an open, multilingual language model designed for research, long-context reasoning, and sovereignty-focused AI systems."
+      }
+    }
+  }
+}

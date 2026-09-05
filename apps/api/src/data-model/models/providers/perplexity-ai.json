@@ -1,0 +1,130 @@
+{
+  "defaults": {
+    "supportsToolCalls": false
+  },
+  "models": {
+    "sonar-deep-research": {
+      "model": "perplexity-ai/sonar-deep-research/perplexity-sonar-deep-research",
+      "matchingModel": "sonar-deep-research",
+      "overrides": {
+        "speed": 3,
+        "isFeatured": true,
+        "lastUpdated": "September 1, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.008,
+        "costPer1kReasoningTokens": 0.003,
+        "costPer1kSearches": 0.005
+      }
+    },
+    "sonar-reasoning-pro": {
+      "model": "sonar-reasoning/sonar-reasoning-pro",
+      "matchingModel": "sonar-reasoning-pro",
+      "overrides": {
+        "description": "Web-grounded Sonar for multi-step research questions that need cited reasoning",
+        "maxTokens": 4096,
+        "strengths": [
+          "reasoning",
+          "multilingual",
+          "coding",
+          "analysis",
+          "general_knowledge",
+          "vision",
+          "document"
+        ],
+        "contextComplexity": 3,
+        "speed": 3,
+        "isFeatured": false,
+        "knowledgeCutoffDate": "September 1, 2025",
+        "releaseDate": "January 1, 2024",
+        "lastUpdated": "September 1, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.008,
+        "costPer1kSearches": 0.005
+      }
+    },
+    "sonar-reasoning": {
+      "model": "perplexity-ai/sonar-reasoning/perplexity-sonar-reasoning",
+      "matchingModel": "sonar-reasoning",
+      "overrides": {
+        "speed": 3,
+        "isFeatured": false,
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
+        "costPer1kSearches": 0.005
+      },
+      "unset": [
+        "supportsToolCalls"
+      ]
+    },
+    "sonar-pro": {
+      "model": "sonar-pro/sonar-pro",
+      "matchingModel": "sonar-pro",
+      "overrides": {
+        "description": "Deeper Sonar search model with broader retrieval and stronger synthesis",
+        "maxTokens": 8192,
+        "strengths": [
+          "search",
+          "analysis",
+          "summarization",
+          "general_knowledge",
+          "vision",
+          "document"
+        ],
+        "speed": 3,
+        "isFeatured": false,
+        "knowledgeCutoffDate": "September 1, 2025",
+        "releaseDate": "January 1, 2024",
+        "lastUpdated": "September 1, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "costPer1kSearches": 0.005
+      }
+    },
+    "sonar": {
+      "model": "sonar/sonar",
+      "matchingModel": "sonar",
+      "overrides": {
+        "description": "Fast web-grounded Sonar for current answers, citations, and lightweight retrieval",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "search",
+          "analysis",
+          "summarization",
+          "general_knowledge"
+        ],
+        "contextComplexity": 2,
+        "speed": 3,
+        "isFeatured": true,
+        "knowledgeCutoffDate": "September 1, 2025",
+        "releaseDate": "January 1, 2024",
+        "lastUpdated": "September 1, 2025",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.001,
+        "costPer1kSearches": 0.005,
+        "supportsAttachments": false
+      }
+    },
+    "r1-1776": {
+      "model": "perplexity-ai/r1-1776/perplexity-r1-1776",
+      "matchingModel": "r1-1776",
+      "overrides": {
+        "speed": 3,
+        "deprecated": true,
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.008
+      },
+      "unset": [
+        "supportsToolCalls"
+      ]
+    }
+  }
+}

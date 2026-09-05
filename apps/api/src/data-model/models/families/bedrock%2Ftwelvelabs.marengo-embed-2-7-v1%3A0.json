@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "contextWindow": 8192,
+    "maxTokens": 512,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "audio",
+        "video"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "search",
+      "analysis"
+    ],
+    "contextComplexity": 3,
+    "reliability": 4,
+    "multimodal": true,
+    "knowledgeCutoffDate": "2024",
+    "releaseDate": "2024",
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The bedrock/twelvelabs.marengo embed 2 7 v1:0 family includes models that produce embedding.",
+  "models": {
+    "twelve-labs-marengo-embed": {
+      "defaults": {
+        "name": "Twelve Labs Marengo Embed",
+        "description": "Advanced multimodal embedding model that generates vector representations from text, image, speech, and video inputs for semantic search and retrieval applications."
+      }
+    }
+  }
+}

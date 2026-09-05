@@ -1,0 +1,43 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "reliability": 1,
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "minimal",
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "minimal"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 17.8,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The sonar reasoning family includes models that produce text.",
+  "models": {
+    "sonar-reasoning-pro": {
+      "defaults": {
+        "name": "Sonar Reasoning Pro",
+        "description": "Web-grounded reasoning model for multi-step research and cited answers"
+      }
+    }
+  }
+}

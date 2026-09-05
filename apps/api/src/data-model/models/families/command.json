@@ -1,0 +1,77 @@
+{
+  "defaults": {
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The command family includes models that produce text.",
+  "models": {
+    "command": {
+      "defaults": {
+        "name": "Command",
+        "description": "Command accepts text and produces text.",
+        "contextWindow": 4096,
+        "knowledgeCutoffDate": "August 2023",
+        "releaseDate": "November 1, 2023",
+        "supportsToolCalls": false
+      }
+    },
+    "command-a": {
+      "defaults": {
+        "name": "Command A",
+        "openWeights": false,
+        "description": "Cohere command model for multilingual enterprise agents, tools, and chat",
+        "contextWindow": 256000,
+        "maxTokens": 8000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "March 13, 2025",
+        "supportsToolCalls": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 7.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "command-light": {
+      "defaults": {
+        "name": "Command Light",
+        "description": "Command Light accepts text and produces text.",
+        "contextWindow": 4096,
+        "knowledgeCutoffDate": "August 2023",
+        "releaseDate": "November 1, 2023",
+        "supportsToolCalls": false
+      }
+    },
+    "command-r": {
+      "defaults": {
+        "description": "Command R is an instruction-following conversational model that performs language tasks at a higher quality, more reliably, and with a longer context than previous models. It can be used for complex workflows like code generation, retrieval augmented generation (RAG), tool use, and agents.",
+        "contextWindow": 128000,
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2024",
+        "supportsToolCalls": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 2.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    }
+  }
+}

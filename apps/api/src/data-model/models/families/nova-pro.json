@@ -1,0 +1,92 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 300000,
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+  "models": {
+    "nova-2-pro": {
+      "defaults": {
+        "name": "Nova 2 Pro",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "coding",
+          "vision",
+          "math"
+        ],
+        "contextComplexity": 5,
+        "reliability": 4,
+        "releaseDate": "December 3, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nova-pro": {
+      "defaults": {
+        "name": "Nova Pro",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "December 3, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 7.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "nova-pro-1-0": {
+      "defaults": {
+        "name": "Nova Pro 1.0",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        }
+      }
+    }
+  }
+}

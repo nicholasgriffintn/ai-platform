@@ -1,0 +1,94 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 300000,
+    "contextComplexity": 4,
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+  "models": {
+    "nova-2-lite": {
+      "defaults": {
+        "name": "Nova 2 Lite",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "coding",
+          "vision",
+          "multilingual"
+        ],
+        "reliability": 4,
+        "releaseDate": "December 1, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "nova-lite": {
+      "defaults": {
+        "name": "Nova Lite",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "reliability": 1,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "December 3, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "nova-lite-1-0": {
+      "defaults": {
+        "name": "Nova Lite 1.0",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "maxTokens": 5120,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "October 31, 2024",
+        "releaseDate": "December 5, 2024",
+        "supportsResponseFormat": false
+      }
+    }
+  }
+}

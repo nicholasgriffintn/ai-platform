@@ -1,0 +1,1006 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The glm family includes models that produce text.",
+  "models": {
+    "cerebras-zai-glm-4-6": {
+      "defaults": {
+        "name": "Cerebras ZAI GLM 4.6",
+        "description": "This model delivers strong coding performance with advanced reasoning capabilities, superior tool use, and enhanced real-world performance in agentic coding applications."
+      }
+    },
+    "glm-4-32b": {
+      "defaults": {
+        "name": "GLM 4 32B ",
+        "description": "GLM 4 32B  accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 128000,
+        "knowledgeCutoffDate": "June 30, 2024",
+        "releaseDate": "July 24, 2025",
+        "supportsResponseFormat": false
+      }
+    },
+    "glm-4-5": {
+      "defaults": {
+        "name": "GLM 4.5",
+        "description": "Hybrid-reasoning GLM release that made the 4.5 line broadly useful",
+        "contextWindow": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "July 28, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 19.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-5-air": {
+      "defaults": {
+        "name": "GLM 4.5 Air",
+        "description": "GLM 4.5 Air hosted on Chutes.",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 16.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-5-air-free": {
+      "defaults": {
+        "name": "GLM 4.5 Air (free)",
+        "description": "GLM 4.5 Air (free) accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 96000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "July 28, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 16.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-5-fp8": {
+      "defaults": {
+        "name": "GLM 4.5 FP8",
+        "description": "GLM 4.5 FP8 hosted on Chutes.",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "January 27, 2026"
+      }
+    },
+    "glm-4-5-tee": {
+      "defaults": {
+        "name": "GLM 4.5 TEE",
+        "description": "GLM 4.5 TEE accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "releaseDate": "December 29, 2025"
+      }
+    },
+    "glm-4-5v": {
+      "defaults": {
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "August 11, 2025",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-6": {
+      "defaults": {
+        "name": "GLM 4.6",
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "September 30, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 23,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-6-exacto": {
+      "defaults": {
+        "name": "GLM 4.6 (exacto)",
+        "description": "GLM 4.6 (exacto) accepts text and produces text.",
+        "contextWindow": 200000,
+        "maxTokens": 128000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "September 2025",
+        "releaseDate": "September 30, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 23,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-6-fp8": {
+      "defaults": {
+        "name": "GLM 4.6 FP8",
+        "description": "GLM 4.6 FP8 accepts text and produces text.",
+        "contextWindow": 202752,
+        "maxTokens": 65535,
+        "releaseDate": "January 27, 2026"
+      }
+    },
+    "glm-4-6-tee": {
+      "defaults": {
+        "name": "GLM 4.6 TEE",
+        "description": "GLM 4.6 TEE accepts text and produces text.",
+        "contextWindow": 202752,
+        "maxTokens": 65536,
+        "releaseDate": "December 29, 2025"
+      }
+    },
+    "glm-4-6v": {
+      "defaults": {
+        "name": "GLM-4.6V",
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "December 8, 2025",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 11,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-6v-flash": {
+      "defaults": {
+        "name": "GLM-4.6V-Flash",
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-4-7": {
+      "defaults": {
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "December 22, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 26.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-7-flash": {
+      "defaults": {
+        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 15.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-7-fp8": {
+      "defaults": {
+        "name": "GLM 4.7 FP8",
+        "description": "GLM 4.7 FP8 accepts text and produces text.",
+        "contextWindow": 202752,
+        "maxTokens": 65535,
+        "releaseDate": "January 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-4-7-tee": {
+      "defaults": {
+        "name": "GLM 4.7 TEE",
+        "description": "GLM 4.7 TEE accepts text and produces text.",
+        "contextWindow": 202752,
+        "maxTokens": 65535,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "December 22, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5": {
+      "defaults": {
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 202752,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 32.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-5-1": {
+      "defaults": {
+        "name": "GLM-5.1",
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "April 7, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 35.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-5-1-eu": {
+      "defaults": {
+        "name": "GLM-5.1 (EU)",
+        "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
+        "contextWindow": 200000,
+        "maxTokens": 200000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "April 7, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 35.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-5-1-fast": {
+      "defaults": {
+        "name": "GLM 5.1 Fast",
+        "description": "GLM 5.1 Fast accepts text and produces text.",
+        "contextWindow": 202800,
+        "maxTokens": 131072,
+        "releaseDate": "April 1, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-1-tee": {
+      "defaults": {
+        "name": "GLM 5.1 TEE",
+        "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
+        "contextWindow": 202752,
+        "maxTokens": 65535,
+        "releaseDate": "April 7, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-2": {
+      "defaults": {
+        "name": "GLM-5.2",
+        "description": "Open flagship GLM for long-horizon coding agents and million-token context work",
+        "maxTokens": 131072,
+        "strengths": [
+          "coding",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 51.1,
+          "codingIndex": 68.8,
+          "agenticIndex": 43.1,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-5-2-caveman": {
+      "defaults": {
+        "name": "GLM-5.2 Caveman",
+        "description": "glm-5.2 carrying a built-in ruleset that compresses prose, keeping code and technical detail verbatim. The middle tier, and the ruleset as its authors wrote it. Same upstream model and price per token as glm-5.2, with fewer output tokens.",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-2-caveman-lite": {
+      "defaults": {
+        "name": "GLM-5.2 Caveman Lite",
+        "description": "glm-5.2 carrying a built-in ruleset that compresses prose, keeping code and technical detail verbatim. The gentlest tier: it cuts filler only and keeps the explanation intact. Same upstream model and price per token as glm-5.2, with fewer output tokens.",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-2-caveman-ultra": {
+      "defaults": {
+        "name": "GLM-5.2 Caveman Ultra",
+        "description": "glm-5.2 carrying a built-in ruleset that compresses prose, keeping code and technical detail verbatim. The most aggressive tier, close to answer-only. Same upstream model and price per token as glm-5.2, with fewer output tokens.",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-2-eu": {
+      "defaults": {
+        "name": "GLM-5.2 (EU)",
+        "description": "Open flagship GLM for long-horizon coding agents and million-token context work",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "strengths": [
+          "coding",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 51.1,
+          "codingIndex": 68.8,
+          "agenticIndex": 43.1,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-5-2-fast": {
+      "defaults": {
+        "name": "GLM 5.2 Fast",
+        "description": "GLM-5.2 introduces a robust 1M-token context and advanced, multi-effort coding capabilities to significantly enhance performance on long-horizon tasks. Its new IndexShare architecture and improved MTP layer simultaneously boost efficiency by reducing per-token FLOPs and increasing speculative decoding lengths. A 743B-parameter model in Zhipu AI's GLM series, designed to plan, execute, and iterate autonomously on extended, engineering-grade tasks.",
+        "contextWindow": 1000000,
+        "maxTokens": 131072
+      }
+    },
+    "glm-5-2-free": {
+      "defaults": {
+        "name": "GLM 5.2 (free)",
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 256000,
+        "maxTokens": 230400,
+        "strengths": [
+          "coding",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 51.1,
+          "codingIndex": 68.8,
+          "agenticIndex": 43.1,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-5-2-honey": {
+      "defaults": {
+        "name": "GLM-5.2 Honey",
+        "description": "glm-5.2 carrying a built-in ruleset that compresses both generated code and prose. The middle tier, and the ruleset as its authors wrote it. Same upstream model and price per token as glm-5.2, with fewer output tokens.",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-2-honey-lite": {
+      "defaults": {
+        "name": "GLM-5.2 Honey Lite",
+        "description": "glm-5.2 carrying a built-in ruleset that compresses both generated code and prose. The gentlest tier: it cuts filler only and keeps the explanation intact. Same upstream model and price per token as glm-5.2, with fewer output tokens.",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-2-honey-ultra": {
+      "defaults": {
+        "name": "GLM-5.2 Honey Ultra",
+        "description": "glm-5.2 carrying a built-in ruleset that compresses both generated code and prose. The most aggressive tier, close to answer-only. Same upstream model and price per token as glm-5.2, with fewer output tokens.",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-2-ponytail": {
+      "defaults": {
+        "name": "GLM-5.2 Ponytail",
+        "description": "glm-5.2 carrying a built-in ruleset that compresses generated code, preferring platform features over custom code. The middle tier, and the ruleset as its authors wrote it. Same upstream model and price per token as glm-5.2, with fewer output tokens.",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-2-ponytail-lite": {
+      "defaults": {
+        "name": "GLM-5.2 Ponytail Lite",
+        "description": "glm-5.2 carrying a built-in ruleset that compresses generated code, preferring platform features over custom code. The gentlest tier: it cuts filler only and keeps the explanation intact. Same upstream model and price per token as glm-5.2, with fewer output tokens.",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-2-ponytail-ultra": {
+      "defaults": {
+        "name": "GLM-5.2 Ponytail Ultra",
+        "description": "glm-5.2 carrying a built-in ruleset that compresses generated code, preferring platform features over custom code. The most aggressive tier, close to answer-only. Same upstream model and price per token as glm-5.2, with fewer output tokens.",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-2-tee": {
+      "defaults": {
+        "name": "GLM 5.2 TEE",
+        "description": "Open flagship GLM for long-horizon coding agents and million-token context work",
+        "contextWindow": 1048576,
+        "maxTokens": 65535,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-3": {
+      "defaults": {
+        "name": "GLM-5.3",
+        "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "maxTokens": 131072,
+        "releaseDate": "August 14, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "glm-5-3-50-off": {
+      "defaults": {
+        "name": "GLM 5.3 (50% off)",
+        "openWeights": false,
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "releaseDate": "August 18, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-3-eu": {
+      "defaults": {
+        "name": "GLM-5.3 (EU)",
+        "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "releaseDate": "August 14, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-3-fast": {
+      "defaults": {
+        "name": "GLM 5.3 Fast",
+        "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "releaseDate": "August 14, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "glm-5-3-flash": {
+      "defaults": {
+        "name": "GLM-5.3-Flash",
+        "openWeights": false,
+        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "maxTokens": 131072,
+        "releaseDate": "August 26, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "glm-5-3-flash-2x-usage": {
+      "defaults": {
+        "name": "GLM-5.3-Flash (2x usage)",
+        "openWeights": false,
+        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 26, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "glm-5-3-flash-eu": {
+      "defaults": {
+        "name": "GLM-5.3-Flash (EU)",
+        "openWeights": false,
+        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 26, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-tee": {
+      "defaults": {
+        "name": "GLM 5 TEE",
+        "description": "GLM 5 TEE accepts text and produces text.",
+        "contextWindow": 202752,
+        "maxTokens": 65535,
+        "releaseDate": "February 12, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-turbo": {
+      "defaults": {
+        "name": "GLM 5 Turbo",
+        "openWeights": false,
+        "description": "Faster GLM-5 lane for coding agents that need lower latency",
+        "contextWindow": 202752,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "March 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-5v-turbo": {
+      "defaults": {
+        "name": "GLM 5V Turbo",
+        "openWeights": false,
+        "description": "Fast GLM vision model for screenshots, documents, and multimodal agent tasks",
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "April 1, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-latest": {
+      "defaults": {
+        "name": "GLM Latest",
+        "openWeights": false,
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 1310720,
+        "maxTokens": 235929,
+        "releaseDate": "August 19, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "glm-z1-32b-free": {
+      "defaults": {
+        "name": "GLM Z1 32B (free)",
+        "description": "GLM Z1 32B (free) accepts text and produces text.",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "April 17, 2025"
+      }
+    },
+    "z-ai-glm-4-7": {
+      "defaults": {
+        "name": "Z.AI GLM-4.7",
+        "description": "This model delivers strong coding performance with advanced reasoning capabilities, superior tool use, and enhanced real-world performance in agentic coding applications.",
+        "contextWindow": 131072,
+        "maxTokens": 40960,
+        "releaseDate": "January 7, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

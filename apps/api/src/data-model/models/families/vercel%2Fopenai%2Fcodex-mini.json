@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "contextWindow": 200000,
+    "maxTokens": 100000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "October 2024",
+    "releaseDate": "May 16, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The vercel/openai/codex mini family includes models that produce text.",
+  "models": {
+    "codex-mini": {
+      "defaults": {
+        "name": "Codex Mini",
+        "description": "Codex Mini accepts text, image, pdf and produces text."
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "agent-prime": {
+      "model": "the-grid-ai/agent-prime/agent-prime",
+      "matchingModel": "agent-prime",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "July 15, 2026"
+      }
+    },
+    "code-prime": {
+      "model": "the-grid-ai/code-prime/code-prime",
+      "matchingModel": "code-prime",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "July 15, 2026"
+      }
+    },
+    "agent-max": {
+      "model": "the-grid-ai/agent-max/agent-max",
+      "matchingModel": "agent-max",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "July 24, 2026",
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "agent-standard": {
+      "model": "the-grid-ai/agent-standard/agent-standard",
+      "matchingModel": "agent-standard",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "July 15, 2026"
+      }
+    },
+    "code-max": {
+      "model": "the-grid-ai/code-max/code-max",
+      "matchingModel": "code-max",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "July 24, 2026",
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "code-standard": {
+      "model": "the-grid-ai/code-standard/code-standard",
+      "matchingModel": "code-standard",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "July 15, 2026"
+      }
+    },
+    "text-max": {
+      "model": "the-grid-ai/text-max/text-max",
+      "matchingModel": "text-max",
+      "overrides": {
+        "lastUpdated": "July 24, 2026",
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "text-prime": {
+      "model": "the-grid-ai/text-prime/text-prime",
+      "matchingModel": "text-prime",
+      "overrides": {
+        "lastUpdated": "July 15, 2026"
+      }
+    },
+    "text-standard": {
+      "model": "the-grid-ai/text-standard/text-standard",
+      "matchingModel": "text-standard",
+      "overrides": {
+        "lastUpdated": "July 15, 2026"
+      }
+    }
+  }
+}

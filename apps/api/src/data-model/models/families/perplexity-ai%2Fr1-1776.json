@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "reasoning",
+      "multilingual",
+      "coding",
+      "analysis",
+      "general_knowledge"
+    ],
+    "contextComplexity": 1,
+    "reliability": 1,
+    "artificialAnalysis": {
+      "intelligenceIndex": 6.3,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The perplexity ai/r1 1776 family includes models that produce text.",
+  "models": {
+    "perplexity-r1-1776": {
+      "defaults": {
+        "name": "Perplexity R1 1776",
+        "description": "R1-1776 is a version of the DeepSeek R1 model that has been post-trained to provide uncensored, unbiased, and factual information."
+      }
+    }
+  }
+}

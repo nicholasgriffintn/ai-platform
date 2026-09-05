@@ -1,0 +1,294 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "glm-4.7": {
+      "model": "glm/glm-4-7",
+      "matchingModel": "glm-4.7",
+      "overrides": {
+        "name": "GLM 4.7",
+        "description": "Mature GLM model for dependable coding, reasoning, and structured agent tasks",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "strengths": [
+          "coding",
+          "reasoning",
+          "agents",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "December 22, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0022
+      }
+    },
+    "glm-5": {
+      "model": "glm/glm-5",
+      "matchingModel": "glm-5",
+      "overrides": {
+        "name": "GLM 5",
+        "description": "General GLM flagship for coding, analysis, and tool-heavy engineering workflows",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "strengths": [
+          "coding",
+          "reasoning",
+          "agents",
+          "tool_use"
+        ],
+        "speed": 3,
+        "releaseDate": "February 12, 2026",
+        "lastUpdated": "February 12, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.0032
+      }
+    },
+    "glm-4.5": {
+      "model": "glm/glm-4-5",
+      "matchingModel": "glm-4.5",
+      "overrides": {
+        "name": "GLM-4.5",
+        "maxTokens": 98304,
+        "speed": 3,
+        "lastUpdated": "July 28, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0022
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "glm-4.5-air": {
+      "model": "glm-air/glm-4-5-air",
+      "matchingModel": "glm-4.5-air",
+      "overrides": {
+        "name": "GLM-4.5-Air",
+        "speed": 3,
+        "lastUpdated": "July 28, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0011
+      }
+    },
+    "glm-4.5-flash": {
+      "model": "glm-flash/glm-4-5-flash",
+      "matchingModel": "glm-4.5-flash",
+      "overrides": {
+        "lastUpdated": "July 28, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "glm-4.5v": {
+      "model": "glm/glm-4-5v",
+      "matchingModel": "glm-4.5v",
+      "overrides": {
+        "name": "GLM-4.5V",
+        "contextWindow": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 2,
+        "lastUpdated": "August 11, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0018,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "glm-4.6": {
+      "model": "glm/glm-4-6",
+      "matchingModel": "glm-4.6",
+      "overrides": {
+        "name": "GLM-4.6",
+        "description": "Late GLM-4 workhorse for coding agents, reasoning, and structured tasks",
+        "contextWindow": 204800,
+        "speed": 3,
+        "lastUpdated": "September 30, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0022
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "glm-4.6v": {
+      "model": "glm/glm-4-6v",
+      "matchingModel": "glm-4.6v",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "December 8, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0009,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "glm-4.7-flash": {
+      "model": "glm-flash/glm-4-7-flash",
+      "matchingModel": "glm-4.7-flash",
+      "overrides": {
+        "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
+        "contextWindow": 200000,
+        "maxTokens": 131072,
+        "speed": 4,
+        "lastUpdated": "January 19, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "glm-4.7-flashx": {
+      "model": "glm-flash/glm-4-7-flashx",
+      "matchingModel": "glm-4.7-flashx",
+      "overrides": {
+        "name": "GLM-4.7-FlashX",
+        "maxTokens": 131072,
+        "knowledgeCutoffDate": "April 2025",
+        "lastUpdated": "January 19, 2026",
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.0004
+      }
+    },
+    "glm-5-turbo": {
+      "model": "glm/glm-5-turbo",
+      "matchingModel": "glm-5-turbo",
+      "overrides": {
+        "name": "GLM-5-Turbo",
+        "contextWindow": 200000,
+        "maxTokens": 131072,
+        "lastUpdated": "March 16, 2026",
+        "costPer1kInputTokens": 0.0012,
+        "costPer1kOutputTokens": 0.004
+      }
+    },
+    "glm-5.1": {
+      "model": "glm/glm-5-1",
+      "matchingModel": "glm-5.1",
+      "overrides": {
+        "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
+        "contextWindow": 200000,
+        "maxTokens": 131072,
+        "speed": 3,
+        "lastUpdated": "April 7, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044
+      }
+    },
+    "glm-5.2": {
+      "model": "glm/glm-5-2",
+      "matchingModel": "glm-5.2",
+      "overrides": {
+        "contextWindow": 1000000,
+        "speed": 4,
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044
+      }
+    },
+    "glm-5.3": {
+      "model": "glm/glm-5-3",
+      "matchingModel": "glm-5.3",
+      "overrides": {
+        "contextWindow": 1000000,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044
+      }
+    },
+    "glm-5.3-flash": {
+      "model": "glm/glm-5-3-flash",
+      "matchingModel": "glm-5.3-flash",
+      "overrides": {
+        "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.000075,
+        "costPer1kOutputTokens": 0.00025,
+        "supportsAttachments": true
+      }
+    },
+    "glm-5v-turbo": {
+      "model": "glm/glm-5v-turbo",
+      "matchingModel": "glm-5v-turbo",
+      "overrides": {
+        "name": "GLM-5V-Turbo",
+        "contextWindow": 200000,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use"
+        ],
+        "lastUpdated": "April 1, 2026",
+        "costPer1kInputTokens": 0.0012,
+        "costPer1kOutputTokens": 0.004,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    }
+  }
+}

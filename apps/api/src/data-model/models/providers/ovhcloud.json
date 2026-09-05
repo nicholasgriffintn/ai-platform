@@ -1,0 +1,321 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "gpt-oss-120b": {
+      "model": "gpt/gpt-oss-120b",
+      "matchingModel": "gpt-oss-120b",
+      "overrides": {
+        "openWeights": true,
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "speed": 5,
+        "releaseDate": "August 28, 2025",
+        "lastUpdated": "August 28, 2025",
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0.00047,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "qwen3-32b": {
+      "model": "qwen/qwen3-32b",
+      "matchingModel": "qwen3-32b",
+      "overrides": {
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "speed": 3,
+        "releaseDate": "July 16, 2025",
+        "lastUpdated": "July 16, 2025",
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0.00025
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    },
+    "gpt-oss-20b": {
+      "model": "gpt/gpt-oss-20b",
+      "matchingModel": "gpt-oss-20b",
+      "overrides": {
+        "name": "gpt-oss-20b",
+        "openWeights": true,
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "speed": 5,
+        "releaseDate": "August 28, 2025",
+        "lastUpdated": "August 28, 2025",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00018,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "meta-llama-3_3-70b-instruct": {
+      "model": "llama/meta-llama-3-3-70b-instruct",
+      "matchingModel": "meta-llama-3_3-70b-instruct",
+      "overrides": {
+        "lastUpdated": "April 1, 2025",
+        "costPer1kInputTokens": 0.00074,
+        "costPer1kOutputTokens": 0.00074
+      }
+    },
+    "mistral-7b-instruct-v0.3": {
+      "model": "mistral/mistral-7b-instruct-v0-3",
+      "matchingModel": "mistral-7b-instruct-v0.3",
+      "overrides": {
+        "openWeights": true,
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "contextWindow": 65536,
+        "maxTokens": 65536,
+        "lastUpdated": "April 1, 2025",
+        "costPer1kInputTokens": 0.00011,
+        "costPer1kOutputTokens": 0.00011
+      }
+    },
+    "mistral-nemo-instruct-2407": {
+      "model": "mistral/mistral-nemo-instruct-2407",
+      "matchingModel": "mistral-nemo-instruct-2407",
+      "overrides": {
+        "name": "Mistral-Nemo-Instruct-2407",
+        "openWeights": true,
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "contextWindow": 65536,
+        "maxTokens": 65536,
+        "releaseDate": "November 20, 2024",
+        "lastUpdated": "November 20, 2024",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00014
+      }
+    },
+    "mistral-small-3.2-24b-instruct-2506": {
+      "model": "mistral/mistral-small-3-2-24b-instruct-2506",
+      "matchingModel": "mistral-small-3.2-24b-instruct-2506",
+      "overrides": {
+        "name": "Mistral-Small-3.2-24B-Instruct-2506",
+        "openWeights": true,
+        "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
+        "releaseDate": "July 16, 2025",
+        "lastUpdated": "July 16, 2025",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00031,
+        "supportsAttachments": true
+      }
+    },
+    "qwen2.5-vl-72b-instruct": {
+      "model": "qwen/qwen2-5-vl-72b-instruct",
+      "matchingModel": "qwen2.5-vl-72b-instruct",
+      "overrides": {
+        "name": "Qwen2.5-VL-72B-Instruct",
+        "description": "Multimodal model for analyzing text, images, documents, and rich media",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "releaseDate": "March 31, 2025",
+        "lastUpdated": "March 31, 2025",
+        "costPer1kInputTokens": 0.00101,
+        "costPer1kOutputTokens": 0.00101,
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "qwen3-coder-30b-a3b-instruct": {
+      "model": "qwen/qwen3-coder-30b-a3b-instruct",
+      "matchingModel": "qwen3-coder-30b-a3b-instruct",
+      "overrides": {
+        "name": "Qwen3-Coder-30B-A3B-Instruct",
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+        "maxTokens": 262144,
+        "speed": 4,
+        "releaseDate": "October 28, 2025",
+        "lastUpdated": "October 28, 2025",
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.00026
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    },
+    "qwen3.5-397b-a17b": {
+      "model": "qwen/qwen3-5-397b-a17b",
+      "matchingModel": "qwen3.5-397b-a17b",
+      "overrides": {
+        "name": "Qwen3.5-397B-A17B",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 2,
+        "releaseDate": "May 18, 2026",
+        "lastUpdated": "May 18, 2026",
+        "costPer1kInputTokens": 0.00071,
+        "costPer1kOutputTokens": 0.00425,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3.5-9b": {
+      "model": "qwen/qwen3-5-9b",
+      "matchingModel": "qwen3.5-9b",
+      "overrides": {
+        "name": "Qwen3.5-9B",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "maxTokens": 262144,
+        "releaseDate": "April 22, 2026",
+        "lastUpdated": "April 22, 2026",
+        "costPer1kInputTokens": 0.00012,
+        "costPer1kOutputTokens": 0.00018,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3.6-27b": {
+      "model": "qwen/qwen3-6-27b",
+      "matchingModel": "qwen3.6-27b",
+      "overrides": {
+        "name": "Qwen3.6-27B",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "maxTokens": 262144,
+        "speed": 3,
+        "releaseDate": "June 1, 2026",
+        "lastUpdated": "June 1, 2026",
+        "costPer1kInputTokens": 0.00047,
+        "costPer1kOutputTokens": 0.00319,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3guard-gen-0.6b": {
+      "model": "qwen/qwen3guard-gen-0-6b",
+      "matchingModel": "qwen3guard-gen-0.6b",
+      "overrides": {
+        "name": "Qwen3Guard-Gen-0.6B",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads",
+        "maxTokens": 16384,
+        "releaseDate": "January 22, 2026",
+        "lastUpdated": "January 22, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "qwen3guard-gen-8b": {
+      "model": "qwen/qwen3guard-gen-8b",
+      "matchingModel": "qwen3guard-gen-8b",
+      "overrides": {
+        "name": "Qwen3Guard-Gen-8B",
+        "openWeights": true,
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads",
+        "contextWindow": 32768,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "January 22, 2026",
+        "lastUpdated": "January 22, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "qwen3.8-27b": {
+      "model": "qwen/qwen3-8-27b",
+      "matchingModel": "qwen3.8-27b",
+      "overrides": {
+        "name": "Qwen3.8-27B",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "maxTokens": 262144,
+        "releaseDate": "September 2, 2026",
+        "lastUpdated": "September 2, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

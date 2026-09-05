@@ -1,0 +1,127 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 400000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
+    "knowledgeCutoffDate": "August 31, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "defaultEffort": "medium"
+    }
+  },
+  "description": "The gpt pro family includes models that produce text.",
+  "models": {
+    "gpt-5-2": {
+      "defaults": {
+        "name": "GPT 5.2 ",
+        "description": "Higher-accuracy GPT-5.2 variant for tougher reasoning and review workflows",
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "December 11, 2025",
+        "supportsResponseFormat": false,
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 26,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-5-2-pro": {
+      "defaults": {
+        "name": "GPT-5.2 Pro",
+        "description": "Higher-accuracy GPT-5.2 variant for tougher reasoning and review workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 11, 2025"
+      }
+    },
+    "gpt-5-4-pro": {
+      "defaults": {
+        "name": "GPT-5.4 Pro",
+        "description": "More exact GPT-5.4 tier for demanding professional reasoning and agent tasks",
+        "contextWindow": 1050000,
+        "contextComplexity": 5,
+        "releaseDate": "March 5, 2026",
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-5-5-pro": {
+      "defaults": {
+        "name": "GPT-5.5 Pro",
+        "description": "Highest-accuracy GPT-5.5 tier for slower, precision-heavy reasoning and coding",
+        "contextWindow": 1050000,
+        "contextComplexity": 5,
+        "knowledgeCutoffDate": "December 1, 2025",
+        "releaseDate": "April 23, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-5-pro": {
+      "defaults": {
+        "name": "GPT-5 Pro",
+        "description": "Higher-accuracy GPT-5 tier for tough analysis, coding reviews, and planning",
+        "maxTokens": 272000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "September 30, 2024",
+        "releaseDate": "October 6, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    }
+  }
+}

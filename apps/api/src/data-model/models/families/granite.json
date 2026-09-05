@@ -1,0 +1,87 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The granite family includes models that produce text.",
+  "models": {
+    "granite-4-0-h-micro": {
+      "defaults": {
+        "name": "IBM Granite 4.0 H Micro",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 131000,
+        "maxTokens": 131000,
+        "releaseDate": "October 7, 2025",
+        "supportsResponseFormat": false
+      }
+    },
+    "granite-4-0-micro": {
+      "defaults": {
+        "name": "Granite 4.0 Micro",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 131000,
+        "maxTokens": 117900,
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "October 20, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 2.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "granite-4-1-8b": {
+      "defaults": {
+        "name": "Granite 4.1 8B",
+        "description": "Granite 4.1 8B accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 117964,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "April 30, 2026",
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.7,
+          "codingIndex": 9.5,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "granite-4-2-8b": {
+      "defaults": {
+        "name": "Granite 4.2 8B",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 131072,
+        "maxTokens": 117964,
+        "releaseDate": "August 31, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

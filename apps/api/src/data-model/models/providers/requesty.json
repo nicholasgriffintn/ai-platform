@@ -1,0 +1,3757 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "openai/gpt-4.1-mini": {
+      "model": "gpt-mini/gpt-4-1-mini",
+      "matchingModel": "openai/gpt-4.1-mini",
+      "overrides": {
+        "name": "GPT-4.1 Mini",
+        "description": "Balanced version of GPT-4.1 with massive 1M+ token context window and lower cost.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "analysis",
+          "instruction",
+          "vision",
+          "tool_use",
+          "document"
+        ],
+        "speed": 3,
+        "isFeatured": false,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0.0004,
+        "costPer1kOutputTokens": 0.0016
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "openai/o4-mini": {
+      "model": "o-mini/o4-mini",
+      "matchingModel": "openai/o4-mini",
+      "overrides": {
+        "description": "Smaller model optimized for fast, cost-efficient reasoning with strong performance in math, coding, and visual tasks.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "reasoning",
+          "math",
+          "coding",
+          "analysis",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "isFeatured": false,
+        "knowledgeCutoffDate": "June 2024",
+        "lastUpdated": "April 16, 2025",
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0044,
+        "supportsParallelToolCalls": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "openai/gpt-4o-mini": {
+      "model": "gpt-mini/gpt-4o-mini",
+      "matchingModel": "openai/gpt-4o-mini",
+      "overrides": {
+        "name": "GPT-4o Mini",
+        "description": "Efficient version of GPT-4o optimized for faster response times while maintaining core capabilities.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "analysis",
+          "chat",
+          "coding",
+          "multilingual",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "multimodal": true,
+        "isFeatured": false,
+        "knowledgeCutoffDate": "October 2024",
+        "lastUpdated": "July 18, 2024",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "openai/gpt-4.1": {
+      "model": "gpt/gpt-4-1",
+      "matchingModel": "openai/gpt-4.1",
+      "overrides": {
+        "description": "OpenAI's advanced model optimized for coding and instruction-following with massive 1M+ token context window.",
+        "strengths": [
+          "coding",
+          "academic",
+          "reasoning",
+          "instruction",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "isFeatured": false,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.008
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "anthropic/claude-4-sonnet-20250522": {
+      "model": "claude/claude-sonnet-4",
+      "matchingModel": "anthropic/claude-4-sonnet-20250522",
+      "overrides": {
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "creative",
+          "vision"
+        ],
+        "contextComplexity": 5,
+        "reliability": 5,
+        "speed": 3,
+        "multimodal": true,
+        "isFeatured": false,
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "anthropic/claude-3-7-sonnet": {
+      "model": "claude-sonnet/claude-sonnet-3-7",
+      "matchingModel": "anthropic/claude-3-7-sonnet",
+      "overrides": {
+        "speed": 3,
+        "isFeatured": false,
+        "lastUpdated": "February 19, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "anthropic/claude-opus-4": {
+      "model": "claude-opus/claude-opus-4",
+      "matchingModel": "anthropic/claude-opus-4",
+      "overrides": {
+        "description": "Claude's flagship Opus model with exceptional performance across all domains.",
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "creative",
+          "coding",
+          "vision"
+        ],
+        "reliability": 5,
+        "speed": 2,
+        "multimodal": true,
+        "isFeatured": false,
+        "knowledgeCutoffDate": "March 31, 2025",
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.015,
+        "costPer1kOutputTokens": 0.075
+      },
+      "unset": [
+        "supportsTopP",
+        "supportsResponseFormat"
+      ]
+    },
+    "google/gemini-2.5-flash": {
+      "model": "gemini-flash/gemini-2-5-flash",
+      "matchingModel": "google/gemini-2.5-flash",
+      "overrides": {
+        "description": "Google's fast multimodal model with support for text, images, audio, video, and PDFs.",
+        "strengths": [
+          "vision",
+          "audio",
+          "analysis",
+          "reasoning",
+          "tool_use",
+          "document",
+          "video",
+          "image",
+          "creative"
+        ],
+        "reliability": 4,
+        "speed": 5,
+        "multimodal": true,
+        "isFeatured": false,
+        "lastUpdated": "June 17, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsAudio": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1159,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "google/gemini-2.5-pro": {
+      "model": "gemini-pro/gemini-2-5-pro",
+      "matchingModel": "google/gemini-2.5-pro",
+      "overrides": {
+        "description": "Google's advanced multimodal model with extensive capabilities across text, images, audio, video, and PDFs.",
+        "strengths": [
+          "vision",
+          "audio",
+          "analysis",
+          "reasoning",
+          "tool_use",
+          "coding",
+          "document",
+          "video"
+        ],
+        "speed": 3,
+        "multimodal": true,
+        "isFeatured": false,
+        "lastUpdated": "June 17, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAudio": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "anthropic/claude-haiku-4-5": {
+      "model": "claude-haiku/claude-haiku-4-5",
+      "matchingModel": "anthropic/claude-haiku-4-5",
+      "overrides": {
+        "maxTokens": 62000,
+        "knowledgeCutoffDate": "February 1, 2025",
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "anthropic/claude-opus-4-1": {
+      "model": "claude-opus/claude-opus-4-1",
+      "matchingModel": "anthropic/claude-opus-4-1",
+      "overrides": {
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.015,
+        "costPer1kOutputTokens": 0.075
+      },
+      "unset": [
+        "contextComplexity",
+        "supportsTopP",
+        "supportsResponseFormat"
+      ]
+    },
+    "anthropic/claude-opus-4-5": {
+      "model": "claude-opus/claude-opus-4-5",
+      "matchingModel": "anthropic/claude-opus-4-5",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "November 24, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTopP",
+        "supportsResponseFormat"
+      ]
+    },
+    "anthropic/claude-sonnet-4": {
+      "model": "claude-sonnet/claude-sonnet-4",
+      "matchingModel": "anthropic/claude-sonnet-4",
+      "overrides": {
+        "contextWindow": 200000,
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "anthropic/claude-sonnet-4-5": {
+      "model": "claude-sonnet/claude-sonnet-4-5",
+      "matchingModel": "anthropic/claude-sonnet-4-5",
+      "overrides": {
+        "lastUpdated": "September 29, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "google/gemini-3-flash-preview": {
+      "model": "gemini/gemini-3-flash",
+      "matchingModel": "google/gemini-3-flash-preview",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "December 17, 2025",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.003
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "google/gemini-3-pro-preview": {
+      "model": "gemini-pro/gemini-3-pro",
+      "matchingModel": "google/gemini-3-pro-preview",
+      "overrides": {
+        "lastUpdated": "November 18, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "openai/gpt-5": {
+      "model": "gpt/gpt-5",
+      "matchingModel": "openai/gpt-5",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "audio",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio",
+            "image"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "openai/gpt-5-mini": {
+      "model": "gpt-mini/gpt-5-mini",
+      "matchingModel": "openai/gpt-5-mini",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 32000,
+        "speed": 2,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.002,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "openai/gpt-5-nano": {
+      "model": "gpt-nano/gpt-5-nano",
+      "matchingModel": "openai/gpt-5-nano",
+      "overrides": {
+        "contextWindow": 16000,
+        "maxTokens": 4000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "speed": 3,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.0004,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "xai/grok-4": {
+      "model": "grok/grok-4",
+      "matchingModel": "xai/grok-4",
+      "overrides": {
+        "openWeights": false,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "September 9, 2025",
+        "lastUpdated": "September 9, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "xai/grok-4-fast": {
+      "model": "grok/grok-4-fast",
+      "matchingModel": "xai/grok-4-fast",
+      "overrides": {
+        "openWeights": false,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "January 2025",
+        "lastUpdated": "September 19, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0005,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "anthropic/claude-opus-4-6": {
+      "model": "claude-opus/claude-opus-4-6",
+      "matchingModel": "anthropic/claude-opus-4-6",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "February 5, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "anthropic/claude-sonnet-4-6": {
+      "model": "claude-sonnet/claude-sonnet-4-6",
+      "matchingModel": "anthropic/claude-sonnet-4-6",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
+        "lastUpdated": "February 17, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai/gpt-5-chat": {
+      "model": "gpt-codex/gpt-5-chat",
+      "matchingModel": "openai/gpt-5-chat",
+      "overrides": {
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "openai/gpt-5-codex": {
+      "model": "gpt-codex/gpt-5-codex",
+      "matchingModel": "openai/gpt-5-codex",
+      "overrides": {
+        "name": "GPT-5 Codex",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "knowledgeCutoffDate": "October 1, 2024",
+        "lastUpdated": "September 15, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai/gpt-5-image": {
+      "model": "gpt/gpt-5-image",
+      "matchingModel": "openai/gpt-5-image",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "lastUpdated": "October 14, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "openai/gpt-5-pro": {
+      "model": "gpt-pro/gpt-5-pro",
+      "matchingModel": "openai/gpt-5-pro",
+      "overrides": {
+        "lastUpdated": "October 6, 2025",
+        "costPer1kInputTokens": 0.015,
+        "costPer1kOutputTokens": 0.12,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "strengths"
+      ]
+    },
+    "openai/gpt-5.1": {
+      "model": "gpt/gpt-5-1",
+      "matchingModel": "openai/gpt-5.1",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai/gpt-5.1-chat": {
+      "model": "gpt-codex/gpt-5-1-chat",
+      "matchingModel": "openai/gpt-5.1-chat",
+      "overrides": {
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "openai/gpt-5.1-codex": {
+      "model": "gpt-codex/gpt-5-1-codex",
+      "matchingModel": "openai/gpt-5.1-codex",
+      "overrides": {
+        "name": "GPT-5.1-Codex",
+        "speed": 4,
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai/gpt-5.1-codex-max": {
+      "model": "gpt-codex/gpt-5-1-codex-max",
+      "matchingModel": "openai/gpt-5.1-codex-max",
+      "overrides": {
+        "name": "GPT-5.1-Codex-Max",
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.009,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "openai/gpt-5.1-codex-mini": {
+      "model": "gpt-codex/gpt-5-1-codex-mini",
+      "matchingModel": "openai/gpt-5.1-codex-mini",
+      "overrides": {
+        "name": "GPT-5.1-Codex-Mini",
+        "maxTokens": 100000,
+        "speed": 4,
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.002,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai/gpt-5.2": {
+      "model": "gpt/gpt-5-2",
+      "matchingModel": "openai/gpt-5.2",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "December 11, 2025",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai/gpt-5.2-chat": {
+      "model": "gpt-codex/gpt-5-2-chat",
+      "matchingModel": "openai/gpt-5.2-chat",
+      "overrides": {
+        "lastUpdated": "December 11, 2025",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "openai/gpt-5.2-codex": {
+      "model": "gpt-codex/gpt-5-2-codex",
+      "matchingModel": "openai/gpt-5.2-codex",
+      "overrides": {
+        "speed": 3,
+        "releaseDate": "January 14, 2026",
+        "lastUpdated": "January 14, 2026",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai/gpt-5.2-pro": {
+      "model": "gpt-pro/gpt-5-2-pro",
+      "matchingModel": "openai/gpt-5.2-pro",
+      "overrides": {
+        "lastUpdated": "December 11, 2025",
+        "costPer1kInputTokens": 0.021,
+        "costPer1kOutputTokens": 0.168,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "strengths"
+      ]
+    },
+    "openai/gpt-5.3-codex": {
+      "model": "gpt-codex/gpt-5-3-codex",
+      "matchingModel": "openai/gpt-5.3-codex",
+      "overrides": {
+        "name": "GPT-5.3-Codex",
+        "speed": 2,
+        "releaseDate": "February 24, 2026",
+        "lastUpdated": "February 24, 2026",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai/gpt-5.4": {
+      "model": "gpt/gpt-5-4",
+      "matchingModel": "openai/gpt-5.4",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "March 5, 2026",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.015,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai/gpt-5.4-pro": {
+      "model": "gpt-pro/gpt-5-4-pro",
+      "matchingModel": "openai/gpt-5.4-pro",
+      "overrides": {
+        "lastUpdated": "March 5, 2026",
+        "costPer1kInputTokens": 0.03,
+        "costPer1kOutputTokens": 0.18,
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-fable-5": {
+      "model": "claude-fable/claude-fable-5",
+      "matchingModel": "claude-fable-5",
+      "overrides": {
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-haiku-4-5": {
+      "model": "claude-haiku/claude-haiku-4-5-latest",
+      "matchingModel": "claude-haiku-4-5",
+      "overrides": {
+        "name": "Claude Haiku 4.5 (latest)",
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-haiku-4-5@eu": {
+      "model": "claude-haiku/claude-haiku-4-5-latest-eu",
+      "matchingModel": "claude-haiku-4-5@eu",
+      "overrides": {
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0055
+      }
+    },
+    "claude-opus-4-1": {
+      "model": "claude-opus/claude-opus-4-1-latest",
+      "matchingModel": "claude-opus-4-1",
+      "overrides": {
+        "name": "Claude Opus 4.1 (latest)",
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.015,
+        "costPer1kOutputTokens": 0.075,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "contextComplexity",
+        "supportsTopP"
+      ]
+    },
+    "claude-opus-4-5": {
+      "model": "claude-opus/claude-opus-4-5-latest",
+      "matchingModel": "claude-opus-4-5",
+      "overrides": {
+        "name": "Claude Opus 4.5 (latest)",
+        "speed": 3,
+        "lastUpdated": "November 24, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "claude-opus-4-5@eu": {
+      "model": "claude-opus/claude-opus-4-5-latest-eu",
+      "matchingModel": "claude-opus-4-5@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "November 24, 2025",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "claude-opus-4-6": {
+      "model": "claude-opus/claude-opus-4-6",
+      "matchingModel": "claude-opus-4-6",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "claude-opus-4-6@eu": {
+      "model": "claude-opus/claude-opus-4-6-eu",
+      "matchingModel": "claude-opus-4-6@eu",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "claude-opus-4-7": {
+      "model": "claude-opus/claude-opus-4-7",
+      "matchingModel": "claude-opus-4-7",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-opus-4-7@eu": {
+      "model": "claude-opus/claude-opus-4-7-eu",
+      "matchingModel": "claude-opus-4-7@eu",
+      "overrides": {
+        "description": "Stronger Opus tier for advanced software work and high-stakes reasoning",
+        "speed": 2,
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-opus-4-8": {
+      "model": "claude-opus/claude-opus-4-8",
+      "matchingModel": "claude-opus-4-8",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-opus-4-8@eu": {
+      "model": "claude-opus/claude-opus-4-8-eu",
+      "matchingModel": "claude-opus-4-8@eu",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-opus-5": {
+      "model": "claude-opus/claude-opus-5",
+      "matchingModel": "claude-opus-5",
+      "overrides": {
+        "lastUpdated": "July 24, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "claude-opus-5@eu": {
+      "model": "claude-opus/claude-opus-5-eu",
+      "matchingModel": "claude-opus-5@eu",
+      "overrides": {
+        "lastUpdated": "July 24, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "claude-sonnet-4-5": {
+      "model": "claude-sonnet/claude-sonnet-4-5-latest",
+      "matchingModel": "claude-sonnet-4-5",
+      "overrides": {
+        "name": "Claude Sonnet 4.5 (latest)",
+        "lastUpdated": "September 29, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-sonnet-4-5@eu": {
+      "model": "claude-sonnet/claude-sonnet-4-5-latest-eu",
+      "matchingModel": "claude-sonnet-4-5@eu",
+      "overrides": {
+        "lastUpdated": "September 29, 2025",
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165
+      }
+    },
+    "claude-sonnet-4-6": {
+      "model": "claude-sonnet/claude-sonnet-4-6",
+      "matchingModel": "claude-sonnet-4-6",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-sonnet-4-6@eu": {
+      "model": "claude-sonnet/claude-sonnet-4-6-eu",
+      "matchingModel": "claude-sonnet-4-6@eu",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-sonnet-4@eu": {
+      "model": "claude-sonnet/claude-sonnet-4-latest-eu",
+      "matchingModel": "claude-sonnet-4@eu",
+      "overrides": {
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "claude-sonnet-5": {
+      "model": "claude-sonnet/claude-sonnet-5",
+      "matchingModel": "claude-sonnet-5",
+      "overrides": {
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-sonnet-5@eu": {
+      "model": "claude-sonnet/claude-sonnet-5-eu",
+      "matchingModel": "claude-sonnet-5@eu",
+      "overrides": {
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4-flash-0731@eu": {
+      "model": "deepseek-flash/deepseek-v4-flash-0731-eu",
+      "matchingModel": "deepseek-v4-flash-0731@eu",
+      "overrides": {
+        "lastUpdated": "July 31, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-2.5-flash@eu": {
+      "model": "gemini-flash/gemini-2-5-flash-eu",
+      "matchingModel": "gemini-2.5-flash@eu",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "June 17, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0025
+      }
+    },
+    "gemini-3.1-flash-lite@eu": {
+      "model": "gemini-flash-lite/gemini-3-1-flash-lite-eu",
+      "matchingModel": "gemini-3.1-flash-lite@eu",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "May 7, 2026",
+        "costPer1kInputTokens": 0.000275,
+        "costPer1kOutputTokens": 0.00165
+      }
+    },
+    "gemini-3.5-flash-lite": {
+      "model": "gemini-flash-lite/gemini-3-5-flash-lite",
+      "matchingModel": "gemini-3.5-flash-lite",
+      "overrides": {
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "maxTokens": 65535,
+        "lastUpdated": "July 21, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "gemini-3.5-flash@eu": {
+      "model": "gemini-flash/gemini-3-5-flash-eu",
+      "matchingModel": "gemini-3.5-flash@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "May 19, 2026",
+        "costPer1kInputTokens": 0.00165,
+        "costPer1kOutputTokens": 0.0099
+      }
+    },
+    "gemini-3.6-flash": {
+      "model": "gemini-flash/gemini-3-6-flash",
+      "matchingModel": "gemini-3.6-flash",
+      "overrides": {
+        "maxTokens": 65535,
+        "lastUpdated": "July 21, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.007,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5.2": {
+      "model": "glm/glm-5-2",
+      "matchingModel": "glm-5.2",
+      "overrides": {
+        "contextWindow": 1048576,
+        "speed": 4,
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.00255,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5.2@eu": {
+      "model": "glm/glm-5-2-eu",
+      "matchingModel": "glm-5.2@eu",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.0012,
+        "costPer1kOutputTokens": 0.0042,
+        "supportsAttachments": false
+      }
+    },
+    "gpt-4.1-mini@eu": {
+      "model": "gpt-mini/gpt-4-1-mini-eu",
+      "matchingModel": "gpt-4.1-mini@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0.00044,
+        "costPer1kOutputTokens": 0.00176
+      }
+    },
+    "gpt-4.1-nano@eu": {
+      "model": "gpt-nano/gpt-4-1-nano-eu",
+      "matchingModel": "gpt-4.1-nano@eu",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0.00011,
+        "costPer1kOutputTokens": 0.00044
+      }
+    },
+    "gpt-4.1@eu": {
+      "model": "gpt/gpt-4-1-eu",
+      "matchingModel": "gpt-4.1@eu",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.0088
+      }
+    },
+    "gpt-4o-mini@eu": {
+      "model": "gpt-mini/gpt-4o-mini-eu",
+      "matchingModel": "gpt-4o-mini@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "July 18, 2024",
+        "costPer1kInputTokens": 0.000165,
+        "costPer1kOutputTokens": 0.00066
+      }
+    },
+    "gpt-5-mini@eu": {
+      "model": "gpt-mini/gpt-5-mini-eu",
+      "matchingModel": "gpt-5-mini@eu",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.000275,
+        "costPer1kOutputTokens": 0.0022,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-5-nano@eu": {
+      "model": "gpt-nano/gpt-5-nano-eu",
+      "matchingModel": "gpt-5-nano@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.000055,
+        "costPer1kOutputTokens": 0.00044,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-5.1@eu": {
+      "model": "gpt/gpt-5-1-eu",
+      "matchingModel": "gpt-5.1@eu",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0.001375,
+        "costPer1kOutputTokens": 0.011
+      }
+    },
+    "gpt-5.4@eu": {
+      "model": "gpt/gpt-5-4-eu",
+      "matchingModel": "gpt-5.4@eu",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "March 5, 2026",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "gpt-5.5@eu": {
+      "model": "gpt/gpt-5-5-eu",
+      "matchingModel": "gpt-5.5@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 23, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-5.6-luna@eu": {
+      "model": "gpt-luna/gpt-5-6-luna-eu",
+      "matchingModel": "gpt-5.6-luna@eu",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00132,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-5.6-sol@eu": {
+      "model": "gpt-sol/gpt-5-6-sol-eu",
+      "matchingModel": "gpt-5.6-sol@eu",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.033,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-5.6-terra@eu": {
+      "model": "gpt-terra/gpt-5-6-terra-eu",
+      "matchingModel": "gpt-5.6-terra@eu",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.0132,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-5@eu": {
+      "model": "gpt/gpt-5-eu",
+      "matchingModel": "gpt-5@eu",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.001375,
+        "costPer1kOutputTokens": 0.011,
+        "supportsTemperature": false
+      }
+    },
+    "grok-4.5": {
+      "model": "grok/grok-4-5",
+      "matchingModel": "grok-4.5",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "July 8, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kimi-k3": {
+      "model": "kimi-k3/kimi-k3",
+      "matchingModel": "kimi-k3",
+      "overrides": {
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.00225,
+        "costPer1kOutputTokens": 0.01125,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kimi-k3@eu": {
+      "model": "kimi-k3/kimi-k3-eu",
+      "matchingModel": "kimi-k3@eu",
+      "overrides": {
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.00225,
+        "costPer1kOutputTokens": 0.01125,
+        "supportsTemperature": false
+      }
+    },
+    "o4-mini@eu": {
+      "model": "o-mini/o4-mini-eu",
+      "matchingModel": "o4-mini@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 16, 2025",
+        "costPer1kInputTokens": 0.00121,
+        "costPer1kOutputTokens": 0.00484,
+        "supportsTemperature": false
+      }
+    },
+    "gemini-3.7-flash": {
+      "model": "gemini-flash/gemini-3-7-flash",
+      "matchingModel": "gemini-3.7-flash",
+      "overrides": {
+        "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "maxTokens": 65535,
+        "lastUpdated": "August 13, 2026",
+        "costPer1kInputTokens": 0.00075,
+        "costPer1kOutputTokens": 0.00375,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3.7-flash@eu": {
+      "model": "gemini-flash/gemini-3-7-flash-eu",
+      "matchingModel": "gemini-3.7-flash@eu",
+      "overrides": {
+        "lastUpdated": "August 13, 2026",
+        "costPer1kInputTokens": 0.000825,
+        "costPer1kOutputTokens": 0.004125
+      }
+    },
+    "claude-fable-5@eu": {
+      "model": "claude-fable/claude-fable-5-eu",
+      "matchingModel": "claude-fable-5@eu",
+      "overrides": {
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0.011,
+        "costPer1kOutputTokens": 0.055,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4-flash": {
+      "model": "deepseek-flash/deepseek-v4-flash",
+      "matchingModel": "deepseek-v4-flash",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "speed": 4,
+        "lastUpdated": "April 24, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4-pro": {
+      "model": "deepseek-thinking/deepseek-v4-pro",
+      "matchingModel": "deepseek-v4-pro",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "speed": 3,
+        "lastUpdated": "April 24, 2026",
+        "costPer1kInputTokens": 0.00132,
+        "costPer1kOutputTokens": 0.00396,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4-pro@eu": {
+      "model": "deepseek-thinking/deepseek-v4-pro-eu",
+      "matchingModel": "deepseek-v4-pro@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 24, 2026",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.0035,
+        "supportsAttachments": false
+      }
+    },
+    "devstral-latest": {
+      "model": "devstral/devstral-latest",
+      "matchingModel": "devstral-latest",
+      "overrides": {
+        "lastUpdated": "May 27, 2026",
+        "costPer1kInputTokens": 0.00044,
+        "costPer1kOutputTokens": 0.0022,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "devstral-latest@eu": {
+      "model": "devstral/devstral-latest-eu",
+      "matchingModel": "devstral-latest@eu",
+      "overrides": {
+        "lastUpdated": "May 27, 2026",
+        "costPer1kInputTokens": 0.00044,
+        "costPer1kOutputTokens": 0.0022,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "fugu-ultra": {
+      "model": "fugu/fugu-ultra",
+      "matchingModel": "fugu-ultra",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "lastUpdated": "June 15, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3-pro-image": {
+      "model": "gemini-pro/nano-banana-pro",
+      "matchingModel": "gemini-3-pro-image",
+      "overrides": {
+        "contextWindow": 1048576,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "image",
+          "creative"
+        ],
+        "contextComplexity": 4,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3.1-flash-image": {
+      "model": "gemini-flash/nano-banana-2",
+      "matchingModel": "gemini-3.1-flash-image",
+      "overrides": {
+        "name": "Nano Banana 2",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use",
+          "image",
+          "creative"
+        ],
+        "contextComplexity": 4,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.002,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3.1-flash-lite": {
+      "model": "gemini-flash-lite/gemini-3-1-flash-lite",
+      "matchingModel": "gemini-3.1-flash-lite",
+      "overrides": {
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "May 7, 2026",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.0015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3.1-pro-preview": {
+      "model": "gemini-pro/gemini-3-1-pro-preview",
+      "matchingModel": "gemini-3.1-pro-preview",
+      "overrides": {
+        "maxTokens": 65535,
+        "speed": 3,
+        "lastUpdated": "February 19, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3.5-flash": {
+      "model": "gemini-flash/gemini-3-5-flash",
+      "matchingModel": "gemini-3.5-flash",
+      "overrides": {
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "May 19, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.009,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3.5-flash-lite@eu": {
+      "model": "gemini-flash-lite/gemini-3-5-flash-lite-eu",
+      "matchingModel": "gemini-3.5-flash-lite@eu",
+      "overrides": {
+        "lastUpdated": "July 21, 2026",
+        "costPer1kInputTokens": 0.00033,
+        "costPer1kOutputTokens": 0.00275
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "gemma-4-26b-a4b-it": {
+      "model": "gemma/gemma-4-26b-a4b-it",
+      "matchingModel": "gemma-4-26b-a4b-it",
+      "overrides": {
+        "maxTokens": 262144,
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.00034,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemma-4-31b-it": {
+      "model": "gemma/gemma-4-31b-it",
+      "matchingModel": "gemma-4-31b-it",
+      "overrides": {
+        "maxTokens": 8192,
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5.1": {
+      "model": "glm/glm-5-1",
+      "matchingModel": "glm-5.1",
+      "overrides": {
+        "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
+        "contextWindow": 200000,
+        "maxTokens": 128000,
+        "speed": 3,
+        "lastUpdated": "April 7, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5.1@eu": {
+      "model": "glm/glm-5-1-eu",
+      "matchingModel": "glm-5.1@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 7, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044,
+        "supportsAttachments": false
+      }
+    },
+    "glm-5.2-fast": {
+      "model": "glm/glm-5-2-fast",
+      "matchingModel": "glm-5.2-fast",
+      "overrides": {
+        "name": "glm-5.2-fast",
+        "openWeights": false,
+        "releaseDate": "July 13, 2026",
+        "lastUpdated": "July 13, 2026",
+        "costPer1kInputTokens": 0.0021,
+        "costPer1kOutputTokens": 0.0066,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "glm-5.3": {
+      "model": "glm/glm-5-3",
+      "matchingModel": "glm-5.3",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0012,
+        "costPer1kOutputTokens": 0.0042,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5.3-chat": {
+      "model": "gpt/gpt-5-3-chat",
+      "matchingModel": "gpt-5.3-chat",
+      "overrides": {
+        "name": "gpt-5.3-chat",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 18, 2026",
+        "lastUpdated": "March 18, 2026",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "gpt-5.3-codex": {
+      "model": "gpt-codex/gpt-5-3-codex",
+      "matchingModel": "gpt-5.3-codex",
+      "overrides": {
+        "name": "GPT-5.3 Codex",
+        "speed": 2,
+        "lastUpdated": "February 5, 2026",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5.4": {
+      "model": "gpt/gpt-5-4",
+      "matchingModel": "gpt-5.4",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "March 5, 2026",
+        "costPer1kInputTokens": 0.00275,
+        "costPer1kOutputTokens": 0.0165,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5.4-mini": {
+      "model": "gpt-mini/gpt-5-4-mini",
+      "matchingModel": "gpt-5.4-mini",
+      "overrides": {
+        "name": "GPT-5.4 mini",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 4,
+        "lastUpdated": "March 17, 2026",
+        "costPer1kInputTokens": 0.00075,
+        "costPer1kOutputTokens": 0.0045,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5.4-nano": {
+      "model": "gpt-nano/gpt-5-4-nano",
+      "matchingModel": "gpt-5.4-nano",
+      "overrides": {
+        "name": "GPT-5.4 nano",
+        "speed": 4,
+        "lastUpdated": "March 17, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.00125,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5.4-pro": {
+      "model": "gpt-pro/gpt-5-4-pro",
+      "matchingModel": "gpt-5.4-pro",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "March 5, 2026",
+        "costPer1kInputTokens": 0.03,
+        "costPer1kOutputTokens": 0.18,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5.5": {
+      "model": "gpt/gpt-5-5",
+      "matchingModel": "gpt-5.5",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 23, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.033,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5.5-pro": {
+      "model": "gpt-pro/gpt-5-5-pro",
+      "matchingModel": "gpt-5.5-pro",
+      "overrides": {
+        "lastUpdated": "April 23, 2026",
+        "costPer1kInputTokens": 0.03,
+        "costPer1kOutputTokens": 0.18,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5.6-luna": {
+      "model": "gpt-luna/gpt-5-6-luna",
+      "matchingModel": "gpt-5.6-luna",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5.6-sol": {
+      "model": "gpt-sol/gpt-5-6-sol",
+      "matchingModel": "gpt-5.6-sol",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5.6-terra": {
+      "model": "gpt-terra/gpt-5-6-terra",
+      "matchingModel": "gpt-5.6-terra",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "grok-4.2-beta": {
+      "model": "grok/grok-4-2-beta",
+      "matchingModel": "grok-4.2-beta",
+      "overrides": {
+        "lastUpdated": "March 19, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "grok-4.3": {
+      "model": "grok/grok-4-3",
+      "matchingModel": "grok-4.3",
+      "overrides": {
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 4,
+        "lastUpdated": "April 17, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.0025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "grok-4.6": {
+      "model": "grok/grok-4-6",
+      "matchingModel": "grok-4.6",
+      "overrides": {
+        "lastUpdated": "August 12, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "grok-build-0.1": {
+      "model": "grok-build/grok-build-0-1",
+      "matchingModel": "grok-build-0.1",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.002
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
+    },
+    "hy3": {
+      "model": "Hy/hy3",
+      "matchingModel": "hy3",
+      "overrides": {
+        "maxTokens": 262144,
+        "speed": 3,
+        "lastUpdated": "July 6, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00058,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "inkling": {
+      "model": "ling/inkling",
+      "matchingModel": "inkling",
+      "overrides": {
+        "contextWindow": 65536,
+        "maxTokens": 32768,
+        "lastUpdated": "July 15, 2026",
+        "costPer1kInputTokens": 0.00187,
+        "costPer1kOutputTokens": 0.00468,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "inkling-256k": {
+      "model": "kling/inkling-256k",
+      "matchingModel": "inkling-256k",
+      "overrides": {
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.00187,
+        "costPer1kOutputTokens": 0.00468,
+        "supportsResponseFormat": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "kat-coder-pro": {
+      "model": "kat-coder/kat-coder-pro",
+      "matchingModel": "kat-coder-pro",
+      "overrides": {
+        "lastUpdated": "March 27, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "kimi-k2.6": {
+      "model": "kimi-k2/kimi-k2-6",
+      "matchingModel": "kimi-k2.6",
+      "overrides": {
+        "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "April 21, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kimi-k2.6@eu": {
+      "model": "kimi-k2/kimi-k2-6-eu",
+      "matchingModel": "kimi-k2.6@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 21, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004
+      }
+    },
+    "kimi-k2.7-code": {
+      "model": "kimi-k2/kimi-k2-7-code",
+      "matchingModel": "kimi-k2.7-code",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
+        "lastUpdated": "June 12, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004,
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kimi-k2.7-code@eu": {
+      "model": "kimi-k2/kimi-k2-7-code-eu",
+      "matchingModel": "kimi-k2.7-code@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "June 12, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.0045,
+        "supportsTemperature": false
+      }
+    },
+    "laguna-m.1": {
+      "model": "laguna/laguna-m-1",
+      "matchingModel": "laguna-m.1",
+      "overrides": {
+        "contextWindow": 32768,
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "laguna-xs.2": {
+      "model": "laguna/laguna-xs-2",
+      "matchingModel": "laguna-xs.2",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
+    "leanstral-1-5": {
+      "model": "requesty/leanstral-1-5/leanstral-1-5",
+      "matchingModel": "leanstral-1-5",
+      "overrides": {
+        "lastUpdated": "May 27, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "leanstral-1-5@eu": {
+      "model": "requesty/leanstral-1-5@eu/leanstral-1-5-eu",
+      "matchingModel": "leanstral-1-5@eu",
+      "overrides": {
+        "lastUpdated": "May 27, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "ling-2.6-1t": {
+      "model": "ling/ling-2-6-1t",
+      "matchingModel": "ling-2.6-1t",
+      "overrides": {
+        "name": "ling-2.6-1t",
+        "maxTokens": 262144,
+        "lastUpdated": "April 23, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "ling-2.6-flash": {
+      "model": "ling/ling-2-6-flash",
+      "matchingModel": "ling-2.6-flash",
+      "overrides": {
+        "name": "ling-2.6-flash",
+        "maxTokens": 262144,
+        "lastUpdated": "April 21, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0003,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "ling-3.0-tiny": {
+      "model": "ling/ling-3-0-tiny",
+      "matchingModel": "ling-3.0-tiny",
+      "overrides": {
+        "lastUpdated": "August 5, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "mimo-v2.5": {
+      "model": "mimo/mimo-v2-5",
+      "matchingModel": "mimo-v2.5",
+      "overrides": {
+        "contextWindow": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 5,
+        "speed": 3,
+        "lastUpdated": "April 22, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "mimo-v2.5-pro": {
+      "model": "mimo/mimo-v2-5-pro",
+      "matchingModel": "mimo-v2.5-pro",
+      "overrides": {
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "speed": 2,
+        "lastUpdated": "April 22, 2026",
+        "costPer1kInputTokens": 0.000435,
+        "costPer1kOutputTokens": 0.00087,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "minimax-m2.7": {
+      "model": "minimax/minimax-m2-7",
+      "matchingModel": "minimax-m2.7",
+      "overrides": {
+        "name": "MiniMax-M2.7",
+        "contextWindow": 200000,
+        "maxTokens": 128000,
+        "speed": 2,
+        "lastUpdated": "March 18, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "minimax-m2.7-highspeed": {
+      "model": "minimax/minimax-m2-7-highspeed",
+      "matchingModel": "minimax-m2.7-highspeed",
+      "overrides": {
+        "contextWindow": 200000,
+        "maxTokens": 128000,
+        "lastUpdated": "March 18, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "minimax-m3": {
+      "model": "minimax/minimax-m3",
+      "matchingModel": "minimax-m3",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "contextComplexity": 5,
+        "speed": 3,
+        "lastUpdated": "June 1, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "minimax-m3@eu": {
+      "model": "minimax/minimax-m3-eu",
+      "matchingModel": "minimax-m3@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "June 1, 2026",
+        "costPer1kInputTokens": 0.0004,
+        "costPer1kOutputTokens": 0.002
+      }
+    },
+    "mistral-medium-3-5": {
+      "model": "mistral-medium/mistral-medium-3-5",
+      "matchingModel": "mistral-medium-3-5",
+      "overrides": {
+        "name": "mistral-medium-3-5",
+        "description": "Mistral Medium 3.5 is a dense 128B instruction following model from Mistral AI. It supports text and image inputs with text output, and is designed for agentic workflows, coding, and complex multi step reasoning. It is particularly strong at reliable multi tool calling and long horizon tasks, with a 256K context window, configurable reasoning effort per request, and a custom vision encoder that handles variable image sizes and aspect ratios. Self hostable on as few as four GPUs and available under open weights.",
+        "maxTokens": 262144,
+        "speed": 4,
+        "lastUpdated": "April 30, 2026",
+        "costPer1kInputTokens": 0.00165,
+        "costPer1kOutputTokens": 0.00825,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "mistral-medium-3-5@eu": {
+      "model": "mistral-medium/mistral-medium-3-5-eu",
+      "matchingModel": "mistral-medium-3-5@eu",
+      "overrides": {
+        "lastUpdated": "April 30, 2026",
+        "costPer1kInputTokens": 0.00165,
+        "costPer1kOutputTokens": 0.00825
+      },
+      "unset": [
+        "supportsTemperature",
+        "strengths",
+        "contextComplexity",
+        "reliability"
+      ]
+    },
+    "mistral-medium-latest": {
+      "model": "mistral-medium/mistral-medium-latest",
+      "matchingModel": "mistral-medium-latest",
+      "overrides": {
+        "name": "Mistral Medium (latest)",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "speed": 4,
+        "lastUpdated": "April 29, 2026",
+        "costPer1kInputTokens": 0.00044,
+        "costPer1kOutputTokens": 0.0022
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
+    },
+    "mistral-medium-latest@eu": {
+      "model": "mistral-medium/mistral-medium-latest-eu",
+      "matchingModel": "mistral-medium-latest@eu",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "April 29, 2026",
+        "costPer1kInputTokens": 0.00044,
+        "costPer1kOutputTokens": 0.0022
+      }
+    },
+    "mistral-small-2603": {
+      "model": "mistral-small/mistral-small-4",
+      "matchingModel": "mistral-small-2603",
+      "overrides": {
+        "contextWindow": 256000,
+        "speed": 4,
+        "lastUpdated": "March 16, 2026",
+        "costPer1kInputTokens": 0.000165,
+        "costPer1kOutputTokens": 0.00066,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "mistral-small-2603@eu": {
+      "model": "mistral-small/mistral-small-4-eu",
+      "matchingModel": "mistral-small-2603@eu",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "March 16, 2026",
+        "costPer1kInputTokens": 0.000165,
+        "costPer1kOutputTokens": 0.00066
+      }
+    },
+    "muse-glimmer-30b": {
+      "model": "muse/muse-glimmer-30b",
+      "matchingModel": "muse-glimmer-30b",
+      "overrides": {
+        "maxTokens": 20480,
+        "lastUpdated": "August 10, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nemotron-3-nano-omni": {
+      "model": "nemotron/nemotron-3-nano-omni",
+      "matchingModel": "nemotron-3-nano-omni",
+      "overrides": {
+        "lastUpdated": "May 20, 2026",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "nemotron-3-nano-omni-30b-a3b-reasoning": {
+      "model": "nemotron/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "matchingModel": "nemotron-3-nano-omni-30b-a3b-reasoning",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "April 28, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false
+      }
+    },
+    "nemotron-3-nano-omni@eu": {
+      "model": "nemotron/nemotron-3-nano-omni-eu",
+      "matchingModel": "nemotron-3-nano-omni@eu",
+      "overrides": {
+        "lastUpdated": "May 20, 2026",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "nemotron-3-super-120b-a12b": {
+      "model": "nemotron/nemotron-3-super-120b-a12b",
+      "matchingModel": "nemotron-3-super-120b-a12b",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "lastUpdated": "March 11, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nemotron-3-ultra-550b-a55b": {
+      "model": "nemotron/nemotron-3-ultra-550b-a55b",
+      "matchingModel": "nemotron-3-ultra-550b-a55b",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "speed": 4,
+        "lastUpdated": "June 4, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nemotron-3-ultra-nvfp4": {
+      "model": "nemotron/nemotron-3-ultra-nvfp4",
+      "matchingModel": "nemotron-3-ultra-nvfp4",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "nemotron-3.5-content-safety": {
+      "model": "nemotron/nemotron-3-5-content-safety",
+      "matchingModel": "nemotron-3.5-content-safety",
+      "overrides": {
+        "maxTokens": 8192,
+        "lastUpdated": "June 4, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nemotron-3.5-lightning-30b-a3b": {
+      "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
+      "matchingModel": "nemotron-3.5-lightning-30b-a3b",
+      "overrides": {
+        "name": "nemotron-3.5-lightning-30b-a3b",
+        "openWeights": false,
+        "description": "NVIDIA Nemotron 3.5 Lightning 30B-A3B is a hybrid Mamba-2 + MoE + Attention model with 30B total and 3B active parameters, pre-trained on over 20T tokens with an NVFP4 recipe and Multi-Token Prediction for fast generation. Up to 1M token context for long-running autonomous agents, sub-agent workhorse deployments, and agentic workflows. Supports reasoning and tool calling. English and coding languages plus Spanish, French, German, Italian, and Japanese. Open weights under the OpenMDW License Agreement v1.1. Part of the NVIDIA Nemotron family.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "lastUpdated": "August 11, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "nemotron-lightning-3.5-30b-a3b": {
+      "model": "nemotron/nemotron-lightning-3-5-30b-a3b",
+      "matchingModel": "nemotron-lightning-3.5-30b-a3b",
+      "overrides": {
+        "lastUpdated": "August 15, 2026",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.0002,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "nvidia-nemotron-3-super-120b-a12b": {
+      "model": "nemotron/nvidia-nemotron-3-super-120b-a12b",
+      "matchingModel": "nvidia-nemotron-3-super-120b-a12b",
+      "overrides": {
+        "name": "nvidia-nemotron-3-super-120b-a12b",
+        "openWeights": false,
+        "description": "NVIDIA Nemotron 3 Super is a hybrid Mixture-of-Experts (MoE) model engineered for highest compute efficiency and accuracy in multi-agent applications and specialized agentic systems. It is optimized to run many collaborating agents per application on a single GPU, delivering high accuracy for reasoning, tool use, and instruction following.",
+        "maxTokens": 262144,
+        "speed": 4,
+        "lastUpdated": "March 11, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "nvidia-nemotron-3-ultra": {
+      "model": "nemotron/nvidia-nemotron-3-ultra",
+      "matchingModel": "nvidia-nemotron-3-ultra",
+      "overrides": {
+        "lastUpdated": "June 23, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "qwen3.5-27b": {
+      "model": "qwen/qwen3-5-27b",
+      "matchingModel": "qwen3.5-27b",
+      "overrides": {
+        "maxTokens": 262144,
+        "speed": 3,
+        "lastUpdated": "February 23, 2026",
+        "costPer1kInputTokens": 0.00026,
+        "costPer1kOutputTokens": 0.0026,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3.5-2b": {
+      "model": "qwen3.5/qwen3-5-2b",
+      "matchingModel": "qwen3.5-2b",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "March 10, 2026",
+        "costPer1kInputTokens": 0.00002,
+        "costPer1kOutputTokens": 0.0001
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "qwen3.5-35b-a3b": {
+      "model": "qwen/qwen3-5-35b-a3b",
+      "matchingModel": "qwen3.5-35b-a3b",
+      "overrides": {
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "February 23, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.001,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3.6-plus": {
+      "model": "qwen/qwen3-6-plus",
+      "matchingModel": "qwen3.6-plus",
+      "overrides": {
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.003,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3.7-max": {
+      "model": "qwen/qwen3-7-max",
+      "matchingModel": "qwen3.7-max",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "speed": 4,
+        "lastUpdated": "May 21, 2026",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.0075,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3.7-plus": {
+      "model": "qwen/qwen3-7-plus",
+      "matchingModel": "qwen3.7-plus",
+      "overrides": {
+        "contextWindow": 1048576,
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 2,
+        "lastUpdated": "June 2, 2026",
+        "costPer1kInputTokens": 0.00032,
+        "costPer1kOutputTokens": 0.00128,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3.8-2.4T-A95B": {
+      "model": "qwen/qwen3-8-2-4t-a95b",
+      "matchingModel": "qwen3.8-2.4T-A95B",
+      "overrides": {
+        "maxTokens": 262144,
+        "lastUpdated": "August 12, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3.8-max": {
+      "model": "qwen/qwen3-8-max",
+      "matchingModel": "qwen3.8-max",
+      "overrides": {
+        "contextWindow": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "August 3, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ring-2.6-1t": {
+      "model": "ring/ring-2-6-1t",
+      "matchingModel": "ring-2.6-1t",
+      "overrides": {
+        "name": "ring-2.6-1t",
+        "maxTokens": 262144,
+        "speed": 3,
+        "lastUpdated": "May 8, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "seed-1.8": {
+      "model": "seed/seed-1-8",
+      "matchingModel": "seed-1.8",
+      "overrides": {
+        "name": "seed-1.8",
+        "maxTokens": 256000,
+        "releaseDate": "May 27, 2026",
+        "lastUpdated": "May 27, 2026",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.002,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "seed-2.0-code": {
+      "model": "seed/seed-2-0-code",
+      "matchingModel": "seed-2.0-code",
+      "overrides": {
+        "maxTokens": 256000,
+        "lastUpdated": "February 14, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.003,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "seed-2.0-mini": {
+      "model": "seed/seed-2-0-mini",
+      "matchingModel": "seed-2.0-mini",
+      "overrides": {
+        "maxTokens": 256000,
+        "lastUpdated": "February 14, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0004,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "seed-2.0-pro": {
+      "model": "seed/seed-2-0-pro",
+      "matchingModel": "seed-2.0-pro",
+      "overrides": {
+        "maxTokens": 256000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "February 14, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.003,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "step-3.7-flash": {
+      "model": "requesty/step-3.7-flash/step-3-7-flash",
+      "matchingModel": "step-3.7-flash",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "May 29, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.00115
+      }
+    },
+    "thinkingcap-qwen3.6-27b": {
+      "model": "qwen3.6/thinkingcap-qwen3-6-27b",
+      "matchingModel": "thinkingcap-qwen3.6-27b",
+      "overrides": {
+        "lastUpdated": "July 13, 2026",
+        "costPer1kInputTokens": 0.0004,
+        "costPer1kOutputTokens": 0.003,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "thinkingcap-qwen3.6-27b@eu": {
+      "model": "qwen3.6/thinkingcap-qwen3-6-27b-eu",
+      "matchingModel": "thinkingcap-qwen3.6-27b@eu",
+      "overrides": {
+        "lastUpdated": "July 13, 2026",
+        "costPer1kInputTokens": 0.0004,
+        "costPer1kOutputTokens": 0.003,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "glm-5.3-flash": {
+      "model": "glm/glm-5-3-flash",
+      "matchingModel": "glm-5.3-flash",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0005,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5.3-flash@eu": {
+      "model": "glm/glm-5-3-flash-eu",
+      "matchingModel": "glm-5.3-flash@eu",
+      "overrides": {
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0005
+      }
+    },
+    "glm-5.3@eu": {
+      "model": "glm/glm-5-3-eu",
+      "matchingModel": "glm-5.3@eu",
+      "overrides": {
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0012,
+        "costPer1kOutputTokens": 0.0042,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
+    "claude-fable-5.1": {
+      "model": "claude-fable/claude-fable-5-1",
+      "matchingModel": "claude-fable-5.1",
+      "overrides": {
+        "lastUpdated": "September 1, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "claude-fable-5.1@eu": {
+      "model": "claude-fable/claude-fable-5-1-eu",
+      "matchingModel": "claude-fable-5.1@eu",
+      "overrides": {
+        "lastUpdated": "September 1, 2026",
+        "costPer1kInputTokens": 0.011,
+        "costPer1kOutputTokens": 0.055,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "deepseek-v4-pro-0813@eu": {
+      "model": "deepseek-thinking/deepseek-v4-pro-0813-eu",
+      "matchingModel": "deepseek-v4-pro-0813@eu",
+      "overrides": {
+        "lastUpdated": "August 22, 2026",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.0035,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
+    },
+    "gemini-2.5-flash-lite@eu": {
+      "model": "gemini-flash-lite/gemini-2-5-flash-lite-eu",
+      "matchingModel": "gemini-2.5-flash-lite@eu",
+      "overrides": {
+        "lastUpdated": "June 17, 2025",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0004
+      }
+    },
+    "gemini-2.5-pro@eu": {
+      "model": "gemini-pro/gemini-2-5-pro-eu",
+      "matchingModel": "gemini-2.5-pro@eu",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "June 17, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "gemini-3.8-flash": {
+      "model": "gemini-flash/gemini-3-8-flash",
+      "matchingModel": "gemini-3.8-flash",
+      "overrides": {
+        "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "maxTokens": 65535,
+        "lastUpdated": "September 2, 2026",
+        "costPer1kInputTokens": 0.00075,
+        "costPer1kOutputTokens": 0.00375,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    },
+    "gemini-3.8-flash@eu": {
+      "model": "gemini-flash/gemini-3-8-flash-eu",
+      "matchingModel": "gemini-3.8-flash@eu",
+      "overrides": {
+        "lastUpdated": "September 2, 2026",
+        "costPer1kInputTokens": 0.000825,
+        "costPer1kOutputTokens": 0.004125
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    },
+    "qwen3.8-2.4T-A95B@eu": {
+      "model": "qwen/qwen3-8-2-4t-a95b-eu",
+      "matchingModel": "qwen3.8-2.4T-A95B@eu",
+      "overrides": {
+        "lastUpdated": "August 12, 2026",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": false
+      }
+    },
+    "qwen3.8-flash": {
+      "model": "qwen/qwen3-8-flash",
+      "matchingModel": "qwen3.8-flash",
+      "overrides": {
+        "contextWindow": 1048576,
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.00016,
+        "costPer1kOutputTokens": 0.00047,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "qwen3.8-flash-next": {
+      "model": "qwen/qwen3-8-flash-next",
+      "matchingModel": "qwen3.8-flash-next",
+      "overrides": {
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "August 27, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0005,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3.8-flash-next@eu": {
+      "model": "qwen/qwen3-8-flash-next-eu",
+      "matchingModel": "qwen3.8-flash-next@eu",
+      "overrides": {
+        "lastUpdated": "August 27, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0005
+      }
+    }
+  }
+}

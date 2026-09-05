@@ -1,0 +1,83 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The auto family includes models that produce image, text.",
+  "models": {
+    "auto": {
+      "defaults": {
+        "name": "Auto",
+        "description": "Automatic model router for matching prompts to suitable backends and budgets",
+        "contextWindow": 32000,
+        "maxTokens": 32000,
+        "strengths": [
+          "coding"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "knowledgeCutoffDate": "June 2024",
+        "releaseDate": "June 1, 2024",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "auto-router": {
+      "defaults": {
+        "name": "Auto Router",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 2000000,
+        "maxTokens": 2000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "pdf",
+            "video"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "strengths": [
+          "general_knowledge",
+          "analysis",
+          "reasoning"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "releaseDate": "November 8, 2023"
+      }
+    },
+    "standard-compute": {
+      "defaults": {
+        "name": "Standard Compute",
+        "description": "Flat-rate smart-routing gateway: one model id, each request routed across a curated catalog of 1M-context models (DeepSeek, GLM, MiniMax, Qwen, GPT-5.6, Claude 5, Gemini 2.5, Kimi) or pinned to a user-selected model",
+        "contextWindow": 1000000,
+        "maxTokens": 24576,
+        "releaseDate": "March 1, 2026"
+      }
+    }
+  }
+}

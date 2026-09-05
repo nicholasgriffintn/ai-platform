@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 262144,
+    "maxTokens": 256000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "June 8, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/nex agi/nex n2 pro:free family includes models that produce text.",
+  "models": {
+    "nex-n2-pro-free": {
+      "defaults": {
+        "name": "Nex-N2-Pro (free)",
+        "description": "Nex-N2-Pro (free) accepts text, image and produces text."
+      }
+    }
+  }
+}

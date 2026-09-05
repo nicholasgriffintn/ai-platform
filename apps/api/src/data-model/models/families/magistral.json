@@ -1,0 +1,49 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 40000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "releaseDate": "December 2, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 11.9,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The magistral family includes models that produce text.",
+  "models": {
+    "magistral-small-1-2": {
+      "defaults": {
+        "name": "Magistral Small 1.2",
+        "description": "Mistral reasoning model for transparent analysis, math, and complex decisions"
+      }
+    }
+  }
+}

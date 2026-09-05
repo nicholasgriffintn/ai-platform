@@ -1,0 +1,51 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "releaseDate": "June 15, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The fugu family includes models that produce text.",
+  "models": {
+    "fugu": {
+      "defaults": {
+        "name": "Fugu",
+        "description": "Multi-agent model for routing expert agents across complex analytical tasks",
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "fugu-ultra": {
+      "defaults": {
+        "name": "Fugu Ultra",
+        "description": "Quality-first multi-agent model for hard research, analysis, and competitions",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        }
+      }
+    }
+  }
+}

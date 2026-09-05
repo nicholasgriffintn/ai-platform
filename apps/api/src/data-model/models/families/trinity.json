@@ -1,0 +1,67 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "October 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The trinity family includes models that produce text.",
+  "models": {
+    "trinity-large-preview": {
+      "defaults": {
+        "name": "Trinity Large Preview",
+        "openWeights": false,
+        "description": "Trinity Large Preview accepts text and produces text.",
+        "contextWindow": 131000,
+        "maxTokens": 131000,
+        "releaseDate": "January 27, 2026"
+      }
+    },
+    "trinity-large-thinking": {
+      "defaults": {
+        "name": "Trinity Large Thinking",
+        "description": "Reasoning-optimized 398B MoE agent model with extended thinking for long-horizon and multi-turn tool use",
+        "maxTokens": 80000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "April 1, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 24.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "trinity-mini": {
+      "defaults": {
+        "name": "Trinity Mini",
+        "description": "Trinity Mini accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "releaseDate": "December 1, 2025",
+        "supportsToolCalls": false,
+        "supportsTopP": false
+      }
+    }
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "c4ai-aya-expanse-32b": {
+      "model": "cohere/c4ai-aya-expanse-32b/aya-expanse-32b",
+      "matchingModel": "c4ai-aya-expanse-32b",
+      "overrides": {
+        "lastUpdated": "October 24, 2024",
+        "supportsToolCalls": false
+      }
+    },
+    "c4ai-aya-expanse-8b": {
+      "model": "cohere/c4ai-aya-expanse-8b/aya-expanse-8b",
+      "matchingModel": "c4ai-aya-expanse-8b",
+      "overrides": {
+        "lastUpdated": "October 24, 2024",
+        "supportsToolCalls": false
+      }
+    },
+    "c4ai-aya-vision-32b": {
+      "model": "cohere/c4ai-aya-vision-32b/aya-vision-32b",
+      "matchingModel": "c4ai-aya-vision-32b",
+      "overrides": {
+        "lastUpdated": "May 14, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "c4ai-aya-vision-8b": {
+      "model": "cohere/c4ai-aya-vision-8b/aya-vision-8b",
+      "matchingModel": "c4ai-aya-vision-8b",
+      "overrides": {
+        "lastUpdated": "May 14, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "command-a-03-2025": {
+      "model": "command-a/command-a",
+      "matchingModel": "command-a-03-2025",
+      "overrides": {
+        "maxTokens": 8000,
+        "isFree": true,
+        "speed": 3,
+        "lastUpdated": "March 13, 2025",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "command-a-plus-05-2026": {
+      "model": "command-a/command-a-plus",
+      "matchingModel": "command-a-plus-05-2026",
+      "overrides": {
+        "isFree": true,
+        "speed": 5,
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": true
+      }
+    },
+    "command-a-reasoning-08-2025": {
+      "model": "command-a/command-a-reasoning",
+      "matchingModel": "command-a-reasoning-08-2025",
+      "overrides": {
+        "isFree": true,
+        "lastUpdated": "August 21, 2025",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "command-a-translate-08-2025": {
+      "model": "command-a/command-a-translate",
+      "matchingModel": "command-a-translate-08-2025",
+      "overrides": {
+        "isFree": true,
+        "lastUpdated": "August 28, 2025",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "command-a-vision-07-2025": {
+      "model": "command-a/command-a-vision",
+      "matchingModel": "command-a-vision-07-2025",
+      "overrides": {
+        "isFree": true,
+        "lastUpdated": "July 31, 2025",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01,
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "command-r-08-2024": {
+      "model": "command-r/command-r",
+      "matchingModel": "command-r-08-2024",
+      "overrides": {
+        "name": "Command R",
+        "isFree": true,
+        "lastUpdated": "August 30, 2024",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006
+      }
+    },
+    "command-r-plus-08-2024": {
+      "model": "command-r/command-r",
+      "matchingModel": "command-r-plus-08-2024",
+      "overrides": {
+        "name": "Command R+",
+        "description": "Cohere's RAG workhorse for long-context enterprise search and tool use",
+        "isFree": true,
+        "lastUpdated": "August 30, 2024",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "command-r7b-12-2024": {
+      "model": "command-r/command-r7b",
+      "matchingModel": "command-r7b-12-2024",
+      "overrides": {
+        "name": "Command R7B",
+        "isFree": true,
+        "lastUpdated": "December 2, 2024",
+        "costPer1kInputTokens": 0.0000375,
+        "costPer1kOutputTokens": 0.00015
+      }
+    },
+    "command-r7b-arabic-02-2025": {
+      "model": "command-r/command-r7b-arabic",
+      "matchingModel": "command-r7b-arabic-02-2025",
+      "overrides": {
+        "lastUpdated": "February 27, 2025",
+        "costPer1kInputTokens": 0.0000375,
+        "costPer1kOutputTokens": 0.00015
+      }
+    },
+    "north-mini-code-1-0": {
+      "model": "north/north-mini-code",
+      "matchingModel": "north-mini-code-1-0",
+      "overrides": {
+        "isFree": true,
+        "speed": 4,
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    }
+  }
+}

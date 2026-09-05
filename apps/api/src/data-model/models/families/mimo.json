@@ -1,0 +1,160 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "reliability": 2,
+    "knowledgeCutoffDate": "December 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The mimo family includes models that produce text.",
+  "models": {
+    "mimo-m2-5": {
+      "defaults": {
+        "name": "MiMo M2.5",
+        "description": "Open MiMo model for multimodal coding agents and long-context automation",
+        "contextWindow": 1050000,
+        "maxTokens": 131100,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "releaseDate": "April 22, 2026",
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 40.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mimo-v2-5": {
+      "defaults": {
+        "name": "MiMo-V2.5",
+        "description": "Open MiMo model for multimodal coding agents and long-context automation",
+        "maxTokens": 131072,
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "releaseDate": "April 22, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 40.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mimo-v2-5-pro": {
+      "defaults": {
+        "name": "MiMo-V2.5-Pro",
+        "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "contextComplexity": 5,
+        "releaseDate": "April 22, 2026",
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 42.2,
+          "codingIndex": 60.2,
+          "agenticIndex": 29.1,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mimo-v2-5-pro-ultraspeed": {
+      "defaults": {
+        "name": "MiMo V2.5 Pro UltraSpeed",
+        "description": "MiMo pro model for strong multimodal reasoning and agent execution",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "releaseDate": "June 8, 2026"
+      }
+    },
+    "mimo-v2-flash": {
+      "defaults": {
+        "description": "MiMo flash model for fast multimodal assistance and agent workflows",
+        "contextWindow": 262144,
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 1,
+        "releaseDate": "December 16, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 33.2,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mimo-v2-flash-tee": {
+      "defaults": {
+        "name": "MiMo V2 Flash TEE",
+        "description": "MiMo V2 Flash TEE accepts text and produces text.",
+        "contextWindow": 262144,
+        "maxTokens": 65536,
+        "knowledgeCutoffDate": "December 1, 2024",
+        "releaseDate": "December 16, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "mimo-v2-pro": {
+      "defaults": {
+        "name": "MiMo V2 Pro",
+        "openWeights": false,
+        "description": "MiMo V2 Pro accepts text and produces text.",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "releaseDate": "March 18, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 40.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    }
+  }
+}

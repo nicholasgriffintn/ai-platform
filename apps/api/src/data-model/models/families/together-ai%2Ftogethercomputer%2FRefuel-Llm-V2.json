@@ -1,0 +1,24 @@
+{
+  "defaults": {
+    "contextWindow": 16000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 4,
+    "reliability": 4
+  },
+  "description": "The together ai/togethercomputer/Refuel Llm V2 family includes models that produce text.",
+  "models": {
+    "refuel-llm-v2": {
+      "defaults": {
+        "name": "Refuel LLM V2",
+        "description": "47B model optimized for data tasks such as classification, structured data extraction, and more."
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32768,
+    "maxTokens": 29491,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 30, 2024",
+    "releaseDate": "March 10, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/thedrummer/skyfall 36b v2 family includes models that produce text.",
+  "models": {
+    "skyfall-36b-v2": {
+      "defaults": {
+        "name": "Skyfall 36B V2",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads"
+      }
+    }
+  }
+}

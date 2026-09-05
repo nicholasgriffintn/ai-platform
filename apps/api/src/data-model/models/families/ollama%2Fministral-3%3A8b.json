@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "contextWindow": 262144,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 1, 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": true
+  },
+  "description": "The ollama/ministral 3:8b family includes models that produce text.",
+  "models": {
+    "ministral-3-8b": {
+      "defaults": {
+        "name": "ministral-3:8b",
+        "description": "ministral-3:8b accepts text, image and produces text."
+      }
+    }
+  }
+}

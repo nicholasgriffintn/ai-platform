@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131072,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 29, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The rednote family includes models that produce text.",
+  "models": {
+    "dots-ocr": {
+      "defaults": {
+        "name": "dots.ocr",
+        "description": "dots.ocr accepts text, image and produces text."
+      }
+    }
+  }
+}

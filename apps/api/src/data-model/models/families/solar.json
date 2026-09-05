@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 524288,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "August 10, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The solar family includes models that produce text.",
+  "models": {
+    "solar-pro-4": {
+      "defaults": {
+        "name": "Solar Pro 4",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows"
+      }
+    }
+  }
+}

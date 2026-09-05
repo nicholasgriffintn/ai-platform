@@ -1,0 +1,1059 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The llama family includes models that produce guardrails, text.",
+  "models": {
+    "aion-rp-1-0-8b": {
+      "defaults": {
+        "name": "Aion-RP 1.0 (8B)",
+        "openWeights": false,
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 32768,
+        "maxTokens": 29491,
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "February 4, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "cerebras-llama-3-3-70b": {
+      "defaults": {
+        "name": "Cerebras Llama 3.3 70B",
+        "description": "A high speed deployment of Llama 3.3. 70b optimized for chat and reasoning tasks."
+      }
+    },
+    "codellama-7b-instruct-solidity": {
+      "defaults": {
+        "name": "CodeLLaMa 7B Instruct Solidity",
+        "description": "CodeLLaMa 7B Instruct Solidity accepts text and produces text.",
+        "contextWindow": 4096,
+        "maxTokens": 4096,
+        "knowledgeCutoffDate": "June 30, 2023",
+        "releaseDate": "April 14, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "deephermes-3-llama-3-8b-preview": {
+      "defaults": {
+        "name": "DeepHermes 3 Llama 3 8B Preview",
+        "description": "DeepHermes 3 Llama 3 8B Preview accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 8192,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "February 28, 2025"
+      }
+    },
+    "groq-llama-3-70b": {
+      "defaults": {
+        "name": "Groq Llama 3 70B",
+        "description": "Groq Llama 3 70B accepts text and produces text.",
+        "contextWindow": 8192,
+        "maxTokens": 8192,
+        "strengths": [
+          "chat",
+          "analysis",
+          "creative",
+          "general_knowledge"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "April 18, 2024"
+      }
+    },
+    "groq-llama-3-8b": {
+      "defaults": {
+        "name": "Groq Llama 3 8B",
+        "description": "Groq Llama 3 8B accepts text and produces text.",
+        "contextWindow": 8192,
+        "maxTokens": 8192,
+        "strengths": [
+          "chat",
+          "general_knowledge"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "April 18, 2024"
+      }
+    },
+    "hermes-2-pro-llama-3-8b": {
+      "defaults": {
+        "name": "Hermes 2 Pro - Llama-3 8B",
+        "description": "Hermes 2 Pro - Llama-3 8B accepts text and produces text.",
+        "contextWindow": 8192,
+        "maxTokens": 8192,
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "May 27, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    },
+    "hermes-3-llama-3-1-70b": {
+      "defaults": {
+        "name": "Hermes-3-Llama-3.1-70B",
+        "description": "Hermes 3 is a generalist language model with many improvements over Hermes 2, including advanced agentic capabilities, much better roleplaying, reasoning, multi-turn conversation, long context coherence, and improvements across the board.",
+        "contextWindow": 24000,
+        "maxTokens": 1024,
+        "strengths": [
+          "instruction",
+          "coding",
+          "reasoning",
+          "chat"
+        ],
+        "supportsResponseFormat": true
+      }
+    },
+    "llama-3-1-405b-instruct": {
+      "defaults": {
+        "name": "Llama 3.1 405B Instruct",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 128000,
+        "maxTokens": 128000,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "llama-3-1-405b-instruct-free": {
+      "defaults": {
+        "name": "Llama 3.1 405B Instruct (free)",
+        "description": "Llama 3.1 405B Instruct (free) accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "July 23, 2024",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "llama-3-1-70b": {
+      "defaults": {
+        "name": "Llama 3.1 70B",
+        "description": "Llama 3.1 70B accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "releaseDate": "July 23, 2024"
+      }
+    },
+    "llama-3-1-70b-hanami-x1": {
+      "defaults": {
+        "name": "Llama 3.1 70B Hanami x1",
+        "description": "Llama 3.1 70B Hanami x1 accepts text and produces text.",
+        "contextWindow": 16000,
+        "maxTokens": 16000,
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "January 8, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    },
+    "llama-3-1-70b-instruct": {
+      "defaults": {
+        "name": "Llama 3.1 70B Instruct",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 128000,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024"
+      }
+    },
+    "llama-3-1-70b-turbo": {
+      "defaults": {
+        "name": "Llama 3.1 70B Turbo",
+        "description": "Llama 3.1 70B Turbo accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "releaseDate": "July 23, 2024"
+      }
+    },
+    "llama-3-1-8b": {
+      "defaults": {
+        "description": "Compact Llama instruction model for fast chat and local deployment",
+        "contextWindow": 131072,
+        "releaseDate": "July 23, 2024"
+      }
+    },
+    "llama-3-1-8b-instruct": {
+      "defaults": {
+        "name": "Llama 3.1 8B Instruct",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024"
+      }
+    },
+    "llama-3-1-8b-instruct-fp8": {
+      "defaults": {
+        "name": "Llama 3.1 8B Instruct FP8",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 32000,
+        "maxTokens": 32000,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "llama-3-1-8b-turbo": {
+      "defaults": {
+        "name": "Llama 3.1 8B Turbo",
+        "description": "Llama 3.1 8B Turbo accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "releaseDate": "July 23, 2024"
+      }
+    },
+    "llama-3-1-euryale-70b-v2-2": {
+      "defaults": {
+        "name": "Llama 3.1 Euryale 70B v2.2",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "August 28, 2024",
+        "supportsResponseFormat": true
+      }
+    },
+    "llama-3-1-nemotron-ultra-253b-v1": {
+      "defaults": {
+        "name": "Llama 3.1 Nemotron Ultra 253B V1",
+        "openWeights": false,
+        "description": "A reasoning-optimized LLM based on Llama 3.1, Nemotron Ultra 253B delivers strong performance in tasks like RAG and tool use, with high efficiency and reduced latency.",
+        "contextWindow": 128000,
+        "maxTokens": 128000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "April 7, 2025",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "llama-3-2-11b-instruct": {
+      "defaults": {
+        "name": "Llama 3.2 11B Instruct",
+        "description": "Llama 3.2 11B Instruct accepts text, image and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "September 25, 2024",
+        "supportsAttachments": true
+      }
+    },
+    "llama-3-2-11b-vision-instruct": {
+      "defaults": {
+        "name": "Llama 3.2 11B Vision Instruct",
+        "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "contextWindow": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "September 25, 2024",
+        "supportsAttachments": true
+      }
+    },
+    "llama-3-2-1b-instruct": {
+      "defaults": {
+        "name": "Llama 3.2 1B Instruct",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "September 25, 2024",
+        "supportsToolCalls": false
+      }
+    },
+    "llama-3-2-3b-instruct": {
+      "defaults": {
+        "name": "Llama 3.2 3B Instruct",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "September 25, 2024",
+        "supportsToolCalls": false
+      }
+    },
+    "llama-3-2-3b-instruct-free": {
+      "defaults": {
+        "name": "Llama 3.2 3B Instruct (free)",
+        "description": "Llama 3.2 3B Instruct (free) accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "September 25, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "llama-3-2-90b-instruct": {
+      "defaults": {
+        "name": "Llama 3.2 90B Instruct",
+        "description": "Large multimodal model with 90B parameters offering strong vision and language capabilities.",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "vision"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "multimodal": true,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "September 25, 2024",
+        "supportsAttachments": true
+      }
+    },
+    "llama-3-2-90b-vision-instruct": {
+      "defaults": {
+        "name": "Llama-3.2-90B-Vision-Instruct",
+        "description": "Large multimodal Llama model with vision and audio capabilities.",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "September 25, 2024",
+        "supportsAttachments": true
+      }
+    },
+    "llama-3-3-70b": {
+      "defaults": {
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 131072,
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "December 6, 2024"
+      }
+    },
+    "llama-3-3-70b-instruct": {
+      "defaults": {
+        "name": "Llama-3.3-70B-Instruct",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 128000,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "December 6, 2024"
+      }
+    },
+    "llama-3-3-70b-instruct-fp8-fast": {
+      "defaults": {
+        "name": "Llama 3.3 70B Instruct FP8 Fast",
+        "description": "Popular open Llama workhorse for multilingual chat, coding, and self-hosting",
+        "contextWindow": 24000,
+        "maxTokens": 24000,
+        "strengths": [
+          "instruction",
+          "general_knowledge",
+          "coding",
+          "reasoning",
+          "multilingual"
+        ],
+        "contextComplexity": 5,
+        "reliability": 5,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "December 6, 2024",
+        "supportsResponseFormat": false
+      }
+    },
+    "llama-3-3-70b-instruct-free": {
+      "defaults": {
+        "name": "Llama 3.3 70B Instruct (free)",
+        "description": "Llama 3.3 70B Instruct (free) accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "multilingual"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "December 6, 2024",
+        "supportsResponseFormat": false
+      }
+    },
+    "llama-3-3-70b-turbo": {
+      "defaults": {
+        "name": "Llama 3.3 70B Turbo",
+        "description": "Compact Llama instruction model for fast chat and local deployment",
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "releaseDate": "December 6, 2024",
+        "supportsResponseFormat": true
+      }
+    },
+    "llama-3-3-euryale-70b": {
+      "defaults": {
+        "name": "Llama 3.3 Euryale 70B",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "December 18, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    },
+    "llama-3-70b-instruct": {
+      "defaults": {
+        "name": "Llama 3 70B Instruct",
+        "description": "Llama 3 70B Instruct accepts text and produces text.",
+        "contextWindow": 8192,
+        "supportsToolCalls": false
+      }
+    },
+    "llama-3-8b-instruct": {
+      "defaults": {
+        "name": "Llama 3 8B Instruct",
+        "description": "Llama 3 8B Instruct accepts text and produces text.",
+        "contextWindow": 8192,
+        "supportsToolCalls": false
+      }
+    },
+    "llama-3-8b-lunaris": {
+      "defaults": {
+        "name": "Llama 3 8B Lunaris",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 8192,
+        "maxTokens": 7372,
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "August 13, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    },
+    "llama-4-maverick": {
+      "defaults": {
+        "name": "Llama 4 Maverick",
+        "description": "Open multimodal Llama model for strong reasoning and fast responses",
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "April 5, 2025",
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 14.3,
+          "codingIndex": 16.3,
+          "agenticIndex": 1.3,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "llama-4-maverick-17b-128e-instruct-fp8": {
+      "defaults": {
+        "name": "Llama 4 Maverick 17B 128E Instruct FP8",
+        "description": "Open multimodal Llama model for strong reasoning and fast responses",
+        "contextWindow": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "April 5, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "llama-4-maverick-17b-fp8": {
+      "defaults": {
+        "name": "Llama 4 Maverick 17B FP8",
+        "description": "Open multimodal Llama model for strong reasoning and fast responses",
+        "contextWindow": 1048576,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 5, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
+      }
+    },
+    "llama-4-maverick-17b-instruct": {
+      "defaults": {
+        "name": "Llama 4 Maverick 17B Instruct",
+        "description": "Open multimodal Llama model for strong reasoning and fast responses",
+        "contextWindow": 1000000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "April 5, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "llama-4-maverick-17b-instruct-us": {
+      "defaults": {
+        "name": "Llama 4 Maverick 17B Instruct (US)",
+        "description": "Open multimodal Llama for strong reasoning with efficient everyday serving",
+        "contextWindow": 1000000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "April 5, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "llama-4-maverick-instruct": {
+      "defaults": {
+        "name": "Llama 4 Maverick Instruct",
+        "description": "Llama 4 Maverick is a large language model that uses an optimized transformer architecture. The tuned versions use supervised fine-tuning (SFT) and reinforcement learning with human feedback (RLHF) to align with human preferences for helpfulness and safety.",
+        "contextWindow": 1000000,
+        "maxTokens": 16384,
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "multimodal": true
+      }
+    },
+    "llama-4-scout": {
+      "defaults": {
+        "name": "Llama 4 Scout",
+        "description": "Open multimodal Llama model for long-context analysis and efficient agents",
+        "contextWindow": 1310720,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "August 31, 2024",
+        "releaseDate": "April 5, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 10,
+          "codingIndex": 8.2,
+          "agenticIndex": 1.1,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "llama-4-scout-17b": {
+      "defaults": {
+        "name": "Llama 4 Scout 17B",
+        "description": "Open multimodal Llama model for long-context analysis and efficient agents",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 5, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
+      }
+    },
+    "llama-4-scout-17b-16e-instruct": {
+      "defaults": {
+        "name": "Llama 4 Scout 17B 16E Instruct",
+        "description": "Open multimodal Llama model for long-context analysis and efficient agents",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "April 5, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "llama-4-scout-17b-16e-instruct-fp8": {
+      "defaults": {
+        "name": "Llama-4-Scout-17B-16E-Instruct-FP8",
+        "description": "Open multimodal Llama model for long-context analysis and efficient agents",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "April 5, 2025",
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 10,
+          "codingIndex": 8.2,
+          "agenticIndex": 1.1,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "llama-4-scout-17b-instruct": {
+      "defaults": {
+        "name": "Llama 4 Scout 17B Instruct",
+        "description": "Open multimodal Llama model for long-context analysis and efficient agents",
+        "contextWindow": 3500000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "April 5, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "llama-4-scout-17b-instruct-us": {
+      "defaults": {
+        "name": "Llama 4 Scout 17B Instruct (US)",
+        "description": "Open Llama with long-context vision for efficient multimodal agents",
+        "contextWindow": 3500000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "April 5, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "llama-4-scout-free": {
+      "defaults": {
+        "name": "Llama 4 Scout (free)",
+        "description": "Llama 4 Scout (free) accepts text, image and produces text.",
+        "contextWindow": 64000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "April 5, 2025",
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 10,
+          "codingIndex": 8.2,
+          "agenticIndex": 1.1,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "llama-guard-3-8b": {
+      "defaults": {
+        "name": "Llama Guard 3 8B",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
+        },
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "llama-guard-4-12b": {
+      "defaults": {
+        "name": "Llama Guard 4 12B",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 163840,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
+        },
+        "knowledgeCutoffDate": "August 31, 2024",
+        "releaseDate": "April 30, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true
+      }
+    },
+    "llama-prompt-guard-2-22m": {
+      "defaults": {
+        "name": "Llama Prompt Guard 2 22M",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 512,
+        "maxTokens": 512,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
+        },
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "May 29, 2025",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "meta-llama-3-1-405b-instruct": {
+      "defaults": {
+        "name": "Meta-Llama-3.1-405B-Instruct",
+        "description": "Largest open-source language model with exceptional reasoning capabilities.",
+        "contextWindow": 128000,
+        "maxTokens": 32768,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024"
+      }
+    },
+    "meta-llama-3-1-405b-instruct-turbo": {
+      "defaults": {
+        "name": "Meta Llama 3.1 405B Instruct Turbo",
+        "description": "Llama 3.1 is an auto-regressive language model that uses an optimized transformer architecture. The tuned versions use supervised fine-tuning (SFT) and reinforcement learning with human feedback (RLHF) to align with human preferences for helpfulness and safety.",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual"
+        ],
+        "contextComplexity": 5,
+        "reliability": 5
+      }
+    },
+    "meta-llama-3-1-70b-instruct": {
+      "defaults": {
+        "name": "Meta-Llama-3.1-70B-Instruct",
+        "description": "Meta-Llama-3.1-70B-Instruct accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 32768,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024"
+      }
+    },
+    "meta-llama-3-1-8b-instruct": {
+      "defaults": {
+        "name": "Meta-Llama-3.1-8B-Instruct",
+        "description": "Meta-Llama-3.1-8B-Instruct accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 32768,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024"
+      }
+    },
+    "meta-llama-3-2-11b-vision-instruct-turbo": {
+      "defaults": {
+        "name": "Meta Llama 3.2 11B Vision Instruct Turbo",
+        "description": "Llama 3.2 is an auto-regressive language model that uses an optimized transformer architecture. The tuned versions use supervised fine-tuning (SFT) and reinforcement learning with human feedback (RLHF) to align with human preferences for helpfulness and safety.",
+        "contextWindow": 32768,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "chat",
+          "general_knowledge"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "multimodal": true
+      }
+    },
+    "meta-llama-3-2-90b-vision-instruct-turbo": {
+      "defaults": {
+        "name": "Meta Llama 3.2 90B Vision Instruct Turbo",
+        "description": "Llama 3.2 is an auto-regressive language model that uses an optimized transformer architecture. The tuned versions use supervised fine-tuning (SFT) and reinforcement learning with human feedback (RLHF) to align with human preferences for helpfulness and safety.",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "analysis",
+          "chat",
+          "general_knowledge"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "multimodal": true
+      }
+    },
+    "meta-llama-3-3-70b-instruct": {
+      "defaults": {
+        "name": "Meta-Llama-3_3-70B-Instruct",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "releaseDate": "April 1, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "meta-llama-3-3-70b-instruct-turbo-free": {
+      "defaults": {
+        "name": "Meta Llama 3.3 70B Instruct Turbo Free",
+        "description": "The Meta Llama 3.3 multilingual large language model (LLM) is a pretrained and instruction tuned generative model in 70B (text in/text out). The Llama 3.3 instruction tuned text only model is optimized for multilingual dialogue use cases and outperform many of the available open source and closed chat models on common industry benchmarks.",
+        "contextWindow": 8192,
+        "maxTokens": 4096,
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "multilingual"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3
+      }
+    },
+    "meta-llama-3-70b-instruct": {
+      "defaults": {
+        "name": "Meta-Llama-3-70B-Instruct",
+        "description": "Meta-Llama-3-70B-Instruct accepts text and produces text.",
+        "contextWindow": 8192,
+        "maxTokens": 2048,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "April 18, 2024"
+      }
+    },
+    "meta-llama-3-8b-instruct": {
+      "defaults": {
+        "name": "Meta-Llama-3-8B-Instruct",
+        "description": "Meta-Llama-3-8B-Instruct accepts text and produces text.",
+        "contextWindow": 8192,
+        "maxTokens": 2048,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "April 18, 2024"
+      }
+    },
+    "meta-llama-3-8b-instruct-lite": {
+      "defaults": {
+        "name": "Meta Llama 3 8B Instruct Lite",
+        "description": "Compact Llama instruction model for fast chat and local deployment",
+        "contextWindow": 8192,
+        "maxTokens": 8192,
+        "releaseDate": "April 18, 2024",
+        "supportsToolCalls": false
+      }
+    },
+    "meta-llama-vision-free": {
+      "defaults": {
+        "name": "Meta Llama Vision Free",
+        "description": "Llama 3.2 is an auto-regressive language model that uses an optimized transformer architecture. The tuned versions use supervised fine-tuning (SFT) and reinforcement learning with human feedback (RLHF) to align with human preferences for helpfulness and safety.",
+        "contextWindow": 32768,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "chat"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "multimodal": true
+      }
+    },
+    "prompt-guard-2-86m": {
+      "defaults": {
+        "name": "Llama Prompt Guard 2 86M",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 512,
+        "maxTokens": 512,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
+        },
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "May 29, 2025",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    }
+  }
+}

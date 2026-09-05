@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32768,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 30, 2024",
+    "releaseDate": "October 22, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/anthracite org/magnum v4 72b family includes models that produce text.",
+  "models": {
+    "magnum-v4-72b": {
+      "defaults": {
+        "name": "Magnum v4 72B",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads"
+      }
+    }
+  }
+}

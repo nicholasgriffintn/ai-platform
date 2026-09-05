@@ -13,6 +13,8 @@ Configure the selected capabilities from tracked examples and active Wrangler ma
 
 Never copy real secret values into documentation or tracked configuration.
 
+Maintain shared model descriptions, family defaults and provider execution exceptions through the [model catalogue guide](operations/model-catalogue.md).
+
 ## Core requirements
 
 - Set matching web/API/WebSocket origins, `APP_BASE_URL`, `API_BASE_URL` and a strong `JWT_SECRET`.
