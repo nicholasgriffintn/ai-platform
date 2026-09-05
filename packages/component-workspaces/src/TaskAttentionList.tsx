@@ -18,6 +18,7 @@ const KIND_LABELS: Record<ProjectTaskAttentionKind, string> = {
   review: "Review",
   blocked: "Blocked",
   assigned: "Assigned to you",
+  completion: "Completed",
 };
 
 function kindIcon(kind: ProjectTaskAttentionKind) {
@@ -29,7 +30,7 @@ function kindIcon(kind: ProjectTaskAttentionKind) {
     return <ShieldQuestion className="text-attention" size={16} />;
   }
 
-  if (kind === "review") {
+  if (kind === "review" || kind === "completion") {
     return <CheckCircle2 className="text-success" size={16} />;
   }
 
