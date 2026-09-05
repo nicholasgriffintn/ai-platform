@@ -8,7 +8,7 @@ export function catalogueFileSegment(value) {
     throw new Error(`Invalid catalogue path segment: ${value}`);
   }
 
-  return encodeURIComponent(value);
+  return encodeURIComponent(value).replaceAll("~", "%7E").replaceAll("%", "~");
 }
 
 export async function readCatalogue(directory) {
@@ -21,7 +21,12 @@ export async function readCatalogue(directory) {
       continue;
     }
 
-    const family = decodeURIComponent(entry.name.slice(0, -5));
+    const segment = entry.name.slice(0, -5);
+    const family = decodeURIComponent(segment.replaceAll("~", "%"));
+
+    if (catalogueFileSegment(family) !== segment) {
+      throw new Error(`Invalid catalogue filename: ${entry.name}`);
+    }
 
     families[family] = JSON.parse(
       await fs.readFile(path.join(directory, "families", entry.name), "utf8"),

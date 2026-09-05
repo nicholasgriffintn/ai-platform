@@ -12,7 +12,7 @@ Three roles, three tokens. `--polychat-font-display` is for titles and welcome c
 
 Faces are self-hosted as latin woff2 subsets with `font-display: swap`. The content security policy allows fonts from the origin only, and that stays as it is; no font host is added.
 
-The display face is applied deliberately, not by element: the conversation welcome title, page titles and the theme picker names. Body copy, buttons and navigation stay in the body face. iOS keeps its own type until its design is settled, and follows the web pairing only if that design adopts it.
+The display face is brand language rather than landing-page decoration, so it recurs, but rarely and by role: the conversation welcome title, page heroes and section titles on public pages, empty-state titles and the theme picker names. It never appears in the header bar, navigation, controls or body copy. Conversation body copy is set at weight 400 with a line height of 1.6 through the shared markdown prose tokens, which also map the typography plugin's colours to the theme rather than to a fixed grey ramp. iOS keeps its own type until its design is settled, and follows the web pairing only if that design adopts it.
 
 ## Trade-off
 
