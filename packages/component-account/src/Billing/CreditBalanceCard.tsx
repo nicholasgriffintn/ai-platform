@@ -1,4 +1,4 @@
-import { Badge, Card, cn } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, cn } from "@ngriffin_uk/polychat-component-ui";
 import type { UsageBalanceResponse } from "@ngriffin_uk/polychat-schemas";
 import {
   formatCredits,

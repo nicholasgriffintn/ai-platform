@@ -4,16 +4,11 @@ import {
   AlertTitle,
   Badge,
   Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   EmptyState,
   SignInEmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
-import { ExternalLink, Link2, Trash2 } from "lucide-react";
+import { ExternalLink, Trash2 } from "lucide-react";
 
 import { SettingsSection } from "../SettingsSection";
 

@@ -1,4 +1,4 @@
-import { Button, Card, cn } from "@ngriffin_uk/polychat-component-ui";
+import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import { Database, Plus, Trash2 } from "lucide-react";
 
 import { SettingsSection } from "../SettingsSection";

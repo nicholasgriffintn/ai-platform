@@ -1,4 +1,4 @@
-import { Card, EmptyState, getStatusIcon, ListItem } from "@ngriffin_uk/polychat-component-ui";
+import { EmptyState, getStatusIcon, ListItem } from "@ngriffin_uk/polychat-component-ui";
 import type { Task } from "@ngriffin_uk/polychat-schemas";
 import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { Loader2 } from "lucide-react";

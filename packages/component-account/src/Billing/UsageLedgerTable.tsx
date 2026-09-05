@@ -1,4 +1,4 @@
-import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import {
   USAGE_SOURCES,
   type UsageEventRecord,

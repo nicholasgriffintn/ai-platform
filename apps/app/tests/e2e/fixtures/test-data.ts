@@ -37,7 +37,7 @@ export function createSilentWavFixture() {
 export function createGitHubPrivateKeyFixture() {
   const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
 
-  return privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+  return privateKey.export({ type: "pkcs8", format: "pem" });
 }
 
 import { generateKeyPairSync } from "node:crypto";

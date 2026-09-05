@@ -1,6 +1,5 @@
 import {
   Button,
-  Card,
   ConfirmationDialog,
   Dialog,
   DialogContent,

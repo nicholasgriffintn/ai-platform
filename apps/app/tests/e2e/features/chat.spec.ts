@@ -784,9 +784,9 @@ test.describe("Pro message attachments", () => {
     await polychatApi.updateConversation(siblingId, { title: "Release branch sibling" });
     const branchFamily = await polychatApi.getConversationBranches(siblingId);
 
-    expect(branchFamily.branches.map(({ id }) => id).sort()).toEqual(
-      [parentId, childId, siblingId].sort(),
-    );
+    expect(
+      branchFamily.branches.map(({ id }) => id).toSorted((a, b) => a.localeCompare(b)),
+    ).toEqual([parentId, childId, siblingId].toSorted((a, b) => a.localeCompare(b)));
     await homePage.openConversationBranches();
     await expect(homePage.conversationBranch("Release branch sibling")).toContainText("Current");
     await expect(homePage.conversationBranch("Release branch child")).toContainText("Archived");

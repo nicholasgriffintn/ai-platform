@@ -1,4 +1,4 @@
-import { Button, Card, Switch } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Switch } from "@ngriffin_uk/polychat-component-ui";
 import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { ExternalLink } from "lucide-react";
 

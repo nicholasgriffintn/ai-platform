@@ -1,4 +1,13 @@
-import { Badge, Button, EmptyState, Link, cn } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  FormInput,
+  FormSelect,
+  Link,
+  cn,
+} from "@ngriffin_uk/polychat-component-ui";
 import type {
   WorkAttentionItem,
   WorkAttentionKind,
@@ -110,36 +119,6 @@ function kindClass(kind: WorkAttentionKind): string {
   return "border-attention/40 text-attention";
 }
 
-function FilterSelect({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: Array<{ value: string; label: string }>;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="text-muted-foreground min-w-36 text-xs">
-      {label}
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="border-input bg-surface text-foreground focus:border-ring focus:ring-ring/30 mt-1 min-h-9 w-full border px-2 text-sm outline-none focus:ring-[3px]"
-      >
-        <option value="">All</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
 export function WorkAttentionView({
   items,
   facets,
@@ -164,90 +143,93 @@ export function WorkAttentionView({
 
   return (
     <div className="space-y-5">
-      <section
-        aria-label="Attention filters"
-        className="border-border bg-surface-elevated border p-3"
-      >
+      <Card aria-label="Attention filters" className="p-4">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <FilterSelect
+          <FormSelect
             label="State"
             value={filters.kind ?? ""}
-            options={KIND_OPTIONS}
-            onChange={(value) =>
+            options={[{ value: "", label: "All" }, ...KIND_OPTIONS]}
+            onChange={(event) =>
               onFiltersChange({
                 ...filters,
-                kind: parseKind(value),
+                kind: parseKind(event.target.value),
               })
             }
           />
-          <FilterSelect
+          <FormSelect
             label="Workspace"
             value={filters.workspaceId ?? ""}
-            options={(facets?.workspaces ?? []).map(({ id, name }) => ({ value: id, label: name }))}
-            onChange={(value) =>
+            options={[
+              { value: "", label: "All" },
+              ...(facets?.workspaces ?? []).map(({ id, name }) => ({ value: id, label: name })),
+            ]}
+            onChange={(event) =>
               onFiltersChange({
                 ...filters,
-                workspaceId: value || undefined,
+                workspaceId: event.target.value || undefined,
                 projectId: undefined,
               })
             }
           />
-          <FilterSelect
+          <FormSelect
             label="Project"
             value={filters.projectId ?? ""}
-            options={projects.map(({ id, name }) => ({ value: id, label: name }))}
-            onChange={(value) => onFiltersChange({ ...filters, projectId: value || undefined })}
+            options={[
+              { value: "", label: "All" },
+              ...projects.map(({ id, name }) => ({ value: id, label: name })),
+            ]}
+            onChange={(event) =>
+              onFiltersChange({ ...filters, projectId: event.target.value || undefined })
+            }
           />
-          <FilterSelect
+          <FormSelect
             label="Owner"
             value={filters.ownerUserId ? String(filters.ownerUserId) : ""}
-            options={(facets?.owners ?? []).map(({ id, name }) => ({
-              value: String(id),
-              label: name,
-            }))}
-            onChange={(value) =>
+            options={[
+              { value: "", label: "All" },
+              ...(facets?.owners ?? []).map(({ id, name }) => ({
+                value: String(id),
+                label: name,
+              })),
+            ]}
+            onChange={(event) =>
               onFiltersChange({
                 ...filters,
-                ownerUserId: value ? Number(value) : undefined,
+                ownerUserId: event.target.value ? Number(event.target.value) : undefined,
               })
             }
           />
-          <FilterSelect
+          <FormSelect
             label="Type"
             value={filters.type ?? ""}
             options={[
+              { value: "", label: "All" },
               { value: "task", label: "Project task" },
               { value: "run", label: "Coding run" },
             ]}
-            onChange={(value) =>
+            onChange={(event) =>
               onFiltersChange({
                 ...filters,
-                type: parseType(value),
+                type: parseType(event.target.value),
               })
             }
           />
-          <label className="text-muted-foreground text-xs">
-            From
-            <input
-              type="date"
-              value={filters.from ?? ""}
-              onChange={(event) =>
-                onFiltersChange({ ...filters, from: event.target.value || undefined })
-              }
-              className="border-input bg-surface text-foreground focus:border-ring focus:ring-ring/30 mt-1 min-h-9 w-full border px-2 text-sm outline-none focus:ring-[3px]"
-            />
-          </label>
-          <label className="text-muted-foreground text-xs">
-            To
-            <input
-              type="date"
-              value={filters.to ?? ""}
-              onChange={(event) =>
-                onFiltersChange({ ...filters, to: event.target.value || undefined })
-              }
-              className="border-input bg-surface text-foreground focus:border-ring focus:ring-ring/30 mt-1 min-h-9 w-full border px-2 text-sm outline-none focus:ring-[3px]"
-            />
-          </label>
+          <FormInput
+            label="From"
+            type="date"
+            value={filters.from ?? ""}
+            onChange={(event) =>
+              onFiltersChange({ ...filters, from: event.target.value || undefined })
+            }
+          />
+          <FormInput
+            label="To"
+            type="date"
+            value={filters.to ?? ""}
+            onChange={(event) =>
+              onFiltersChange({ ...filters, to: event.target.value || undefined })
+            }
+          />
           <div className="flex items-end">
             <Button
               type="button"
@@ -260,7 +242,7 @@ export function WorkAttentionView({
             </Button>
           </div>
         </div>
-      </section>
+      </Card>
 
       {isLoading ? (
         <div className="text-muted-foreground flex min-h-48 items-center justify-center gap-2 text-sm">
@@ -286,9 +268,10 @@ export function WorkAttentionView({
               <li key={item.id}>
                 <Link
                   href={itemHref(item)}
-                  className="border-border bg-surface hover:border-border-strong block border p-3 no-underline hover:no-underline"
+                  aria-label={item.title}
+                  className="group block no-underline hover:!no-underline"
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="border-border bg-surface group-hover:border-border-strong flex items-start gap-3 rounded-lg border p-3">
                     <Icon
                       className={cn(
                         "mt-0.5 size-4 shrink-0",
