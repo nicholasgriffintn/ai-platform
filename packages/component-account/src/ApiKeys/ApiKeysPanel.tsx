@@ -15,6 +15,8 @@ import {
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
+import { SettingsSection } from "../SettingsSection";
+
 export interface ApiKeySummary {
   id: string;
   name: string;
@@ -68,17 +70,15 @@ function GeneratedApiKeyModal({
         <DialogHeader>
           <DialogTitle>{`API Key Created: ${generatedKey.name}`}</DialogTitle>
         </DialogHeader>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-muted-foreground">
           Please copy your new API key. You won't be able to see it again!
         </p>
         <div className="space-y-4 mt-4">
-          <div className="bg-zinc-100 dark:bg-zinc-700 p-3 rounded-md flex items-center justify-between gap-2">
-            <code className="text-sm text-zinc-700 dark:text-zinc-200 break-all flex-1">
-              {generatedKey.key}
-            </code>
+          <div className="bg-selection flex items-center justify-between gap-2 rounded-md p-3">
+            <code className="text-sm text-foreground break-all flex-1">{generatedKey.key}</code>
             {renderCopyButton(generatedKey.key)}
           </div>
-          <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+          <p className="text-xs text-attention font-medium">
             Store this key securely. It grants access to your account.
           </p>
           <div className="flex justify-end">
@@ -113,119 +113,105 @@ export function ApiKeysPanel({
 
   return (
     <div className="space-y-8">
-      <Card>
-        <div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Generate New API Key
-          </h3>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Create a new key to use with external applications or scripts.
-          </p>
-        </div>
-        <div className="px-6">
-          <form
-            onSubmit={async (event) => {
-              event.preventDefault();
-              await onCreate(newApiKeyName || undefined);
-              setNewApiKeyName("");
-            }}
-            className="space-y-4"
-          >
-            <FormInput
-              id="new-api-key-name"
-              label="Key Name (Optional)"
-              placeholder="e.g., My Script Key"
-              value={newApiKeyName}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                setNewApiKeyName(event.target.value)
-              }
-              disabled={isCreating}
-            />
-            {createErrorMessage && (
-              <p className="text-sm text-red-600 dark:text-red-400">Error: {createErrorMessage}</p>
-            )}
-            <Button type="submit" variant="primary" disabled={isCreating}>
-              {isCreating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...
-                </>
-              ) : (
-                <>
-                  <Plus className="mr-2 h-4 w-4" /> Generate Key
-                </>
-              )}
-            </Button>
-          </form>
-        </div>
-      </Card>
-
-      <Card>
-        <div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Existing API Keys
-          </h3>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Manage your existing API keys. Remember to delete keys that are no longer needed.
-          </p>
-        </div>
-        <div className="px-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-6">
-              <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-              <span className="ml-2 text-zinc-500 dark:text-zinc-400">Loading keys...</span>
-            </div>
-          ) : requiresSignIn ? (
-            <SignInEmptyState
-              title="Sign in to view API keys"
-              message="Sign in to manage the API keys connected to your account."
-              className="bg-transparent dark:bg-transparent py-6 px-0"
-              onSignIn={onSignIn}
-            />
-          ) : loadErrorMessage ? (
-            <p className="text-center text-red-600 dark:text-red-400 py-6">
-              Error loading API keys: {loadErrorMessage}
-            </p>
-          ) : apiKeys.length === 0 ? (
-            <EmptyState
-              message="You haven't generated any API keys yet."
-              className="bg-transparent dark:bg-transparent py-6 px-0"
-            />
-          ) : (
-            <ul className="space-y-2">
-              {apiKeys.map((key) => (
-                <ListItem
-                  key={key.id}
-                  label={key.name}
-                  className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750"
-                  sublabel={`Created: ${formatCreatedAt(key.created_at)}`}
-                  actions={
-                    <HoverActions
-                      alwaysVisible
-                      actions={[
-                        {
-                          id: "delete",
-                          icon:
-                            isDeleting && deletingKeyId === key.id ? (
-                              <Loader2 size={14} className="animate-spin" />
-                            ) : (
-                              <Trash2 size={14} />
-                            ),
-                          label: `Delete API key ${key.name}`,
-                          onClick: (event) => {
-                            event.stopPropagation();
-                            setKeyToDelete(key);
-                          },
-                          disabled: isDeleting && deletingKeyId === key.id,
-                        },
-                      ]}
-                    />
-                  }
-                />
-              ))}
-            </ul>
+      <SettingsSection
+        title="Generate New API Key"
+        description="Create a new key to use with external applications or scripts."
+      >
+        <form
+          onSubmit={async (event) => {
+            event.preventDefault();
+            await onCreate(newApiKeyName || undefined);
+            setNewApiKeyName("");
+          }}
+          className="space-y-4"
+        >
+          <FormInput
+            id="new-api-key-name"
+            label="Key Name (Optional)"
+            placeholder="e.g., My Script Key"
+            value={newApiKeyName}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              setNewApiKeyName(event.target.value)
+            }
+            disabled={isCreating}
+          />
+          {createErrorMessage && (
+            <p className="text-sm text-failure">Error: {createErrorMessage}</p>
           )}
-        </div>
-      </Card>
+          <Button type="submit" variant="primary" disabled={isCreating}>
+            {isCreating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" /> Generate Key
+              </>
+            )}
+          </Button>
+        </form>
+      </SettingsSection>
+
+      <SettingsSection
+        title="Existing API Keys"
+        description="Manage your existing API keys. Remember to delete keys that are no longer needed."
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-muted-foreground">Loading keys...</span>
+          </div>
+        ) : requiresSignIn ? (
+          <SignInEmptyState
+            title="Sign in to view API keys"
+            message="Sign in to manage the API keys connected to your account."
+            className="bg-transparent dark:bg-transparent py-6 px-0"
+            onSignIn={onSignIn}
+          />
+        ) : loadErrorMessage ? (
+          <p className="text-center text-failure py-6">
+            Error loading API keys: {loadErrorMessage}
+          </p>
+        ) : apiKeys.length === 0 ? (
+          <EmptyState
+            message="You haven't generated any API keys yet."
+            className="bg-transparent dark:bg-transparent py-6 px-0"
+          />
+        ) : (
+          <ul className="space-y-2">
+            {apiKeys.map((key) => (
+              <ListItem
+                key={key.id}
+                label={key.name}
+                className="border-border bg-surface hover:bg-selection border"
+                sublabel={`Created: ${formatCreatedAt(key.created_at)}`}
+                actions={
+                  <HoverActions
+                    alwaysVisible
+                    actions={[
+                      {
+                        id: "delete",
+                        icon:
+                          isDeleting && deletingKeyId === key.id ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={14} />
+                          ),
+                        label: `Delete API key ${key.name}`,
+                        onClick: (event) => {
+                          event.stopPropagation();
+                          setKeyToDelete(key);
+                        },
+                        disabled: isDeleting && deletingKeyId === key.id,
+                      },
+                    ]}
+                  />
+                }
+              />
+            ))}
+          </ul>
+        )}
+      </SettingsSection>
 
       {generatedKey && (
         <GeneratedApiKeyModal

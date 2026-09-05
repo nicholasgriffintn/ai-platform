@@ -21,26 +21,20 @@ export function ConversationListSection({
   return (
     <div className="px-2">
       <div className="flex items-center justify-between px-2 pb-2">
-        <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-          Recent conversations
-        </p>
+        <p className="text-xs font-semibold text-muted-foreground">Recent conversations</p>
         {controls}
       </div>
       {isLoading ? (
-        <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-          Loading conversations...
-        </div>
+        <div className="p-4 text-center text-muted-foreground">Loading conversations...</div>
       ) : hasError ? (
-        <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
+        <div className="p-4 text-center text-muted-foreground">
           <p>Could not load conversations.</p>
           <Button type="button" variant="secondary" className="mt-2" onClick={onRetry}>
             Retry
           </Button>
         </div>
       ) : isEmpty ? (
-        <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-          No conversations yet.
-        </div>
+        <div className="p-4 text-center text-muted-foreground">No conversations yet.</div>
       ) : (
         children
       )}

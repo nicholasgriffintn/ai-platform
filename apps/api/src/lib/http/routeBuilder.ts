@@ -1,3 +1,7 @@
+import type {
+  InternalServiceScope,
+  InternalServiceTokenClaims,
+} from "@ngriffin_uk/polychat-schemas";
 import type { Context, MiddlewareHandler } from "hono";
 import {
   describeRoute,
@@ -8,7 +12,11 @@ import {
 import type { ZodType } from "zod/v4";
 
 import { getServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { requireAuthenticatedUser, requireAuthenticatedUserOrAnonymous } from "~/lib/http/auth";
+import {
+  requireAuthenticatedService,
+  requireAuthenticatedUser,
+  requireAuthenticatedUserOrAnonymous,
+} from "~/lib/http/auth";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import type { AnonymousUser, IUser } from "~/types";
 
@@ -44,6 +52,14 @@ export interface AuthenticatedHandlerContext<
   user: IUser;
 }
 
+export interface ServiceHandlerContext<
+  TBody = unknown,
+  TParams = unknown,
+  TQuery = unknown,
+> extends HandlerContext<TBody, TParams, TQuery> {
+  service: InternalServiceTokenClaims;
+}
+
 interface BaseRouteConfig<TBody, TParams, TQuery> {
   /** OpenAPI tag(s). */
   tags: string[];
@@ -70,20 +86,23 @@ type RouteConfig<TBody, TParams, TQuery> =
       /** Require a signed-in user. Throws 401 if only anonymous context is present. */
       auth: true;
       /** The handler function. Return data for JSON, or a Response for streaming. */
-      handler: (
-        ctx: AuthenticatedHandlerContext<TBody, TParams, TQuery>,
-      ) => Promise<Response | unknown>;
+      handler: (ctx: AuthenticatedHandlerContext<TBody, TParams, TQuery>) => Promise<unknown>;
+    })
+  | (BaseRouteConfig<TBody, TParams, TQuery> & {
+      auth: "service";
+      serviceScope: InternalServiceScope;
+      handler: (ctx: ServiceHandlerContext<TBody, TParams, TQuery>) => Promise<unknown>;
     })
   | (BaseRouteConfig<TBody, TParams, TQuery> & {
       /** Require either a signed-in user or anonymous-user context. */
       auth: "user-or-anonymous";
       /** The handler function. Return data for JSON, or a Response for streaming. */
-      handler: (ctx: HandlerContext<TBody, TParams, TQuery>) => Promise<Response | unknown>;
+      handler: (ctx: HandlerContext<TBody, TParams, TQuery>) => Promise<unknown>;
     })
   | (BaseRouteConfig<TBody, TParams, TQuery> & {
       auth?: false;
       /** The handler function. Return data for JSON, or a Response for streaming. */
-      handler: (ctx: HandlerContext<TBody, TParams, TQuery>) => Promise<Response | unknown>;
+      handler: (ctx: HandlerContext<TBody, TParams, TQuery>) => Promise<unknown>;
     });
 
 interface HonoLike {
@@ -165,6 +184,21 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
         ...baseHandlerCtx,
         user: requireAuthenticatedUser(c),
         anonymousUser: c.get("anonymousUser") as AnonymousUser | undefined,
+      });
+
+      if (result instanceof Response) {
+        return result;
+      }
+
+      return ResponseFactory.success(c, result);
+    }
+
+    if (config.auth === "service") {
+      const result = await config.handler({
+        ...baseHandlerCtx,
+        user: undefined,
+        anonymousUser: undefined,
+        service: requireAuthenticatedService(c, config.serviceScope),
       });
 
       if (result instanceof Response) {

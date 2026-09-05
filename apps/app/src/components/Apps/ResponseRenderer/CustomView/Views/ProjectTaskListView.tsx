@@ -24,7 +24,7 @@ export function ProjectTaskListView({ data }: { data: unknown }) {
   const result = parseTasks(data);
 
   if (!result) {
-    return <p className="text-sm text-red-600 dark:text-red-300">Task results are invalid.</p>;
+    return <p className="text-sm text-failure">Task results are invalid.</p>;
   }
 
   if (result.tasks.length === 0) {
@@ -56,9 +56,7 @@ export function ProjectTaskListView({ data }: { data: unknown }) {
                     {task.acceptanceCriteria.length === 1 ? "criterion" : "criteria"}
                   </p>
                 )}
-                {task.blockedDetail && (
-                  <p className="text-amber-700 dark:text-amber-300">{task.blockedDetail}</p>
-                )}
+                {task.blockedDetail && <p className="text-attention">{task.blockedDetail}</p>}
               </div>
             )}
           </li>

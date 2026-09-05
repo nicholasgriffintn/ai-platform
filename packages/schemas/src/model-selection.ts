@@ -172,6 +172,20 @@ export function isActiveModel(model: Pick<ModelConfigItem, "deprecated" | "statu
   return !model.deprecated && model.status !== "deprecated";
 }
 
+export function isModelReferenceSelectable(
+  modelReferences: ReadonlyMap<string, ModelConfigItem>,
+  modelId: string | null | undefined,
+  isPro: boolean,
+): boolean {
+  const model = getModelByReference(modelReferences, modelId);
+
+  if (!model || !isActiveModel(model)) {
+    return false;
+  }
+
+  return model.isExecutable ?? isModelSelectableForAccount(model, isPro);
+}
+
 export function getDefaultModelId(models: ModelConfig): string | undefined {
   return Object.entries(models).find(([, model]) => model.isDefault && isActiveModel(model))?.[0];
 }

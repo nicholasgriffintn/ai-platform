@@ -6,6 +6,7 @@ import type {
   GlobalWorkspaceSearchRow,
   WorkspaceRepository,
 } from "~/repositories/WorkspaceRepository";
+import { safeParseJson } from "~/utils/json";
 
 export interface GlobalSearchContext {
   requireUser(): { id: number; plan_id: string | null };
@@ -43,6 +44,18 @@ export async function searchPolychat(
         id: conversation.id,
         title: conversation.title,
         updatedAt: conversation.updated_at,
+        isPinned: conversation.is_pinned === 1,
+        isUnread: conversation.is_unread === 1,
+        snooze:
+          conversation.snoozed_until && Date.parse(conversation.snoozed_until) > Date.now()
+            ? { kind: "until" as const, until: conversation.snoozed_until }
+            : conversation.snoozed_next_response_at && conversation.next_response_arrived !== 1
+              ? { kind: "next_response" as const }
+              : null,
+        labels:
+          safeParseJson<GlobalSearchResponse["conversations"][number]["labels"]>(
+            conversation.labels,
+          ) ?? [],
         project:
           conversation.project_id &&
           conversation.project_name &&

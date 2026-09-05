@@ -69,7 +69,7 @@ export function SharedAgentsBrowser({
         <div className="flex gap-2">
           <FormSelect
             aria-label="Filter shared agents by category"
-            className="h-10 min-w-36 bg-white dark:bg-zinc-900"
+            className="bg-surface h-10 min-w-36"
             value={selectedCategory}
             onChange={(event) => onSelectedCategoryChange(event.target.value)}
             options={[
@@ -79,7 +79,7 @@ export function SharedAgentsBrowser({
           />
           <FormSelect
             aria-label="Filter shared agents by tag"
-            className="h-10 min-w-32 bg-white dark:bg-zinc-900"
+            className="bg-surface h-10 min-w-32"
             value={selectedTag}
             onChange={(event) => onSelectedTagChange(event.target.value)}
             options={[
@@ -92,8 +92,8 @@ export function SharedAgentsBrowser({
 
       {showFeatured && (
         <section className="space-y-3">
-          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-zinc-600 dark:text-zinc-300">
-            <Star size={14} className="fill-amber-400 text-amber-400" />
+          <h3 className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium">
+            <Star size={14} className="fill-attention text-attention" />
             Featured
           </h3>
           {isLoadingFeaturedAgents ? (
@@ -107,14 +107,14 @@ export function SharedAgentsBrowser({
       )}
 
       <section className="space-y-3">
-        <h3 className="text-sm font-semibold text-zinc-600 dark:text-zinc-300">
+        <h3 className="text-muted-foreground text-sm font-medium">
           {isFiltering ? "Results" : "All shared agents"}
         </h3>
         {isLoadingSharedAgents ? (
           <CardGridLoadingSkeleton count={3} label="Loading shared agents" />
         ) : sharedAgents.length === 0 ? (
           <EmptyState
-            icon={<SearchX size={24} className="text-zinc-400" />}
+            icon={<SearchX size={24} className="text-muted-foreground" />}
             title="No shared agents found"
             message="Try another search, category, or tag."
             className="min-h-[200px]"

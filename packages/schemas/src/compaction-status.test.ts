@@ -64,4 +64,39 @@ describe("normaliseCompactionStatusMessage", () => {
       expect(normaliseCompactionStatusMessage(message)).toBeUndefined();
     }
   });
+
+  it("preserves coverage metadata on durable status messages", () => {
+    expect(
+      normaliseCompactionStatusMessage({
+        id: "snapshot-1-compaction",
+        role: "compaction",
+        content: "Context automatically compacted",
+        parts: [
+          {
+            type: "compaction",
+            status: "completed",
+            coverage: {
+              coveredMessageIds: ["message-1"],
+              coveredMessageCount: 1,
+              candidateMessageCount: 2,
+              summaryInputCharacters: 500,
+              strategy: "fallback_transcript",
+            },
+          },
+        ],
+      }),
+    ).toMatchObject({
+      parts: [
+        {
+          coverage: {
+            coveredMessageIds: ["message-1"],
+            coveredMessageCount: 1,
+            candidateMessageCount: 2,
+            summaryInputCharacters: 500,
+            strategy: "fallback_transcript",
+          },
+        },
+      ],
+    });
+  });
 });

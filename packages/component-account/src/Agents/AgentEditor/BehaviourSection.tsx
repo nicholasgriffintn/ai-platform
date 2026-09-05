@@ -92,7 +92,7 @@ export function BehaviourSection({ value, disabled, onChange }: BehaviourSection
         {value.examples.map((example, index) => (
           <div key={example.id} className="space-y-3 rounded-lg border p-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium">Example {index + 1}</h4>
+              <h3 className="text-muted-foreground text-sm font-medium">Example {index + 1}</h3>
               <Button
                 variant="destructive"
                 size="icon"

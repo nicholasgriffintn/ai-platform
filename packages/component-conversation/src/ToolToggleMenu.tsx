@@ -34,9 +34,7 @@ function MenuToggleButton({
       aria-label={label}
       className={cn(
         "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
-        isPressed
-          ? "bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-zinc-50"
-          : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
+        isPressed ? "bg-selection text-foreground" : "text-foreground hover:bg-surface-elevated",
         isDisabled && "cursor-not-allowed opacity-50 hover:bg-transparent",
       )}
       aria-pressed={isPressed}
@@ -46,20 +44,18 @@ function MenuToggleButton({
         <span className="block min-w-0">
           <span className="block truncate font-medium leading-5">{label}</span>
           {description ? (
-            <span className="block truncate text-xs text-zinc-500 dark:text-zinc-400">
-              {description}
-            </span>
+            <span className="block truncate text-xs text-muted-foreground">{description}</span>
           ) : null}
         </span>
       </span>
       <span
         className={cn(
           "flex h-6 w-10 shrink-0 rounded-full p-0.5",
-          isPressed ? "justify-end bg-blue-500" : "bg-zinc-200 dark:bg-zinc-700",
+          isPressed ? "bg-active-work justify-end" : "bg-border-strong",
         )}
         aria-hidden="true"
       >
-        <span className="h-5 w-5 rounded-full bg-white dark:bg-zinc-300" />
+        <span className="bg-surface h-5 w-5 rounded-full" />
       </span>
     </button>
   );
@@ -87,9 +83,9 @@ export function ToolToggleMenu({
   showHeading = true,
 }: ToolToggleMenuProps) {
   return (
-    <div className={showHeading ? "border-t border-zinc-200 pt-2 dark:border-zinc-700" : undefined}>
+    <div className={showHeading ? "border-t border-border pt-2" : undefined}>
       {showHeading ? (
-        <div className="px-3 pb-1 text-[11px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">
+        <div className="px-3 pb-1 text-[11px] font-semibold uppercase text-muted-foreground">
           Tools
         </div>
       ) : null}

@@ -37,21 +37,21 @@ export const TranscriptionOverlay = memo(function TranscriptionOverlay({
 
   return (
     <div
-      className="absolute bottom-16 left-4 right-4 p-3 bg-gray-100 dark:bg-gray-800 rounded shadow-md border border-gray-200 dark:border-gray-700 max-h-32 overflow-y-auto"
+      className="border-border bg-surface-elevated absolute right-4 bottom-16 left-4 max-h-32 overflow-y-auto rounded border p-3 shadow-[var(--polychat-elevated-shadow)]"
       aria-live="polite"
     >
-      <div className="flex items-center mb-1 text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex items-center mb-1 text-xs text-muted-foreground">
         <span className="font-medium mr-2">Status:</span>
         <span
           className={cn(
             "px-2 py-0.5 rounded text-xs",
             transcriptionStatus === "active"
-              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+              ? "bg-success/12 text-success"
               : transcriptionStatus === "connecting"
-                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                ? "bg-attention/12 text-attention"
                 : transcriptionStatus === "reconnecting"
-                  ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100"
-                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
+                  ? "bg-attention/12 text-attention"
+                  : "bg-failure/12 text-failure",
           )}
         >
           {transcriptionStatus === "active"
@@ -64,12 +64,12 @@ export const TranscriptionOverlay = memo(function TranscriptionOverlay({
         </span>
         <div className="ml-auto flex items-center">
           {isSpeechDetected ? (
-            <span className="flex items-center text-green-600 dark:text-green-400">
+            <span className="flex items-center text-success">
               <Volume2 size={14} className="mr-1 animate-pulse" />
               Speech detected
             </span>
           ) : (
-            <span className="flex items-center text-gray-500 dark:text-gray-400">
+            <span className="flex items-center text-muted-foreground">
               <VolumeX size={14} className="mr-1" />
               Silence {silenceDuration > 0 ? `(${silenceDuration}s)` : ""}
             </span>
@@ -77,11 +77,9 @@ export const TranscriptionOverlay = memo(function TranscriptionOverlay({
         </div>
       </div>
       {partialTranscript ? (
-        <p className="text-sm opacity-70 text-gray-500 dark:text-gray-400 italic">
-          {partialTranscript}
-        </p>
+        <p className="text-sm opacity-70 text-muted-foreground italic">{partialTranscript}</p>
       ) : (
-        <p className="text-sm opacity-50 text-gray-500 dark:text-gray-400 animate-pulse">
+        <p className="text-sm opacity-50 text-muted-foreground animate-pulse">
           {isSpeechDetected ? "Listening..." : "Waiting for speech..."}
         </p>
       )}

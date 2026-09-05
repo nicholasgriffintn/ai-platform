@@ -80,12 +80,52 @@ export function describeSandboxEvent(event: SandboxRunEvent): string {
       return "Cloning repository";
     case "repo_clone_completed":
       return "Repository cloned";
+    case "environment_configuration_resolved":
+      return `Environment configuration resolved at ${event.configurationRevision?.slice(0, 12) ?? "unknown revision"}`;
+    case "environment_cache_miss":
+      return "Environment cache missed; running clean setup";
+    case "environment_cache_restored":
+      return "Environment snapshot restored";
+    case "environment_cache_created":
+      return "Environment snapshot created";
+    case "environment_cache_key_failed":
+      return "Environment cache key could not be resolved; running clean setup";
+    case "environment_cache_restore_failed":
+      return "Environment snapshot restore failed; running clean setup";
+    case "environment_cache_creation_failed":
+      return "Environment snapshot could not be saved";
+    case "environment_setup_started":
+      return event.preparationMode === "resume"
+        ? "Resuming prepared environment"
+        : "Preparing environment";
+    case "environment_setup_command_started":
+      return `Running setup command ${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"}: ${event.command ?? ""}`;
+    case "environment_setup_command_output":
+      return `${event.stream ?? "setup output"}: ${event.output ?? ""}`.trim();
+    case "environment_setup_command_completed":
+      return `Completed setup command ${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"}`;
+    case "environment_setup_completed":
+      return event.preparationMode === "resume" ? "Environment resumed" : "Environment prepared";
+    case "environment_setup_failed":
+      return event.error
+        ? `Environment preparation failed: ${event.error}`
+        : "Environment preparation failed";
     case "git_branch_created":
       return `Created branch ${event.branchName ?? ""}`.trim();
     case "diff_generated":
       return "Generated code diff";
     case "commit_created":
       return `Created commit on ${event.branchName ?? "feature branch"}`;
+    case "delivery_started":
+      return `Delivering ${event.commitSha ?? "commit"} to ${event.targetBranch ?? "GitHub"}`;
+    case "delivery_completed":
+      return event.pullRequestUrl
+        ? `Pull request created: ${event.pullRequestUrl}`
+        : "GitHub delivery completed";
+    case "delivery_failed":
+      return event.error ? `GitHub delivery failed: ${event.error}` : "GitHub delivery failed";
+    case "delivery_skipped":
+      return event.message || "GitHub delivery skipped";
     case "run_completed":
       return "Run completed successfully";
     case "run_cancelled":

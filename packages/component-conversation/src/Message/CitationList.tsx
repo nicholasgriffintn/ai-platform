@@ -28,7 +28,7 @@ export const CitationList = ({ citations, maxDisplayed = 3 }: CitationListProps)
 
   return (
     <div className="flex items-center mb-2 mt-2">
-      <div className="text-sm text-zinc-500 dark:text-zinc-400 mr-2">Sources:</div>
+      <div className="text-sm text-muted-foreground mr-2">Sources:</div>
       <div className="flex">
         {displayedCitations.map((url, index) => (
           <div
@@ -47,8 +47,8 @@ export const CitationList = ({ citations, maxDisplayed = 3 }: CitationListProps)
             >
               <Favicon
                 url={typeof url === "string" ? url : url.url}
-                className={`w-6 h-6 rounded-full border border-zinc-200 dark:border-zinc-700 
-                  bg-white object-contain p-[2px] ${hoveredIndex === index ? "shadow-md" : ""} `}
+                className={`w-6 h-6 rounded-full border border-border 
+ bg-surface object-contain p-[2px] ${hoveredIndex === index ? "shadow-md" : ""} `}
               />
             </a>
           </div>
@@ -58,7 +58,7 @@ export const CitationList = ({ citations, maxDisplayed = 3 }: CitationListProps)
         <button
           type="button"
           onClick={() => setShowAllCitations(!showAllCitations)}
-          className="cursor-pointer ml-1 text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+          className="cursor-pointer ml-1 text-xs text-muted-foreground hover:text-foreground"
           aria-label={
             showAllCitations
               ? "Show fewer citations"

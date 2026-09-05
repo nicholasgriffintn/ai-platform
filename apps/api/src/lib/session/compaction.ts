@@ -13,6 +13,7 @@ export interface CompactionWindowConfig {
   triggerRatio?: number;
   maxTriggerTokens?: number;
   keepRecentMessages?: number;
+  maxSummaryCharacters?: number;
 }
 
 export type CompactionMode = "auto" | "manual" | "off";
@@ -24,6 +25,8 @@ export interface CompactionPlan<TMessage extends CompactionPlanMessage = Message
   messagesToArchive: TMessage[];
   messagesToKeep: TMessage[];
   snapshotInsertionIndex: number;
+  candidateMessageCount: number;
+  summaryInput: string;
 }
 
 const DEFAULT_CONTEXT_WINDOW = 32000;
@@ -31,6 +34,7 @@ const DEFAULT_TRIGGER_RATIO = 0.7;
 const DEFAULT_KEEP_RECENT_MESSAGES = 8;
 
 const DEFAULT_MAX_TRIGGER_TOKENS = 200000;
+const DEFAULT_MAX_SUMMARY_CHARACTERS = 16000;
 
 export { estimateConversationTokens, estimateMessageTokens };
 
@@ -67,6 +71,7 @@ export function buildCompactionPlan<TMessage extends CompactionPlanMessage>(
   const triggerRatio = config.triggerRatio ?? DEFAULT_TRIGGER_RATIO;
   const maxTriggerTokens = resolveMaxTriggerTokens(config.maxTriggerTokens);
   const keepRecentMessages = config.keepRecentMessages ?? DEFAULT_KEEP_RECENT_MESSAGES;
+  const maxSummaryCharacters = config.maxSummaryCharacters ?? DEFAULT_MAX_SUMMARY_CHARACTERS;
 
   if (mode === "off") {
     return {
@@ -74,6 +79,8 @@ export function buildCompactionPlan<TMessage extends CompactionPlanMessage>(
       messagesToArchive: [],
       messagesToKeep: messages,
       snapshotInsertionIndex: messages.length,
+      candidateMessageCount: 0,
+      summaryInput: "",
     };
   }
 
@@ -92,6 +99,8 @@ export function buildCompactionPlan<TMessage extends CompactionPlanMessage>(
         messagesToArchive: [],
         messagesToKeep: messages,
         snapshotInsertionIndex: messages.length,
+        candidateMessageCount: 0,
+        summaryInput: "",
       };
     }
   }
@@ -102,6 +111,8 @@ export function buildCompactionPlan<TMessage extends CompactionPlanMessage>(
       messagesToArchive: [],
       messagesToKeep: messages,
       snapshotInsertionIndex: messages.length,
+      candidateMessageCount: 0,
+      summaryInput: "",
     };
   }
 
@@ -114,25 +125,42 @@ export function buildCompactionPlan<TMessage extends CompactionPlanMessage>(
   const archiveableHead = messages.slice(0, archiveBoundary);
   const tail = messages.slice(archiveBoundary);
 
-  const messagesToArchive = archiveableHead.filter(canArchiveDuringCompaction);
+  const candidateMessages = archiveableHead.filter(canArchiveDuringCompaction);
 
-  if (messagesToArchive.length === 0) {
+  if (candidateMessages.length === 0) {
     return {
       shouldCompact: false,
       messagesToArchive: [],
       messagesToKeep: messages,
       snapshotInsertionIndex: messages.length,
+      candidateMessageCount: 0,
+      summaryInput: "",
+    };
+  }
+
+  const summarySelection = selectMessagesForSummary(candidateMessages, maxSummaryCharacters);
+
+  if (summarySelection.representedMessages.length === 0) {
+    return {
+      shouldCompact: false,
+      messagesToArchive: [],
+      messagesToKeep: messages,
+      snapshotInsertionIndex: messages.length,
+      candidateMessageCount: candidateMessages.length,
+      summaryInput: "",
     };
   }
 
   const preservedHead = archiveableHead.filter((message) => !canArchiveDuringCompaction(message));
-  const messagesToKeep = [...preservedHead, ...tail];
+  const messagesToKeep = [...preservedHead, ...summarySelection.unrepresentedMessages, ...tail];
 
   return {
     shouldCompact: true,
-    messagesToArchive,
+    messagesToArchive: summarySelection.representedMessages,
     messagesToKeep,
     snapshotInsertionIndex: preservedHead.length,
+    candidateMessageCount: candidateMessages.length,
+    summaryInput: summarySelection.input,
   };
 }
 
@@ -144,48 +172,74 @@ const ROLE_LABELS: Partial<Record<Message["role"], string>> = {
   developer: "[Developer]",
 };
 
-export function buildFallbackSummary(messages: Message[]): string {
-  const lines = messages.slice(-6).flatMap((message) => {
-    const label = ROLE_LABELS[message.role] ?? `[${message.role}]`;
-    const text = messageToText(message);
-
-    return text ? [`${label} ${text}`.trim()] : [];
-  });
-
-  if (lines.length === 0) {
-    return "Conversation snapshot recorded.";
-  }
-
-  return `Earlier context summary:\n${lines.join("\n")}`;
+export interface SummaryInputSelection<TMessage extends CompactionPlanMessage = Message> {
+  input: string;
+  representedMessages: TMessage[];
+  unrepresentedMessages: TMessage[];
 }
 
-export function formatMessagesForSummary(messages: Message[], maxCharacters = 16000): string {
+function formatMessageForSummary(message: CompactionPlanMessage): string | null {
+  const label = ROLE_LABELS[message.role] ?? `[${message.role}]`;
+  const body = messageToText(message, { truncateToolResults: false });
+
+  if (!body) {
+    return null;
+  }
+
+  const prefix = message.role === "tool" && message.name ? `${label}(${message.name})` : label;
+
+  return `${prefix}: ${body}`;
+}
+
+export function selectMessagesForSummary<TMessage extends CompactionPlanMessage>(
+  messages: TMessage[],
+  maxCharacters = DEFAULT_MAX_SUMMARY_CHARACTERS,
+): SummaryInputSelection<TMessage> {
   const lines: string[] = [];
-  let remaining = maxCharacters;
+  let representedCount = 0;
+  let inputLength = 0;
+
+  if (!Number.isFinite(maxCharacters) || maxCharacters <= 0) {
+    return {
+      input: "",
+      representedMessages: [],
+      unrepresentedMessages: messages,
+    };
+  }
 
   for (const message of messages) {
-    const label = ROLE_LABELS[message.role] ?? `[${message.role}]`;
-    const body = messageToText(message);
+    const line = formatMessageForSummary(message);
+    const separatorLength = lines.length > 0 ? 1 : 0;
 
-    if (!body) {
-      continue;
-    }
-
-    const prefix = message.role === "tool" && message.name ? `${label}(${message.name})` : label;
-    const line = `${prefix}: ${body}`;
-
-    if (line.length > remaining) {
-      if (remaining <= 0) {
-        break;
-      }
-
-      lines.push(`${line.slice(0, remaining)}…`);
+    if (!line || inputLength + separatorLength + line.length > maxCharacters) {
       break;
     }
 
     lines.push(line);
-    remaining -= line.length;
+    inputLength += separatorLength + line.length;
+    representedCount += 1;
   }
 
-  return lines.join("\n");
+  return {
+    input: lines.join("\n"),
+    representedMessages: messages.slice(0, representedCount),
+    unrepresentedMessages: messages.slice(representedCount),
+  };
+}
+
+export function buildFallbackSummary(messages: Message[]): string {
+  const transcript = formatMessagesForSummary(messages);
+
+  if (!transcript) {
+    return "Conversation snapshot recorded.";
+  }
+
+  return `Earlier context transcript:\n${transcript}`;
+}
+
+export function formatMessagesForSummary(
+  messages: Message[],
+  maxCharacters = DEFAULT_MAX_SUMMARY_CHARACTERS,
+): string {
+  return selectMessagesForSummary(messages, maxCharacters).input;
 }

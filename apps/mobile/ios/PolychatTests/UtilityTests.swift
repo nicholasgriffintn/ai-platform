@@ -171,10 +171,136 @@ struct UtilityTests {
         #expect(delta == [.toolUseDelta(
             ChatToolCallEvent(
                 toolCallId: "call-1",
-                parameters: .object(["query": .string("polychat")])
+                parameterFragment: #"{"query":"polychat"}"#
             )
         )])
         #expect(stop == [.toolUseStop("call-1")])
+    }
+
+    @Test func chatStreamParserTypesSemanticTurnActivityAndIgnoresUnknownKinds() throws {
+        let started = try ChatStreamEventParser.events(
+            from: #"{"type":"turn_activity","kind":"tool_execution_started","step":2,"toolCallId":"call-1","toolName":"web_search"}"#
+        )
+        let waiting = try ChatStreamEventParser.events(
+            from: #"{"type":"turn_activity","kind":"waiting_for_user","step":2,"toolCallId":"call-2","toolName":"ask_user","reason":"question"}"#
+        )
+        let unknown = try ChatStreamEventParser.events(
+            from: #"{"type":"turn_activity","kind":"future_phase","step":2}"#
+        )
+
+        #expect(started == [
+            .turnActivity(.toolExecutionStarted(
+                step: 2,
+                toolCallId: "call-1",
+                toolName: "web_search"
+            ))
+        ])
+        #expect(waiting == [
+            .turnActivity(.waitingForUser(
+                step: 2,
+                toolCallId: "call-2",
+                toolName: "ask_user",
+                reason: .question
+            ))
+        ])
+        #expect(unknown.isEmpty)
+    }
+
+    @Test func turnActivityProjectionTracksParallelToolsWaitsAndTerminals() {
+        var projection = TurnActivityProjection()
+
+        projection.apply(.toolExecutionStarted(
+            step: 1,
+            toolCallId: "call-weather",
+            toolName: "weather"
+        ))
+        projection.apply(.toolExecutionStarted(
+            step: 1,
+            toolCallId: "call-clock",
+            toolName: "clock"
+        ))
+        #expect(projection.phase == .usingTools)
+        #expect(projection.label == "Running 2 tools...")
+
+        projection.apply(.toolFinished(
+            step: 1,
+            toolCallId: "call-weather",
+            toolName: "weather",
+            outcome: .failure
+        ))
+        #expect(projection.tools.first?.status == .failure)
+        #expect(projection.tools.last?.status == .running)
+
+        projection.apply(.waitingForUser(
+            step: 1,
+            toolCallId: "call-question",
+            toolName: "ask_user",
+            reason: .question
+        ))
+        #expect(projection.phase == .waiting)
+        #expect(projection.requiresAction)
+        #expect(projection.label == "Waiting for your answer.")
+
+        projection.markReconnecting()
+        #expect(projection.phase == .reconnecting)
+        #expect(projection.label == "Reconnecting to the response...")
+
+        projection.apply(.turnFinished(outcome: .cancelled, errorType: nil))
+        #expect(projection.phase == .cancelled)
+        #expect(projection.label == "Response stopped.")
+    }
+
+    @Test func sharedConformanceFixtureParsesSemanticTurnActivity() throws {
+        let events = try Self.sharedConformanceEvents(named: "semantic_turn_activity_lifecycle")
+        let activityEvents = events.compactMap { event -> ChatTurnActivityEvent? in
+            guard case .turnActivity(let activity) = event else {
+                return nil
+            }
+            return activity
+        }
+
+        #expect(activityEvents.count == 14)
+        #expect(activityEvents.first == .turnStarted)
+        #expect(activityEvents.last == .turnFinished(outcome: .completed, errorType: nil))
+    }
+
+    @Test func sharedConformanceFixtureAssemblesParallelFragmentedToolInput() throws {
+        let events = try Self.sharedConformanceEvents(
+            named: "parallel_tools_with_fragmented_arguments_and_mixed_results"
+        )
+        var activity = StreamingToolActivity()
+        var updates: [StreamingToolActivity.Update] = []
+
+        for event in events {
+            switch event {
+            case .toolUseStart(let toolCall):
+                activity.start(toolCall)
+            case .toolUseDelta(let toolCall):
+                activity.applyDelta(toolCall)
+            case .toolUseStop(let toolCallId):
+                if let update = activity.stop(toolCallId: toolCallId, completionId: "fixture") {
+                    updates.append(update)
+                }
+            default:
+                continue
+            }
+        }
+
+        let inputsByName: [String: JSONValue] = Dictionary(
+            uniqueKeysWithValues: updates.compactMap { update -> (String, JSONValue)? in
+                guard
+                    let part = update.message.parts?.first,
+                    let name = part.name,
+                    let input = part.input
+                else {
+                    return nil
+                }
+                return (name, input)
+            }
+        )
+
+        #expect(inputsByName["clock"] == JSONValue.object(["zone": .string("UTC")]))
+        #expect(inputsByName["weather"] == JSONValue.object(["city": .string("London")]))
     }
 
     @Test func chatStreamParserReadsToolResponseResult() throws {
@@ -214,7 +340,11 @@ struct UtilityTests {
         activity.start(ChatToolCallEvent(toolCallId: "call-1", name: "web_search"))
         activity.applyDelta(ChatToolCallEvent(
             toolCallId: "call-1",
-            parameters: .object(["query": .string("polychat")])
+            parameterFragment: #"{"query":"poly"#
+        ))
+        activity.applyDelta(ChatToolCallEvent(
+            toolCallId: "call-1",
+            parameterFragment: #"chat"}"#
         ))
 
         let startUpdate = activity.stop(toolCallId: "call-1", completionId: "conversation-1")
@@ -269,5 +399,33 @@ struct UtilityTests {
                 )
             )
         )])
+    }
+
+    private static func sharedConformanceEvents(named name: String) throws -> [ChatStreamEvent] {
+        let sourceFile = URL(fileURLWithPath: #filePath)
+        let repositoryRoot = sourceFile
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let fixtureURL = repositoryRoot
+            .appendingPathComponent("packages/schemas/fixtures/chat-stream-conformance.json")
+        let fixtureData = try Data(contentsOf: fixtureURL)
+        let root = try #require(
+            try JSONSerialization.jsonObject(with: fixtureData) as? [String: Any]
+        )
+        let cases = try #require(root["cases"] as? [[String: Any]])
+        let fixture = try #require(cases.first { $0["name"] as? String == name })
+        let chunks = try #require(fixture["chunks"] as? [String])
+        var parser = ChatStreamEventChunkParser()
+        var events: [ChatStreamEvent] = []
+
+        for chunk in chunks {
+            events.append(contentsOf: try parser.append(Data(chunk.utf8)))
+        }
+        events.append(contentsOf: try parser.finish())
+
+        return events
     }
 }

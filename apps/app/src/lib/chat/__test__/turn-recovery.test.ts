@@ -49,4 +49,30 @@ describe("recoverDetachedTurn", () => {
 
     await expect(recover(fetchMessages)).resolves.toEqual([assistantMessage]);
   });
+
+  it("classifies the last scheduled poll for timeout telemetry", async () => {
+    const attempts: Array<{ attempt: number; elapsedMs: number; finalAttempt: boolean }> = [];
+    let currentTime = 0;
+
+    await recoverDetachedTurn({
+      completionId: "completion-1",
+      knownMessageIds: new Set(["user-1"]),
+      fetchMessages: async (_completionId, attempt) => {
+        attempts.push(attempt);
+
+        return [userMessage];
+      },
+      pollIntervalMs: 20,
+      maxWaitMs: 50,
+      wait: async (ms) => {
+        currentTime += ms;
+      },
+      now: () => currentTime,
+    });
+
+    expect(attempts).toEqual([
+      { attempt: 1, elapsedMs: 20, finalAttempt: false },
+      { attempt: 2, elapsedMs: 40, finalAttempt: true },
+    ]);
+  });
 });

@@ -1,3 +1,7 @@
+import type {
+  InternalServiceScope,
+  InternalServiceTokenClaims,
+} from "@ngriffin_uk/polychat-schemas";
 import type { Context } from "hono";
 
 import type { AnonymousUser, IUser } from "~/types";
@@ -33,4 +37,21 @@ export function requireAuthenticatedUserOrAnonymous(ctx: Context): {
   }
 
   return { user, anonymousUser };
+}
+
+export function requireAuthenticatedService(
+  ctx: Context,
+  scope: InternalServiceScope,
+): InternalServiceTokenClaims {
+  const service = ctx.get("servicePrincipal") as InternalServiceTokenClaims | undefined;
+
+  if (!service || !service.scopes.includes(scope)) {
+    throw new AssistantError(
+      "This endpoint requires an authorised internal service.",
+      ErrorType.AUTHORISATION_ERROR,
+      403,
+    );
+  }
+
+  return service;
 }

@@ -15,7 +15,7 @@ export function WorkspaceOverviewSkeleton() {
       <PageHeaderSkeleton title="Workspace" actionCount={2} />
       <div className="mb-5">
         <h2 className="text-lg font-semibold">Projects</h2>
-        <p className="text-sm text-zinc-500">Projects in this workspace.</p>
+        <p className="text-sm text-muted-foreground">Projects in this workspace.</p>
       </div>
       <SkeletonCardGrid />
     </LoadingRegion>
@@ -37,9 +37,7 @@ export function ProjectOverviewSkeleton() {
       <PageHeaderSkeleton title="Project" actionCount={2} />
       <div className="grid gap-5 lg:grid-cols-[1.45fr_0.75fr]">
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            Recent conversations
-          </h2>
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Recent conversations</h2>
           <SkeletonList count={3} />
         </section>
         <aside className="space-y-4">

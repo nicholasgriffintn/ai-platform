@@ -517,6 +517,39 @@ export class ConversationManager {
     return normalisedMessages;
   }
 
+  async persistCompaction(
+    conversation_id: string,
+    snapshotMessage: Message,
+    compactionMessage: Message,
+    messageIdsToArchive: string[],
+  ): Promise<void> {
+    const normalisedMessages = this.prepareMessagesForStorage([snapshotMessage, compactionMessage]);
+
+    await this.incrementUsageForAssistantResponse(normalisedMessages);
+
+    if (!this.store) {
+      return;
+    }
+
+    await this.ensureWritableConversation(
+      conversation_id,
+      "User ID is required to compact conversations",
+      undefined,
+      normalisedMessages,
+    );
+
+    await this.database.repositories.messages.createCompactionAndArchiveMessages(
+      conversation_id,
+      normalisedMessages.map((message) => ({
+        id: message.id,
+        role: message.role,
+        content: this.serializeMessageContent(message.content),
+        data: message,
+      })),
+      messageIdsToArchive,
+    );
+  }
+
   /**
    * Replace all messages in a conversation with new ones, cleaning up any extras
    * @param conversation_id - The ID of the conversation to replace messages in

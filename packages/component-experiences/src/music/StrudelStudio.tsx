@@ -99,7 +99,7 @@ export function StrudelStudio({
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-600/10 p-2 text-blue-600">
+              <div className="rounded-lg bg-active-work/10 p-2 text-active-work">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>
@@ -265,9 +265,8 @@ export function StrudelStudio({
                 type="button"
                 onClick={() => onSelectExample(example)}
                 className={cn(
-                  "w-full rounded-lg border border-dashed border-zinc-200 px-4 py-3 text-left transition hover:border-blue-500/60 dark:border-zinc-700 dark:hover:border-blue-400/60 cursor-pointer",
-                  selectedExampleId === example.id &&
-                    "border-blue-500/80 bg-blue-500/5 dark:bg-blue-500/10",
+                  "w-full rounded-lg border border-dashed border-border px-4 py-3 text-left transition hover:border-active-work/60 cursor-pointer",
+                  selectedExampleId === example.id && "border-active-work/80 bg-active-work/5",
                 )}
               >
                 <div className="flex items-center justify-between gap-4">

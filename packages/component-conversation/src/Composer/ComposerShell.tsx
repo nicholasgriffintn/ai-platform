@@ -31,7 +31,7 @@ export function ComposerShell({
   return (
     <div
       data-chat-input-shell
-      className="relative rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-[#121212] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 focus-within:border-zinc-300 dark:focus-within:border-zinc-500 transition-colors"
+      className="border-border bg-card text-card-foreground hover:border-border-strong focus-within:border-ring focus-within:ring-ring/30 relative rounded-lg border shadow-sm transition-[border-color,box-shadow] focus-within:ring-[3px]"
     >
       <div className="flex flex-col">
         {chips}
@@ -60,14 +60,14 @@ export function ComposerShell({
           </div>
         </div>
 
-        <div className="mt-2 border-t border-zinc-200 px-3 pb-3 pt-3 dark:border-zinc-700">
+        <div className="border-border mt-2 border-t px-3 pt-3 pb-3">
           {isGeneratingAudio && (
             <div
-              className="mb-3 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400"
+              className="text-muted-foreground mb-3 flex items-center gap-2 text-xs"
               aria-live="polite"
               role="status"
             >
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" aria-hidden="true" />
+              <Loader2 className="text-active-work h-3.5 w-3.5 animate-spin" aria-hidden="true" />
               <span>Generating response audio...</span>
             </div>
           )}

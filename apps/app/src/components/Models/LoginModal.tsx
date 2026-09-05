@@ -22,9 +22,9 @@ const DISPLAY_SIGN_IN_WITH_APPLE_BUTTON =
   import.meta.env.VITE_DISPLAY_SIGN_IN_WITH_APPLE_BUTTON === "true";
 const AUTH_BUTTON_CLASS_NAME =
   "flex h-11 w-full items-center justify-center gap-2.5 rounded-lg px-4 text-sm font-semibold leading-none shadow-sm disabled:opacity-60";
-const GITHUB_BUTTON_CLASS_NAME = `${AUTH_BUTTON_CLASS_NAME} border border-zinc-950 bg-zinc-950 text-white hover:bg-zinc-800 dark:border-zinc-700`;
-const PASSKEY_BUTTON_CLASS_NAME = `${AUTH_BUTTON_CLASS_NAME} border border-teal-600/30 bg-teal-50 text-teal-950 hover:bg-teal-100 dark:border-teal-400/35 dark:bg-teal-400/10 dark:text-teal-50 dark:hover:bg-teal-400/15`;
-const EMAIL_BUTTON_CLASS_NAME = `${AUTH_BUTTON_CLASS_NAME} bg-blue-600 text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400`;
+const GITHUB_BUTTON_CLASS_NAME = `${AUTH_BUTTON_CLASS_NAME} border border-transparent bg-foreground text-background hover:bg-foreground/88`;
+const PASSKEY_BUTTON_CLASS_NAME = `${AUTH_BUTTON_CLASS_NAME} border border-accent-teal/35 bg-accent-teal/12 text-accent-teal hover:bg-accent-teal/20`;
+const EMAIL_BUTTON_CLASS_NAME = `${AUTH_BUTTON_CLASS_NAME} bg-human-action text-human-action-foreground hover:bg-human-action/88`;
 
 export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps) {
   const { isAuthenticated, isLoading, refreshAuthStatus } = useAuthStatus();
@@ -57,8 +57,7 @@ export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps)
                 id: "apple",
                 label: "Sign in with Apple",
                 clientId: APPLE_SIGN_IN_CLIENT_ID,
-                className:
-                  "!border-zinc-300 !bg-white !p-0 dark:!border-zinc-600 dark:!bg-white overflow-hidden",
+                className: "!border-transparent !bg-surface !p-0 overflow-hidden [&>div]:w-full",
               },
             ]
           : []),
@@ -85,7 +84,7 @@ export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps)
         panel: "mx-auto w-full max-w-[375px] space-y-3",
         signIn: "space-y-3",
         header: "mb-3 space-y-1",
-        title: "text-xl font-semibold text-zinc-900 dark:text-white",
+        title: "text-xl font-semibold text-foreground",
         providerList: "space-y-3",
         providerButton: GITHUB_BUTTON_CLASS_NAME,
         button: EMAIL_BUTTON_CLASS_NAME,
@@ -93,17 +92,16 @@ export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps)
         magicLinkButton: EMAIL_BUTTON_CLASS_NAME,
         form: "flex flex-col gap-2",
         field: "flex flex-col gap-2",
-        label: "text-sm font-medium text-zinc-800 dark:text-zinc-200",
+        label: "text-sm font-medium text-foreground",
         input:
-          "h-11 w-full rounded-lg border border-zinc-300 bg-white pr-3 pl-10 text-zinc-950 outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white",
+          "border-border bg-surface text-foreground focus:border-active-work h-11 w-full rounded-lg border pr-3 pl-10 outline-none",
         inputContainer: "relative w-full",
         inputIcon:
-          "pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-zinc-500 dark:text-zinc-400",
-        error:
-          "rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300",
+          "pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground",
+        error: "rounded-md border border-failure/40 bg-failure/10 px-3 py-2 text-sm text-failure",
         separator:
-          "flex items-center gap-2 py-3 text-sm text-zinc-500 before:h-px before:flex-1 before:bg-zinc-300 after:h-px after:flex-1 after:bg-zinc-300 dark:before:bg-zinc-700 dark:after:bg-zinc-700",
-        status: "text-sm text-green-600 dark:text-green-400",
+          "flex items-center gap-2 py-3 text-sm text-muted-foreground before:h-px before:flex-1 before:bg-selection after:h-px after:flex-1 after:bg-selection",
+        status: "text-sm text-success",
       },
       mapError: (error) => {
         const message = error instanceof Error ? error.message : "Sign-in failed.";

@@ -39,12 +39,12 @@ export function ProjectBriefCard({
     <>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-indigo-50 p-2 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
+          <div className="rounded-lg bg-creative/12 p-2 text-creative">
             <Pencil size={17} aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-sm font-semibold">Project brief</h2>
-            <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               Shared instructions for every project conversation.
             </p>
           </div>
@@ -72,10 +72,10 @@ export function ProjectBriefCard({
             rows={8}
             autoFocus
             placeholder="Add project context, terminology, constraints, and working preferences."
-            className="w-full resize-y rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-6 text-zinc-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm leading-6 text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-active-work/40"
           />
           {errorMessage && (
-            <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+            <p role="alert" className="text-sm text-failure">
               {errorMessage}
             </p>
           )}
@@ -89,7 +89,7 @@ export function ProjectBriefCard({
           </div>
         </div>
       ) : (
-        <p className="whitespace-pre-wrap pl-11 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+        <p className="whitespace-pre-wrap pl-11 text-sm leading-6 text-muted-foreground">
           {instructions ||
             (canManage
               ? "Add instructions to give every project conversation the same context."

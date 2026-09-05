@@ -97,6 +97,7 @@ export class ActivityRepository extends BaseRepository {
   async listPersonalActivities(
     userId: number,
     options: {
+      conversationId?: string;
       capabilityId?: string;
       status?: ActivityStatus;
       limit: number;
@@ -108,6 +109,7 @@ export class ActivityRepository extends BaseRepository {
       {
         created_by_user_id: userId,
         project_id: null,
+        conversation_id: options.conversationId,
         capability_id: options.capabilityId,
         status: options.status,
       },
@@ -120,6 +122,7 @@ export class ActivityRepository extends BaseRepository {
   async listProjectActivities(
     projectId: string,
     options: {
+      conversationId?: string;
       capabilityId?: string;
       status?: ActivityStatus;
       limit: number;
@@ -130,6 +133,7 @@ export class ActivityRepository extends BaseRepository {
       "activity_record",
       {
         project_id: projectId,
+        conversation_id: options.conversationId,
         capability_id: options.capabilityId,
         status: options.status,
       },

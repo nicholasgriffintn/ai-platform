@@ -3,10 +3,6 @@ const reactDomPreset = {
   darkMode: "class",
   theme: {
     extend: {
-      colors: {
-        "off-white": "#f8f8f8",
-        "off-white-highlight": "#e8eaed",
-      },
       typography: {
         DEFAULT: {
           css: {

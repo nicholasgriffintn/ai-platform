@@ -7,7 +7,6 @@ import {
   PopoverTrigger,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
-  Check,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -16,7 +15,6 @@ import {
   Keyboard,
   Loader2,
   LogIn,
-  Palette,
   Settings2,
   ShieldCheck,
   User,
@@ -24,8 +22,6 @@ import {
   Wrench,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
-
-import { themeOptions, type ThemePreference } from "./ThemeDropdown";
 
 export interface SidebarUsageMeter {
   id: string;
@@ -55,10 +51,10 @@ export interface SidebarSettingsLinks {
 }
 
 const usageToneClasses: Record<SidebarUsageMeter["tone"], string> = {
-  blue: "bg-blue-500",
-  emerald: "bg-emerald-500",
-  amber: "bg-amber-500",
-  violet: "bg-violet-500",
+  blue: "bg-active-work",
+  emerald: "bg-success",
+  amber: "bg-attention",
+  violet: "bg-creative",
 };
 
 function SidebarUsageSummary({
@@ -69,15 +65,15 @@ function SidebarUsageSummary({
   isLoading: boolean;
 }) {
   return (
-    <section className="p-3 border-b border-zinc-200 dark:border-zinc-700">
+    <section className="border-border border-b p-3">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Usage</h2>
+          <h2 className="text-foreground text-sm font-semibold">Usage</h2>
         </div>
       </div>
 
       {usage.length === 0 ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-muted-foreground text-sm">
           {isLoading ? "Loading usage…" : "Usage is temporarily unavailable."}
         </p>
       ) : (
@@ -85,17 +81,17 @@ function SidebarUsageSummary({
           {usage.map((item) => (
             <div key={item.id}>
               <div className="mb-1 flex items-center justify-between gap-3 text-xs">
-                <span className="font-medium text-zinc-700 dark:text-zinc-200">{item.label}</span>
-                <span className="text-zinc-500 dark:text-zinc-400">{item.value}</span>
+                <span className="text-foreground font-medium">{item.label}</span>
+                <span className="text-muted-foreground">{item.value}</span>
               </div>
               {item.percentage === null ? (
-                <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                <div className="text-muted-foreground flex items-center gap-2 text-xs">
                   <span className={cn("h-1.5 w-1.5 rounded-full", usageToneClasses[item.tone])} />
                   <span>{item.assistiveLabel}</span>
                 </div>
               ) : (
                 <div
-                  className="h-2 rounded-full bg-zinc-200 dark:bg-zinc-800"
+                  className="bg-selection h-2 rounded-full"
                   role="meter"
                   aria-label={item.assistiveLabel}
                   aria-valuemin={0}
@@ -145,7 +141,7 @@ function SidebarUserAvatar({
   }
 
   return (
-    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500 text-[10px] font-semibold text-white">
+    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-creative text-[10px] font-semibold text-background">
       {account.name ? account.name.charAt(0).toUpperCase() : "U"}
     </span>
   );
@@ -163,7 +159,7 @@ function PopoverLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-zinc-700 no-underline transition-colors hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+      className="text-popover-foreground hover:bg-selection hover:text-foreground flex items-center gap-2 rounded-md px-2.5 py-2 text-sm no-underline transition-colors"
     >
       {icon}
       <span>{children}</span>
@@ -178,11 +174,9 @@ export interface SidebarSettingsPopoverProps {
   isUsageLoading?: boolean;
   links: SidebarSettingsLinks;
   sourceCodeIcon: ReactNode;
-  theme?: ThemePreference;
   usage: SidebarUsageMeter[];
   onShowKeyboardShortcuts: () => void;
   onSignIn: () => void;
-  onThemeChange: (theme: ThemePreference) => void;
 }
 
 export function SidebarSettingsPopover({
@@ -192,19 +186,14 @@ export function SidebarSettingsPopover({
   isUsageLoading = false,
   links,
   sourceCodeIcon,
-  theme,
   usage,
   onShowKeyboardShortcuts,
   onSignIn,
-  onThemeChange,
 }: SidebarSettingsPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
 
   const displayName = isAuthenticated && account?.name ? account.name : "Settings";
   const planLabel = isAuthenticated ? (account?.planLabel ?? "Free") : "Guest";
-  const currentTheme = themeOptions.find((option) => option.value === theme) ?? themeOptions[0];
-  const CurrentThemeIcon = currentTheme.icon;
   const TriggerIcon = isOpen ? ChevronUp : ChevronDown;
 
   return (
@@ -212,11 +201,11 @@ export function SidebarSettingsPopover({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex w-full min-w-0 items-center justify-between gap-3 rounded-none bg-zinc-50 px-3 py-3 text-left text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500/40 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+          className="bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus:ring-sidebar-ring flex w-full min-w-0 items-center justify-between gap-3 rounded-none px-3 py-3 text-left transition-colors focus:ring-2 focus:ring-inset focus:outline-none"
           aria-label="Open settings and configuration"
         >
           <span className="flex min-w-0 items-center gap-2">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-100">
+            <span className="bg-selection text-foreground flex h-7 w-7 shrink-0 items-center justify-center rounded-md">
               <SidebarUserAvatar
                 account={account}
                 isAuthenticated={isAuthenticated}
@@ -225,15 +214,12 @@ export function SidebarSettingsPopover({
             </span>
             <span className="flex min-w-0 flex-1 items-center gap-2">
               <span className="min-w-0 truncate text-sm font-medium">{displayName}</span>
-              <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+              <span className="bg-selection text-muted-foreground shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium">
                 {planLabel}
               </span>
             </span>
           </span>
-          <TriggerIcon
-            className="h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400"
-            aria-hidden="true"
-          />
+          <TriggerIcon className="text-muted-foreground h-4 w-4 shrink-0" aria-hidden="true" />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -241,7 +227,7 @@ export function SidebarSettingsPopover({
         side="top"
         sideOffset={8}
         collisionPadding={{ top: 64, right: 8, bottom: 88, left: 8 }}
-        className="w-[calc(var(--radix-popover-trigger-width)-1rem)] max-w-[calc(var(--radix-popover-trigger-width)-1rem)] border-zinc-200 bg-off-white p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
+        className="border-border bg-popover text-popover-foreground w-[calc(var(--radix-popover-trigger-width)-1rem)] max-w-[calc(var(--radix-popover-trigger-width)-1rem)] p-3 shadow-[var(--polychat-elevated-shadow)]"
       >
         <div className="space-y-3">
           <SidebarUsageSummary usage={usage} isLoading={isUsageLoading} />
@@ -282,62 +268,11 @@ export function SidebarSettingsPopover({
             )}
           </div>
 
-          <div className="space-y-1">
-            <button
-              type="button"
-              onClick={() => setIsThemeMenuOpen((open) => !open)}
-              className="flex w-full items-center gap-2 rounded-md px-2.5 text-left text-sm text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
-              aria-expanded={isThemeMenuOpen}
-              aria-label={`Theme. Current: ${currentTheme.label}`}
-            >
-              <Palette className="h-4 w-4" />
-              <span>Theme</span>
-              {theme && (
-                <span className="ml-auto inline-flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                  <CurrentThemeIcon className="h-3.5 w-3.5" />
-                  {currentTheme.label}
-                </span>
-              )}
-              {isThemeMenuOpen ? (
-                <ChevronUp className="h-3.5 w-3.5 text-zinc-400" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
-              )}
-            </button>
-            {isThemeMenuOpen && (
-              <div className="ml-6 space-y-1 border-l border-zinc-200 pl-2 dark:border-zinc-700">
-                {themeOptions.map((option) => {
-                  const Icon = option.icon;
-                  const isSelected = Boolean(theme) && theme === option.value;
-
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => onThemeChange(option.value)}
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm transition-colors",
-                        isSelected
-                          ? "bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-zinc-50"
-                          : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-50",
-                      )}
-                      aria-pressed={isSelected}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{option.label}</span>
-                      {isSelected && <Check className="ml-auto h-4 w-4" />}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-1 border-t border-zinc-200 pt-2 dark:border-zinc-700">
+          <div className="border-border space-y-1 border-t pt-2">
             <button
               type="button"
               onClick={onShowKeyboardShortcuts}
-              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+              className="text-popover-foreground hover:bg-selection hover:text-foreground flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm transition-colors"
             >
               <Keyboard className="h-4 w-4" />
               <span>Keyboard shortcuts</span>
@@ -352,7 +287,7 @@ export function SidebarSettingsPopover({
               href={links.sourceCode}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-zinc-700 no-underline transition-colors hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+              className="text-popover-foreground hover:bg-selection hover:text-foreground flex items-center gap-2 rounded-md px-2.5 py-2 text-sm no-underline transition-colors"
             >
               <span aria-hidden="true">{sourceCodeIcon}</span>
               <span className="flex flex-1 items-center justify-between">

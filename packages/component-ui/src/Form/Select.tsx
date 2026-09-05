@@ -46,7 +46,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
           ref={ref}
           id={controlId}
           className={cn(
-            "w-full px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100",
+            "border-input bg-surface text-foreground focus:border-ring focus:ring-ring/30 w-full rounded-md border px-3 py-1.5 text-sm focus:ring-[3px] focus:outline-none",
             fullWidth && "w-full",
             className,
           )}
@@ -62,7 +62,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
             : children}
         </select>
         {description && (
-          <p id={descriptionId} className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+          <p id={descriptionId} className="text-muted-foreground mt-1 text-xs">
             {description}
           </p>
         )}

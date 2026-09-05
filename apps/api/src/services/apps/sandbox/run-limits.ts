@@ -1,4 +1,5 @@
-import { SANDBOX_RUNS_APP_ID } from "~/constants/app";
+import { SANDBOX_RUNS_CAPABILITY_ID } from "@ngriffin_uk/polychat-schemas";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
@@ -29,7 +30,7 @@ export async function assertSandboxRunCanStart(params: {
 
   const records = await context.repositories.activities.listRecentUserActivities(
     userId,
-    SANDBOX_RUNS_APP_ID,
+    SANDBOX_RUNS_CAPABILITY_ID,
   );
 
   const oneMinuteAgoMs = nowMs - 60_000;

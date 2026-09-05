@@ -7,7 +7,11 @@ import {
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { updateConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
-import { EMPTY_MODEL_CONFIG, getModelProvider } from "@ngriffin_uk/polychat-schemas";
+import {
+  chatTurnActivityEventSchema,
+  EMPTY_MODEL_CONFIG,
+  getModelProvider,
+} from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import { toast } from "sonner";
@@ -63,15 +67,27 @@ export function useStreamingResponse(
     user,
   } = useChatStore();
   const setUsageLimits = useUsageStore((state) => state.setUsageLimits);
-  const {
-    beginStreamActivity,
-    completeStreamActivityMessage,
-    endStreamActivity,
-    recordStreamActivityState,
-    recordStreamActivityText,
-    recordStreamActivityToolResult,
-    updateStreamLoadingMessage,
-  } = useStreamActivityStore.getState();
+  const beginStreamActivity = useStreamActivityStore((state) => state.beginStreamActivity);
+  const completeStreamActivityMessage = useStreamActivityStore(
+    (state) => state.completeStreamActivityMessage,
+  );
+  const endStreamActivity = useStreamActivityStore((state) => state.endStreamActivity);
+  const markStreamActivityReconnecting = useStreamActivityStore(
+    (state) => state.markStreamActivityReconnecting,
+  );
+  const recordStreamActivityState = useStreamActivityStore(
+    (state) => state.recordStreamActivityState,
+  );
+  const recordStreamActivityText = useStreamActivityStore(
+    (state) => state.recordStreamActivityText,
+  );
+  const recordStreamActivityToolResult = useStreamActivityStore(
+    (state) => state.recordStreamActivityToolResult,
+  );
+  const recordTurnActivity = useStreamActivityStore((state) => state.recordTurnActivity);
+  const updateStreamLoadingMessage = useStreamActivityStore(
+    (state) => state.updateStreamLoadingMessage,
+  );
   const currentConversationId = useChatStore((state) => state.currentConversationId);
   const currentStream = useStreamActivityStore((state) =>
     currentConversationId ? state.streams[currentConversationId] : undefined,
@@ -335,7 +351,7 @@ export function useStreamingResponse(
 
           try {
             response = await webLLMService.generate(
-              String(conversationId),
+              conversationId,
               lastMessageContent,
               async (_chatId: string, content: any, _model: any, _mode: any, role: string) => {
                 if (role !== "user") {
@@ -365,6 +381,16 @@ export function useStreamingResponse(
           const modelConfigToSend = selectedModel ? apiModels[selectedModel] : undefined;
 
           const handleStateChange = (state: string, data?: any) => {
+            if (state === "turn_activity") {
+              const activity = chatTurnActivityEventSchema.safeParse(data);
+
+              if (activity.success) {
+                recordTurnActivity(conversationId, activity.data);
+              }
+
+              return;
+            }
+
             recordStreamActivityState(conversationId, state, data);
 
             if (state === "conversation_title") {
@@ -511,13 +537,22 @@ export function useStreamingResponse(
         }
 
         updateStreamLoadingMessage(conversationId, "Reconnecting to the response...");
+        markStreamActivityReconnecting(conversationId);
         updateLoading("stream-response", undefined, "Reconnecting to the response...");
 
         const recoveredMessages = await recoverDetachedTurn({
           completionId: conversationId,
           knownMessageIds,
-          fetchMessages: async (completionId) =>
-            (await apiService.getChat(completionId)).messages ?? [],
+          fetchMessages: async (completionId, recovery) =>
+            (
+              await apiService.getChat(completionId, {
+                recovery: {
+                  ...recovery,
+                  knownAssistantCount: messages.filter((message) => message.role === "assistant")
+                    .length,
+                },
+              })
+            ).messages ?? [],
           signal: requestSignal,
         });
 
@@ -583,6 +618,8 @@ export function useStreamingResponse(
       recordStreamActivityState,
       recordStreamActivityText,
       recordStreamActivityToolResult,
+      recordTurnActivity,
+      markStreamActivityReconnecting,
       updateStreamLoadingMessage,
       user?.id,
     ],

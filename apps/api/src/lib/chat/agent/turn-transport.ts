@@ -22,6 +22,7 @@ export interface TurnTransportContext {
   serviceContext?: ServiceContext;
   shouldStop?: () => boolean;
   deferOutputUntilValidated?: boolean;
+  step?: number;
 }
 
 export interface ChatTurnTransport {
@@ -99,6 +100,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
           userId: context.userId,
           serviceContext: context.serviceContext,
           shouldStop: context.shouldStop,
+          step: context.step,
         },
       );
 
@@ -129,6 +131,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         error: streamed.error,
         status: streamed.interrupted ? "incomplete" : undefined,
         stopped: streamed.stopped,
+        activityStreamed: !context.deferOutputUntilValidated,
       };
     },
   };

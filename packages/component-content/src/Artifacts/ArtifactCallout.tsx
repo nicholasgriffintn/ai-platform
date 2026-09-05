@@ -51,11 +51,11 @@ export const ArtifactCallout = memo(
       <div className="artifact-wrapper">
         <button
           type="button"
-          className={`artifact-container w-full text-left border border-zinc-200 dark:border-zinc-700 ${
+          className={`artifact-container w-full text-left border border-border ${
             isCombinable && combinableCount && combinableCount > 1
               ? "rounded-t-md rounded-b-none"
               : "rounded-md"
-          } p-2 my-1 hover:border-blue-300 dark:hover:border-blue-500 transition-colors cursor-pointer`}
+          } p-2 my-1 hover:border-active-work/45 transition-colors cursor-pointer`}
           onClick={handleClick}
           onKeyDown={handleKeyDown}
           aria-label={`Open ${title || "artifact"}`}
@@ -64,14 +64,12 @@ export const ArtifactCallout = memo(
             <div className="flex-shrink-0 mt-1">{icon}</div>
             <div className="flex-grow min-w-0">
               <span className="text-sm font-medium truncate">{title || "Artifact"}</span>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-muted-foreground">
                 Click here to open the {isCode ? "code" : "file"}
               </p>
             </div>
             {language && (
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 flex-shrink-0 mr-1">
-                {language}
-              </span>
+              <span className="text-xs text-muted-foreground flex-shrink-0 mr-1">{language}</span>
             )}
           </div>
         </button>
@@ -79,7 +77,7 @@ export const ArtifactCallout = memo(
         {isCombinable && combinableCount && combinableCount > 1 && (
           <button
             type="button"
-            className="cursor-pointer preview-together-button w-full flex items-center justify-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 py-1 px-2 rounded-b-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors -mt-1 border border-t-0 border-blue-200 dark:border-blue-800"
+            className="cursor-pointer preview-together-button w-full flex items-center justify-center gap-1 text-xs bg-active-work/12 text-active-work py-1 px-2 rounded-b-md hover:bg-active-work/20 transition-colors -mt-1 border border-t-0 border-active-work/45"
             onClick={handleCombineClick}
             aria-label={`Preview with ${combinableCount - 1} other artifact${combinableCount > 2 ? "s" : ""}`}
           >

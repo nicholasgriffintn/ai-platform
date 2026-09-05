@@ -30,12 +30,12 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
   return (
     <PageShell.Content className="max-w-6xl">
       <PageShell.Header title="Governance" />
-      <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
         Review workspace spend, manage reusable project templates, and review workspace changes.
       </p>
 
       {workspaceQuery.isLoading ? (
-        <Card className="p-6 text-sm text-zinc-500 shadow-none">Loading governance…</Card>
+        <Card className="p-6 text-sm text-muted-foreground shadow-none">Loading governance…</Card>
       ) : !canManage ? (
         <EmptyState
           title="Governance unavailable"

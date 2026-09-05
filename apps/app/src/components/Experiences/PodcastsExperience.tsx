@@ -83,7 +83,7 @@ export function PodcastsExperience({ basePath, projectId, subpath }: ExperienceP
   if (!podcasts?.length) {
     return (
       <EmptyState
-        icon={<Mic2 size={24} className="text-zinc-400" />}
+        icon={<Mic2 size={24} className="text-muted-foreground" />}
         title="No podcasts yet"
         message="Upload a recording or audio URL to begin processing it."
         action={
@@ -140,7 +140,7 @@ function PodcastDetail({ podcast, projectId }: { podcast: Podcast; projectId?: s
           message="Sign in to process this podcast."
         />
       ) : (
-        process.error && <p className="text-sm text-red-700">{process.error.message}</p>
+        process.error && <p className="text-sm text-failure">{process.error.message}</p>
       )}
       <PodcastView podcast={podcast} />
     </div>

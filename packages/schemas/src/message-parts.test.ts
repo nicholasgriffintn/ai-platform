@@ -51,4 +51,54 @@ describe("normaliseMessageParts", () => {
       expect(normaliseMessageParts(parts)).toBeUndefined();
     }
   });
+
+  it("normalises explicit compaction coverage for clients", () => {
+    expect(
+      normaliseMessageParts([
+        {
+          type: "compaction",
+          status: "completed",
+          label: "Context compacted",
+          coverage: {
+            coveredMessageIds: ["message-1", "message-2"],
+            coveredMessageCount: 2,
+            candidateMessageCount: 3,
+            summaryInputCharacters: 1200,
+            strategy: "model_summary",
+          },
+        },
+      ]),
+    ).toEqual([
+      expect.objectContaining({
+        type: "compaction",
+        coverage: {
+          coveredMessageIds: ["message-1", "message-2"],
+          coveredMessageCount: 2,
+          candidateMessageCount: 3,
+          summaryInputCharacters: 1200,
+          strategy: "model_summary",
+        },
+      }),
+    ]);
+  });
+
+  it("rejects compaction coverage that claims more messages than were candidates", () => {
+    const parts = [
+      {
+        type: "compaction",
+        status: "completed",
+        coverage: {
+          coveredMessageIds: ["message-1", "message-2"],
+          coveredMessageCount: 2,
+          candidateMessageCount: 1,
+          summaryInputCharacters: 1200,
+          strategy: "model_summary",
+        },
+      },
+    ];
+
+    expect(hasValidCompactionPart(parts)).toBe(false);
+    expect(hasInvalidCompactionPart(parts)).toBe(true);
+    expect(normaliseMessageParts(parts)).toBeUndefined();
+  });
 });

@@ -1,7 +1,7 @@
 import { ChatHistoryControls } from "@ngriffin_uk/polychat-component-account";
 import { useState } from "react";
 
-import { PageShell } from "~/components/Core/PageShell";
+import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useDeleteAllLocalChats, useDeleteAllRemoteChats } from "~/hooks/useChat";
 import { apiService } from "~/lib/api/api-service";
@@ -44,9 +44,7 @@ export function ProfileHistoryTab() {
   };
 
   return (
-    <div>
-      <PageShell.Header title="Chat History" />
-
+    <ProfileTab title="Chat History">
       <ChatHistoryControls
         isExporting={isExporting}
         isDeletingLocal={deleteAllChats.isPending}
@@ -79,6 +77,6 @@ export function ProfileHistoryTab() {
           }
         }}
       />
-    </div>
+    </ProfileTab>
   );
 }

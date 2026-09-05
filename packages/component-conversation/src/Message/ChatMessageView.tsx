@@ -215,7 +215,7 @@ export const ChatMessageView = ({
       {message.role === "user" && goalStarted ? (
         <output
           aria-label="Goal started"
-          className="mb-1.5 mr-2 flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400"
+          className="text-muted-foreground mr-2 mb-1.5 flex items-center gap-1.5 text-xs font-medium"
         >
           <Target className="h-3.5 w-3.5" aria-hidden="true" />
           <span>Goal started</span>
@@ -224,8 +224,8 @@ export const ChatMessageView = ({
       <div
         className={`flex flex-col ${
           message.role === "user"
-            ? "max-w-[80%] rounded-2xl border border-zinc-200/10 bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
-            : "w-full text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
+            ? "border-human-action/25 bg-human-action/12 text-foreground max-w-[80%] rounded-2xl border"
+            : "text-foreground w-full"
         } `}
       >
         <div className={`flex flex-col gap-2 py-2 ${message.role === "user" ? "px-3" : ""}`}>

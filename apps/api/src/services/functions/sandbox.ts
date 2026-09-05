@@ -1,4 +1,5 @@
 import {
+  resolveSandboxDeliveryPolicy,
   sandboxRunEventSchema,
   sandboxPromptStrategySchema,
   type ExecuteSandboxRunPayload,
@@ -113,10 +114,13 @@ async function executeSandboxFunction(params: {
     taskType,
     model: sandboxOptions?.model,
     promptStrategy: parsePromptStrategy(sandboxOptions?.promptStrategy || args.promptStrategy),
-    shouldCommit:
+    deliveryPolicy: resolveSandboxDeliveryPolicy(
+      sandboxOptions?.deliveryPolicy,
       typeof forceShouldCommit === "boolean"
         ? forceShouldCommit
         : (sandboxOptions?.shouldCommit ?? args.shouldCommit),
+    ),
+    environmentSetup: sandboxOptions?.environmentSetup,
     timeoutSeconds: sandboxOptions?.timeoutSeconds ?? args.timeoutSeconds,
     modelSettings: getSandboxModelSettings(request),
   };

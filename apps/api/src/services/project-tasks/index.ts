@@ -24,7 +24,7 @@ import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
-import { resolveProjectTaskToolApproval } from "./approvals";
+import { getPendingProjectTaskToolApproval, resolveProjectTaskToolApproval } from "./approvals";
 import { approveLatestProjectTaskCompletion } from "./completions";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
 import { queueProjectTaskRun } from "./runner";
@@ -203,12 +203,13 @@ export async function listProjectTasks(
 export async function getProjectTask(context: ServiceContext, projectId: string, taskId: string) {
   await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
-  const [goal, pendingQuestions] = await Promise.all([
+  const [goal, pendingQuestions, pendingApproval] = await Promise.all([
     task.goalId ? context.repositories.goals.getGoalById(task.goalId) : null,
     getPendingProjectTaskQuestions(context, task),
+    getPendingProjectTaskToolApproval(context, task),
   ]);
 
-  return { task, goal, pendingQuestions };
+  return { task, goal, pendingQuestions, pendingApproval };
 }
 
 export async function respondToProjectTaskQuestions(

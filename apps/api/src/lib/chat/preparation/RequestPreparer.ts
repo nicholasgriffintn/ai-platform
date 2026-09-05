@@ -16,6 +16,7 @@ import {
   getConnectedRecipeConnectorProviders,
   listRecipeConnectors,
 } from "~/services/apps/connectors";
+import { isRecipeExecutionRequest } from "~/services/apps/recipes/toolContext";
 import {
   resolveEnabledFunctionToolNames,
   resolveRequestFunctionToolNames,
@@ -23,6 +24,7 @@ import {
 import {
   buildSkillAvailabilityInput,
   listSkillAvailability,
+  mergeSkillLoadToolName,
   mergeSkillSuggestedToolNames,
 } from "~/services/skills";
 import {
@@ -315,14 +317,17 @@ export class RequestPreparer {
       scopedSkillCatalogPromise,
     ]);
     const enabledTools = this.resolveRequestTools(scope);
-    const skills: readonly SkillAvailability[] = await listSkillAvailability(
-      buildSkillAvailabilityInput({
-        skillScope,
-        supportsToolCalls: Boolean(primaryModelConfig.supportsToolCalls),
-        enabledToolIds: new Set(enabledTools ?? []),
-      }),
-      scopedSkillCatalog?.listDefinitions(),
-    );
+    const hasFixedToolScope = isRecipeExecutionRequest(scope.options);
+    const skills: readonly SkillAvailability[] = hasFixedToolScope
+      ? []
+      : await listSkillAvailability(
+          buildSkillAvailabilityInput({
+            skillScope,
+            supportsToolCalls: Boolean(primaryModelConfig.supportsToolCalls),
+            enabledToolIds: new Set(enabledTools ?? []),
+          }),
+          scopedSkillCatalog?.listDefinitions(),
+        );
 
     const activeGoal = await loadActiveGoal(scope.options);
 
@@ -367,22 +372,24 @@ export class RequestPreparer {
       userSettings,
       currentMode: mode,
       isProUser: scope.isProUser,
-      enabledTools: mergeSkillSuggestedToolNames({
-        enabledTools: mergeEnabledGoalToolNames({
-          enabledTools: mergeEnabledMemoryToolNames({
-            enabledTools,
-            user,
-            userSettings,
-            store: scope.options.store,
+      enabledTools: hasFixedToolScope
+        ? [...(enabledTools ?? [])]
+        : mergeSkillSuggestedToolNames({
+            enabledTools: mergeEnabledGoalToolNames({
+              enabledTools: mergeEnabledMemoryToolNames({
+                enabledTools: mergeSkillLoadToolName({ enabledTools, skills }),
+                user,
+                userSettings,
+                store: scope.options.store,
+              }),
+              isProUser: scope.isProUser,
+            }),
+            skills,
+            deferSuggestedTools:
+              enabledTools !== undefined ||
+              (Boolean(primaryModelConfig.supportsToolSearch) &&
+                Boolean(enabledTools?.includes("tool_search"))),
           }),
-          isProUser: scope.isProUser,
-        }),
-        skills,
-        deferSuggestedTools:
-          enabledTools !== undefined ||
-          (Boolean(primaryModelConfig.supportsToolSearch) &&
-            Boolean(enabledTools?.includes("tool_search"))),
-      }),
       activeGoal,
       toolOptions: this.resolveToolOptions(scope, savedToolConfigurations, enabledTools),
       requestOptions: scope.options.options,

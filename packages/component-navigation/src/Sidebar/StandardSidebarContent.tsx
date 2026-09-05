@@ -34,8 +34,8 @@ export function StandardSidebarContent({
               href={homeHref}
               className={cn(
                 "block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out",
-                "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900",
-                "dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
+                "text-muted-foreground hover:bg-surface-elevated hover:text-foreground",
+                "",
                 "no-underline",
                 "flex items-center",
               )}

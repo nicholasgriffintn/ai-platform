@@ -1,6 +1,8 @@
 import { CAPABILITY_DISCOVERY_DATA_KEY } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { handleToolCalls } from "~/lib/chat/tools/execution";
+
 const mocks = vi.hoisted(() => ({
   handleToolCalls: vi.fn(),
 }));
@@ -9,7 +11,8 @@ vi.mock("~/lib/chat/tools/execution", () => ({
   handleToolCalls: mocks.handleToolCalls,
 }));
 
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatEventSink } from "~/lib/chat/streaming/emitter";
+import type { ChatCompletionParameters, Message } from "~/types";
 
 import { runAgentLoop } from "../agent-loop";
 import type { TurnOutput } from "../assistant-turn";
@@ -83,6 +86,7 @@ function creditSummary(overrides: Record<string, unknown> = {}) {
 
 function createParams(turns: TurnOutput[], maxSteps = 8) {
   const { transport, runTurn } = createTransport(turns);
+  const sink = { writeEvent: vi.fn<ChatEventSink["writeEvent"]>(async () => {}) };
 
   return {
     params: {
@@ -104,8 +108,10 @@ function createParams(turns: TurnOutput[], maxSteps = 8) {
       platform: "api" as const,
       mode: "normal",
       memoryScope: { type: "personal" } as const,
+      sink,
     },
     runTurn,
+    sink,
   };
 }
 
@@ -148,6 +154,109 @@ describe("runAgentLoop", () => {
     expect(runTurn).toHaveBeenCalledTimes(2);
     expect(result.response.response).toBe("It is sunny.");
     expect(result.toolResponses).toHaveLength(1);
+  });
+
+  it("emits semantic activity in model, tool, and response order", async () => {
+    const { params, sink } = createParams([
+      toolTurn("get_weather", "call-weather"),
+      textTurn("It is sunny."),
+    ]);
+    const toolResult: Message = {
+      id: "result-weather",
+      role: "tool",
+      name: "get_weather",
+      content: "sunny",
+      status: "success",
+      tool_call_id: "call-weather",
+    };
+
+    mocks.handleToolCalls.mockImplementationOnce(
+      async (...args: Parameters<typeof handleToolCalls>) => {
+        const options = args[4];
+
+        await options.onToolExecutionStart({ id: "call-weather", name: "get_weather" });
+        await options.onToolResult(toolResult);
+
+        return [toolResult];
+      },
+    );
+
+    await runAgentLoop(params);
+
+    const activities = sink.writeEvent.mock.calls
+      .filter(([type]) => type === "turn_activity")
+      .map(([, activity]) => activity);
+
+    expect(activities).toEqual([
+      { kind: "model_step_started", step: 1 },
+      { kind: "model_step_finished", step: 1, outcome: "tool_calls" },
+      {
+        kind: "tool_input_started",
+        step: 1,
+        toolCallId: "call-weather",
+        toolName: "get_weather",
+      },
+      {
+        kind: "tool_input_finished",
+        step: 1,
+        toolCallId: "call-weather",
+        toolName: "get_weather",
+      },
+      {
+        kind: "tool_execution_started",
+        step: 1,
+        toolCallId: "call-weather",
+        toolName: "get_weather",
+      },
+      {
+        kind: "tool_finished",
+        step: 1,
+        toolCallId: "call-weather",
+        toolName: "get_weather",
+        outcome: "success",
+      },
+      { kind: "model_step_started", step: 2 },
+      { kind: "response_started", step: 2 },
+      { kind: "response_finished", step: 2 },
+      { kind: "model_step_finished", step: 2, outcome: "completed" },
+    ]);
+  });
+
+  it("emits a waiting transition without claiming the tool executed", async () => {
+    const { params, sink } = createParams([toolTurn("ask_user", "call-question")]);
+    const pendingResult: Message = {
+      id: "result-question",
+      role: "tool",
+      name: "ask_user",
+      content: "Which environment?",
+      status: "pending",
+      tool_call_id: "call-question",
+    };
+
+    mocks.handleToolCalls.mockImplementationOnce(
+      async (...args: Parameters<typeof handleToolCalls>) => {
+        await args[4].onToolResult(pendingResult);
+
+        return [pendingResult];
+      },
+    );
+
+    await runAgentLoop(params);
+
+    const activities = sink.writeEvent.mock.calls
+      .filter(([type]) => type === "turn_activity")
+      .map(([, activity]) => activity);
+
+    expect(activities).toContainEqual({
+      kind: "waiting_for_user",
+      step: 1,
+      toolCallId: "call-question",
+      toolName: "ask_user",
+      reason: "question",
+    });
+    expect(activities).not.toContainEqual(
+      expect.objectContaining({ kind: "tool_execution_started", toolCallId: "call-question" }),
+    );
   });
 
   it("activates a discovered native tool for the rest of the response", async () => {
@@ -311,7 +420,7 @@ describe("runAgentLoop", () => {
   });
 
   it("stops for user approval when a tool result is pending", async () => {
-    const { params, runTurn } = createParams([toolTurn("request_approval")]);
+    const { params, runTurn, sink } = createParams([toolTurn("request_approval")]);
 
     mocks.handleToolCalls.mockResolvedValueOnce([
       {
@@ -327,6 +436,10 @@ describe("runAgentLoop", () => {
     expect(result.response.status).toBe("pending");
     expect(result.response.response).toBe("Waiting on you to approve the deploy.");
     expect(runTurn).toHaveBeenCalledTimes(1);
+    expect(sink.writeEvent).toHaveBeenCalledWith(
+      "message_delta",
+      expect.objectContaining({ status: "pending" }),
+    );
   });
 
   it("tells the goal gate that a pending question is waiting for the user", async () => {

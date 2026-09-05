@@ -44,15 +44,43 @@ export interface ConversationMessageMetadata {
   message_count: number;
 }
 
+interface StoredMessageWrite {
+  id: string;
+  role: string;
+  content: string | Record<string, unknown>;
+  data?: Partial<Message>;
+}
+
 export class MessageRepository extends BaseRepository {
+  private buildMessageInsertStatements(
+    database: D1Database,
+    conversationId: string,
+    messages: StoredMessageWrite[],
+  ): D1PreparedStatement[] {
+    const columns = MESSAGE_INSERT_COLUMNS.join(", ");
+    const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
+    const insertSql = `INSERT INTO message (
+			${columns}, created_at, updated_at
+		) VALUES (${placeholders}, datetime('now'), datetime('now'))`;
+
+    return messages.map((message) =>
+      database
+        .prepare(insertSql)
+        .bind(
+          ...this.buildMessageValues(
+            message.id,
+            conversationId,
+            message.role,
+            message.content,
+            message.data,
+          ),
+        ),
+    );
+  }
+
   public async createMessagesAndUpdateConversation(
     conversationId: string,
-    messages: Array<{
-      id: string;
-      role: string;
-      content: string | Record<string, unknown>;
-      data?: Partial<Message>;
-    }>,
+    messages: StoredMessageWrite[],
   ): Promise<void> {
     if (messages.length === 0) {
       return;
@@ -64,27 +92,10 @@ export class MessageRepository extends BaseRepository {
       throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
     }
 
-    const columns = MESSAGE_INSERT_COLUMNS.join(", ");
-    const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
-    const insertSql = `INSERT INTO message (
-			${columns}, created_at, updated_at
-		) VALUES (${placeholders}, datetime('now'), datetime('now'))`;
     const lastMessage = messages[messages.length - 1];
 
     await database.batch([
-      ...messages.map((message) =>
-        database
-          .prepare(insertSql)
-          .bind(
-            ...this.buildMessageValues(
-              message.id,
-              conversationId,
-              message.role,
-              message.content,
-              message.data,
-            ),
-          ),
-      ),
+      ...this.buildMessageInsertStatements(database, conversationId, messages),
       database
         .prepare(
           `UPDATE conversation
@@ -95,6 +106,67 @@ export class MessageRepository extends BaseRepository {
 					 WHERE id = ?`,
         )
         .bind(lastMessage.id, messages.length, conversationId),
+    ]);
+  }
+
+  public async createCompactionAndArchiveMessages(
+    conversationId: string,
+    messages: StoredMessageWrite[],
+    messageIdsToArchive: string[],
+  ): Promise<void> {
+    if (messages.length === 0 || messageIdsToArchive.length === 0) {
+      return;
+    }
+
+    const database = this.env.DB;
+
+    if (!database) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
+
+    const archiveIds = Array.from(new Set(messageIdsToArchive.filter(Boolean)));
+
+    if (archiveIds.length === 0) {
+      return;
+    }
+
+    const archivePlaceholders = archiveIds.map(() => "?").join(", ");
+
+    await database.batch([
+      ...this.buildMessageInsertStatements(database, conversationId, messages),
+      database
+        .prepare(
+          `UPDATE message
+			 SET is_archived = 1,
+			     updated_at = datetime('now')
+			 WHERE conversation_id = ?
+			   AND id IN (${archivePlaceholders})`,
+        )
+        .bind(conversationId, ...archiveIds),
+      database
+        .prepare(
+          `UPDATE conversation
+			 SET last_message_id = (
+			       SELECT id
+			       FROM message
+			       WHERE conversation_id = ?
+			         AND is_archived = 0
+			       ORDER BY ${MESSAGE_ORDER_BY_DESC}
+			       LIMIT 1
+			     ),
+			     last_message_at = CASE
+			       WHEN EXISTS (
+			         SELECT 1 FROM message WHERE conversation_id = ? AND is_archived = 0
+			       ) THEN datetime('now')
+			       ELSE NULL
+			     END,
+			     message_count = (
+			       SELECT COUNT(*) FROM message WHERE conversation_id = ? AND is_archived = 0
+			     ),
+			     updated_at = datetime('now')
+			 WHERE id = ?`,
+        )
+        .bind(conversationId, conversationId, conversationId, conversationId),
     ]);
   }
 

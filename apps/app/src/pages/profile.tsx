@@ -43,7 +43,7 @@ export default function ProfilePage() {
     >
       {isLoading ? (
         <PageStatus
-          icon={<Loader2 size={32} className="animate-spin text-blue-600" />}
+          icon={<Loader2 size={32} className="animate-spin text-active-work" />}
           message="Loading profile data..."
           className="h-auto min-h-[200px]"
         />

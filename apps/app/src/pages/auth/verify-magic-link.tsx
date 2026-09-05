@@ -53,7 +53,7 @@ const VerifyMagicLink = () => {
         <PageStatus title="Verification Failed" message={error} />
       ) : isPending || !token ? (
         <PageStatus
-          icon={<Loader2 size={32} className="animate-spin text-blue-600" />}
+          icon={<Loader2 size={32} className="animate-spin text-active-work" />}
           message="Verifying your login link..."
         />
       ) : (

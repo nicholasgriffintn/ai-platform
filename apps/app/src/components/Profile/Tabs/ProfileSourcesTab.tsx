@@ -1,7 +1,8 @@
 import {
   SourceCollectionList,
   SourceList,
-  SourceListHeader,
+  SettingsSection,
+  SourceKindFilter,
 } from "@ngriffin_uk/polychat-component-account";
 import {
   ConfirmationDialog,
@@ -14,7 +15,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { PageShell } from "~/components/Core/PageShell";
+import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 import { API_BASE_URL } from "~/constants";
 import { useSourceCollections, useSourceMutations, useSources } from "~/hooks/useSources";
 
@@ -60,27 +61,25 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
   const selectedCollection = collections?.find((collection) => collection.id === collectionId);
 
   return (
-    <>
-      <PageShell.Header
-        title={title}
-        actions={
-          projectId
-            ? []
-            : [
-                {
-                  label: "Add source",
-                  icon: <Plus size={16} />,
-                  onClick: () => setIsCreateSourceOpen(true),
-                },
-              ]
-        }
-      />
-      <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-        {projectId
+    <ProfileTab
+      title={title}
+      actions={
+        projectId
+          ? []
+          : [
+              {
+                label: "Add source",
+                icon: <Plus size={16} />,
+                onClick: () => setIsCreateSourceOpen(true),
+              },
+            ]
+      }
+      description={
+        projectId
           ? "Memories and sources available to this project."
-          : "Files, memories, links, repositories, and connected records available to Polychat."}
-      </p>
-
+          : "Files, memories, links, repositories, and connected records available to Polychat."
+      }
+    >
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside>
           <SourceCollectionList
@@ -93,38 +92,48 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
         </aside>
 
         <section className="min-w-0">
-          <SourceListHeader
-            collectionTitle={selectedCollection?.title}
-            kindOptions={sourceKinds}
-            kind={kind}
-            onKindChange={(value) => setKind(value as "" | SourceKind)}
-            showKindFilter={!collectionId}
-          />
+          <SettingsSection
+            title={selectedCollection?.title ?? "All sources"}
+            description={
+              selectedCollection
+                ? "Sources grouped in this collection."
+                : "Browse and manage available source material."
+            }
+            actions={
+              collectionId ? null : (
+                <SourceKindFilter
+                  kindOptions={sourceKinds}
+                  kind={kind}
+                  onKindChange={(value) => setKind(value as "" | SourceKind)}
+                />
+              )
+            }
+          >
+            <SourceList
+              sources={sources}
+              collections={collections}
+              isLoading={isLoading}
+              errorMessage={error?.message}
+              isCollectionView={!!selectedCollection}
+              fileHref={(source) => `${API_BASE_URL}/sources/${source.id}/content`}
+              onAddToCollection={
+                collectionId
+                  ? undefined
+                  : (targetCollectionId, sourceId) =>
+                      mutations.addToCollection.mutate({
+                        collectionId: targetCollectionId,
+                        sourceId,
+                      })
+              }
+              onDelete={setSourceIdToDelete}
+            />
+          </SettingsSection>
 
           {!projectId ? (
-            <div className="mb-4">
+            <div className="mt-6">
               <MemorySynthesisPanel />
             </div>
           ) : null}
-
-          <SourceList
-            sources={sources}
-            collections={collections}
-            isLoading={isLoading}
-            errorMessage={error?.message}
-            isCollectionView={!!selectedCollection}
-            fileHref={(source) => `${API_BASE_URL}/sources/${source.id}/content`}
-            onAddToCollection={
-              collectionId
-                ? undefined
-                : (targetCollectionId, sourceId) =>
-                    mutations.addToCollection.mutate({
-                      collectionId: targetCollectionId,
-                      sourceId,
-                    })
-            }
-            onDelete={setSourceIdToDelete}
-          />
         </section>
       </div>
 
@@ -235,7 +244,7 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
           setCollectionIdToDelete(null);
         }}
       />
-    </>
+    </ProfileTab>
   );
 }
 

@@ -17,12 +17,12 @@ export function CanvasGenerationsView({
       <section data-header-scroll-source className={cn("h-full overflow-auto p-4", className)}>
         <div className="mx-auto max-w-[1400px]">
           <div className="mb-4 flex items-center gap-2">
-            <div className="rounded-lg bg-zinc-900 p-2 text-white dark:bg-zinc-100 dark:text-zinc-900">
+            <div className="bg-creative/15 text-creative rounded-lg p-2">
               <Layers className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Drawings</h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <h2 className="text-lg font-semibold text-foreground">Drawings</h2>
+              <p className="text-sm text-muted-foreground">
                 Past drawings and transformed outputs appear here.
               </p>
             </div>
@@ -38,19 +38,17 @@ export function CanvasGenerationsView({
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="rounded-lg bg-zinc-900 p-2 text-white dark:bg-zinc-100 dark:text-zinc-900">
+            <div className="bg-creative/15 text-creative rounded-lg p-2">
               <Layers className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                Generations
-              </h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <h2 className="text-lg font-semibold text-foreground">Generations</h2>
+              <p className="text-sm text-muted-foreground">
                 Outputs from selected models appear here.
               </p>
             </div>
           </div>
-          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="text-xs text-muted-foreground">
             {canvas.selectedModelIds.length} active model
             {canvas.selectedModelIds.length === 1 ? "" : "s"}
           </div>
@@ -61,14 +59,14 @@ export function CanvasGenerationsView({
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={`loading-${index}`}
-                className="h-48 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800"
+                className="bg-selection h-48 animate-pulse rounded-xl"
               />
             ))}
           </div>
         )}
 
         {!canvas.isModelsLoading && canvas.displayRuns.length === 0 && (
-          <div className="flex min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+          <div className="border-border text-muted-foreground flex min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed">
             <Sparkles className="mb-2 h-6 w-6" />
             <p>Select models in the sidebar and run your first generation.</p>
           </div>

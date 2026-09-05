@@ -1,7 +1,10 @@
-import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
+import {
+  SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  SANDBOX_RUNS_CAPABILITY_ID,
+} from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SANDBOX_RUN_ITEM_TYPE, SANDBOX_RUNS_APP_ID } from "~/constants/app";
+import { SANDBOX_RUN_ITEM_TYPE } from "~/constants/app";
 import { resolveSandboxModel } from "~/services/sandbox/worker";
 
 import { executeSandboxRunStream } from "../execute-stream";
@@ -119,7 +122,7 @@ describe("executeSandboxRunStream", () => {
         createdByUserId: 42,
         projectId: "project-1",
         conversationId: "conversation-1",
-        capabilityId: SANDBOX_RUNS_APP_ID,
+        capabilityId: SANDBOX_RUNS_CAPABILITY_ID,
         groupId: "run-123",
         kind: SANDBOX_RUN_ITEM_TYPE,
         status: "queued",

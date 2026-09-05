@@ -3,6 +3,7 @@ import type { PetModelOverrides, PetSheetLayout, PetSource } from "@ngriffin_uk/
 import { ArrowRight, Sparkles, Trash2, Upload } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { SettingsSection } from "../SettingsSection";
 import { PetModelAssignments } from "./PetModelAssignments";
 import { petKey, type PetModelTargetOption } from "./petModelTargets";
 
@@ -68,16 +69,11 @@ export function PetSettings({
   const selectedOption = options.find((option) => option.id === selectedId);
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100">Choose your pet</h3>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Polys are the house birds. The rest are strays we let in. Bring your own if you would
-              rather.
-            </p>
-          </div>
+    <div className="space-y-6">
+      <SettingsSection
+        title="Choose your pet"
+        description="Polys are the house birds. The rest are strays we let in. Bring your own if you would rather."
+        actions={
           <div className="flex gap-2">
             <Button
               type="button"
@@ -98,10 +94,10 @@ export function PetSettings({
               Create with Polychat
             </Button>
           </div>
-        </div>
-
+        }
+      >
         {canAuthor ? null : (
-          <p className="rounded-lg border border-zinc-200 p-3 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
+          <p className="rounded-lg border border-border p-3 text-sm text-muted-foreground">
             Uploading a sprite sheet, or having Polychat draw one, needs a Pro plan.
           </p>
         )}
@@ -119,20 +115,16 @@ export function PetSettings({
                   aria-pressed={isSelected}
                   className={`flex h-full w-full flex-col items-center gap-2 rounded-lg border p-3 text-center transition-colors disabled:opacity-60 ${
                     isSelected
-                      ? "border-zinc-800 bg-zinc-50 dark:border-zinc-200 dark:bg-zinc-800"
-                      : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500"
+                      ? "border-active-work/50 bg-selection"
+                      : "border-border hover:border-border-strong"
                   }`}
                 >
                   <span className="flex h-20 items-end justify-center">
                     {renderPreview(option)}
                   </span>
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                    {option.name}
-                  </span>
+                  <span className="text-sm font-medium text-foreground">{option.name}</span>
                   {option.description ? (
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {option.description}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{option.description}</span>
                   ) : null}
                 </button>
                 {option.canDelete ? (
@@ -163,9 +155,7 @@ export function PetSettings({
             >
               Previous
             </Button>
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
-              Custom pets, page {customPetPage}
-            </span>
+            <span className="text-sm text-muted-foreground">Custom pets, page {customPetPage}</span>
             <Button
               type="button"
               variant="ghost"
@@ -177,14 +167,14 @@ export function PetSettings({
           </div>
         ) : null}
 
-        {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+        {error ? <p className="text-sm text-failure">{error}</p> : null}
 
         <div className="flex justify-end">
           <TextLink href="/pets" size="xs" trailingIcon={<ArrowRight size={13} />}>
             Meet the pets
           </TextLink>
         </div>
-      </section>
+      </SettingsSection>
 
       <PetModelAssignments
         targets={modelTargets}
@@ -196,17 +186,16 @@ export function PetSettings({
         onChange={onModelOverridesChange}
       />
 
-      <section className="space-y-3">
-        <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100">Movement</h3>
-        <div className="flex items-start justify-between gap-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+      <SettingsSection title="Movement">
+        <div className="flex items-start justify-between gap-4 rounded-lg border border-border p-3">
           <div>
             <label
               htmlFor="pet_animation_enabled"
-              className="block text-sm font-medium text-zinc-800 dark:text-zinc-200"
+              className="block text-sm font-medium text-foreground"
             >
               Animate your pet
             </label>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               Off by default, your pet stays in its neutral pose. Your reduced-motion preference
               always takes priority.
             </p>
@@ -218,19 +207,18 @@ export function PetSettings({
             onChange={(event) => onAnimationChange(event.target.checked)}
           />
         </div>
-      </section>
+      </SettingsSection>
 
-      <section className="space-y-3">
-        <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100">Following you around</h3>
-        <div className="flex items-start justify-between gap-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+      <SettingsSection title="Following you around">
+        <div className="flex items-start justify-between gap-4 rounded-lg border border-border p-3">
           <div>
             <label
               htmlFor="pet_travel_enabled"
-              className="block text-sm font-medium text-zinc-800 dark:text-zinc-200"
+              className="block text-sm font-medium text-foreground"
             >
               Let your pet follow you
             </label>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               It comes with you into conversations and perches above the composer. Off, it stays on
               the new chat screen.
             </p>
@@ -242,7 +230,7 @@ export function PetSettings({
             onChange={(event) => onTravelChange(event.target.checked)}
           />
         </div>
-      </section>
+      </SettingsSection>
     </div>
   );
 }

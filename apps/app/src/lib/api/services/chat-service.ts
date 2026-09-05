@@ -21,6 +21,7 @@ import type {
   ModelRouterMode,
   ToolSelectionMode,
 } from "@ngriffin_uk/polychat-schemas";
+import { conversationLabelSchema } from "@ngriffin_uk/polychat-schemas";
 import {
   createChatStreamAssembler,
   parseChatStreamSseBuffer,
@@ -29,7 +30,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas/chat-stream";
 import { goalSchema } from "@ngriffin_uk/polychat-schemas/goals";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { getSandboxTaskToolNames } from "~/lib/sandbox/task-tools";
 import type {
@@ -64,6 +65,18 @@ export interface ConversationUpdateRequest {
 export interface ConversationCompactionResult {
   compacted: boolean;
   conversation: Conversation;
+}
+
+export interface RecoveryRequestContext {
+  attempt: number;
+  elapsedMs: number;
+  finalAttempt: boolean;
+  knownAssistantCount: number;
+}
+
+export interface GetChatOptions {
+  recovery?: RecoveryRequestContext;
+  refreshPending?: boolean;
 }
 
 type StreamProgressHandler = (
@@ -156,6 +169,9 @@ export class ChatService {
         parent_conversation_id?: string;
         parent_message_id?: string;
         is_archived?: boolean;
+        is_pinned?: number;
+        is_unread?: number;
+        labels?: string | unknown[];
       }[];
       pageNumber?: number;
       pageSize?: number;
@@ -175,15 +191,35 @@ export class ChatService {
       };
     }
 
-    const results = data.conversations.map((conversation) => ({
-      ...conversation,
-      messages: [],
-      parent_conversation_id: conversation.parent_conversation_id,
-      parent_message_id: conversation.parent_message_id,
-    }));
+    const results = data.conversations.map((conversation) => {
+      let labels: unknown = conversation.labels ?? [];
+
+      if (typeof labels === "string") {
+        try {
+          labels = JSON.parse(labels);
+        } catch {
+          labels = [];
+        }
+      }
+
+      const parsedLabels = conversationLabelSchema.array().safeParse(labels);
+
+      return {
+        ...conversation,
+        messages: [],
+        parent_conversation_id: conversation.parent_conversation_id,
+        parent_message_id: conversation.parent_message_id,
+        isPinned: conversation.is_pinned === 1,
+        isUnread: conversation.is_unread === 1,
+        labels: parsedLabels.success ? parsedLabels.data : [],
+      };
+    });
 
     const sortBy = options.sortBy ?? "updated";
-    const conversations = results.sort((a, b) => compareConversationsBySort(a, b, sortBy));
+    const conversations = sortCopy(
+      results,
+      (a, b) => Number(b.isPinned) - Number(a.isPinned) || compareConversationsBySort(a, b, sortBy),
+    );
 
     return {
       conversations,
@@ -224,10 +260,7 @@ export class ChatService {
     return data.archived ?? 0;
   }
 
-  async getChat(
-    completion_id: string,
-    options?: { refreshPending?: boolean },
-  ): Promise<Conversation> {
+  async getChat(completion_id: string, options?: GetChatOptions): Promise<Conversation> {
     if (!completion_id) {
       throw new Error("No completion ID provided");
     }
@@ -240,10 +273,22 @@ export class ChatService {
       console.error("Error getting chat:", error);
     }
 
-    const refreshPending = options?.refreshPending ?? true;
-    const url = refreshPending
-      ? `/chat/completions/${completion_id}?refresh_pending=true`
-      : `/chat/completions/${completion_id}`;
+    const params = new URLSearchParams();
+
+    if (options?.refreshPending ?? true) {
+      params.set("refresh_pending", "true");
+    }
+
+    if (options?.recovery) {
+      params.set("recovery_platform", "web");
+      params.set("recovery_attempt", String(options.recovery.attempt));
+      params.set("recovery_elapsed_ms", String(options.recovery.elapsedMs));
+      params.set("recovery_known_assistant_count", String(options.recovery.knownAssistantCount));
+      params.set("recovery_final_attempt", String(options.recovery.finalAttempt));
+    }
+
+    const query = params.toString();
+    const url = `/chat/completions/${completion_id}${query ? `?${query}` : ""}`;
 
     const response = await fetchApi(url, {
       method: "GET",
@@ -500,7 +545,7 @@ export class ChatService {
 
     await fetchApi(`/chat/completions/${completion_id}/cancel`, {
       method: "POST",
-      headers,
+      headers: { ...headers, "X-Platform": "web" },
     });
   }
 
@@ -740,6 +785,12 @@ export class ChatService {
 
       if (update.type === "state") {
         onStateChange(update.state, update.event);
+
+        return;
+      }
+
+      if (update.type === "activity") {
+        onStateChange("turn_activity", update.activity);
 
         return;
       }

@@ -16,7 +16,7 @@ export function ProjectActivity({ projectId }: { projectId: string }) {
   return (
     <PageShell.Content className="max-w-6xl">
       <PageShell.Header title="Activity" />
-      <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
         Runs and background work across this project.
       </p>
 

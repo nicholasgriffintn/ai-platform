@@ -130,7 +130,7 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
   if (!outputs?.length) {
     return (
       <EmptyState
-        icon={<Puzzle size={24} className="text-zinc-400" />}
+        icon={<Puzzle size={24} className="text-muted-foreground" />}
         title="Nothing saved yet"
         message="Run an experience or tool and its result lands here."
       />

@@ -107,7 +107,7 @@ export const ToolForm = ({
     <div className="max-w-3xl mx-auto">
       <div
         className={cn(
-          "border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-off-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600",
+          "border border-border rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-surface-elevated hover:border-border-strong",
           "bg-gradient-to-br",
           getCardGradient(tool.theme),
           "mb-6",
@@ -119,10 +119,8 @@ export const ToolForm = ({
               {getIcon(tool.icon, tool.theme)}
             </div>
             <div>
-              <h1 className={cn("text-2xl font-bold mb-2 text-zinc-900 dark:text-zinc-50")}>
-                {tool.name}
-              </h1>
-              <p className={cn("text-zinc-600 dark:text-zinc-300")}>{tool.description}</p>
+              <h1 className={cn("text-2xl font-bold mb-2 text-foreground")}>{tool.name}</h1>
+              <p className={cn("text-muted-foreground")}>{tool.description}</p>
             </div>
           </div>
 
@@ -134,21 +132,21 @@ export const ToolForm = ({
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${
                         index < currentStepIndex
-                          ? "bg-green-500 dark:bg-green-600 text-white"
+                          ? "bg-success text-background"
                           : index === currentStepIndex
-                            ? "bg-blue-500 dark:bg-blue-600 text-white"
-                            : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                            ? "bg-active-work text-background"
+                            : "bg-selection text-muted-foreground"
                       }`}
                     >
                       {index < currentStepIndex ? <Check className="w-4 h-4" /> : index + 1}
                     </div>
-                    <span className="text-xs text-zinc-600 dark:text-zinc-300">{step.title}</span>
+                    <span className="text-xs text-muted-foreground">{step.title}</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full">
+              <div className="mt-4 h-2 bg-selection rounded-full">
                 <div
-                  className="h-full bg-blue-500 dark:bg-blue-600 rounded-full transition-all duration-300"
+                  className="h-full bg-active-work rounded-full transition-all duration-300"
                   style={{
                     width: `${((currentStepIndex + 1) / tool.formSchema.steps.length) * 100}%`,
                   }}
@@ -159,7 +157,7 @@ export const ToolForm = ({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="bg-off-white/80 dark:bg-zinc-800/80 p-5 rounded-lg">
+          <div className="bg-surface-elevated p-5 rounded-lg">
             <FormStep
               step={currentStep}
               formData={formData}
@@ -168,7 +166,7 @@ export const ToolForm = ({
             />
 
             {errors.form && (
-              <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 rounded-md border border-red-200 dark:border-red-800">
+              <div className="mt-4 p-3 bg-failure/12 text-failure rounded-md border border-failure/45">
                 {errors.form}
               </div>
             )}

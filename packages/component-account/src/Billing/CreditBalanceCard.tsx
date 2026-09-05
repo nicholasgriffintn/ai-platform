@@ -6,6 +6,7 @@ import {
   getBoundedPercentage,
 } from "@ngriffin_uk/polychat-utility-core";
 
+import { SettingsSection } from "../SettingsSection";
 import { CREDIT_STATE_DESCRIPTIONS, CREDIT_STATE_LABELS } from "./usage-display";
 
 export interface CreditBalanceCardProps {
@@ -13,10 +14,10 @@ export interface CreditBalanceCardProps {
 }
 
 const stateBadgeClasses: Record<UsageBalanceResponse["credits"]["state"], string> = {
-  ok: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
-  reserve: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
-  overage: "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
-  exhausted: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
+  ok: "bg-success/12 text-success",
+  reserve: "bg-attention/12 text-attention",
+  overage: "bg-creative/12 text-creative",
+  exhausted: "bg-failure/12 text-failure",
 };
 
 export function CreditBalanceCard({ balance }: CreditBalanceCardProps) {
@@ -31,25 +32,28 @@ export function CreditBalanceCard({ balance }: CreditBalanceCardProps) {
   const isMetered = credits.included > 0;
 
   return (
-    <Card className="p-5">
+    <SettingsSection
+      title="Credits"
+      actions={
+        <Badge className={cn("border-transparent", stateBadgeClasses[credits.state])}>
+          {CREDIT_STATE_LABELS[credits.state]}
+        </Badge>
+      }
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Credits</h3>
-          <p className="mt-1 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+          <p className="text-3xl font-bold text-foreground">
             {formatCredits(credits.used)}
-            <span className="text-lg font-normal text-zinc-500 dark:text-zinc-400">
+            <span className="text-lg font-normal text-muted-foreground">
               {" "}
               {isMetered ? `used of ${formatCredits(credits.included)}` : "used"}
             </span>
           </p>
         </div>
-        <Badge className={cn("border-transparent", stateBadgeClasses[credits.state])}>
-          {CREDIT_STATE_LABELS[credits.state]}
-        </Badge>
       </div>
 
       <div
-        className="relative mt-4 h-3 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
+        className="bg-selection relative mt-4 h-3 overflow-hidden rounded-full"
         role="meter"
         aria-label={`${formatCredits(credits.used)} of ${formatCredits(credits.included)} included credits used, ${formatCredits(reserveRemaining)} of reserve remaining`}
         aria-valuemin={0}
@@ -58,62 +62,56 @@ export function CreditBalanceCard({ balance }: CreditBalanceCardProps) {
       >
         <div className="absolute inset-y-0 left-0 flex w-full">
           <div
-            className="h-full rounded-full bg-violet-500 transition-[width] duration-500 ease-out"
+            className="h-full rounded-full bg-creative transition-[width] duration-500 ease-out"
             style={{ width: `${Math.min(usedPercentage, reserveStartPercentage)}%` }}
           />
           {usedPercentage > reserveStartPercentage && (
             <div
-              className="h-full rounded-r-full bg-amber-400/80 transition-[width] duration-500 ease-out motion-safe:animate-pulse dark:bg-amber-500/70"
+              className="h-full rounded-r-full bg-attention/80 transition-[width] duration-500 ease-out motion-safe:animate-pulse"
               style={{ width: `${usedPercentage - reserveStartPercentage}%` }}
             />
           )}
         </div>
         <div
-          className="absolute inset-y-0 w-0.5 bg-white dark:bg-zinc-950"
+          className="bg-surface absolute inset-y-0 w-0.5"
           style={{ left: `${reserveStartPercentage}%` }}
         />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">Included</p>
-          <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-            {formatCredits(credits.included)}
-          </p>
+          <p className="text-xs text-muted-foreground">Included</p>
+          <p className="text-sm font-medium text-foreground">{formatCredits(credits.included)}</p>
         </div>
         <div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">Remaining</p>
-          <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-            {formatCredits(includedRemaining)}
-          </p>
+          <p className="text-xs text-muted-foreground">Remaining</p>
+          <p className="text-sm font-medium text-foreground">{formatCredits(includedRemaining)}</p>
         </div>
         <div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-muted-foreground">
             {inReserve ? "Reserve remaining" : "Reserve"}
           </p>
-          <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+          <p className="text-sm font-medium text-foreground">
             {formatCredits(inReserve ? reserveRemaining : credits.grace)}
           </p>
         </div>
         <div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">Resets</p>
-          <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-            {formatDate(balance.resets_at)}
-          </p>
+          <p className="text-xs text-muted-foreground">Resets</p>
+          <p className="text-sm font-medium text-foreground">{formatDate(balance.resets_at)}</p>
         </div>
       </div>
 
-      <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-3 text-sm text-muted-foreground">
         {isMetered
           ? CREDIT_STATE_DESCRIPTIONS[credits.state]
           : "This plan has no credit allowance configured yet."}
       </p>
 
       {credits.overage > 0 && (
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           {formatCredits(credits.overage)} credits of overage so far this period.
         </p>
       )}
-    </Card>
+    </SettingsSection>
   );
 }

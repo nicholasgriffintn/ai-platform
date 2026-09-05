@@ -10,7 +10,7 @@ export const ScrollButton = ({ onClick }: ScrollButtonProps) => {
     <div className="sticky bottom-6 flex justify-center px-4">
       <Button
         onClick={onClick}
-        className="z-10 rounded-full bg-zinc-800/90 text-white shadow-lg backdrop-blur-sm hover:bg-zinc-700 dark:bg-zinc-700/90 dark:text-white dark:hover:bg-zinc-600"
+        className="bg-surface-elevated text-foreground border-border hover:bg-selection z-10 rounded-full border shadow-[var(--polychat-elevated-shadow)] backdrop-blur-sm"
         aria-label="Scroll to bottom"
       >
         <span>Scroll to bottom</span>

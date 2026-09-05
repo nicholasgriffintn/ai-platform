@@ -27,7 +27,7 @@ export function UserMenuItem({
 }: UserMenuItemProps) {
   if (!isReady) {
     return (
-      <div className="flex items-center justify-center w-10 h-10 text-zinc-700 dark:text-zinc-200">
+      <div className="flex items-center justify-center w-10 h-10 text-foreground">
         <User size={16} />
         <span className="sr-only">User</span>
       </div>
@@ -36,7 +36,7 @@ export function UserMenuItem({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center w-10 h-10 text-zinc-700 dark:text-zinc-200">
+      <div className="flex items-center justify-center w-10 h-10 text-foreground">
         <Loader2 size={16} className="animate-spin" />
         <span className="sr-only">Loading...</span>
       </div>
@@ -49,7 +49,7 @@ export function UserMenuItem({
         type="button"
         variant="ghost"
         onClick={onSignIn}
-        className="cursor-pointer flex items-center justify-center p-2 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md"
+        className="cursor-pointer flex items-center justify-center p-2 text-foreground hover:bg-surface-elevated rounded-md"
         icon={<KeyRound size={16} />}
       >
         Login
@@ -64,7 +64,7 @@ export function UserMenuItem({
   return (
     <Link
       href={profileHref}
-      className="no-underline cursor-pointer flex items-center justify-center w-10 h-10 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md"
+      className="no-underline cursor-pointer flex items-center justify-center w-10 h-10 text-foreground hover:bg-surface-elevated rounded-md"
       aria-disabled={isLoggingOut}
     >
       {account.avatarUrl ? (
@@ -75,7 +75,7 @@ export function UserMenuItem({
           loading="eager"
         />
       ) : (
-        <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-semibold">
+        <div className="w-6 h-6 rounded-full bg-creative flex items-center justify-center text-background text-xs font-semibold">
           {account.name ? account.name.charAt(0).toUpperCase() : "U"}
         </div>
       )}

@@ -33,13 +33,13 @@ export function ProjectActivityList({
   }
 
   if (isLoading) {
-    return <Card className="p-6 text-sm text-zinc-500 shadow-none">Loading activity…</Card>;
+    return <Card className="p-6 text-sm text-muted-foreground shadow-none">Loading activity…</Card>;
   }
 
   if (activities.length === 0) {
     return (
       <EmptyState
-        icon={<Activity size={24} className="text-zinc-400" />}
+        icon={<Activity size={24} className="text-muted-foreground" />}
         title="No activity yet"
         message="Capability runs will appear here."
         className="min-h-[240px]"
@@ -53,18 +53,18 @@ export function ProjectActivityList({
         {activities.map((item) => (
           <div
             key={item.id}
-            className="flex items-center gap-4 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
+            className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-0"
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-elevated">
               {getStatusIcon(item.status)}
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="truncate text-sm font-medium">{item.summary}</h2>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-muted-foreground">
                 {item.capabilityId} · {formatDate(item.updatedAt ?? item.createdAt)}
               </p>
             </div>
-            <span className="text-xs capitalize text-zinc-500">{item.status}</span>
+            <span className="text-xs capitalize text-muted-foreground">{item.status}</span>
           </div>
         ))}
       </Card>

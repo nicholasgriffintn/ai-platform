@@ -43,9 +43,7 @@ export function WorkOverview() {
               : undefined
           }
         />
-        <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
-          Create and manage shared workspaces.
-        </p>
+        <p className="mb-6 text-sm text-muted-foreground">Create and manage shared workspaces.</p>
 
         {isAuthenticationLoading ? (
           <CardGridLoadingSkeleton
@@ -85,7 +83,7 @@ export function WorkOverview() {
 
         {canAccessWork && data?.workspaces.length === 0 && (
           <EmptyState
-            icon={<BriefcaseBusiness className="text-zinc-400" size={24} />}
+            icon={<BriefcaseBusiness className="text-muted-foreground" size={24} />}
             title="No workspaces yet"
             message="Create a workspace to organise projects and invite other people."
             action={<Button onClick={() => setIsCreateOpen(true)}>Create workspace</Button>}
@@ -104,9 +102,7 @@ export function WorkOverview() {
 
         {canAccessWork && attentionItems.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-              Waiting on you
-            </h2>
+            <h2 className="text-foreground mb-3 text-sm font-semibold">Waiting on you</h2>
             <TaskAttentionList
               items={attentionItems}
               itemHref={(item) =>

@@ -21,7 +21,7 @@ export function ProjectConversationStarter({ onStart }: ProjectConversationStart
   };
 
   return (
-    <Card className="gap-3 border-zinc-300 p-3 shadow-none dark:border-zinc-700">
+    <Card className="gap-3 border-border-strong p-3 shadow-none">
       <Textarea
         aria-label="Start a project conversation"
         value={input}
@@ -35,8 +35,8 @@ export function ProjectConversationStarter({ onStart }: ProjectConversationStart
         placeholder="What would you like to work on?"
         className="min-h-28 resize-none border-0 bg-transparent px-2 py-2 text-base shadow-none focus-visible:ring-0 dark:bg-transparent"
       />
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-        <p className="px-1 text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+        <p className="px-1 text-xs text-muted-foreground">
           Uses this project&apos;s instructions, memory, context, and capabilities.
         </p>
         <Button

@@ -42,7 +42,7 @@ export function ConversationBranchesButton({
           variant="ghost"
           size="sm"
           collapseLabel="container"
-          className="flex-shrink-0 text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+          className="flex-shrink-0 text-muted-foreground hover:text-foreground"
           title="Browse conversation branches"
           aria-label="Browse conversation branches"
           icon={<GitBranch className="h-3.5 w-3.5" />}
@@ -56,10 +56,10 @@ export function ConversationBranchesButton({
         className="w-[min(92vw,22rem)] overflow-hidden rounded-xl p-0 shadow-lg"
         aria-label="Conversation branches"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-zinc-200 px-3.5 py-3 dark:border-zinc-800">
-          <h2 className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">Branches</h2>
+        <div className="flex items-center justify-between gap-3 border-b border-border px-3.5 py-3">
+          <h2 className="text-xs font-semibold text-foreground">Branches</h2>
           {data && (
-            <span className="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs tabular-nums text-muted-foreground">
               {rows.length}
               {data.truncated ? "+" : ""} conversations
             </span>
@@ -67,7 +67,7 @@ export function ConversationBranchesButton({
         </div>
         {errorMessage ? (
           <div role="alert" className="space-y-3 p-3.5">
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">{errorMessage}</p>
+            <p className="text-sm text-muted-foreground">{errorMessage}</p>
             <Button
               variant="secondary"
               size="sm"
@@ -78,7 +78,7 @@ export function ConversationBranchesButton({
             </Button>
           </div>
         ) : isLoading ? (
-          <output className="flex items-center gap-2 px-3.5 py-5 text-xs text-zinc-500 dark:text-zinc-400">
+          <output className="flex items-center gap-2 px-3.5 py-5 text-xs text-muted-foreground">
             <RotateCw
               className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"
               aria-hidden="true"
@@ -103,7 +103,7 @@ export function ConversationBranchesButton({
                     {branch.depth > 0 && (
                       <span
                         aria-hidden="true"
-                        className="absolute -left-2 top-0 h-6 w-2 rounded-bl border-b border-l border-zinc-300 dark:border-zinc-700"
+                        className="absolute -left-2 top-0 h-6 w-2 rounded-bl border-b border-l border-border-strong"
                       />
                     )}
                     <button
@@ -112,31 +112,29 @@ export function ConversationBranchesButton({
                       disabled={current}
                       aria-current={current ? "page" : undefined}
                       className={cn(
-                        "group my-0.5 flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-500",
-                        current
-                          ? "bg-zinc-100 dark:bg-zinc-800/70"
-                          : "hover:bg-zinc-100 dark:hover:bg-zinc-800/50",
+                        "group my-0.5 flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-active-work",
+                        current ? "bg-selection" : "hover:bg-selection/60",
                       )}
                     >
                       {branch.depth === 0 ? (
                         <MessageSquare
                           aria-hidden="true"
-                          className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500 dark:text-zinc-400"
+                          className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground"
                         />
                       ) : (
                         <GitBranch
                           aria-hidden="true"
-                          className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500 dark:text-zinc-400"
+                          className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground"
                         />
                       )}
                       <span className="min-w-0 flex-1">
                         <span
-                          className="block truncate text-sm font-medium text-zinc-800 dark:text-zinc-200"
+                          className="block truncate text-sm font-medium text-foreground"
                           title={branch.title || "Untitled conversation"}
                         >
                           {branch.title || "Untitled conversation"}
                         </span>
-                        <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-4 text-zinc-500 dark:text-zinc-400">
+                        <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-4 text-muted-foreground">
                           {branch.depth === 0 && (
                             <>
                               <span>Original</span>
@@ -153,7 +151,7 @@ export function ConversationBranchesButton({
                         </span>
                       </span>
                       {current && (
-                        <span className="mt-0.5 flex shrink-0 items-center gap-1 text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
+                        <span className="mt-0.5 flex shrink-0 items-center gap-1 text-[11px] font-medium text-muted-foreground">
                           <Check aria-hidden="true" className="h-3 w-3" />
                           Current
                         </span>
@@ -166,7 +164,7 @@ export function ConversationBranchesButton({
           </nav>
         )}
         {data?.truncated && (
-          <p className="border-t border-zinc-200 px-3.5 py-2 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+          <p className="border-t border-border px-3.5 py-2 text-xs text-muted-foreground">
             Showing the first 200 conversations.
           </p>
         )}

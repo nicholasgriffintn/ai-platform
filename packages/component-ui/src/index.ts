@@ -41,6 +41,8 @@ export * from "./skeletons";
 export * from "./sonner";
 export * from "./Status/icons";
 export * from "./tabs";
+export * from "./theme";
+export * from "./ThemePicker";
 export * from "./Textarea";
 export * from "./TextLink";
 export * from "./toggle";

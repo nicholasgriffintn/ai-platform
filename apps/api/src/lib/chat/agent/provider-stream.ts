@@ -20,6 +20,8 @@ import { appendReasoningPart, appendTextPart, buildMessageParts } from "~/lib/ch
 import { modelEmitsUnterminatedThinking } from "~/lib/chat/messages/unterminated-thinking";
 import type { ChatEventSink } from "~/lib/chat/streaming/emitter";
 import { SseLineBuffer } from "~/lib/chat/streaming/sse-line-buffer";
+import { writeTurnActivity } from "~/lib/chat/streaming/turn-activity";
+import { emitToolInputDelta, emitToolInputStart, emitToolInputStop } from "~/lib/chat/tools/events";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { findModelConfig } from "~/lib/providers/models";
@@ -44,6 +46,7 @@ export interface ProviderStreamContext {
   userId?: number;
   serviceContext?: ServiceContext;
   shouldStop?: () => boolean;
+  step?: number;
 }
 
 export interface StreamedTurn {
@@ -113,6 +116,7 @@ export async function consumeProviderStream(
   context: ProviderStreamContext,
 ): Promise<StreamedTurn> {
   const { env, model, provider, completionId } = context;
+  const step = context.step ?? 1;
   const modelConfig = await findModelConfig(model, env, provider, context.userId);
   const content = new BoundedText(MAX_CONTENT_LENGTH, "Content", completionId);
   const thinking = new BoundedText(MAX_THINKING_LENGTH, "Thinking", completionId);
@@ -133,10 +137,13 @@ export async function consumeProviderStream(
   };
 
   const partialToolCalls: Record<string, any> = {};
+  const toolInputEvents = createToolInputEventState();
   let currentEventType = "";
   let isFirstContentChunk = true;
   let openedThinkTag = false;
   let completed = false;
+  let reasoningStarted = false;
+  let responseStarted = false;
   const handledReasoningItems = new Set<string>();
   const completedHostedToolItems = new Set<string>();
   const pendingHostedToolCallIds = new Map<string, string[]>();
@@ -280,6 +287,11 @@ export async function consumeProviderStream(
         : StreamingFormatter.extractContentFromChunk(formattedData, currentEventType);
 
     if (contentDelta) {
+      if (!responseStarted) {
+        responseStarted = true;
+        await writeTurnActivity(sink, { kind: "response_started", step });
+      }
+
       if (
         modelEmitsUnterminatedThinking(model) &&
         isFirstContentChunk &&
@@ -301,6 +313,11 @@ export async function consumeProviderStream(
     const thinkingData = StreamingFormatter.extractThinkingFromChunk(data, currentEventType);
 
     if (typeof thinkingData === "string") {
+      if (!reasoningStarted) {
+        reasoningStarted = true;
+        await writeTurnActivity(sink, { kind: "reasoning_started", step });
+      }
+
       if (
         data.type === "response.reasoning_summary_text.delta" &&
         typeof data.item_id === "string"
@@ -332,6 +349,11 @@ export async function consumeProviderStream(
       const reasoningSummary = extractOpenAIReasoningSummary(item);
 
       if (reasoningSummary && (!itemId || !handledReasoningItems.has(itemId))) {
+        if (!reasoningStarted) {
+          reasoningStarted = true;
+          await writeTurnActivity(sink, { kind: "reasoning_started", step });
+        }
+
         thinking.add(reasoningSummary);
         appendReasoningPart(turn.parts, reasoningSummary, Date.now());
         await sink.writeEvent("thinking_delta", { thinking: reasoningSummary });
@@ -418,15 +440,14 @@ export async function consumeProviderStream(
       }
     }
 
-    collectToolCallDelta(
+    await collectToolCallDelta(
       StreamingFormatter.extractToolCall(data, currentEventType),
       partialToolCalls,
       turn.toolCalls,
+      sink,
+      step,
+      toolInputEvents,
     );
-
-    if (currentEventType === "content_block_start" || currentEventType === "content_block_stop") {
-      await sink.writeEvent(currentEventType, data);
-    }
 
     if (currentEventType === "content_block_stop") {
       if (provider === "anthropic" && typeof data.index === "number") {
@@ -453,6 +474,7 @@ export async function consumeProviderStream(
 
       if (completedToolCall) {
         turn.toolCalls.push(completedToolCall);
+        await finishToolInput(sink, step, completedToolCall, toolInputEvents);
       }
     }
 
@@ -551,6 +573,15 @@ export async function consumeProviderStream(
   }
 
   finaliseToolCalls();
+  await finaliseToolInputEvents(sink, step, turn.toolCalls, toolInputEvents);
+
+  if (reasoningStarted) {
+    await writeTurnActivity(sink, { kind: "reasoning_finished", step });
+  }
+
+  if (responseStarted) {
+    await writeTurnActivity(sink, { kind: "response_finished", step });
+  }
 
   turn.content = content.toString();
   turn.thinking = thinking.toString();
@@ -558,10 +589,27 @@ export async function consumeProviderStream(
   return turn;
 }
 
-function collectToolCallDelta(
+interface ToolInputEventState {
+  started: Set<string>;
+  finished: Set<string>;
+  emittedArgumentCharacters: Map<string, number>;
+}
+
+function createToolInputEventState(): ToolInputEventState {
+  return {
+    started: new Set(),
+    finished: new Set(),
+    emittedArgumentCharacters: new Map(),
+  };
+}
+
+async function collectToolCallDelta(
   toolCallData: any,
   partialToolCalls: Record<string, any>,
   toolCalls: ToolCall[],
+  sink: ChatEventSink,
+  step: number,
+  eventState: ToolInputEventState,
 ) {
   if (!toolCallData) {
     return;
@@ -577,12 +625,22 @@ function collectToolCallDelta(
         function: { name: toolCall.function?.name || "", arguments: "" },
       };
 
+      if (toolCall.id) {
+        partialToolCalls[index].id = toolCall.id;
+      }
+
       if (toolCall.function?.name) {
         partialToolCalls[index].function.name = toolCall.function.name;
       }
 
       if (toolCall.function?.arguments) {
         partialToolCalls[index].function.arguments += toolCall.function.arguments;
+      }
+
+      const partialToolCall = partialToolCalls[index] as ToolCall;
+
+      if (partialToolCall.id && partialToolCall.function?.name) {
+        await emitPendingToolInput(sink, step, partialToolCall, eventState);
       }
     }
 
@@ -597,12 +655,27 @@ function collectToolCallDelta(
       isComplete: false,
     };
 
+    if (toolCallData.id && toolCallData.name) {
+      await startToolInput(sink, step, toolCallData.id, toolCallData.name, eventState);
+    }
+
     return;
   }
 
   if (toolCallData.format === "anthropic_delta" || toolCallData.format === "nova_delta") {
     if (partialToolCalls[toolCallData.index] && toolCallData.partial_json) {
-      partialToolCalls[toolCallData.index].accumulatedInput += toolCallData.partial_json;
+      const partialToolCall = partialToolCalls[toolCallData.index];
+
+      partialToolCall.accumulatedInput += toolCallData.partial_json;
+
+      if (partialToolCall.id && partialToolCall.name) {
+        await startToolInput(sink, step, partialToolCall.id, partialToolCall.name, eventState);
+        await emitToolInputDelta(sink, partialToolCall.id, toolCallData.partial_json);
+        eventState.emittedArgumentCharacters.set(
+          partialToolCall.id,
+          partialToolCall.accumulatedInput.length,
+        );
+      }
     }
 
     return;
@@ -621,7 +694,76 @@ function collectToolCallDelta(
       }
 
       toolCalls.push(toolCall);
+      await emitPendingToolInput(sink, step, toolCall, eventState);
+      await finishToolInput(sink, step, toolCall, eventState);
     }
+  }
+}
+
+async function emitPendingToolInput(
+  sink: ChatEventSink,
+  step: number,
+  toolCall: ToolCall,
+  eventState: ToolInputEventState,
+) {
+  const toolCallId = toolCall.id;
+  const toolName = toolCall.function?.name;
+
+  if (!toolCallId || !toolName) {
+    return;
+  }
+
+  await startToolInput(sink, step, toolCallId, toolName, eventState);
+
+  const argumentsText = toolCall.function?.arguments || "";
+  const emittedCharacters = eventState.emittedArgumentCharacters.get(toolCallId) ?? 0;
+  const pendingArguments = argumentsText.slice(emittedCharacters);
+
+  await emitToolInputDelta(sink, toolCallId, pendingArguments);
+  eventState.emittedArgumentCharacters.set(toolCallId, argumentsText.length);
+}
+
+async function startToolInput(
+  sink: ChatEventSink,
+  step: number,
+  toolCallId: string,
+  toolName: string,
+  eventState: ToolInputEventState,
+) {
+  if (eventState.started.has(toolCallId)) {
+    return;
+  }
+
+  eventState.started.add(toolCallId);
+  await emitToolInputStart(sink, step, toolCallId, toolName);
+}
+
+async function finishToolInput(
+  sink: ChatEventSink,
+  step: number,
+  toolCall: ToolCall,
+  eventState: ToolInputEventState,
+) {
+  const toolCallId = toolCall.id;
+  const toolName = toolCall.function?.name;
+
+  if (!toolCallId || !toolName || eventState.finished.has(toolCallId)) {
+    return;
+  }
+
+  await emitPendingToolInput(sink, step, toolCall, eventState);
+  eventState.finished.add(toolCallId);
+  await emitToolInputStop(sink, step, toolCallId, toolName);
+}
+
+async function finaliseToolInputEvents(
+  sink: ChatEventSink,
+  step: number,
+  toolCalls: readonly ToolCall[],
+  eventState: ToolInputEventState,
+) {
+  for (const toolCall of toolCalls) {
+    await finishToolInput(sink, step, toolCall, eventState);
   }
 }
 

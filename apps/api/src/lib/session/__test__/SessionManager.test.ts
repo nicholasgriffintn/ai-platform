@@ -45,9 +45,7 @@ function createTimestampedShortMessage(index: number): Message {
 
 describe("SessionManager", () => {
   const mockConversationManager: SessionConversationStore = {
-    add: vi.fn(),
-    archiveMessages: vi.fn(),
-    deleteMessages: vi.fn(),
+    persistCompaction: vi.fn(),
   };
 
   const env = {
@@ -88,8 +86,7 @@ describe("SessionManager", () => {
 
     expect(result.compacted).toBe(false);
     expect(result.messages).toEqual(messages);
-    expect(mockConversationManager.add).not.toHaveBeenCalled();
-    expect(mockConversationManager.archiveMessages).not.toHaveBeenCalled();
+    expect(mockConversationManager.persistCompaction).not.toHaveBeenCalled();
   });
 
   it("compacts and persists snapshot + archived IDs", async () => {
@@ -107,19 +104,13 @@ describe("SessionManager", () => {
       modelConfig: { contextWindow: 4096 },
     });
 
-    expect(result.compacted).toBe(true);
     expect(result.snapshotMessage?.id).toBe("snapshot-message-id");
-    expect(mockConversationManager.add).toHaveBeenNthCalledWith(
-      1,
+    expect(mockConversationManager.persistCompaction).toHaveBeenCalledWith(
       "conv-2",
       expect.objectContaining({
         id: "snapshot-message-id",
         parts: expect.arrayContaining([expect.objectContaining({ type: "snapshot" })]),
       }),
-    );
-    expect(mockConversationManager.add).toHaveBeenNthCalledWith(
-      2,
-      "conv-2",
       expect.objectContaining({
         id: "snapshot-message-id-compaction",
         completion_id: "conv-2",
@@ -132,11 +123,75 @@ describe("SessionManager", () => {
           }),
         ]),
       }),
-    );
-    expect(mockConversationManager.archiveMessages).toHaveBeenCalledWith(
-      "conv-2",
       expect.arrayContaining(["msg-0", "msg-1", "snapshot-message-id-compaction"]),
     );
+  });
+
+  it("persists and archives exactly the messages represented within the summary input cap", async () => {
+    const manager = new SessionManager({
+      env,
+      conversationManager: mockConversationManager,
+    });
+
+    const messages = Array.from({ length: 30 }, (_, index) =>
+      index === 20
+        ? {
+            ...createLongMessage(index),
+            content: "Constraint: retain audit records for seven years.",
+          }
+        : createLongMessage(index),
+    );
+
+    const result = await manager.compact({
+      completionId: "conv-covered",
+      messages,
+      modelConfig: { contextWindow: 4096 },
+    });
+
+    const snapshotPart = result.snapshotMessage?.parts?.find((part) => part.type === "snapshot");
+    const coverage = snapshotPart?.type === "snapshot" ? snapshotPart.coverage : undefined;
+    const persistenceCall = vi.mocked(mockConversationManager.persistCompaction).mock.calls[0];
+    const archivedIds = persistenceCall?.[3].filter(
+      (messageId) => messageId !== "snapshot-message-id-compaction",
+    );
+    const summaryRequest = mockProviderGetResponse.mock.calls[0]?.[0];
+
+    expect(coverage?.coveredMessageIds).toEqual(archivedIds);
+    expect(coverage?.coveredMessageCount).toBe(archivedIds?.length);
+    expect(coverage?.candidateMessageCount).toBe(22);
+    expect(coverage?.summaryInputCharacters).toBeLessThanOrEqual(16000);
+    expect(coverage?.strategy).toBe("model_summary");
+    expect(result.messages).toContain(messages[20]);
+    expect(summaryRequest.messages[1].content).not.toContain("retain audit records");
+  });
+
+  it("does not compact when the first candidate message cannot be represented in full", async () => {
+    const manager = new SessionManager({
+      env,
+      conversationManager: mockConversationManager,
+    });
+    const messages: Message[] = [
+      {
+        id: "oversized",
+        role: "user",
+        content: "x".repeat(17000),
+      },
+      {
+        id: "later",
+        role: "assistant",
+        content: "Later response",
+      },
+    ];
+
+    const result = await manager.compact({
+      completionId: "conv-oversized",
+      messages,
+      compaction: "manual",
+    });
+
+    expect(result).toEqual({ messages, compacted: false });
+    expect(mockProviderGetResponse).not.toHaveBeenCalled();
+    expect(mockConversationManager.persistCompaction).not.toHaveBeenCalled();
   });
 
   it("rejects when compacted history cannot be persisted", async () => {
@@ -145,8 +200,8 @@ describe("SessionManager", () => {
       conversationManager: mockConversationManager,
     });
 
-    vi.mocked(mockConversationManager.archiveMessages).mockRejectedValueOnce(
-      new Error("archive failed"),
+    vi.mocked(mockConversationManager.persistCompaction).mockRejectedValueOnce(
+      new Error("persistence failed"),
     );
 
     const messages = Array.from({ length: 30 }, (_, index) => createLongMessage(index));
@@ -157,56 +212,8 @@ describe("SessionManager", () => {
         messages,
         modelConfig: { contextWindow: 4096 },
       }),
-    ).rejects.toThrow("archive failed");
-  });
-
-  it("removes inserted snapshot and compaction marker when archive persistence fails", async () => {
-    const manager = new SessionManager({
-      env,
-      conversationManager: mockConversationManager,
-    });
-
-    vi.mocked(mockConversationManager.archiveMessages).mockRejectedValueOnce(
-      new Error("archive failed"),
-    );
-
-    const messages = Array.from({ length: 30 }, (_, index) => createLongMessage(index));
-
-    await expect(
-      manager.compact({
-        completionId: "conv-cleanup",
-        messages,
-        modelConfig: { contextWindow: 4096 },
-      }),
-    ).rejects.toThrow("archive failed");
-    expect(mockConversationManager.deleteMessages).toHaveBeenCalledWith("conv-cleanup", [
-      "snapshot-message-id",
-      "snapshot-message-id-compaction",
-    ]);
-  });
-
-  it("preserves the original persistence error when cleanup also fails", async () => {
-    const manager = new SessionManager({
-      env,
-      conversationManager: mockConversationManager,
-    });
-
-    vi.mocked(mockConversationManager.archiveMessages).mockRejectedValueOnce(
-      new Error("archive failed"),
-    );
-    vi.mocked(mockConversationManager.deleteMessages).mockRejectedValueOnce(
-      new Error("cleanup failed"),
-    );
-
-    const messages = Array.from({ length: 30 }, (_, index) => createLongMessage(index));
-
-    await expect(
-      manager.compact({
-        completionId: "conv-cleanup-fails",
-        messages,
-        modelConfig: { contextWindow: 4096 },
-      }),
-    ).rejects.toThrow("archive failed");
+    ).rejects.toThrow("persistence failed");
+    expect(mockConversationManager.persistCompaction).toHaveBeenCalledTimes(1);
   });
 
   it("manually compacts conversations below the automatic token threshold", async () => {
@@ -228,8 +235,10 @@ describe("SessionManager", () => {
     expect(result.snapshotMessage?.parts).toEqual(
       expect.arrayContaining([expect.objectContaining({ type: "snapshot" })]),
     );
-    expect(mockConversationManager.archiveMessages).toHaveBeenCalledWith(
+    expect(mockConversationManager.persistCompaction).toHaveBeenCalledWith(
       "conv-manual",
+      expect.any(Object),
+      expect.any(Object),
       expect.arrayContaining(["msg-0", "msg-1"]),
     );
   });
@@ -254,8 +263,10 @@ describe("SessionManager", () => {
       expect.arrayContaining([expect.objectContaining({ type: "snapshot" })]),
     );
     expect(result.messages).toEqual([result.snapshotMessage]);
-    expect(mockConversationManager.archiveMessages).toHaveBeenCalledWith(
+    expect(mockConversationManager.persistCompaction).toHaveBeenCalledWith(
       "conv-short-manual",
+      expect.any(Object),
+      expect.any(Object),
       expect.arrayContaining([
         "msg-0",
         "msg-1",
@@ -296,8 +307,10 @@ describe("SessionManager", () => {
     });
 
     expect(result.compacted).toBe(true);
-    expect(mockConversationManager.archiveMessages).toHaveBeenCalledWith(
+    expect(mockConversationManager.persistCompaction).toHaveBeenCalledWith(
       "conv-recompact",
+      expect.any(Object),
+      expect.any(Object),
       expect.arrayContaining(["previous-snapshot", "msg-0", "snapshot-message-id-compaction"]),
     );
     expect(result.messages).toEqual([result.snapshotMessage]);
@@ -322,7 +335,11 @@ describe("SessionManager", () => {
       modelConfig: { contextWindow: 4096 },
     });
 
-    expect(result.snapshotMessage?.timestamp).toBe(messages.at(-8).timestamp - 1);
+    const snapshotPart = result.snapshotMessage?.parts?.find((part) => part.type === "snapshot");
+    const coverage = snapshotPart?.type === "snapshot" ? snapshotPart.coverage : undefined;
+    const firstRetainedMessage = messages[coverage?.coveredMessageCount ?? 0];
+
+    expect(result.snapshotMessage?.timestamp).toBe(firstRetainedMessage.timestamp - 1);
   });
 
   it("does not compact when compaction is disabled for the request", async () => {
@@ -342,8 +359,7 @@ describe("SessionManager", () => {
 
     expect(result.compacted).toBe(false);
     expect(result.messages).toEqual(messages);
-    expect(mockConversationManager.add).not.toHaveBeenCalled();
-    expect(mockConversationManager.archiveMessages).not.toHaveBeenCalled();
+    expect(mockConversationManager.persistCompaction).not.toHaveBeenCalled();
   });
 
   it("falls back when summarisation fails", async () => {
@@ -367,6 +383,34 @@ describe("SessionManager", () => {
       },
     ]);
 
-    expect(summary).toContain("Earlier context summary");
+    expect(summary).toContain("Earlier context transcript");
+  });
+
+  it("marks fallback coverage and preserves every archived message verbatim", async () => {
+    const manager = new SessionManager({
+      env,
+      conversationManager: mockConversationManager,
+    });
+
+    mockProviderGetResponse.mockRejectedValueOnce(new Error("provider failure"));
+    const messages = Array.from({ length: 8 }, (_, index) => createShortMessage(index));
+
+    const result = await manager.compact({
+      completionId: "conv-fallback",
+      messages,
+      compaction: "manual",
+    });
+
+    const snapshotPart = result.snapshotMessage?.parts?.find((part) => part.type === "snapshot");
+    const coverage = snapshotPart?.type === "snapshot" ? snapshotPart.coverage : undefined;
+
+    expect(coverage).toMatchObject({
+      coveredMessageIds: messages.map((message) => message.id),
+      coveredMessageCount: messages.length,
+      candidateMessageCount: messages.length,
+      strategy: "fallback_transcript",
+    });
+    expect(snapshotPart?.summary).toContain("short message 0");
+    expect(snapshotPart?.summary).toContain("short message 7");
   });
 });

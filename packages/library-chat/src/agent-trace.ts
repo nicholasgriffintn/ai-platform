@@ -28,6 +28,7 @@ export interface AgentTraceEntry {
   id: string;
   type: AgentTraceEntryType;
   label: string;
+  occurredAt?: number;
   status?: string;
   provider?: string;
   model?: string;
@@ -191,6 +192,7 @@ export function buildAgentTraceEntries(messages: readonly Message[]): AgentTrace
   const entries: AgentTraceEntry[] = [];
 
   for (const [index, message] of messages.entries()) {
+    const firstEntryIndex = entries.length;
     const previous = messages[index - 1];
     const textContent = readTextContent(message);
     const tracedToolCallIds = new Set<string>();
@@ -314,6 +316,18 @@ export function buildAgentTraceEntries(messages: readonly Message[]): AgentTrace
         type: "provider_error",
         label: providerError,
       });
+    }
+
+    const occurredAt = readMessageTime(message);
+
+    if (occurredAt !== undefined) {
+      for (let entryIndex = firstEntryIndex; entryIndex < entries.length; entryIndex += 1) {
+        const entry = entries[entryIndex];
+
+        if (entry) {
+          entry.occurredAt = occurredAt;
+        }
+      }
     }
   }
 

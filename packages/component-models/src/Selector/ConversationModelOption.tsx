@@ -42,9 +42,7 @@ export function ConversationModelOption({
       }}
       className={cn(
         "flex w-full cursor-pointer items-start gap-2.5 rounded-md px-2 py-2 text-left transition-colors",
-        isSelected
-          ? "bg-blue-50 text-blue-950 dark:bg-blue-950/35 dark:text-blue-50"
-          : "hover:bg-zinc-100 dark:hover:bg-zinc-800/80",
+        isSelected ? "bg-active-work/12 text-active-work" : "hover:bg-surface-elevated",
         isDisabled && "cursor-not-allowed opacity-45 hover:bg-transparent",
       )}
     >
@@ -66,10 +64,10 @@ export function ConversationModelOption({
         />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-medium leading-5 text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
+        <span className="block text-sm font-medium leading-5 text-foreground whitespace-normal break-words">
           {displayName}
         </span>
-        <span className="block text-xs leading-4 text-zinc-500 whitespace-normal break-words dark:text-zinc-400">
+        <span className="block text-xs leading-4 text-muted-foreground whitespace-normal break-words">
           {model.provider}
         </span>
       </span>

@@ -45,6 +45,10 @@ import type {
 import { type Context, Hono, type Next } from "hono";
 import z from "zod/v4";
 
+import {
+  countAssistantMessages,
+  recordTurnRecoveryAttempt,
+} from "~/lib/chat/streaming/continuity-telemetry";
 import { requireCloudflareExecutionContext } from "~/lib/cloudflare/execution-context";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
@@ -87,6 +91,8 @@ import type { ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { readNumericField, readRecordObjectField } from "~/utils/recordFields";
 
+import { registerConversationOrganisationRoutes } from "./chat-organisation";
+
 const app = new Hono();
 
 const routeLogger = createRouteLogger("chat");
@@ -94,6 +100,33 @@ const chatMessageListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional().default(50),
   after: z.string().optional(),
 });
+
+const getChatCompletionQuerySchema = z
+  .object({
+    refresh_pending: z.enum(["true", "false"]).optional().default("false"),
+    recovery_platform: z.enum(["web", "ios"]).optional(),
+    recovery_attempt: z.coerce.number().int().min(1).max(100).optional(),
+    recovery_elapsed_ms: z.coerce.number().int().min(0).max(86_400_000).optional(),
+    recovery_known_assistant_count: z.coerce.number().int().min(0).max(10_000).optional(),
+    recovery_final_attempt: z.enum(["true", "false"]).optional(),
+  })
+  .superRefine((query, context) => {
+    const recoveryFields = [
+      query.recovery_platform,
+      query.recovery_attempt,
+      query.recovery_elapsed_ms,
+      query.recovery_known_assistant_count,
+      query.recovery_final_attempt,
+    ];
+    const providedCount = recoveryFields.filter((value) => value !== undefined).length;
+
+    if (providedCount > 0 && providedCount !== recoveryFields.length) {
+      context.addIssue({
+        code: "custom",
+        message: "Recovery telemetry fields must be provided together",
+      });
+    }
+  });
 
 const chatCompletionsListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional().default(25),
@@ -365,6 +398,7 @@ addRoute(app, "get", "/completions/:completion_id", {
   description:
     "Get a stored chat completion. Only chat completions that have been created with the store parameter set to true will be returned.",
   paramSchema: getChatCompletionParamsSchema,
+  querySchema: getChatCompletionQuerySchema,
   responses: {
     200: {
       description: "Chat completion details",
@@ -381,13 +415,40 @@ addRoute(app, "get", "/completions/:completion_id", {
       const { completion_id } = context.req.valid("param" as never) as {
         completion_id: string;
       };
+      const query = context.req.valid("query" as never) as z.infer<
+        typeof getChatCompletionQuerySchema
+      >;
 
       const serviceContext = getServiceContext(context);
-      const refreshPending = context.req.query("refresh_pending") === "true";
+      const refreshPending = query.refresh_pending === "true";
 
       const data = await handleGetChatCompletion(serviceContext, completion_id, {
         refreshPending,
       });
+
+      if (
+        query.recovery_platform &&
+        query.recovery_attempt !== undefined &&
+        query.recovery_elapsed_ms !== undefined &&
+        query.recovery_known_assistant_count !== undefined &&
+        query.recovery_final_attempt
+      ) {
+        recordTurnRecoveryAttempt(
+          {
+            env: serviceContext.env,
+            executionCtx: requireCloudflareExecutionContext(context.executionCtx),
+            traceId: completion_id,
+          },
+          {
+            platform: query.recovery_platform,
+            attempt: query.recovery_attempt,
+            elapsedMs: query.recovery_elapsed_ms,
+            knownAssistantCount: query.recovery_known_assistant_count,
+            finalAttempt: query.recovery_final_attempt === "true",
+          },
+          countAssistantMessages(data.messages),
+        );
+      }
 
       return ResponseFactory.success(context, data);
     })(raw),
@@ -471,7 +532,10 @@ addRoute(app, "post", "/completions/:completion_id/cancel", {
       };
 
       const serviceContext = getServiceContext(context);
-      const response = await handleCancelChatCompletion(serviceContext, completion_id);
+      const response = await handleCancelChatCompletion(serviceContext, completion_id, {
+        executionCtx: requireCloudflareExecutionContext(context.executionCtx),
+        platform: context.req.header("X-Platform"),
+      });
 
       return ResponseFactory.success(context, response);
     })(raw),
@@ -996,5 +1060,7 @@ addRoute(app, "get", "/shared/:share_id", {
       return ResponseFactory.success(context, result);
     })(raw),
 });
+
+registerConversationOrganisationRoutes(app);
 
 export default app;

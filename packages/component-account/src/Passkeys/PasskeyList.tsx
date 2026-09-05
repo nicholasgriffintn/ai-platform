@@ -30,12 +30,12 @@ export interface PasskeyListProps {
 
 function UnsupportedNotice() {
   return (
-    <Card className="p-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+    <Card className="bg-attention/12 border-attention/45 p-5">
       <div className="flex">
-        <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-3 flex-shrink-0" />
+        <Shield className="h-5 w-5 text-attention mr-3 flex-shrink-0" />
         <div>
-          <h3 className="text-amber-800 dark:text-amber-300 font-medium">Passkeys not supported</h3>
-          <p className="text-amber-700 dark:text-amber-400 text-sm mt-1">
+          <h3 className="text-attention font-medium">Passkeys not supported</h3>
+          <p className="text-attention text-sm mt-1">
             Your browser doesn't support passkeys. Try using a newer browser like Chrome, Safari, or
             Edge.
           </p>
@@ -78,7 +78,7 @@ export function PasskeyList({
         </div>
       ) : passkeys.length === 0 ? (
         <EmptyState
-          icon={<Fingerprint className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />}
+          icon={<Fingerprint className="h-6 w-6 text-muted-foreground" />}
           title="No passkeys added"
           message="Add a passkey to sign in to your account without a password. Passkeys use biometrics or device PIN for secure authentication."
           action={
@@ -95,7 +95,7 @@ export function PasskeyList({
         />
       ) : (
         <>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
+          <p className="text-muted-foreground text-sm mb-4">
             Passkeys allow you to sign in to your account using biometrics (like fingerprint or face
             recognition) or your device PIN instead of a password.
           </p>
@@ -108,7 +108,7 @@ export function PasskeyList({
                 sublabel={`Added ${formatRelativeTime(passkey.created_at)}`}
                 badge={
                   passkey.backed_up ? (
-                    <span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
+                    <span className="inline-flex items-center rounded-full bg-success/12 px-2 py-0.5 text-xs text-success">
                       <Shield className="h-3 w-3 mr-1" /> Synced
                     </span>
                   ) : undefined

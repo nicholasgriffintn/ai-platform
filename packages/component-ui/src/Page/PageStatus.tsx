@@ -19,9 +19,9 @@ export const PageStatus = ({ icon, title, message, children, className }: PageSt
         className,
       )}
     >
-      {icon && <div className="text-zinc-500 dark:text-zinc-400">{icon}</div>}
-      {title && <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">{title}</h2>}
-      {message && <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md">{message}</p>}
+      {icon && <div className="text-muted-foreground">{icon}</div>}
+      {title && <h2 className="text-lg font-semibold text-foreground">{title}</h2>}
+      {message && <p className="text-sm text-muted-foreground max-w-md">{message}</p>}
       {children && <div className="mt-2">{children}</div>}
     </div>
   );

@@ -48,7 +48,7 @@ export function ProjectExperiences({
         title="Experiences"
         actionContent={<ManageCapabilitiesLink href={libraryPath} />}
       />
-      <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
         Open the richer tools enabled for {project?.name ?? "this project"}.
       </p>
 
@@ -68,7 +68,7 @@ export function ProjectExperiences({
         <EmptyState title="Experiences unavailable" message={pageError.message} />
       ) : experiences.length === 0 ? (
         <EmptyState
-          icon={<Puzzle size={24} className="text-zinc-400" />}
+          icon={<Puzzle size={24} className="text-muted-foreground" />}
           title="No rich experiences enabled"
           message="Add an app or recipe capability to use its project workspace."
           action={

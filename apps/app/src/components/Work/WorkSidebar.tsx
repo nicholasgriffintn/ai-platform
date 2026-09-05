@@ -6,8 +6,10 @@ import {
 } from "@ngriffin_uk/polychat-component-navigation";
 import { ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
+import { useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router";
 
+import { ConversationOrganisationDialog } from "~/components/ConversationOrganisationDialog";
 import { SidebarFooter } from "~/components/Sidebar/SidebarFooter";
 import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
 import { useTaskAttention } from "~/hooks/useProjectTasks";
@@ -37,6 +39,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const { data } = workspacesQuery;
   const { data: workspace } = workspaceQuery;
   const { data: project } = projectQuery;
+  const [conversationToOrganise, setConversationToOrganise] = useState<string | null>(null);
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -82,6 +85,9 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         attentionItems.some(
           (item) => item.kind === "input" && item.conversationId === conversation.id,
         ) || conversationStreams[conversation.id]?.status === "action-required",
+      isPinned: conversation.isPinned,
+      isUnread: conversation.isUnread,
+      labels: conversation.labels,
     })),
     {
       groupBy: workConversationListFilters.groupBy,
@@ -116,6 +122,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     >
       <WorkSidebarNav
         workspacesHref="/work"
+        attentionHref="/work/attention"
         workspace={
           workspace
             ? {
@@ -169,6 +176,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                           void editConversationTitle(conversationId, currentTitle);
                         }}
                         onDelete={requestDeleteConversation}
+                        onOrganise={setConversationToOrganise}
                       />
                     </ConversationListSection>
                   </div>
@@ -201,6 +209,12 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         variant="destructive"
         onConfirm={confirmDeleteConversation}
         isLoading={deletePending}
+      />
+      <ConversationOrganisationDialog
+        conversationId={conversationToOrganise}
+        projectId={projectId}
+        canManageLabels={workspace?.role === "owner" || workspace?.role === "admin"}
+        onOpenChange={(open) => !open && setConversationToOrganise(null)}
       />
     </SidebarShell>
   );

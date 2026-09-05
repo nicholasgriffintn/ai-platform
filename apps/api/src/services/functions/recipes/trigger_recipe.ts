@@ -105,7 +105,6 @@ export const trigger_recipe: ApiToolDefinition = {
         data: {
           ...invocation,
           executionConversationId: execution.conversationId,
-          notification,
           mediaUrls: notification.mediaUrls,
         },
       };

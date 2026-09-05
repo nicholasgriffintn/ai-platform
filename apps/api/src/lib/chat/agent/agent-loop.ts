@@ -16,6 +16,7 @@ import type { ChatTurnTransport } from "~/lib/chat/agent/turn-transport";
 import { buildMessageParts } from "~/lib/chat/messages/parts";
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/streaming/emitter";
+import { writeTurnActivity } from "~/lib/chat/streaming/turn-activity";
 import {
   ARTIFACT_MARKUP_FINAL_ANSWER_NOTICE,
   isArtifactMarkupToolName,
@@ -23,7 +24,7 @@ import {
 import { createToolCallLedger, type ToolCallLedger } from "~/lib/chat/tools/call-ledger";
 import { getResponseScopedCapabilityToolNames } from "~/lib/chat/tools/capability-activation";
 import { isSuccessfulToolStatus } from "~/lib/chat/tools/continuation";
-import { getToolEventPayload } from "~/lib/chat/tools/events";
+import { emitCompleteToolInput } from "~/lib/chat/tools/events";
 import { handleToolCalls } from "~/lib/chat/tools/execution";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
@@ -31,7 +32,6 @@ import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/lib/usage/limitSta
 import { sumTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import {
   StreamState,
-  ToolStage,
   type ChatCompletionParameters,
   type ChatMode,
   type ChatRequestOptions,
@@ -72,6 +72,7 @@ interface ChatAgentLoopState extends AgentLoopState {
   toolCallLedger: ToolCallLedger;
   pendingUserAction?: { message: string; kind: "approval" | "question" };
   waitingForUserAction?: "approval" | "question";
+  streamedToolInputStep?: number;
   stoppedForUsageLimit?: boolean;
   finalAnswerForced?: boolean;
   finalAnswerNotice?: string;
@@ -357,36 +358,62 @@ export async function runAgentLoop(
         state.finalAnswerForced = true;
       }
 
-      const turn = await params.transport.runTurn({
-        request: goalFinalisationNotice
-          ? {
-              ...params.requestParams,
-              messages: [...providerMessages, { role: "user", content: goalFinalisationNotice }],
-              enabled_tools: [...state.enabledToolNames],
-            }
-          : finalAnswerNotice
+      await writeTurnActivity(sink, { kind: "model_step_started", step });
+
+      let turn: TurnOutput & { error?: unknown };
+
+      try {
+        turn = await params.transport.runTurn({
+          request: goalFinalisationNotice
             ? {
                 ...params.requestParams,
-                messages: [...providerMessages, { role: "user", content: finalAnswerNotice }],
-                disable_functions: true,
+                messages: [...providerMessages, { role: "user", content: goalFinalisationNotice }],
                 enabled_tools: [...state.enabledToolNames],
               }
-            : {
-                ...params.requestParams,
-                messages: providerMessages,
-                enabled_tools: [...state.enabledToolNames],
-              },
-        sink,
-        context: transportContext,
-      });
+            : finalAnswerNotice
+              ? {
+                  ...params.requestParams,
+                  messages: [...providerMessages, { role: "user", content: finalAnswerNotice }],
+                  disable_functions: true,
+                  enabled_tools: [...state.enabledToolNames],
+                }
+              : {
+                  ...params.requestParams,
+                  messages: providerMessages,
+                  enabled_tools: [...state.enabledToolNames],
+                },
+          sink,
+          context: { ...transportContext, step },
+        });
+      } catch (error) {
+        await writeTurnActivity(sink, { kind: "model_step_finished", step, outcome: "failed" });
+        throw error;
+      }
 
       if (turn.error) {
+        await writeTurnActivity(sink, { kind: "model_step_finished", step, outcome: "failed" });
         throw new AssistantError(resolveProviderErrorMessage(turn.error), ErrorType.PROVIDER_ERROR);
       }
+
+      if (!turn.activityStreamed) {
+        if (turn.thinking) {
+          await writeTurnActivity(sink, { kind: "reasoning_started", step });
+          await writeTurnActivity(sink, { kind: "reasoning_finished", step });
+        }
+
+        if (turn.content) {
+          await writeTurnActivity(sink, { kind: "response_started", step });
+          await writeTurnActivity(sink, { kind: "response_finished", step });
+        }
+      }
+
+      finalStatus = turn.status ?? finalStatus;
+      state.streamedToolInputStep = turn.activityStreamed ? step : undefined;
 
       totalUsage = sumTokenUsage(totalUsage, turn.usage) ?? totalUsage;
 
       if (turn.stopped) {
+        await writeTurnActivity(sink, { kind: "model_step_finished", step, outcome: "cancelled" });
         finalStatus = "stopped";
 
         if (!turn.content) {
@@ -405,6 +432,17 @@ export async function runAgentLoop(
           assistantMessage: { role: "assistant", content: stoppedMessage.content },
         };
       }
+
+      await writeTurnActivity(sink, {
+        kind: "model_step_finished",
+        step,
+        outcome:
+          turn.status === "incomplete"
+            ? "failed"
+            : turn.toolCalls.length > 0
+              ? "tool_calls"
+              : "completed",
+      });
 
       const message = await finalise(turn);
 
@@ -446,8 +484,12 @@ export async function runAgentLoop(
     executeToolCalls: async (toolCalls: AgentToolCall[], context) => {
       const providerToolCalls = providerIO.providerToolCalls(toolCalls);
 
-      await emitToolCallEvents(sink, providerToolCalls as unknown as ToolCall[]);
+      if (context.state.streamedToolInputStep !== context.step) {
+        await emitToolCallEvents(sink, providerToolCalls as unknown as ToolCall[], context.step);
+      }
+
       await sink.writeEvent("tool_response_start", { tool_calls: providerToolCalls });
+      const settledToolCallIds = new Set<string>();
 
       const toolResults = await handleToolCalls(
         context.shared.completionId,
@@ -458,11 +500,44 @@ export async function runAgentLoop(
           persistResults: "immediate",
           callLedger: context.state.toolCallLedger,
           recoverUnknownToolCalls: !context.state.unknownToolRecoveryUsed,
+          onToolExecutionStart: async (tool) => {
+            await writeTurnActivity(sink, {
+              kind: "tool_execution_started",
+              step: context.step,
+              toolCallId: tool.id,
+              toolName: tool.name,
+            });
+          },
           onToolResult: async (toolResult) => {
             await sink.writeEvent("tool_response", {
               tool_id: toolResult.id,
               result: toolResult,
             });
+
+            const toolCallId = toolResult.tool_call_id;
+
+            if (typeof toolCallId === "string" && !settledToolCallIds.has(toolCallId)) {
+              settledToolCallIds.add(toolCallId);
+
+              if (toolResult.status === "pending") {
+                await writeTurnActivity(sink, {
+                  kind: "waiting_for_user",
+                  step: context.step,
+                  toolCallId,
+                  toolName: toolResult.name || "unknown",
+                  reason: toolResult.name === "ask_user" ? "question" : "approval",
+                });
+              } else {
+                await writeTurnActivity(sink, {
+                  kind: "tool_finished",
+                  step: context.step,
+                  toolCallId,
+                  toolName: toolResult.name || "unknown",
+                  outcome: isSuccessfulToolStatus(toolResult.status) ? "success" : "failure",
+                });
+              }
+            }
+
             await params.onToolResult?.(toolResult);
           },
         },
@@ -585,15 +660,14 @@ export async function runAgentLoop(
   };
 }
 
-async function emitToolCallEvents(sink: ChatEventSink, toolCalls: readonly ToolCall[]) {
+async function emitToolCallEvents(
+  sink: ChatEventSink,
+  toolCalls: readonly ToolCall[],
+  step: number,
+) {
   for (const toolCall of toolCalls) {
     try {
-      await sink.writeEvent("tool_use_start", getToolEventPayload(toolCall, ToolStage.START));
-      await sink.writeEvent(
-        "tool_use_delta",
-        getToolEventPayload(toolCall, ToolStage.DELTA, toolCall.function?.arguments || "{}"),
-      );
-      await sink.writeEvent("tool_use_stop", getToolEventPayload(toolCall, ToolStage.STOP));
+      await emitCompleteToolInput(sink, step, toolCall);
     } catch (error) {
       logger.error("Failed to emit tool events", { error, toolCall });
     }

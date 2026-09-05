@@ -88,7 +88,7 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
   if (!reports?.length) {
     return (
       <EmptyState
-        icon={<FileText size={24} className="text-zinc-400" />}
+        icon={<FileText size={24} className="text-muted-foreground" />}
         title="No reports yet"
         message="Analyse one or more source URLs to create a reusable report."
         action={

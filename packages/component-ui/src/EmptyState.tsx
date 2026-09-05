@@ -41,8 +41,7 @@ export const EmptyState = ({
     <div
       className={cn(
         "flex flex-col items-center justify-center text-center",
-        !isWelcome &&
-          "bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl",
+        !isWelcome && "border-border bg-surface rounded-xl border",
         isWelcome ? "px-4 pt-4 pb-2" : "p-8",
         className,
       )}
@@ -51,7 +50,7 @@ export const EmptyState = ({
         <div
           className={cn(
             "mx-auto flex items-center justify-center rounded-full mb-4",
-            isWelcome ? "h-32 w-32" : "h-12 w-12 bg-zinc-100 dark:bg-zinc-700",
+            isWelcome ? "h-32 w-32" : "bg-selection h-12 w-12",
           )}
         >
           {icon}
@@ -60,7 +59,7 @@ export const EmptyState = ({
       {title && (
         <h3
           className={cn(
-            "font-semibold mb-2 text-zinc-800 dark:text-zinc-200",
+            "text-foreground mb-2 font-semibold",
             isWelcome ? "md:text-4xl text-2xl" : "text-xl",
           )}
         >
@@ -70,7 +69,7 @@ export const EmptyState = ({
       {message && (
         <p
           className={cn(
-            "text-zinc-600 dark:text-zinc-400 max-w-sm mx-auto",
+            "text-muted-foreground mx-auto max-w-sm",
             isWelcome ? "mb-4 mt-2" : "text-sm mb-4",
           )}
         >
@@ -106,7 +105,7 @@ export function SignInEmptyState({
 }: SignInEmptyStateProps) {
   return (
     <EmptyState
-      icon={<LogIn className="text-blue-600 dark:text-blue-400" size={24} aria-hidden="true" />}
+      icon={<LogIn className="text-active-work" size={24} aria-hidden="true" />}
       title={title}
       message={message}
       action={

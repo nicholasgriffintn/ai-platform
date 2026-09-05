@@ -56,7 +56,7 @@ export function AttachAgentDialog({
         </DialogHeader>
 
         {error && (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="text-sm text-failure">
             {error.message}
           </p>
         )}
@@ -67,7 +67,7 @@ export function AttachAgentDialog({
           </LoadingRegion>
         ) : agents.length === 0 ? (
           <EmptyState
-            icon={<Bot size={24} className="text-zinc-400" />}
+            icon={<Bot size={24} className="text-muted-foreground" />}
             title="No agents left to add"
             message="Every workspace agent is already on this project. Publish an agent to the workspace to make it available here."
             className="min-h-[160px]"
@@ -77,11 +77,11 @@ export function AttachAgentDialog({
             {agents.map((agent) => (
               <li
                 key={agent.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                className="flex items-center justify-between gap-3 rounded-lg border border-border p-3"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{agent.name}</p>
-                  <p className="truncate text-sm text-zinc-500">{agent.description}</p>
+                  <p className="truncate text-sm text-muted-foreground">{agent.description}</p>
                 </div>
                 <Button
                   variant="primary"

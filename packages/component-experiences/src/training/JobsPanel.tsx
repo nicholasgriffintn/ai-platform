@@ -89,16 +89,11 @@ export function JobsPanel({
                   const key = trainingRecordKey(job);
 
                   return (
-                    <div
-                      key={key}
-                      className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800"
-                    >
+                    <div key={key} className="rounded-md border border-border p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <div className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
-                            {job.jobName}
-                          </div>
-                          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                          <div className="font-medium text-foreground truncate">{job.jobName}</div>
+                          <div className="text-xs text-muted-foreground">
                             {job.provider} · {job.modelId}
                           </div>
                         </div>
@@ -107,33 +102,29 @@ export function JobsPanel({
 
                       <div className="mt-4 space-y-2 text-sm">
                         <div>
-                          <span className="text-zinc-500 dark:text-zinc-400">Base model</span>
-                          <div className="truncate text-zinc-800 dark:text-zinc-200">
-                            {job.baseModel}
-                          </div>
+                          <span className="text-muted-foreground">Base model</span>
+                          <div className="truncate text-foreground">{job.baseModel}</div>
                         </div>
                         <div>
-                          <span className="text-zinc-500 dark:text-zinc-400">Created</span>
-                          <div className="text-zinc-800 dark:text-zinc-200">
-                            {formatTrainingDate(job.createdAt)}
-                          </div>
+                          <span className="text-muted-foreground">Created</span>
+                          <div className="text-foreground">{formatTrainingDate(job.createdAt)}</div>
                         </div>
                         {job.modelArtifactsS3Uri && (
                           <div>
-                            <span className="text-zinc-500 dark:text-zinc-400">Artifacts</span>
-                            <div className="truncate text-zinc-800 dark:text-zinc-200">
+                            <span className="text-muted-foreground">Artifacts</span>
+                            <div className="truncate text-foreground">
                               {job.modelArtifactsS3Uri}
                             </div>
                           </div>
                         )}
                         {job.failureReason && (
-                          <p className="rounded-md bg-red-50 p-2 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">
+                          <p className="rounded-md bg-failure/12 p-2 text-sm text-failure">
                             {job.failureReason}
                           </p>
                         )}
                       </div>
 
-                      <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+                      <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-border pt-3">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -149,7 +140,7 @@ export function JobsPanel({
               </div>
             ) : (
               <EmptyState
-                icon={<Activity className="h-8 w-8 text-zinc-400" />}
+                icon={<Activity className="h-8 w-8 text-muted-foreground" />}
                 title="No jobs yet"
                 message="Start a training job and it will appear here."
               />

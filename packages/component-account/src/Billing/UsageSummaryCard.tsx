@@ -6,6 +6,7 @@ import {
   getBoundedPercentage,
 } from "@ngriffin_uk/polychat-utility-core";
 
+import { SettingsSection } from "../SettingsSection";
 import { humaniseIdentifier, humaniseUsageSource } from "./usage-display";
 
 export interface UsageSummaryCardProps {
@@ -36,21 +37,21 @@ function SummaryGroup({
 
   return (
     <div>
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+      <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
         {title}
-      </h4>
+      </h2>
       <ul className="mt-2 space-y-2">
         {rows.map((row) => (
           <li key={row.key}>
             <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="truncate text-zinc-700 dark:text-zinc-200">{row.label}</span>
-              <span className="shrink-0 text-zinc-500 dark:text-zinc-400">
+              <span className="truncate text-foreground">{row.label}</span>
+              <span className="shrink-0 text-muted-foreground">
                 {formatCredits(row.credits)} credits · {formatUsdFromMicros(row.cost_micros)}
               </span>
             </div>
-            <div className="mt-1 h-1 rounded-full bg-zinc-200 dark:bg-zinc-800">
+            <div className="bg-selection mt-1 h-1 rounded-full">
               <div
-                className="h-full rounded-full bg-violet-400 transition-[width] duration-500 ease-out dark:bg-violet-500"
+                className="h-full rounded-full bg-creative transition-[width] duration-500 ease-out"
                 style={{ width: `${getBoundedPercentage(row.credits, totalCredits)}%` }}
               />
             </div>
@@ -75,19 +76,17 @@ export function UsageSummaryCard({ summary, projectRows }: UsageSummaryCardProps
   }));
 
   return (
-    <Card className="p-5">
-      <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Where it went this period
-        </h3>
-        <span className="text-sm text-zinc-500 dark:text-zinc-400">
+    <SettingsSection
+      title="Where it went this period"
+      actions={
+        <span className="text-sm text-muted-foreground">
           {formatCredits(totalCredits)} credits ·{" "}
           {summary.totals.event_count.toLocaleString("en-GB")} events
         </span>
-      </div>
-
+      }
+    >
       {summary.totals.event_count === 0 ? (
-        <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-3 text-sm text-muted-foreground">
           Nothing spent yet this period. The ledger fills in as you work.
         </p>
       ) : (
@@ -99,6 +98,6 @@ export function UsageSummaryCard({ summary, projectRows }: UsageSummaryCardProps
           )}
         </div>
       )}
-    </Card>
+    </SettingsSection>
   );
 }

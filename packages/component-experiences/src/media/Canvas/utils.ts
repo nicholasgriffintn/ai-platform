@@ -26,12 +26,12 @@ const videoMixedAspectClasses = [
 ] as const;
 
 const placeholderPaletteClasses = [
-  "from-sky-200 via-cyan-100 to-indigo-200",
-  "from-rose-200 via-pink-100 to-orange-200",
-  "from-amber-200 via-yellow-100 to-lime-200",
-  "from-violet-200 via-purple-100 to-fuchsia-200",
-  "from-emerald-200 via-teal-100 to-cyan-200",
-  "from-blue-200 via-indigo-100 to-violet-200",
+  "from-accent-sky/35 via-accent-cyan/25 to-accent-indigo/35",
+  "from-accent-rose/35 via-accent-pink/25 to-accent-orange/35",
+  "from-accent-amber/35 via-accent-yellow/25 to-accent-green/35",
+  "from-accent-violet/35 via-accent-purple/25 to-accent-pink/35",
+  "from-accent-emerald/35 via-accent-teal/25 to-accent-cyan/35",
+  "from-accent-blue/35 via-accent-indigo/25 to-accent-violet/35",
 ] as const;
 
 function intersectOptions(optionGroups: string[][]): string[] {

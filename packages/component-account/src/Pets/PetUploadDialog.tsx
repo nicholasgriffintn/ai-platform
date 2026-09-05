@@ -64,10 +64,7 @@ export function PetUploadDialog({
       }}
     >
       <div className="space-y-2">
-        <label
-          htmlFor="pet_upload_name"
-          className="block text-sm font-medium text-zinc-800 dark:text-zinc-200"
-        >
+        <label htmlFor="pet_upload_name" className="block text-sm font-medium text-foreground">
           Pet name
         </label>
         <FormInput
@@ -82,7 +79,7 @@ export function PetUploadDialog({
       <div className="space-y-2">
         <label
           htmlFor="pet_upload_description"
-          className="block text-sm font-medium text-zinc-800 dark:text-zinc-200"
+          className="block text-sm font-medium text-foreground"
         >
           Pet description (optional)
         </label>
@@ -95,16 +92,13 @@ export function PetUploadDialog({
           placeholder="Describe your pet"
           onChange={(event) => setDescription(event.target.value)}
         />
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="text-xs text-muted-foreground">
           Up to {PET_DESCRIPTION_MAX_LENGTH} characters.
         </p>
       </div>
 
       <div className="space-y-2">
-        <label
-          htmlFor="pet_upload_sheet"
-          className="block text-sm font-medium text-zinc-800 dark:text-zinc-200"
-        >
+        <label htmlFor="pet_upload_sheet" className="block text-sm font-medium text-foreground">
           Sprite sheet
         </label>
         <SingleFileUploader
@@ -119,13 +113,13 @@ export function PetUploadDialog({
             setSheet(next instanceof File ? next : null);
           }}
         />
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="text-xs text-muted-foreground">
           Eight columns of 192 by 208 frames, one row per animation. Polychat sheets have eleven
           rows; Codex sheets have nine and reuse the rows they share.
         </p>
       </div>
 
-      {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p className="text-sm text-failure">{error}</p> : null}
     </FormDialog>
   );
 }

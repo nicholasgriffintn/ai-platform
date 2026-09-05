@@ -48,13 +48,13 @@ export function SourceList({
   }
 
   if (isLoading) {
-    return <Card className="p-6 text-sm text-zinc-500 shadow-none">Loading sources…</Card>;
+    return <Card className="text-muted-foreground p-5 text-sm shadow-none">Loading sources…</Card>;
   }
 
   if (!sources?.length) {
     return (
       <EmptyState
-        icon={<Database size={24} className="text-zinc-400" />}
+        icon={<Database size={24} className="text-muted-foreground" />}
         title="No sources"
         message={
           isCollectionView
@@ -67,18 +67,18 @@ export function SourceList({
   }
 
   return (
-    <Card className="gap-0 overflow-hidden py-0 shadow-none">
+    <div className="-mx-6">
       {sources.map((source) => (
         <div
           key={source.id}
-          className="flex items-center gap-4 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
+          className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-0"
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-zinc-800">
+          <div className="bg-selection text-muted-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
             {source.kind === "url" ? <Link2 size={17} /> : <FileText size={17} />}
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-sm font-medium">{source.title}</h3>
-            <p className="text-xs capitalize text-zinc-500">
+            <p className="text-xs capitalize text-muted-foreground">
               {source.kind} · {formatDate(source.updatedAt ?? source.createdAt)}
             </p>
           </div>
@@ -119,6 +119,6 @@ export function SourceList({
           />
         </div>
       ))}
-    </Card>
+    </div>
   );
 }

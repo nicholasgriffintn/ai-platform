@@ -47,21 +47,21 @@ export function InvitationAcceptView({
     <Shell>
       <Card className="w-full p-8 text-center">
         {acceptedWorkspace ? (
-          <CheckCircle2 size={36} className="mx-auto text-emerald-600" />
+          <CheckCircle2 size={36} className="mx-auto text-success" />
         ) : (
-          <Link2 size={34} className="mx-auto text-zinc-500" />
+          <Link2 size={34} className="mx-auto text-muted-foreground" />
         )}
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-2xl font-bold text-foreground">
           {acceptedWorkspace ? `Welcome to ${acceptedWorkspace.name}` : "Workspace invitation"}
         </h1>
         {!hasToken && (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="text-sm text-failure">
             This invitation link is incomplete.
           </p>
         )}
-        {isAccepting && <p className="text-sm text-zinc-500">Checking your invitation…</p>}
+        {isAccepting && <p className="text-sm text-muted-foreground">Checking your invitation…</p>}
         {errorMessage && (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="text-sm text-failure">
             {errorMessage}
           </p>
         )}

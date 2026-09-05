@@ -5,6 +5,7 @@ import { AgentRepository } from "./AgentRepository";
 import { AnonymousUserRepository } from "./AnonymousUserRepository";
 import { ApiKeyRepository } from "./ApiKeyRepository";
 import { ArtificialAnalysisRepository } from "./ArtificialAnalysisRepository";
+import { AttentionRepository } from "./AttentionRepository";
 import { AuditRepository } from "./AuditRepository";
 import { AuthChallengeRepository } from "./AuthChallengeRepository";
 import { AuthoredSkillRepository } from "./AuthoredSkillRepository";
@@ -12,12 +13,14 @@ import { BaseRepository } from "./BaseRepository";
 import { CapabilityConfigurationRepository } from "./CapabilityConfigurationRepository";
 import { ComposioConnectorSessionRepository } from "./ComposioConnectorSessionRepository";
 import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprovalRepository";
+import { ConversationOrganisationRepository } from "./ConversationOrganisationRepository";
 import { ConversationRepository } from "./ConversationRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { GoalRepository } from "./GoalRepository";
 import { InfraCostDailyRepository } from "./InfraCostDailyRepository";
 import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
+import { MobilePushRepository } from "./MobilePushRepository";
 import { OAuthStateRepository } from "./OAuthStateRepository";
 import { OutputRepository } from "./OutputRepository";
 import { PlanRepository } from "./PlanRepository";
@@ -42,6 +45,7 @@ import { WorkspaceRepository } from "./WorkspaceRepository";
 export {
   AgentRepository,
   ActivityRepository,
+  AttentionRepository,
   AnonymousUserRepository,
   ApiKeyRepository,
   ArtificialAnalysisRepository,
@@ -50,6 +54,7 @@ export {
   AuditRepository,
   BaseRepository,
   ConversationRepository,
+  ConversationOrganisationRepository,
   CapabilityConfigurationRepository,
   ComposioConnectorSessionRepository,
   ConnectorOperationApprovalRepository,
@@ -58,6 +63,7 @@ export {
   InfraCostDailyRepository,
   MemorySynthesisRepository,
   MessageRepository,
+  MobilePushRepository,
   OAuthStateRepository,
   OutputRepository,
   SessionRepository,
@@ -82,6 +88,7 @@ export {
 
 export class RepositoryManager {
   private activityRepo: ActivityRepository;
+  private attentionRepo: AttentionRepository;
   private agentRepo: AgentRepository;
   private planRepo: PlanRepository;
   private projectTaskRepo: ProjectTaskRepository;
@@ -96,9 +103,11 @@ export class RepositoryManager {
   private userPetRepo: UserPetRepository;
   private capabilityConfigurationRepo: CapabilityConfigurationRepository;
   private conversationRepo: ConversationRepository;
+  private conversationOrganisationRepo: ConversationOrganisationRepository;
   private composioConnectorSessionRepo: ComposioConnectorSessionRepository;
   private connectorOperationApprovalRepo: ConnectorOperationApprovalRepository;
   private messageRepo: MessageRepository;
+  private mobilePushRepo: MobilePushRepository;
   private embeddingRepo: EmbeddingRepository;
   private goalRepo: GoalRepository;
   private webAuthnRepo: WebAuthnRepository;
@@ -121,6 +130,7 @@ export class RepositoryManager {
 
   constructor(env: IEnv) {
     this.activityRepo = new ActivityRepository(env);
+    this.attentionRepo = new AttentionRepository(env);
     this.agentRepo = new AgentRepository(env);
     this.planRepo = new PlanRepository(env);
     this.projectTaskRepo = new ProjectTaskRepository(env);
@@ -135,9 +145,11 @@ export class RepositoryManager {
     this.userPetRepo = new UserPetRepository(env);
     this.capabilityConfigurationRepo = new CapabilityConfigurationRepository(env);
     this.conversationRepo = new ConversationRepository(env);
+    this.conversationOrganisationRepo = new ConversationOrganisationRepository(env);
     this.composioConnectorSessionRepo = new ComposioConnectorSessionRepository(env);
     this.connectorOperationApprovalRepo = new ConnectorOperationApprovalRepository(env);
     this.messageRepo = new MessageRepository(env);
+    this.mobilePushRepo = new MobilePushRepository(env);
     this.embeddingRepo = new EmbeddingRepository(env);
     this.goalRepo = new GoalRepository(env);
     this.webAuthnRepo = new WebAuthnRepository(env);
@@ -169,6 +181,10 @@ export class RepositoryManager {
 
   public get activities(): ActivityRepository {
     return this.activityRepo;
+  }
+
+  public get attention(): AttentionRepository {
+    return this.attentionRepo;
   }
 
   public get projectTasks(): ProjectTaskRepository {
@@ -235,6 +251,10 @@ export class RepositoryManager {
     return this.conversationRepo;
   }
 
+  public get conversationOrganisation(): ConversationOrganisationRepository {
+    return this.conversationOrganisationRepo;
+  }
+
   public get goals(): GoalRepository {
     return this.goalRepo;
   }
@@ -249,6 +269,10 @@ export class RepositoryManager {
 
   public get messages(): MessageRepository {
     return this.messageRepo;
+  }
+
+  public get mobilePush(): MobilePushRepository {
+    return this.mobilePushRepo;
   }
 
   public get embeddings(): EmbeddingRepository {

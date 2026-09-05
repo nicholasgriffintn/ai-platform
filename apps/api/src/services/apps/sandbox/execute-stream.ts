@@ -1,9 +1,15 @@
-import type { ExecuteSandboxRunPayload as ExecuteSandboxRunStreamPayload } from "@ngriffin_uk/polychat-schemas";
+import {
+  resolveSandboxDeliveryPolicy,
+  sandboxDeliveryPolicyCreatesCommit,
+  type ExecuteSandboxRunPayload as ExecuteSandboxRunStreamPayload,
+  SANDBOX_RUNS_CAPABILITY_ID,
+} from "@ngriffin_uk/polychat-schemas";
 
-import { SANDBOX_RUN_ITEM_TYPE, SANDBOX_RUNS_APP_ID } from "~/constants/app";
+import { SANDBOX_RUN_ITEM_TYPE } from "~/constants/app";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { SSE_HEADERS } from "~/lib/http/streaming";
 import { resolveSandboxModel } from "~/services/sandbox/worker";
+import { resolveProjectEnvironmentCacheForRun } from "~/services/workspaces/environment-cache";
 import type { IEnv, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -51,11 +57,25 @@ export async function executeSandboxRunStream(
     env,
     requestedTimeoutSeconds: payload.timeoutSeconds,
   });
+  const deliveryPolicy = resolveSandboxDeliveryPolicy(payload.deliveryPolicy, payload.shouldCommit);
+  const projectEnvironment = projectId
+    ? await resolveProjectEnvironmentCacheForRun({
+        context: serviceContext,
+        projectId,
+        repository: payload.repo,
+        installationId: payload.installationId,
+      })
+    : {
+        environmentSetup: payload.environmentSetup,
+        environmentCache: undefined,
+        environmentCacheGeneration: 0,
+      };
 
   const runId = generateId();
   const now = new Date().toISOString();
   const runData: SandboxRunData = {
     runId,
+    projectId,
     installationId: payload.installationId,
     repo: payload.repo,
     task: payload.task,
@@ -63,7 +83,11 @@ export async function executeSandboxRunStream(
     model,
     trustLevel: payload.trustLevel ?? "balanced",
     promptStrategy: payload.promptStrategy,
-    shouldCommit: Boolean(payload.shouldCommit),
+    deliveryPolicy,
+    shouldCommit: sandboxDeliveryPolicyCreatesCommit(deliveryPolicy),
+    environmentSetup: projectEnvironment.environmentSetup,
+    environmentPreparationMode: "setup",
+    environmentCacheGeneration: projectEnvironment.environmentCacheGeneration,
     status: "queued",
     startedAt: now,
     updatedAt: now,
@@ -77,7 +101,7 @@ export async function executeSandboxRunStream(
     createdByUserId: user.id,
     projectId,
     conversationId,
-    capabilityId: SANDBOX_RUNS_APP_ID,
+    capabilityId: SANDBOX_RUNS_CAPABILITY_ID,
     groupId: runId,
     kind: SANDBOX_RUN_ITEM_TYPE,
     status: getSandboxActivityStatus(runData.status),
@@ -113,13 +137,18 @@ export async function executeSandboxRunStream(
       runId,
       userId: user.id,
       payload: {
+        projectId,
         installationId: payload.installationId,
         repo: payload.repo,
         task: payload.task,
         taskType: payload.taskType,
         model,
         promptStrategy: payload.promptStrategy,
-        shouldCommit: Boolean(payload.shouldCommit),
+        deliveryPolicy,
+        environmentSetup: projectEnvironment.environmentSetup,
+        environmentPreparationMode: "setup",
+        environmentCache: projectEnvironment.environmentCache,
+        environmentCacheGeneration: projectEnvironment.environmentCacheGeneration,
         timeoutSeconds: timeoutConfig.timeoutSeconds,
         trustLevel: payload.trustLevel ?? "balanced",
         modelSettings: payload.modelSettings,

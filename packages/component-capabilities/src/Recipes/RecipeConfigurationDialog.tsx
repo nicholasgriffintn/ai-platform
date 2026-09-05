@@ -30,7 +30,7 @@ function RecipeConfigurationFieldInput({
 }) {
   if (field.type === "boolean") {
     return (
-      <div className="flex items-start gap-3 rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
+      <div className="flex items-start gap-3 rounded-md border border-border p-3">
         <Checkbox
           id={`recipe-configuration-${field.key}`}
           checked={value === true}
@@ -39,7 +39,7 @@ function RecipeConfigurationFieldInput({
         <div className="space-y-1">
           <Label htmlFor={`recipe-configuration-${field.key}`}>{field.label}</Label>
           {field.description && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">{field.description}</p>
+            <p className="text-sm text-muted-foreground">{field.description}</p>
           )}
         </div>
       </div>
@@ -52,7 +52,7 @@ function RecipeConfigurationFieldInput({
     <div className="space-y-2">
       <Label htmlFor={`recipe-configuration-${field.key}`}>
         {field.label}
-        {field.required && <span className="text-red-500"> *</span>}
+        {field.required && <span className="text-failure"> *</span>}
       </Label>
       {field.type === "textarea" || field.type === "string_list" ? (
         <Textarea
@@ -74,9 +74,7 @@ function RecipeConfigurationFieldInput({
           placeholder={field.placeholder}
         />
       )}
-      {field.description && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{field.description}</p>
-      )}
+      {field.description && <p className="text-sm text-muted-foreground">{field.description}</p>}
     </div>
   );
 }
@@ -122,7 +120,7 @@ export function RecipeConfigurationDialog({
           />
         ))
       ) : (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted-foreground">
           This recipe does not need saved configuration.
         </p>
       )}

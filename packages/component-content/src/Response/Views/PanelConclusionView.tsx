@@ -36,8 +36,8 @@ export function PanelConclusionView({
 
   return (
     <div className={cn("space-y-1.5", embedded ? "" : "my-2")}>
-      <div className="flex flex-wrap items-baseline gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-        <span className="font-medium text-zinc-700 dark:text-zinc-200">{heading}</span>
+      <div className="flex flex-wrap items-baseline gap-2 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">{heading}</span>
         {turnCount !== undefined && <span>{turnCount} turns</span>}
         {conclusion.models && conclusion.models.length > 0 && (
           <span className="font-mono">{conclusion.models.join(", ")}</span>

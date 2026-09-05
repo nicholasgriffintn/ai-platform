@@ -39,23 +39,21 @@ export interface ButtonLinkProps extends LinkRenderProps {
   collapseLabel?: ButtonCollapse;
 }
 
+const solidActionStyles =
+  "bg-human-action text-human-action-foreground hover:bg-human-action/88 border-transparent shadow-sm";
+
 const variantStyles: Record<ButtonVariant, string> = {
-  default:
-    "border-transparent bg-zinc-900 text-white shadow-sm hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300",
-  primary:
-    "border-transparent bg-blue-600 text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400",
-  secondary:
-    "border-transparent bg-off-white-highlight text-zinc-900 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-600",
+  default: solidActionStyles,
+  primary: solidActionStyles,
+  secondary: "bg-surface-elevated text-foreground hover:bg-selection border-transparent",
   outline:
-    "border-zinc-300 bg-transparent text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
+    "border-border-strong bg-transparent text-foreground hover:bg-selection hover:text-foreground",
   ghost:
-    "border-transparent bg-transparent text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
-  destructive:
-    "border-transparent bg-red-800 text-white shadow-sm hover:bg-red-900 dark:bg-red-800 dark:hover:bg-red-700",
-  icon: "border-transparent bg-transparent text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
-  iconActive:
-    "border-transparent bg-off-white-highlight text-zinc-900 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700",
-  link: "border-0 bg-transparent p-0 text-blue-600 underline-offset-4 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300",
+    "border-transparent bg-transparent text-muted-foreground hover:bg-selection hover:text-foreground",
+  destructive: "bg-failure text-canvas hover:bg-failure/88 border-transparent shadow-sm",
+  icon: "border-transparent bg-transparent text-muted-foreground hover:bg-selection hover:text-foreground",
+  iconActive: "text-active-work hover:bg-selection border-transparent bg-transparent",
+  link: "text-active-work hover:text-active-work/80 border-0 bg-transparent p-0 underline-offset-4 hover:underline",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -143,8 +141,8 @@ export function buttonClassName({
   "variant" | "size" | "fullWidth" | "collapseLabel" | "className"
 > = {}): string {
   return cn(
-    "inline-flex cursor-pointer select-none items-center justify-center gap-2 rounded-md border border-solid font-medium whitespace-nowrap transition-colors",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 focus:outline-none",
+    "polychat-motion-micro inline-flex cursor-pointer select-none items-center justify-center gap-2 rounded-md border border-solid font-medium whitespace-nowrap transition-colors",
+    "focus-visible:outline-ring focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none",
     resolveSizeStyles(variant, size, resolveCollapse(collapseLabel)),
     variantStyles[variant],
     fullWidth && "w-full",
