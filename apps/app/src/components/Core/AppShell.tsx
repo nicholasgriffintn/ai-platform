@@ -9,7 +9,8 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   name: "Polychat",
-  description: "Chat with multiple AI models from one place",
+  description:
+    "Ask any model, keep every conversation, and bring your team into Work when a question becomes a project.",
   url: "https://polychat.app",
   applicationCategory: "AIApplication",
 };

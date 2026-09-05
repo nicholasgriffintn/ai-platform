@@ -34,6 +34,7 @@ export default [
     route(":workspaceId/projects/:projectId/agents/:agentId", "pages/work/project-agent.tsx"),
   ]),
   route("/pets", "pages/pets.tsx"),
+  route("/discover", "pages/discover.tsx"),
   route("/pricing", "pages/pricing.tsx"),
   route("/terms", "pages/terms.tsx"),
   route("/privacy", "pages/privacy.tsx"),
