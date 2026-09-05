@@ -65,6 +65,12 @@ function createContext(options?: {
           },
         ]),
       },
+      usageEvents: {
+        summariseChatRuns: vi.fn().mockResolvedValue([]),
+      },
+      usageReservations: {
+        listReservations: vi.fn().mockResolvedValue([]),
+      },
     },
   } as unknown as ServiceContext;
 }
