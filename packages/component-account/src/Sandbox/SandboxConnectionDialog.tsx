@@ -90,9 +90,7 @@ export const SandboxConnectionDialog = ({
         <div className="space-y-4">
           {!configureManually ? (
             <div className="rounded-lg border bg-muted/30 p-3">
-              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Install GitHub App
-              </p>
+              <p className="text-sm font-medium text-foreground">Install GitHub App</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Install the GitHub App on your account or organization to allow the sandbox to
                 automatically create branches, commits, and pull requests for your runs.

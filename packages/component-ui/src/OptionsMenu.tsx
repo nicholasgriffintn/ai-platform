@@ -5,10 +5,10 @@ import type { CSSProperties, ReactNode } from "react";
 import { cn } from "./utils";
 
 const surfaceClassName =
-  "z-[70] min-w-44 rounded-md border border-zinc-200 bg-off-white p-1 text-xs shadow-lg dark:border-zinc-700 dark:bg-zinc-900";
+  "border-border bg-popover text-popover-foreground z-[70] min-w-44 rounded-md border p-1 text-xs shadow-[var(--polychat-elevated-shadow)]";
 
 const rowClassName =
-  "flex w-full cursor-pointer select-none items-center rounded px-2 py-1.5 text-zinc-700 outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-zinc-100 data-[state=open]:bg-zinc-100 dark:text-zinc-200 dark:data-[highlighted]:bg-zinc-800 dark:data-[state=open]:bg-zinc-800";
+  "text-popover-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground flex w-full cursor-pointer select-none items-center rounded px-2 py-1.5 outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50";
 
 export interface OptionsMenuProps {
   trigger: ReactNode;
@@ -92,7 +92,7 @@ export function OptionsMenuSection<TValue extends string>({
     <DropdownMenuPrimitive.Sub>
       <DropdownMenuPrimitive.SubTrigger className={cn(rowClassName, "justify-between gap-4")}>
         <span className="truncate">{label}</span>
-        <span className="flex shrink-0 items-center gap-1 text-zinc-500 dark:text-zinc-400">
+        <span className="text-muted-foreground flex shrink-0 items-center gap-1">
           {selected?.label}
           <ChevronRight size={13} aria-hidden="true" />
         </span>
@@ -121,7 +121,7 @@ export function OptionsMenuSection<TValue extends string>({
                 className={cn(rowClassName, "justify-between gap-4")}
               >
                 <span className="truncate">{option.label}</span>
-                <DropdownMenuPrimitive.ItemIndicator className="shrink-0 text-blue-500 dark:text-blue-400">
+                <DropdownMenuPrimitive.ItemIndicator className="text-active-work shrink-0">
                   <Check size={13} aria-hidden="true" />
                 </DropdownMenuPrimitive.ItemIndicator>
               </DropdownMenuPrimitive.RadioItem>
@@ -169,7 +169,7 @@ export function OptionsMenuSubmenu({
 }
 
 export function OptionsMenuSeparator() {
-  return <DropdownMenuPrimitive.Separator className="my-1 h-px bg-zinc-200 dark:bg-zinc-700" />;
+  return <DropdownMenuPrimitive.Separator className="bg-border my-1 h-px" />;
 }
 
 export interface OptionsMenuActionProps {

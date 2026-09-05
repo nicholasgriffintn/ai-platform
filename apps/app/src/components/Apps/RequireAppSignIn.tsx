@@ -15,7 +15,7 @@ export function RequireAppSignIn({ children }: RequireAppSignInProps) {
   if (isLoading) {
     return (
       <PageStatus
-        icon={<Loader2 size={32} className="animate-spin text-blue-600" />}
+        icon={<Loader2 size={32} className="animate-spin text-active-work" />}
         message="Loading..."
         className="h-auto min-h-[200px]"
       />

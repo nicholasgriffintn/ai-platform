@@ -144,14 +144,14 @@ export function RecipeEventTriggersDialog({
         {requestError && (
           <div
             role="alert"
-            className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+            className="rounded-md border border-failure/45 bg-failure/12 p-3 text-sm text-failure"
           >
             {getErrorMessage(requestError, "Could not load or update event triggers.")}
           </div>
         )}
 
         {isLoading ? (
-          <p role="status" className="py-8 text-center text-sm text-zinc-500">
+          <p role="status" className="py-8 text-center text-sm text-muted-foreground">
             Loading event options…
           </p>
         ) : (
@@ -184,13 +184,10 @@ export function RecipeEventTriggersDialog({
 
             <section aria-labelledby="active-event-triggers" className="space-y-3">
               <div>
-                <h3
-                  id="active-event-triggers"
-                  className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
-                >
+                <h3 id="active-event-triggers" className="text-sm font-semibold text-foreground">
                   Installed events
                 </h3>
-                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Pause an event without removing its setup.
                 </p>
               </div>

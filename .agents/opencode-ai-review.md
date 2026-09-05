@@ -10,7 +10,7 @@ The OpenCode baseline is the official `anomalyco/opencode` repository at commit 
 
 This review traced the current runtime from session entry, through prompt construction, model invocation, streamed message-part persistence, tool dispatch, MCP, retry and cancellation, into the desktop/web application reducers and timeline. It also inspected the unfinished next-generation runner in [`packages/core/src/session/runner/llm.ts`](https://github.com/anomalyco/opencode/blob/5b1e31988ed74b821b3a7ca6647188446992aafc/packages/core/src/session/runner/llm.ts). It does not treat that runner's TODOs as shipped behaviour. The behavioural baseline is `packages/opencode/src/**` plus the current `packages/app` consumer.
 
-The Polychat baseline is this checkout on 5 September 2026. Its accepted constraints come from [architecture context](skills/polychat-setup/references/architecture/context.md) and the linked ADRs. The comparison accounts for a structural difference: OpenCode is primarily a trusted, local coding-agent process; Polychat is a multi-user cloud product with personal and workspace authority shared by web and iOS. A useful local UX pattern is not automatically a safe cloud runtime pattern.
+The Polychat evidence baseline is commit `e0dd1b094f31ea2680d2c28e1118e71abc8b6153` on 5 September 2026. Its accepted constraints come from [architecture context](skills/polychat-setup/references/architecture/context.md) and the linked ADRs. The comparison accounts for a structural difference: OpenCode is primarily a trusted, local coding-agent process; Polychat is a multi-user cloud product with personal and workspace authority shared by web and iOS. A useful local UX pattern is not automatically a safe cloud runtime pattern.
 
 Verdicts mean:
 

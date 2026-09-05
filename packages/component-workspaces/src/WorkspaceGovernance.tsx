@@ -38,14 +38,14 @@ export function WorkspaceTemplateList({
     <section>
       <div className="mb-3">
         <h2 className="flex items-center gap-2 text-lg font-semibold">
-          <LayoutTemplate size={18} className="text-zinc-500" /> Project templates
+          <LayoutTemplate size={18} className="text-muted-foreground" /> Project templates
         </h2>
-        <p className="text-sm text-zinc-500">Create projects from saved configurations.</p>
+        <p className="text-sm text-muted-foreground">Create projects from saved configurations.</p>
       </div>
       {errorMessage ? (
         <EmptyState title="Templates unavailable" message={errorMessage} />
       ) : isLoading ? (
-        <Card className="p-6 text-sm text-zinc-500 shadow-none">Loading templates…</Card>
+        <Card className="p-6 text-sm text-muted-foreground shadow-none">Loading templates…</Card>
       ) : templates.length === 0 ? (
         <EmptyState
           title="No project templates"
@@ -57,11 +57,11 @@ export function WorkspaceTemplateList({
           {templates.map((template) => (
             <div
               key={template.id}
-              className="flex items-center gap-3 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
+              className="flex items-center gap-3 border-b border-border px-5 py-4 last:border-0"
             >
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-sm font-medium">{template.name}</h3>
-                <p className="truncate text-xs text-zinc-500">
+                <p className="truncate text-xs text-muted-foreground">
                   {template.description || "Reusable project setup"}
                 </p>
               </div>
@@ -101,14 +101,16 @@ export function WorkspaceAuditList({ records, isLoading, errorMessage }: Workspa
     <section>
       <div className="mb-3">
         <h2 className="flex items-center gap-2 text-lg font-semibold">
-          <ClipboardList size={18} className="text-zinc-500" /> Audit history
+          <ClipboardList size={18} className="text-muted-foreground" /> Audit history
         </h2>
-        <p className="text-sm text-zinc-500">Review governed changes in this workspace.</p>
+        <p className="text-sm text-muted-foreground">Review governed changes in this workspace.</p>
       </div>
       {errorMessage ? (
         <EmptyState title="Audit history unavailable" message={errorMessage} />
       ) : isLoading ? (
-        <Card className="p-6 text-sm text-zinc-500 shadow-none">Loading audit history…</Card>
+        <Card className="p-6 text-sm text-muted-foreground shadow-none">
+          Loading audit history…
+        </Card>
       ) : records.length === 0 ? (
         <EmptyState
           title="No audit history"
@@ -118,12 +120,9 @@ export function WorkspaceAuditList({ records, isLoading, errorMessage }: Workspa
       ) : (
         <Card className="gap-0 overflow-hidden py-0 shadow-none">
           {records.map((record) => (
-            <div
-              key={record.id}
-              className="border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
-            >
+            <div key={record.id} className="border-b border-border px-5 py-4 last:border-0">
               <p className="text-sm font-medium capitalize">{record.action.replaceAll(".", " ")}</p>
-              <p className="mt-1 text-xs text-zinc-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 <span className="capitalize">{record.targetType}</span>
                 {record.targetId ? ` · ${record.targetId}` : ""} · {formatDate(record.createdAt)}
               </p>

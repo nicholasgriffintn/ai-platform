@@ -81,7 +81,7 @@ function FieldHelp({ field }: { field: CanvasInputField }) {
         <button
           type="button"
           aria-label={`Help for ${formatCanvasFieldLabel(field.name)}`}
-          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 dark:focus:ring-zinc-600"
+          className="text-muted-foreground hover:bg-selection hover:text-foreground focus:ring-ring inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition focus:ring-2 focus:outline-none"
         >
           <Info className="h-4 w-4" />
         </button>
@@ -98,7 +98,7 @@ function FieldLabel({ field, label }: { field: CanvasInputField; label: string }
     <div className="flex items-center justify-between gap-2">
       <label
         htmlFor={`canvas-option-${field.name}`}
-        className="text-sm font-medium leading-5 text-zinc-700 dark:text-zinc-200"
+        className="text-foreground text-sm font-medium leading-5"
       >
         {label}
       </label>
@@ -118,10 +118,10 @@ export function CanvasModelOptionControls({
 
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+      <label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
         Options
       </label>
-      <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
+      <div className="border-border bg-surface overflow-hidden rounded-xl border">
         {fields.map((field) => {
           const fieldTypes = getFieldTypes(field);
           const label = formatCanvasFieldLabel(field.name);
@@ -131,14 +131,14 @@ export function CanvasModelOptionControls({
             return (
               <div
                 key={field.name}
-                className="space-y-1.5 border-b border-zinc-200 px-3 py-2.5 last:border-b-0 dark:border-zinc-700"
+                className="border-border space-y-1.5 border-b px-3 py-2.5 last:border-b-0"
               >
                 <FieldLabel field={field} label={label} />
                 <select
                   id={`canvas-option-${field.name}`}
                   value={typeof value === "string" ? value : ""}
                   onChange={(event) => onChange(field.name, event.target.value)}
-                  className="h-9 w-full rounded-lg border border-zinc-200 bg-white px-2.5 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                  className="border-border bg-surface-elevated text-foreground focus:border-active-work h-9 w-full rounded-lg border px-2.5 text-sm outline-none transition"
                 >
                   <option value="">Default</option>
                   {field.enum
@@ -159,12 +159,12 @@ export function CanvasModelOptionControls({
             return (
               <div
                 key={field.name}
-                className="flex items-center justify-between gap-3 border-b border-zinc-200 px-3 py-2.5 last:border-b-0 dark:border-zinc-700"
+                className="border-border flex items-center justify-between gap-3 border-b px-3 py-2.5 last:border-b-0"
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <label
                     htmlFor={`canvas-option-${field.name}`}
-                    className="text-sm font-medium leading-5 text-zinc-700 dark:text-zinc-200"
+                    className="text-foreground text-sm font-medium leading-5"
                   >
                     {label}
                   </label>
@@ -175,7 +175,7 @@ export function CanvasModelOptionControls({
                   type="checkbox"
                   checked={value === true}
                   onChange={(event) => onChange(field.name, event.target.checked)}
-                  className="h-5 w-5 shrink-0 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-400 dark:border-zinc-600 dark:bg-zinc-950"
+                  className="border-border bg-surface-elevated text-active-work focus:ring-ring h-5 w-5 shrink-0 rounded"
                 />
               </div>
             );
@@ -185,7 +185,7 @@ export function CanvasModelOptionControls({
             return (
               <div
                 key={field.name}
-                className="space-y-1.5 border-b border-zinc-200 px-3 py-2.5 last:border-b-0 dark:border-zinc-700"
+                className="border-border space-y-1.5 border-b px-3 py-2.5 last:border-b-0"
               >
                 <FieldLabel field={field} label={label} />
                 <textarea
@@ -193,7 +193,7 @@ export function CanvasModelOptionControls({
                   value={typeof value === "string" ? value : ""}
                   onChange={(event) => onChange(field.name, event.target.value)}
                   rows={3}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                  className="border-border bg-surface-elevated text-foreground focus:border-active-work w-full rounded-lg border px-2.5 py-2 text-sm outline-none transition"
                   placeholder={getFieldPlaceholder(field)}
                 />
               </div>
@@ -203,7 +203,7 @@ export function CanvasModelOptionControls({
           return (
             <div
               key={field.name}
-              className="space-y-1.5 border-b border-zinc-200 px-3 py-2.5 last:border-b-0 dark:border-zinc-700"
+              className="border-border space-y-1.5 border-b px-3 py-2.5 last:border-b-0"
             >
               <FieldLabel field={field} label={label} />
               <input
@@ -215,7 +215,7 @@ export function CanvasModelOptionControls({
                 }
                 value={typeof value === "string" ? value : ""}
                 onChange={(event) => onChange(field.name, event.target.value)}
-                className="h-9 w-full rounded-lg border border-zinc-200 bg-white px-2.5 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                className="border-border bg-surface-elevated text-foreground focus:border-active-work h-9 w-full rounded-lg border px-2.5 text-sm outline-none transition"
                 placeholder={getFieldPlaceholder(field)}
               />
             </div>

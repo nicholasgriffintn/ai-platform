@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
-import { PageShell } from "~/components/Core/PageShell";
 import { SandboxAddGitHubConnection } from "~/components/Models/SandboxAddGitHubConnection";
+import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 import {
   useConnectSandboxInstallation,
   useDeleteSandboxConnection,
@@ -136,21 +136,17 @@ export function ProfileSandboxTab() {
   };
 
   return (
-    <div className="space-y-6">
-      <PageShell.Header
-        title="Sandbox"
-        actions={[
-          {
-            label: "Add GitHub connection",
-            icon: <Plus className="h-4 w-4" />,
-            onClick: () => setIsConnectionModalOpen(true),
-          },
-        ]}
-      />
-      <p className="max-w-3xl text-sm text-muted-foreground">
-        Connect GitHub installations used by Sandbox chat mode.
-      </p>
-
+    <ProfileTab
+      title="Sandbox"
+      actions={[
+        {
+          label: "Add GitHub connection",
+          icon: <Plus className="h-4 w-4" />,
+          onClick: () => setIsConnectionModalOpen(true),
+        },
+      ]}
+      description="Connect GitHub installations used by Sandbox chat mode."
+    >
       <SandboxConnectionList
         connections={connections}
         isLoading={isLoading}
@@ -190,6 +186,6 @@ export function ProfileSandboxTab() {
         isLoading={deleteConnectionMutation.isPending}
         onConfirm={handleDeleteConnection}
       />
-    </div>
+    </ProfileTab>
   );
 }

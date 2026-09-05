@@ -23,12 +23,7 @@ export function getToolEventPayload(
     case ToolStage.STOP:
       break;
     default: {
-      const exhaustiveCheck: never = stage;
-
-      throw new AssistantError(
-        `Unsupported ToolStage: ${exhaustiveCheck}`,
-        ErrorType.INTERNAL_ERROR,
-      );
+      throw new AssistantError("Unsupported tool stage", ErrorType.INTERNAL_ERROR);
     }
   }
 

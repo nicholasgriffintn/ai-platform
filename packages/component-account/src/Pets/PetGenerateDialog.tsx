@@ -74,7 +74,7 @@ export function PetGenerateDialog({
           <div className="space-y-2">
             <label
               htmlFor="pet_generate_name"
-              className="block text-sm font-medium text-zinc-800 dark:text-zinc-200"
+              className="block text-sm font-medium text-foreground"
             >
               Pet name
             </label>
@@ -90,7 +90,7 @@ export function PetGenerateDialog({
           <div className="space-y-2">
             <label
               htmlFor="pet_generate_prompt"
-              className="block text-sm font-medium text-zinc-800 dark:text-zinc-200"
+              className="block text-sm font-medium text-foreground"
             >
               What should it be?
             </label>
@@ -124,7 +124,7 @@ export function PetGenerateDialog({
           <div className="space-y-2">
             <label
               htmlFor="pet_generate_description"
-              className="block text-sm font-medium text-zinc-800 dark:text-zinc-200"
+              className="block text-sm font-medium text-foreground"
             >
               Pet description (optional)
             </label>
@@ -139,22 +139,22 @@ export function PetGenerateDialog({
             />
           </div>
 
-          <div className="flex min-h-28 items-center justify-center rounded-lg border border-dashed border-zinc-300 p-3 dark:border-zinc-600">
+          <div className="flex min-h-28 items-center justify-center rounded-lg border border-dashed border-border-strong p-3">
             {isGenerating ? (
-              <span className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <span className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Drawing your pet
               </span>
             ) : hasPreview ? (
               preview
             ) : (
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              <span className="text-sm text-muted-foreground">
                 A preview appears here before anything is saved.
               </span>
             )}
           </div>
 
-          {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+          {error ? <p className="text-sm text-failure">{error}</p> : null}
         </div>
 
         <DialogFooter>

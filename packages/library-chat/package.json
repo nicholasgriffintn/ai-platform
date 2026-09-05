@@ -30,6 +30,12 @@
       "import": "./dist/agent-trace-display.js",
       "require": "./dist/agent-trace-display.cjs"
     },
+    "./run-activity": {
+      "polychat-source": "./src/run-activity.ts",
+      "types": "./dist/run-activity.d.ts",
+      "import": "./dist/run-activity.js",
+      "require": "./dist/run-activity.cjs"
+    },
     "./attachments": {
       "polychat-source": "./src/attachments.ts",
       "types": "./dist/attachments.d.ts",

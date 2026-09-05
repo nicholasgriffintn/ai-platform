@@ -6,8 +6,6 @@ import {
 
 import { SOURCE_CODE_URL } from "~/constants";
 import { useAuthStatus } from "~/hooks/useAuth";
-import { useIsHydrated } from "~/hooks/useIsHydrated";
-import { useTheme } from "~/hooks/useTheme";
 import { useUsageBalance } from "~/hooks/useUsage";
 import { getSidebarUsageItems } from "~/lib/sidebar-usage";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -32,8 +30,6 @@ export function SidebarSettingsPopover() {
   const planId: string | null | undefined = user?.plan_id;
   const hasPaidPlan = planId === "pro" || planId === "enterprise";
   const usageBalance = useUsageBalance();
-  const [theme, setTheme] = useTheme();
-  const isHydrated = useIsHydrated();
 
   return (
     <ControlledSidebarSettingsPopover
@@ -51,11 +47,9 @@ export function SidebarSettingsPopover() {
       isUsageLoading={isLoading || (isAuthenticated && usageBalance.isLoading)}
       links={links}
       sourceCodeIcon={<ProviderGlyph name="github" size={16} />}
-      theme={isHydrated ? theme : undefined}
       usage={getSidebarUsageItems(usageLimits, usageBalance.data?.credits)}
       onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
       onSignIn={() => setShowLoginModal(true)}
-      onThemeChange={setTheme}
     />
   );
 }

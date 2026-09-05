@@ -1,38 +1,33 @@
-import { useEffect, useState } from "react";
+import {
+  applyTheme,
+  resolveThemeId,
+  SYSTEM_DARK_QUERY,
+  type ThemePreference,
+} from "@ngriffin_uk/polychat-component-ui";
+import { useEffect } from "react";
 
-import type { Theme } from "~/types";
+import { useThemeStore } from "~/state/stores/themeStore";
 
-export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(
-    () =>
-      (typeof window !== "undefined"
-        ? (window.localStorage.getItem("theme") as Theme)
-        : "system") || "system",
-  );
+export function useThemePreference(): ThemePreference {
+  return useThemeStore((state) => state.preference);
+}
+
+export function useSetThemePreference(): (preference: ThemePreference) => void {
+  return useThemeStore((state) => state.setPreference);
+}
+
+export function useApplyTheme(): void {
+  const preference = useThemeStore((state) => state.preference);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
+    const media = window.matchMedia(SYSTEM_DARK_QUERY);
+    const apply = () => {
+      applyTheme(document.documentElement, resolveThemeId(preference, media.matches));
+    };
 
-    const root = window.document.documentElement;
+    apply();
+    media.addEventListener("change", apply);
 
-    root.classList.remove("light", "dark");
-
-    const effectiveTheme =
-      theme === "system"
-        ? window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light"
-        : theme;
-
-    root.classList.add(effectiveTheme);
-    if (theme === "system") {
-      window.localStorage.removeItem("theme");
-    } else {
-      window.localStorage.setItem("theme", theme);
-    }
-  }, [theme]);
-
-  return [theme, setTheme] as const;
+    return () => media.removeEventListener("change", apply);
+  }, [preference]);
 }

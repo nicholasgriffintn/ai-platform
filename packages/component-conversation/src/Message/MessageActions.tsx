@@ -57,7 +57,7 @@ export interface MessageActionsProps {
 }
 
 const messageActionButtonClassName =
-  "flex size-8 min-h-0 min-w-0 shrink-0 cursor-pointer items-center justify-center rounded-lg p-1.5 text-zinc-500 transition-colors duration-200 hover:bg-zinc-200/50 dark:text-zinc-400 dark:hover:bg-zinc-600/50";
+  "text-muted-foreground hover:bg-selection hover:text-foreground polychat-motion-micro flex size-8 min-h-0 min-w-0 shrink-0 cursor-pointer items-center justify-center rounded-lg p-1.5 transition-colors";
 
 export const MessageActions = ({
   message,
@@ -193,9 +193,7 @@ export const MessageActions = ({
             onClick={copyMessageToClipboard}
             className={cn(
               messageActionButtonClassName,
-              copied
-                ? "text-green-500 dark:text-green-400 bg-green-100/50 dark:bg-green-900/20"
-                : undefined,
+              copied ? "text-success bg-success/12" : undefined,
             )}
             title={copied ? "Copied!" : "Copy message"}
             aria-label={copied ? "Copied!" : "Copy message"}
@@ -210,9 +208,7 @@ export const MessageActions = ({
             onClick={handleReplaySpeech}
             className={cn(
               messageActionButtonClassName,
-              isPlayingSpeech
-                ? "text-emerald-500 dark:text-emerald-400 bg-emerald-100/50 dark:bg-emerald-900/20"
-                : undefined,
+              isPlayingSpeech ? "text-success bg-success/12" : undefined,
             )}
             title={isPlayingSpeech ? "Stop response audio" : "Replay response audio"}
             aria-label={isPlayingSpeech ? "Stop response audio" : "Replay response audio"}
@@ -294,7 +290,7 @@ export const MessageActions = ({
                   align="end"
                   sideOffset={8}
                   collisionPadding={{ top: 64, right: 8, bottom: 112, left: 8 }}
-                  className="w-[calc(100vw-1rem)] max-w-[22rem] overflow-hidden border-zinc-200 bg-white p-0 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
+                  className="border-border bg-surface-elevated w-[calc(100vw-1rem)] max-w-[22rem] overflow-hidden p-0 shadow-[var(--polychat-elevated-shadow)]"
                 >
                   {renderModelSelector({
                     onModelSelect: handleModelSelected,
@@ -331,7 +327,7 @@ export const MessageActions = ({
       </div>
       {canSubmitFeedback && !isSharedView && message.role !== "user" && message.log_id && (
         <div className="flex items-center space-x-1">
-          <span className="text-xs text-zinc-600 dark:text-zinc-300">Helpful?</span>
+          <span className="text-xs text-muted-foreground">Helpful?</span>
           <Button
             type="button"
             variant="icon"
@@ -339,9 +335,7 @@ export const MessageActions = ({
             disabled={isSubmittingFeedback || feedbackState === "liked"}
             className={cn(
               messageActionButtonClassName,
-              feedbackState === "liked"
-                ? "text-green-500 dark:text-green-400 bg-green-100/50 dark:bg-green-900/20"
-                : undefined,
+              feedbackState === "liked" ? "text-success bg-success/12" : undefined,
               (isSubmittingFeedback || feedbackState === "liked") &&
                 "cursor-not-allowed opacity-50",
             )}
@@ -357,9 +351,7 @@ export const MessageActions = ({
             disabled={isSubmittingFeedback || feedbackState === "disliked"}
             className={cn(
               messageActionButtonClassName,
-              feedbackState === "disliked"
-                ? "text-red-500 dark:text-red-400 bg-red-100/50 dark:bg-red-900/20"
-                : undefined,
+              feedbackState === "disliked" ? "text-failure bg-failure/12" : undefined,
               (isSubmittingFeedback || feedbackState === "disliked") &&
                 "cursor-not-allowed opacity-50",
             )}

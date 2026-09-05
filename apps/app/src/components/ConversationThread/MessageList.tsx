@@ -15,6 +15,7 @@ import {
 import { collectResolvedToolCallIds } from "@ngriffin_uk/polychat-library-chat/agent-trace";
 import {
   getCompactionMessageLabel,
+  getCompactionCoverageDetail,
   isCompactionLoadingMessage,
 } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import { getGoalMessageMarker } from "@ngriffin_uk/polychat-library-chat/message-goal-status";
@@ -168,6 +169,7 @@ export const MessageList = ({
           message,
           index,
           compactionLabel: getCompactionMessageLabel(message),
+          compactionDetail: getCompactionCoverageDetail(message),
           goalMarker: getGoalMessageMarker(message),
           goalStarted:
             message.role === "user" && getGoalMessageMarker(messages[index - 1])?.event === "set",
@@ -254,51 +256,61 @@ export const MessageList = ({
         >
           {!isSharedView && isLoadingConversation
             ? [...Array(3)].map((_, i) => <MessageSkeleton key={`skeleton-item-${i}`} />)
-            : visibleRows.map(({ message, index, compactionLabel, goalMarker, goalStarted }) => {
-                return (
-                  <div key={message.id || `message-${index}`} className="pb-4">
-                    {goalMarker ? (
-                      <GoalStatusRow label={goalMarker.label} objective={goalMarker.objective} />
-                    ) : compactionLabel ? (
-                      <CompactionStatusRow label={compactionLabel} />
-                    ) : (
-                      <ChatMessage
-                        conversationId={currentConversationId}
-                        canSubmitFeedback={Boolean(conversation && !conversation.isLocalOnly)}
-                        message={message}
-                        isGenerating={index === generatingAssistantMessageIndex}
-                        modelConfig={getModelByReference(modelReferences, message.model)}
-                        onToolInteraction={onToolInteraction}
-                        onConnectorApproval={onConnectorApproval}
-                        onArtifactOpen={onArtifactOpen}
-                        isSharedView={isSharedView}
-                        onRetry={(messageId) => void retryMessage(messageId)}
-                        isRetrying={streamStarted}
-                        onEdit={message.id ? () => startEditingMessage(message.id) : undefined}
-                        isEditing={editingMessageId === message.id}
-                        onSaveEdit={(newContent) => {
-                          if (message.id) {
-                            void updateUserMessage(message.id, newContent);
-                            stopEditingMessage();
+            : visibleRows.map(
+                ({
+                  message,
+                  index,
+                  compactionLabel,
+                  compactionDetail,
+                  goalMarker,
+                  goalStarted,
+                }) => {
+                  return (
+                    <div key={message.id || `message-${index}`} className="pb-4">
+                      {goalMarker ? (
+                        <GoalStatusRow label={goalMarker.label} objective={goalMarker.objective} />
+                      ) : compactionLabel ? (
+                        <CompactionStatusRow label={compactionLabel} detail={compactionDetail} />
+                      ) : (
+                        <ChatMessage
+                          conversationId={currentConversationId}
+                          canSubmitFeedback={Boolean(conversation && !conversation.isLocalOnly)}
+                          message={message}
+                          isGenerating={index === generatingAssistantMessageIndex}
+                          modelConfig={getModelByReference(modelReferences, message.model)}
+                          onToolInteraction={onToolInteraction}
+                          onConnectorApproval={onConnectorApproval}
+                          onArtifactOpen={onArtifactOpen}
+                          isSharedView={isSharedView}
+                          onRetry={(messageId) => void retryMessage(messageId)}
+                          isRetrying={streamStarted}
+                          onEdit={message.id ? () => startEditingMessage(message.id) : undefined}
+                          isEditing={editingMessageId === message.id}
+                          onSaveEdit={(newContent) => {
+                            if (message.id) {
+                              void updateUserMessage(message.id, newContent);
+                              stopEditingMessage();
+                            }
+                          }}
+                          onCancelEdit={stopEditingMessage}
+                          onBranch={onBranch}
+                          isBranching={isBranching}
+                          onRequestSecondOpinion={
+                            canAccessProFeatures ? onRequestSecondOpinion : undefined
                           }
-                        }}
-                        onCancelEdit={stopEditingMessage}
-                        onBranch={onBranch}
-                        isBranching={isBranching}
-                        onRequestSecondOpinion={
-                          canAccessProFeatures ? onRequestSecondOpinion : undefined
-                        }
-                        isRequestingSecondOpinion={isRequestingSecondOpinion}
-                        isArchivedByCompaction={
-                          latestCompactionMarkerIndex !== -1 && index < latestCompactionMarkerIndex
-                        }
-                        responseDurationMs={responseDurations[message.id]}
-                        goalStarted={goalStarted}
-                      />
-                    )}
-                  </div>
-                );
-              })}
+                          isRequestingSecondOpinion={isRequestingSecondOpinion}
+                          isArchivedByCompaction={
+                            latestCompactionMarkerIndex !== -1 &&
+                            index < latestCompactionMarkerIndex
+                          }
+                          responseDurationMs={responseDurations[message.id]}
+                          goalStarted={goalStarted}
+                        />
+                      )}
+                    </div>
+                  );
+                },
+              )}
           {!isSharedView && (isStreamLoading || streamStarted) ? (
             isCompactionLoadingMessage(streamLoadingMessage) ? (
               showCompactionLoadingDivider ? (
@@ -313,8 +325,8 @@ export const MessageList = ({
             )
           ) : null}
           {!isSharedView && isModelInitializing && (
-            <div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
-              <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
+            <div className="flex items-center gap-2 py-2 px-4 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin text-active-work flex-shrink-0" />
               <span>
                 {modelInitMessage}
                 {modelInitProgress !== undefined ? ` ${Math.round(modelInitProgress)}%` : null}

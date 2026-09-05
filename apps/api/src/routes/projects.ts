@@ -19,6 +19,8 @@ import {
   projectTaskDetailResponseSchema,
   projectTaskResponseSchema,
   resolveProjectTaskToolApprovalSchema,
+  sandboxEnvironmentCacheActionResponseSchema,
+  sandboxEnvironmentCacheActionSchema,
   setProjectFlowSchema,
   skillIdSchema,
   updateProjectSchema,
@@ -61,6 +63,7 @@ import {
   removeProjectCapability,
   updateProject,
 } from "~/services/workspaces";
+import { applyProjectEnvironmentCacheAction } from "~/services/workspaces/environment-cache";
 
 const app = new Hono();
 const projectParams = z.object({ projectId: z.string().min(1) });
@@ -91,6 +94,22 @@ addRoute(app, "delete", "/:projectId", {
   summary: "Archive a project",
   paramSchema: projectParams,
   handler: ({ serviceContext, params }) => archiveProject(serviceContext, params.projectId),
+});
+
+addRoute(app, "post", "/:projectId/environment-cache", {
+  auth: true,
+  tags: ["projects"],
+  summary: "Rebuild or delete a project environment cache",
+  paramSchema: projectParams,
+  bodySchema: sandboxEnvironmentCacheActionSchema,
+  responses: {
+    200: {
+      description: "Environment cache action result",
+      schema: sandboxEnvironmentCacheActionResponseSchema,
+    },
+  },
+  handler: ({ serviceContext, params, body }) =>
+    applyProjectEnvironmentCacheAction(serviceContext, params.projectId, body),
 });
 
 addRoute(app, "post", "/:projectId/capabilities", {

@@ -29,9 +29,7 @@ export function PersonalExperienceRoute({
       <PageShell.Header title={title ?? "Experience"} />
       <BackLink href={backLink.to} label={backLink.label} />
       {definition && (
-        <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-          {definition.description}
-        </p>
+        <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{definition.description}</p>
       )}
 
       {isLoading ? (

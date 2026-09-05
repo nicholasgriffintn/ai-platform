@@ -43,6 +43,42 @@ describe("MessageRepository", () => {
     expect(bind).toHaveBeenLastCalledWith("message-2", 2, "conversation-1");
   });
 
+  it("inserts compaction records, archives exact coverage, and refreshes metadata atomically", async () => {
+    const { batch, bind, prepare, repository } = createRepository();
+
+    await repository.createCompactionAndArchiveMessages(
+      "conversation-1",
+      [
+        { id: "snapshot-1", role: "assistant", content: "Conversation snapshot" },
+        { id: "snapshot-1-compaction", role: "compaction", content: "Context compacted" },
+      ],
+      ["message-1", "message-2", "snapshot-1-compaction"],
+    );
+
+    expect(batch).toHaveBeenCalledTimes(1);
+    expect(batch.mock.calls[0][0]).toHaveLength(4);
+
+    const statements = prepare.mock.calls.map((call) => call[0]);
+
+    expect(statements[2]).toContain("SET is_archived = 1");
+    expect(statements[2]).toContain("id IN (?, ?, ?)");
+    expect(statements[3]).toContain("message_count = (");
+    expect(bind).toHaveBeenNthCalledWith(
+      3,
+      "conversation-1",
+      "message-1",
+      "message-2",
+      "snapshot-1-compaction",
+    );
+    expect(bind).toHaveBeenNthCalledWith(
+      4,
+      "conversation-1",
+      "conversation-1",
+      "conversation-1",
+      "conversation-1",
+    );
+  });
+
   it("replaces a conversation's messages in a single transaction", async () => {
     const { batch, prepare, repository } = createRepository();
 

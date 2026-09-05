@@ -5,6 +5,7 @@ import type {
   ProjectCodingEnvironment,
   WorkspaceRole,
 } from "@ngriffin_uk/polychat-schemas";
+import { sandboxDeliveryPolicyCreatesCommit } from "@ngriffin_uk/polychat-schemas";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { escapeSqlLikePattern } from "~/utils/sql";
@@ -78,6 +79,10 @@ export interface ProjectRow {
   coding_repository?: string | null;
   coding_prompt_strategy?: string;
   coding_should_commit?: number;
+  coding_delivery_policy?: string | null;
+  coding_environment_setup?: string | null;
+  coding_environment_cache?: string | null;
+  coding_cache_generation?: number;
   coding_timeout_seconds?: number;
   flow?: string | null;
   created_by: number;
@@ -114,6 +119,12 @@ export interface ProjectConversationRow {
   created_by: number;
   created_by_name: string | null;
   created_by_avatar_url: string | null;
+  is_pinned: number;
+  is_unread: number;
+  snoozed_until: string | null;
+  snoozed_next_response_at: string | null;
+  next_response_arrived: number;
+  labels: string;
 }
 
 export class WorkspaceRepository extends BaseRepository {
@@ -461,8 +472,10 @@ export class WorkspaceRepository extends BaseRepository {
       `INSERT INTO project
 				(id, workspace_id, name, description, instructions, colour,
 				 coding_enabled, coding_installation_id, coding_repository,
-				 coding_prompt_strategy, coding_should_commit, coding_timeout_seconds, created_by, default_router_mode)
-				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				 coding_prompt_strategy, coding_should_commit, coding_delivery_policy,
+				 coding_environment_setup, coding_environment_cache, coding_cache_generation,
+				 coding_timeout_seconds, created_by, default_router_mode)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         params.id,
         params.workspaceId,
@@ -474,7 +487,15 @@ export class WorkspaceRepository extends BaseRepository {
         params.codingEnvironment?.installationId ?? null,
         params.codingEnvironment?.repository ?? null,
         params.codingEnvironment?.promptStrategy ?? "auto",
-        params.codingEnvironment?.shouldCommit ?? true,
+        params.codingEnvironment
+          ? sandboxDeliveryPolicyCreatesCommit(params.codingEnvironment.deliveryPolicy)
+          : true,
+        params.codingEnvironment ? JSON.stringify(params.codingEnvironment.deliveryPolicy) : null,
+        params.codingEnvironment?.environmentSetup
+          ? JSON.stringify(params.codingEnvironment.environmentSetup)
+          : null,
+        null,
+        0,
         params.codingEnvironment?.timeoutSeconds ?? 900,
         params.createdBy,
         params.defaultRouterMode ?? "auto",
@@ -503,8 +524,10 @@ export class WorkspaceRepository extends BaseRepository {
           `INSERT INTO project
 					 (id, workspace_id, name, description, instructions, colour,
 					  coding_enabled, coding_installation_id, coding_repository,
-					  coding_prompt_strategy, coding_should_commit, coding_timeout_seconds, created_by, default_router_mode)
-					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					  coding_prompt_strategy, coding_should_commit, coding_delivery_policy,
+					  coding_environment_setup, coding_environment_cache, coding_cache_generation,
+					  coding_timeout_seconds, created_by, default_router_mode)
+					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           params.id,
@@ -517,7 +540,15 @@ export class WorkspaceRepository extends BaseRepository {
           params.codingEnvironment?.installationId ?? null,
           params.codingEnvironment?.repository ?? null,
           params.codingEnvironment?.promptStrategy ?? "auto",
-          params.codingEnvironment?.shouldCommit ?? true,
+          params.codingEnvironment
+            ? sandboxDeliveryPolicyCreatesCommit(params.codingEnvironment.deliveryPolicy)
+            : true,
+          params.codingEnvironment ? JSON.stringify(params.codingEnvironment.deliveryPolicy) : null,
+          params.codingEnvironment?.environmentSetup
+            ? JSON.stringify(params.codingEnvironment.environmentSetup)
+            : null,
+          null,
+          0,
           params.codingEnvironment?.timeoutSeconds ?? 900,
           params.createdBy,
           params.defaultRouterMode ?? "auto",
@@ -596,6 +627,10 @@ export class WorkspaceRepository extends BaseRepository {
         "coding_repository",
         "coding_prompt_strategy",
         "coding_should_commit",
+        "coding_delivery_policy",
+        "coding_environment_setup",
+        "coding_environment_cache",
+        "coding_cache_generation",
         "coding_timeout_seconds",
         "flow",
         "archived_at",
@@ -607,6 +642,105 @@ export class WorkspaceRepository extends BaseRepository {
     if (result) {
       await this.executeRun(result.query, result.values);
     }
+  }
+
+  async invalidateProjectEnvironmentCache(
+    projectId: string,
+    invalidatedCache: string | null,
+  ): Promise<void> {
+    await this.executeRun(
+      `UPDATE project
+       SET coding_environment_cache = ?,
+           coding_cache_generation = coding_cache_generation + 1,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      [invalidatedCache, projectId],
+    );
+  }
+
+  async storeProjectEnvironmentCache(
+    projectId: string,
+    expectedGeneration: number,
+    cacheKey: string,
+    cache: string,
+  ): Promise<boolean> {
+    const result = await this.executeRun(
+      `UPDATE project
+       SET coding_environment_cache = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND coding_cache_generation = ?
+         AND (
+           coding_environment_cache IS NULL
+           OR json_valid(coding_environment_cache) = 0
+           OR json_extract(
+             CASE WHEN json_valid(coding_environment_cache) THEN coding_environment_cache ELSE '{}'
+             END,
+             '$.status'
+           ) <> 'ready'
+           OR json_extract(
+             CASE WHEN json_valid(coding_environment_cache) THEN coding_environment_cache ELSE '{}'
+             END,
+             '$.cacheKey'
+           ) <> ?
+         )`,
+      [cache, projectId, expectedGeneration, cacheKey],
+    );
+
+    return result.meta.changes > 0;
+  }
+
+  async touchProjectEnvironmentCache(
+    projectId: string,
+    expectedGeneration: number,
+    backupId: string,
+    cache: string,
+  ): Promise<boolean> {
+    const result = await this.executeRun(
+      `UPDATE project
+       SET coding_environment_cache = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND coding_cache_generation = ?
+         AND json_extract(
+           CASE WHEN json_valid(coding_environment_cache) THEN coding_environment_cache ELSE '{}'
+           END,
+           '$.status'
+         ) = 'ready'
+         AND json_extract(
+           CASE WHEN json_valid(coding_environment_cache) THEN coding_environment_cache ELSE '{}'
+           END,
+           '$.backupId'
+         ) = ?`,
+      [cache, projectId, expectedGeneration, backupId],
+    );
+
+    return result.meta.changes > 0;
+  }
+
+  async replaceProjectEnvironmentCache(
+    projectId: string,
+    expectedGeneration: number,
+    expectedBackupId: string,
+    cache: string,
+  ): Promise<boolean> {
+    const result = await this.executeRun(
+      `UPDATE project
+       SET coding_environment_cache = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND coding_cache_generation = ?
+         AND json_extract(
+           CASE WHEN json_valid(coding_environment_cache) THEN coding_environment_cache ELSE '{}'
+           END,
+           '$.status'
+         ) = 'ready'
+         AND json_extract(
+           CASE WHEN json_valid(coding_environment_cache) THEN coding_environment_cache ELSE '{}'
+           END,
+           '$.backupId'
+         ) = ?`,
+      [cache, projectId, expectedGeneration, expectedBackupId],
+    );
+
+    return result.meta.changes > 0;
   }
 
   async listProjectCapabilities(projectId: string): Promise<ProjectCapabilityRow[]> {
@@ -735,16 +869,55 @@ export class WorkspaceRepository extends BaseRepository {
     ]);
   }
 
-  async listProjectConversations(projectId: string): Promise<ProjectConversationRow[]> {
+  async listProjectConversations(
+    projectId: string,
+    userId: number,
+  ): Promise<ProjectConversationRow[]> {
     return this.runQuery<ProjectConversationRow>(
       `SELECT c.id, c.type, c.title, c.created_at, c.updated_at, c.last_message_at, c.message_count,
-				u.id AS created_by, u.name AS created_by_name, u.avatar_url AS created_by_avatar_url
+				u.id AS created_by, u.name AS created_by_name, u.avatar_url AS created_by_avatar_url,
+        COALESCE(state.is_pinned, 0) AS is_pinned,
+        COALESCE(state.is_unread, 0) AS is_unread,
+        state.snoozed_until,
+        state.snoozed_next_response_at,
+        EXISTS (
+          SELECT 1 FROM message response
+          WHERE response.conversation_id = c.id
+            AND response.role = 'assistant'
+            AND state.snoozed_next_response_at IS NOT NULL
+            AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
+        ) AS next_response_arrived,
+        COALESCE((
+          SELECT json_group_array(json_object(
+            'id', label.id,
+            'name', label.name,
+            'scope', json_object('kind', 'project', 'projectId', label.project_id)
+          ))
+          FROM conversation_label_assignment assignment
+          JOIN conversation_label label ON label.id = assignment.label_id
+          WHERE assignment.conversation_id = c.id AND label.project_id = c.project_id
+        ), '[]') AS labels
 			 FROM conversation c
 			 JOIN user u ON u.id = c.user_id
+			 LEFT JOIN conversation_user_state state
+         ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.project_id = ? AND c.is_archived = 0
-			 ORDER BY COALESCE(c.last_message_at, c.updated_at, c.created_at) DESC
+        AND NOT (
+          COALESCE(datetime(state.snoozed_until) > datetime('now'), 0)
+          OR (
+            state.snoozed_next_response_at IS NOT NULL
+            AND NOT EXISTS (
+              SELECT 1 FROM message response
+              WHERE response.conversation_id = c.id
+                AND response.role = 'assistant'
+                AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
+            )
+          )
+        )
+			 ORDER BY COALESCE(state.is_pinned, 0) DESC,
+        COALESCE(c.last_message_at, c.updated_at, c.created_at) DESC, c.id DESC
 			 LIMIT 50`,
-      [projectId],
+      [userId, projectId],
     );
   }
 

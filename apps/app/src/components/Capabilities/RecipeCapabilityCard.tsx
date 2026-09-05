@@ -63,7 +63,7 @@ export function RecipeCapabilityCard({
               trigger={<Ellipsis className="h-4 w-4" />}
             >
               <DropdownMenuItem
-                className="text-red-700 dark:text-red-300"
+                className="text-failure"
                 icon={<Trash2 className="h-4 w-4" />}
                 onClick={projectActions.onRemove}
               >

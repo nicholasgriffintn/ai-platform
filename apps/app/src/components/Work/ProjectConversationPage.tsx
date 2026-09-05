@@ -24,6 +24,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
+import { ProjectWorkbenchConversation } from "./ProjectWorkbenchConversation";
 import { useWorkData } from "./WorkDataContext";
 
 export function ProjectConversationPage({
@@ -50,6 +51,7 @@ export function ProjectConversationPage({
   }, [model, models]);
   const { data: currentConversation } = useChat(currentConversationId);
   const { tasks, answer, approval } = useProjectTasks(projectId);
+  const conversationTask = tasks.find((task) => task.conversationId === currentConversationId);
   const pendingTask = tasks.find(
     (task) =>
       task.conversationId === currentConversationId &&
@@ -248,63 +250,73 @@ export function ProjectConversationPage({
   }, [currentConversationId, isStreamLoading, project, projectId, queryClient]);
 
   return (
-    <ConversationPage
-      embedded
-      title={project?.name ?? "Project conversation"}
-      modeConfig={{
-        contextAttachments: isNewConversation ? projectSources.attachments : [],
-        contextAttachmentsReady: !isNewConversation || !projectSources.isLoading,
-        assistantActionRoutes: {
-          recipes: recipeManagementPath,
-        },
-        assistantActionCatalog: {
-          includeAgents: false,
-          includeTools: false,
-          projectId,
-        },
-        allowedAssistantActionCapabilities: capabilities,
-        toolSelectionLocked: true,
-        welcomeTitle: codingEnvironment
-          ? codingPresentation.title
-          : (project?.name ?? "Project conversation"),
-        welcomeDescription: codingEnvironment
-          ? codingPresentation.description
-          : project?.description ||
-            "This conversation uses the project's instructions and capabilities.",
-        welcomeSuggestions: codingEnvironment ? codingPresentation.suggestions : undefined,
-        welcomeCapabilitySuggestions: false,
-        inputPlaceholder: {
-          newConversation: codingEnvironment
-            ? codingPresentation.placeholder
-            : "Message about this project…",
-          followUp: codingEnvironment ? codingPresentation.placeholder : "Reply…",
-        },
-        inputControls: codingEnvironment ? (
-          <ProjectCodingTaskControl taskType={taskType} onChange={handleTaskTypeChange} />
-        ) : undefined,
-        requestOptions: {
-          metadata: { project_id: projectId },
-          ...(codingEnvironment
-            ? {
-                options: {
-                  sandbox: {
-                    enabled: true,
-                    installationId: codingEnvironment.installationId,
-                    repo: codingEnvironment.repository,
-                    taskType,
-                    promptStrategy: codingEnvironment.promptStrategy,
-                    shouldCommit: codingEnvironment.shouldCommit,
-                    timeoutSeconds: codingEnvironment.timeoutSeconds,
+    <ProjectWorkbenchConversation
+      projectId={projectId}
+      conversationId={currentConversationId}
+      hasCodingEnvironment={Boolean(codingEnvironment)}
+      conversationIsStreaming={isStreamLoading}
+      conversationMessages={currentConversation?.messages}
+      task={conversationTask}
+    >
+      <ConversationPage
+        embedded
+        title={project?.name ?? "Project conversation"}
+        modeConfig={{
+          contextAttachments: isNewConversation ? projectSources.attachments : [],
+          contextAttachmentsReady: !isNewConversation || !projectSources.isLoading,
+          assistantActionRoutes: {
+            recipes: recipeManagementPath,
+          },
+          assistantActionCatalog: {
+            includeAgents: false,
+            includeTools: false,
+            projectId,
+          },
+          allowedAssistantActionCapabilities: capabilities,
+          toolSelectionLocked: true,
+          welcomeTitle: codingEnvironment
+            ? codingPresentation.title
+            : (project?.name ?? "Project conversation"),
+          welcomeDescription: codingEnvironment
+            ? codingPresentation.description
+            : project?.description ||
+              "This conversation uses the project's instructions and capabilities.",
+          welcomeSuggestions: codingEnvironment ? codingPresentation.suggestions : undefined,
+          welcomeCapabilitySuggestions: false,
+          inputPlaceholder: {
+            newConversation: codingEnvironment
+              ? codingPresentation.placeholder
+              : "Message about this project…",
+            followUp: codingEnvironment ? codingPresentation.placeholder : "Reply…",
+          },
+          inputControls: codingEnvironment ? (
+            <ProjectCodingTaskControl taskType={taskType} onChange={handleTaskTypeChange} />
+          ) : undefined,
+          requestOptions: {
+            metadata: { project_id: projectId },
+            ...(codingEnvironment
+              ? {
+                  options: {
+                    sandbox: {
+                      enabled: true,
+                      installationId: codingEnvironment.installationId,
+                      repo: codingEnvironment.repository,
+                      taskType,
+                      promptStrategy: codingEnvironment.promptStrategy,
+                      deliveryPolicy: codingEnvironment.deliveryPolicy,
+                      environmentSetup: codingEnvironment.environmentSetup,
+                      timeoutSeconds: codingEnvironment.timeoutSeconds,
+                    },
                   },
-                },
-              }
-            : {}),
-        },
-        analyticsSource: "project",
-        hideComposerSuggestions: true,
-        pendingUserQuestions: pendingTaskQuery.data?.pendingQuestions ?? null,
-        onToolInteraction: handleTaskQuestionInteraction,
-      }}
-    />
+                }
+              : {}),
+          },
+          analyticsSource: "project",
+          hideComposerSuggestions: true,
+          pendingUserQuestions: pendingTaskQuery.data?.pendingQuestions ?? null,
+          onToolInteraction: handleTaskQuestionInteraction,
+        }}
+      />
+    </ProjectWorkbenchConversation>
   );
 }

@@ -1,4 +1,8 @@
 import type {
+  SandboxDeliveryPolicy,
+  SandboxEnvironmentCacheRecord,
+  SandboxEnvironmentPreparationMode,
+  SandboxEnvironmentSetup,
   SandboxPromptStrategy,
   SandboxTaskType,
   SandboxTrustLevel,
@@ -68,14 +72,19 @@ export interface ExecuteSandboxWorkerOptions {
   model?: string;
   taskType?: SandboxTaskType;
   promptStrategy?: SandboxPromptStrategy;
+  deliveryPolicy?: SandboxDeliveryPolicy;
   shouldCommit?: boolean;
+  environmentSetup?: SandboxEnvironmentSetup;
+  environmentPreparationMode?: SandboxEnvironmentPreparationMode;
+  environmentCache?: SandboxEnvironmentCacheRecord;
+  environmentCacheGeneration?: number;
+  projectId?: string;
   timeoutSeconds?: number;
   trustLevel?: SandboxTrustLevel;
   modelSettings?: SandboxModelSettings;
   installationId?: number;
   stream?: boolean;
   runId?: string;
-  githubTokenOverride?: string;
   signal?: AbortSignal;
 }
 
@@ -131,16 +140,11 @@ async function resolveGitHubToken(params: {
   userId: number;
   repo: string;
   installationId?: number;
-  githubTokenOverride?: string;
 }): Promise<string> {
-  const { context, userId, repo, installationId, githubTokenOverride } = params;
-
-  if (githubTokenOverride?.trim()) {
-    return githubTokenOverride.trim();
-  }
+  const { context, userId, repo, installationId } = params;
 
   const githubConnection = installationId
-    ? await getGitHubAppConnectionForUserInstallation(context, userId, installationId)
+    ? await getGitHubAppConnectionForUserInstallation(context, userId, installationId, repo)
     : await getGitHubAppConnectionForUserRepo(context, userId, repo);
 
   return getGitHubAppInstallationToken({
@@ -161,14 +165,19 @@ export async function executeSandboxWorker(
     task,
     taskType,
     promptStrategy,
+    deliveryPolicy,
     shouldCommit,
+    environmentSetup,
+    environmentPreparationMode,
+    environmentCache,
+    environmentCacheGeneration,
+    projectId,
     timeoutSeconds,
     trustLevel,
     modelSettings,
     installationId,
     stream,
     runId,
-    githubTokenOverride,
     signal,
   } = options;
 
@@ -196,16 +205,21 @@ export async function executeSandboxWorker(
     userId: user.id,
     repo,
     installationId,
-    githubTokenOverride,
   });
   const workerPayload: SandboxWorkerExecuteRequest = {
     userId: user.id,
+    projectId,
     taskType: taskType || "feature-implementation",
     repo,
     task,
     model,
     promptStrategy,
-    shouldCommit: Boolean(shouldCommit),
+    deliveryPolicy,
+    shouldCommit,
+    environmentSetup,
+    environmentPreparationMode,
+    environmentCache,
+    environmentCacheGeneration,
     timeoutSeconds,
     trustLevel,
     modelSettings,

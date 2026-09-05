@@ -34,7 +34,7 @@ export function LiveProviderPicker({
 }: LiveProviderPickerProps) {
   if (isLoading) {
     return (
-      <output className="block px-2 py-3 text-sm text-zinc-500 dark:text-zinc-400">
+      <output className="block px-2 py-3 text-sm text-muted-foreground">
         Loading realtime providers…
       </output>
     );
@@ -42,7 +42,7 @@ export function LiveProviderPicker({
 
   if (options.length === 0) {
     return (
-      <output className="block px-2 py-3 text-sm text-zinc-500 dark:text-zinc-400">
+      <output className="block px-2 py-3 text-sm text-muted-foreground">
         No realtime providers are available.
       </output>
     );
@@ -66,8 +66,8 @@ export function LiveProviderPicker({
             className={cn(
               "flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60",
               isSelected
-                ? "bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-zinc-50"
-                : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
+                ? "bg-selection text-foreground"
+                : "text-foreground hover:bg-surface-elevated",
             )}
           >
             <span className="flex h-5 w-5 shrink-0 items-center justify-center">
@@ -75,13 +75,13 @@ export function LiveProviderPicker({
             </span>
             <span className="min-w-0 flex-1">
               <span className="block font-medium leading-5">{option.label}</span>
-              <span className="block truncate text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="block truncate text-xs text-muted-foreground">
                 {isReady
                   ? `${option.transport.toUpperCase()} · ${option.description}`
                   : option.availabilityReason}
               </span>
             </span>
-            {isSelected && <Check className="h-4 w-4 text-zinc-500" aria-hidden="true" />}
+            {isSelected && <Check className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
           </button>
         );
       })}

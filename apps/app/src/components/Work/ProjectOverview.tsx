@@ -55,7 +55,7 @@ export function ProjectOverview({
 
   if (error || !project) {
     return (
-      <div role="alert" className="p-10 text-sm text-red-700">
+      <div role="alert" className="p-10 text-sm text-failure">
         {error?.message ?? "Project not found"}
       </div>
     );
@@ -115,7 +115,7 @@ export function ProjectOverview({
             />
           }
         />
-        <p className="mb-6 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
           {project.description || "No project description"}
         </p>
 
@@ -181,7 +181,7 @@ export function ProjectOverview({
         }}
       >
         {archiveProject.error && (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="text-sm text-failure">
             {archiveProject.error.message}
           </p>
         )}

@@ -24,6 +24,7 @@ import { useCallback, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 import type { CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
+import { ConversationOrganisationDialog } from "~/components/ConversationOrganisationDialog";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
   useChats,
@@ -98,6 +99,7 @@ export const ChatSidebar = ({
   const updateTitle = useUpdateChatTitle();
   const setAllArchived = useSetAllChatsArchived();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [conversationToOrganise, setConversationToOrganise] = useState<string | null>(null);
   const [confirmArchiveAll, setConfirmArchiveAll] = useState<boolean | null>(null);
   const loadMoreConversations = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -105,7 +107,7 @@ export const ChatSidebar = ({
     }
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
   const loadMoreRef = useLoadMoreOnIntersect({
-    enabled: Boolean(hasNextPage),
+    enabled: hasNextPage,
     isLoading: isFetchingNextPage,
     onLoadMore: loadMoreConversations,
   });
@@ -243,6 +245,9 @@ export const ChatSidebar = ({
       parentConversationId: conversation.parent_conversation_id,
       isStreaming: conversationStreams[conversation.id ?? ""]?.status === "streaming",
       needsInput: conversationStreams[conversation.id ?? ""]?.status === "action-required",
+      isPinned: conversation.isPinned,
+      isUnread: conversation.isUnread,
+      labels: conversation.labels,
     })),
     {
       groupBy: conversationListFilters.groupBy,
@@ -291,7 +296,7 @@ export const ChatSidebar = ({
           <CanvasSidebarControls canvas={canvas} />
         ) : isAuthenticationLoading ? (
           <div className="flex items-center gap-2 p-2">
-            <Loader2 size={20} className="animate-spin text-zinc-600 dark:text-zinc-400" />
+            <Loader2 size={20} className="animate-spin text-muted-foreground" />
           </div>
         ) : (
           <nav aria-label="Conversations">
@@ -363,16 +368,16 @@ export const ChatSidebar = ({
                   loadMoreSlot={
                     isFetchingNextPage ? (
                       <div className="flex justify-center py-2">
-                        <Loader2
-                          size={16}
-                          className="animate-spin text-zinc-500 dark:text-zinc-400"
-                        />
+                        <Loader2 size={16} className="animate-spin text-muted-foreground" />
                       </div>
                     ) : null
                   }
                   onSelect={handleConversationClick}
-                  onEditTitle={handleEditTitle}
+                  onEditTitle={(conversationId, currentTitle) => {
+                    void handleEditTitle(conversationId, currentTitle);
+                  }}
                   onDelete={(conversationId) => setConfirmDelete(conversationId)}
+                  onOrganise={setConversationToOrganise}
                 />
               }
             </ConversationListSection>
@@ -403,6 +408,11 @@ export const ChatSidebar = ({
         variant="destructive"
         onConfirm={confirmDeleteChat}
         isLoading={deleteChat.isPending}
+      />
+      <ConversationOrganisationDialog
+        conversationId={conversationToOrganise}
+        canManageLabels
+        onOpenChange={(open) => !open && setConversationToOrganise(null)}
       />
     </>
   );

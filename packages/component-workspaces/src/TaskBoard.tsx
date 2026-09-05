@@ -95,10 +95,10 @@ function PipelineProgress({ task, flow }: { task: ProjectTask; flow: ProjectFlow
               <span
                 className={`h-px min-w-1 flex-1 ${
                   isDone
-                    ? "bg-emerald-500"
+                    ? "bg-success"
                     : isComplete || isCurrent
-                      ? "bg-blue-400"
-                      : "bg-zinc-200 dark:bg-zinc-800"
+                      ? "bg-active-work"
+                      : "bg-selection"
                 }`}
               />
             ) : null}
@@ -108,11 +108,11 @@ function PipelineProgress({ task, flow }: { task: ProjectTask; flow: ProjectFlow
               className={`h-2.5 w-2.5 shrink-0 rounded-full border ${
                 isComplete
                   ? isDone
-                    ? "border-emerald-500 bg-emerald-500"
-                    : "border-blue-500 bg-blue-500"
+                    ? "border-success bg-success"
+                    : "border-active-work bg-active-work"
                   : isCurrent
-                    ? "border-blue-500 bg-white ring-2 ring-blue-100 dark:bg-zinc-900 dark:ring-blue-950"
-                    : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+                    ? "border-active-work bg-surface ring-2 ring-active-work/45"
+                    : "border-border-strong bg-surface"
               }`}
             />
           </Fragment>
@@ -154,28 +154,28 @@ function TaskRow({
   const activityAt = task.updatedAt ?? task.createdAt;
 
   return (
-    <article className="group grid gap-4 border-b border-zinc-100 px-4 py-4 last:border-b-0 hover:bg-zinc-50/70 dark:border-zinc-800/80 dark:hover:bg-white/[0.025] lg:grid-cols-[minmax(0,1fr)_190px_130px] lg:items-center">
+    <article className="group grid gap-4 border-b border-border px-4 py-4 last:border-b-0 hover:bg-surface-elevated/70 lg:grid-cols-[minmax(0,1fr)_190px_130px] lg:items-center">
       <div className="min-w-0 space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <TaskStatusBadge status={task.status} />
-          {stage ? <span className="text-xs text-zinc-500">{stage.name}</span> : null}
+          {stage ? <span className="text-xs text-muted-foreground">{stage.name}</span> : null}
         </div>
         <Link
           href={href}
-          className="block line-clamp-2 text-sm font-semibold text-zinc-950 no-underline hover:!text-blue-700 hover:!no-underline dark:text-zinc-100 dark:hover:!text-blue-300"
+          className="block line-clamp-2 text-sm font-semibold text-foreground no-underline hover:!text-active-work hover:!no-underline"
         >
           {task.objective}
         </Link>
         {task.status === "blocked" && task.blockedReason ? (
-          <p className="line-clamp-2 text-xs text-amber-700 dark:text-amber-300">
+          <p className="line-clamp-2 text-xs text-attention">
             {task.blockedDetail ?? projectTaskBlockedReasonLabels[task.blockedReason]}
           </p>
         ) : null}
         <PipelineProgress task={task} flow={flow} />
       </div>
 
-      <div className="space-y-1 text-xs text-zinc-500">
-        <p className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
+      <div className="space-y-1 text-xs text-muted-foreground">
+        <p className="flex items-center gap-1.5 text-foreground">
           <Bot size={13} /> {agent?.name ?? "No agent assigned"}
         </p>
         <p>{owner?.name ? `Owned by ${owner.name}` : "No human owner"}</p>
@@ -260,13 +260,13 @@ function FlowStrip({
   onConfigure: () => void;
 }) {
   return (
-    <section className="rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-800 dark:bg-zinc-900/35">
+    <section className="rounded-xl border border-border bg-surface-elevated/60 p-4">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold">
             <GitBranch size={15} /> Agent pipeline
           </p>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Each completed stage either hands work to the next agent or stops for review.
           </p>
         </div>
@@ -290,13 +290,13 @@ function FlowStrip({
             return (
               <li
                 key={stage.id}
-                className="relative rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700/70 dark:bg-white/[0.035]"
+                className="relative rounded-lg border border-border bg-surface p-3"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-950 text-[11px] font-semibold text-white dark:bg-white dark:text-zinc-950">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background text-[11px] font-semibold">
                     {index + 1}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500">
+                  <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                     {stage.advance === "on_goal_complete" ? (
                       <Sparkles size={11} />
                     ) : (
@@ -306,7 +306,7 @@ function FlowStrip({
                   </span>
                 </div>
                 <p className="mt-3 truncate text-sm font-semibold">{stage.name}</p>
-                <p className="mt-1 truncate text-xs text-zinc-500">
+                <p className="mt-1 truncate text-xs text-muted-foreground">
                   {agent?.name ?? "Project default agent"}
                   {stage.mode ? ` · ${stage.mode}` : ""}
                 </p>
@@ -315,10 +315,10 @@ function FlowStrip({
           })}
         </ol>
       ) : (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-zinc-300 px-4 py-5 dark:border-zinc-700">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-border-strong px-4 py-5">
           <div>
             <p className="text-sm font-medium">No agent pipeline configured</p>
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               Add stages to hand work between specialist agents automatically.
             </p>
           </div>
@@ -371,33 +371,25 @@ export function TaskBoard({
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 dark:border-blue-900 dark:bg-blue-950/30">
-          <p className="text-2xl font-semibold text-blue-950 dark:text-blue-100">
-            {running.length}
-          </p>
-          <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">Agents active or queued</p>
+        <div className="rounded-xl border border-active-work/45 bg-active-work/12 p-4">
+          <p className="text-2xl font-semibold text-active-work">{running.length}</p>
+          <p className="mt-1 text-xs text-active-work">Agents active or queued</p>
         </div>
-        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-900 dark:bg-amber-950/30">
-          <p className="text-2xl font-semibold text-amber-950 dark:text-amber-100">
-            {attention.length}
-          </p>
-          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Waiting for attention</p>
+        <div className="rounded-xl border border-attention/45 bg-attention/12 p-4">
+          <p className="text-2xl font-semibold text-attention">{attention.length}</p>
+          <p className="mt-1 text-xs text-attention">Waiting for attention</p>
         </div>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
-          <p className="text-2xl font-semibold text-emerald-950 dark:text-emerald-100">
-            {completed.length}
-          </p>
-          <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">
-            Completed and accepted
-          </p>
+        <div className="rounded-xl border border-success/45 bg-success/12 p-4">
+          <p className="text-2xl font-semibold text-success">{completed.length}</p>
+          <p className="mt-1 text-xs text-success">Completed and accepted</p>
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/30">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800/80">
+      <section className="overflow-hidden rounded-xl border border-border bg-surface">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
           <div>
             <h2 className="text-sm font-semibold">Work queue</h2>
-            <p className="mt-0.5 text-xs text-zinc-500">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               Live work ordered by what needs attention first.
             </p>
           </div>
@@ -438,7 +430,7 @@ export function TaskBoard({
           </div>
         ) : tasks.length ? (
           <EmptyState
-            icon={<SlidersHorizontal className="text-zinc-400" size={24} />}
+            icon={<SlidersHorizontal className="text-muted-foreground" size={24} />}
             title="No work matches"
             message="Adjust the queue filters to see more work."
             action={
@@ -450,7 +442,7 @@ export function TaskBoard({
           />
         ) : (
           <EmptyState
-            icon={<ListChecks className="text-zinc-400" size={24} />}
+            icon={<ListChecks className="text-muted-foreground" size={24} />}
             title="The queue is empty"
             message="Add an outcome, then let the configured agents move it through the pipeline."
             action={

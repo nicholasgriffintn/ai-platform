@@ -12,6 +12,7 @@ export default [
   ]),
   route("/work", "pages/work/layout.tsx", [
     index("pages/work/index.tsx"),
+    route("attention", "pages/work/attention.tsx"),
     route("invitations", "pages/work/invitations.tsx"),
     route(":workspaceId", "pages/work/workspace.tsx"),
     route(":workspaceId/members", "pages/work/members.tsx"),

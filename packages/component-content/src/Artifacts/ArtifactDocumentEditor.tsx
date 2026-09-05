@@ -166,16 +166,16 @@ export const ArtifactDocumentEditor = ({
   }, [artifact, content]);
 
   return (
-    <div className="flex h-full flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 bg-white px-3 py-2 text-xs dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="flex rounded-md border border-zinc-200 bg-zinc-50 p-0.5 dark:border-zinc-700 dark:bg-zinc-950">
+    <div className="flex h-full flex-col bg-surface-elevated text-foreground">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface px-3 py-2 text-xs">
+        <div className="flex rounded-md border border-border bg-surface-elevated p-0.5">
           <button
             type="button"
             onClick={() => setActiveView("edit")}
             className={`flex items-center gap-1.5 rounded px-2 py-1 font-medium transition-colors ${
               activeView === "edit"
-                ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
-                : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                ? "bg-surface text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Pencil size={13} />
@@ -186,8 +186,8 @@ export const ArtifactDocumentEditor = ({
             onClick={() => setActiveView("preview")}
             className={`flex items-center gap-1.5 rounded px-2 py-1 font-medium transition-colors ${
               activeView === "preview"
-                ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
-                : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                ? "bg-surface text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Eye size={13} />
@@ -196,7 +196,7 @@ export const ArtifactDocumentEditor = ({
         </div>
 
         {activeView === "edit" && (
-          <div className="flex rounded-md border border-zinc-200 bg-zinc-50 p-0.5 dark:border-zinc-700 dark:bg-zinc-950">
+          <div className="flex rounded-md border border-border bg-surface-elevated p-0.5">
             <MarkdownToolbarButton
               label="Bold"
               action="bold"
@@ -230,7 +230,7 @@ export const ArtifactDocumentEditor = ({
           </div>
         )}
 
-        <div className="ml-auto flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+        <div className="ml-auto flex items-center gap-2 text-muted-foreground">
           <span>{documentStats.words} words</span>
           <span>{documentStats.characters} chars</span>
         </div>
@@ -243,14 +243,14 @@ export const ArtifactDocumentEditor = ({
       {outline.length > 0 && (
         <nav
           aria-label="Document outline"
-          className="flex gap-1 overflow-x-auto border-b border-zinc-200 bg-zinc-50 px-3 py-2 text-xs dark:border-zinc-800 dark:bg-zinc-950"
+          className="flex gap-1 overflow-x-auto border-b border-border bg-surface-elevated px-3 py-2 text-xs"
         >
           {outline.map((item) => (
             <button
               key={`${item.line}-${item.title}`}
               type="button"
               onClick={() => handleOutlineClick(item.line)}
-              className="max-w-48 truncate rounded px-2 py-1 text-zinc-600 transition-colors hover:bg-white hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+              className="max-w-48 truncate rounded px-2 py-1 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
               style={{ marginLeft: `${Math.max(item.level - 1, 0) * 10}px` }}
             >
               {item.title}
@@ -267,7 +267,7 @@ export const ArtifactDocumentEditor = ({
             value={content}
             onChange={(event) => setContent(event.currentTarget.value)}
             onSelect={handleSelectionChange}
-            className="h-full w-full resize-none bg-white px-6 py-5 font-serif text-[15px] leading-7 text-zinc-900 outline-none dark:bg-zinc-900 dark:text-zinc-100"
+            className="h-full w-full resize-none bg-surface px-6 py-5 font-serif text-[15px] leading-7 text-foreground outline-none"
             spellCheck
           />
           {selection && onAddSelectionToChat && (
@@ -277,7 +277,7 @@ export const ArtifactDocumentEditor = ({
               onClick={handleAddSelectionToChat}
               data-selection-action="true"
               style={{ top: selection.top, left: selection.left }}
-              className="absolute z-10 bg-white shadow-lg dark:bg-zinc-900"
+              className="absolute z-10 bg-surface shadow-lg"
               icon={<MessageSquarePlus size={13} />}
             >
               Add selection to chat
@@ -285,7 +285,7 @@ export const ArtifactDocumentEditor = ({
           )}
         </div>
       ) : (
-        <div className="min-h-0 flex-1 overflow-auto bg-white px-6 py-5 dark:bg-zinc-900">
+        <div className="min-h-0 flex-1 overflow-auto bg-surface px-6 py-5">
           <MemoizedMarkdown className="max-w-none">{content}</MemoizedMarkdown>
         </div>
       )}
@@ -308,7 +308,7 @@ function MarkdownToolbarButton({ label, action, icon, onApply }: MarkdownToolbar
       title={label}
       onMouseDown={(event) => event.preventDefault()}
       onClick={() => onApply(action)}
-      className="flex h-7 w-7 items-center justify-center rounded text-zinc-600 transition-colors hover:bg-white hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+      className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
     >
       {icon}
     </button>

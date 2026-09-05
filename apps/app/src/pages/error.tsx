@@ -21,7 +21,7 @@ export default function ErrorRoute({ message, details, stack }: ErrorRouteProps)
   const shouldShowStack = Boolean(stack) && shouldShowDevTools();
 
   return (
-    <PageShell className="flex h-dvh w-full max-w-full overflow-hidden bg-off-white dark:bg-zinc-900">
+    <PageShell className="bg-canvas flex h-dvh w-full max-w-full overflow-hidden">
       <div className="flex-1 overflow-auto w-full space-y-3 p-4">
         <PetSprite
           sheetUrl="/pets/ash.webp"
@@ -31,12 +31,10 @@ export default function ErrorRoute({ message, details, stack }: ErrorRouteProps)
           size={64}
           paused
         />
-        <div className="text-base font-semibold text-zinc-600 dark:text-zinc-200 truncate">
-          {message}
-        </div>
-        <div className="text-sm text-zinc-500 dark:text-zinc-400">{details}</div>
+        <div className="text-base font-semibold text-muted-foreground truncate">{message}</div>
+        <div className="text-sm text-muted-foreground">{details}</div>
         {shouldShowStack ? (
-          <div className="text-sm text-zinc-500 dark:text-zinc-400 break-words">{stack}</div>
+          <div className="text-sm text-muted-foreground break-words">{stack}</div>
         ) : null}
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" onClick={() => window.location.reload()}>

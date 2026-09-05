@@ -66,12 +66,12 @@ export function SidebarLayout({
       <div
         className={cn(
           "flex h-dvh w-full max-w-full overflow-hidden",
-          bgClassName ?? "bg-off-white dark:bg-zinc-900",
+          bgClassName ?? "bg-background",
         )}
       >
         <a
           href={`#${MAIN_CONTENT_ID}`}
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-md focus:bg-off-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-zinc-900 focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:bg-zinc-800 dark:focus:text-zinc-50 dark:focus:ring-zinc-50"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-md focus:bg-popover focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-popover-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
         >
           Skip to main content
         </a>

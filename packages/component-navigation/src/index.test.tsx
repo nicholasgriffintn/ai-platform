@@ -31,7 +31,6 @@ const sidebarSettingsProps = {
   usage: [],
   onShowKeyboardShortcuts: vi.fn(),
   onSignIn: vi.fn(),
-  onThemeChange: vi.fn(),
 };
 
 describe("SidebarSettingsPopover", () => {

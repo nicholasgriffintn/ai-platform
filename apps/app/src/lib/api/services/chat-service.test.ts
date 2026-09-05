@@ -830,8 +830,8 @@ describe("ChatService streaming", () => {
       mode: "remote",
       model: "test-model",
       onProgress: () => {},
-      onStateChange: (state, data) => {
-        stateUpdates.push({ state, data });
+      onStateChange: (state, payload) => {
+        stateUpdates.push({ state, data: payload });
       },
       signal: new AbortController().signal,
     });

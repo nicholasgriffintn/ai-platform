@@ -30,7 +30,7 @@ export function PersonalExperiences() {
         title="Experiences"
         actionContent={<ManageCapabilitiesLink href={libraryPath} />}
       />
-      <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
         Longer jobs that need more room than a message: writing, reading, listening, and making
         things.
       </p>
@@ -51,7 +51,7 @@ export function PersonalExperiences() {
         <EmptyState title="Experiences unavailable" message={pageError.message} />
       ) : experiences.length === 0 ? (
         <EmptyState
-          icon={<Puzzle size={24} className="text-zinc-400" />}
+          icon={<Puzzle size={24} className="text-muted-foreground" />}
           title="Nothing to open yet"
           message="Experiences will appear here once the catalogue loads."
           action={

@@ -117,7 +117,7 @@ export function ToolConfigurationDialog({
               placeholder="vs_abc123"
               rows={4}
             />
-            <p className="text-xs text-zinc-500">Enter one ID per line.</p>
+            <p className="text-xs text-muted-foreground">Enter one ID per line.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -170,14 +170,14 @@ export function ToolConfigurationDialog({
             >
               Add server
             </Button>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               Use an HTTPS endpoint and do not put credentials in the URL.
             </p>
           </div>
         )}
 
         {error && (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="text-sm text-failure">
             {error}
           </p>
         )}

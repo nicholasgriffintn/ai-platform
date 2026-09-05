@@ -4,16 +4,16 @@ export function getStatusIcon(status: string): React.ReactNode {
   switch (status) {
     case "completed":
     case "succeeded":
-      return <CheckCircle2 size={16} className="text-green-600" />;
+      return <CheckCircle2 size={16} className="text-success" />;
     case "running":
-      return <Loader2 size={16} className="text-blue-600 animate-spin" />;
+      return <Loader2 size={16} className="text-active-work animate-spin" />;
     case "failed":
-      return <XCircle size={16} className="text-red-600" />;
+      return <XCircle size={16} className="text-failure" />;
     case "pending":
     case "queued":
-      return <Clock size={16} className="text-yellow-600" />;
+      return <Clock size={16} className="text-attention" />;
     case "cancelled":
-      return <AlertCircle size={16} className="text-gray-600" />;
+      return <AlertCircle size={16} className="text-muted-foreground" />;
     default:
       return <Clock size={16} />;
   }

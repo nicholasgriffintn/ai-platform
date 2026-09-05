@@ -62,10 +62,10 @@ export const AIFormattingModal = memo(function AIFormattingModal({
             <div className="mb-4 h-48 border rounded">
               {formatNoteMutation.status === "pending" ? (
                 <div className="flex items-center justify-center h-full">
-                  <Loader2 className="animate-spin text-gray-500" />
+                  <Loader2 className="animate-spin text-muted-foreground" />
                 </div>
               ) : formatNoteMutation.status === "error" ? (
-                <p role="alert" className="text-red-500 p-4">
+                <p role="alert" className="text-failure p-4">
                   Formatting failed. Try again.
                 </p>
               ) : (

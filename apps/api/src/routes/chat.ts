@@ -91,6 +91,8 @@ import type { ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { readNumericField, readRecordObjectField } from "~/utils/recordFields";
 
+import { registerConversationOrganisationRoutes } from "./chat-organisation";
+
 const app = new Hono();
 
 const routeLogger = createRouteLogger("chat");
@@ -1058,5 +1060,7 @@ addRoute(app, "get", "/shared/:share_id", {
       return ResponseFactory.success(context, result);
     })(raw),
 });
+
+registerConversationOrganisationRoutes(app);
 
 export default app;

@@ -26,7 +26,7 @@ export function hardenSandboxDocument(documentContent: string | null): string | 
 
 export function LoadingIndicator() {
   return (
-    <div className="flex items-center justify-center h-full w-full bg-white dark:bg-zinc-800 p-4 text-sm text-zinc-500 dark:text-zinc-400">
+    <div className="flex items-center justify-center h-full w-full bg-surface p-4 text-sm text-muted-foreground">
       Processing code...
     </div>
   );

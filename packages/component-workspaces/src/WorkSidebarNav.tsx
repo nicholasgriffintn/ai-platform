@@ -2,6 +2,7 @@ import { SidebarNavButton, sidebarNavLinkClass } from "@ngriffin_uk/polychat-com
 import { Badge, cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   Activity,
+  BellRing,
   ChevronRight,
   ClipboardList,
   Database,
@@ -53,6 +54,7 @@ export interface WorkSidebarProject {
 
 export interface WorkSidebarNavProps {
   workspacesHref: string;
+  attentionHref: string;
   workspace?: WorkSidebarWorkspace;
   activeProjectId?: string;
   project?: WorkSidebarProject;
@@ -65,6 +67,7 @@ export interface WorkSidebarNavProps {
 
 export function WorkSidebarNav({
   workspacesHref,
+  attentionHref,
   workspace,
   activeProjectId,
   project,
@@ -84,12 +87,15 @@ export function WorkSidebarNav({
         <NavLink href={workspacesHref} end className={linkClass} onClick={onNavigate}>
           <LayoutDashboard size={17} /> Workspaces
         </NavLink>
+        <NavLink href={attentionHref} className={linkClass} onClick={onNavigate}>
+          <BellRing size={17} /> Attention
+        </NavLink>
       </div>
 
       {workspace && (
         <div className="space-y-2">
           <div className="flex items-center gap-2 px-2">
-            <p className="min-w-0 flex-1 truncate text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-200">
+            <p className="text-sidebar-foreground min-w-0 flex-1 truncate text-xs font-bold uppercase tracking-wider">
               {workspace.name}
             </p>
           </div>
@@ -109,7 +115,7 @@ export function WorkSidebarNav({
 
       {workspace && workspace.projects.length > 0 && (
         <div>
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+          <p className="text-muted-foreground px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em]">
             Projects
           </p>
           <ul className="space-y-1">
@@ -185,7 +191,7 @@ export function WorkSidebarNav({
 
       {workspaceShortcuts?.length ? (
         <div>
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+          <p className="text-muted-foreground px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em]">
             Your workspaces
           </p>
           <ul className="space-y-1">

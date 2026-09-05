@@ -38,6 +38,15 @@ protocol ConversationAPIClient {
     func deleteConversation(id: String) async throws
 }
 
+protocol WorkAPIClient {
+    func fetchWorkAttention(limit: Int) async throws -> WorkAttentionResponse
+    func fetchProjectTask(projectId: String, taskId: String) async throws -> MobileProjectTaskDetail
+    func fetchSandboxRun(id: String) async throws -> SandboxRunDetail
+    func fetchSandboxRunEvents(id: String) async throws -> SandboxRunEventsResponse
+    func fetchSandboxRunInstructions(id: String) async throws -> SandboxRunInstructionsResponse
+    func fetchSandboxRunControl(id: String) async throws -> SandboxRunControl
+}
+
 extension ConversationAPIClient {
     func updateConversation(id: String, title: String) async throws {
         try await updateConversation(
@@ -58,4 +67,4 @@ extension ConversationAPIClient {
     }
 }
 
-extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient {}
+extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient, WorkAPIClient {}

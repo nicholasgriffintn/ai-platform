@@ -11,7 +11,7 @@ const FORBIDDEN_COMMAND_PATTERNS: RegExp[] = [
   /\brm\s+-rf\s+\/(?:\s|$)/i,
   /\b(sudo|shutdown|reboot|mkfs|dd)\b/i,
   /\b(curl|wget)\b[^\n]*\|/i,
-  /\bgit\s+push\b/i,
+  /\bgit\s+(add|branch|checkout|commit|push|switch)\b/i,
 ];
 
 const READ_ONLY_MUTATING_PATTERNS: RegExp[] = [
@@ -60,7 +60,10 @@ export type SandboxCommandResult = {
 };
 
 export type SandboxExecInstance = Pick<ReturnType<typeof getSandbox>, "exec"> &
-  Partial<Pick<ReturnType<typeof getSandbox>, "execStream">>;
+  Partial<Pick<ReturnType<typeof getSandbox>, "execStream" | "createBackup" | "restoreBackup">>;
+
+export type SandboxProcessInstance = SandboxExecInstance &
+  Pick<ReturnType<typeof getSandbox>, "startProcess" | "unexposePort">;
 
 interface RepoInfo {
   displayName: string;

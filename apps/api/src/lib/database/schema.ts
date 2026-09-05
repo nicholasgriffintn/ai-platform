@@ -166,6 +166,50 @@ export const mobileAuthExchangeCodes = sqliteTable(
   }),
 );
 
+export const mobilePushDevice = sqliteTable(
+  "mobile_push_device",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    token: text().notNull().unique(),
+    environment: text({ enum: ["sandbox", "production"] }).notNull(),
+    app_bundle_id: text().notNull(),
+    last_registered_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    invalidated_at: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    userIdx: index("mobile_push_device_user_idx").on(table.user_id, table.invalidated_at),
+  }),
+);
+
+export const mobilePushDelivery = sqliteTable(
+  "mobile_push_delivery",
+  {
+    id: text().primaryKey(),
+    device_id: text()
+      .notNull()
+      .references(() => mobilePushDevice.id, { onDelete: "cascade" }),
+    status: text({ enum: ["sending", "sent", "failed"] }).notNull(),
+    error_code: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    deviceIdx: index("mobile_push_delivery_device_idx").on(table.device_id),
+  }),
+);
+
 export const embedding = sqliteTable(
   "embedding",
   {
@@ -397,6 +441,10 @@ export const project = sqliteTable(
     coding_repository: text(),
     coding_prompt_strategy: text().default("auto").notNull(),
     coding_should_commit: integer({ mode: "boolean" }).default(true).notNull(),
+    coding_delivery_policy: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
+    coding_environment_setup: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
+    coding_environment_cache: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
+    coding_cache_generation: integer().default(0).notNull(),
     coding_timeout_seconds: integer().default(900).notNull(),
     flow: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
     created_by: integer()
@@ -575,6 +623,90 @@ export const conversation = sqliteTable(
 );
 
 export type Conversation = typeof conversation.$inferSelect;
+
+export const conversationUserState = sqliteTable(
+  "conversation_user_state",
+  {
+    conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    is_pinned: integer({ mode: "boolean" }).default(false).notNull(),
+    is_unread: integer({ mode: "boolean" }).default(false).notNull(),
+    snoozed_until: text(),
+    snoozed_next_response_at: text(),
+    revision: integer().default(1).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.conversation_id, table.user_id] }),
+    userPinnedIdx: index("conversation_user_state_pinned_idx").on(table.user_id, table.is_pinned),
+    userUnreadIdx: index("conversation_user_state_unread_idx").on(table.user_id, table.is_unread),
+    userSnoozeIdx: index("conversation_user_state_snooze_idx").on(
+      table.user_id,
+      table.snoozed_until,
+    ),
+  }),
+);
+
+export const conversationLabel = sqliteTable(
+  "conversation_label",
+  {
+    id: text().primaryKey(),
+    owner_user_id: integer().references(() => user.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    normalised_name: text().notNull(),
+    created_by_user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    ownerCheck: check(
+      "conversation_label_owner_check",
+      sql`(${table.owner_user_id} IS NULL) <> (${table.project_id} IS NULL)`,
+    ),
+    personalNameIdx: uniqueIndex("conversation_label_personal_name_idx")
+      .on(table.owner_user_id, table.normalised_name)
+      .where(sql`${table.owner_user_id} IS NOT NULL`),
+    projectNameIdx: uniqueIndex("conversation_label_project_name_idx")
+      .on(table.project_id, table.normalised_name)
+      .where(sql`${table.project_id} IS NOT NULL`),
+  }),
+);
+
+export const conversationLabelAssignment = sqliteTable(
+  "conversation_label_assignment",
+  {
+    conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    label_id: text()
+      .notNull()
+      .references(() => conversationLabel.id, { onDelete: "cascade" }),
+    assigned_by_user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.conversation_id, table.label_id] }),
+    labelIdx: index("conversation_label_assignment_label_idx").on(table.label_id),
+  }),
+);
+
+export type ConversationUserState = typeof conversationUserState.$inferSelect;
+export type ConversationLabel = typeof conversationLabel.$inferSelect;
+export type ConversationLabelAssignment = typeof conversationLabelAssignment.$inferSelect;
 
 export const goal = sqliteTable(
   "goal",
@@ -1372,6 +1504,11 @@ export const activityRecord = sqliteTable(
     projectIdx: index("activity_record_project_id_idx").on(table.project_id),
     conversationIdx: index("activity_record_conversation_id_idx").on(table.conversation_id),
     groupIdx: index("activity_record_group_id_idx").on(table.group_id),
+    operationalIdx: index("activity_record_operational_idx").on(
+      table.capability_id,
+      table.status,
+      table.updated_at,
+    ),
   }),
 );
 

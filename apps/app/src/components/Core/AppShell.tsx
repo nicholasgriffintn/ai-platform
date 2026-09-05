@@ -1,3 +1,4 @@
+import { THEME_BOOTSTRAP_SCRIPT } from "@ngriffin_uk/polychat-component-ui";
 import { Links, Meta, Scripts, ScrollRestoration } from "react-router";
 
 interface AppShellProps {
@@ -15,17 +16,18 @@ const structuredData = {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <html lang="en" className="dark bg-off-white dark:bg-zinc-900">
+    <html lang="en" className="dark bg-background" data-polychat-theme="dark">
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#040810" />
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
         <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
         <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
-        <meta name="theme-color" content="#000000" />
         <link
           rel="search"
           type="application/opensearchdescription+xml"

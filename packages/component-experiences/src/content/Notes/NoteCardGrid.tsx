@@ -56,14 +56,14 @@ export function NoteCardGrid({
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {notes.map((item) => (
             <Link key={item.id} href={item.href} className="group no-underline hover:!no-underline">
-              <Card className="h-full gap-2 p-5 shadow-none hover:border-zinc-400 dark:hover:border-zinc-600">
-                <h2 className="font-semibold text-zinc-950 group-hover:underline dark:text-white">
+              <Card className="h-full gap-2 p-5 shadow-none hover:border-border-strong">
+                <h2 className="font-semibold text-foreground group-hover:underline">
                   {item.title || "Untitled note"}
                 </h2>
-                <p className="line-clamp-3 text-sm leading-6 text-zinc-500">
+                <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
                   {item.content || "Empty note"}
                 </p>
-                <p className="mt-auto pt-3 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-auto pt-3 text-xs text-muted-foreground">
                   Updated {new Date(item.updatedAt).toLocaleDateString()}
                 </p>
               </Card>

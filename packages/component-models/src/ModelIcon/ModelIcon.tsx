@@ -114,7 +114,7 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
         {...rest}
       >
         {modelName === "Automatic" ? (
-          <div className="absolute inset-0 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
             <Wand2 size={containerSize * 0.8} aria-hidden="true" />
           </div>
         ) : (
@@ -132,7 +132,7 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
                 }
               >
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className={mono ? "text-black dark:text-white" : ""}>
+                  <div className={mono ? "text-foreground" : ""}>
                     <IconComponent
                       size={containerSize}
                       style={{

@@ -50,10 +50,9 @@ export function ActionButtons({ actions, align = "right", className }: ActionBut
             onClick={action.onClick}
             disabled={action.disabled || action.loading}
             className={cn(
-              action.variant === "success" &&
-                "bg-green-100/50 text-green-500 dark:bg-green-900/20 dark:text-green-400",
+              action.variant === "success" && "bg-success/12 text-success",
               action.variant === "destructive" &&
-                "text-red-500 hover:bg-red-100/50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300",
+                "text-failure hover:bg-failure/12 hover:text-failure",
               action.className,
             )}
             title={action.loading ? `${action.label}...` : action.label}

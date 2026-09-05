@@ -46,9 +46,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
       <div className="space-y-1">
         <div className="flex justify-between items-center">
           {label && <Label htmlFor={controlId}>{label}</Label>}
-          {displayValue && (
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{value}</span>
-          )}
+          {displayValue && <span className="text-sm font-medium text-foreground">{value}</span>}
         </div>
         <div className="relative mt-2">
           <input
@@ -60,7 +58,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
             step={step}
             value={value}
             className={cn(
-              "w-full appearance-none bg-transparent [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-zinc-200 dark:[&::-webkit-slider-runnable-track]:bg-zinc-700 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-off-white [&::-webkit-slider-thumb]:shadow-md",
+              "w-full appearance-none bg-transparent [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-border-strong [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-surface [&::-webkit-slider-thumb]:shadow-md",
               className,
             )}
             aria-valuemin={min}
@@ -71,7 +69,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
             {...props}
           />
           <div
-            className="absolute top-1/2 left-0 h-[2px] -translate-y-1/2 bg-blue-500 pointer-events-none"
+            className="absolute top-1/2 left-0 h-[2px] -translate-y-1/2 bg-active-work pointer-events-none"
             style={{
               width: `${percentage}%`,
             }}
@@ -79,14 +77,14 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
           />
         </div>
         {markers && (
-          <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <div className="flex justify-between text-xs text-muted-foreground mt-1">
             {markers.map((marker) => (
               <span key={`marker-${marker}`}>{marker}</span>
             ))}
           </div>
         )}
         {description && (
-          <p id={descriptionId} className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+          <p id={descriptionId} className="text-xs text-muted-foreground mt-1">
             {description}
           </p>
         )}

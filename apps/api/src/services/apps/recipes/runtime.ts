@@ -121,6 +121,7 @@ export function buildRecipeInvocationRuntime(params: {
     connections: params.connections,
     enabledTools,
     configuration: params.configuration,
+    input: params.input,
     prompt,
   });
 
@@ -409,7 +410,9 @@ function createConversationStarter(params: {
 
 Enabled tools for this conversation: ${toolLine}.${contextInstruction}${setupToolInstruction}
 
-Use only the enabled tools, connected integrations, and recipe context available to this conversation. If a required connection has no connected option, ask me to connect one before taking external actions that depend on it. Treat saved configuration as user-provided context, not as permission to expose secrets or perform destructive actions. Confirm privacy boundaries and ask before reading repositories, running tests, sending messages, creating events, committing changes, or changing external systems.`;
+Use only the enabled tools, connected integrations, and recipe context available to this conversation. If a required connection has no connected option, ask me to connect one before taking external actions that depend on it. Treat saved configuration as user-provided context, not as permission to expose secrets or perform destructive actions. Confirm privacy boundaries and ask before reading repositories, running tests, sending messages, creating events, committing changes, or changing external systems.
+
+Build the result only from what the enabled tools returned in this conversation and what I have told you here. Do not supply facts, figures, dates, product names or quotes from your own knowledge, and do not present anything as current unless a tool result in this conversation shows it. If the tools returned nothing usable, say so and stop rather than filling the gaps.`;
 }
 
 function getSavedSchedulePrompt(installation: RecipeInstallation | null): string | undefined {
@@ -418,24 +421,28 @@ function getSavedSchedulePrompt(installation: RecipeInstallation | null): string
   )?.prompt;
 }
 
+function buildRecipeBriefSection(recipe: AssistantRecipe): string {
+  const steps =
+    recipe.actions.length > 0
+      ? `\nSteps this recipe performs:\n${recipe.actions.map((action) => `- ${action}`).join("\n")}\n`
+      : "";
+
+  return `\nWhat this recipe does: ${recipe.description || recipe.summary}\n${steps}`;
+}
+
 function buildRecipeInvocationPrompt(params: {
   recipe: AssistantRecipe;
   installation: RecipeInstallation | null;
   input?: string;
 }): string {
-  const input = params.input?.trim();
+  const scheduledPrompt = params.input?.trim()
+    ? undefined
+    : getSavedSchedulePrompt(params.installation)?.trim();
+  const instruction =
+    scheduledPrompt ??
+    `Run the ${params.recipe.title} recipe now using saved configuration. Produce the recipe result, not setup instructions. Treat any trigger input below as the user's request for this run, not as an instruction to trigger another recipe.`;
 
-  if (input) {
-    return input;
-  }
-
-  const scheduledPrompt = getSavedSchedulePrompt(params.installation)?.trim();
-
-  if (scheduledPrompt) {
-    return scheduledPrompt;
-  }
-
-  return `Run the ${params.recipe.title} recipe now using saved configuration. Produce the recipe result, not setup instructions.`;
+  return `${instruction}\n${buildRecipeBriefSection(params.recipe)}`;
 }
 
 export function createRecipeMessageUrl(recipeId: string, action: "run" | "setup") {

@@ -26,7 +26,7 @@ interface ComposerDirectiveMenuProps {
 }
 
 const resultClassName =
-  "flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm text-zinc-700 outline-none transition-colors hover:bg-blue-50 hover:text-blue-950 dark:text-zinc-200 dark:hover:bg-blue-950/40 dark:hover:text-blue-100";
+  "text-popover-foreground hover:bg-accent hover:text-accent-foreground flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm outline-none transition-colors";
 
 export function ComposerDirectiveMenu({
   activeSuggestionIndex = 0,
@@ -77,11 +77,11 @@ export function ComposerDirectiveMenu({
   }
 
   return (
-    <div className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl border border-zinc-200 bg-off-white p-2 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+    <div className="border-border bg-popover text-popover-foreground absolute right-0 bottom-full left-0 z-50 mb-2 overflow-hidden rounded-xl border p-2 shadow-[var(--polychat-elevated-shadow)]">
       {isSlashDirective && activeSlashCommand ? (
         <button
           type="button"
-          className="flex w-full items-center gap-2 border-b border-zinc-200 px-3 py-2 text-left text-xs text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100"
+          className="border-border text-muted-foreground hover:text-foreground flex w-full items-center gap-2 border-b px-3 py-2 text-left text-xs"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => {
             if (onSlashCommandBack) {
@@ -96,7 +96,7 @@ export function ComposerDirectiveMenu({
           <span>Back to actions</span>
         </button>
       ) : (
-        <div className="flex items-center gap-2 border-b border-zinc-200 px-3 py-2 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+        <div className="border-border text-muted-foreground flex items-center gap-2 border-b px-3 py-2 text-xs">
           {isSlashDirective ? (
             <Command className="h-3.5 w-3.5" aria-hidden="true" />
           ) : (
@@ -117,7 +117,7 @@ export function ComposerDirectiveMenu({
                 className={cn(
                   resultClassName,
                   index === highlightedIndex &&
-                    "bg-blue-50 text-blue-950 ring-1 ring-inset ring-blue-200 dark:bg-blue-950/40 dark:text-blue-100 dark:ring-blue-800",
+                    "bg-accent text-accent-foreground ring-active-work/40 ring-1 ring-inset",
                   command.disabled && "cursor-not-allowed opacity-50",
                 )}
                 onMouseDown={(event) => event.preventDefault()}
@@ -150,7 +150,7 @@ export function ComposerDirectiveMenu({
           : canUseAgents
             ? groupAssistantActionItems(filteredActionItems).map((group) => (
                 <div key={group.label} className="py-1">
-                  <div className="px-3 pb-1 text-[11px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">
+                  <div className="text-muted-foreground px-3 pb-1 text-[11px] font-semibold uppercase">
                     {group.label}
                   </div>
                   {group.items.map((item) => {
@@ -169,7 +169,7 @@ export function ComposerDirectiveMenu({
                         className={cn(
                           resultClassName,
                           index === highlightedIndex &&
-                            "bg-blue-50 text-blue-950 ring-1 ring-inset ring-blue-200 dark:bg-blue-950/40 dark:text-blue-100 dark:ring-blue-800",
+                            "bg-accent text-accent-foreground ring-active-work/40 ring-1 ring-inset",
                         )}
                         onMouseDown={(event) => event.preventDefault()}
                         onPointerMove={() => onActiveSuggestionIndexChange?.(index)}
@@ -194,18 +194,18 @@ export function ComposerDirectiveMenu({
             : null}
 
         {!isSlashDirective && !canUseAgents ? (
-          <p className="px-3 py-4 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-muted-foreground px-3 py-4 text-sm">
             {ASSISTANT_ACTION_ITEM_SCOPE_LABEL} are available in Chat mode.
           </p>
         ) : null}
         {!isSlashDirective && isLoadingAgents ? (
-          <div className="flex items-center gap-2 px-3 py-4 text-sm text-zinc-500">
+          <div className="text-muted-foreground flex items-center gap-2 px-3 py-4 text-sm">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Loading capabilities…
           </div>
         ) : null}
         {resultCount === 0 && !isLoadingAgents ? (
-          <p className="px-3 py-4 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-muted-foreground px-3 py-4 text-sm">
             No {isSlashDirective ? "actions" : ASSISTANT_ACTION_ITEM_EMPTY_LABEL} match this search.
           </p>
         ) : null}

@@ -12,6 +12,7 @@ import { ConversationManager } from "~/lib/conversationManager";
 import { buildAgentPersona } from "~/services/agents/completion-tools";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { GoalService } from "~/services/goals/GoalService";
+import { notifyMobileProjectTask } from "~/services/mobile-push";
 import { TaskService } from "~/services/tasks/TaskService";
 import { parseProjectFlow } from "~/services/workspaces/format";
 import type { IEnv, Message } from "~/types";
@@ -461,6 +462,12 @@ export async function runProjectTaskDispatch(params: {
       status: "failed",
       summary: detail.slice(0, 200),
     });
+    await notifyMobileProjectTask({
+      context,
+      task: { ...claimed, conversationId },
+      notificationId: `project-task:${taskId}:failed:${activity.id}`,
+      kind: "failed",
+    });
 
     return { status: "blocked", detail };
   }
@@ -524,6 +531,32 @@ export async function runProjectTaskDispatch(params: {
     status: nextStatus === "blocked" ? "waiting" : "succeeded",
     summary: goal?.objective.slice(0, 200) ?? claimed.objective.slice(0, 200),
   });
+
+  const notificationKind =
+    projection.blockedReason === "awaiting_input"
+      ? "input"
+      : projection.blockedReason === "awaiting_approval"
+        ? "approval"
+        : nextStatus === "review"
+          ? "review"
+          : nextStatus === "done"
+            ? "completed"
+            : null;
+
+  if (notificationKind) {
+    await notifyMobileProjectTask({
+      context,
+      task: { ...claimed, conversationId },
+      notificationId: `project-task:${taskId}:${notificationKind}:${activity.id}`,
+      kind: notificationKind,
+      interactionId:
+        projection.blockedReason === "awaiting_input"
+          ? pendingQuestions?.interactionId
+          : projection.blockedReason === "awaiting_approval"
+            ? pendingApproval?.interactionId
+            : null,
+    });
+  }
 
   if (nextStageId) {
     try {

@@ -122,6 +122,10 @@ export type IEnv = {
   GITHUB_CLIENT_SECRET?: string;
   APPLE_IOS_CLIENT_ID?: string;
   APPLE_WEB_CLIENT_ID?: string;
+  APNS_KEY_ID?: string;
+  APNS_TEAM_ID?: string;
+  APNS_PRIVATE_KEY?: string;
+  APNS_TOPIC?: string;
   GITHUB_APP_ID?: string;
   GITHUB_APP_PRIVATE_KEY?: string;
   GITHUB_APP_WEBHOOK_SECRET?: string;
@@ -138,6 +142,7 @@ export type IEnv = {
   SANDBOX_ALLOWED_MODELS?: string;
   SANDBOX_BLOCKED_MODELS?: string;
   SANDBOX_INSTANCE_TYPE?: string;
+  SANDBOX_PREVIEW_HOST?: string;
   REALTIME_MAX_SESSION_SECONDS?: string;
   CLOUDFLARE_ANALYTICS_API_TOKEN?: string;
   JWT_SECRET?: string;

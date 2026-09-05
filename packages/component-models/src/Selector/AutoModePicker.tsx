@@ -39,61 +39,48 @@ function getModeTone(mode: ModelRouterMode) {
   switch (mode) {
     case "auto":
       return {
-        icon: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950/40 dark:text-fuchsia-200",
-        selected:
-          "border-fuchsia-300/70 bg-fuchsia-50/80 text-fuchsia-950 dark:border-fuchsia-500/40 dark:bg-fuchsia-950/30 dark:text-fuchsia-100",
-        check: "text-fuchsia-700 dark:text-fuchsia-200",
-        panelIcon:
-          "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 dark:border-fuchsia-500/40 dark:bg-fuchsia-950/30 dark:text-fuchsia-200",
-        panelCard:
-          "border-fuchsia-200/70 bg-fuchsia-50/60 dark:border-fuchsia-500/30 dark:bg-fuchsia-950/20",
-        panelLabel: "text-fuchsia-700 dark:text-fuchsia-200",
+        icon: "bg-creative/12 text-creative",
+        selected: "border-creative/45 bg-creative/12 text-creative",
+        check: "text-creative",
+        panelIcon: "border-creative/45 bg-creative/12 text-creative",
+        panelCard: "border-creative/45 bg-creative/12",
+        panelLabel: "text-creative",
       };
     case "lite":
       return {
-        icon: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-200",
-        selected:
-          "border-sky-300/70 bg-sky-50/80 text-sky-950 dark:border-sky-500/40 dark:bg-sky-950/30 dark:text-sky-100",
-        check: "text-sky-700 dark:text-sky-200",
-        panelIcon:
-          "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/40 dark:bg-sky-950/30 dark:text-sky-200",
-        panelCard: "border-sky-200/70 bg-sky-50/60 dark:border-sky-500/30 dark:bg-sky-950/20",
-        panelLabel: "text-sky-700 dark:text-sky-200",
+        icon: "bg-active-work/12 text-active-work",
+        selected: "border-active-work/45 bg-active-work/12 text-active-work",
+        check: "text-active-work",
+        panelIcon: "border-active-work/45 bg-active-work/12 text-active-work",
+        panelCard: "border-active-work/45 bg-active-work/12",
+        panelLabel: "text-active-work",
       };
     case "standard":
       return {
-        icon: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200",
-        selected:
-          "border-emerald-300/70 bg-emerald-50/80 text-emerald-950 dark:border-emerald-500/40 dark:bg-emerald-950/30 dark:text-emerald-100",
-        check: "text-emerald-700 dark:text-emerald-200",
-        panelIcon:
-          "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-950/30 dark:text-emerald-200",
-        panelCard:
-          "border-emerald-200/70 bg-emerald-50/60 dark:border-emerald-500/30 dark:bg-emerald-950/20",
-        panelLabel: "text-emerald-700 dark:text-emerald-200",
+        icon: "bg-success/12 text-success",
+        selected: "border-success/45 bg-success/12 text-success",
+        check: "text-success",
+        panelIcon: "border-success/45 bg-success/12 text-success",
+        panelCard: "border-success/45 bg-success/12",
+        panelLabel: "text-success",
       };
     case "pro":
       return {
-        icon: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200",
-        selected:
-          "border-amber-300/70 bg-amber-50/80 text-amber-950 dark:border-amber-500/40 dark:bg-amber-950/30 dark:text-amber-100",
-        check: "text-amber-700 dark:text-amber-200",
-        panelIcon:
-          "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/40 dark:bg-amber-950/30 dark:text-amber-200",
-        panelCard:
-          "border-amber-200/70 bg-amber-50/60 dark:border-amber-500/30 dark:bg-amber-950/20",
-        panelLabel: "text-amber-700 dark:text-amber-200",
+        icon: "bg-attention/12 text-attention",
+        selected: "border-attention/45 bg-attention/12 text-attention",
+        check: "text-attention",
+        panelIcon: "border-attention/45 bg-attention/12 text-attention",
+        panelCard: "border-attention/45 bg-attention/12",
+        panelLabel: "text-attention",
       };
     case "max":
       return {
-        icon: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-200",
-        selected:
-          "border-rose-300/70 bg-rose-50/80 text-rose-950 dark:border-rose-500/40 dark:bg-rose-950/30 dark:text-rose-100",
-        check: "text-rose-700 dark:text-rose-200",
-        panelIcon:
-          "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/40 dark:bg-rose-950/30 dark:text-rose-200",
-        panelCard: "border-rose-200/70 bg-rose-50/60 dark:border-rose-500/30 dark:bg-rose-950/20",
-        panelLabel: "text-rose-700 dark:text-rose-200",
+        icon: "bg-failure/12 text-failure",
+        selected: "border-failure/45 bg-failure/12 text-failure",
+        check: "text-failure",
+        panelIcon: "border-failure/45 bg-failure/12 text-failure",
+        panelCard: "border-failure/45 bg-failure/12",
+        panelLabel: "text-failure",
       };
   }
 }
@@ -117,7 +104,7 @@ function ModeDetail({
   const tone = getModeTone(mode.id);
 
   return (
-    <div className="flex min-h-[17rem] flex-col rounded-lg border border-zinc-200 bg-white/70 p-4 dark:border-zinc-700 dark:bg-zinc-900/50">
+    <div className="border-border bg-surface flex min-h-[17rem] flex-col rounded-lg border p-4">
       <div className="flex items-start gap-3">
         <div
           className={cn(
@@ -128,10 +115,8 @@ function ModeDetail({
           <Icon className="h-4 w-4" aria-hidden="true" />
         </div>
         <div className="min-w-0">
-          <h4 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">{mode.label}</h4>
-          <p className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-300">
-            {mode.description}
-          </p>
+          <h4 className="text-sm font-semibold text-foreground">{mode.label}</h4>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">{mode.description}</p>
         </div>
       </div>
 
@@ -141,18 +126,14 @@ function ModeDetail({
             <Gauge className="h-3.5 w-3.5" aria-hidden="true" />
             <span>Filter</span>
           </div>
-          <p className="mt-1 font-semibold text-zinc-900 dark:text-zinc-100">
-            {mode.filterSummary}
-          </p>
+          <p className="mt-1 font-semibold text-foreground">{mode.filterSummary}</p>
         </div>
         <div className={cn("rounded-md border p-2", tone.panelCard)}>
           <div className={cn("flex items-center gap-1.5", tone.panelLabel)}>
             <Network className="h-3.5 w-3.5" aria-hidden="true" />
             <span>Router pool</span>
           </div>
-          <p className="mt-1 font-semibold text-zinc-900 dark:text-zinc-100">
-            {getCandidateText(candidateCount)}
-          </p>
+          <p className="mt-1 font-semibold text-foreground">{getCandidateText(candidateCount)}</p>
         </div>
       </div>
 
@@ -165,7 +146,7 @@ function ModeDetail({
               return (
                 <span
                   key={`${mode.id}-${model.id || model.matchingModel}`}
-                  className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  className="border-border bg-surface-elevated text-foreground inline-flex max-w-full items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-medium"
                   title={`${modelName} (${model.provider})`}
                 >
                   <ModelIcon
@@ -179,15 +160,13 @@ function ModeDetail({
               );
             })}
             {remainingModelCount > 0 ? (
-              <span className="inline-flex items-center rounded-full border border-dashed border-zinc-300 px-2 py-1 text-[11px] font-medium text-zinc-500 dark:border-zinc-600 dark:text-zinc-400">
+              <span className="inline-flex items-center rounded-full border border-dashed border-border-strong px-2 py-1 text-[11px] font-medium text-muted-foreground">
                 +{remainingModelCount} more...
               </span>
             ) : null}
           </div>
         ) : (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            No matching router models are available.
-          </p>
+          <p className="text-xs text-muted-foreground">No matching router models are available.</p>
         )}
       </div>
     </div>
@@ -234,7 +213,7 @@ export function AutoModePicker({
                 "flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50",
                 isSelected
                   ? tone.selected
-                  : "border-transparent bg-zinc-100/70 text-zinc-700 hover:border-zinc-300 hover:bg-white dark:bg-zinc-800/70 dark:text-zinc-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-800",
+                  : "bg-surface-elevated text-foreground hover:border-border-strong hover:bg-selection/60 border-transparent",
               )}
             >
               <span
@@ -250,7 +229,7 @@ export function AutoModePicker({
                 <span
                   className={cn(
                     "block truncate text-xs",
-                    isSelected ? "text-current opacity-75" : "text-zinc-500 dark:text-zinc-400",
+                    isSelected ? "text-current opacity-75" : "text-muted-foreground",
                   )}
                 >
                   {mode.tagline}

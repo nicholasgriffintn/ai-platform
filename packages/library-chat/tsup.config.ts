@@ -22,6 +22,7 @@ export default defineConfig({
     "src/markdown-editor.ts",
     "src/agent-trace.ts",
     "src/agent-trace-display.ts",
+    "src/run-activity.ts",
     "src/textarea-selection-position.ts",
     "src/opinion.ts",
     "src/branching.ts",

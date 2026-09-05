@@ -44,10 +44,10 @@ export function InlineSettingSelect<T extends string>({
             aria-haspopup="menu"
             aria-expanded={isOpen}
             className={cn(
-              "inline-flex h-8 min-w-8 items-center gap-1.5 rounded-md px-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+              "polychat-motion-micro inline-flex h-8 min-w-8 items-center gap-1.5 rounded-md px-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-60",
               isOpen
-                ? "bg-off-white-highlight text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
-                : "text-zinc-700 hover:bg-off-white-highlight dark:text-zinc-200 dark:hover:bg-zinc-900",
+                ? "bg-selection text-foreground"
+                : "text-muted-foreground hover:bg-selection hover:text-foreground",
             )}
           >
             <span
@@ -70,12 +70,12 @@ export function InlineSettingSelect<T extends string>({
       <PopoverContent
         side="top"
         align="start"
-        className="w-56 border-zinc-200 bg-off-white p-1 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
+        className="border-border bg-popover text-popover-foreground w-56 p-1 shadow-[var(--polychat-elevated-shadow)]"
         aria-label={label}
       >
         <div
           id={id}
-          className="px-2 py-1.5 text-[11px] font-semibold uppercase text-zinc-500 dark:text-zinc-400"
+          className="text-muted-foreground px-2 py-1.5 text-[11px] font-semibold uppercase"
         >
           {label}
         </div>
@@ -94,12 +94,12 @@ export function InlineSettingSelect<T extends string>({
                   setIsOpen(false);
                 }}
                 className={cn(
-                  "flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
-                  isSelected && "bg-zinc-100 font-medium dark:bg-zinc-800",
+                  "text-popover-foreground hover:bg-selection flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm",
+                  isSelected && "bg-selection font-medium",
                 )}
               >
                 <span>{option.label}</span>
-                {isSelected && <span className="text-xs text-zinc-500">Selected</span>}
+                {isSelected && <span className="text-muted-foreground text-xs">Selected</span>}
               </button>
             );
           })}

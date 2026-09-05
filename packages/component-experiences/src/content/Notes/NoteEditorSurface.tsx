@@ -34,8 +34,8 @@ export function NoteEditorSurface({
           className={cn(
             "w-2 h-2 sm:w-3 sm:h-3 rounded-full",
             isSaving
-              ? "bg-blue-400 dark:bg-blue-600 animate-pulse ring-2 ring-blue-300 dark:ring-blue-500"
-              : "bg-gray-400 dark:bg-gray-600 ring-1 ring-gray-300 dark:ring-gray-500",
+              ? "bg-active-work animate-pulse ring-2 ring-active-work/45"
+              : "bg-border-strong ring-border ring-1",
           )}
           title={isSaving ? "Saving..." : "All changes saved"}
         />
@@ -48,7 +48,7 @@ export function NoteEditorSurface({
             <button
               type="button"
               onClick={() => setShowMetadata(!showMetadata)}
-              className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black-800 dark:hover:text-black-200"
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-black-800"
             >
               <Hash size={14} />
               Metadata

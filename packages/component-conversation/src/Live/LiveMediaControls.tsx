@@ -30,8 +30,8 @@ export function LiveMediaControls({
         className={cn(
           "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
           microphoneEnabled
-            ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
-            : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700",
+            ? "bg-success/12 text-success hover:bg-success/20"
+            : "bg-surface-elevated text-muted-foreground hover:bg-selection hover:text-foreground",
         )}
       >
         {microphoneEnabled ? (
@@ -56,8 +56,8 @@ export function LiveMediaControls({
         className={cn(
           "flex h-8 w-8 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-50",
           videoEnabled
-            ? "bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/30 dark:text-sky-300 dark:hover:bg-sky-950/50"
-            : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700",
+            ? "bg-active-work/12 text-active-work hover:bg-active-work/20"
+            : "bg-surface-elevated text-muted-foreground hover:bg-selection hover:text-foreground",
         )}
       >
         {videoEnabled ? (
@@ -86,9 +86,7 @@ export function LiveAudioLevelMeter({
   const clampedLevel = Math.min(1, Math.max(0, level));
   const value = Math.round(clampedLevel * 100);
   const label = isAssistantAudio ? "Assistant audio level" : "Microphone audio level";
-  const barClassName = isAssistantAudio
-    ? "bg-sky-500 shadow-sky-500/30 dark:bg-sky-300 dark:shadow-sky-300/20"
-    : "bg-emerald-500 shadow-emerald-500/30 dark:bg-emerald-300 dark:shadow-emerald-300/20";
+  const barClassName = isAssistantAudio ? "bg-active-work" : "bg-success";
 
   return (
     <div
@@ -100,9 +98,9 @@ export function LiveAudioLevelMeter({
       className={cn(
         "flex h-10 min-w-0 flex-1 items-center justify-center gap-1 rounded-md border px-3 transition-colors",
         isAssistantAudio
-          ? "border-sky-200 bg-sky-50/70 dark:border-sky-900/70 dark:bg-sky-950/25"
-          : "border-emerald-200 bg-emerald-50/70 dark:border-emerald-900/70 dark:bg-emerald-950/25",
-        !isActive && "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950/30",
+          ? "border-active-work/45 bg-active-work/12"
+          : "border-success/45 bg-success/12",
+        !isActive && "border-border bg-surface",
         isActive && !microphoneEnabled && !isAssistantAudio && "opacity-55",
       )}
     >
@@ -118,7 +116,7 @@ export function LiveAudioLevelMeter({
             className={cn(
               "w-1.5 rounded-full shadow-sm transition-[height,opacity,background-color] duration-100 ease-out",
               barClassName,
-              !isActive && "bg-zinc-300 shadow-none dark:bg-zinc-700",
+              !isActive && "bg-border-strong shadow-none",
             )}
             style={{ height }}
           />

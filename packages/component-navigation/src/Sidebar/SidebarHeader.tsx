@@ -18,11 +18,11 @@ export function SidebarHeader({
   onToggleSidebar,
 }: SidebarHeaderProps) {
   return (
-    <div className="sticky top-0 z-10 h-[53px] w-full bg-off-white dark:bg-zinc-900">
+    <div className="bg-sidebar sticky top-0 z-10 h-[53px] w-full">
       <div className="flex h-full items-center justify-between px-2">
         <Link
           href={homeHref}
-          className="px-1 text-sm font-semibold text-zinc-700 no-underline hover:text-zinc-950 dark:text-zinc-200 dark:hover:text-white"
+          className="text-sidebar-foreground hover:text-active-work px-1 text-sm font-semibold no-underline"
         >
           {appName}
         </Link>

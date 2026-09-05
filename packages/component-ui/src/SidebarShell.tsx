@@ -52,23 +52,21 @@ export function SidebarShell({
         tabIndex={isDrawer ? -1 : undefined}
         className={cn(
           "fixed md:relative z-50 h-full w-64",
-          "bg-off-white dark:bg-zinc-900",
-          "transition-transform duration-300 ease-in-out",
-          "border-r border-zinc-200 dark:border-zinc-700",
+          "bg-sidebar text-sidebar-foreground",
+          "polychat-motion-panel transition-transform",
+          "border-sidebar-border border-r",
           visible ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:border-0",
           className,
         )}
       >
         {visible && (
           <div className={cn("flex h-full w-full flex-col", contentClassName)}>
-            {header && (
-              <div className="sticky top-0 z-10 w-full bg-off-white dark:bg-zinc-900">{header}</div>
-            )}
+            {header && <div className="bg-sidebar sticky top-0 z-10 w-full">{header}</div>}
 
             <div className="flex-1 overflow-y-auto overflow-x-hidden">{children}</div>
 
             {footer && (
-              <div className="sticky bottom-0 border-t border-r border-zinc-200 dark:border-zinc-800 bg-off-white dark:bg-zinc-900 overflow-visible">
+              <div className="border-sidebar-border bg-sidebar sticky bottom-0 overflow-visible border-t border-r">
                 {footer}
               </div>
             )}

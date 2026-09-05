@@ -25,8 +25,8 @@ export interface KeyboardShortcutSection {
 
 function KeyComponent({ keyValue }: { keyValue: string }) {
   return (
-    <kbd className="flex min-h-8 min-w-8 items-center justify-center rounded border border-zinc-700 bg-zinc-800 px-2 text-xs text-zinc-200">
-      <span className="text-zinc-200">{keyValue}</span>
+    <kbd className="flex min-h-8 min-w-8 items-center justify-center rounded border border-border bg-surface px-2 text-xs text-muted-foreground">
+      <span className="text-muted-foreground">{keyValue}</span>
     </kbd>
   );
 }
@@ -62,18 +62,16 @@ export const KeyboardShortcutsHelp = ({
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {sections.map((section) => (
             <section key={section.title}>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {section.title}
               </h3>
-              <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              <div className="divide-y divide-border">
                 {section.shortcuts.map((shortcut) => (
                   <div
                     key={shortcut.id}
                     className="flex min-h-12 items-center justify-between gap-4 py-2"
                   >
-                    <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                      {shortcut.description}
-                    </span>
+                    <span className="text-sm text-foreground">{shortcut.description}</span>
                     <div className="flex shrink-0 gap-1">
                       {shortcut.keys.map((keyValue) => (
                         <KeyComponent key={`${shortcut.id}-${keyValue}`} keyValue={keyValue} />

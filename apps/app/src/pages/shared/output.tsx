@@ -57,7 +57,7 @@ export default function SharedOutputPage() {
   if (!output || !token) {
     return (
       <PageShell className="flex min-h-screen items-center justify-center" displayNavBar={false}>
-        <Loader2 size={40} className="animate-spin text-zinc-400" />
+        <Loader2 size={40} className="animate-spin text-muted-foreground" />
       </PageShell>
     );
   }
@@ -67,9 +67,9 @@ export default function SharedOutputPage() {
       <div className="mx-auto w-full max-w-4xl py-8">
         <Card className="gap-5 p-6 shadow-none">
           <div className="flex items-center gap-3">
-            <FileQuestion size={20} className="text-zinc-400" />
+            <FileQuestion size={20} className="text-muted-foreground" />
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {output.capabilityId}
               </p>
               <h1 className="text-xl font-semibold">{output.title}</h1>

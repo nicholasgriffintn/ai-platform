@@ -2,10 +2,9 @@ import { PasskeyList } from "@ngriffin_uk/polychat-component-account";
 import { KeyRound } from "lucide-react";
 import { useEffect } from "react";
 
+import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { usePasskeys } from "~/hooks/usePasskeys";
-
-import { PageShell } from "../../Core/PageShell";
 
 export function ProfilePasskeysTab() {
   const { trackEvent } = useTrackEvent();
@@ -38,23 +37,21 @@ export function ProfilePasskeysTab() {
   };
 
   return (
-    <div>
-      <PageShell.Header
-        title="Passkeys"
-        actions={
-          passkeySupported
-            ? [
-                {
-                  label: isRegisteringPasskey ? "Adding..." : "Add Passkey",
-                  onClick: handleAddPasskey,
-                  disabled: isRegisteringPasskey,
-                  icon: <KeyRound className="h-4 w-4 mr-2" />,
-                },
-              ]
-            : []
-        }
-      />
-
+    <ProfileTab
+      title="Passkeys"
+      actions={
+        passkeySupported
+          ? [
+              {
+                label: isRegisteringPasskey ? "Adding..." : "Add Passkey",
+                onClick: handleAddPasskey,
+                disabled: isRegisteringPasskey,
+                icon: <KeyRound className="h-4 w-4 mr-2" />,
+              },
+            ]
+          : []
+      }
+    >
       <PasskeyList
         passkeys={passkeys}
         isSupported={passkeySupported}
@@ -64,6 +61,6 @@ export function ProfilePasskeysTab() {
         onRegister={handleAddPasskey}
         onDelete={deletePasskey}
       />
-    </div>
+    </ProfileTab>
   );
 }

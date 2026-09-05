@@ -67,7 +67,7 @@ export function DrawingView({ drawing }: DrawingViewProps) {
         </Button>
       </div>
 
-      <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden shadow-md">
+      <div className="bg-selection relative aspect-video w-full overflow-hidden rounded-lg shadow-md">
         <ImageModal
           src={activeTab === "transformed" ? drawing.paintingUrl : drawing.drawingUrl}
           alt={drawing.description || "Drawing"}
@@ -77,17 +77,17 @@ export function DrawingView({ drawing }: DrawingViewProps) {
         />
       </div>
 
-      <div className="bg-white dark:bg-zinc-800 shadow rounded-lg p-5 space-y-4">
+      <div className="bg-surface space-y-4 rounded-lg p-5 shadow">
         <div>
           <h2 className="text-lg font-semibold">Description</h2>
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-muted-foreground">
             {drawing.description || "No description available"}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-zinc-500 dark:text-zinc-400">Created</p>
+            <p className="text-muted-foreground">Created</p>
             <p>
               {new Date(drawing.createdAt).toLocaleString(undefined, {
                 dateStyle: "medium",
@@ -96,7 +96,7 @@ export function DrawingView({ drawing }: DrawingViewProps) {
             </p>
           </div>
           <div>
-            <p className="text-zinc-500 dark:text-zinc-400">Last Updated</p>
+            <p className="text-muted-foreground">Last Updated</p>
             <p>
               {new Date(drawing.updatedAt).toLocaleString(undefined, {
                 dateStyle: "medium",

@@ -33,8 +33,8 @@ export function InlineModelPicker({
   return (
     <div ref={dropdownRef} className={cn("w-full", className)}>
       {isOpen && (
-        <div className="w-full overflow-hidden rounded-lg bg-white dark:bg-zinc-900">
-          <div className="border-b border-zinc-200 p-2 dark:border-zinc-700">
+        <div className="bg-surface-elevated w-full overflow-hidden rounded-lg">
+          <div className="border-b border-border p-2">
             <SearchInput
               value={searchQuery}
               onChange={onSearchQueryChange}
@@ -45,13 +45,11 @@ export function InlineModelPicker({
           </div>
           <div className="max-h-[calc(100vh-10rem)] overflow-y-auto p-2 sm:max-h-80">
             {isLoading && (
-              <p className="px-2 py-3 text-sm text-zinc-500 dark:text-zinc-400">
-                Loading models...
-              </p>
+              <p className="px-2 py-3 text-sm text-muted-foreground">Loading models...</p>
             )}
             {currentModel && (
               <>
-                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Current Model
                 </div>
                 <ConversationModelOption model={currentModel} onSelect={onSelect} />
@@ -59,7 +57,7 @@ export function InlineModelPicker({
             )}
             {isSearching && (
               <div className={currentModel ? "mt-3" : ""}>
-                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Search Results
                 </div>
                 {searchResults.length > 0 ? (
@@ -71,7 +69,7 @@ export function InlineModelPicker({
                     />
                   ))
                 ) : (
-                  <p className="rounded-md border border-dashed border-zinc-300 px-2 py-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+                  <p className="rounded-md border border-dashed border-border-strong px-2 py-3 text-sm text-muted-foreground">
                     No matching models.
                   </p>
                 )}
@@ -79,7 +77,7 @@ export function InlineModelPicker({
             )}
             {featuredModels.length > 0 && (
               <div className={currentModel || isSearching ? "mt-3" : ""}>
-                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Featured Models
                 </div>
                 {featuredModels.map((modelItem) => (
@@ -92,7 +90,7 @@ export function InlineModelPicker({
               </div>
             )}
             {!isLoading && !currentModel && !isSearching && featuredModels.length === 0 && (
-              <p className="rounded-md border border-dashed border-zinc-300 px-2 py-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+              <p className="rounded-md border border-dashed border-border-strong px-2 py-3 text-sm text-muted-foreground">
                 No branch models are available.
               </p>
             )}

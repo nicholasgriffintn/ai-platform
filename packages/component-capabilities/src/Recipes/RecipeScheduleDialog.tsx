@@ -58,7 +58,7 @@ export function RecipeScheduleDialog({
           placeholder="0 9 * * *"
         />
         {cronExpression.trim() && !cronIsSupported && (
-          <p className="text-sm text-red-600 dark:text-red-400">
+          <p className="text-sm text-failure">
             Use five fields with numeric values, lists, ranges, steps, or `*`.
           </p>
         )}
@@ -72,17 +72,15 @@ export function RecipeScheduleDialog({
           rows={5}
         />
       </div>
-      <div className="space-y-3 rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
+      <div className="space-y-3 rounded-md border border-border p-3">
         <label className="flex items-start gap-3">
           <Checkbox
             checked={notifySms}
             onCheckedChange={(checked) => onNotifySmsChange(checked === true)}
           />
           <span>
-            <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              Send result by SMS
-            </span>
-            <span className="block text-sm text-zinc-500 dark:text-zinc-400">
+            <span className="block text-sm font-medium text-foreground">Send result by SMS</span>
+            <span className="block text-sm text-muted-foreground">
               Uses your configured Twilio or AWS SMS provider.
             </span>
           </span>

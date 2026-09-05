@@ -244,26 +244,10 @@ export class MessageFormatter {
         }
 
         case "anthropic": {
-          let formattedContent: any;
+          const formattedContent = MessageFormatter.buildAnthropicContent(content);
 
-          if (Array.isArray(content) && content.length === 1 && typeof content[0] === "string") {
-            formattedContent = [MessageFormatter.createAnthropicTextBlock(content[0])];
-          } else if (typeof content === "string") {
-            formattedContent = [MessageFormatter.createAnthropicTextBlock(content)];
-          } else if (Array.isArray(content)) {
-            formattedContent = content;
-            if (formattedContent.length > 0) {
-              const lastBlock = formattedContent[formattedContent.length - 1];
-
-              if (lastBlock && typeof lastBlock === "object") {
-                formattedContent = [
-                  ...formattedContent.slice(0, -1),
-                  MessageFormatter.addAnthropicCacheControl(lastBlock),
-                ];
-              }
-            }
-          } else {
-            formattedContent = content;
+          if (formattedContent === undefined) {
+            break;
           }
 
           formattedMessages.push({
@@ -315,6 +299,50 @@ export class MessageFormatter {
     }
 
     return formattedMessages;
+  }
+
+  private static isEmptyAnthropicBlock(block: unknown): boolean {
+    if (typeof block === "string") {
+      return block.trim() === "";
+    }
+
+    if (!isRecord(block) || block.type !== "text") {
+      return false;
+    }
+
+    return typeof block.text !== "string" || block.text.trim() === "";
+  }
+
+  private static buildAnthropicContent(content: any): any {
+    if (typeof content === "string") {
+      return content.trim() === ""
+        ? undefined
+        : [MessageFormatter.createAnthropicTextBlock(content)];
+    }
+
+    if (!Array.isArray(content)) {
+      return content;
+    }
+
+    const blocks = content
+      .filter((block) => !MessageFormatter.isEmptyAnthropicBlock(block))
+      .map((block) =>
+        typeof block === "string"
+          ? { type: "text", text: block }
+          : (block as Record<string, unknown>),
+      );
+
+    if (blocks.length === 0) {
+      return undefined;
+    }
+
+    const lastBlock = blocks[blocks.length - 1];
+
+    if (!lastBlock || typeof lastBlock !== "object") {
+      return blocks;
+    }
+
+    return [...blocks.slice(0, -1), MessageFormatter.addAnthropicCacheControl(lastBlock)];
   }
 
   private static createAnthropicTextBlock(text: string): Record<string, unknown> {

@@ -23,7 +23,7 @@ export function WorkspaceProjectsSection({
       <div className="mb-5 flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">Projects</h2>
-          <p className="text-sm text-zinc-500">Projects in this workspace.</p>
+          <p className="text-sm text-muted-foreground">Projects in this workspace.</p>
         </div>
         <TextLink href={membersHref}>
           {memberCount} {memberCount === 1 ? "member" : "members"}
@@ -31,7 +31,7 @@ export function WorkspaceProjectsSection({
       </div>
       {projects.length === 0 ? (
         <EmptyState
-          icon={<FolderKanban size={24} className="text-zinc-400" />}
+          icon={<FolderKanban size={24} className="text-muted-foreground" />}
           title="No projects yet"
           message="Create a project to keep its conversations, instructions, and capabilities together."
           action={canManage ? <Button onClick={onCreateProject}>Create project</Button> : undefined}

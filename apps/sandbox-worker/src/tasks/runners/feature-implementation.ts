@@ -1,4 +1,14 @@
 import { getSandbox } from "@cloudflare/sandbox";
+import {
+  SANDBOX_RUN_PROOF_MAX_CHANGED_FILES,
+  resolveSandboxDeliveryPolicy,
+  sandboxDeliveryPolicyCreatesCommit,
+  type SandboxEnvironmentCacheRecord,
+  type SandboxRunEnvironmentEvidence,
+  type SandboxRunServiceEvidence,
+  type SandboxRunProofEvidence,
+  type SandboxDeliveryPolicy,
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
   execOrThrow,
@@ -9,6 +19,7 @@ import {
   quoteForShell,
   buildCommitMessage,
 } from "../../lib/commands";
+import { prepareSandboxEnvironment } from "../../lib/environment-setup";
 import { classifySandboxError } from "../../lib/errors";
 import { createExecutionControl } from "../../lib/execution-control";
 import { executeAgentLoop } from "../../lib/feature-implementation/agent-loop";
@@ -27,9 +38,10 @@ import {
 } from "../../lib/feature-implementation/quality-gate";
 import { runStoryTracker } from "../../lib/feature-implementation/story-tracker";
 import { truncateForModel } from "../../lib/feature-implementation/utils";
+import { deliverCommitToGitHub, prepareGitHubDelivery } from "../../lib/github-delivery";
 import { PolychatClient } from "../../lib/polychat-client";
-import { pushBranchToRemote } from "../../lib/push-branch";
 import { RunControlClient } from "../../lib/run-control-client";
+import { ProjectServiceSupervisor } from "../../lib/service-supervisor";
 import type {
   TaskEvent,
   TaskEventEmitter,
@@ -38,6 +50,52 @@ import type {
   TaskSecrets,
   Env,
 } from "../../types";
+
+function lines(value: string): string[] {
+  return Array.from(
+    new Set(
+      value
+        .split("\n")
+        .map((entry) => entry.trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function buildProofEvidence(params: {
+  baseRevision?: string;
+  headRevision?: string;
+  changedFiles: string[];
+  validation?: SandboxRunProofEvidence["validation"];
+  environment?: SandboxRunEnvironmentEvidence;
+  services?: SandboxRunServiceEvidence[];
+  deliveryPolicy?: SandboxDeliveryPolicy;
+  branch?: string;
+  commit?: string;
+  pullRequestUrl?: string;
+  residualRisks?: string[];
+  incompleteWork?: string[];
+}): SandboxRunProofEvidence {
+  return {
+    repository: {
+      baseRevision: params.baseRevision,
+      headRevision: params.headRevision,
+    },
+    changedFileCount: params.changedFiles.length,
+    changedFiles: params.changedFiles.slice(0, SANDBOX_RUN_PROOF_MAX_CHANGED_FILES),
+    validation: params.validation,
+    environment: params.environment,
+    services: params.services,
+    delivery: {
+      policy: params.deliveryPolicy,
+      branch: params.branch,
+      commit: params.commit,
+      pullRequestUrl: params.pullRequestUrl,
+    },
+    residualRisks: params.residualRisks,
+    incompleteWork: params.incompleteWork,
+  };
+}
 
 function resolveAbsoluteRepoTargetDir(sandboxRoot: string, repoTargetDir: string): string {
   if (repoTargetDir.startsWith("/")) {
@@ -63,6 +121,7 @@ export async function executeFeatureImplementation(
       ...event,
       type: event.type,
       runId: typeof event.runId === "string" ? event.runId : runId,
+      timestamp: event.timestamp ?? new Date().toISOString(),
     };
 
     await emitEvent(nextEvent);
@@ -73,10 +132,25 @@ export async function executeFeatureImplementation(
   }
 
   const runId = params.runId || crypto.randomUUID().slice(0, 8);
+  const deliveryPolicy = resolveSandboxDeliveryPolicy(params.deliveryPolicy, params.shouldCommit);
+  const shouldCommit = sandboxDeliveryPolicyCreatesCommit(deliveryPolicy);
   const sandbox = getSandbox(env.Sandbox, runId);
   const client = new PolychatClient(secrets.userToken, env.POLYCHAT_API);
   const executionLogs: string[] = [];
   let branchName: string | undefined;
+  let baseRevision: string | undefined;
+  let headRevision: string | undefined;
+  let commitSha: string | undefined;
+  let defaultBranch: string | undefined;
+  let targetBranch: string | undefined;
+  let pullRequestUrl: string | undefined;
+  let deliveryIncompleteReason: string | undefined;
+  let changedFiles: string[] = [];
+  let validation: SandboxRunProofEvidence["validation"];
+  let environmentEvidence: SandboxRunEnvironmentEvidence | undefined;
+  let environmentCacheRecord: SandboxEnvironmentCacheRecord | undefined;
+  let serviceSupervisor: ProjectServiceSupervisor | undefined;
+  let serviceFailure: Promise<never> | undefined;
   let fileWatcher: FileWatcher | undefined;
 
   const executionControl = createExecutionControl({
@@ -153,17 +227,45 @@ export async function executeFeatureImplementation(
       throw new Error(sandboxRootResult.stderr || "Failed to resolve sandbox working directory");
     }
 
-    const sandboxRoot = sandboxRootResult.stdout
-      .split("\n")
-      .map((entry) => entry.trim())
-      .filter(Boolean)
-      .at(-1);
+    const sandboxRoot = lines(sandboxRootResult.stdout).at(-1);
 
     if (!sandboxRoot) {
       throw new Error("Failed to resolve sandbox working directory");
     }
 
     const repoTargetDir = resolveAbsoluteRepoTargetDir(sandboxRoot, repo.targetDir);
+    const baseRevisionResult = await sandbox.exec(
+      `git -C ${quoteForShell(repoTargetDir)} rev-parse HEAD`,
+    );
+
+    if (baseRevisionResult.success) {
+      baseRevision = baseRevisionResult.stdout.trim() || undefined;
+      headRevision = baseRevision;
+    }
+
+    await checkpoint("Sandbox run cancelled after repository clone");
+
+    const environmentPreparation = await prepareSandboxEnvironment({
+      sandbox,
+      repoTargetDir,
+      userId: params.userId,
+      projectId: params.projectId,
+      installationId: params.installationId,
+      repo: params.repo,
+      setup: params.environmentSetup,
+      requestedMode: params.environmentPreparationMode,
+      environmentCache: params.environmentCache,
+      environmentCacheGeneration: params.environmentCacheGeneration,
+      trustLevel: params.trustLevel ?? "balanced",
+      executionLogs,
+      approvalClient,
+      abortSignal,
+      checkpoint,
+      emit,
+    });
+
+    environmentEvidence = environmentPreparation.evidence;
+    environmentCacheRecord = environmentPreparation.cacheRecord;
 
     fileWatcher = startFileWatcher({
       sandbox,
@@ -172,18 +274,52 @@ export async function executeFeatureImplementation(
       abortSignal,
     });
 
-    await checkpoint("Sandbox run cancelled after repository clone");
-
-    if (params.shouldCommit) {
-      branchName = `polychat/feature-${Date.now()}`;
-      await execOrThrow(
+    if (environmentPreparation.services?.length) {
+      serviceSupervisor = new ProjectServiceSupervisor({
         sandbox,
-        `git -C ${quoteForShell(repoTargetDir)} checkout -b ${quoteForShell(branchName)}`,
+        repoTargetDir,
+        services: environmentPreparation.services,
+        trustLevel: params.trustLevel ?? "balanced",
+        approvalClient,
+        abortSignal,
+        checkpoint,
+        emit,
+      });
+      await serviceSupervisor.start();
+      serviceFailure = serviceSupervisor.waitForFailure();
+    }
+
+    const supervisedAbortSignal = serviceSupervisor
+      ? abortSignal
+        ? AbortSignal.any([abortSignal, serviceSupervisor.signal])
+        : serviceSupervisor.signal
+      : abortSignal;
+
+    if (shouldCommit) {
+      if (!secrets.githubToken) {
+        throw new Error("GitHub delivery requires a current installation token");
+      }
+
+      const delivery = await prepareGitHubDelivery({
+        sandbox,
+        repoTargetDir,
+        repo: repo.displayName,
+        runId,
+        policy: deliveryPolicy,
+        githubToken: secrets.githubToken,
+        checkoutAuthHeader: repo.checkoutAuthHeader,
         executionLogs,
-      );
+      });
+
+      branchName = delivery.branchName;
+      targetBranch = delivery.targetBranch;
+      defaultBranch = delivery.defaultBranch;
+
       await emit({
         type: "git_branch_created",
         branchName,
+        targetBranch,
+        deliveryAction: deliveryPolicy.mode,
       });
     }
 
@@ -250,7 +386,7 @@ export async function executeFeatureImplementation(
       message: "Agent command budget initialised",
     });
 
-    const loopResult = await executeAgentLoop({
+    const loopOperation = executeAgentLoop({
       sandbox,
       client,
       model,
@@ -266,9 +402,14 @@ export async function executeFeatureImplementation(
       executionLogs,
       emit,
       approvalClient,
-      abortSignal,
+      abortSignal: supervisedAbortSignal,
       checkpoint,
     });
+    const loopResult = serviceFailure
+      ? await Promise.race([loopOperation, serviceFailure])
+      : await loopOperation;
+
+    serviceSupervisor?.throwIfFailed();
 
     const qualityGateCommands = deriveQualityGateCommands({
       plans: [loopResult.finalPlan, plan],
@@ -279,15 +420,34 @@ export async function executeFeatureImplementation(
       commandTotal: qualityGateCommands.length,
       commands: qualityGateCommands,
     });
-    const qualityGateResult = await runQualityGate({
+    const qualityGateOperation = runQualityGate({
       sandbox,
       repoTargetDir,
       commands: qualityGateCommands,
       executionLogs,
       emit,
-      abortSignal,
+      abortSignal: supervisedAbortSignal,
       checkpoint,
     });
+    const qualityGateResult = serviceFailure
+      ? await Promise.race([qualityGateOperation, serviceFailure])
+      : await qualityGateOperation;
+
+    serviceSupervisor?.throwIfFailed();
+
+    validation = {
+      qualityGate:
+        qualityGateCommands.length === 0
+          ? "skipped"
+          : qualityGateResult.passed
+            ? "passed"
+            : "failed",
+      checks: qualityGateResult.checks.map((check) => ({
+        command: check.command,
+        status: check.passed ? "passed" : "failed",
+        exitCode: check.exitCode,
+      })),
+    };
 
     await checkpoint("Sandbox run cancelled after quality gate");
 
@@ -303,6 +463,7 @@ export async function executeFeatureImplementation(
     });
 
     await checkpoint("Sandbox run cancelled during story tracking");
+    serviceSupervisor?.throwIfFailed();
 
     const diffResult = await sandbox.exec(`git -C ${quoteForShell(repoTargetDir)} diff --patch`);
 
@@ -312,13 +473,21 @@ export async function executeFeatureImplementation(
     }
 
     const diff = diffResult.stdout;
+    const changedFilesResult = await sandbox.exec(
+      `git -C ${quoteForShell(repoTargetDir)} ls-files --modified --others --exclude-standard`,
+    );
+
+    if (changedFilesResult.success) {
+      changedFiles = lines(changedFilesResult.stdout);
+    }
 
     await emit({
       type: "diff_generated",
       hasChanges: diff.trim().length > 0,
     });
+    serviceSupervisor?.throwIfFailed();
 
-    if (params.shouldCommit && qualityGateResult.passed) {
+    if (shouldCommit && qualityGateResult.passed) {
       await checkpoint("Sandbox run cancelled before commit");
       await execOrThrow(
         sandbox,
@@ -343,27 +512,57 @@ export async function executeFeatureImplementation(
           `git -C ${quoteForShell(repoTargetDir)} commit -m ${quoteForShell(buildCommitMessage(task))}`,
           executionLogs,
         );
+        const commitResult = await sandbox.exec(
+          `git -C ${quoteForShell(repoTargetDir)} rev-parse HEAD`,
+        );
+
+        if (commitResult.success) {
+          commitSha = commitResult.stdout.trim() || undefined;
+          headRevision = commitSha ?? headRevision;
+        }
+
+        if (!branchName || !targetBranch || !commitSha || !secrets.githubToken) {
+          throw new Error("Delivery evidence is incomplete; no GitHub write was attempted");
+        }
+
         await emit({
           type: "commit_created",
           branchName,
+          commitSha,
+          targetBranch,
+          deliveryAction: deliveryPolicy.mode,
         });
 
-        if (branchName) {
-          await pushBranchToRemote({
-            sandbox,
-            repoTargetDir,
-            branchName,
-            checkoutAuthHeader: repo.checkoutAuthHeader,
-            executionLogs,
-            checkpoint,
-            emit,
-          });
-        }
+        const delivery = await deliverCommitToGitHub({
+          sandbox,
+          repoTargetDir,
+          repo: repo.displayName,
+          runId,
+          policy: deliveryPolicy,
+          branchName,
+          targetBranch,
+          defaultBranch,
+          commitSha,
+          validationSummary: qualityGateResult.summary,
+          githubToken: secrets.githubToken,
+          checkoutAuthHeader: repo.checkoutAuthHeader,
+          executionLogs,
+          trustLevel: params.trustLevel ?? "balanced",
+          approvalClient,
+          abortSignal,
+          checkpoint,
+          emit,
+        });
+
+        pullRequestUrl = delivery.pullRequestUrl;
+        deliveryIncompleteReason = delivery.incompleteReason;
       }
-    } else if (params.shouldCommit && !qualityGateResult.passed) {
+    } else if (shouldCommit && !qualityGateResult.passed) {
+      deliveryIncompleteReason = "Delivery was skipped because the quality gate failed.";
       await emit({
         type: "commit_skipped",
-        message: "Skipped commit because quality gate failed",
+        deliveryAction: deliveryPolicy.mode,
+        message: deliveryIncompleteReason,
       });
     }
 
@@ -372,19 +571,35 @@ export async function executeFeatureImplementation(
         buildSummary(task, repo.displayName, loopResult.commandCount, branchName, taskType),
       qualityGateResult.summary,
       storyTrackerResult.summary,
-      params.shouldCommit && !qualityGateResult.passed
-        ? "Commit skipped due to failing quality gate."
-        : "",
+      deliveryIncompleteReason,
     ]
       .filter(Boolean)
       .join(" ");
+
+    serviceSupervisor?.throwIfFailed();
 
     return {
       success: true,
       logs: truncateLog(executionLogs.join("\n")),
       diff,
       branchName,
+      pullRequestUrl,
       summary,
+      environmentCache: environmentCacheRecord,
+      proof: buildProofEvidence({
+        baseRevision,
+        headRevision,
+        changedFiles,
+        validation,
+        environment: environmentEvidence,
+        services: serviceSupervisor?.getEvidence(),
+        deliveryPolicy,
+        branch: branchName,
+        commit: commitSha,
+        pullRequestUrl,
+        residualRisks: qualityGateResult.passed ? [] : [qualityGateResult.summary],
+        incompleteWork: deliveryIncompleteReason ? [deliveryIncompleteReason] : [],
+      }),
     };
   } catch (error) {
     console.error("Error during sandbox task execution:", error);
@@ -401,12 +616,29 @@ export async function executeFeatureImplementation(
       success: false,
       logs: truncateLog(executionLogs.join("\n")),
       branchName,
+      pullRequestUrl,
       error: classified.message,
       errorType: classified.type,
       retryable: classified.retryable,
+      environmentCache: environmentCacheRecord,
+      proof: buildProofEvidence({
+        baseRevision,
+        headRevision,
+        changedFiles,
+        validation,
+        environment: environmentEvidence,
+        services: serviceSupervisor?.getEvidence(),
+        deliveryPolicy,
+        branch: branchName,
+        commit: commitSha,
+        pullRequestUrl,
+        residualRisks: [classified.message],
+        incompleteWork: ["The run ended before the objective was completed."],
+      }),
     };
   } finally {
     fileWatcher?.stop();
+    await serviceSupervisor?.stop();
     await sandbox.destroy();
   }
 }

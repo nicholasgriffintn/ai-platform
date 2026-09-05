@@ -36,8 +36,8 @@ export function ToolRunner({ backPath, projectId, toolId }: ToolRunnerProps) {
     return (
       <div className="mx-auto max-w-xl px-6 py-16">
         <Card className="p-8 text-center shadow-none">
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Tool unavailable</h1>
-          <p className="text-sm leading-6 text-zinc-500">This tool no longer exists.</p>
+          <h1 className="text-2xl font-bold text-foreground">Tool unavailable</h1>
+          <p className="text-sm leading-6 text-muted-foreground">This tool no longer exists.</p>
           <BackLink href={backPath} label="Back to capabilities" />
         </Card>
       </div>

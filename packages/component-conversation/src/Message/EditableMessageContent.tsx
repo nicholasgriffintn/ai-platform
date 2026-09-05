@@ -66,16 +66,15 @@ export const EditableMessageContent = ({
         onChange={handleTextareaChange}
         onKeyDown={handleKeyDown}
         disabled={isUpdating}
-        className="resize-none min-h-[80px] min-w-full md:min-w-[460px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="resize-none min-h-[80px] min-w-full md:min-w-[460px] focus:ring-2 focus:ring-active-work focus:border-active-work"
         placeholder="Edit your message..."
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1 flex-wrap">
-          Press{" "}
-          <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">Cmd+Enter</kbd>
+        <span className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap">
+          Press <kbd className="bg-selection rounded px-1 py-0.5 text-xs">Cmd+Enter</kbd>
           to save,
-          <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">Esc</kbd>
+          <kbd className="bg-selection rounded px-1 py-0.5 text-xs">Esc</kbd>
           to cancel
         </span>
         <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:justify-end sm:w-auto">

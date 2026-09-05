@@ -1,4 +1,4 @@
-import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import {
   USAGE_SOURCES,
   type UsageEventRecord,
@@ -7,6 +7,7 @@ import {
 import { formatCredits, formatUsdFromMicros } from "@ngriffin_uk/polychat-utility-core";
 import { Loader2 } from "lucide-react";
 
+import { SettingsSection } from "../SettingsSection";
 import { describeUsageEvent, formatUsageQuantity, humaniseUsageSource } from "./usage-display";
 
 export interface UsageLedgerTableProps {
@@ -40,18 +41,16 @@ function LedgerCreditsCell({ event }: { event: UsageEventRecord }) {
   if (event.byok) {
     return (
       <div className="text-right">
-        <p className="text-zinc-800 dark:text-zinc-200">0</p>
-        <p className="text-xs text-emerald-600 dark:text-emerald-400">
-          your key · {formatUsdFromMicros(event.cost_micros)}
-        </p>
+        <p className="text-foreground">0</p>
+        <p className="text-xs text-success">your key · {formatUsdFromMicros(event.cost_micros)}</p>
       </div>
     );
   }
 
   return (
     <div className="text-right">
-      <p className="text-zinc-800 dark:text-zinc-200">{formatCredits(event.credits)}</p>
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="text-foreground">{formatCredits(event.credits)}</p>
+      <p className="text-xs text-muted-foreground">
         {formatUsdFromMicros(event.cost_micros)}
         {event.estimated ? " · estimated" : ""}
       </p>
@@ -69,14 +68,11 @@ export function UsageLedgerTable({
   onSourceChange,
 }: UsageLedgerTableProps) {
   return (
-    <Card className="p-5">
-      <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Ledger</h3>
-      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-        Every priced piece of work, line by line. Rows on your own keys show their cost but charge
-        no credits.
-      </p>
-
-      <div className="mt-3 flex flex-wrap gap-1" role="group" aria-label="Filter the ledger">
+    <SettingsSection
+      title="Ledger"
+      description="Every priced piece of work, line by line. Rows on your own keys show their cost but charge no credits."
+    >
+      <div className="flex flex-wrap gap-1" role="group" aria-label="Filter the ledger">
         {LEDGER_FILTERS.map((filter) => (
           <button
             key={filter}
@@ -85,8 +81,8 @@ export function UsageLedgerTable({
             onClick={() => onSourceChange(filter)}
             className={
               source === filter
-                ? "rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-                : "rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 hover:border-zinc-300 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600"
+                ? "bg-human-action text-human-action-foreground rounded-full px-3 py-1 text-xs font-medium"
+                : "rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:border-border-strong"
             }
           >
             {filter === "all" ? "All" : humaniseUsageSource(filter)}
@@ -95,18 +91,18 @@ export function UsageLedgerTable({
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-8 text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center justify-center py-8 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
         </div>
       ) : events.length === 0 ? (
-        <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-4 text-sm text-muted-foreground">
           No entries yet. A quiet ledger is nothing to worry about.
         </p>
       ) : (
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <th className="pb-2 pr-3 font-medium">When</th>
                 <th className="pb-2 pr-3 font-medium">What</th>
                 <th className="pb-2 pr-3 font-medium">Amount</th>
@@ -115,22 +111,19 @@ export function UsageLedgerTable({
             </thead>
             <tbody>
               {events.map((event) => (
-                <tr
-                  key={event.id}
-                  className="border-b border-zinc-100 last:border-b-0 dark:border-zinc-800"
-                >
-                  <td className="py-2 pr-3 whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+                <tr key={event.id} className="border-b border-border last:border-b-0">
+                  <td className="py-2 pr-3 whitespace-nowrap text-muted-foreground">
                     {formatEventDate(event.occurred_at)}
                   </td>
                   <td className="py-2 pr-3">
-                    <p className="text-zinc-800 dark:text-zinc-200">
+                    <p className="text-foreground">
                       {describeUsageEvent(event.vendor, event.resource)}
                     </p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-muted-foreground">
                       {humaniseUsageSource(event.source)}
                     </p>
                   </td>
-                  <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-300">
+                  <td className="py-2 pr-3 text-muted-foreground">
                     {formatUsageQuantity(event.quantity, event.unit)}
                   </td>
                   <td className="py-2">
@@ -153,6 +146,6 @@ export function UsageLedgerTable({
           </Button>
         </div>
       )}
-    </Card>
+    </SettingsSection>
   );
 }

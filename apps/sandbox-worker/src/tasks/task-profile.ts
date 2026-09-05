@@ -1,10 +1,16 @@
-import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
+import {
+  resolveSandboxDeliveryPolicy,
+  sandboxDeliveryPolicyCreatesCommit,
+  type SandboxDeliveryPolicy,
+  type SandboxTaskType,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { TaskParams } from "../types";
 
 export interface ResolvedSandboxTaskProfile {
   taskType: SandboxTaskType;
   task: string;
+  deliveryPolicy?: SandboxDeliveryPolicy;
   shouldCommit: boolean;
   readOnlyCommands: boolean;
 }
@@ -62,9 +68,27 @@ function buildMigrationTask(task: string): string {
   ].join("\n");
 }
 
+function applyCustomDeliveryInstructions(
+  task: string,
+  deliveryPolicy: SandboxDeliveryPolicy,
+): string {
+  if (deliveryPolicy.mode !== "custom") {
+    return task;
+  }
+
+  return [
+    task,
+    "",
+    "Custom delivery instructions:",
+    deliveryPolicy.instructions,
+    "These instructions do not authorise a remote GitHub write.",
+  ].join("\n");
+}
+
 export function resolveSandboxTaskProfile(params: TaskParams): ResolvedSandboxTaskProfile {
   const taskType = params.taskType || "feature-implementation";
   const trimmedTask = params.task.trim();
+  const deliveryPolicy = resolveSandboxDeliveryPolicy(params.deliveryPolicy, params.shouldCommit);
 
   if (!trimmedTask) {
     throw new Error("Task is required");
@@ -75,6 +99,7 @@ export function resolveSandboxTaskProfile(params: TaskParams): ResolvedSandboxTa
       return {
         taskType,
         task: buildCodeReviewTask(trimmedTask),
+        deliveryPolicy: { mode: "leave_uncommitted" },
         shouldCommit: false,
         readOnlyCommands: true,
       };
@@ -82,43 +107,49 @@ export function resolveSandboxTaskProfile(params: TaskParams): ResolvedSandboxTa
       return {
         taskType,
         task: buildTestSuiteTask(trimmedTask),
+        deliveryPolicy: { mode: "leave_uncommitted" },
         shouldCommit: false,
         readOnlyCommands: true,
       };
     case "bug-fix":
       return {
         taskType,
-        task: buildBugFixTask(trimmedTask),
-        shouldCommit: Boolean(params.shouldCommit),
+        task: applyCustomDeliveryInstructions(buildBugFixTask(trimmedTask), deliveryPolicy),
+        deliveryPolicy,
+        shouldCommit: sandboxDeliveryPolicyCreatesCommit(deliveryPolicy),
         readOnlyCommands: false,
       };
     case "refactoring":
       return {
         taskType,
-        task: buildRefactoringTask(trimmedTask),
-        shouldCommit: Boolean(params.shouldCommit),
+        task: applyCustomDeliveryInstructions(buildRefactoringTask(trimmedTask), deliveryPolicy),
+        deliveryPolicy,
+        shouldCommit: sandboxDeliveryPolicyCreatesCommit(deliveryPolicy),
         readOnlyCommands: false,
       };
     case "documentation":
       return {
         taskType,
-        task: buildDocumentationTask(trimmedTask),
-        shouldCommit: Boolean(params.shouldCommit),
+        task: applyCustomDeliveryInstructions(buildDocumentationTask(trimmedTask), deliveryPolicy),
+        deliveryPolicy,
+        shouldCommit: sandboxDeliveryPolicyCreatesCommit(deliveryPolicy),
         readOnlyCommands: false,
       };
     case "migration":
       return {
         taskType,
-        task: buildMigrationTask(trimmedTask),
-        shouldCommit: Boolean(params.shouldCommit),
+        task: applyCustomDeliveryInstructions(buildMigrationTask(trimmedTask), deliveryPolicy),
+        deliveryPolicy,
+        shouldCommit: sandboxDeliveryPolicyCreatesCommit(deliveryPolicy),
         readOnlyCommands: false,
       };
     case "feature-implementation":
     default:
       return {
         taskType: "feature-implementation",
-        task: trimmedTask,
-        shouldCommit: Boolean(params.shouldCommit),
+        task: applyCustomDeliveryInstructions(trimmedTask, deliveryPolicy),
+        deliveryPolicy,
+        shouldCommit: sandboxDeliveryPolicyCreatesCommit(deliveryPolicy),
         readOnlyCommands: false,
       };
   }

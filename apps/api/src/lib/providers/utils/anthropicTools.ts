@@ -84,3 +84,42 @@ class AnthropicHostedToolBuilder {
     };
   }
 }
+
+type AnthropicToolChoice =
+  | { type: "auto"; disable_parallel_tool_use?: boolean }
+  | { type: "any"; disable_parallel_tool_use?: boolean }
+  | { type: "tool"; name: string; disable_parallel_tool_use?: boolean }
+  | { type: "none" };
+
+export function buildAnthropicToolChoice(
+  toolChoice: ChatCompletionParameters["tool_choice"],
+  parallelToolCalls: boolean | undefined,
+): AnthropicToolChoice | undefined {
+  const parallelUse = parallelToolCalls === false ? { disable_parallel_tool_use: true } : {};
+
+  if (toolChoice === undefined) {
+    return parallelToolCalls === false ? { type: "auto", ...parallelUse } : undefined;
+  }
+
+  if (toolChoice === "none") {
+    return { type: "none" };
+  }
+
+  if (toolChoice === "auto") {
+    return { type: "auto", ...parallelUse };
+  }
+
+  if (toolChoice === "required") {
+    return { type: "any", ...parallelUse };
+  }
+
+  if (
+    typeof toolChoice === "object" &&
+    toolChoice.type === "function" &&
+    toolChoice.function?.name
+  ) {
+    return { type: "tool", name: toolChoice.function.name, ...parallelUse };
+  }
+
+  return undefined;
+}

@@ -4,7 +4,7 @@
 
 ## Evidence baseline
 
-These briefs follow the [full runtime comparison](opencode-ai-review.md). The OpenCode evidence is pinned to [`5b1e31988ed74b821b3a7ca6647188446992aafc`](https://github.com/anomalyco/opencode/tree/5b1e31988ed74b821b3a7ca6647188446992aafc), release `1.18.29`, committed 4 September 2026. The Polychat baseline is this checkout on 5 September 2026 and its [architecture context](skills/polychat-setup/references/architecture/context.md).
+These briefs follow the [full runtime comparison](opencode-ai-review.md). The OpenCode evidence is pinned to [`5b1e31988ed74b821b3a7ca6647188446992aafc`](https://github.com/anomalyco/opencode/tree/5b1e31988ed74b821b3a7ca6647188446992aafc), release `1.18.29`, committed 4 September 2026. The Polychat evidence baseline is commit `e0dd1b094f31ea2680d2c28e1118e71abc8b6153` on 5 September 2026 and its [architecture context](skills/polychat-setup/references/architecture/context.md).
 
 The order below is recommended. Each item is independently bounded; do not combine them into a broad runtime rewrite.
 

@@ -8,7 +8,10 @@ import type {
   WorkspaceDetail,
   WorkspaceRole,
 } from "@ngriffin_uk/polychat-schemas";
-import { deriveProjectColour } from "@ngriffin_uk/polychat-schemas";
+import {
+  deriveProjectColour,
+  sandboxDeliveryPolicyCreatesCommit,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { validateCapabilityReference } from "~/lib/capabilities";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -19,6 +22,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
 
 import { requireProjectAccess, requireWorkAccess, requireWorkspaceAccess } from "./access";
+import { invalidateProjectEnvironmentCacheForConfiguration } from "./environment-cache";
 import {
   formatProjectDetail,
   formatProjectSummary,
@@ -458,7 +462,7 @@ export async function getProject(context: ServiceContext, projectId: string) {
   const { project } = await requireProjectAccess(context, projectId);
   const [capabilities, conversations] = await Promise.all([
     context.repositories.workspaces.listProjectCapabilities(projectId),
-    context.repositories.workspaces.listProjectConversations(projectId),
+    context.repositories.workspaces.listProjectConversations(projectId, context.requireUser().id),
   ]);
 
   return formatProjectDetail({ project, capabilities, conversations });
@@ -477,6 +481,17 @@ export async function updateProject(
     await validateProjectCodingEnvironment(context, user.id, codingEnvironment);
   }
 
+  const cacheRelevantConfigurationChanged =
+    codingEnvironment !== undefined &&
+    (project.coding_enabled !== (codingEnvironment ? 1 : 0) ||
+      project.coding_installation_id !== (codingEnvironment?.installationId ?? null) ||
+      project.coding_repository?.toLowerCase() !==
+        (codingEnvironment?.repository.toLowerCase() ?? null) ||
+      project.coding_environment_setup !==
+        (codingEnvironment?.environmentSetup
+          ? JSON.stringify(codingEnvironment.environmentSetup)
+          : null));
+
   const codingUpdates =
     codingEnvironment === undefined
       ? {}
@@ -485,7 +500,15 @@ export async function updateProject(
           coding_installation_id: codingEnvironment?.installationId ?? null,
           coding_repository: codingEnvironment?.repository ?? null,
           coding_prompt_strategy: codingEnvironment?.promptStrategy ?? "auto",
-          coding_should_commit: codingEnvironment?.shouldCommit ?? true,
+          coding_should_commit: codingEnvironment
+            ? sandboxDeliveryPolicyCreatesCommit(codingEnvironment.deliveryPolicy)
+            : true,
+          coding_delivery_policy: codingEnvironment
+            ? JSON.stringify(codingEnvironment.deliveryPolicy)
+            : null,
+          coding_environment_setup: codingEnvironment?.environmentSetup
+            ? JSON.stringify(codingEnvironment.environmentSetup)
+            : null,
           coding_timeout_seconds: codingEnvironment?.timeoutSeconds ?? 900,
         };
 
@@ -494,6 +517,11 @@ export async function updateProject(
     ...(defaultRouterMode === undefined ? {} : { default_router_mode: defaultRouterMode }),
     ...codingUpdates,
   });
+
+  if (cacheRelevantConfigurationChanged) {
+    await invalidateProjectEnvironmentCacheForConfiguration(context, project);
+  }
+
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,

@@ -28,10 +28,10 @@ export function CapabilityAddMenu({ choices }: { choices: CapabilityAddChoice[] 
     >
       {choices.map((choice) => (
         <OptionsMenuAction key={choice.label} onSelect={choice.onSelect} className="items-start">
-          <span className="mt-0.5 shrink-0 text-zinc-500 dark:text-zinc-400">{choice.icon}</span>
+          <span className="mt-0.5 shrink-0 text-muted-foreground">{choice.icon}</span>
           <span className="ml-2 flex min-w-0 flex-col gap-0.5 text-left">
-            <span className="font-medium text-zinc-800 dark:text-zinc-100">{choice.label}</span>
-            <span className="text-zinc-500 dark:text-zinc-400">{choice.description}</span>
+            <span className="font-medium text-foreground">{choice.label}</span>
+            <span className="text-muted-foreground">{choice.description}</span>
           </span>
         </OptionsMenuAction>
       ))}

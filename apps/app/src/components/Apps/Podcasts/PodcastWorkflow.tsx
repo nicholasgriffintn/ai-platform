@@ -20,7 +20,7 @@ export function PodcastWorkflow({ basePath, projectId }: PodcastWorkflowProps) {
     <div className="mx-auto max-w-3xl">
       <ProgressStepper currentStep={workflow.currentStep} />
       {workflow.workflowError && (
-        <p role="alert" className="mb-4 text-sm text-red-700 dark:text-red-400">
+        <p role="alert" className="mb-4 text-sm text-failure">
           {workflow.workflowError}
         </p>
       )}

@@ -2,7 +2,7 @@ import { ProjectCodingEnvironmentCard as ControlledProjectCodingEnvironmentCard 
 import type { ProjectDetail } from "@ngriffin_uk/polychat-schemas";
 
 import { useSandboxConnections, useSandboxRepositoryOptions } from "~/hooks/useSandbox";
-import { useUpdateProject } from "~/hooks/useWorkspaces";
+import { useProjectEnvironmentCacheAction, useUpdateProject } from "~/hooks/useWorkspaces";
 
 export function ProjectCodingEnvironmentCard({
   canManage,
@@ -14,6 +14,7 @@ export function ProjectCodingEnvironmentCard({
   embedded?: boolean;
 }) {
   const updateProject = useUpdateProject();
+  const cacheAction = useProjectEnvironmentCacheAction();
   const { data: connections = [], isLoading: isLoadingConnections } = useSandboxConnections();
   const { repoOptions, isLoading: isLoadingRepositories } =
     useSandboxRepositoryOptions(connections);
@@ -23,11 +24,22 @@ export function ProjectCodingEnvironmentCard({
       canManage={canManage}
       embedded={embedded}
       codingEnvironment={project.codingEnvironment ?? null}
+      environmentCache={project.environmentCache}
       repositoryOptions={repoOptions}
       isLoadingRepositories={isLoadingConnections || isLoadingRepositories}
       isSaving={updateProject.isPending}
       errorMessage={updateProject.error?.message}
-      onConnect={async ({ installationId, repository, shouldCommit }) => {
+      cacheMessage={
+        cacheAction.data?.warning ??
+        cacheAction.error?.message ??
+        (cacheAction.isSuccess
+          ? cacheAction.variables.input.action === "rebuild"
+            ? "Rebuild requested for the next run."
+            : "Environment cache deleted."
+          : undefined)
+      }
+      isUpdatingCache={cacheAction.isPending}
+      onConnect={async ({ installationId, repository, deliveryPolicy, environmentSetup }) => {
         await updateProject.mutateAsync({
           projectId: project.id,
           input: {
@@ -35,7 +47,8 @@ export function ProjectCodingEnvironmentCard({
               installationId,
               repository,
               promptStrategy: project.codingEnvironment?.promptStrategy ?? "auto",
-              shouldCommit,
+              deliveryPolicy,
+              environmentSetup,
               timeoutSeconds: project.codingEnvironment?.timeoutSeconds ?? 900,
             },
           },
@@ -45,6 +58,18 @@ export function ProjectCodingEnvironmentCard({
         await updateProject.mutateAsync({
           projectId: project.id,
           input: { codingEnvironment: null },
+        });
+      }}
+      onRebuildCache={async () => {
+        await cacheAction.mutateAsync({
+          projectId: project.id,
+          input: { action: "rebuild" },
+        });
+      }}
+      onDeleteCache={async () => {
+        await cacheAction.mutateAsync({
+          projectId: project.id,
+          input: { action: "delete" },
         });
       }}
     />

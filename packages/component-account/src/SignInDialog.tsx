@@ -25,7 +25,7 @@ export function SignInDialog({ open, onOpenChange, appName, children }: SignInDi
         </DialogDescription>
         <div className="space-y-6 p-6">
           {children}
-          <p className="mx-auto max-w-[375px] text-center text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mx-auto max-w-[375px] text-center text-sm text-muted-foreground">
             By continuing, you agree to our{" "}
             <a href="/terms" className={textLinkClassName({ tone: "accent" })}>
               Terms of Service
@@ -59,10 +59,8 @@ export function AuthenticationStatusDialog({
           Wait while your authentication status is checked.
         </DialogDescription>
         <div className="flex flex-col items-center justify-center gap-4 py-8">
-          <Loader2 size={32} className="animate-spin text-blue-600" />
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Checking authentication status...
-          </p>
+          <Loader2 size={32} className="animate-spin text-active-work" />
+          <p className="text-sm text-muted-foreground">Checking authentication status...</p>
         </div>
       </DialogContent>
     </Dialog>

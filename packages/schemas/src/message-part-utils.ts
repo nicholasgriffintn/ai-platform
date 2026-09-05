@@ -32,10 +32,22 @@ export interface ReasoningMessagePart extends MessagePartBase {
   collapsed?: boolean;
 }
 
+export const compactionSummaryStrategies = ["model_summary", "fallback_transcript"] as const;
+export type CompactionSummaryStrategy = (typeof compactionSummaryStrategies)[number];
+
+export interface CompactionCoverage {
+  coveredMessageIds: string[];
+  coveredMessageCount: number;
+  candidateMessageCount: number;
+  summaryInputCharacters: number;
+  strategy: CompactionSummaryStrategy;
+}
+
 export interface SnapshotMessagePart extends MessagePartBase {
   type: "snapshot";
   summary: string;
   title?: string;
+  coverage?: CompactionCoverage;
 }
 
 export const compactionPartStatuses = ["pending", "completed"] as const;
@@ -45,6 +57,7 @@ export interface CompactionMessagePart extends MessagePartBase {
   type: "compaction";
   status: CompactionPartStatus;
   label?: string;
+  coverage?: CompactionCoverage;
 }
 
 export const goalMarkerEventNames = [
@@ -116,6 +129,44 @@ function readOptionalNumber(value: unknown, fallback?: number): number | undefin
   return typeof fallback === "number" && Number.isFinite(fallback) ? fallback : undefined;
 }
 
+function readNonNegativeInteger(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : undefined;
+}
+
+function readCompactionCoverage(value: unknown): CompactionCoverage | undefined {
+  if (!isRecord(value) || !Array.isArray(value.coveredMessageIds)) {
+    return undefined;
+  }
+
+  const coveredMessageIds = value.coveredMessageIds.filter(
+    (messageId): messageId is string => typeof messageId === "string" && messageId.length > 0,
+  );
+  const coveredMessageCount = readNonNegativeInteger(value.coveredMessageCount);
+  const candidateMessageCount = readNonNegativeInteger(value.candidateMessageCount);
+  const summaryInputCharacters = readNonNegativeInteger(value.summaryInputCharacters);
+  const strategy = compactionSummaryStrategies.find((item) => item === value.strategy);
+
+  if (
+    coveredMessageIds.length !== value.coveredMessageIds.length ||
+    coveredMessageCount === undefined ||
+    candidateMessageCount === undefined ||
+    summaryInputCharacters === undefined ||
+    strategy === undefined ||
+    coveredMessageCount > candidateMessageCount ||
+    coveredMessageIds.length > coveredMessageCount
+  ) {
+    return undefined;
+  }
+
+  return {
+    coveredMessageIds,
+    coveredMessageCount,
+    candidateMessageCount,
+    summaryInputCharacters,
+    strategy,
+  };
+}
+
 function readPayload(value: unknown): string | unknown[] | Record<string, unknown> | undefined {
   if (typeof value === "string" || isObjectOrArray(value)) {
     return value;
@@ -163,7 +214,8 @@ function isValidCompactionPart(part: unknown): part is CompactionMessagePart {
     part.type === "compaction" &&
     isValidPartBase(part) &&
     readCompactionPartStatus(part.status) !== undefined &&
-    (part.label === undefined || typeof part.label === "string")
+    (part.label === undefined || typeof part.label === "string") &&
+    (part.coverage === undefined || readCompactionCoverage(part.coverage) !== undefined)
   );
 }
 
@@ -257,19 +309,30 @@ function normaliseMessagePart(part: unknown, fallbackTimestamp?: number): Messag
             collapsed: typeof part.collapsed === "boolean" ? part.collapsed : undefined,
           }
         : null;
-    case "snapshot":
-      return typeof part.summary === "string"
-        ? {
-            ...base,
-            type: "snapshot",
-            summary: part.summary,
-            title: readOptionalString(part.title),
-          }
-        : null;
+    case "snapshot": {
+      const coverage = readCompactionCoverage(part.coverage);
+
+      if (
+        typeof part.summary !== "string" ||
+        (part.coverage !== undefined && coverage === undefined)
+      ) {
+        return null;
+      }
+
+      return {
+        ...base,
+        type: "snapshot",
+        summary: part.summary,
+        title: readOptionalString(part.title),
+        coverage,
+      };
+    }
+
     case "compaction": {
       const status = readCompactionPartStatus(part.status);
+      const coverage = readCompactionCoverage(part.coverage);
 
-      if (status === undefined) {
+      if (status === undefined || (part.coverage !== undefined && coverage === undefined)) {
         return null;
       }
 
@@ -278,6 +341,7 @@ function normaliseMessagePart(part: unknown, fallbackTimestamp?: number): Messag
         type: "compaction",
         status,
         label: readOptionalString(part.label),
+        coverage,
       };
     }
 

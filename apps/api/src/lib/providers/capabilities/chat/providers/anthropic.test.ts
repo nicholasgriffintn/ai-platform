@@ -56,3 +56,56 @@ describe("AnthropicProvider.mapParameters", () => {
     expect(body).not.toHaveProperty("output_config");
   });
 });
+
+function toolRequestFor(overrides: Partial<ChatCompletionParameters>) {
+  return {
+    model: "claude-haiku-4-5",
+    provider: "anthropic",
+    messages: [{ role: "user", content: "hello" }],
+    max_tokens: 1_000,
+    stream: false,
+    enabled_tools: [],
+    tools: [
+      {
+        type: "function",
+        function: { name: "lookup", description: "Look something up", parameters: {} },
+      },
+    ],
+    ...overrides,
+  } as unknown as ChatCompletionParameters;
+}
+
+describe("AnthropicProvider tool choice", () => {
+  it("maps an OpenAI tool choice onto the Anthropic object form", async () => {
+    const body = await provider.mapParameters(toolRequestFor({ tool_choice: "auto" }));
+
+    expect(body.tool_choice).toEqual({ type: "auto" });
+    expect(body).not.toHaveProperty("parallel_tool_calls");
+  });
+
+  it("requires any tool and disables parallel use when asked", async () => {
+    const body = await provider.mapParameters(
+      toolRequestFor({ tool_choice: "required", parallel_tool_calls: false }),
+    );
+
+    expect(body.tool_choice).toEqual({ type: "any", disable_parallel_tool_use: true });
+  });
+
+  it("names a required function tool", async () => {
+    const body = await provider.mapParameters(
+      toolRequestFor({
+        tool_choice: { type: "function", function: { name: "lookup" } },
+      }),
+    );
+
+    expect(body.tool_choice).toEqual({ type: "tool", name: "lookup" });
+  });
+
+  it("omits tool choice when no tools are sent", async () => {
+    const body = await provider.mapParameters(
+      toolRequestFor({ tools: undefined, disable_functions: true, tool_choice: "auto" }),
+    );
+
+    expect(body).not.toHaveProperty("tool_choice");
+  });
+});

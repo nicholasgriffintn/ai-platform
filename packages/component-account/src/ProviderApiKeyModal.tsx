@@ -131,7 +131,7 @@ export function ProviderApiKeyModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             {usesConfigurationFields
               ? `Enter the required connection details for ${providerName}.`
               : isBedrockProvider
@@ -209,7 +209,7 @@ export function ProviderApiKeyModal({
               <Button
                 type="button"
                 variant="ghost"
-                className="text-red-600 hover:text-red-700 dark:text-red-400"
+                className="text-failure hover:bg-failure/12 hover:text-failure"
                 onClick={onDelete}
                 disabled={isSubmitting || isDeleting}
                 isLoading={isDeleting}

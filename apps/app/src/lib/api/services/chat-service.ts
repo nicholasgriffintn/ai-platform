@@ -21,6 +21,7 @@ import type {
   ModelRouterMode,
   ToolSelectionMode,
 } from "@ngriffin_uk/polychat-schemas";
+import { conversationLabelSchema } from "@ngriffin_uk/polychat-schemas";
 import {
   createChatStreamAssembler,
   parseChatStreamSseBuffer,
@@ -29,7 +30,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas/chat-stream";
 import { goalSchema } from "@ngriffin_uk/polychat-schemas/goals";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { getSandboxTaskToolNames } from "~/lib/sandbox/task-tools";
 import type {
@@ -168,6 +169,9 @@ export class ChatService {
         parent_conversation_id?: string;
         parent_message_id?: string;
         is_archived?: boolean;
+        is_pinned?: number;
+        is_unread?: number;
+        labels?: string | unknown[];
       }[];
       pageNumber?: number;
       pageSize?: number;
@@ -187,15 +191,35 @@ export class ChatService {
       };
     }
 
-    const results = data.conversations.map((conversation) => ({
-      ...conversation,
-      messages: [],
-      parent_conversation_id: conversation.parent_conversation_id,
-      parent_message_id: conversation.parent_message_id,
-    }));
+    const results = data.conversations.map((conversation) => {
+      let labels: unknown = conversation.labels ?? [];
+
+      if (typeof labels === "string") {
+        try {
+          labels = JSON.parse(labels);
+        } catch {
+          labels = [];
+        }
+      }
+
+      const parsedLabels = conversationLabelSchema.array().safeParse(labels);
+
+      return {
+        ...conversation,
+        messages: [],
+        parent_conversation_id: conversation.parent_conversation_id,
+        parent_message_id: conversation.parent_message_id,
+        isPinned: conversation.is_pinned === 1,
+        isUnread: conversation.is_unread === 1,
+        labels: parsedLabels.success ? parsedLabels.data : [],
+      };
+    });
 
     const sortBy = options.sortBy ?? "updated";
-    const conversations = [...results].sort((a, b) => compareConversationsBySort(a, b, sortBy));
+    const conversations = sortCopy(
+      results,
+      (a, b) => Number(b.isPinned) - Number(a.isPinned) || compareConversationsBySort(a, b, sortBy),
+    );
 
     return {
       conversations,
