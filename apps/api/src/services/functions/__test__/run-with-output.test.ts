@@ -91,18 +91,26 @@ describe("runFunctionWithOutput", () => {
 
     const result = await runFunctionWithOutput(functionName, formData, createRequest());
 
-    expect(createOutputSpy).toHaveBeenCalledWith({
-      createdByUserId: 42,
-      projectId: undefined,
-      capabilityId: functionName,
-      groupId: "async-123",
-      kind: "dynamic_app_response",
-      title: `App output: ${functionName}`,
-      content: {
-        formData,
-        result: functionResult,
-      },
-    });
+    expect(createOutputSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        createdByUserId: 42,
+        projectId: undefined,
+        capabilityId: functionName,
+        groupId: "async-123",
+        kind: "dynamic_app_response",
+        title: `App output: ${functionName}`,
+        content: {
+          formData,
+          result: functionResult,
+        },
+        provenance: expect.objectContaining({
+          origin: "generated",
+          completeness: "partial",
+          run: null,
+          model: null,
+        }),
+      }),
+    );
     expect(updateOutputSpy).toHaveBeenCalledWith(
       "response-123",
       expect.objectContaining({

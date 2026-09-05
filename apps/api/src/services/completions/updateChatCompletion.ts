@@ -30,6 +30,7 @@ export const handleUpdateChatCompletion = async (
   const conversationManager = ConversationManager.getInstance({
     database: context.database,
     user,
+    env: context.env,
   });
 
   const { messages, parent_conversation_id, parent_message_id, ...conversationUpdates } = updates;
@@ -41,9 +42,17 @@ export const handleUpdateChatCompletion = async (
   if (messages) {
     await withThreadLock(
       { env: context.env, conversationId: completion_id, kind: "edit_messages" },
-      async () => {
+      async (lease) => {
+        const guardedConversationManager = ConversationManager.getInstance({
+          database: context.database,
+          repositories: context.repositories,
+          user,
+          env: context.env,
+          writeFence: lease,
+        });
+
         if (parent_conversation_id && parent_message_id) {
-          const parentConversation = await conversationManager.getConversationDetails(
+          const parentConversation = await guardedConversationManager.getConversationDetails(
             parent_conversation_id,
             { includeArchived: false, includeSnapshots: true },
           );
@@ -70,7 +79,7 @@ export const handleUpdateChatCompletion = async (
             );
           }
 
-          await conversationManager.replaceMessages(
+          await guardedConversationManager.replaceMessages(
             completion_id,
             cloneMessagesForBranch(branchSourceMessages, completion_id),
             {
@@ -87,7 +96,7 @@ export const handleUpdateChatCompletion = async (
             );
           }
 
-          await conversationManager.replaceMessages(completion_id, messages);
+          await guardedConversationManager.replaceMessages(completion_id, messages);
         }
       },
     );

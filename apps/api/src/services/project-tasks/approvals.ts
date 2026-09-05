@@ -9,6 +9,7 @@ import {
 import { buildMessageParts } from "~/lib/chat/messages/parts";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
+import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
 import { withThreadLock } from "~/services/conversations/coordinator/client";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -16,6 +17,7 @@ import { generateId } from "~/utils/id";
 import { isRecord } from "~/utils/objects";
 
 import { readInteractionMessageData } from "./interaction-messages";
+import { isProjectTaskInteractionExpired } from "./interaction-recovery";
 
 interface PendingApprovalMessage {
   messageId: string;
@@ -48,7 +50,13 @@ async function getPendingApprovalMessage(
     data && isRecord(data.approval) ? data.approval : undefined,
   );
 
-  if (!message || !data || !approval.success || typeof message.id !== "string") {
+  if (
+    !message ||
+    !data ||
+    !approval.success ||
+    typeof message.id !== "string" ||
+    isProjectTaskInteractionExpired(message)
+  ) {
     return null;
   }
 
@@ -85,7 +93,9 @@ export async function resolveProjectTaskToolApproval(params: {
     );
   }
 
-  const pending = await getPendingApprovalMessage(context, task.conversationId);
+  const conversationId = task.conversationId;
+
+  const pending = await getPendingApprovalMessage(context, conversationId);
 
   if (!pending || pending.approval.interactionId !== input.interactionId) {
     throw new AssistantError(
@@ -95,61 +105,75 @@ export async function resolveProjectTaskToolApproval(params: {
     );
   }
 
-  const resolvedAt = new Date().toISOString();
-  const resolvedData = {
-    ...pending.data,
-    resolved: true,
-    resolvedAt,
-    resolution: input.resolution,
-    approval: {
-      ...pending.approval,
-      status: input.resolution,
-    },
-    humanInTheLoop: {
-      type: "approval",
-      status: "resolved",
-      interactionId: input.interactionId,
-      toolName: pending.approval.toolName,
-      resolution: input.resolution,
-      requires_user_action: false,
-    },
-  };
-  const resolvedMessage: Message = {
-    role: "tool",
-    name: pending.approval.toolName,
-    content: input.resolution === "approved" ? "Tool access approved." : "Tool access rejected.",
-    status: "resolved",
-    data: resolvedData,
-    tool_call_id: pending.toolCallId,
-    timestamp: pending.timestamp,
-  };
-
-  await context.repositories.messages.updateMessage(task.conversationId, pending.messageId, {
-    content: resolvedMessage.content,
-    status: resolvedMessage.status,
-    data: resolvedData,
-    parts: buildMessageParts(resolvedMessage),
-  });
-
   const user = context.requireUser();
-  const conversationManager = ConversationManager.getInstance({
-    database: context.database,
-    repositories: context.repositories,
-    user,
-    env: context.env,
-    store: true,
-  });
 
   await withThreadLock(
-    { env: context.env, conversationId: task.conversationId, kind: "human_response" },
-    () =>
-      conversationManager.add(task.conversationId, {
+    { env: context.env, conversationId, kind: "human_response" },
+    async (lease) => {
+      const currentPending = await getPendingApprovalMessage(context, conversationId);
+
+      if (!currentPending || currentPending.approval.interactionId !== input.interactionId) {
+        throw new AssistantError(
+          "This approval is no longer pending. Refresh the conversation.",
+          ErrorType.CONFLICT_ERROR,
+          409,
+        );
+      }
+
+      const resolvedData = {
+        ...currentPending.data,
+        resolved: true,
+        resolvedAt: new Date().toISOString(),
+        resolution: input.resolution,
+        approval: {
+          ...currentPending.approval,
+          status: input.resolution,
+        },
+        humanInTheLoop: {
+          type: "approval",
+          status: "resolved",
+          interactionId: input.interactionId,
+          toolName: currentPending.approval.toolName,
+          resolution: input.resolution,
+          requires_user_action: false,
+        },
+      };
+      const resolvedMessage: Message = {
+        role: "tool",
+        name: currentPending.approval.toolName,
+        content:
+          input.resolution === "approved" ? "Tool access approved." : "Tool access rejected.",
+        status: "resolved",
+        data: resolvedData,
+        tool_call_id: currentPending.toolCallId,
+        timestamp: currentPending.timestamp,
+      };
+
+      await lease.assertOwned();
+      await context.repositories.messages.updateMessage(conversationId, currentPending.messageId, {
+        content: resolvedMessage.content,
+        status: resolvedMessage.status,
+        data: resolvedData,
+        parts: buildMessageParts(resolvedMessage),
+      });
+
+      const conversationManager = ConversationManager.getInstance({
+        database: context.database,
+        repositories: context.repositories,
+        user,
+        env: context.env,
+        store: true,
+        runId: task.runId ?? undefined,
+        writeFence: lease,
+      });
+
+      await conversationManager.add(conversationId, {
         id: generateId(),
         role: "user",
         content:
           input.resolution === "approved"
-            ? `Approved access to ${pending.approval.toolName}. Continue the task.`
-            : `Rejected access to ${pending.approval.toolName}. Continue without it.`,
+            ? `Approved access to ${currentPending.approval.toolName}. Continue the task.`
+            : `Rejected access to ${currentPending.approval.toolName}. Continue without it.`,
         data: {
           toolApprovalResponse: {
             interactionId: input.interactionId,
@@ -159,8 +183,19 @@ export async function resolveProjectTaskToolApproval(params: {
         },
         timestamp: Date.now(),
         platform: "web",
-      }),
+      });
+    },
   );
+
+  if (pending.timestamp !== undefined) {
+    recordChatRunOperationalMetric(context.env, {
+      signal: "approval_latency",
+      runId: task.runId ?? undefined,
+      taskId: task.id,
+      outcome: "success",
+      value: Math.max(0, Date.now() - pending.timestamp),
+    });
+  }
 
   return { toolName: pending.approval.toolName, resolution: input.resolution };
 }

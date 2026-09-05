@@ -2,6 +2,7 @@ import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { hydrateConnectorApprovalMessageState } from "~/services/apps/connectors/approval-message-state";
+import { hydrateChatRunUsage } from "~/services/chat-runs/usage";
 import {
   getActiveThreadOperation,
   withThreadLockIfFree,
@@ -12,19 +13,27 @@ import { handleAsyncInvocation } from "./async/handler";
 
 interface GetChatCompletionOptions {
   refreshPending?: boolean;
+  messageLimit?: number;
 }
 
 async function refreshPendingMessages(
   context: ServiceContext,
-  conversationManager: ConversationManager,
   completionId: string,
   messages: Message[],
   user: ReturnType<ServiceContext["requireUser"]>,
 ): Promise<Message[]> {
   const refreshed = await withThreadLockIfFree(
     { env: context.env, conversationId: completionId, kind: "async_result" },
-    () =>
-      Promise.all(
+    (lease) => {
+      const conversationManager = ConversationManager.getInstance({
+        database: context.database,
+        repositories: context.repositories,
+        user,
+        env: context.env,
+        writeFence: lease,
+      });
+
+      return Promise.all(
         messages.map(async (message) => {
           const asyncInvocation = message.data?.asyncInvocation;
 
@@ -41,7 +50,8 @@ async function refreshPendingMessages(
 
           return result.message;
         }),
-      ),
+      );
+    },
   );
 
   return refreshed ?? messages;
@@ -67,29 +77,34 @@ export const handleGetChatCompletion = async (
     env: context.env,
     conversationId: completion_id,
   });
+  const latestRunRecord =
+    await context.repositories.conversationRuns.getLatestForConversation(completion_id);
+  const [latestRun] = latestRunRecord
+    ? await hydrateChatRunUsage(context.repositories, [latestRunRecord])
+    : [null];
 
   const conversation = await conversationManager.getConversationDetails(completion_id, {
     includeArchived: true,
     includeSnapshots: false,
+    messageLimit: options.messageLimit,
   });
 
   if (!Array.isArray(conversation.messages)) {
-    return conversation;
+    return {
+      ...conversation,
+      active_operation: activeOperation,
+      latest_run: latestRun,
+    };
   }
 
   const refreshedMessages = options.refreshPending
-    ? await refreshPendingMessages(
-        context,
-        conversationManager,
-        completion_id,
-        conversation.messages,
-        user,
-      )
+    ? await refreshPendingMessages(context, completion_id, conversation.messages, user)
     : conversation.messages;
 
   return {
     ...conversation,
     active_operation: activeOperation,
+    latest_run: latestRun,
     messages: await hydrateConnectorApprovalMessageState({
       messages: refreshedMessages,
       userId: user.id,

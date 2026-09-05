@@ -19,6 +19,7 @@ import {
 } from "./creditActor";
 import { resolveCreditState } from "./creditState";
 import { creditsAreEnforced, resolvePlanCreditAllowance } from "./planSeed";
+import { finishUsageReservation } from "./reservations";
 
 const logger = getLogger({ prefix: "lib/usage/credits" });
 
@@ -149,7 +150,7 @@ export async function readCreditPosition(
 
 export interface TurnReservation {
   creditMicros: number;
-  release(): Promise<void>;
+  release(outcome?: "settled" | "released"): Promise<void>;
 }
 
 export type TurnAdmission =
@@ -158,6 +159,12 @@ export type TurnAdmission =
 
 export interface AdmitTurnParams extends ReadCreditPositionParams {
   estimatedCreditMicros: number;
+  durableReservation?: {
+    kind: "chat_run";
+    refId: string;
+    userId: number;
+    expiresAt?: string | null;
+  };
 }
 
 function createTurnReservation(
@@ -191,6 +198,27 @@ function createTurnReservation(
   };
 }
 
+function createDurableTurnReservation(
+  repositories: RepositoryManager,
+  kind: "chat_run",
+  refId: string,
+  creditMicros: number,
+): TurnReservation {
+  let finished = false;
+
+  return {
+    creditMicros,
+    release: async (outcome = "released") => {
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+      await finishUsageReservation({ repositories, kind, refId, outcome });
+    },
+  };
+}
+
 export async function admitTurn(params: AdmitTurnParams): Promise<TurnAdmission> {
   const position = await readCreditPosition(params);
 
@@ -208,6 +236,37 @@ export async function admitTurn(params: AdmitTurnParams): Promise<TurnAdmission>
 
   if (params.estimatedCreditMicros <= 0) {
     return { admitted: true, position, reservation: null };
+  }
+
+  if (params.durableReservation) {
+    const durable = params.durableReservation;
+    const created = await params.repositories.usageReservations.createUserReservationWithBalance({
+      id: `${durable.kind}:${durable.refId}`,
+      userId: durable.userId,
+      period: position.period,
+      kind: durable.kind,
+      refId: durable.refId,
+      creditMicros: params.estimatedCreditMicros,
+      expiresAt: durable.expiresAt ?? null,
+      planId: position.planId,
+      includedCreditMicros: position.includedCreditMicros,
+      graceCreditMicros: position.graceCreditMicros,
+    });
+
+    if (!created) {
+      return { admitted: false, position };
+    }
+
+    return {
+      admitted: true,
+      position,
+      reservation: createDurableTurnReservation(
+        params.repositories,
+        durable.kind,
+        durable.refId,
+        params.estimatedCreditMicros,
+      ),
+    };
   }
 
   await applyActorCreditDeltas({

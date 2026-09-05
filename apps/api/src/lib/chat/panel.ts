@@ -50,6 +50,8 @@ export interface RunPanelParams {
   env: IEnv;
   completionId: string;
   usageScopeId: string;
+  runId?: string;
+  runAttempt?: number;
   user?: IUser;
   model?: string;
   provider?: string;
@@ -204,6 +206,8 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
       completionId: params.completionId,
       messageId: `panel:${params.usageScopeId}:${currentInvocation}`,
       conversationId: params.completionId,
+      runId: params.runId ?? null,
+      runAttempt: params.runAttempt ?? null,
     });
 
     if (!result.response) {

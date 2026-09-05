@@ -9,7 +9,10 @@ export class SseLineBuffer {
 
     this.pending = lines.pop() ?? "";
 
-    if (this.pending.length > this.maxEventLength) {
+    if (
+      this.pending.length > this.maxEventLength ||
+      lines.some((line) => line.length > this.maxEventLength)
+    ) {
       throw new Error(`Provider stream event exceeded ${this.maxEventLength} characters`);
     }
 

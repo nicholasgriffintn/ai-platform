@@ -7,6 +7,7 @@ import {
   type RecipeChatRequestOptions,
 } from "./apps";
 import { conversationChannelRequestOptionsSchema } from "./chat-mode";
+import { chatRunCommandIdSchema, chatRunCommandReceiptSchema, chatRunIdSchema } from "./chat-runs";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { sandboxRequestOptionsSchema } from "./sandbox";
@@ -103,6 +104,7 @@ export const chatMessageContentPartSchema = z
     tool_use_id: z.string().optional().describe("Tool use identifier."),
     id: z.string().optional().describe("Content part identifier."),
     name: z.string().optional().describe("Content part name."),
+    source_id: z.string().min(1).optional().describe("Durable source identifier."),
     content: z.string().optional().describe("Nested content payload."),
     input: z.union([z.string(), recordSchema]).optional().describe("Tool input payload."),
     cache_control: z
@@ -573,10 +575,20 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   safety_identifier: z.string().optional().describe("Provider safety identifier."),
   store: z.boolean().optional().describe("Whether to store the conversation and response."),
   completion_id: z.string().optional().describe("Existing or new completion ID."),
+  command_id: chatRunCommandIdSchema
+    .optional()
+    .describe("Idempotency key for accepting this user command."),
+  run_id: chatRunIdSchema.optional().describe("Existing waiting run resumed by this command."),
   platform: z.string().min(1).optional().describe("Client platform sending the request."),
   options: chatRequestOptionsSchema
     .optional()
     .describe("Grouped feature settings that are not model generation controls."),
+});
+
+export const chatRunCommandInputSchema = chatCompletionsRequestFieldsSchema.omit({
+  command_id: true,
+  run_id: true,
+  stream: true,
 });
 
 const retiredChatRetrievalFields = {
@@ -760,6 +772,9 @@ export const createChatCompletionsResponseSchema = z
       .describe("Token usage for the response."),
     post_processing: chatPostProcessingSchema.optional().describe("Post-processing metadata."),
     usage_limits: recordSchema.optional().describe("Usage limit metadata."),
+    run: chatRunCommandReceiptSchema
+      .optional()
+      .describe("Persisted acknowledgement for the accepted run command."),
   })
   .describe("Chat completion response.");
 

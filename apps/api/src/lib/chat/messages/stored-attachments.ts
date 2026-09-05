@@ -7,6 +7,7 @@ function toAttachmentContent(value: unknown): MessageContent | null {
   }
 
   const name = typeof value.name === "string" ? value.name : undefined;
+  const sourceId = typeof value.sourceId === "string" ? value.sourceId : undefined;
 
   switch (value.type) {
     case "image":
@@ -16,6 +17,7 @@ function toAttachmentContent(value: unknown): MessageContent | null {
 
       return {
         type: "image_url",
+        ...(sourceId ? { source_id: sourceId } : {}),
         image_url: {
           url: value.url,
           ...(value.detail === "low" || value.detail === "high" ? { detail: value.detail } : {}),
@@ -28,6 +30,7 @@ function toAttachmentContent(value: unknown): MessageContent | null {
 
       return {
         type: "document_url",
+        ...(sourceId ? { source_id: sourceId } : {}),
         document_url: { url: value.url, ...(name ? { name } : {}) },
       };
     case "markdown_document":
@@ -37,6 +40,7 @@ function toAttachmentContent(value: unknown): MessageContent | null {
 
       return {
         type: "markdown_document",
+        ...(sourceId ? { source_id: sourceId } : {}),
         markdown_document: { markdown: value.markdown, ...(name ? { name } : {}) },
       };
     case "audio":
@@ -44,13 +48,21 @@ function toAttachmentContent(value: unknown): MessageContent | null {
         return null;
       }
 
-      return { type: "audio_url", audio_url: { url: value.url } };
+      return {
+        type: "audio_url",
+        ...(sourceId ? { source_id: sourceId } : {}),
+        audio_url: { url: value.url },
+      };
     case "video":
       if (typeof value.url !== "string") {
         return null;
       }
 
-      return { type: "video_url", video_url: { url: value.url } };
+      return {
+        type: "video_url",
+        ...(sourceId ? { source_id: sourceId } : {}),
+        video_url: { url: value.url },
+      };
     default:
       return null;
   }

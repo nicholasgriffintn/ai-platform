@@ -18,6 +18,8 @@ import { RepositoryManager } from "~/repositories";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { resolveModelReadiness } from "./readiness";
+
 function includeModelIds(models: ModelConfig): ModelConfig {
   const modelsWithIds: ModelConfig = {};
 
@@ -51,7 +53,7 @@ export function listModelCatalogue() {
 /**
  * List all models available to the user.
  */
-export async function listModels(env: IEnv, user?: IUser) {
+export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> {
   const allModels = getModels({
     shouldUseCache: false,
     excludeModalities: [...CATALOGUE_EXCLUDED_MODALITIES],
@@ -65,14 +67,21 @@ export async function listModels(env: IEnv, user?: IUser) {
   const defaultModel = tryResolveDefaultChatModel(filteredModels, user)?.id;
 
   return Object.fromEntries(
-    Object.entries(includeModelIds(filteredModels)).map(([id, model]) => [
-      id,
-      {
+    Object.entries(includeModelIds(filteredModels)).map(([id, model]) => {
+      const enrichedModel = {
         ...model,
         isDefault: id === defaultModel,
         isExecutable: executableModelIds.has(id),
-      },
-    ]),
+      };
+
+      return [
+        id,
+        {
+          ...enrichedModel,
+          readiness: resolveModelReadiness(enrichedModel, user),
+        },
+      ];
+    }),
   );
 }
 

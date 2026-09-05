@@ -156,6 +156,75 @@ describe("runAgentLoop", () => {
     expect(result.toolResponses).toHaveLength(1);
   });
 
+  it("rechecks the context budget after a large tool result before the next model call", async () => {
+    const { params, runTurn } = createParams([
+      toolTurn("inspect_repository"),
+      {
+        ...textTurn("Done."),
+        usage: {
+          input_tokens: 432,
+          output_tokens: 2,
+          total_tokens: 434,
+          prompt_tokens: 432,
+          completion_tokens: 2,
+        },
+      },
+    ]);
+    const fullResult = `opening ${"large result ".repeat(1000)} closing constraint`;
+    const onContextSnapshot = vi.fn();
+
+    mocks.handleToolCalls.mockResolvedValueOnce([
+      {
+        id: "tool-result-1",
+        role: "tool",
+        name: "inspect_repository",
+        content: fullResult,
+        status: "success",
+      },
+    ]);
+
+    const result = await runAgentLoop({
+      ...params,
+      contextWindow: 32000,
+      runId: "run-1",
+      runAttempt: 1,
+      onContextSnapshot,
+    });
+
+    expect(runTurn.mock.calls[1][0].request.messages.at(-1)?.content).toContain(
+      "Tool result shortened",
+    );
+    expect(result.toolResponses[0]?.content).toBe(fullResult);
+    expect(onContextSnapshot).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        usage: expect.objectContaining({ inputTokens: 432, source: "reported" }),
+        omissions: expect.arrayContaining([
+          expect.objectContaining({
+            kind: "tool_result",
+            messageId: "tool-result-1",
+            retrievalPath: "/chat/messages/tool-result-1",
+          }),
+        ]),
+      }),
+    );
+  });
+
+  it("stops after an in-flight tool settles without starting another model step", async () => {
+    const { params, runTurn } = createParams([toolTurn("get_weather"), textTurn("Too late")]);
+    let shouldStop = false;
+
+    mocks.handleToolCalls.mockImplementationOnce(async () => {
+      shouldStop = true;
+
+      return [{ role: "tool", name: "get_weather", content: "sunny", status: "success" }];
+    });
+
+    const result = await runAgentLoop({ ...params, shouldStop: () => shouldStop });
+
+    expect(runTurn).toHaveBeenCalledTimes(1);
+    expect(result.response.status).toBe("stopped");
+  });
+
   it("emits semantic activity in model, tool, and response order", async () => {
     const { params, sink } = createParams([
       toolTurn("get_weather", "call-weather"),

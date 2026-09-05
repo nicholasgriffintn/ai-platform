@@ -350,8 +350,10 @@ export const handleToolCalls = async (
           },
         });
 
-        if (result?.status !== "error") {
+        if (result?.status !== "error" || result?.data?.retryable === true) {
           recordToolCallAttempt?.();
+        } else if (result?.data?.outcome === "unknown") {
+          recordDeterministicFailure?.();
         }
       } catch (functionError: any) {
         logger.error(`Function execution error for ${functionName}:`, functionError);

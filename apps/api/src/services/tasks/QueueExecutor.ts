@@ -5,6 +5,7 @@ import {
   REALTIME_RECONCILIATION_TASK_TYPE,
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   STRIPE_USAGE_SYNC_TASK_TYPE,
+  TASK_NOTIFICATION_DELIVERY_TASK_TYPE,
   USAGE_ROLLUP_TASK_TYPE,
   type TaskType,
 } from "@ngriffin_uk/polychat-schemas";
@@ -13,6 +14,7 @@ import { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
+import { TaskNotificationDeliveryHandler } from "../task-notifications/delivery";
 import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
 import { ArtificialAnalysisScoringHandler } from "./handlers/ArtificialAnalysisScoringHandler";
 import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandler";
@@ -30,6 +32,7 @@ import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler"
 import { StripeUsageSyncHandler } from "./handlers/StripeUsageSyncHandler";
 import { TrainingQualityHandler } from "./handlers/TrainingQualityHandler";
 import { UsageRollupHandler } from "./handlers/UsageRollupHandler";
+import { TaskExecutionLeaseBusyError } from "./task-execution-lease";
 import { TaskExecutor } from "./TaskExecutor";
 import type { TaskHandler } from "./TaskHandler";
 import type { TaskMessage } from "./TaskService";
@@ -56,6 +59,7 @@ export function createTaskHandlers(): Map<TaskType, TaskHandler> {
     [REALTIME_RECONCILIATION_TASK_TYPE, new RealtimeReconciliationHandler()],
     [INFRA_RECONCILIATION_TASK_TYPE, new InfraReconciliationHandler()],
     [STRIPE_USAGE_SYNC_TASK_TYPE, new StripeUsageSyncHandler()],
+    [TASK_NOTIFICATION_DELIVERY_TASK_TYPE, new TaskNotificationDeliveryHandler()],
   ]);
 }
 
@@ -93,7 +97,20 @@ export class QueueExecutor {
         logger.info(`Task ${message.body.taskId} acknowledged`);
       } catch (error) {
         logger.error(`Error processing task ${message.body.taskId}:`, error);
+
+        if (error instanceof TaskExecutionLeaseBusyError) {
+          message.retry({
+            delaySeconds: Math.min(error.delaySeconds, MAX_QUEUE_DELAY_SECONDS),
+          });
+          continue;
+        }
+
         const task = await taskRepository.getTaskById(message.body.taskId);
+
+        if (task?.status === "completed") {
+          message.ack();
+          continue;
+        }
 
         if (!task || task.status === "failed" || task.status === "cancelled") {
           logger.error(`Task ${message.body.taskId} reached terminal state, acknowledging message`);

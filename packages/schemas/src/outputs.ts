@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { outputProvenanceSchema } from "./provenance";
+
 export const outputKindSchema = z
   .string()
   .trim()
@@ -9,6 +11,7 @@ export const outputKindSchema = z
 
 export const outputStatusSchema = z.enum(["pending", "ready", "failed", "archived"]);
 export const outputSensitivitySchema = z.enum(["personal", "internal", "confidential"]);
+export const outputRevisionOperationSchema = z.enum(["created", "updated", "restored"]);
 
 export const outputFileSchema = z
   .object({
@@ -35,12 +38,13 @@ export const outputSchema = z
     content: z.record(z.string(), z.unknown()),
     file: outputFileSchema.nullable(),
     revision: z.number().int().positive(),
+    provenance: outputProvenanceSchema,
     createdAt: z.string(),
     updatedAt: z.string().nullable(),
   })
   .strict();
 
-export const outputSummarySchema = outputSchema.omit({ content: true });
+export const outputSummarySchema = outputSchema.omit({ content: true, provenance: true });
 
 const outputScopeFields = {
   projectId: z.string().min(1).nullable().optional(),
@@ -114,13 +118,37 @@ export const outputRevisionSchema = z
   .object({
     outputId: z.string().min(1),
     revision: z.number().int().positive(),
+    parentRevision: z.number().int().positive().nullable(),
     title: z.string().min(1),
     status: outputStatusSchema,
     sensitivity: outputSensitivitySchema,
     content: z.record(z.string(), z.unknown()),
     createdByUserId: z.number().int().positive(),
     createdAt: z.string(),
+    operation: outputRevisionOperationSchema,
+    restoredFromRevision: z.number().int().positive().nullable(),
+    provenance: outputProvenanceSchema,
   })
+  .strict();
+
+export const outputRestoreCapabilitySchema = z
+  .object({
+    supported: z.boolean(),
+    reason: z.string().min(1).nullable(),
+    fields: z.array(z.enum(["title", "content"])).max(2),
+  })
+  .strict();
+
+export const outputHistoryResponseSchema = z
+  .object({
+    current: outputRevisionSchema,
+    revisions: z.array(outputRevisionSchema),
+    restore: outputRestoreCapabilitySchema,
+  })
+  .strict();
+
+export const restoreOutputRevisionSchema = z
+  .object({ expectedRevision: z.number().int().positive() })
   .strict();
 
 export const createOutputShareSchema = z
@@ -156,4 +184,8 @@ export type SharedOutput = z.infer<typeof sharedOutputSchema>;
 export type CreateOutputInput = z.infer<typeof createOutputSchema>;
 export type UpdateOutputInput = z.infer<typeof updateOutputSchema>;
 export type OutputRevision = z.infer<typeof outputRevisionSchema>;
+export type OutputRevisionOperation = z.infer<typeof outputRevisionOperationSchema>;
+export type OutputRestoreCapability = z.infer<typeof outputRestoreCapabilitySchema>;
+export type OutputHistoryResponse = z.infer<typeof outputHistoryResponseSchema>;
+export type RestoreOutputRevisionInput = z.infer<typeof restoreOutputRevisionSchema>;
 export type OutputShare = z.infer<typeof outputShareSchema>;

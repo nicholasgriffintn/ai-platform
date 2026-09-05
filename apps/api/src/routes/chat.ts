@@ -36,11 +36,17 @@ import {
   updateChatCompletionJsonSchema,
   updateChatCompletionParamsSchema,
   errorResponseSchema,
+  chatRunParamsSchema,
+  chatRunCommandParamsSchema,
+  chatRunCommandReceiptResponseSchema,
+  chatRunRecoveryResponseSchema,
+  chatRunReplayQuerySchema,
+  chatRunReplayResponseSchema,
+  chatRunSnapshotResponseSchema,
+  cancelChatRunRequestSchema,
   messageSchema,
-} from "@ngriffin_uk/polychat-schemas";
-import type {
-  ChatCompletionRequestBody,
-  SubmitChatCompletionFeedbackInput,
+  type ChatCompletionRequestBody,
+  type SubmitChatCompletionFeedbackInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { type Context, Hono, type Next } from "hono";
 import z from "zod/v4";
@@ -49,6 +55,10 @@ import {
   countAssistantMessages,
   recordTurnRecoveryAttempt,
 } from "~/lib/chat/streaming/continuity-telemetry";
+import {
+  recoveryTelemetryQueryFields,
+  validateRecoveryTelemetryQuery,
+} from "~/lib/chat/streaming/recovery-telemetry-query";
 import { requireCloudflareExecutionContext } from "~/lib/cloudflare/execution-context";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
@@ -58,6 +68,13 @@ import { sseResponse } from "~/lib/http/streaming";
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { handleCancelChatRun } from "~/services/chat-runs/cancel";
+import { handleReplayChatRunEvents } from "~/services/chat-runs/replay";
+import {
+  handleGetChatRun,
+  handleGetChatRunCommand,
+  handleGetChatRunSnapshot,
+} from "~/services/chat-runs/status";
 import { handleArchiveAllChatCompletions } from "~/services/completions/archiveAllChatCompletions";
 import { handleCancelChatCompletion } from "~/services/completions/cancelChatCompletion";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
@@ -96,7 +113,17 @@ import { registerConversationOrganisationRoutes } from "./chat-organisation";
 const app = new Hono();
 
 const routeLogger = createRouteLogger("chat");
-const chatMessageListQuerySchema = z.object({
+const chatMessageListQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(100).optional().default(50),
+    after: z.string().optional(),
+    before: z.string().optional(),
+  })
+  .refine(({ after, before }) => !(after && before), {
+    message: "Use either after or before, not both",
+  });
+
+const sharedChatMessageListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional().default(50),
   after: z.string().optional(),
 });
@@ -104,30 +131,14 @@ const chatMessageListQuerySchema = z.object({
 const getChatCompletionQuerySchema = z
   .object({
     refresh_pending: z.enum(["true", "false"]).optional().default("false"),
-    recovery_platform: z.enum(["web", "ios"]).optional(),
-    recovery_attempt: z.coerce.number().int().min(1).max(100).optional(),
-    recovery_elapsed_ms: z.coerce.number().int().min(0).max(86_400_000).optional(),
-    recovery_known_assistant_count: z.coerce.number().int().min(0).max(10_000).optional(),
-    recovery_final_attempt: z.enum(["true", "false"]).optional(),
+    message_limit: z.coerce.number().int().min(1).max(100).optional().default(100),
+    ...recoveryTelemetryQueryFields,
   })
-  .superRefine((query, context) => {
-    const recoveryFields = [
-      query.recovery_platform,
-      query.recovery_attempt,
-      query.recovery_elapsed_ms,
-      query.recovery_known_assistant_count,
-      query.recovery_final_attempt,
-    ];
-    const providedCount = recoveryFields.filter((value) => value !== undefined).length;
+  .superRefine(validateRecoveryTelemetryQuery);
 
-    if (providedCount > 0 && providedCount !== recoveryFields.length) {
-      context.addIssue({
-        code: "custom",
-        message: "Recovery telemetry fields must be provided together",
-      });
-    }
-  });
-
+const chatRunRecoveryQuerySchema = z
+  .object(recoveryTelemetryQueryFields)
+  .superRefine(validateRecoveryTelemetryQuery);
 const chatCompletionsListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional().default(25),
   page: z.coerce.number().int().min(1).optional().default(1),
@@ -161,7 +172,7 @@ addRoute(app, "post", "/completions", {
   responses: {
     200: {
       description: "Chat completion response with model generation",
-      schema: chatCompletionResponseSchema,
+      schema: z.union([chatCompletionResponseSchema, chatRunCommandReceiptResponseSchema]),
     },
     400: {
       description: "Bad request or validation error",
@@ -424,6 +435,7 @@ addRoute(app, "get", "/completions/:completion_id", {
 
       const data = await handleGetChatCompletion(serviceContext, completion_id, {
         refreshPending,
+        messageLimit: query.message_limit,
       });
 
       if (
@@ -452,6 +464,120 @@ addRoute(app, "get", "/completions/:completion_id", {
 
       return ResponseFactory.success(context, data);
     })(raw),
+});
+
+addRoute(app, "get", "/runs/:run_id", {
+  auth: true,
+  tags: ["chat"],
+  summary: "Get chat run status",
+  description: "Returns the authoritative lifecycle state for an authorised stored chat run.",
+  paramSchema: chatRunParamsSchema,
+  querySchema: chatRunRecoveryQuerySchema,
+  responses: {
+    200: {
+      description: "Chat run status and stored messages",
+      schema: chatRunRecoveryResponseSchema,
+    },
+    404: { description: "Run not found", schema: errorResponseSchema },
+  },
+  handler: ({ raw }) =>
+    (async (context: Context) => {
+      const { run_id } = context.req.valid("param" as never) as z.infer<typeof chatRunParamsSchema>;
+      const query = context.req.valid("query" as never) as z.infer<
+        typeof chatRunRecoveryQuerySchema
+      >;
+      const serviceContext = getServiceContext(context);
+      const data = await handleGetChatRun(serviceContext, run_id);
+
+      if (
+        query.recovery_platform &&
+        query.recovery_attempt !== undefined &&
+        query.recovery_elapsed_ms !== undefined &&
+        query.recovery_known_assistant_count !== undefined &&
+        query.recovery_final_attempt
+      ) {
+        recordTurnRecoveryAttempt(
+          {
+            env: serviceContext.env,
+            executionCtx: requireCloudflareExecutionContext(context.executionCtx),
+            traceId: run_id,
+          },
+          {
+            platform: query.recovery_platform,
+            attempt: query.recovery_attempt,
+            elapsedMs: query.recovery_elapsed_ms,
+            knownAssistantCount: query.recovery_known_assistant_count,
+            finalAttempt: query.recovery_final_attempt === "true",
+          },
+          countAssistantMessages(data.messages),
+        );
+      }
+
+      return ResponseFactory.success(context, data);
+    })(raw),
+});
+
+addRoute(app, "get", "/run-commands/:command_id", {
+  auth: true,
+  tags: ["chat"],
+  summary: "Resolve an accepted chat command",
+  paramSchema: chatRunCommandParamsSchema,
+  responses: {
+    200: { description: "Accepted chat command", schema: chatRunCommandReceiptResponseSchema },
+    404: { description: "Command not found", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params }) =>
+    handleGetChatRunCommand(serviceContext, params.command_id),
+});
+
+addRoute(app, "get", "/runs/:run_id/snapshot", {
+  auth: true,
+  tags: ["chat"],
+  summary: "Get an authoritative chat run snapshot",
+  paramSchema: chatRunParamsSchema,
+  responses: {
+    200: {
+      description: "Chat run snapshot at a replay cursor",
+      schema: chatRunSnapshotResponseSchema,
+    },
+    404: { description: "Run not found", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params }) => handleGetChatRunSnapshot(serviceContext, params.run_id),
+});
+
+addRoute(app, "get", "/runs/:run_id/events", {
+  auth: true,
+  tags: ["chat"],
+  summary: "Replay ordered chat run events",
+  paramSchema: chatRunParamsSchema,
+  querySchema: chatRunReplayQuerySchema,
+  responses: {
+    200: {
+      description: "Ordered run events or an explicit snapshot reset",
+      schema: chatRunReplayResponseSchema,
+    },
+    404: { description: "Run not found", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params, query }) =>
+    handleReplayChatRunEvents(serviceContext, params.run_id, query),
+});
+
+addRoute(app, "post", "/runs/:run_id/cancel", {
+  auth: true,
+  tags: ["chat"],
+  summary: "Cancel an exact chat run attempt",
+  paramSchema: chatRunParamsSchema,
+  bodySchema: cancelChatRunRequestSchema,
+  responses: {
+    200: {
+      description: "Cancellation command accepted",
+      schema: chatRunCommandReceiptResponseSchema,
+    },
+    404: { description: "Run not found", schema: errorResponseSchema },
+    409: { description: "Run attempt changed", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params, body }) =>
+    handleCancelChatRun(serviceContext, params.run_id, body),
 });
 
 addRoute(app, "get", "/completions/:completion_id/branches", {
@@ -489,7 +615,7 @@ addRoute(app, "get", "/completions/:completion_id/messages", {
       const { completion_id } = context.req.valid("param" as never) as {
         completion_id: string;
       };
-      const { limit, after } = context.req.valid("query" as never) as z.infer<
+      const { limit, after, before } = context.req.valid("query" as never) as z.infer<
         typeof chatMessageListQuerySchema
       >;
 
@@ -497,17 +623,21 @@ addRoute(app, "get", "/completions/:completion_id/messages", {
 
       const serviceContext = getServiceContext(context);
 
-      const { messages, conversation_id } = await handleGetChatMessages(
-        serviceContext,
-        anonymousUser,
-        completion_id,
-        limit,
-        after,
-      );
+      const { messages, conversation_id, has_more, oldest_message_id } =
+        await handleGetChatMessages(
+          serviceContext,
+          anonymousUser,
+          completion_id,
+          limit,
+          after,
+          before,
+        );
 
       return ResponseFactory.success(context, {
         messages,
         conversation_id,
+        has_more,
+        oldest_message_id,
       });
     })(raw),
 });
@@ -1026,7 +1156,7 @@ addRoute(app, "get", "/shared/:share_id", {
   summary: "Access a shared conversation",
   description: "Get messages from a publicly shared conversation using its share ID",
   paramSchema: getSharedConversationParamsSchema,
-  querySchema: chatMessageListQuerySchema,
+  querySchema: sharedChatMessageListQuerySchema,
   responses: {
     200: {
       description: "Shared conversation messages",
@@ -1050,7 +1180,7 @@ addRoute(app, "get", "/shared/:share_id", {
         share_id: string;
       };
       const { limit, after } = context.req.valid("query" as never) as z.infer<
-        typeof chatMessageListQuerySchema
+        typeof sharedChatMessageListQuerySchema
       >;
 
       const serviceContext = getServiceContext(context);

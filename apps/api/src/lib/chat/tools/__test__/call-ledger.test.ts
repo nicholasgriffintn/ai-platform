@@ -80,6 +80,52 @@ describe("repeated tool call guard", () => {
     expect(mocks.handleFunctions).toHaveBeenCalledTimes(2);
   });
 
+  it("blocks a repeated external write when its outcome is unknown", async () => {
+    mocks.resolveToolRepeatLimit.mockReturnValue(2);
+    mocks.handleFunctions.mockResolvedValue({
+      status: "error",
+      content: "The write may have completed.",
+      data: { outcome: "unknown", retryable: false },
+    });
+    const ledger = createToolCallLedger();
+
+    const [first] = await run(
+      [toolCall("use_recipe_connector", { operation: "create_item" }, "call-1")],
+      ledger,
+    );
+    const [second] = await run(
+      [toolCall("use_recipe_connector", { operation: "create_item" }, "call-2")],
+      ledger,
+    );
+
+    expect(first.data).toMatchObject({ outcome: "unknown", retryable: false });
+    expect(second.data.errorCode).toBe("REPEATED_TOOL_CALL");
+    expect(mocks.handleFunctions).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows one exact repeat for a retryable external write and then stops", async () => {
+    mocks.resolveToolRepeatLimit.mockReturnValue(2);
+    mocks.handleFunctions.mockResolvedValue({
+      status: "error",
+      content: "The idempotent write outcome is unknown.",
+      data: { outcome: "unknown", retryable: true },
+    });
+    const ledger = createToolCallLedger();
+    const statuses: string[] = [];
+
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      const [result] = await run(
+        [toolCall("use_recipe_connector", { operation: "set_item" }, `call-${attempt}`)],
+        ledger,
+      );
+
+      statuses.push(result.data.errorCode ?? result.status);
+    }
+
+    expect(statuses).toEqual(["error", "error", "REPEATED_TOOL_CALL"]);
+    expect(mocks.handleFunctions).toHaveBeenCalledTimes(2);
+  });
+
   it("spends the repeat budget on deterministic argument failures", async () => {
     mocks.resolveToolRepeatLimit.mockReturnValue(1);
     const ledger = createToolCallLedger();

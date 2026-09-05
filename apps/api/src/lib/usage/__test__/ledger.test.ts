@@ -133,6 +133,13 @@ describe("buildUsageEventRow", () => {
 
     expect(JSON.parse(row.raw ?? "null")).toEqual(raw);
   });
+
+  it("preserves the exact run and attempt across queued ledger rollups", () => {
+    const row = buildUsageEventRow(draft({ runId: "run-1", runAttempt: 2 }));
+
+    expect(row.run_id).toBe("run-1");
+    expect(row.run_attempt).toBe(2);
+  });
 });
 
 describe("applyUsageRollup", () => {

@@ -40,19 +40,26 @@ function buildConnectorToolError(params: {
   error: AssistantError;
   savedConfiguration?: Record<string, unknown>;
 }) {
-  const recoverable = params.error.type === ErrorType.PARAMS_ERROR;
+  const outcome = params.error.context?.outcome;
+  const retryable = params.error.context?.retryable === true;
+  const recoverable = params.error.type === ErrorType.PARAMS_ERROR || retryable;
+  const requiresUserAction = outcome === "unknown" && !retryable;
 
   return {
     status: "error",
     name: "use_recipe_connector",
-    content: recoverable
-      ? `${params.error.message}. Retry use_recipe_connector with corrected params. If this is a recipe chat, use the savedConfiguration values from this tool result as defaults.`
-      : params.error.message,
+    content:
+      params.error.type === ErrorType.PARAMS_ERROR
+        ? `${params.error.message}. Retry use_recipe_connector with corrected params. If this is a recipe chat, use the savedConfiguration values from this tool result as defaults.`
+        : params.error.message,
     data: {
       provider: params.provider,
       operation: params.operation,
       errorType: params.error.type,
       statusCode: params.error.statusCode,
+      ...(outcome === "unknown" || outcome === "not_applied"
+        ? { outcome, retryable, requiresUserAction }
+        : {}),
       ...(recoverable
         ? {
             recoverable: true,

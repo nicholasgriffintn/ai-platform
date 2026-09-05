@@ -1,5 +1,7 @@
+import { buildAppendRunEventStatements } from "~/lib/chat-runs/event-statements";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { nonEmptyToolCallsOrNull, serialiseToolCallArguments } from "~/utils/toolCalls";
 
 import { BaseRepository } from "./BaseRepository";
@@ -7,6 +9,7 @@ import { BaseRepository } from "./BaseRepository";
 const MESSAGE_INSERT_COLUMNS = [
   "id",
   "conversation_id",
+  "run_id",
   "parent_message_id",
   "role",
   "content",
@@ -63,8 +66,8 @@ export class MessageRepository extends BaseRepository {
 			${columns}, created_at, updated_at
 		) VALUES (${placeholders}, datetime('now'), datetime('now'))`;
 
-    return messages.map((message) =>
-      database
+    return messages.flatMap((message) => {
+      const insert = database
         .prepare(insertSql)
         .bind(
           ...this.buildMessageValues(
@@ -74,8 +77,30 @@ export class MessageRepository extends BaseRepository {
             message.content,
             message.data,
           ),
-        ),
-    );
+        );
+      const runId = message.data?.run_id;
+
+      if (!runId) {
+        return [insert];
+      }
+
+      const occurredAt = new Date().toISOString();
+
+      return [
+        insert,
+        ...buildAppendRunEventStatements(database, {
+          id: `event_${generateId()}`,
+          runId,
+          type: "message.created",
+          occurredAt,
+          data: {
+            messageId: message.id,
+            role: message.role,
+            status: message.data?.status ?? null,
+          },
+        }),
+      ];
+    });
   }
 
   public async createMessagesAndUpdateConversation(
@@ -192,8 +217,10 @@ export class MessageRepository extends BaseRepository {
 
     const columns = MESSAGE_INSERT_COLUMNS.join(", ");
     const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
-    const updateClause = MESSAGE_UPSERT_UPDATE_COLUMNS.map(
-      (column) => `${column} = excluded.${column}`,
+    const updateClause = MESSAGE_UPSERT_UPDATE_COLUMNS.map((column) =>
+      column === "run_id"
+        ? "run_id = COALESCE(excluded.run_id, message.run_id)"
+        : `${column} = excluded.${column}`,
     ).join(", ");
     const upsertSql = `INSERT INTO message (
          ${columns},
@@ -274,6 +301,7 @@ export class MessageRepository extends BaseRepository {
     return [
       messageId,
       conversationId,
+      messageData.run_id || null,
       messageData.parent_message_id || null,
       role,
       contentStr,
@@ -305,7 +333,7 @@ export class MessageRepository extends BaseRepository {
     const columns = MESSAGE_INSERT_COLUMNS.join(", ");
     const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
 
-    const result = this.runQuery<Record<string, unknown>>(
+    const insert = this.env.DB.prepare(
       `INSERT INTO message (
          ${columns},
          created_at,
@@ -313,11 +341,24 @@ export class MessageRepository extends BaseRepository {
        )
        VALUES (${placeholders}, datetime('now'), datetime('now'))
        RETURNING *`,
-      this.buildMessageValues(messageId, conversationId, role, content, messageData),
-      true,
-    );
+    ).bind(...this.buildMessageValues(messageId, conversationId, role, content, messageData));
+    const statements = [insert];
 
-    return result;
+    if (messageData.run_id) {
+      statements.push(
+        ...buildAppendRunEventStatements(this.env.DB, {
+          id: `event_${generateId()}`,
+          runId: messageData.run_id,
+          type: "message.created",
+          occurredAt: new Date().toISOString(),
+          data: { messageId, role, status: messageData.status ?? null },
+        }),
+      );
+    }
+
+    const [result] = await this.env.DB.batch(statements);
+
+    return (result.results[0] as Record<string, unknown> | undefined) ?? null;
   }
 
   public async getMessage(messageId: string): Promise<Record<string, unknown> | null> {
@@ -352,6 +393,24 @@ export class MessageRepository extends BaseRepository {
        ORDER BY ${MESSAGE_ORDER_BY_DESC}
        LIMIT 1`,
       [conversationId, ...(toolNames ?? [])],
+      true,
+    );
+  }
+
+  public async getLatestProjectTaskInteractionMessage(
+    conversationId: string,
+  ): Promise<Record<string, unknown> | null> {
+    return this.runQuery<Record<string, unknown>>(
+      `SELECT * FROM message
+       WHERE conversation_id = ?
+         AND role = 'tool'
+         AND is_archived = 0
+         AND json_valid(data)
+         AND json_extract(data, '$.humanInTheLoop.type') IN ('question', 'approval')
+         AND json_extract(data, '$.humanInTheLoop.interactionId') IS NOT NULL
+       ORDER BY ${MESSAGE_ORDER_BY_DESC}
+       LIMIT 1`,
+      [conversationId],
       true,
     );
   }
@@ -428,6 +487,76 @@ export class MessageRepository extends BaseRepository {
     return Array.isArray(result) ? result : [];
   }
 
+  public async getConversationMessagesBefore(
+    conversationId: string,
+    limit: number,
+    before?: string,
+    options?: {
+      includeArchived?: boolean;
+    },
+  ): Promise<Record<string, unknown>[]> {
+    const includeArchived = options?.includeArchived ?? false;
+    const archivedClause = includeArchived ? "" : " AND message.is_archived = 0";
+    const params: Array<string | number> = before
+      ? [conversationId, before, conversationId, limit]
+      : [conversationId, limit];
+    const cursorCte = before
+      ? `cursor_message AS (
+          SELECT
+            ${MESSAGE_ORDER_EXPRESSION} AS cursor_order_value,
+            ${MESSAGE_SEQUENCE_EXPRESSION} AS cursor_sequence_value,
+            ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} AS cursor_timestamp_value,
+            created_at AS cursor_created_at,
+            id AS cursor_id
+          FROM message
+          WHERE conversation_id = ? AND id = ?
+        ),`
+      : "";
+    const cursorSource = before ? ", cursor_message" : "";
+    const cursorClause = before
+      ? `AND (
+          ${MESSAGE_ORDER_EXPRESSION} < cursor_order_value
+          OR (
+            ${MESSAGE_ORDER_EXPRESSION} = cursor_order_value
+            AND ${MESSAGE_SEQUENCE_EXPRESSION} < cursor_sequence_value
+          )
+          OR (
+            ${MESSAGE_ORDER_EXPRESSION} = cursor_order_value
+            AND ${MESSAGE_SEQUENCE_EXPRESSION} = cursor_sequence_value
+            AND ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} < cursor_timestamp_value
+          )
+          OR (
+            ${MESSAGE_ORDER_EXPRESSION} = cursor_order_value
+            AND ${MESSAGE_SEQUENCE_EXPRESSION} = cursor_sequence_value
+            AND ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} = cursor_timestamp_value
+            AND message.created_at < cursor_created_at
+          )
+          OR (
+            ${MESSAGE_ORDER_EXPRESSION} = cursor_order_value
+            AND ${MESSAGE_SEQUENCE_EXPRESSION} = cursor_sequence_value
+            AND ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} = cursor_timestamp_value
+            AND message.created_at = cursor_created_at
+            AND message.id < cursor_id
+          )
+        )`
+      : "";
+    const result = await this.runQuery<Record<string, unknown>>(
+      `WITH ${cursorCte} selected_messages AS (
+        SELECT message.*
+        FROM message${cursorSource}
+        WHERE message.conversation_id = ?${archivedClause}
+        ${cursorClause}
+        ORDER BY ${MESSAGE_ORDER_BY_DESC}
+        LIMIT ?
+      )
+      SELECT * FROM selected_messages
+      ORDER BY ${MESSAGE_ORDER_BY}`,
+      params,
+    );
+
+    return Array.isArray(result) ? result : [];
+  }
+
   public async getMessages(
     conversationId: string,
     limit = 50,
@@ -437,6 +566,20 @@ export class MessageRepository extends BaseRepository {
     },
   ): Promise<Record<string, unknown>[]> {
     return this.getConversationMessages(conversationId, limit, after, options);
+  }
+
+  public async getRunMessages(
+    conversationId: string,
+    runId: string,
+  ): Promise<Record<string, unknown>[]> {
+    const result = await this.runQuery<Record<string, unknown>>(
+      `SELECT * FROM message
+       WHERE conversation_id = ? AND run_id = ?
+       ORDER BY ${MESSAGE_ORDER_BY}`,
+      [conversationId, runId],
+    );
+
+    return Array.isArray(result) ? result : [];
   }
 
   public async archiveMessages(conversationId: string, messageIds: string[]): Promise<void> {
@@ -504,7 +647,32 @@ export class MessageRepository extends BaseRepository {
       return;
     }
 
-    await this.executeRun(result.query, result.values);
+    const existing = await this.getMessage(messageId);
+    const runId =
+      existing?.conversation_id === conversationId && typeof existing.run_id === "string"
+        ? existing.run_id
+        : null;
+    const updateStatement = this.env.DB.prepare(result.query).bind(...result.values);
+
+    if (!runId) {
+      await updateStatement.run();
+
+      return;
+    }
+
+    await this.env.DB.batch([
+      updateStatement,
+      ...buildAppendRunEventStatements(this.env.DB, {
+        id: `event_${generateId()}`,
+        runId,
+        type: "message.updated",
+        occurredAt: new Date().toISOString(),
+        data: {
+          messageId,
+          changedFields: Object.keys(updates).sort(),
+        },
+      }),
+    ]);
   }
 
   public async deleteMessage(messageId: string): Promise<void> {

@@ -11,9 +11,21 @@ export interface TaskResult {
 export interface TaskExecutionContext {
   deliveryAttempt: number;
   isRedelivery: boolean;
+  lease: TaskExecutionLease;
+}
+
+export interface TaskExecutionLease {
+  readonly ownerToken: string;
+  readonly expiresAt: string;
+  assertOwned(): Promise<void>;
 }
 
 export interface TaskHandler {
   handle(message: TaskMessage, env: IEnv, context: TaskExecutionContext): Promise<TaskResult>;
-  onFinalFailure?(message: TaskMessage, env: IEnv, error: Error): Promise<void>;
+  onFinalFailure?(
+    message: TaskMessage,
+    env: IEnv,
+    error: Error,
+    context: TaskExecutionContext,
+  ): Promise<void>;
 }

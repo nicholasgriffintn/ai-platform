@@ -85,25 +85,24 @@ export const handleCreateChatCompletions = async (req: {
     }
 
     serviceContext.ensureDatabase();
-    const conversationManager = ConversationManager.getInstance({
-      database: serviceContext.database,
-      repositories: serviceContext.repositories,
-      user,
-      model: chatRequest.model,
-      provider: chatRequest.provider,
-      platform: chatRequest.platform,
-      store: true,
-      env,
-      requestCache: serviceContext.requestCache,
-    });
-
     connectorReplay = await withThreadLock(
       { env, conversationId: completionIdWithFallback, kind: "connector_replay" },
-      () =>
+      (lease) =>
         replayApprovedConnectorOperation({
           approval,
           context: serviceContext,
-          conversationManager,
+          conversationManager: ConversationManager.getInstance({
+            database: serviceContext.database,
+            repositories: serviceContext.repositories,
+            user,
+            model: chatRequest.model,
+            provider: chatRequest.provider,
+            platform: chatRequest.platform,
+            store: true,
+            env,
+            requestCache: serviceContext.requestCache,
+            writeFence: lease,
+          }),
           user,
           model: chatRequest.model,
           appUrl: app_url,
@@ -166,6 +165,7 @@ export const handleCreateChatCompletions = async (req: {
       post_processing: {
         guardrails: assistantMessage.guardrails,
       },
+      ...("runReceipt" in result && result.runReceipt ? { run: result.runReceipt } : {}),
     };
   }
 
@@ -179,6 +179,10 @@ export const handleCreateChatCompletions = async (req: {
           })
         : result.stream,
     );
+  }
+
+  if ("duplicateRun" in result) {
+    return Response.json({ run: result.runReceipt });
   }
 
   if (!("response" in result)) {
@@ -266,6 +270,7 @@ export const handleCreateChatCompletions = async (req: {
       }),
     ],
     usage: assistantMessage.usage,
+    ...(result.runReceipt ? { run: result.runReceipt } : {}),
     post_processing: buildChatPostProcessing({
       guardrails: assistantMessage.guardrails,
       response: result.response,

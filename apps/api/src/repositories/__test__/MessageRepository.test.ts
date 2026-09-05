@@ -103,6 +103,7 @@ describe("MessageRepository", () => {
 
     expect(statements[0]).toContain("DELETE FROM message");
     expect(statements[0]).toContain("id NOT IN (?, ?)");
+    expect(statements[1]).toContain("run_id = COALESCE(excluded.run_id, message.run_id)");
     expect(statements.at(-1)).toContain("UPDATE conversation");
   });
 
@@ -142,7 +143,7 @@ describe("MessageRepository", () => {
   });
 
   it("serialises structured tool arguments before binding them", async () => {
-    const { bind, repository } = createRepository();
+    const { batch, bind, prepare, repository } = createRepository();
 
     await repository.createMessagesAndUpdateConversation("conversation-1", [
       {
@@ -152,11 +153,38 @@ describe("MessageRepository", () => {
         data: {
           tool_call_id: "call-1",
           tool_call_arguments: { plan: ["Research", "Draft"] },
+          run_id: "run-1",
         },
       },
     ]);
 
-    expect(bind.mock.calls[0][17]).toBe('{"plan":["Research","Draft"]}');
+    expect(bind.mock.calls[0][2]).toBe("run-1");
+    expect(bind.mock.calls[0][18]).toBe('{"plan":["Research","Draft"]}');
+    expect(batch.mock.calls[0][0]).toHaveLength(5);
+    expect(
+      prepare.mock.calls.some(([query]) => query.includes("INSERT INTO conversation_run_event")),
+    ).toBe(true);
+  });
+
+  it("persists a run message update and its reference event atomically", async () => {
+    const { batch, bind, first, prepare, repository } = createRepository();
+
+    first.mockResolvedValueOnce({
+      id: "message-1",
+      conversation_id: "conversation-1",
+      run_id: "run-1",
+    });
+
+    await repository.updateMessage("conversation-1", "message-1", {
+      content: "Updated partial result",
+      status: "in_progress",
+    });
+
+    expect(batch.mock.calls[0][0]).toHaveLength(4);
+    expect(
+      prepare.mock.calls.some(([query]) => query.includes("INSERT INTO conversation_run_event")),
+    ).toBe(true);
+    expect(bind.mock.calls.some((values) => values.includes("message.updated"))).toBe(true);
   });
 
   it("orders conversation messages by persisted message timestamp before insert time", async () => {
@@ -172,6 +200,24 @@ describe("MessageRepository", () => {
     expect(query).toContain("timestamp");
     expect(query).toContain("created_at ASC");
     expect(query).toContain("id ASC");
+  });
+
+  it("loads a bounded older page in transcript order from an exact cursor", async () => {
+    const { bind, prepare, repository } = createRepository();
+
+    await repository.getConversationMessagesBefore("conversation-1", 101, "message-200", {
+      includeArchived: true,
+    });
+
+    const query = prepare.mock.calls[0][0] as string;
+
+    expect(query).toContain("cursor_message AS");
+    expect(query).toContain("message.id < cursor_id");
+    expect(query).toContain("ORDER BY COALESCE(");
+    expect(query).toContain("DESC");
+    expect(query).toContain("SELECT * FROM selected_messages");
+    expect(query).toContain("id ASC");
+    expect(bind).toHaveBeenCalledWith("conversation-1", "message-200", "conversation-1", 101);
   });
 
   it("deletes selected messages only within the requested conversation", async () => {

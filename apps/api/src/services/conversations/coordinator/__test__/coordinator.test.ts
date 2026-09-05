@@ -1,103 +1,159 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { acquireThread, releaseThread, withThreadLock, withThreadLockIfFree } from "../client";
+import { acquireThread, withThreadLock, withThreadLockIfFree } from "../client";
 
-function createEnv(responses: Record<string, unknown>) {
-  const fetchMock = vi.fn(async (url: string) => {
-    const { pathname } = new URL(url);
+const OWNER_TOKEN = "owner-token";
+const INITIAL_EXPIRY = "2026-09-05T01:05:00.000Z";
+const RENEWED_EXPIRY = "2026-09-05T01:06:00.000Z";
 
-    return Response.json(responses[pathname] ?? {});
+vi.mock("~/utils/id", () => ({
+  generateId: () => OWNER_TOKEN,
+}));
+
+type CoordinatorHandler = (
+  path: string,
+  body: Record<string, unknown> | undefined,
+) => Response | Promise<Response>;
+
+function createEnv(handler: CoordinatorHandler) {
+  const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    const body =
+      typeof init?.body === "string"
+        ? (JSON.parse(init.body) as Record<string, unknown>)
+        : undefined;
+
+    return handler(new URL(url).pathname, body);
   });
 
   return {
-    CONVERSATION_COORDINATOR: {
-      idFromName: (name: string) => name,
-      get: () => ({ fetch: fetchMock }),
-    },
-  } as any;
+    env: {
+      CONVERSATION_COORDINATOR: {
+        idFromName: (name: string) => name,
+        get: () => ({ fetch: fetchMock }),
+      },
+    } as any,
+    fetchMock,
+  };
 }
 
-describe("acquireThread", () => {
+function successfulResponse(path: string): Response {
+  switch (path) {
+    case "/acquire":
+      return Response.json({
+        acquired: true,
+        currentOperation: "edit_messages",
+        expiresAt: INITIAL_EXPIRY,
+      });
+    case "/assert":
+      return Response.json({ owned: true, expiresAt: INITIAL_EXPIRY });
+    case "/renew":
+      return Response.json({ renewed: true, expiresAt: RENEWED_EXPIRY });
+    case "/release":
+      return Response.json({ released: true });
+    default:
+      return new Response(null, { status: 404 });
+  }
+}
+
+describe("conversation coordinator client", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("reports the thread as taken when another operation holds it", async () => {
-    const env = createEnv({ "/acquire": { acquired: false, currentOperation: "user_message" } });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("reports the current operation when another owner holds the thread", async () => {
+    const { env } = createEnv(() =>
+      Response.json({ acquired: false, currentOperation: "user_message" }),
+    );
 
     await expect(
       acquireThread({ env, conversationId: "conversation-1", kind: "compact" }),
-    ).resolves.toMatchObject({ acquired: false, currentOperation: "user_message" });
+    ).resolves.toEqual({
+      acquired: false,
+      currentOperation: "user_message",
+      reason: "busy",
+    });
   });
 
-  it("takes a free thread", async () => {
-    const env = createEnv({ "/acquire": { acquired: true, currentOperation: "compact" } });
+  it("uses one opaque owner token for acquisition and release", async () => {
+    const requests: Array<{ path: string; body: Record<string, unknown> | undefined }> = [];
+    const { env } = createEnv((path, body) => {
+      requests.push({ path, body });
 
-    await expect(
-      acquireThread({ env, conversationId: "conversation-1", kind: "compact" }),
-    ).resolves.toMatchObject({ acquired: true });
+      return successfulResponse(path);
+    });
+    const acquisition = await acquireThread({
+      env,
+      conversationId: "conversation-1",
+      kind: "edit_messages",
+    });
+
+    expect(acquisition.acquired).toBe(true);
+
+    if (!acquisition.acquired) {
+      return;
+    }
+
+    await acquisition.lease.release();
+
+    expect(requests).toEqual([
+      {
+        path: "/acquire",
+        body: { kind: "edit_messages", ownerToken: OWNER_TOKEN },
+      },
+      {
+        path: "/release",
+        body: { ownerToken: OWNER_TOKEN },
+      },
+    ]);
   });
 
-  it("treats a deployment without the coordinator as a free thread", async () => {
+  it("fails closed when the coordinator binding is unavailable", async () => {
     await expect(
       acquireThread({ env: {} as any, conversationId: "conversation-1", kind: "compact" }),
-    ).resolves.toEqual({ acquired: true });
+    ).resolves.toEqual({
+      acquired: false,
+      currentOperation: null,
+      reason: "unavailable",
+    });
   });
 
-  it("refuses rather than granting a lock it could not take", async () => {
-    const env = {
-      CONVERSATION_COORDINATOR: {
-        idFromName: (name: string) => name,
-        get: () => ({
-          fetch: vi.fn(async () => {
-            throw new Error("durable object unavailable");
-          }),
-        }),
-      },
-    } as any;
+  it("fails closed when the coordinator cannot be reached", async () => {
+    const { env } = createEnv(() => {
+      throw new Error("durable object unavailable");
+    });
 
     await expect(
       acquireThread({ env, conversationId: "conversation-1", kind: "compact" }),
-    ).resolves.toEqual({ acquired: false, currentOperation: null });
+    ).resolves.toEqual({
+      acquired: false,
+      currentOperation: null,
+      reason: "unavailable",
+    });
   });
 
-  it("refuses when the coordinator answers with an error status", async () => {
-    const env = {
-      CONVERSATION_COORDINATOR: {
-        idFromName: (name: string) => name,
-        get: () => ({
-          fetch: vi.fn(async () => new Response("boom", { status: 500 })),
-        }),
-      },
-    } as any;
+  it("fails closed when the coordinator response is invalid", async () => {
+    const { env } = createEnv(() => Response.json({ acquired: true }));
 
     await expect(
       acquireThread({ env, conversationId: "conversation-1", kind: "compact" }),
-    ).resolves.toEqual({ acquired: false, currentOperation: null });
+    ).resolves.toEqual({
+      acquired: false,
+      currentOperation: null,
+      reason: "unavailable",
+    });
   });
 
-  it("releases without throwing when the coordinator is absent", async () => {
-    await expect(
-      releaseThread({ env: {} as any, conversationId: "conversation-1" }),
-    ).resolves.toBeUndefined();
-  });
-});
-
-describe("withThreadLock", () => {
-  it("runs the work and releases the thread afterwards", async () => {
+  it("asserts ownership before work and releases afterwards", async () => {
     const calls: string[] = [];
-    const env = {
-      CONVERSATION_COORDINATOR: {
-        idFromName: (name: string) => name,
-        get: () => ({
-          fetch: vi.fn(async (url: string) => {
-            calls.push(new URL(url).pathname);
+    const { env } = createEnv((path) => {
+      calls.push(path);
 
-            return Response.json({ acquired: true });
-          }),
-        }),
-      },
-    } as any;
+      return successfulResponse(path);
+    });
 
     await expect(
       withThreadLock({ env, conversationId: "conversation-1", kind: "edit_messages" }, async () => {
@@ -107,23 +163,16 @@ describe("withThreadLock", () => {
       }),
     ).resolves.toBe("done");
 
-    expect(calls).toEqual(["/acquire", "work", "/release"]);
+    expect(calls).toEqual(["/acquire", "/assert", "work", "/release"]);
   });
 
-  it("releases the thread when the work throws", async () => {
+  it("releases only its lease when work throws", async () => {
     const calls: string[] = [];
-    const env = {
-      CONVERSATION_COORDINATOR: {
-        idFromName: (name: string) => name,
-        get: () => ({
-          fetch: vi.fn(async (url: string) => {
-            calls.push(new URL(url).pathname);
+    const { env } = createEnv((path) => {
+      calls.push(path);
 
-            return Response.json({ acquired: true });
-          }),
-        }),
-      },
-    } as any;
+      return successfulResponse(path);
+    });
 
     await expect(
       withThreadLock({ env, conversationId: "conversation-1", kind: "edit_messages" }, async () => {
@@ -131,37 +180,94 @@ describe("withThreadLock", () => {
       }),
     ).rejects.toThrow("write failed");
 
-    expect(calls).toEqual(["/acquire", "/release"]);
+    expect(calls).toEqual(["/acquire", "/assert", "/release"]);
   });
 
-  it("refuses the work when another operation holds the thread", async () => {
+  it("returns a service error without running work when coordination is unavailable", async () => {
     const run = vi.fn();
-    const env = createEnv({ "/acquire": { acquired: false, currentOperation: "user_message" } });
 
     await expect(
-      withThreadLock({ env, conversationId: "conversation-1", kind: "edit_messages" }, async () => {
-        run();
-      }),
-    ).rejects.toThrow(/already working on something/);
-
+      withThreadLock(
+        { env: {} as any, conversationId: "conversation-1", kind: "edit_messages" },
+        run,
+      ),
+    ).rejects.toMatchObject({ statusCode: 503 });
     expect(run).not.toHaveBeenCalled();
   });
 
-  it("skips optional work rather than refusing it", async () => {
+  it("skips opportunistic work when the thread is busy or coordination is unavailable", async () => {
     const run = vi.fn();
-    const env = createEnv({ "/acquire": { acquired: false, currentOperation: "user_message" } });
+    const { env } = createEnv(() =>
+      Response.json({ acquired: false, currentOperation: "user_message" }),
+    );
 
     await expect(
       withThreadLockIfFree(
         { env, conversationId: "conversation-1", kind: "session_compaction" },
-        async () => {
-          run();
-
-          return "compacted";
-        },
+        run,
       ),
     ).resolves.toBeNull();
-
+    await expect(
+      withThreadLockIfFree(
+        {
+          env: {} as any,
+          conversationId: "conversation-1",
+          kind: "session_compaction",
+        },
+        run,
+      ),
+    ).resolves.toBeNull();
     expect(run).not.toHaveBeenCalled();
+  });
+
+  it("renews a live lease on the configured interval and stops after release", async () => {
+    vi.useFakeTimers();
+    const calls: string[] = [];
+    const { env } = createEnv((path) => {
+      calls.push(path);
+
+      return successfulResponse(path);
+    });
+    const acquisition = await acquireThread({
+      env,
+      conversationId: "conversation-1",
+      kind: "edit_messages",
+    });
+
+    if (!acquisition.acquired) {
+      throw new Error("Expected lease acquisition");
+    }
+
+    await vi.advanceTimersByTimeAsync(60 * 1000);
+    expect(acquisition.lease.expiresAt).toBe(RENEWED_EXPIRY);
+    await acquisition.lease.release();
+    await vi.advanceTimersByTimeAsync(2 * 60 * 1000);
+
+    expect(calls).toEqual(["/acquire", "/renew", "/release"]);
+  });
+
+  it("fences the attempt after renewal fails", async () => {
+    vi.useFakeTimers();
+    const calls: string[] = [];
+    const { env } = createEnv((path) => {
+      calls.push(path);
+
+      return path === "/renew" ? Response.json({ renewed: false }) : successfulResponse(path);
+    });
+    const acquisition = await acquireThread({
+      env,
+      conversationId: "conversation-1",
+      kind: "edit_messages",
+    });
+
+    if (!acquisition.acquired) {
+      throw new Error("Expected lease acquisition");
+    }
+
+    await vi.advanceTimersByTimeAsync(60 * 1000);
+    await expect(acquisition.lease.assertOwned()).rejects.toMatchObject({ statusCode: 409 });
+    await acquisition.lease.release();
+
+    expect(calls).toEqual(["/acquire", "/renew", "/release"]);
   });
 });

@@ -7,6 +7,10 @@ import type {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { MobilePushDeviceRecord } from "~/repositories/MobilePushRepository";
+import {
+  isTaskNotificationPreferenceEnabled,
+  notificationCategoryForMobileKind,
+} from "~/services/notifications/preferences";
 import type { IEnv } from "~/types";
 import { base64ToBuffer, stringToBase64Url } from "~/utils/base64";
 import { encodeBase64Url } from "~/utils/base64url";
@@ -18,6 +22,10 @@ const TOKEN_LIFETIME_MS = 45 * 60 * 1000;
 let cachedProviderToken: { value: string; createdAt: number; keyId: string } | undefined;
 
 const SAFE_ALERTS: Record<MobileWorkNotificationKind, { title: string; body: string }> = {
+  assigned: {
+    title: "Work was assigned",
+    body: "Open Polychat to review the task.",
+  },
   input: {
     title: "Work needs input",
     body: "Open Polychat to review the current request.",
@@ -293,12 +301,21 @@ export async function notifyMobileProjectTask(params: {
 }): Promise<void> {
   try {
     const recipientUserId = params.task.assigneeUserId ?? params.task.createdByUserId;
-    const membership = await params.context.repositories.workspaces.getMembership(
-      params.task.workspaceId,
-      recipientUserId,
-    );
+    const [membership, preferences] = await Promise.all([
+      params.context.repositories.workspaces.getMembership(
+        params.task.workspaceId,
+        recipientUserId,
+      ),
+      params.context.repositories.taskNotifications.getPreferences(recipientUserId),
+    ]);
 
-    if (!membership) {
+    if (
+      !membership ||
+      !isTaskNotificationPreferenceEnabled(
+        preferences,
+        notificationCategoryForMobileKind(params.kind),
+      )
+    ) {
       return;
     }
 

@@ -1,3 +1,5 @@
+import type { ChatRetryClassification } from "@ngriffin_uk/polychat-schemas";
+
 import { safeParseJson } from "~/utils/json";
 import { isPlainObject } from "~/utils/objects";
 import { redactSensitiveTokens } from "~/utils/redaction";
@@ -11,6 +13,7 @@ export interface ProviderErrorBody {
 }
 
 interface ProviderErrorLike extends ProviderErrorBody {
+  context?: unknown;
   name?: unknown;
   status?: unknown;
   statusCode?: unknown;
@@ -25,7 +28,7 @@ const retryableNetworkErrorCodes = new Set([
   "ENETUNREACH",
 ]);
 
-const retryableErrorNames = new Set(["AbortError", "FetchError", "TimeoutError"]);
+const retryableErrorNames = new Set(["AbortError", "FetchError", "TimeoutError", "TypeError"]);
 
 const nonRetryableErrorTypes = new Set([
   "AUTHENTICATION_ERROR",
@@ -47,7 +50,13 @@ const nonRetryableErrorTypes = new Set([
   "USER_NOT_FOUND",
 ]);
 
-const retryableStatusCodes = new Set([408, 409, 425]);
+const retryableStatusCodes = new Set([408, 425]);
+
+export interface ProviderRetryClassification {
+  retryable: boolean;
+  classification?: ChatRetryClassification;
+  reason: string;
+}
 
 function isProviderErrorLike(error: unknown): error is ProviderErrorLike {
   return typeof error === "object" && error !== null && !Array.isArray(error);
@@ -149,6 +158,10 @@ export function isProviderRateLimitError(error: unknown): boolean {
     return false;
   }
 
+  if (typeof error.type === "string" && nonRetryableErrorTypes.has(error.type)) {
+    return false;
+  }
+
   if (error.type === "RATE_LIMIT_ERROR" || error.status === 429 || error.statusCode === 429) {
     return true;
   }
@@ -169,27 +182,99 @@ function getProviderErrorStatus(error: ProviderErrorLike): number | undefined {
 }
 
 export function isRetryableProviderError(error: unknown): boolean {
-  if (!isProviderErrorLike(error)) {
-    return false;
-  }
+  return classifyProviderRetryError(error).retryable;
+}
 
-  if (isProviderRateLimitError(error) || error.type === "NETWORK_ERROR") {
-    return true;
+export function classifyProviderRetryError(error: unknown): ProviderRetryClassification {
+  if (!isProviderErrorLike(error)) {
+    return { retryable: false, reason: "The provider error is not eligible for retry." };
   }
 
   if (typeof error.type === "string" && nonRetryableErrorTypes.has(error.type)) {
-    return false;
+    return { retryable: false, reason: "This failure requires a change before retrying." };
   }
 
-  if (typeof error.code === "string" && retryableNetworkErrorCodes.has(error.code)) {
-    return true;
+  if (isProviderRateLimitError(error)) {
+    return {
+      retryable: true,
+      classification: "rate_limited",
+      reason: "The model provider is rate limited.",
+    };
   }
 
-  if (typeof error.name === "string" && retryableErrorNames.has(error.name)) {
-    return true;
+  if (
+    error.type === "NETWORK_ERROR" ||
+    (typeof error.code === "string" && retryableNetworkErrorCodes.has(error.code)) ||
+    error.name === "FetchError" ||
+    error.name === "TypeError"
+  ) {
+    return {
+      retryable: true,
+      classification: "network",
+      reason: "The model provider connection failed temporarily.",
+    };
+  }
+
+  if (error.name === "AbortError" || error.name === "TimeoutError") {
+    return {
+      retryable: true,
+      classification: "timeout",
+      reason: "The model provider did not respond in time.",
+    };
   }
 
   const status = getProviderErrorStatus(error);
 
-  return status !== undefined && (retryableStatusCodes.has(status) || status >= 500);
+  if (status !== undefined && (retryableStatusCodes.has(status) || status >= 500)) {
+    return {
+      retryable: true,
+      classification: status === 408 ? "timeout" : "provider_unavailable",
+      reason:
+        status === 408
+          ? "The model provider did not respond in time."
+          : "The model provider is temporarily unavailable.",
+    };
+  }
+
+  if (typeof error.name === "string" && retryableErrorNames.has(error.name)) {
+    return {
+      retryable: true,
+      classification: "provider_unavailable",
+      reason: "The model provider is temporarily unavailable.",
+    };
+  }
+
+  return { retryable: false, reason: "This provider failure is not eligible for retry." };
+}
+
+export function parseProviderRetryAfterMs(
+  value: string | null,
+  now: number = Date.now(),
+): number | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const seconds = Number(value);
+
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return seconds * 1000;
+  }
+
+  const date = Date.parse(value);
+
+  return Number.isNaN(date) ? undefined : Math.max(0, date - now);
+}
+
+export function getProviderRetryAfterMs(error: unknown): number | undefined {
+  if (!isProviderErrorLike(error)) {
+    return undefined;
+  }
+
+  const context = isPlainObject(error.context) ? error.context : undefined;
+  const retryAfterMs = context?.retryAfterMs;
+
+  return typeof retryAfterMs === "number" && Number.isFinite(retryAfterMs) && retryAfterMs >= 0
+    ? retryAfterMs
+    : undefined;
 }

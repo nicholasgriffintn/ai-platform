@@ -3,6 +3,7 @@ import type {
   CapabilityDiscoveryItem,
   CapabilityDiscoveryKind,
   CapabilityDiscoveryResult,
+  Readiness,
   RecipeConnectorManifest,
   RecipeInstallation,
 } from "@ngriffin_uk/polychat-schemas";
@@ -53,6 +54,44 @@ export interface CapabilityDiscoveryFilters {
   kinds?: readonly CapabilityDiscoveryKind[];
   limit: number;
   query: string;
+}
+
+const CAPABILITY_READINESS_TTL_MS = 60_000;
+
+function capabilityReadiness(
+  state: Readiness["state"],
+  reasonCode: Readiness["reasonCode"],
+  reason: string,
+  now: Date,
+  action?: Readiness["action"],
+): Readiness {
+  return {
+    protocolVersion: 1,
+    state,
+    reasonCode,
+    reason,
+    checkedAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + CAPABILITY_READINESS_TTL_MS).toISOString(),
+    ...(action ? { action } : {}),
+  };
+}
+
+export function createUnknownCapabilityDiscoveryResult(
+  query: string,
+  now = new Date(),
+): CapabilityDiscoveryResult {
+  return {
+    query,
+    items: [],
+    total: 0,
+    readiness: capabilityReadiness(
+      "unknown",
+      "check_failed",
+      "Capability readiness could not be checked. Retry before relying on this result.",
+      now,
+      { kind: "retry", label: "Retry discovery" },
+    ),
+  };
 }
 
 function createToolItem(
@@ -317,6 +356,7 @@ function scoreItem(item: CapabilityDiscoveryItem, query: string): number {
 export function discoverAssistantCapabilities(
   sources: CapabilityDiscoverySources,
   filters: CapabilityDiscoveryFilters,
+  now = new Date(),
 ): CapabilityDiscoveryResult {
   const ownInstallations = new Map(
     sources.installations.map((installation) => [installation.recipeId, installation]),
@@ -347,10 +387,35 @@ export function discoverAssistantCapabilities(
       (left, right) => right.score - left.score || left.item.name.localeCompare(right.item.name),
     );
 
+  const visibleItems = matches.slice(0, filters.limit).map(({ item }) => item);
+  const readiness = visibleItems.some((item) => item.state === "ready")
+    ? capabilityReadiness(
+        "ready",
+        "ready",
+        "At least one matching capability is ready under the current policy.",
+        now,
+      )
+    : visibleItems.some((item) => item.state === "setup_required")
+      ? capabilityReadiness(
+          "setup_required",
+          "credential_required",
+          "A matching capability needs setup before it can run.",
+          now,
+        )
+      : capabilityReadiness(
+          "unavailable",
+          visibleItems.length === 0 ? "no_match" : "permission_denied",
+          visibleItems.length === 0
+            ? "No matching capability was found under the current policy."
+            : "Matching capabilities are unavailable under the current policy.",
+          now,
+        );
+
   return {
     query: filters.query,
-    items: matches.slice(0, filters.limit).map(({ item }) => item),
+    items: visibleItems,
     total: matches.length,
     ...(sources.projectId ? { projectId: sources.projectId } : {}),
+    readiness,
   };
 }

@@ -1,7 +1,14 @@
 import { projectTaskRunDispatchPayloadSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { createServiceContext } from "~/lib/context/serviceContext";
-import { runProjectTaskDispatch } from "~/services/project-tasks/runner";
+import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
+import {
+  runProjectTaskDispatch,
+  settleFailedProjectTaskDispatch,
+} from "~/services/project-tasks/runner";
+import {
+  isTaskExecutionOwnershipLostError,
+  TaskExecutionLeaseBusyError,
+} from "~/services/tasks/task-execution-lease";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -41,6 +48,7 @@ export class ProjectTaskRunHandler implements TaskHandler {
         conversationId: payload.data.conversationId,
         approvedTools: payload.data.approvedTools,
         resumeInterrupted: execution.isRedelivery,
+        executionLease: execution.lease,
       });
 
       if (result.status === "skipped") {
@@ -59,12 +67,28 @@ export class ProjectTaskRunHandler implements TaskHandler {
         data: { taskId: payload.data.taskId, outcome: result.status },
       };
     } catch (error) {
+      if (
+        isTaskExecutionOwnershipLostError(error) ||
+        error instanceof TaskExecutionLeaseBusyError
+      ) {
+        if (isTaskExecutionOwnershipLostError(error)) {
+          recordChatRunOperationalMetric(env, {
+            signal: "ownership_loss",
+            taskId: payload.data.taskId,
+            outcome: "interrupted",
+          });
+        }
+
+        throw error;
+      }
+
       const errorMessage = error instanceof Error ? error.message : "Project task run failed";
 
-      await createServiceContext({ env }).repositories.projectTasks.failDispatch({
-        taskId: payload.data.taskId,
-        projectId: payload.data.projectId,
+      await settleFailedProjectTaskDispatch({
+        env,
         dispatchTaskId: payload.data.dispatchTaskId,
+        taskId: payload.data.taskId,
+        executionLease: execution.lease,
         detail: "The agent run failed before it could start. Try again.",
       });
 
@@ -79,5 +103,26 @@ export class ProjectTaskRunHandler implements TaskHandler {
         data: { taskId: payload.data.taskId, outcome: "blocked" },
       };
     }
+  }
+
+  public async onFinalFailure(
+    message: TaskMessage,
+    env: IEnv,
+    error: Error,
+    execution: TaskExecutionContext,
+  ): Promise<void> {
+    const payload = projectTaskRunDispatchPayloadSchema.safeParse(message.task_data);
+
+    if (!payload.success) {
+      return;
+    }
+
+    await settleFailedProjectTaskDispatch({
+      env,
+      dispatchTaskId: payload.data.dispatchTaskId,
+      taskId: payload.data.taskId,
+      executionLease: execution.lease,
+      detail: error.message,
+    });
   }
 }

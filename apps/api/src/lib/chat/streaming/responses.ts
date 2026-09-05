@@ -12,8 +12,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults, shouldEnableStreaming } from "~/utils/parameters";
-import { isProviderRateLimitError, isRetryableProviderError } from "~/utils/providerErrors";
-import { withRetry } from "~/utils/retries";
+import { isProviderRateLimitError } from "~/utils/providerErrors";
 
 const logger = getLogger({ prefix: "lib/chat/streaming/responses" });
 
@@ -150,20 +149,7 @@ export async function getAIResponse(request: ChatCompletionParameters) {
   let response;
 
   try {
-    response = await withRetry(() => provider.getResponse(parameters, user?.id), {
-      retryCount: 1,
-      baseDelayMs: 1000,
-      isRetryableError: isRetryableProviderError,
-      onRetry: (attempt, error, delayMs) => {
-        logger.warn("Retrying model invocation after retryable provider error", {
-          model: requestedModel,
-          provider: provider.name,
-          attempt,
-          delayMs,
-          error,
-        });
-      },
-    });
+    response = await provider.getResponse(parameters, user?.id);
   } catch (err: any) {
     let errorType = ErrorType.PROVIDER_ERROR;
     let statusCode =

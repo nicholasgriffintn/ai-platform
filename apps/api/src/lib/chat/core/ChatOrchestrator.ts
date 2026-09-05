@@ -6,12 +6,11 @@ import {
   createBufferedTurnTransport,
   createStreamingTurnTransport,
 } from "~/lib/chat/agent/turn-transport";
-import { createChatTurnStream } from "~/lib/chat/core/chat-stream";
+import { createChatRunReceiptStream, createChatTurnStream } from "~/lib/chat/core/chat-stream";
 import { prependCompactionStateEvent } from "~/lib/chat/core/compaction-stream";
 import { createChatExecutionRequest } from "~/lib/chat/core/execution-request";
 import { createModelEnsembleStream } from "~/lib/chat/core/model-ensemble";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
-import { pruneMessagesToFitContext } from "~/lib/chat/policy/context-window";
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { resolveTurnStepBudget } from "~/lib/chat/policy/step-budget";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
@@ -21,7 +20,16 @@ import type { ConversationManager } from "~/lib/conversationManager";
 import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
 import { SessionManager } from "~/lib/session/SessionManager";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
-import { acquireThread, releaseThread } from "~/services/conversations/coordinator/client";
+import {
+  acceptChatRun,
+  findAcceptedChatRunCommand,
+  type ChatRunLifecycle,
+} from "~/services/chat-runs/lifecycle";
+import {
+  acquireThread,
+  threadLockError,
+  type ThreadLease,
+} from "~/services/conversations/coordinator/client";
 import { disposeMCPClients } from "~/services/functions/mcp";
 import { GOAL_STATUS_MARKER_EVENTS, recordGoalMarker } from "~/services/goals/goalMarker";
 import { GoalService } from "~/services/goals/GoalService";
@@ -50,9 +58,9 @@ export class ChatOrchestrator {
     this.preparer = new RequestPreparer(env);
   }
 
-  private async holdThreadForTurn(options: CoreChatOptions): Promise<boolean> {
+  private async holdThreadForTurn(options: CoreChatOptions): Promise<ThreadLease | undefined> {
     if (!options.completion_id || options.store === false) {
-      return false;
+      return undefined;
     }
 
     const lock = await acquireThread({
@@ -61,14 +69,11 @@ export class ChatOrchestrator {
       kind: "user_message",
     });
 
-    if (!lock.acquired) {
-      throw new AssistantError(
-        "This conversation is already working on something. Try again once it finishes.",
-        ErrorType.CONFLICT_ERROR,
-      );
+    if (lock.acquired === false) {
+      throw threadLockError(lock);
     }
 
-    return true;
+    return lock.lease;
   }
 
   private resolveGoalFinishGate(
@@ -130,28 +135,86 @@ export class ChatOrchestrator {
         };
       }
 
-      const heldThread = await this.holdThreadForTurn(options);
+      const existingRun = await findAcceptedChatRunCommand(options);
+
+      if (existingRun) {
+        return {
+          duplicateRun: true,
+          runReceipt: existingRun.receipt,
+          ...(options.stream ? { stream: createChatRunReceiptStream(existingRun.receipt) } : {}),
+          selectedModel: validationResult.context.modelConfig?.matchingModel || "unknown",
+          completion_id: options.completion_id,
+        };
+      }
+
+      let threadLease: ThreadLease | undefined;
+
+      try {
+        threadLease = await this.holdThreadForTurn(options);
+      } catch (error) {
+        const racedRun = await findAcceptedChatRunCommand(options);
+
+        if (!racedRun) {
+          throw error;
+        }
+
+        return {
+          duplicateRun: true,
+          runReceipt: racedRun.receipt,
+          ...(options.stream ? { stream: createChatRunReceiptStream(racedRun.receipt) } : {}),
+          selectedModel: validationResult.context.modelConfig?.matchingModel || "unknown",
+          completion_id: options.completion_id,
+        };
+      }
+
+      let runLifecycle: ChatRunLifecycle | null = null;
       let released = false;
       const release = async () => {
-        if (!heldThread || released) {
+        if (!threadLease || released) {
           return;
         }
 
         released = true;
-
-        await releaseThread({
-          env: options.env,
-          conversationId: options.completion_id,
-        });
+        await threadLease.release();
       };
 
       let result: Awaited<ReturnType<typeof this.executeRequest>>;
 
       try {
-        const prepared = await this.preparer.prepare(options, validationResult.context);
+        runLifecycle = await acceptChatRun(options);
 
-        result = await this.executeRequest(options, prepared, release);
+        if (runLifecycle?.receipt.duplicate) {
+          await release();
+
+          return {
+            duplicateRun: true,
+            runReceipt: runLifecycle.receipt,
+            ...(options.stream ? { stream: createChatRunReceiptStream(runLifecycle.receipt) } : {}),
+            selectedModel: validationResult.context.modelConfig?.matchingModel || "unknown",
+            completion_id: options.completion_id,
+          };
+        }
+
+        const prepared = await this.preparer.prepare(
+          options,
+          validationResult.context,
+          threadLease,
+          runLifecycle?.run.id,
+        );
+
+        result = await this.executeRequest(options, prepared, release, runLifecycle);
       } catch (error) {
+        if (runLifecycle && !runLifecycle.receipt.duplicate) {
+          try {
+            await runLifecycle.fail(error);
+          } catch (runError) {
+            logger.error("Failed to record chat run failure", {
+              runId: runLifecycle.run.id,
+              error: runError,
+            });
+          }
+        }
+
         await release();
 
         throw error;
@@ -187,6 +250,7 @@ export class ChatOrchestrator {
     chatOptions: CoreChatOptions,
     prepared: PreparedRequest,
     onTurnEnd?: () => Promise<void>,
+    runLifecycle?: ChatRunLifecycle | null,
   ) {
     const {
       platform = "api",
@@ -242,7 +306,6 @@ export class ChatOrchestrator {
       messages = compactedSession.messages;
     }
 
-    messages = pruneMessagesToFitContext(messages, messageWithContext, primaryModelConfig);
     const executionRequest = createChatExecutionRequest({
       chatOptions,
       prepared: {
@@ -266,6 +329,8 @@ export class ChatOrchestrator {
       mode: currentMode,
       model: primaryModel,
       provider: primaryProvider,
+      runId: runLifecycle?.run.id,
+      runAttempt: runLifecycle?.run.attempt,
       memoryScope: prepared.memoryScope,
     });
 
@@ -306,13 +371,28 @@ export class ChatOrchestrator {
       shouldReserveGoalFinalisation: () =>
         chatOptions.max_steps === undefined && (goalFinishGate?.hasActiveGoal() ?? false),
       executionCtx: chatOptions.executionCtx,
+      contextWindow: primaryModelConfig?.contextWindow,
+      contextSkills: prepared.contextSkills,
+      runId: runLifecycle?.run.id,
+      runAttempt: runLifecycle?.run.attempt,
+      onContextSnapshot: runLifecycle
+        ? (snapshot) => runLifecycle.recordContext(snapshot).then(() => undefined)
+        : undefined,
+      onRetryState: runLifecycle
+        ? (retryState) => runLifecycle.recordRetry(retryState).then(() => undefined)
+        : undefined,
     };
 
     if (stream) {
       const runsEnsemble = !isAgentExecutionMode(currentMode) && modelConfigs.length > 1;
       const turnStream = runsEnsemble
-        ? createModelEnsembleStream({ ...runParams, models: modelConfigs, onTurnEnd })
-        : createChatTurnStream({ ...runParams, onTurnEnd });
+        ? createModelEnsembleStream({
+            ...runParams,
+            models: modelConfigs,
+            onTurnEnd,
+            runLifecycle,
+          })
+        : createChatTurnStream({ ...runParams, onTurnEnd, runLifecycle });
 
       return {
         stream:
@@ -329,6 +409,7 @@ export class ChatOrchestrator {
 
     try {
       runResult = await runAgentLoop(runParams);
+      await runLifecycle?.complete(runResult);
     } finally {
       await conversationManager.releaseTurnReservation();
 
@@ -347,6 +428,7 @@ export class ChatOrchestrator {
         validation: "output",
         error: "Response did not pass safety checks",
         violations: runResult.guardrailViolations,
+        ...(runLifecycle ? { runReceipt: runLifecycle.receipt } : {}),
       };
     }
 
@@ -385,6 +467,7 @@ export class ChatOrchestrator {
       selectedModels: modelConfigs.length > 1 ? modelConfigs.map((m) => m.model) : undefined,
       completion_id: chatOptions.completion_id,
       ...(compactionMessage ? { compactionMessage } : {}),
+      ...(runLifecycle ? { runReceipt: runLifecycle.receipt } : {}),
     };
   }
 

@@ -1,6 +1,8 @@
 import { SCHEDULES } from "~/constants/schedules";
 import { reapComposioConnectorSessions } from "~/services/apps/connectors/composio-cleanup";
 import { deleteExpiredConnectorOperationApprovals } from "~/services/apps/connectors/connector-approval-cleanup";
+import { releaseExpiredChatRunReservations } from "~/services/chat-runs/reservation-maintenance";
+import { schedulePendingTaskNotificationDeliveries } from "~/services/task-notifications/delivery";
 import type { IEnv } from "~/types";
 import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -22,6 +24,20 @@ export class ScheduleExecutor {
       await redispatchPendingTasks(env);
     } catch (error) {
       logger.warn("Pending task recovery failed", { error: getErrorMessage(error) });
+    }
+
+    try {
+      await schedulePendingTaskNotificationDeliveries(env);
+    } catch (error) {
+      logger.warn("Pending notification recovery failed", { error: getErrorMessage(error) });
+    }
+
+    try {
+      await releaseExpiredChatRunReservations(env);
+    } catch (error) {
+      logger.warn("Expired chat run reservation recovery failed", {
+        error: getErrorMessage(error),
+      });
     }
 
     switch (event.cron) {

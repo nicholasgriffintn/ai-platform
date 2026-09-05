@@ -6,6 +6,7 @@ import type {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { presentPublicTask } from "./task-presentation";
 import { TaskService } from "./TaskService";
 import { isAccountVisibleTask } from "./taskVisibility";
 
@@ -14,7 +15,7 @@ export async function listUserTasks(context: ServiceContext, userId: number) {
     isAccountVisibleTask,
   );
 
-  return { tasks, total: tasks.length };
+  return { tasks: tasks.map(presentPublicTask), total: tasks.length };
 }
 
 export async function getUserTask(context: ServiceContext, userId: number, taskId: string) {
@@ -26,7 +27,7 @@ export async function getUserTask(context: ServiceContext, userId: number, taskI
 
   const executions = await context.repositories.tasks.getTaskExecutions(taskId);
 
-  return { task, executions };
+  return { task: presentPublicTask(task), executions };
 }
 
 export async function createMemorySynthesisTask(

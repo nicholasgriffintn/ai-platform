@@ -15,6 +15,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
 import { readInteractionMessageData } from "./interaction-messages";
+import { isProjectTaskInteractionExpired } from "./interaction-recovery";
 
 interface PendingQuestionMessage {
   messageId: string;
@@ -34,7 +35,13 @@ async function getPendingQuestionMessage(
   const data = readInteractionMessageData(message?.data);
   const parsed = userQuestionSetSchema.safeParse(data);
 
-  if (!message || !data || !parsed.success || typeof message.id !== "string") {
+  if (
+    !message ||
+    !data ||
+    !parsed.success ||
+    typeof message.id !== "string" ||
+    isProjectTaskInteractionExpired(message)
+  ) {
     return null;
   }
 
@@ -91,7 +98,9 @@ export async function answerProjectTaskQuestions(params: {
     );
   }
 
-  const pending = await getPendingQuestionMessage(context, task.conversationId);
+  const conversationId = task.conversationId;
+
+  const pending = await getPendingQuestionMessage(context, conversationId);
 
   if (!pending || pending.questions.interactionId !== input.interactionId) {
     throw new AssistantError(
@@ -116,52 +125,65 @@ export async function answerProjectTaskQuestions(params: {
     );
   }
 
-  const resolvedAt = new Date().toISOString();
-  const resolvedData = {
-    ...pending.data,
-    resolved: true,
-    resolvedAt,
-    answers: input.answers,
-    humanInTheLoop: {
-      type: "question",
-      status: "resolved",
-      interactionId: input.interactionId,
-      questions: pending.questions.questions,
-      answers: input.answers,
-      requires_user_action: false,
-    },
-  };
-  const resolvedMessage: Message = {
-    role: "tool",
-    name: "ask_user",
-    content: "Questions answered.",
-    status: "resolved",
-    data: resolvedData,
-    tool_call_id: pending.toolCallId,
-    timestamp: pending.timestamp,
-  };
-
-  await context.repositories.messages.updateMessage(task.conversationId, pending.messageId, {
-    content: resolvedMessage.content,
-    status: resolvedMessage.status,
-    data: resolvedData,
-    parts: buildMessageParts(resolvedMessage),
-  });
-
   const user = context.requireUser();
-  const conversationManager = ConversationManager.getInstance({
-    database: context.database,
-    repositories: context.repositories,
-    user,
-    env: context.env,
-    store: true,
-  });
   const content = formatAnswers(pending.questions, input);
 
   await withThreadLock(
-    { env: context.env, conversationId: task.conversationId, kind: "human_response" },
-    () =>
-      conversationManager.add(task.conversationId, {
+    { env: context.env, conversationId, kind: "human_response" },
+    async (lease) => {
+      const currentPending = await getPendingQuestionMessage(context, conversationId);
+
+      if (!currentPending || currentPending.questions.interactionId !== input.interactionId) {
+        throw new AssistantError(
+          "These questions are no longer waiting for an answer. Refresh the conversation.",
+          ErrorType.CONFLICT_ERROR,
+          409,
+        );
+      }
+
+      const resolvedData = {
+        ...currentPending.data,
+        resolved: true,
+        resolvedAt: new Date().toISOString(),
+        answers: input.answers,
+        humanInTheLoop: {
+          type: "question",
+          status: "resolved",
+          interactionId: input.interactionId,
+          questions: currentPending.questions.questions,
+          answers: input.answers,
+          requires_user_action: false,
+        },
+      };
+      const resolvedMessage: Message = {
+        role: "tool",
+        name: "ask_user",
+        content: "Questions answered.",
+        status: "resolved",
+        data: resolvedData,
+        tool_call_id: currentPending.toolCallId,
+        timestamp: currentPending.timestamp,
+      };
+
+      await lease.assertOwned();
+      await context.repositories.messages.updateMessage(conversationId, currentPending.messageId, {
+        content: resolvedMessage.content,
+        status: resolvedMessage.status,
+        data: resolvedData,
+        parts: buildMessageParts(resolvedMessage),
+      });
+
+      const conversationManager = ConversationManager.getInstance({
+        database: context.database,
+        repositories: context.repositories,
+        user,
+        env: context.env,
+        store: true,
+        runId: task.runId ?? undefined,
+        writeFence: lease,
+      });
+
+      await conversationManager.add(conversationId, {
         id: generateId(),
         role: "user",
         content,
@@ -173,6 +195,7 @@ export async function answerProjectTaskQuestions(params: {
         },
         timestamp: Date.now(),
         platform: "web",
-      }),
+      });
+    },
   );
 }

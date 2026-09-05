@@ -4,7 +4,9 @@ import type {
   ProjectTaskCompletion,
   ProjectTaskContext,
   ProjectTaskCriterion,
+  ProjectFlow,
   ProjectTaskRunner,
+  OutputProvenance,
   StoredPetModelOverrides,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
@@ -624,6 +626,117 @@ export const conversation = sqliteTable(
 
 export type Conversation = typeof conversation.$inferSelect;
 
+export const conversationRun = sqliteTable(
+  "conversation_run",
+  {
+    id: text().primaryKey(),
+    conversation_id: text().notNull(),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    project_task_id: text(),
+    stage_id: text(),
+    initiator_user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    status: text({
+      enum: [
+        "accepted",
+        "running",
+        "awaiting_input",
+        "awaiting_approval",
+        "cancelling",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "interrupted",
+      ],
+    })
+      .notNull()
+      .default("accepted"),
+    attempt: integer().notNull().default(1),
+    event_sequence: integer().notNull().default(0),
+    terminal_reason: text(),
+    last_message_id: text(),
+    context_json: text(),
+    retry_json: text(),
+    created_at: text().notNull(),
+    updated_at: text().notNull(),
+    started_at: text(),
+    completed_at: text(),
+    cancellation_requested_at: text(),
+  },
+  (table) => ({
+    conversationUpdatedIdx: index("conversation_run_conversation_updated_idx").on(
+      table.conversation_id,
+      table.updated_at,
+    ),
+    projectUpdatedIdx: index("conversation_run_project_updated_idx").on(
+      table.project_id,
+      table.updated_at,
+    ),
+    projectTaskIdx: index("conversation_run_project_task_idx").on(table.project_task_id),
+    initiatorIdx: index("conversation_run_initiator_idx").on(table.initiator_user_id),
+  }),
+);
+
+export type ConversationRunRow = typeof conversationRun.$inferSelect;
+
+export const conversationRunEvent = sqliteTable(
+  "conversation_run_event",
+  {
+    id: text().primaryKey(),
+    run_id: text()
+      .notNull()
+      .references(() => conversationRun.id, { onDelete: "cascade" }),
+    sequence: integer().notNull(),
+    protocol_version: integer().notNull().default(1),
+    attempt: integer().notNull(),
+    type: text().notNull(),
+    occurred_at: text().notNull(),
+    data: text().notNull().default("{}"),
+  },
+  (table) => ({
+    runSequenceIdx: uniqueIndex("conversation_run_event_run_sequence_idx").on(
+      table.run_id,
+      table.sequence,
+    ),
+    runOccurredIdx: index("conversation_run_event_run_occurred_idx").on(
+      table.run_id,
+      table.occurred_at,
+    ),
+  }),
+);
+
+export type ConversationRunEventRow = typeof conversationRunEvent.$inferSelect;
+
+export const conversationRunCommand = sqliteTable(
+  "conversation_run_command",
+  {
+    id: text().primaryKey(),
+    run_id: text()
+      .notNull()
+      .references(() => conversationRun.id, { onDelete: "cascade" }),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    command_id: text().notNull(),
+    kind: text({ enum: ["turn", "interaction_response", "cancel"] }).notNull(),
+    input_digest: text().notNull(),
+    accepted_at: text().notNull(),
+  },
+  (table) => ({
+    userCommandIdx: uniqueIndex("conversation_run_command_user_command_idx").on(
+      table.user_id,
+      table.command_id,
+    ),
+    runAcceptedIdx: index("conversation_run_command_run_accepted_idx").on(
+      table.run_id,
+      table.accepted_at,
+    ),
+  }),
+);
+
+export type ConversationRunCommandRow = typeof conversationRunCommand.$inferSelect;
+
 export const conversationUserState = sqliteTable(
   "conversation_user_state",
   {
@@ -771,6 +884,7 @@ export const message = sqliteTable(
     conversation_id: text()
       .notNull()
       .references(() => conversation.id),
+    run_id: text().references(() => conversationRun.id, { onDelete: "set null" }),
     parent_message_id: text(),
     is_archived: integer({ mode: "boolean" }).default(false),
     role: text({
@@ -820,6 +934,7 @@ export const message = sqliteTable(
     archivedIdx: index("message_archived_idx").on(table.is_archived),
     parentMessageIdx: index("message_parent_message_id_idx").on(table.parent_message_id),
     roleIdx: index("message_role_idx").on(table.role),
+    runIdx: index("message_run_id_idx").on(table.run_id),
   }),
 );
 
@@ -1217,6 +1332,11 @@ export const output = sqliteTable(
     filename: text(),
     byte_size: integer(),
     revision: integer().default(1).notNull(),
+    provenance_json: text({ mode: "json" }).$type<OutputProvenance>(),
+    revision_created_by_user_id: integer().references(() => user.id),
+    revision_created_at: text(),
+    revision_operation: text({ enum: ["created", "updated", "restored"] }),
+    restored_from_revision: integer(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -1257,6 +1377,9 @@ export const outputRevision = sqliteTable(
       enum: ["personal", "internal", "confidential"],
     }).notNull(),
     content: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    provenance_json: text({ mode: "json" }).$type<OutputProvenance>(),
+    operation: text({ enum: ["created", "updated", "restored"] }),
+    restored_from_revision: integer(),
     created_by_user_id: integer()
       .notNull()
       .references(() => user.id),
@@ -1759,6 +1882,8 @@ export const tasks = sqliteTable(
     attempts: integer().default(0),
     max_attempts: integer().default(3),
     last_attempted_at: text(),
+    execution_owner_token: text(),
+    execution_lease_expires_at: text(),
     completed_at: text(),
     error_message: text(),
     metadata: text(),
@@ -1775,6 +1900,10 @@ export const tasks = sqliteTable(
     statusIdx: index("tasks_status_idx").on(table.status),
     taskTypeIdx: index("tasks_task_type_idx").on(table.task_type),
     scheduledAtIdx: index("tasks_scheduled_at_idx").on(table.scheduled_at),
+    executionLeaseIdx: index("tasks_execution_lease_idx").on(
+      table.status,
+      table.execution_lease_expires_at,
+    ),
   }),
 );
 
@@ -2046,6 +2175,7 @@ export const projectTask = sqliteTable(
     }),
     blocked_detail: text(),
     stage_id: text(),
+    flow_snapshot: text({ mode: "json" }).$type<ProjectFlow>(),
     runner: text({ mode: "json" }).$type<ProjectTaskRunner>(),
     created_by_user_id: integer()
       .notNull()
@@ -2057,6 +2187,7 @@ export const projectTask = sqliteTable(
     }),
     goal_id: text(),
     dispatch_task_id: text(),
+    run_id: text().references(() => conversationRun.id, { onDelete: "set null" }),
     completions: text({ mode: "json" }).$type<ProjectTaskCompletion[]>(),
     position: real().default(0).notNull(),
     token_budget: integer(),
@@ -2069,6 +2200,7 @@ export const projectTask = sqliteTable(
       .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
     started_at: text(),
     completed_at: text(),
+    attention_version: integer().default(1).notNull(),
   },
   (table) => ({
     projectStatusIdx: index("project_task_project_status_idx").on(
@@ -2084,10 +2216,126 @@ export const projectTask = sqliteTable(
     conversationIdx: uniqueIndex("project_task_conversation_idx")
       .on(table.conversation_id)
       .where(sql`${table.conversation_id} IS NOT NULL`),
+    runIdx: index("project_task_run_idx").on(table.run_id),
   }),
 );
 
 export type ProjectTaskRow = typeof projectTask.$inferSelect;
+
+export const taskNotificationPreference = sqliteTable("task_notification_preference", {
+  user_id: integer()
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  enabled: integer({ mode: "boolean" }).default(true).notNull(),
+  decisions: integer({ mode: "boolean" }).default(true).notNull(),
+  failures: integer({ mode: "boolean" }).default(true).notNull(),
+  completions: integer({ mode: "boolean" }).default(true).notNull(),
+  assignments: integer({ mode: "boolean" }).default(true).notNull(),
+  updated_at: text()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type TaskNotificationPreferenceRow = typeof taskNotificationPreference.$inferSelect;
+
+export const taskNotificationRegistration = sqliteTable(
+  "task_notification_registration",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    installation_id: text().notNull(),
+    platform: text({ enum: ["web"] }).notNull(),
+    endpoint_hash: text().notNull(),
+    destination_json: text({ mode: "json" }).$type<{ v: 1; iv: string; data: string }>().notNull(),
+    state: text({ enum: ["registered", "failed", "disabled"] })
+      .default("registered")
+      .notNull(),
+    failure_code: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    ownerInstallationIdx: uniqueIndex("task_notification_registration_owner_installation_idx").on(
+      table.user_id,
+      table.platform,
+      table.installation_id,
+    ),
+    endpointIdx: uniqueIndex("task_notification_registration_endpoint_idx").on(
+      table.platform,
+      table.endpoint_hash,
+    ),
+  }),
+);
+
+export type TaskNotificationRegistrationRow = typeof taskNotificationRegistration.$inferSelect;
+
+export const taskInboxReceipt = sqliteTable(
+  "task_inbox_receipt",
+  {
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    task_id: text()
+      .notNull()
+      .references(() => projectTask.id, { onDelete: "cascade" }),
+    task_version: integer().notNull(),
+    read_at: text(),
+    dismissed_at: text(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.user_id, table.task_id, table.task_version] }),
+    taskIdx: index("task_inbox_receipt_task_idx").on(table.task_id, table.task_version),
+  }),
+);
+
+export type TaskInboxReceiptRow = typeof taskInboxReceipt.$inferSelect;
+
+export const taskNotificationDelivery = sqliteTable(
+  "task_notification_delivery",
+  {
+    id: text().primaryKey(),
+    dedupe_key: text().notNull().unique(),
+    registration_id: text()
+      .notNull()
+      .references(() => taskNotificationRegistration.id, { onDelete: "cascade" }),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    task_id: text()
+      .notNull()
+      .references(() => projectTask.id, { onDelete: "cascade" }),
+    task_version: integer().notNull(),
+    category: text({ enum: ["decisions", "failures", "completions", "assignments"] }).notNull(),
+    status: text({ enum: ["pending", "delivered", "failed", "obsolete"] })
+      .default("pending")
+      .notNull(),
+    attempts: integer().default(0).notNull(),
+    provider_message_id: text(),
+    failure_code: text(),
+    next_attempt_at: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    pendingIdx: index("task_notification_delivery_pending_idx").on(
+      table.status,
+      table.next_attempt_at,
+    ),
+    taskIdx: index("task_notification_delivery_task_idx").on(table.task_id, table.task_version),
+  }),
+);
+
+export type TaskNotificationDeliveryRow = typeof taskNotificationDelivery.$inferSelect;
 
 export const usageEvent = sqliteTable(
   "usage_event",
@@ -2103,6 +2351,8 @@ export const usageEvent = sqliteTable(
     message_id: text(),
     activity_id: text(),
     completion_id: text(),
+    run_id: text(),
+    run_attempt: integer(),
     occurred_at: text().notNull(),
     period: text().notNull(),
     source: text({
@@ -2128,6 +2378,7 @@ export const usageEvent = sqliteTable(
     userPeriodIdx: index("usage_event_user_period_idx").on(table.user_id, table.period),
     periodSourceIdx: index("usage_event_period_source_idx").on(table.period, table.source),
     conversationIdx: index("usage_event_conversation_idx").on(table.conversation_id),
+    runIdx: index("usage_event_run_idx").on(table.run_id, table.run_attempt),
     workspacePeriodIdx: index("usage_event_workspace_period_idx").on(
       table.workspace_id,
       table.period,
@@ -2177,10 +2428,10 @@ export const usageReservation = sqliteTable(
       .notNull()
       .references(() => user.id),
     period: text().notNull(),
-    kind: text({ enum: ["realtime", "sandbox"] }).notNull(),
+    kind: text({ enum: ["realtime", "sandbox", "chat_run"] }).notNull(),
     ref_id: text().notNull(),
     credit_micros: integer().notNull(),
-    status: text({ enum: ["held", "settled", "released"] }).notNull(),
+    status: text({ enum: ["held", "releasing", "settled", "released"] }).notNull(),
     expires_at: text(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)

@@ -8,7 +8,6 @@ import { createServiceContext } from "~/lib/context/serviceContext";
 import { getSummarisePrompt } from "~/lib/prompts/summarise";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel } from "~/lib/providers/models";
-import { withThreadLockIfFree } from "~/services/conversations/coordinator/client";
 import type { ChatMode, IEnv, Message, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -275,15 +274,11 @@ export class SessionManager {
     const archiveIds = coverage.coveredMessageIds;
 
     try {
-      await withThreadLockIfFree(
-        { env: this.env, conversationId: completionId, kind: "session_compaction" },
-        () =>
-          this.conversationManager.persistCompaction(
-            completionId,
-            snapshotMessage,
-            compactionMessage,
-            [...archiveIds, compactionMessage.id],
-          ),
+      await this.conversationManager.persistCompaction(
+        completionId,
+        snapshotMessage,
+        compactionMessage,
+        [...archiveIds, compactionMessage.id],
       );
     } catch (error) {
       logger.warn("Failed to persist session compaction", {

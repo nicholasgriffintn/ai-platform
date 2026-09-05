@@ -1,3 +1,4 @@
+import { withExecutionRunContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions, IRequest, ChatMode, MemoryScope } from "~/types";
 import { resolveRequestUser } from "~/utils/requestUser";
 import { getToolDefinitionName, type ToolDefinitionLike } from "~/utils/toolNames";
@@ -37,10 +38,16 @@ export function buildToolRequestContext(params: {
   mode: ChatMode;
   model: string;
   provider: string;
+  runId?: string;
+  runAttempt?: number;
   memoryScope: MemoryScope;
 }): IRequest {
   const { chatOptions, input, mode, model, provider, memoryScope } = params;
   const user = resolveRequestUser(chatOptions);
+  const context =
+    chatOptions.context && params.runId
+      ? withExecutionRunContext(chatOptions.context, params.runId, params.runAttempt)
+      : chatOptions.context;
 
   return {
     env: chatOptions.env,
@@ -51,6 +58,8 @@ export function buildToolRequestContext(params: {
       input,
       model,
       provider,
+      run_id: params.runId,
+      run_attempt: params.runAttempt,
       mode,
       tool_policy_mode: chatOptions.tool_policy_mode,
       date: new Date().toISOString().slice(0, 10),
@@ -63,7 +72,7 @@ export function buildToolRequestContext(params: {
     },
     app_url: chatOptions.app_url,
     user,
-    context: chatOptions.context,
+    context,
     memoryScope,
   };
 }

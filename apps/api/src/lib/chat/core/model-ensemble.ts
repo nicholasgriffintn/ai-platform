@@ -14,11 +14,13 @@ import {
 } from "~/lib/chat/streaming/emitter";
 import { getAIResponse } from "~/lib/chat/streaming/responses";
 import { writeTurnActivity } from "~/lib/chat/streaming/turn-activity";
-import { watchDetachedTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
+import { watchTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import { userCreditActor } from "~/lib/usage/creditActor";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { recordModelTurnUsage } from "~/lib/usage/modelUsage";
 import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
+import type { ChatRunLifecycle } from "~/services/chat-runs/lifecycle";
+import { createChatRetryStatePublisher } from "~/services/chat-runs/retry-state";
 import { StreamState, type Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -32,6 +34,7 @@ export type CreateModelEnsembleStreamParams = Omit<AgentLoopExecutionParams, "si
   usageScopeId: string;
   executionCtx?: ExecutionContext;
   onTurnEnd?: () => Promise<void>;
+  runLifecycle?: ChatRunLifecycle | null;
 };
 
 export function createModelEnsembleStream(params: CreateModelEnsembleStreamParams): ReadableStream {
@@ -39,10 +42,14 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
   const stream = createChatSseStreamWriter();
   const closeRunResources = createRunResourceCloser(params);
   const stopHeartbeat = startChatStreamHeartbeat(stream);
-  const stopSignal = watchDetachedTurnCancellation({
+  const runLifecycle = params.runLifecycle;
+  const stopSignal = watchTurnCancellation({
     env: params.env,
     completionId: params.completionId,
     isDetached: stream.isDetached,
+    isRunCancellationRequested: runLifecycle
+      ? () => runLifecycle.isCancellationRequested()
+      : undefined,
   });
   const secondaryModels = params.models.slice(1);
   const secondaryResponses = secondaryModels.map((modelConfig, index) =>
@@ -63,6 +70,13 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
     let outcome: TurnContinuityOutcome = "failed";
 
     try {
+      if (params.runLifecycle) {
+        await stream.writeEvent("state", {
+          state: "run",
+          receipt: params.runLifecycle.receipt,
+        });
+      }
+
       await writeTurnActivity(stream, { kind: "turn_started" });
       await stream.writeEvent("state", { state: StreamState.INIT });
 
@@ -82,6 +96,10 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
         ...params,
         sink: primarySink,
         shouldStop: stopSignal.shouldStop,
+        onRetryState: createChatRetryStatePublisher({
+          sink: primarySink,
+          runLifecycle,
+        }),
       });
 
       outcome =
@@ -120,10 +138,33 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
         finish_reason: "stop",
       });
       await stream.writeEvent("message_stop", {});
+      if (params.runLifecycle) {
+        await params.runLifecycle.complete(primary);
+        await stream.writeEvent("state", {
+          state: "run",
+          receipt: params.runLifecycle.receipt,
+        });
+      }
+
       await writeTurnActivity(stream, { kind: "turn_finished", outcome });
       await stream.writeEvent("state", { state: StreamState.DONE });
     } catch (error) {
       logger.error("Model ensemble stream failed", { error, completionId: params.completionId });
+
+      if (params.runLifecycle) {
+        try {
+          await params.runLifecycle.fail(error);
+          await stream.writeEvent("state", {
+            state: "run",
+            receipt: params.runLifecycle.receipt,
+          });
+        } catch (runError) {
+          logger.error("Failed to record model ensemble run failure", {
+            error: runError,
+            runId: params.runLifecycle.run.id,
+          });
+        }
+      }
 
       await writeTurnActivity(stream, { kind: "turn_finished", outcome: "failed" });
       await stream.writeEvent("error", {
@@ -220,6 +261,8 @@ async function requestSecondaryAnswer(
       completionId: params.completionId,
       messageId: `ensemble:${params.usageScopeId}:${index}:${modelConfig.model}`,
       conversationId: params.completionId,
+      runId: params.runId ?? null,
+      runAttempt: params.runAttempt ?? null,
     });
 
     return response.response || "";

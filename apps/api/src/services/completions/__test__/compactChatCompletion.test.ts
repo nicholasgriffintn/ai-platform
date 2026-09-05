@@ -9,6 +9,25 @@ import {
   type CompactChatCompletionContext,
 } from "../compactChatCompletion";
 
+const { mockAcquireThread, mockThreadLease, mockWithThreadLockIfFree } = vi.hoisted(() => ({
+  mockAcquireThread: vi.fn(),
+  mockThreadLease: {
+    conversationId: "conversation-1",
+    kind: "compact",
+    ownerToken: "owner-token",
+    expiresAt: "2026-09-05T01:05:00.000Z",
+    assertOwned: vi.fn(async () => undefined),
+    release: vi.fn(async () => undefined),
+  },
+  mockWithThreadLockIfFree: vi.fn(),
+}));
+
+vi.mock("~/services/conversations/coordinator/client", async (importOriginal) => ({
+  ...(await importOriginal()),
+  acquireThread: mockAcquireThread,
+  withThreadLockIfFree: mockWithThreadLockIfFree,
+}));
+
 vi.mock("~/lib/providers/models", () => ({
   getAuxiliaryModel: vi.fn().mockResolvedValue({
     model: "summary-model",
@@ -62,6 +81,10 @@ describe("handleCompactChatCompletion", () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    mockAcquireThread.mockReset().mockResolvedValue({ acquired: true, lease: mockThreadLease });
+    mockThreadLease.assertOwned.mockClear();
+    mockThreadLease.release.mockClear();
+    mockWithThreadLockIfFree.mockReset().mockImplementation(async (_params, run) => run());
     conversationManager = ConversationManager.getInstance({
       database: context.database,
       user,
@@ -104,6 +127,9 @@ describe("handleCompactChatCompletion", () => {
   it("compacts stored history without adding a command message or model response", async () => {
     const result = await handleCompactChatCompletion(context, "conversation-1");
 
+    expect(ConversationManager.getInstance).toHaveBeenCalledWith(
+      expect.objectContaining({ writeFence: mockThreadLease }),
+    );
     expect(getAllMessagesSpy).toHaveBeenCalledWith("conversation-1", {
       includeArchived: false,
     });
@@ -160,6 +186,17 @@ describe("handleCompactChatCompletion", () => {
         ],
       },
     });
+  });
+
+  it("persists while the handler owns the non-reentrant conversation lock", async () => {
+    mockWithThreadLockIfFree.mockResolvedValueOnce(null);
+
+    await handleCompactChatCompletion(context, "conversation-1");
+
+    expect(mockAcquireThread).toHaveBeenCalledTimes(1);
+    expect(mockWithThreadLockIfFree).not.toHaveBeenCalled();
+    expect(persistCompactionSpy).toHaveBeenCalledTimes(1);
+    expect(mockThreadLease.release).toHaveBeenCalledTimes(1);
   });
 
   it("rejects manual compaction when the compacted history cannot be persisted", async () => {

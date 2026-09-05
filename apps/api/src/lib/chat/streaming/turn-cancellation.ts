@@ -49,12 +49,13 @@ export interface TurnStopSignal {
   stop: () => void;
 }
 
-export function watchDetachedTurnCancellation(params: {
+export function watchTurnCancellation(params: {
   env: IEnv;
   completionId: string;
   isDetached: () => boolean;
+  isRunCancellationRequested?: () => Promise<boolean>;
 }): TurnStopSignal {
-  const { env, completionId, isDetached } = params;
+  const { env, completionId, isDetached, isRunCancellationRequested } = params;
   const startedAt = Date.now();
   let stopRequested = false;
   let stopped = false;
@@ -78,17 +79,24 @@ export function watchDetachedTurnCancellation(params: {
       return;
     }
 
-    if (!isDetached()) {
+    if (!isRunCancellationRequested && !isDetached()) {
       scheduleNext();
 
       return;
     }
 
-    void isTurnCancellationRequested(env, completionId, startedAt)
+    const requested = isRunCancellationRequested
+      ? isRunCancellationRequested()
+      : isTurnCancellationRequested(env, completionId, startedAt);
+
+    void requested
       .then((cancelled) => {
         stopRequested ||= cancelled;
 
         return cancelled;
+      })
+      .catch((error) => {
+        logger.error("Failed to read the run cancellation state", { error, completionId });
       })
       .finally(() => {
         if (!stopRequested) {
