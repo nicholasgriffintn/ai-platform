@@ -3,9 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createOutputShare,
   getOutput,
+  getOutputHistory,
   listOutputs,
   listOutputShares,
   revokeOutputShare,
+  restoreOutputRevision,
 } from "~/lib/api/outputs";
 
 export const OUTPUT_QUERY_KEYS = {
@@ -14,6 +16,7 @@ export const OUTPUT_QUERY_KEYS = {
   list: (projectId?: string, capabilityId?: string) =>
     ["outputs", "list", projectId, capabilityId] as const,
   detail: (outputId: string | null) => ["outputs", "detail", outputId] as const,
+  history: (outputId: string | null) => ["outputs", "history", outputId] as const,
   shares: (outputId: string | null) => ["outputs", "shares", outputId] as const,
 };
 
@@ -34,6 +37,37 @@ export function useOutput(outputId: string | null) {
     queryKey: OUTPUT_QUERY_KEYS.detail(outputId),
     queryFn: () => (outputId ? getOutput(outputId) : Promise.reject(new Error("No output ID"))),
     enabled: Boolean(outputId),
+  });
+}
+
+export function useOutputHistory(outputId: string | null) {
+  return useQuery({
+    queryKey: OUTPUT_QUERY_KEYS.history(outputId),
+    queryFn: () =>
+      outputId ? getOutputHistory(outputId) : Promise.reject(new Error("No output ID")),
+    enabled: Boolean(outputId),
+  });
+}
+
+export function useRestoreOutputRevision() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      outputId,
+      revision,
+      expectedRevision,
+    }: {
+      outputId: string;
+      revision: number;
+      expectedRevision: number;
+    }) => restoreOutputRevision(outputId, revision, expectedRevision),
+    onSettled: (_output, _error, variables) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.detail(variables.outputId) }),
+        queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.history(variables.outputId) }),
+        queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.all }),
+      ]),
   });
 }
 

@@ -18,6 +18,7 @@ export function createSourceAttachment(
     return {
       type: "markdown_document",
       data: contentUrl,
+      sourceId: source.id,
       name: source.title,
       markdown: `# ${source.title}\n\n${content}`,
     };
@@ -27,6 +28,7 @@ export function createSourceAttachment(
     return {
       type: "image",
       data: contentUrl,
+      sourceId: source.id,
       name: source.file.filename ?? source.title,
     };
   }
@@ -35,6 +37,7 @@ export function createSourceAttachment(
     return {
       type: "audio",
       data: contentUrl,
+      sourceId: source.id,
       name: source.file.filename ?? source.title,
     };
   }
@@ -43,6 +46,7 @@ export function createSourceAttachment(
     return {
       type: "document",
       data: contentUrl,
+      sourceId: source.id,
       name: source.file.filename ?? source.title,
     };
   }
@@ -51,6 +55,7 @@ export function createSourceAttachment(
     return {
       type: "markdown_document",
       data: source.externalUri,
+      sourceId: source.id,
       name: source.title,
       markdown: `# ${source.title}\n\n${source.externalUri}`,
     };

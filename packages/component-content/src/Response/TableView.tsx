@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 interface TableViewProps {
   data: {
     headers: Array<{
@@ -57,8 +59,12 @@ const formatCell = (value: unknown, format?: string): string => {
 const isNumericColumn = (rows: Array<Record<string, unknown>>, key: string): boolean =>
   rows.length > 0 && rows.every((row) => row[key] == null || typeof row[key] === "number");
 
+const MAX_VISIBLE_ROWS = 100;
+
 export const TableView = ({ data }: TableViewProps) => {
   const { headers, rows } = data;
+  const [showAllRows, setShowAllRows] = useState(false);
+  const visibleRows = showAllRows ? rows : rows.slice(0, MAX_VISIBLE_ROWS);
 
   if (!headers || !rows || headers.length === 0) {
     return (
@@ -84,7 +90,7 @@ export const TableView = ({ data }: TableViewProps) => {
                 key={header.key}
                 scope="col"
                 className={`px-3 py-2 text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400 ${
-                  isNumericColumn(rows, header.key) ? "text-right" : "text-left"
+                  isNumericColumn(visibleRows, header.key) ? "text-right" : "text-left"
                 }`}
               >
                 {header.label}
@@ -93,16 +99,18 @@ export const TableView = ({ data }: TableViewProps) => {
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-          {rows.map((row, rowIndex) => (
+          {visibleRows.map((row, rowIndex) => (
             <tr
-              key={rowIndex}
+              key={`${headers.map((header) => String(row[header.key])).join("|")}-${rowIndex}`}
               className={rowIndex % 2 === 0 ? undefined : "bg-zinc-50/60 dark:bg-zinc-800/40"}
             >
               {headers.map((header) => (
                 <td
                   key={`${rowIndex}-${header.key}`}
                   className={`max-w-[24rem] break-words px-3 py-2 align-top text-sm text-zinc-600 dark:text-zinc-300 ${
-                    isNumericColumn(rows, header.key) ? "text-right tabular-nums" : "text-left"
+                    isNumericColumn(visibleRows, header.key)
+                      ? "text-right tabular-nums"
+                      : "text-left"
                   }`}
                 >
                   {formatCell(row[header.key], header.format)}
@@ -112,6 +120,16 @@ export const TableView = ({ data }: TableViewProps) => {
           ))}
         </tbody>
       </table>
+      {rows.length > MAX_VISIBLE_ROWS ? (
+        <button
+          type="button"
+          className="w-full border-t border-zinc-200 px-3 py-2 text-xs font-medium text-blue-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-blue-400 dark:hover:bg-zinc-800"
+          onClick={() => setShowAllRows((current) => !current)}
+          aria-expanded={showAllRows}
+        >
+          {showAllRows ? "Show fewer rows" : `Show ${rows.length - MAX_VISIBLE_ROWS} more rows`}
+        </button>
+      ) : null}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import type {
   Output,
+  OutputHistoryResponse,
   OutputShare,
   OutputSummary,
   SharedOutput,
@@ -48,6 +49,32 @@ export async function getOutput(outputId: string): Promise<Output> {
     method: "GET",
     headers: await getHeaders(),
   });
+
+  return returnFetchedData<Output>(response);
+}
+
+export async function getOutputHistory(outputId: string): Promise<OutputHistoryResponse> {
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/revisions`, {
+    method: "GET",
+    headers: await getHeaders(),
+  });
+
+  return returnFetchedData<OutputHistoryResponse>(response);
+}
+
+export async function restoreOutputRevision(
+  outputId: string,
+  revision: number,
+  expectedRevision: number,
+): Promise<Output> {
+  const response = await fetchApiOrThrow(
+    `/outputs/${encodeURIComponent(outputId)}/revisions/${revision}/restore`,
+    {
+      method: "POST",
+      headers: await getHeaders(),
+      body: { expectedRevision },
+    },
+  );
 
   return returnFetchedData<Output>(response);
 }

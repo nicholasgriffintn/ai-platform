@@ -46,6 +46,27 @@ describe("prepareUserMessage", () => {
     ]);
   });
 
+  it("keeps a durable source reference beside inline source content", () => {
+    const message = prepareUserMessage("review this", [
+      {
+        type: "markdown_document",
+        data: "https://files.test/sources/source-1/content",
+        sourceId: "source-1",
+        name: "brief.md",
+        markdown: "# Brief",
+      },
+    ]);
+
+    expect(message.content).toEqual([
+      { type: "text", text: "review this" },
+      {
+        type: "markdown_document",
+        source_id: "source-1",
+        markdown_document: { markdown: "# Brief", name: "brief.md" },
+      },
+    ]);
+  });
+
   it("builds multimodal content for artifact selection attachments", () => {
     const message = prepareUserMessage(
       "Make this firmer",

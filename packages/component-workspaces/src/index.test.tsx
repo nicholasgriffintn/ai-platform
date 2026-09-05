@@ -1,4 +1,10 @@
-import type { Goal, ProjectFlow, ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import type {
+  Goal,
+  ProjectFlow,
+  ProjectTask,
+  ProjectTaskActivityTimeline,
+  ProjectTaskPlanEvidence,
+} from "@ngriffin_uk/polychat-schemas";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -7,6 +13,7 @@ import {
   FlowEditorDialog,
   ProjectBriefCard,
   TaskBoard,
+  TaskActivityTimeline as TaskActivityTimelineView,
   TaskDetail,
 } from "./index";
 
@@ -101,6 +108,32 @@ const task: ProjectTask = {
   updatedAt: null,
   startedAt: null,
   completedAt: null,
+};
+
+const emptyActivity: ProjectTaskActivityTimeline = {
+  protocolVersion: 1,
+  projectId: task.projectId,
+  taskId: task.id,
+  items: [],
+};
+
+const emptyPlan: ProjectTaskPlanEvidence = {
+  protocolVersion: 1,
+  id: task.id,
+  status: "active",
+  stages: [
+    {
+      id: `${task.id}:research`,
+      flowStageId: "research",
+      name: "Research",
+      status: "proposed",
+      input: { objective: task.objective, acceptanceCriterionIds: [] },
+      attempts: [],
+      completionIds: [],
+      outputs: [],
+    },
+  ],
+  resume: { supported: true, reason: null },
 };
 
 describe("TaskBoard", () => {
@@ -344,12 +377,39 @@ describe("TaskDetail", () => {
       <TaskDetail
         task={task}
         goal={goal}
+        activity={{
+          protocolVersion: 1,
+          projectId: task.projectId,
+          taskId: task.id,
+          items: [
+            {
+              protocolVersion: 1,
+              id: "step-1",
+              projectId: task.projectId,
+              taskId: task.id,
+              runId: "run-1",
+              type: "goal.step.recorded",
+              category: "step",
+              status: "succeeded",
+              title: "Step 1",
+              detail: "**Checked** the release inputs",
+              items: [],
+              occurredAt: "2026-08-30T10:05:00.000Z",
+              sourceId: "1",
+              actionable: false,
+              terminal: true,
+            },
+          ],
+        }}
+        plan={emptyPlan}
         flow={flow}
         members={[]}
         agents={[]}
         blockedBy={[]}
         conversationHref={null}
         taskHref={() => "/tasks/task-1"}
+        runHref={() => "/chat?run_id=run-1"}
+        outputHref={() => "/outputs/output-1"}
         onRun={vi.fn()}
         onAccept={vi.fn()}
         onCancel={vi.fn()}
@@ -359,6 +419,7 @@ describe("TaskDetail", () => {
       />,
     );
 
+    fireEvent.click(screen.getByRole("button", { name: "Show details" }));
     expect(renderProgressSummary).toHaveBeenCalledWith("**Checked** the release inputs");
     expect(screen.getByText("Rendered: **Checked** the release inputs")).toBeTruthy();
   });
@@ -401,12 +462,16 @@ describe("TaskDetail", () => {
           acceptanceCriteria: [{ id: "criterion-1", text: criterion }],
         }}
         goal={completedGoal}
+        activity={emptyActivity}
+        plan={{ ...emptyPlan, status: "completed" }}
         flow={flow}
         members={[]}
         agents={[]}
         blockedBy={[]}
         conversationHref="/chat?completion_id=conversation-2"
         taskHref={() => "/tasks/task-1"}
+        runHref={() => "/chat?run_id=run-1"}
+        outputHref={() => "/outputs/output-1"}
         onRun={vi.fn()}
         onAccept={vi.fn()}
         onCancel={vi.fn()}
@@ -417,9 +482,71 @@ describe("TaskDetail", () => {
 
     expect(screen.getByRole("link", { name: "View result" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Reopen" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Reopen task" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Reopen task" })).toBeNull();
+    expect(
+      screen.getByText(
+        "Executed plans keep their evidence. Create a new task to run the work again.",
+      ),
+    ).toBeTruthy();
     expect(screen.getByLabelText(`Met: ${criterion}`)).toBeTruthy();
     expect(screen.getByText("Confirmed").getAttribute("data-slot")).toBe("badge");
+  });
+});
+
+describe("TaskActivityTimeline", () => {
+  it("keeps actionable and unknown activity visible while details stay optional", () => {
+    render(
+      <TaskActivityTimelineView
+        timeline={{
+          protocolVersion: 1,
+          projectId: task.projectId,
+          taskId: task.id,
+          items: [
+            {
+              protocolVersion: 1,
+              id: "question-1",
+              projectId: task.projectId,
+              taskId: task.id,
+              runId: "run-1",
+              type: "interaction.requested",
+              category: "interaction",
+              status: "waiting",
+              title: "Waiting for your answer",
+              detail: "Which format?",
+              items: [],
+              occurredAt: "2026-09-05T12:00:00.000Z",
+              sourceId: "question-1",
+              actionable: true,
+              terminal: false,
+            },
+            {
+              protocolVersion: 1,
+              id: "future-1",
+              projectId: task.projectId,
+              taskId: task.id,
+              runId: "run-1",
+              type: "future.checkpoint",
+              category: "run",
+              status: "unknown",
+              title: "Task activity",
+              detail: "future.checkpoint",
+              items: [],
+              occurredAt: "2026-09-05T11:59:00.000Z",
+              sourceId: "future-1",
+              actionable: false,
+              terminal: false,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Waiting for your answer")).toBeTruthy();
+    expect(screen.getByText("Task activity")).toBeTruthy();
+    expect(screen.queryByText("Which format?")).toBeNull();
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Show details" })[0]);
+    expect(screen.getByText("Which format?")).toBeTruthy();
   });
 });
 

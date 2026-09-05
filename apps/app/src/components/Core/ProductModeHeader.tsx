@@ -30,6 +30,9 @@ export function ProductModeHeader({
   const { trackEvent } = useTrackEvent();
   const { isMobile, sidebarVisible, setSidebarVisible } = useUIStore();
   const { isAuthenticated, localOnlyMode, setLocalOnlyMode } = useChatStore();
+  const cloudModeLabel = localOnlyMode
+    ? "Local-only mode stays on this device and cannot recover after closing. Switch to cloud mode."
+    : "Cloud mode stores chats for recovery. Switch to local-only mode.";
 
   const toggleLocalOnlyMode = () => {
     const nextMode = !localOnlyMode;
@@ -78,8 +81,8 @@ export function ProductModeHeader({
             <Button
               type="button"
               variant={localOnlyMode ? "iconActive" : "icon"}
-              title={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
-              aria-label={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
+              title={cloudModeLabel}
+              aria-label={cloudModeLabel}
               icon={localOnlyMode ? <CloudOff size={20} /> : <Cloud size={20} />}
               onClick={toggleLocalOnlyMode}
             />

@@ -84,10 +84,13 @@ class ApiService {
 
   getChat = (
     completion_id: string,
-    options?: { refreshPending?: boolean },
+    options?: { refreshPending?: boolean; messageLimit?: number },
   ): Promise<Conversation> => {
     return this.chatService.getChat(completion_id, options);
   };
+
+  getEarlierChatMessages = (completionId: string, beforeMessageId: string, limit?: number) =>
+    this.chatService.getEarlierChatMessages(completionId, beforeMessageId, limit);
 
   generateTitle = (completion_id: string, messages: Message[]): Promise<string> => {
     return this.chatService.generateTitle(completion_id, messages);
@@ -100,6 +103,18 @@ class ApiService {
   async cancelChatCompletion(completion_id: string): Promise<void> {
     return this.chatService.cancelChatCompletion(completion_id);
   }
+
+  getChatRun = (runId: string) => this.chatService.getChatRun(runId);
+
+  getChatRunSnapshot = (runId: string) => this.chatService.getChatRunSnapshot(runId);
+
+  getChatRunEvents = (runId: string, after: number, limit?: number) =>
+    this.chatService.getChatRunEvents(runId, after, limit);
+
+  getChatRunCommand = (commandId: string) => this.chatService.getChatRunCommand(commandId);
+
+  cancelChatRun = (runId: string, expectedAttempt: number, commandId?: string) =>
+    this.chatService.cancelChatRun(runId, expectedAttempt, commandId);
 
   getConversationGoal = (completion_id: string) => {
     return this.chatService.getConversationGoal(completion_id);

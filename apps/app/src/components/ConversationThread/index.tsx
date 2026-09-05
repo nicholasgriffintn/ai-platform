@@ -29,6 +29,7 @@ import {
   EMPTY_MODEL_CONFIG,
   getModelByReference,
   isImageGenerationOutputModel,
+  isReadinessFresh,
 } from "@ngriffin_uk/polychat-schemas";
 import type { ConversationModeMetadata, UserQuestionSet } from "@ngriffin_uk/polychat-schemas";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -55,6 +56,7 @@ import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
+import { ChatRunStatusBanner } from "./ChatRunStatusBanner";
 import { ChatSuggestions } from "./ChatSuggestions";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
@@ -111,7 +113,7 @@ export interface ConversationThreadModeConfig {
     toolName: string,
     action: Parameters<ToolInteractionHandler>[1],
     data: Parameters<ToolInteractionHandler>[2],
-  ) => boolean;
+  ) => boolean | Promise<boolean>;
 }
 
 interface ConversationThreadProps {
@@ -128,6 +130,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const {
     currentConversationId,
     model,
+    chatMode,
     chatInput,
     setChatInput,
     selectedAssistantAction,
@@ -157,7 +160,11 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     requestSecondOpinion,
     isRequestingSecondOpinion,
   } = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
-  const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading: isModelsLoading } = useModels();
+  const {
+    data: apiModels = EMPTY_MODEL_CONFIG,
+    isLoading: isModelsLoading,
+    refetch: refetchModels,
+  } = useModels();
   const modelReferences = useMemo(() => createModelReferenceMap(apiModels), [apiModels]);
   const selectedModelConfig = useMemo(
     () => getModelByReference(modelReferences, model),
@@ -387,6 +394,46 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
 
       // For text-to-image models, only allow the first message unless they support image edits
+      if (model && chatMode !== "local") {
+        let currentModel = selectedModelConfig;
+
+        if (currentModel?.readiness && !isReadinessFresh(currentModel.readiness)) {
+          const refreshResult = await refetchModels();
+          const refreshedModels = refreshResult.data ?? EMPTY_MODEL_CONFIG;
+
+          currentModel = getModelByReference(createModelReferenceMap(refreshedModels), model);
+
+          if (
+            refreshResult.isError ||
+            (currentModel?.readiness && !isReadinessFresh(currentModel.readiness))
+          ) {
+            toast.error("Model readiness could not be refreshed. Retry before sending.");
+
+            return false;
+          }
+        }
+
+        if (!currentModel) {
+          toast.error(
+            "Your selected model is no longer available. Choose another model before sending.",
+          );
+
+          return false;
+        }
+
+        if (currentModel.readiness?.state && currentModel.readiness.state !== "ready") {
+          toast.error(currentModel.readiness.reason);
+
+          return false;
+        }
+
+        if (currentModel.isExecutable === false) {
+          toast.error("This model cannot run under the current account and provider policy.");
+
+          return false;
+        }
+      }
+
       if (selectedModelConfig) {
         if (
           isImageGenerationOutputModel(selectedModelConfig) &&
@@ -478,6 +525,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [
       chatInput,
       model,
+      chatMode,
       messages,
       compactConversation,
       sendMessage,
@@ -490,6 +538,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       selectedAssistantAction,
       selectedAssistantAction?.item,
       selectedModelConfig,
+      refetchModels,
       modeConfig?.analyticsSource,
       navigate,
     ],
@@ -592,14 +641,14 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   );
 
   const handleToolInteraction = useCallback<ToolInteractionHandler>(
-    (toolName, action, data) => {
+    async (toolName, action, data) => {
       trackFeatureUsage("tool_interaction", {
         tool_name: toolName,
         action: action,
         conversation_id: currentConversationId || "new",
       });
 
-      if (modeToolInteraction?.(toolName, action, data)) {
+      if (await modeToolInteraction?.(toolName, action, data)) {
         return;
       }
 
@@ -622,7 +671,11 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               }
             : interactionRequestOptions;
 
-          void sendMessage(data.input, undefined, requestOptions);
+          const response = await sendMessage(data.input, undefined, requestOptions);
+
+          if (response.status === "error") {
+            throw new Error(response.response || "The approval could not be submitted");
+          }
         }
 
         return;
@@ -734,6 +787,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         )}
         <ComposerBanner
           model={selectedModelConfig}
+          requestedModelId={model}
+          isModelsLoading={isModelsLoading}
           hideSuggestions={modeConfig?.hideComposerSuggestions}
         />
         {modeConfig?.pendingUserQuestions ? (
@@ -756,6 +811,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
             onClear={() => void handleGoalCommand({ kind: "clear" })}
           />
         ) : null}
+        {currentConversation?.latest_run &&
+        currentConversation.latest_run.status !== "succeeded" ? (
+          <ChatRunStatusBanner run={currentConversation.latest_run} />
+        ) : null}
         <ChatInput
           goalState={goalState}
           ref={chatInputRef}
@@ -771,6 +830,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           modelProviderFilter={modeConfig?.modelProviderFilter}
           modelScope={modeConfig?.modelScope}
           onModelChange={modeConfig?.onModelChange}
+          activeRunStatus={currentConversation?.latest_run?.status}
+          hasConversationHistory={messages.length > 0}
           hideDefaultControls={modeConfig?.hideDefaultControls}
           hideComposerActionMenu={modeConfig?.hideComposerActionMenu}
           allowedAssistantActionCapabilities={modeConfig?.allowedAssistantActionCapabilities}
