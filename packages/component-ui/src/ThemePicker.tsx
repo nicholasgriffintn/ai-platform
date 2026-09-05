@@ -67,13 +67,11 @@ function ThemeCardHeader({
 }) {
   return (
     <span className="flex items-baseline justify-between gap-3">
-      <span className="text-foreground flex items-center gap-2 text-xl font-semibold">
+      <span className="text-foreground font-display flex items-center gap-2 text-2xl font-medium tracking-tight">
         {label}
         {isSelected && <Check className="text-active-work h-4 w-4 shrink-0" aria-hidden />}
       </span>
-      <span className="text-muted-foreground font-mono text-[11px] tracking-wider uppercase">
-        {caption}
-      </span>
+      <span className="polychat-eyebrow">{caption}</span>
     </span>
   );
 }
