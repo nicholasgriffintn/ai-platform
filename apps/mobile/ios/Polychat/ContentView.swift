@@ -1,13 +1,17 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject var authManager: AuthenticationManager
     @EnvironmentObject var conversationManager: ConversationManager
     @EnvironmentObject var modelsStore: ModelsStore
+    @EnvironmentObject var notificationManager: TaskNotificationManager
     @State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
     @State private var selectedConversationID: String?
     @State private var showingSettings = false
     @State private var showingRecipes = false
+    @State private var showingInbox = false
+    @State private var outputReviewTarget: OutputReviewTarget?
     @State private var conversationLoadTask: Task<Void, Never>?
 
     private var isLoadingSelectedConversation: Bool {
@@ -32,6 +36,9 @@ struct ContentView: View {
                         },
                         onShowRecipes: {
                             showingRecipes = true
+                        },
+                        onShowInbox: {
+                            showingInbox = true
                         }
                     )
                 } detail: {
@@ -52,13 +59,31 @@ struct ContentView: View {
                         startRecipeConversation(setup)
                     }
                 }
+                .sheet(isPresented: $showingInbox) {
+                    TaskInboxView()
+                }
+                .sheet(item: $outputReviewTarget) { target in
+                    OutputRevisionReviewView(outputId: target.id)
+                }
                 .task(id: authManager.isAuthenticated) {
                     if authManager.isAuthenticated {
                         await conversationManager.loadConversations()
                         await modelsStore.fetchModels()
+                        await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
                     } else {
                         conversationManager.reset()
                         selectedConversationID = nil
+                        await notificationManager.reconcileAuthenticatedState(isAuthenticated: false)
+                    }
+                }
+                .onChange(of: notificationManager.requestedInboxItemId) { _, itemId in
+                    if itemId != nil {
+                        showingInbox = true
+                    }
+                }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active {
+                        Task { await notificationManager.refresh() }
                     }
                 }
                 .onChange(of: selectedConversationID) { _, conversationID in
@@ -82,6 +107,10 @@ struct ContentView: View {
         }
         .onOpenURL { url in
             authManager.handleOpenURL(url)
+            notificationManager.handleDeepLink(url)
+            if let outputId = OutputReviewDeepLink.outputId(from: url) {
+                outputReviewTarget = OutputReviewTarget(id: outputId)
+            }
         }
     }
 
@@ -103,6 +132,10 @@ struct ContentView: View {
             }
         }
     }
+}
+
+private struct OutputReviewTarget: Identifiable {
+    let id: String
 }
 
 private struct ConversationLoadingView: View {
@@ -163,4 +196,5 @@ private struct EmptyConversationView: View {
         .environmentObject(AuthenticationManager())
         .environmentObject(ConversationManager())
         .environmentObject(ModelsStore())
+        .environmentObject(TaskNotificationManager())
 }

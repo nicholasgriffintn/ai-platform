@@ -16,12 +16,25 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0033: Keep retrieval authority in D1 and preserve vector provenance](decisions/0033-separate-embedding-runtime-and-retrieval-policy.md).
 - [0036: Compose scoped agents from platform capabilities](decisions/0036-agents-composed-from-platform-capabilities.md) — incorporates 0023, 0034.
 - [0041: Meter vendor units and admit turns against credits](decisions/0041-usage-metering-and-credits.md) — incorporates 0042.
+- [0042: Persist one identity and lifecycle for each stored chat run](decisions/0042-persist-chat-run-identity.md).
+- [0043: Order chat run events with snapshot reset](decisions/0043-order-chat-run-events-with-snapshot-reset.md).
+- [0044: Project native task decisions from authoritative interaction state](decisions/0044-project-native-task-interactions.md).
+- [0045: Reconstruct project task activity from authoritative records](decisions/0045-reconstruct-project-task-activity.md).
+- [0046: Budget and report the context of each model step](decisions/0046-budget-and-report-run-context.md).
+- [0047: Bound model retries and surface unknown writes](decisions/0047-bound-model-retries-and-surface-unknown-writes.md).
+- [0048: Expire readiness and make model handoffs explicit](decisions/0048-expire-readiness-and-make-model-handoffs-explicit.md).
+- [0049: Derive attention from current task state and revalidate notification delivery](decisions/0049-project-current-attention-and-notification-delivery.md).
+- [0050: Snapshot effective provenance on durable results](decisions/0050-snapshot-effective-provenance-on-durable-results.md).
+- [0051: Append safe local output restores](decisions/0051-append-safe-local-output-restores.md).
+- [0052: Snapshot project flows and derive stage evidence](decisions/0052-snapshot-project-flows-and-derive-stage-evidence.md).
+- [0053: Attribute run usage and settle reservations once](decisions/0053-attribute-run-usage-and-settle-reservations-once.md).
+- [0054: Bound live streams and page durable history](decisions/0054-bound-live-streams-and-page-durable-history.md).
 
 ## Accepted designs awaiting implementation
 
 - [0038: Scope future model lifecycle to a provider surface](decisions/0038-provider-surface-model-lifecycle.md).
 - [0040: Resolve future provider governance before execution](decisions/0040-provider-execution-governance-policy.md).
 
-Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0043.
+Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0054.
 
 Add a record only for a durable trade-off that code alone cannot explain. State the problem, decision, implementation status and consequence; update this index. Keep rollout plans and copied schemas out of ADRs.

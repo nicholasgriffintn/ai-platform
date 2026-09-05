@@ -1,6 +1,7 @@
 import Foundation
 public struct ChatCompletionResponse: Codable {
     public let choices: [ChatChoice]
+    public let run: ChatRunCommandReceipt?
 
     public struct ChatChoice: Codable {
         public let message: ChatMessage
@@ -29,6 +30,9 @@ public struct ChatCompletionRequest: Encodable {
     let enabledTools: [String]?
     let toolSelectionMode: String
     let modelRouterMode: String?
+    let commandId: String
+    let runId: String?
+    let connectorApprovalId: String?
 
     enum CodingKeys: String, CodingKey {
         case messages, model, provider, platform, mode, store, stream, temperature, reasoning, verbosity, options
@@ -42,6 +46,9 @@ public struct ChatCompletionRequest: Encodable {
         case enabledTools = "enabled_tools"
         case toolSelectionMode = "tool_selection_mode"
         case modelRouterMode = "model_router_mode"
+        case commandId = "command_id"
+        case runId = "run_id"
+        case connectorApprovalId = "connector_approval_id"
     }
 
     public init(
@@ -51,7 +58,10 @@ public struct ChatCompletionRequest: Encodable {
         store: Bool = true,
         completionId: String? = nil,
         settings: ChatSettings? = nil,
-        stream: Bool = false
+        stream: Bool = false,
+        commandId: String = UUID().uuidString,
+        runId: String? = nil,
+        connectorApprovalId: String? = nil
     ) {
         self.messages = ChatMessage.providerMessages(from: messages).map(ChatRequestMessage.init)
         self.model = model
@@ -74,6 +84,268 @@ public struct ChatCompletionRequest: Encodable {
         self.enabledTools = settings?.enabledTools.isEmpty == false ? settings?.enabledTools : nil
         self.toolSelectionMode = "managed"
         self.modelRouterMode = model == nil ? "auto" : nil
+        self.commandId = commandId
+        self.runId = runId
+        self.connectorApprovalId = connectorApprovalId
+    }
+}
+
+public struct ChatRun: Codable, Equatable {
+    public let protocolVersion: Int
+    public let id: String
+    public let conversationId: String
+    public let projectId: String?
+    public let projectTaskId: String?
+    public let stageId: String?
+    public let initiatorUserId: Int
+    public let status: String
+    public let attempt: Int
+    public let createdAt: String
+    public let updatedAt: String
+    public let startedAt: String?
+    public let completedAt: String?
+    public let cancellationRequestedAt: String?
+    public let terminalReason: String?
+    public let lastMessageId: String?
+    public let context: ChatContextSnapshot?
+    public let retry: ChatRetrySnapshot?
+    public let usage: ChatRunUsage?
+
+    public init(
+        protocolVersion: Int,
+        id: String,
+        conversationId: String,
+        projectId: String?,
+        projectTaskId: String?,
+        stageId: String? = nil,
+        initiatorUserId: Int,
+        status: String,
+        attempt: Int,
+        createdAt: String,
+        updatedAt: String,
+        startedAt: String?,
+        completedAt: String?,
+        cancellationRequestedAt: String? = nil,
+        terminalReason: String?,
+        lastMessageId: String?,
+        context: ChatContextSnapshot? = nil,
+        retry: ChatRetrySnapshot? = nil,
+        usage: ChatRunUsage? = nil
+    ) {
+        self.protocolVersion = protocolVersion
+        self.id = id
+        self.conversationId = conversationId
+        self.projectId = projectId
+        self.projectTaskId = projectTaskId
+        self.stageId = stageId
+        self.initiatorUserId = initiatorUserId
+        self.status = status
+        self.attempt = attempt
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.startedAt = startedAt
+        self.completedAt = completedAt
+        self.cancellationRequestedAt = cancellationRequestedAt
+        self.terminalReason = terminalReason
+        self.lastMessageId = lastMessageId
+        self.context = context
+        self.retry = retry
+        self.usage = usage
+    }
+}
+
+public struct ChatRunUsage: Codable, Equatable {
+    public let protocolVersion: Int
+    public let runId: String
+    public let currentAttempt: Int
+    public let measurement: String
+    public let reservation: ChatRunUsageReservation?
+    public let consumption: ChatRunUsageConsumption
+    public let attempts: [ChatRunUsageAttempt]
+    public let settlement: ChatRunUsageSettlement
+}
+
+public struct ChatRunUsageReservation: Codable, Equatable {
+    public let creditMicros: Int
+    public let status: String
+    public let expiresAt: String?
+    public let createdAt: String
+    public let updatedAt: String?
+}
+
+public struct ChatRunUsageConsumption: Codable, Equatable {
+    public let status: String
+    public let eventCount: Int
+    public let costMicros: Int?
+    public let creditMicros: Int?
+    public let estimatedPriceEventCount: Int
+    public let bySource: [ChatRunUsageSourceSummary]
+}
+
+public struct ChatRunUsageSourceSummary: Codable, Equatable {
+    public let source: String
+    public let eventCount: Int
+    public let costMicros: Int
+    public let creditMicros: Int
+    public let estimatedPriceEventCount: Int
+}
+
+public struct ChatRunUsageAttempt: Codable, Equatable {
+    public let attempt: Int
+    public let measurement: String
+    public let inputTokens: Int?
+    public let eventCount: Int
+    public let costMicros: Int?
+    public let creditMicros: Int?
+    public let estimatedPriceEventCount: Int
+}
+
+public struct ChatRunUsageSettlement: Codable, Equatable {
+    public let status: String
+    public let at: String?
+}
+
+public struct ChatRetrySnapshot: Codable, Equatable {
+    public let protocolVersion: Int
+    public let step: Int
+    public let attempt: Int
+    public let maxAttempts: Int
+    public let runRetry: Int
+    public let maxRunRetries: Int
+    public let phase: String
+    public let classification: String
+    public let reason: String
+    public let scheduledAt: String
+    public let retryAt: String?
+}
+
+public struct ChatContextSnapshot: Codable, Equatable {
+    public let protocolVersion: Int
+    public let runId: String
+    public let conversationId: String
+    public let attempt: Int
+    public let step: Int
+    public let model: String
+    public let provider: String?
+    public let generatedAt: String
+    public let usage: ChatContextUsage
+    public let messages: ChatContextMessageCounts
+    public let sources: [ChatContextSource]
+    public let skills: [ChatContextSkill]
+    public let approvals: [ChatContextApproval]?
+    public let summary: ChatContextSummary?
+    public let omissions: [ChatContextOmission]
+}
+
+public struct ChatContextApproval: Codable, Equatable, Identifiable {
+    public let id: String
+    public let type: String
+    public let status: String
+    public let toolName: String?
+    public let messageId: String?
+}
+
+public struct ChatContextUsage: Codable, Equatable {
+    public let inputTokens: Int
+    public let contextWindow: Int
+    public let source: String
+}
+
+public struct ChatContextMessageCounts: Codable, Equatable {
+    public let included: Int
+    public let omitted: Int
+}
+
+public struct ChatContextSource: Codable, Equatable, Identifiable {
+    public let id: String
+    public let name: String
+    public let status: String
+    public let retrievalPath: String?
+    public let messageId: String?
+}
+
+public struct ChatContextSkill: Codable, Equatable, Identifiable {
+    public let id: String
+    public let name: String
+    public let state: String
+    public let revision: Int?
+}
+
+public struct ChatContextSummary: Codable, Equatable {
+    public let messageId: String
+    public let status: String
+    public let text: String
+    public let representedMessageCount: Int
+    public let candidateMessageCount: Int
+    public let fallback: Bool
+}
+
+public struct ChatContextOmission: Codable, Equatable, Identifiable {
+    public let id: String
+    public let kind: String
+    public let reason: String
+    public let count: Int
+    public let messageId: String?
+    public let retrievalPath: String?
+}
+
+public struct ChatRunCommandReceipt: Codable, Equatable {
+    public let protocolVersion: Int
+    public let commandId: String
+    public let run: ChatRun
+    public let kind: String
+    public let acceptedAt: String
+    public let duplicate: Bool
+}
+
+public struct ChatRunRecoveryResponse: Codable, Equatable {
+    public let run: ChatRun
+    public let messages: [ChatMessage]
+}
+
+public struct ChatRunSnapshotResponse: Codable, Equatable {
+    public let protocolVersion: Int
+    public let cursor: Int
+    public let run: ChatRun
+    public let messages: [ChatMessage]
+
+    var recoveryResponse: ChatRunRecoveryResponse {
+        ChatRunRecoveryResponse(run: run, messages: messages)
+    }
+}
+
+public struct ChatRunEvent: Codable, Equatable {
+    public let protocolVersion: Int
+    public let id: String
+    public let runId: String
+    public let sequence: Int
+    public let attempt: Int
+    public let type: String
+    public let occurredAt: String
+    public let data: [String: JSONValue]
+}
+
+public struct ChatRunReplayResponse: Codable, Equatable {
+    public let protocolVersion: Int
+    public let runId: String
+    public let fromCursor: Int
+    public let nextCursor: Int
+    public let resetRequired: Bool
+    public let events: [ChatRunEvent]
+    public let snapshot: ChatRunSnapshotResponse?
+}
+
+public struct ChatRunCommandReceiptResponse: Codable, Equatable {
+    public let run: ChatRunCommandReceipt
+}
+
+struct CancelChatRunRequest: Encodable {
+    let commandId: String
+    let expectedAttempt: Int
+
+    enum CodingKeys: String, CodingKey {
+        case commandId = "command_id"
+        case expectedAttempt = "expected_attempt"
     }
 }
 
@@ -181,7 +453,12 @@ public struct ModelConfigItem: Codable, Identifiable {
     public let isDeprecated: Bool?
     public let isDefault: Bool?
     public let isExecutable: Bool?
+    public let readiness: ModelReadiness?
     public let status: String?
+    public let supportsAttachments: Bool?
+    public let supportsDocuments: Bool?
+    public let supportsAudio: Bool?
+    public let supportsImageEdits: Bool?
     public let reasoningConfig: ReasoningConfig?
     public let supportedServiceTiers: [String]?
     public let serviceTierMultipliers: [String: Double]?
@@ -206,9 +483,10 @@ public struct ModelConfigItem: Codable, Identifiable {
     
     enum CodingKeys: String, CodingKey {
         case name, provider, description, strengths, contextWindow, pricing, modalities, supportsFunctions, multimodal
-        case isFeatured, featured, isDefault, isExecutable, status
+        case isFeatured, featured, isDefault, isExecutable, readiness, status
         case isDeprecated, deprecated
         case reasoningConfig, supportedServiceTiers, serviceTierMultipliers
+        case supportsAttachments, supportsDocuments, supportsAudio, supportsImageEdits
     }
     
     public init(
@@ -226,7 +504,12 @@ public struct ModelConfigItem: Codable, Identifiable {
         isDeprecated: Bool? = nil,
         isDefault: Bool? = nil,
         isExecutable: Bool? = nil,
+        readiness: ModelReadiness? = nil,
         status: String? = nil,
+        supportsAttachments: Bool? = nil,
+        supportsDocuments: Bool? = nil,
+        supportsAudio: Bool? = nil,
+        supportsImageEdits: Bool? = nil,
         reasoningConfig: ReasoningConfig? = nil,
         supportedServiceTiers: [String]? = nil,
         serviceTierMultipliers: [String: Double]? = nil
@@ -245,7 +528,12 @@ public struct ModelConfigItem: Codable, Identifiable {
         self.isDeprecated = isDeprecated
         self.isDefault = isDefault
         self.isExecutable = isExecutable
+        self.readiness = readiness
         self.status = status
+        self.supportsAttachments = supportsAttachments
+        self.supportsDocuments = supportsDocuments
+        self.supportsAudio = supportsAudio
+        self.supportsImageEdits = supportsImageEdits
         self.reasoningConfig = reasoningConfig
         self.supportedServiceTiers = supportedServiceTiers
         self.serviceTierMultipliers = serviceTierMultipliers
@@ -269,7 +557,12 @@ public struct ModelConfigItem: Codable, Identifiable {
             ?? container.decodeIfPresent(Bool.self, forKey: .deprecated)
         isDefault = try container.decodeIfPresent(Bool.self, forKey: .isDefault)
         isExecutable = try container.decodeIfPresent(Bool.self, forKey: .isExecutable)
+        readiness = try container.decodeIfPresent(ModelReadiness.self, forKey: .readiness)
         status = try container.decodeIfPresent(String.self, forKey: .status)
+        supportsAttachments = try container.decodeIfPresent(Bool.self, forKey: .supportsAttachments)
+        supportsDocuments = try container.decodeIfPresent(Bool.self, forKey: .supportsDocuments)
+        supportsAudio = try container.decodeIfPresent(Bool.self, forKey: .supportsAudio)
+        supportsImageEdits = try container.decodeIfPresent(Bool.self, forKey: .supportsImageEdits)
         reasoningConfig = try container.decodeIfPresent(ReasoningConfig.self, forKey: .reasoningConfig)
         supportedServiceTiers = try container.decodeIfPresent([String].self, forKey: .supportedServiceTiers)
         serviceTierMultipliers = try container.decodeIfPresent([String: Double].self, forKey: .serviceTierMultipliers)
@@ -291,10 +584,64 @@ public struct ModelConfigItem: Codable, Identifiable {
         try container.encodeIfPresent(isDeprecated, forKey: .isDeprecated)
         try container.encodeIfPresent(isDefault, forKey: .isDefault)
         try container.encodeIfPresent(isExecutable, forKey: .isExecutable)
+        try container.encodeIfPresent(readiness, forKey: .readiness)
         try container.encodeIfPresent(status, forKey: .status)
+        try container.encodeIfPresent(supportsAttachments, forKey: .supportsAttachments)
+        try container.encodeIfPresent(supportsDocuments, forKey: .supportsDocuments)
+        try container.encodeIfPresent(supportsAudio, forKey: .supportsAudio)
+        try container.encodeIfPresent(supportsImageEdits, forKey: .supportsImageEdits)
         try container.encodeIfPresent(reasoningConfig, forKey: .reasoningConfig)
         try container.encodeIfPresent(supportedServiceTiers, forKey: .supportedServiceTiers)
         try container.encodeIfPresent(serviceTierMultipliers, forKey: .serviceTierMultipliers)
+    }
+}
+
+public struct ModelReadiness: Codable, Equatable {
+    public let protocolVersion: Int
+    public let state: String
+    public let reasonCode: String
+    public let reason: String
+    public let checkedAt: String
+    public let expiresAt: String
+    public let action: ModelReadinessAction?
+
+    public init(
+        protocolVersion: Int,
+        state: String,
+        reasonCode: String,
+        reason: String,
+        checkedAt: String,
+        expiresAt: String,
+        action: ModelReadinessAction? = nil
+    ) {
+        self.protocolVersion = protocolVersion
+        self.state = state
+        self.reasonCode = reasonCode
+        self.reason = reason
+        self.checkedAt = checkedAt
+        self.expiresAt = expiresAt
+        self.action = action
+    }
+
+    var isReady: Bool {
+        state == "ready"
+    }
+
+    func isFresh(at date: Date = Date()) -> Bool {
+        guard let expiry = AppDateParser.parse(expiresAt) else { return false }
+        return expiry > date
+    }
+}
+
+public struct ModelReadinessAction: Codable, Equatable {
+    public let kind: String
+    public let label: String
+    public let path: String?
+
+    public init(kind: String, label: String, path: String? = nil) {
+        self.kind = kind
+        self.label = label
+        self.path = path
     }
 }
 
@@ -563,6 +910,9 @@ public struct ConversationDetailResponse: Codable {
     public let shareId: String?
     public let lastMessageAt: String?
     public let messageCount: Int?
+    public let latestRun: ChatRun?
+    public let hasMoreMessages: Bool
+    public let oldestMessageId: String?
 
     enum CodingKeys: String, CodingKey {
         case id, title, model, messages
@@ -572,6 +922,9 @@ public struct ConversationDetailResponse: Codable {
         case shareId = "share_id"
         case lastMessageAt = "last_message_at"
         case messageCount = "message_count"
+        case latestRun = "latest_run"
+        case hasMoreMessages = "has_more_messages"
+        case oldestMessageId = "oldest_message_id"
     }
 
     public init(from decoder: Decoder) throws {
@@ -586,5 +939,33 @@ public struct ConversationDetailResponse: Codable {
         shareId = try container.decodeIfPresent(String.self, forKey: .shareId)
         lastMessageAt = try container.decodeIfPresent(String.self, forKey: .lastMessageAt)
         messageCount = try container.decodeIfPresent(Int.self, forKey: .messageCount)
+        latestRun = try container.decodeIfPresent(ChatRun.self, forKey: .latestRun)
+        hasMoreMessages = try container.decodeIfPresent(Bool.self, forKey: .hasMoreMessages) ?? false
+        oldestMessageId = try container.decodeIfPresent(String.self, forKey: .oldestMessageId)
+    }
+}
+
+public struct ConversationMessagePageResponse: Codable {
+    public let messages: [ChatMessage]
+    public let hasMore: Bool
+    public let oldestMessageId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case messages
+        case hasMore = "has_more"
+        case oldestMessageId = "oldest_message_id"
+    }
+
+    public init(messages: [ChatMessage], hasMore: Bool, oldestMessageId: String?) {
+        self.messages = messages
+        self.hasMore = hasMore
+        self.oldestMessageId = oldestMessageId
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        messages = try container.decodeIfPresent([ChatMessage].self, forKey: .messages) ?? []
+        hasMore = try container.decodeIfPresent(Bool.self, forKey: .hasMore) ?? false
+        oldestMessageId = try container.decodeIfPresent(String.self, forKey: .oldestMessageId)
     }
 }

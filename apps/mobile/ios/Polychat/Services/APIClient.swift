@@ -72,6 +72,64 @@ final class APIClient: ObservableObject {
         try await send(path: "/auth/logout", method: "POST", emptyBody: true)
     }
 
+    func fetchTaskInbox() async throws -> TaskInboxResponse {
+        try await send(path: "/notifications/inbox", method: "GET")
+    }
+
+    func fetchTaskNotificationSettings() async throws -> TaskNotificationSettings {
+        try await send(path: "/notifications/settings", method: "GET")
+    }
+
+    func updateTaskNotificationPreferences(
+        _ request: UpdateTaskNotificationPreferencesRequest
+    ) async throws -> TaskNotificationSettings {
+        try await send(path: "/notifications/settings", method: "PUT", body: request)
+    }
+
+    func registerTaskNotifications(token: String) async throws -> TaskNotificationRegistration {
+        let response: TaskNotificationRegistrationResponse = try await send(
+            path: "/notifications/registrations",
+            method: "POST",
+            body: RegisterIOSNotificationRequest(
+                installationId: NotificationInstallation.id,
+                token: token
+            )
+        )
+
+        return response.registration
+    }
+
+    func removeTaskNotificationRegistration() async throws -> SuccessResponse {
+        try await send(
+            path: "/notifications/registrations/\(NotificationInstallation.id)",
+            method: "DELETE"
+        )
+    }
+
+    func updateTaskInbox(itemIds: [String], action: String) async throws -> TaskInboxMutationResponse {
+        try await send(
+            path: "/notifications/inbox/\(action)",
+            method: "POST",
+            body: TaskInboxReceiptRequest(itemIds: itemIds)
+        )
+    }
+
+    func fetchOutputHistory(id: String) async throws -> OutputHistoryResponse {
+        try await send(path: "/outputs/\(id)/revisions", method: "GET")
+    }
+
+    func restoreOutputRevision(
+        outputId: String,
+        revision: Int,
+        expectedRevision: Int
+    ) async throws -> RestoredOutputResponse {
+        try await send(
+            path: "/outputs/\(outputId)/revisions/\(revision)/restore",
+            method: "POST",
+            body: RestoreOutputRevisionRequest(expectedRevision: expectedRevision)
+        )
+    }
+
     func createChatCompletion(
         messages: [ChatMessage],
         modelId: String?,
@@ -97,7 +155,8 @@ final class APIClient: ObservableObject {
         modelId: String?,
         provider: String? = nil,
         completionId: String? = nil,
-        settings: ChatSettings? = nil
+        settings: ChatSettings? = nil,
+        commandId: String = UUID().uuidString
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         let requestBody = ChatCompletionRequest(
             messages: messages,
@@ -106,7 +165,8 @@ final class APIClient: ObservableObject {
             store: true,
             completionId: completionId,
             settings: settings,
-            stream: true
+            stream: true,
+            commandId: commandId
         )
         guard !requestBody.messages.isEmpty else {
             return AsyncThrowingStream { continuation in
@@ -114,7 +174,37 @@ final class APIClient: ObservableObject {
             }
         }
 
-        return AsyncThrowingStream { continuation in
+        return chatCompletionStream(requestBody)
+    }
+
+    func streamApprovedConnectorOperation(
+        messages: [ChatMessage],
+        modelId: String?,
+        provider: String?,
+        completionId: String,
+        settings: ChatSettings?,
+        approvalId: String,
+        commandId: String
+    ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
+        let requestBody = ChatCompletionRequest(
+            messages: messages,
+            model: modelId,
+            provider: provider,
+            store: true,
+            completionId: completionId,
+            settings: settings,
+            stream: true,
+            commandId: commandId,
+            connectorApprovalId: approvalId
+        )
+
+        return chatCompletionStream(requestBody)
+    }
+
+    private func chatCompletionStream(
+        _ requestBody: ChatCompletionRequest
+    ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
+        AsyncThrowingStream { continuation in
             let task = Task(priority: .userInitiated) {
                 do {
                     try await self.stream(path: "/chat/completions", method: "POST", body: requestBody, continuation: continuation)
@@ -181,7 +271,129 @@ final class APIClient: ObservableObject {
         try await send(
             path: "/chat/completions/\(id)",
             method: "GET",
-            queryItems: refreshPending ? [URLQueryItem(name: "refresh_pending", value: "true")] : []
+            queryItems: [
+                URLQueryItem(name: "refresh_pending", value: String(refreshPending)),
+                URLQueryItem(name: "message_limit", value: "100")
+            ]
+        )
+    }
+
+    func fetchConversationMessages(
+        id: String,
+        before: String,
+        limit: Int = 100
+    ) async throws -> ConversationMessagePageResponse {
+        try await send(
+            path: "/chat/completions/\(id)/messages",
+            method: "GET",
+            queryItems: [
+                URLQueryItem(name: "before", value: before),
+                URLQueryItem(name: "limit", value: String(limit))
+            ]
+        )
+    }
+
+    func fetchChatRun(id: String) async throws -> ChatRunRecoveryResponse {
+        try await send(path: "/chat/runs/\(id)", method: "GET")
+    }
+
+    func fetchChatRunSnapshot(id: String) async throws -> ChatRunSnapshotResponse {
+        try await send(path: "/chat/runs/\(id)/snapshot", method: "GET")
+    }
+
+    func fetchChatRunEvents(
+        id: String,
+        after: Int,
+        limit: Int = 100
+    ) async throws -> ChatRunReplayResponse {
+        try await send(
+            path: "/chat/runs/\(id)/events",
+            method: "GET",
+            queryItems: [
+                URLQueryItem(name: "after", value: String(after)),
+                URLQueryItem(name: "limit", value: String(limit))
+            ]
+        )
+    }
+
+    func fetchChatRunCommand(id: String) async throws -> ChatRunCommandReceipt {
+        let response: ChatRunCommandReceiptResponse = try await send(
+            path: "/chat/run-commands/\(id)",
+            method: "GET"
+        )
+
+        return response.run
+    }
+
+    func cancelChatRun(
+        id: String,
+        expectedAttempt: Int,
+        commandId: String = UUID().uuidString
+    ) async throws -> ChatRunCommandReceipt {
+        let response: ChatRunCommandReceiptResponse = try await send(
+            path: "/chat/runs/\(id)/cancel",
+            method: "POST",
+            body: CancelChatRunRequest(commandId: commandId, expectedAttempt: expectedAttempt)
+        )
+
+        return response.run
+    }
+
+    func fetchConnectorApproval(id: String) async throws -> ConnectorOperationApproval {
+        let response: ConnectorOperationApprovalResponse = try await send(
+            path: "/apps/connectors/approvals/\(id)",
+            method: "GET"
+        )
+
+        return response.approval
+    }
+
+    func resolveConnectorApproval(
+        id: String,
+        resolution: String
+    ) async throws -> ConnectorApprovalResolution {
+        let response: ConnectorApprovalResolutionResponse = try await send(
+            path: "/apps/connectors/approvals/\(id)",
+            method: "PUT",
+            body: ResolveConnectorApprovalRequest(resolution: resolution)
+        )
+
+        return response.approval
+    }
+
+    func fetchProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskDetailResponse {
+        try await send(path: "/projects/\(projectId)/tasks/\(taskId)", method: "GET")
+    }
+
+    func answerProjectTaskQuestions(
+        projectId: String,
+        taskId: String,
+        interactionId: String,
+        answers: [UserQuestionAnswer]
+    ) async throws -> ProjectTaskResponse {
+        try await send(
+            path: "/projects/\(projectId)/tasks/\(taskId)/answers",
+            method: "POST",
+            body: AnswerProjectTaskQuestionsRequest(
+                interactionId: interactionId,
+                answers: answers
+            )
+        )
+    }
+
+    func resolveProjectTaskApproval(
+        projectId: String,
+        taskId: String,
+        interactionId: String,
+        resolution: String
+    ) async throws -> ProjectTaskResponse {
+        try await send(
+            path: "/projects/\(projectId)/tasks/\(taskId)/tool-approval",
+            method: "POST",
+            body: ResolveProjectTaskApprovalRequest(
+                interactionId: interactionId,
+                resolution: resolution
+            )
         )
     }
 
@@ -412,6 +624,7 @@ final class APIClient: ObservableObject {
         request.httpMethod = method
         request.setValue("mobile", forHTTPHeaderField: "X-Platform")
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        request.setValue(NotificationInstallation.id, forHTTPHeaderField: "X-Notification-Installation")
 
         if let contentType {
             request.setValue(contentType, forHTTPHeaderField: "Content-Type")

@@ -8,8 +8,12 @@ class ConversationManager: ObservableObject {
     @Published var selectedModelId: String?
     @Published var isLoading: Bool = false
     @Published var loadingConversationID: String?
+    @Published private(set) var isLoadingEarlierMessages = false
     @Published var error: String?
     @Published var usageLimits: ChatUsageLimits?
+    @Published private(set) var currentTaskInteraction: ProjectTaskInteractionControl?
+    @Published private(set) var currentTaskActivity: ProjectTaskActivityTimeline?
+    @Published private(set) var currentConnectorApproval: ConnectorApprovalControl?
 
     private var apiClient: (any ConversationAPIClient)?
     private var modelsStore: ModelsStore?
@@ -31,8 +35,12 @@ class ConversationManager: ObservableObject {
         selectedModelId = nil
         isLoading = false
         loadingConversationID = nil
+        isLoadingEarlierMessages = false
         error = nil
         usageLimits = nil
+        currentTaskInteraction = nil
+        currentTaskActivity = nil
+        currentConnectorApproval = nil
     }
 
     func loadConversations() async {
@@ -92,6 +100,11 @@ class ConversationManager: ObservableObject {
 
         let shouldLoadMessages = conversation.messages.isEmpty && conversation.isLoadedFromAPI
         loadingConversationID = shouldLoadMessages ? conversation.id : nil
+        if currentConversation?.id != conversation.id {
+            currentTaskInteraction = nil
+            currentTaskActivity = nil
+            currentConnectorApproval = nil
+        }
         currentConversation = conversation
 
         if !conversation.messages.isEmpty {
@@ -114,12 +127,7 @@ class ConversationManager: ObservableObject {
                 return
             }
 
-            var updatedConversation = conversation
-            updatedConversation.messages = detail.messages
-            updatedConversation.title = detail.title ?? conversation.title
-            updatedConversation.modelId = detail.model
-            updatedConversation.lastMessageAt = AppDateParser.parse(detail.lastMessageAt ?? detail.updatedAt)
-            updatedConversation.messageCount = detail.messageCount ?? detail.messages.count
+            let updatedConversation = applying(detail, to: conversation)
 
             if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
                 conversations[index] = updatedConversation
@@ -145,6 +153,269 @@ class ConversationManager: ObservableObject {
         }
     }
 
+    func loadEarlierMessages() async {
+        guard !isLoadingEarlierMessages,
+              var conversation = currentConversation,
+              conversation.hasMoreMessages,
+              let oldestMessageId = conversation.oldestMessageId,
+              let apiClient else {
+            return
+        }
+
+        isLoadingEarlierMessages = true
+        defer { isLoadingEarlierMessages = false }
+
+        do {
+            let page = try await apiClient.fetchConversationMessages(
+                id: conversation.id,
+                before: oldestMessageId
+            )
+            let existingIds = Set(conversation.messages.map(\.id))
+            let earlierMessages = page.messages.filter { !existingIds.contains($0.id) }
+
+            conversation.messages = earlierMessages + conversation.messages
+            conversation.hasMoreMessages = page.hasMore
+            conversation.oldestMessageId = page.oldestMessageId ?? earlierMessages.first?.id ?? oldestMessageId
+            updateConversationInArray(conversation)
+
+            if currentConversation?.id == conversation.id {
+                currentConversation = conversation
+            }
+        } catch {
+            self.error = "Failed to load earlier messages: \(error.localizedDescription)"
+        }
+    }
+
+    func observeCurrentRun() async {
+        var replayState: ChatRunReplayState?
+
+        while !Task.isCancelled {
+            guard let apiClient,
+                  let conversation = currentConversation,
+                  let run = conversation.latestRun else {
+                return
+            }
+
+            await refreshProjectTaskInteraction(run: run, conversationId: conversation.id)
+            await refreshConnectorApproval(run: run, conversationId: conversation.id)
+
+            guard run.isActive else {
+                return
+            }
+
+            do {
+                if replayState == nil {
+                    let snapshot = try await apiClient.fetchChatRunSnapshot(id: run.id)
+                    replayState = ChatRunReplayState(cursor: snapshot.cursor, snapshot: snapshot)
+                } else if let currentState = replayState {
+                    let replay = try await apiClient.fetchChatRunEvents(
+                        id: run.id,
+                        after: currentState.cursor
+                    )
+                    let outcome = ChatRunReplay.apply(state: currentState, response: replay)
+
+                    if outcome.requiresSnapshot {
+                        let snapshot = try await apiClient.fetchChatRunSnapshot(id: run.id)
+                        replayState = ChatRunReplayState(cursor: snapshot.cursor, snapshot: snapshot)
+                    } else {
+                        replayState = outcome.state
+                    }
+                }
+
+                guard currentConversation?.id == conversation.id,
+                      currentConversation?.latestRun?.id == run.id,
+                      let replayState else {
+                    return
+                }
+
+                _ = applyRunSnapshot(
+                    conversationId: conversation.id,
+                    snapshot: replayState.snapshot.recoveryResponse
+                )
+
+                if replayState.snapshot.run.isTerminal {
+                    return
+                }
+            } catch {
+                self.error = "Task status could not be refreshed: \(error.localizedDescription)"
+            }
+
+            do {
+                try await turnRecoveryPolicy.sleep(turnRecoveryPolicy.pollInterval)
+            } catch {
+                return
+            }
+        }
+    }
+
+    func refreshCurrentTaskInteraction() async {
+        guard let conversation = currentConversation, let run = conversation.latestRun else {
+            currentTaskInteraction = nil
+            currentTaskActivity = nil
+            return
+        }
+
+        await refreshProjectTaskInteraction(run: run, conversationId: conversation.id)
+    }
+
+    func refreshCurrentConnectorApproval() async {
+        guard let conversation = currentConversation, let run = conversation.latestRun else {
+            currentConnectorApproval = nil
+            return
+        }
+
+        await refreshConnectorApproval(run: run, conversationId: conversation.id)
+    }
+
+    func answerCurrentTaskQuestions(_ answers: [UserQuestionAnswer]) async {
+        guard let control = currentTaskInteraction,
+              control.interaction.type == "question",
+              control.acceptsSubmission else {
+            return
+        }
+
+        let interactionId = control.interaction.interactionId
+        setTaskInteractionSubmission(.submitting, interactionId: interactionId)
+
+        do {
+            guard let apiClient else {
+                throw NSError(
+                    domain: "com.polychat.app",
+                    code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "API client not configured"]
+                )
+            }
+
+            _ = try await apiClient.answerProjectTaskQuestions(
+                projectId: control.task.projectId,
+                taskId: control.task.id,
+                interactionId: interactionId,
+                answers: answers
+            )
+            setTaskInteractionSubmission(.acknowledged, interactionId: interactionId)
+            await refreshCurrentTaskInteraction()
+        } catch {
+            await reconcileTaskInteractionFailure(error, control: control)
+        }
+    }
+
+    func resolveCurrentTaskApproval(_ resolution: String) async {
+        guard resolution == "approved" || resolution == "rejected",
+              let control = currentTaskInteraction,
+              control.interaction.type == "approval",
+              control.acceptsSubmission else {
+            return
+        }
+
+        let interactionId = control.interaction.interactionId
+        setTaskInteractionSubmission(.submitting, interactionId: interactionId)
+
+        do {
+            guard let apiClient else {
+                throw NSError(
+                    domain: "com.polychat.app",
+                    code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "API client not configured"]
+                )
+            }
+
+            _ = try await apiClient.resolveProjectTaskApproval(
+                projectId: control.task.projectId,
+                taskId: control.task.id,
+                interactionId: interactionId,
+                resolution: resolution
+            )
+            setTaskInteractionSubmission(.acknowledged, interactionId: interactionId)
+            await refreshCurrentTaskInteraction()
+        } catch {
+            await reconcileTaskInteractionFailure(error, control: control)
+        }
+    }
+
+    func resolveCurrentConnectorApproval(_ resolution: String) async {
+        guard resolution == "approved" || resolution == "rejected",
+              let control = currentConnectorApproval,
+              control.acceptsResolution else {
+            return
+        }
+
+        let approvalId = control.approval.id
+        setConnectorApprovalSubmission(.submitting, approvalId: approvalId)
+
+        do {
+            guard let apiClient else {
+                throw NSError(
+                    domain: "com.polychat.app",
+                    code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "API client not configured"]
+                )
+            }
+
+            _ = try await apiClient.resolveConnectorApproval(id: approvalId, resolution: resolution)
+            setConnectorApprovalSubmission(.acknowledged, approvalId: approvalId)
+
+            if resolution == "approved",
+               let conversation = currentConversation,
+               conversation.id == control.approval.completionId {
+                await generateAssistantResponse(
+                    conversationId: conversation.id,
+                    requestMessages: conversation.messages,
+                    settings: nil,
+                    generateTitle: false,
+                    connectorApprovalId: approvalId
+                )
+            }
+
+            await refreshCurrentConnectorApproval()
+        } catch {
+            await reconcileConnectorApprovalFailure(error, control: control)
+        }
+    }
+
+    func continueCurrentConnectorApproval() async {
+        guard let control = currentConnectorApproval,
+              control.canContinueApprovedOperation,
+              let conversation = currentConversation,
+              conversation.id == control.approval.completionId else {
+            return
+        }
+
+        setConnectorApprovalSubmission(.submitting, approvalId: control.approval.id)
+        await generateAssistantResponse(
+            conversationId: conversation.id,
+            requestMessages: conversation.messages,
+            settings: nil,
+            generateTitle: false,
+            connectorApprovalId: control.approval.id
+        )
+        await refreshCurrentConnectorApproval()
+    }
+
+    func cancelCurrentRun() async {
+        guard let apiClient,
+              let conversation = currentConversation,
+              let run = conversation.latestRun,
+              run.isActive else {
+            return
+        }
+
+        do {
+            let receipt = try await apiClient.cancelChatRun(
+                id: run.id,
+                expectedAttempt: run.attempt
+            )
+            guard currentConversation?.id == conversation.id,
+                  currentConversation?.latestRun?.id == run.id,
+                  currentConversation?.latestRun?.attempt == run.attempt else {
+                return
+            }
+
+            updateRun(receipt.run, conversationId: conversation.id)
+        } catch {
+            self.error = "The task could not be stopped: \(error.localizedDescription)"
+        }
+    }
+
     func startNewConversation() -> Conversation {
         let modelId = selectedModelId ?? modelsStore?.selectedModelId
         let newConversation = Conversation(
@@ -157,6 +428,9 @@ class ConversationManager: ObservableObject {
             lastMessageAt: nil,
             messageCount: 0
         )
+        currentTaskInteraction = nil
+        currentTaskActivity = nil
+        currentConnectorApproval = nil
         currentConversation = newConversation
         conversations.insert(newConversation, at: 0)
         return newConversation
@@ -346,13 +620,15 @@ class ConversationManager: ObservableObject {
         conversationId: String,
         requestMessages: [ChatMessage],
         settings: ChatSettings?,
-        generateTitle: Bool
+        generateTitle: Bool,
+        connectorApprovalId: String? = nil
     ) async {
         guard var conversation = conversations.first(where: { $0.id == conversationId }) else {
             return
         }
 
-        let knownMessageIds = Set(conversation.messages.map(\.id))
+        let commandId = UUID().uuidString
+        var observedRun = conversation.latestRun
         var toolActivity = StreamingToolActivity()
 
         let assistantMessageId = UUID().uuidString
@@ -368,14 +644,28 @@ class ConversationManager: ObservableObject {
         var finalMessageId = assistantMessageId
         var didReceiveStreamEvent = false
         var streamedContent = ""
+        var progressCoalescer: ChatStreamProgressCoalescer?
+
+        defer {
+            progressCoalescer?.stop()
+        }
 
         do {
             let currentSelectedModelId = await MainActor.run { modelsStore?.selectedModelId }
-            let requestedModelIds = [conversation.modelId, selectedModelId, currentSelectedModelId]
-                .compactMap { $0 }
-            let selectedModel = requestedModelIds
-                .compactMap { modelsStore?.model(withId: $0) }
-                .first { $0.isAvailableForSelection }
+            let requestedModelId = conversation.modelId ?? selectedModelId ?? currentSelectedModelId
+            let selectedModel = requestedModelId.flatMap { modelsStore?.model(withId: $0) }
+
+            if let requestedModelId {
+                guard let selectedModel, selectedModel.isAvailableForSelection else {
+                    throw NSError(
+                        domain: "com.polychat.app",
+                        code: 4,
+                        userInfo: [
+                            NSLocalizedDescriptionKey: "Selected model \(requestedModelId) is no longer available. Choose another model before sending."
+                        ]
+                    )
+                }
+            }
             let modelToUse = selectedModel?.id
             let providerToUse = selectedModel?.provider
 
@@ -384,41 +674,67 @@ class ConversationManager: ObservableObject {
                              userInfo: [NSLocalizedDescriptionKey: "API client not configured"])
             }
 
-            let stream = apiClient.streamChatCompletion(
+            let stream = connectorApprovalId.map {
+                apiClient.streamApprovedConnectorOperation(
+                    messages: requestMessages,
+                    modelId: modelToUse,
+                    provider: providerToUse,
+                    completionId: conversationId,
+                    settings: settings,
+                    approvalId: $0,
+                    commandId: commandId
+                )
+            } ?? apiClient.streamChatCompletion(
                 messages: requestMessages,
                 modelId: modelToUse,
                 provider: providerToUse,
                 completionId: conversationId,
-                settings: settings
+                settings: settings,
+                commandId: commandId
             )
 
             var streamedReasoning = ""
             var responseModelId = modelToUse ?? "auto"
+            var responsivenessGate = ChatStreamResponsivenessGate()
+            progressCoalescer = ChatStreamProgressCoalescer { [weak self] update in
+                self?.updateAssistantMessage(
+                    conversationId: update.conversationId,
+                    messageId: update.messageId,
+                    content: update.content,
+                    modelId: update.modelId,
+                    fallbackMessageId: update.fallbackMessageId
+                )
+            }
 
             for try await event in stream {
                 didReceiveStreamEvent = true
+
+                if !event.isProgressDelta {
+                    progressCoalescer?.flush()
+                }
+
                 switch event {
                 case .content(let delta):
                     completePendingCompactionMessage(conversationId: conversationId)
                     streamedContent += delta
-                    updateAssistantMessage(
+                    progressCoalescer?.update(ChatStreamProgressUpdate(
                         conversationId: conversationId,
                         messageId: finalMessageId,
                         content: streamedContent,
                         modelId: responseModelId,
                         fallbackMessageId: assistantMessageId
-                    )
+                    ))
                 case .reasoning(let delta):
                     completePendingCompactionMessage(conversationId: conversationId)
                     streamedReasoning += delta
                     if streamedContent.isEmpty {
-                        updateAssistantMessage(
+                        progressCoalescer?.update(ChatStreamProgressUpdate(
                             conversationId: conversationId,
                             messageId: finalMessageId,
                             content: "<think>\n\(streamedReasoning)",
                             modelId: responseModelId,
                             fallbackMessageId: assistantMessageId
-                        )
+                        ))
                     }
                 case .state(let state):
                     if state == "compaction" {
@@ -427,6 +743,9 @@ class ConversationManager: ObservableObject {
                             beforeMessageId: assistantMessageId
                         )
                     }
+                case .run(let receipt):
+                    observedRun = receipt.run
+                    updateRun(receipt.run, conversationId: conversationId)
                 case .toolUseStart(let toolCall):
                     toolActivity.start(toolCall)
                 case .toolUseDelta(let toolCall):
@@ -479,8 +798,13 @@ class ConversationManager: ObservableObject {
                 case .done:
                     break
                 }
+
+                if responsivenessGate.shouldYield(after: event) {
+                    await Task.yield()
+                }
             }
 
+            progressCoalescer?.flush()
             completePendingCompactionMessage(conversationId: conversationId)
             removeMessages(conversationId: conversationId, ids: toolActivity.interimMessageIds)
 
@@ -495,6 +819,18 @@ class ConversationManager: ObservableObject {
                 )
             }
 
+            if let detail = try? await apiClient.fetchConversation(
+                id: conversationId,
+                refreshPending: false
+            ), let storedConversation = conversations.first(where: { $0.id == conversationId }) {
+                let refreshedConversation = applying(detail, to: storedConversation)
+                updateConversationInArray(refreshedConversation)
+
+                if currentConversation?.id == conversationId {
+                    currentConversation = refreshedConversation
+                }
+            }
+
             if generateTitle,
                let updatedConversation = currentConversation,
                updatedConversation.id == conversationId {
@@ -507,7 +843,8 @@ class ConversationManager: ObservableObject {
             let recovered = await recoverDetachedTurn(
                 error: error,
                 conversationId: conversationId,
-                knownMessageIds: knownMessageIds.union(toolActivity.knownMessageIds),
+                commandId: commandId,
+                runId: observedRun?.id,
                 assistantMessageId: finalMessageId,
                 fallbackMessageId: assistantMessageId,
                 modelId: conversation.modelId,
@@ -537,7 +874,8 @@ class ConversationManager: ObservableObject {
     private func recoverDetachedTurn(
         error: Error,
         conversationId: String,
-        knownMessageIds: Set<String>,
+        commandId: String,
+        runId: String?,
         assistantMessageId: String,
         fallbackMessageId: String,
         modelId: String?,
@@ -558,53 +896,53 @@ class ConversationManager: ObservableObject {
             markLoadedFromAPI: false
         )
 
-        let recoveredMessages = await TurnRecovery.recoverDetachedTurn(
-            completionId: conversationId,
-            knownMessageIds: knownMessageIds,
-            policy: turnRecoveryPolicy
-        ) { completionId in
-            try await apiClient.fetchConversation(id: completionId).messages
+        let snapshot = await TurnRecovery.recoverDetachedTurn(
+            runId: runId,
+            policy: turnRecoveryPolicy,
+            resolveCommand: {
+                try await apiClient.fetchChatRunCommand(id: commandId).run.id
+            },
+            fetchRun: { runId in
+                try await apiClient.fetchChatRun(id: runId)
+            }
+        )
+
+        guard let snapshot else {
+            return false
         }
 
-        return applyRecoveredTurn(
+        return applyRunSnapshot(
             conversationId: conversationId,
-            messages: recoveredMessages,
-            assistantMessageId: assistantMessageId,
-            fallbackMessageId: fallbackMessageId
+            snapshot: snapshot,
+            placeholderIds: [assistantMessageId, fallbackMessageId]
         )
     }
 
-    private func applyRecoveredTurn(
+    private func applyRunSnapshot(
         conversationId: String,
-        messages: [ChatMessage],
-        assistantMessageId: String,
-        fallbackMessageId: String
+        snapshot: ChatRunRecoveryResponse,
+        placeholderIds: Set<String> = []
     ) -> Bool {
-        guard !messages.isEmpty,
-              let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
             return false
         }
 
         var conversation = conversations[index]
-        guard let messageIndex = assistantMessageIndex(
-            in: conversation,
-            messageId: assistantMessageId,
-            fallbackMessageId: fallbackMessageId
-        ) else {
-            return false
+        let authoritativeIds = Set(snapshot.messages.map(\.id))
+        conversation.messages.removeAll { message in
+            !authoritativeIds.contains(message.id)
+                && (placeholderIds.contains(message.id) || message.runId == snapshot.run.id)
         }
 
-        let existingMessageIds = Set(conversation.messages.map(\.id))
-        let placeholderId = conversation.messages[messageIndex].id
-        let replacements = messages.filter { message in
-            message.id == placeholderId || !existingMessageIds.contains(message.id)
+        for message in snapshot.messages {
+            if let messageIndex = conversation.messages.firstIndex(where: { $0.id == message.id }) {
+                conversation.messages[messageIndex] = message
+            } else {
+                conversation.messages.append(message)
+            }
         }
 
-        guard replacements.contains(where: { $0.role == "assistant" }) else {
-            return false
-        }
-
-        conversation.messages.replaceSubrange(messageIndex...messageIndex, with: replacements)
+        conversation.latestRun = snapshot.run
         conversation.isLoadedFromAPI = true
         conversation.messageCount = conversation.messages.count
         conversation.lastMessageAt = Date()
@@ -615,6 +953,15 @@ class ConversationManager: ObservableObject {
         }
 
         return true
+    }
+
+    private func updateRun(_ run: ChatRun, conversationId: String) {
+        if let index = conversations.firstIndex(where: { $0.id == conversationId }) {
+            conversations[index].latestRun = run
+        }
+        if currentConversation?.id == conversationId {
+            currentConversation?.latestRun = run
+        }
     }
 
     private func applyToolActivityUpdate(
@@ -731,6 +1078,24 @@ class ConversationManager: ObservableObject {
         if currentConversation?.id == conversationId {
             currentConversation = conversation
         }
+    }
+
+    private func applying(
+        _ detail: ConversationDetailResponse,
+        to conversation: Conversation
+    ) -> Conversation {
+        var updatedConversation = conversation
+
+        updatedConversation.messages = detail.messages
+        updatedConversation.title = detail.title ?? conversation.title
+        updatedConversation.modelId = detail.model
+        updatedConversation.lastMessageAt = AppDateParser.parse(detail.lastMessageAt ?? detail.updatedAt)
+        updatedConversation.messageCount = detail.messageCount ?? detail.messages.count
+        updatedConversation.latestRun = detail.latestRun
+        updatedConversation.hasMoreMessages = detail.hasMoreMessages
+        updatedConversation.oldestMessageId = detail.oldestMessageId ?? detail.messages.first?.id
+
+        return updatedConversation
     }
 
     private func insertCompactionMessage(
@@ -943,6 +1308,204 @@ class ConversationManager: ObservableObject {
         }
     }
 
+    private func refreshProjectTaskInteraction(run: ChatRun, conversationId: String) async {
+        guard let projectId = run.projectId, let taskId = run.projectTaskId else {
+            currentTaskInteraction = nil
+            currentTaskActivity = nil
+            return
+        }
+
+        if currentTaskInteraction?.task.projectId != projectId ||
+            currentTaskInteraction?.task.id != taskId ||
+            (currentTaskInteraction?.interaction.runId != nil &&
+                currentTaskInteraction?.interaction.runId != run.id) ||
+            currentTaskActivity?.projectId != projectId ||
+            currentTaskActivity?.taskId != taskId {
+            currentTaskInteraction = nil
+            currentTaskActivity = nil
+        }
+
+        do {
+            guard let apiClient else {
+                return
+            }
+
+            let detail = try await apiClient.fetchProjectTask(projectId: projectId, taskId: taskId)
+
+            guard currentConversation?.id == conversationId,
+                  currentConversation?.latestRun?.id == run.id,
+                  detail.task.projectId == projectId,
+                  detail.task.id == taskId,
+                  detail.task.runId == run.id,
+                  detail.activity.protocolVersion == 1,
+                  detail.activity.projectId == projectId,
+                  detail.activity.taskId == taskId,
+                  detail.activity.items.allSatisfy({ item in
+                      item.projectId == projectId && item.taskId == taskId
+                  }),
+                  detail.interaction?.runId == nil || detail.interaction?.runId == run.id else {
+                return
+            }
+
+            currentTaskActivity = detail.activity
+            currentTaskInteraction = ProjectTaskInteractionControl.reconcile(
+                detail,
+                previous: currentTaskInteraction
+            )
+        } catch APIClientError.httpStatus(let status, let message) where status == 403 || status == 404 {
+            currentTaskActivity = nil
+            if var control = currentTaskInteraction,
+               control.task.projectId == projectId,
+               control.task.id == taskId {
+                control.submission = .failed(message: message, retryable: false)
+                currentTaskInteraction = control
+            }
+        } catch {
+            self.error = "Task controls could not be refreshed: \(error.localizedDescription)"
+        }
+    }
+
+    private func refreshConnectorApproval(run: ChatRun, conversationId: String) async {
+        guard let conversation = currentConversation, conversation.id == conversationId,
+              let candidate = ConnectorApprovalCandidate.latest(in: conversation.messages, run: run) else {
+            currentConnectorApproval = nil
+            return
+        }
+
+        if currentConnectorApproval?.approval.id != candidate.approvalId {
+            currentConnectorApproval = nil
+        }
+
+        do {
+            guard let apiClient else {
+                return
+            }
+
+            let approval = try await apiClient.fetchConnectorApproval(id: candidate.approvalId)
+
+            guard currentConversation?.id == conversationId,
+                  currentConversation?.latestRun?.id == run.id,
+                  approval.id == candidate.approvalId,
+                  approval.runId == run.id,
+                  approval.completionId == conversationId,
+                  approval.provider == candidate.provider,
+                  approval.operation == candidate.operation else {
+                currentConnectorApproval = nil
+                return
+            }
+
+            currentConnectorApproval = ConnectorApprovalControl.reconcile(
+                approval,
+                previous: currentConnectorApproval
+            )
+        } catch APIClientError.httpStatus(let status, let message) where status == 403 || status == 404 {
+            if var control = currentConnectorApproval,
+               control.approval.id == candidate.approvalId {
+                control.submission = .failed(message: message, retryable: false)
+                currentConnectorApproval = control
+            }
+        } catch {
+            self.error = "Connector approval could not be refreshed: \(error.localizedDescription)"
+        }
+    }
+
+    private func setTaskInteractionSubmission(
+        _ submission: ProjectTaskInteractionSubmission,
+        interactionId: String
+    ) {
+        guard var control = currentTaskInteraction,
+              control.interaction.interactionId == interactionId else {
+            return
+        }
+
+        control.submission = submission
+        currentTaskInteraction = control
+    }
+
+    private func setConnectorApprovalSubmission(
+        _ submission: ProjectTaskInteractionSubmission,
+        approvalId: String
+    ) {
+        guard var control = currentConnectorApproval, control.approval.id == approvalId else {
+            return
+        }
+
+        control.submission = submission
+        currentConnectorApproval = control
+    }
+
+    private func reconcileTaskInteractionFailure(
+        _ error: Error,
+        control: ProjectTaskInteractionControl
+    ) async {
+        let interactionId = control.interaction.interactionId
+
+        if case APIClientError.httpStatus(let status, let message) = error {
+            if status == 409 {
+                setTaskInteractionSubmission(.resolvedElsewhere, interactionId: interactionId)
+                await refreshCurrentTaskInteraction()
+                return
+            }
+
+            if status == 403 || status == 404 {
+                setTaskInteractionSubmission(
+                    .failed(message: message, retryable: false),
+                    interactionId: interactionId
+                )
+                return
+            }
+        }
+
+        await refreshCurrentTaskInteraction()
+
+        if let current = currentTaskInteraction,
+           current.interaction.interactionId == interactionId,
+           (current.submission == .acknowledged || current.submission == .resolvedElsewhere) {
+            return
+        }
+
+        setTaskInteractionSubmission(
+            .failed(message: error.localizedDescription, retryable: true),
+            interactionId: interactionId
+        )
+    }
+
+    private func reconcileConnectorApprovalFailure(
+        _ error: Error,
+        control: ConnectorApprovalControl
+    ) async {
+        let approvalId = control.approval.id
+
+        if case APIClientError.httpStatus(let status, let message) = error {
+            if status == 404 {
+                setConnectorApprovalSubmission(.resolvedElsewhere, approvalId: approvalId)
+                await refreshCurrentConnectorApproval()
+                return
+            }
+
+            if status == 403 {
+                setConnectorApprovalSubmission(
+                    .failed(message: message, retryable: false),
+                    approvalId: approvalId
+                )
+                return
+            }
+        }
+
+        await refreshCurrentConnectorApproval()
+
+        if let current = currentConnectorApproval,
+           current.approval.id == approvalId,
+           (current.submission == .acknowledged || current.submission == .resolvedElsewhere) {
+            return
+        }
+
+        setConnectorApprovalSubmission(
+            .failed(message: error.localizedDescription, retryable: true),
+            approvalId: approvalId
+        )
+    }
+
     func deleteConversation(_ conversation: Conversation) async {
         if conversation.isLoadedFromAPI {
             do {
@@ -959,6 +1522,9 @@ class ConversationManager: ObservableObject {
 
         if currentConversation?.id == conversation.id {
             currentConversation = nil
+            currentTaskInteraction = nil
+            currentTaskActivity = nil
+            currentConnectorApproval = nil
         }
     }
 }

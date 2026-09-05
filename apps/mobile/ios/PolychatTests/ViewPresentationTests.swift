@@ -32,16 +32,55 @@ struct ViewPresentationTests {
         ]
 
         let featuredFilter = ModelSelectionFilter(searchText: "", showsFeaturedOnly: true, showsDeprecated: false, selectedProvider: nil)
-        #expect(featuredFilter.apply(to: models).map(\.id) == ["gpt-4o"])
+        #expect(featuredFilter.apply(to: models).map(\.id) == ["gpt-4o", "unavailable"])
 
         let providerFilter = ModelSelectionFilter(searchText: "code", showsFeaturedOnly: false, showsDeprecated: false, selectedProvider: "mistral")
         #expect(providerFilter.apply(to: models).map(\.id) == ["mistral"])
 
         let deprecatedFilter = ModelSelectionFilter(searchText: "legacy", showsFeaturedOnly: true, showsDeprecated: true, selectedProvider: nil)
         #expect(deprecatedFilter.apply(to: models).map(\.id) == ["old-gpt"])
-        #expect(ModelSelectionFilter(searchText: "unavailable", showsFeaturedOnly: false, showsDeprecated: true).apply(to: models).isEmpty)
+        #expect(ModelSelectionFilter(searchText: "unavailable", showsFeaturedOnly: false, showsDeprecated: true).apply(to: models).map(\.id) == ["unavailable"])
         #expect(models[1].isAvailableForSelection == false)
         #expect(ModelSelectionFilter.availableProviders(in: models) == ["mistral", "openai"])
+    }
+
+    @Test func modelContinuityBlocksPendingInteractionsAndIncompatibleAttachments() {
+        let model = makeModel(id: "text-model")
+
+        let pending = ModelContinuity.evaluate(
+            model: model,
+            hasConversationHistory: true,
+            activeRun: makeChatRun(status: "awaiting_approval"),
+            attachmentTypes: []
+        )
+        let attachment = ModelContinuity.evaluate(
+            model: model,
+            hasConversationHistory: true,
+            activeRun: nil,
+            attachmentTypes: [.image]
+        )
+
+        #expect(pending.state == .blocked)
+        #expect(pending.reason.contains("approval"))
+        #expect(attachment.unsupportedAttachments == [.image])
+    }
+
+    @Test func modelContinuityRequiresANewConversationForOneTurnImageGeneration() {
+        let imageModel = makeModel(
+            id: "image-model",
+            inputModalities: ["text"],
+            outputModalities: ["image"]
+        )
+
+        let decision = ModelContinuity.evaluate(
+            model: imageModel,
+            hasConversationHistory: true,
+            activeRun: nil,
+            attachmentTypes: []
+        )
+
+        #expect(decision.state == .newConversationRequired)
+        #expect(decision.reason.contains("history will not carry"))
     }
 
     @Test func messageFormattingSeparatesReasoningArtifactsAndTextSegments() throws {

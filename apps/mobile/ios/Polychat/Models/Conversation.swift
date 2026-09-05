@@ -9,6 +9,9 @@ struct Conversation: Identifiable, Equatable {
     var isLoadedFromAPI: Bool
     var lastMessageAt: Date?
     var messageCount: Int
+    var latestRun: ChatRun? = nil
+    var hasMoreMessages = false
+    var oldestMessageId: String? = nil
 
     static func == (lhs: Conversation, rhs: Conversation) -> Bool {
         lhs.id == rhs.id
