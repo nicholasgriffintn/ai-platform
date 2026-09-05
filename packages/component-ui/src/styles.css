@@ -108,6 +108,106 @@
     --polychat-active-execution-glow:
       0 0 0 1px oklch(0.74 0.13 232 / 55%), 0 0 1.5rem oklch(0.74 0.13 232 / 22%);
   }
+
+  [data-polychat-theme="paper"] {
+    color-scheme: light;
+    --polychat-accent-l: 0.52;
+    --polychat-canvas: oklch(0.975 0.012 85);
+    --polychat-surface: oklch(0.99 0.005 85);
+    --polychat-surface-elevated: oklch(0.955 0.016 85);
+    --polychat-text: oklch(0.22 0.03 60);
+    --polychat-text-muted: oklch(0.5 0.03 65);
+    --polychat-active-work: oklch(0.5 0.08 200);
+    --polychat-human-action: oklch(0.5 0.15 42);
+    --polychat-human-action-foreground: oklch(0.985 0.008 85);
+    --polychat-success: oklch(0.5 0.13 150);
+    --polychat-creative: oklch(0.52 0.15 320);
+    --polychat-attention: oklch(0.55 0.105 75);
+    --polychat-failure: oklch(0.55 0.19 25);
+    --polychat-focus: oklch(0.52 0.085 200);
+    --polychat-selection: oklch(0.92 0.03 85);
+    --polychat-border: oklch(0.88 0.022 85);
+    --polychat-border-strong: oklch(0.62 0.03 80);
+    --polychat-overlay: oklch(0.25 0.03 60 / 50%);
+    --polychat-elevated-shadow: 0 12px 32px oklch(0.25 0.03 60 / 12%);
+    --polychat-active-execution-glow:
+      0 0 0 1px oklch(0.5 0.08 200 / 45%), 0 0 1.25rem oklch(0.5 0.08 200 / 16%);
+  }
+
+  [data-polychat-theme="dawn"] {
+    color-scheme: light;
+    --polychat-accent-l: 0.52;
+    --polychat-canvas: oklch(0.975 0.01 290);
+    --polychat-surface: oklch(0.99 0.004 290);
+    --polychat-surface-elevated: oklch(0.955 0.016 290);
+    --polychat-text: oklch(0.2 0.03 290);
+    --polychat-text-muted: oklch(0.5 0.03 290);
+    --polychat-active-work: oklch(0.52 0.14 300);
+    --polychat-human-action: oklch(0.5 0.17 280);
+    --polychat-human-action-foreground: oklch(0.985 0.005 290);
+    --polychat-success: oklch(0.5 0.13 150);
+    --polychat-creative: oklch(0.52 0.16 330);
+    --polychat-attention: oklch(0.55 0.11 80);
+    --polychat-failure: oklch(0.55 0.19 20);
+    --polychat-focus: oklch(0.55 0.13 300);
+    --polychat-selection: oklch(0.92 0.04 290);
+    --polychat-border: oklch(0.89 0.02 290);
+    --polychat-border-strong: oklch(0.64 0.03 290);
+    --polychat-overlay: oklch(0.15 0.03 290 / 52%);
+    --polychat-elevated-shadow: 0 12px 32px oklch(0.2 0.03 290 / 12%);
+    --polychat-active-execution-glow:
+      0 0 0 1px oklch(0.52 0.14 300 / 45%), 0 0 1.25rem oklch(0.52 0.14 300 / 16%);
+  }
+
+  [data-polychat-theme="fern"] {
+    color-scheme: dark;
+    --polychat-accent-l: 0.76;
+    --polychat-canvas: oklch(0.16 0.018 185);
+    --polychat-surface: oklch(0.185 0.018 185);
+    --polychat-surface-elevated: oklch(0.215 0.017 185);
+    --polychat-text: oklch(0.94 0.01 160);
+    --polychat-text-muted: oklch(0.7 0.02 175);
+    --polychat-active-work: oklch(0.78 0.12 165);
+    --polychat-human-action: oklch(0.72 0.15 55);
+    --polychat-human-action-foreground: oklch(0.15 0.02 185);
+    --polychat-success: oklch(0.76 0.13 150);
+    --polychat-creative: oklch(0.74 0.13 320);
+    --polychat-attention: oklch(0.82 0.13 85);
+    --polychat-failure: oklch(0.72 0.17 25);
+    --polychat-focus: oklch(0.8 0.11 165);
+    --polychat-selection: oklch(0.29 0.035 180);
+    --polychat-border: oklch(0.27 0.018 185);
+    --polychat-border-strong: oklch(0.5 0.02 185);
+    --polychat-overlay: oklch(0.06 0.015 185 / 72%);
+    --polychat-elevated-shadow: 0 16px 40px oklch(0.03 0.01 185 / 55%);
+    --polychat-active-execution-glow:
+      0 0 0 1px oklch(0.78 0.12 165 / 55%), 0 0 1.5rem oklch(0.78 0.12 165 / 22%);
+  }
+
+  [data-polychat-theme="plum"] {
+    color-scheme: dark;
+    --polychat-accent-l: 0.76;
+    --polychat-canvas: oklch(0.15 0.025 330);
+    --polychat-surface: oklch(0.175 0.025 330);
+    --polychat-surface-elevated: oklch(0.205 0.024 330);
+    --polychat-text: oklch(0.95 0.008 330);
+    --polychat-text-muted: oklch(0.72 0.02 330);
+    --polychat-active-work: oklch(0.78 0.12 350);
+    --polychat-human-action: oklch(0.55 0.17 300);
+    --polychat-human-action-foreground: oklch(0.985 0.005 330);
+    --polychat-success: oklch(0.76 0.13 150);
+    --polychat-creative: oklch(0.74 0.11 285);
+    --polychat-attention: oklch(0.82 0.13 80);
+    --polychat-failure: oklch(0.72 0.17 20);
+    --polychat-focus: oklch(0.8 0.11 350);
+    --polychat-selection: oklch(0.29 0.045 330);
+    --polychat-border: oklch(0.27 0.02 330);
+    --polychat-border-strong: oklch(0.5 0.025 330);
+    --polychat-overlay: oklch(0.06 0.02 330 / 72%);
+    --polychat-elevated-shadow: 0 16px 40px oklch(0.03 0.015 330 / 55%);
+    --polychat-active-execution-glow:
+      0 0 0 1px oklch(0.78 0.12 350 / 55%), 0 0 1.5rem oklch(0.78 0.12 350 / 22%);
+  }
 }
 
 .polychat-motion-micro {

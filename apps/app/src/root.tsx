@@ -1,5 +1,5 @@
 import { CustomResponseViewProvider } from "@ngriffin_uk/polychat-component-content";
-import { LinkProvider, LoadingSpinner, Toaster } from "@ngriffin_uk/polychat-component-ui";
+import { LinkProvider, LoadingSpinner } from "@ngriffin_uk/polychat-component-ui";
 import { AnalyticsProvider, PolychatProvider } from "@ngriffin_uk/polychat-library-react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect } from "react";
@@ -10,6 +10,7 @@ import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
 import { AppInitializer } from "~/components/Core/AppInitializer";
 import { AppShell } from "~/components/Core/AppShell";
 import { ServiceWorkerRegistration } from "~/components/Core/ServiceWorkerRegistration";
+import { ThemedToaster } from "~/components/Core/ThemedToaster";
 import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
 import { shouldShowDevTools } from "~/constants";
 import { useTrackEvent } from "~/hooks/use-track-event";
@@ -56,7 +57,7 @@ export default function Root() {
             <AnalyticsBootstrap />
             <Outlet />
             <ServiceWorkerRegistration />
-            <Toaster />
+            <ThemedToaster />
           </CaptchaProvider>
         </AppInitializer>
       </LoadingProvider>

@@ -1,7 +1,11 @@
 import {
   applyTheme,
+  getThemeDefinition,
   resolveThemeId,
   SYSTEM_DARK_QUERY,
+  useMediaQuery,
+  type ThemeAppearance,
+  type ThemeId,
   type ThemePreference,
 } from "@ngriffin_uk/polychat-component-ui";
 import { useEffect } from "react";
@@ -16,18 +20,21 @@ export function useSetThemePreference(): (preference: ThemePreference) => void {
   return useThemeStore((state) => state.setPreference);
 }
 
-export function useApplyTheme(): void {
+export function useResolvedThemeId(): ThemeId {
   const preference = useThemeStore((state) => state.preference);
+  const prefersDark = useMediaQuery(SYSTEM_DARK_QUERY);
+
+  return resolveThemeId(preference, prefersDark);
+}
+
+export function useThemeAppearance(): ThemeAppearance {
+  return getThemeDefinition(useResolvedThemeId()).appearance;
+}
+
+export function useApplyTheme(): void {
+  const id = useResolvedThemeId();
 
   useEffect(() => {
-    const media = window.matchMedia(SYSTEM_DARK_QUERY);
-    const apply = () => {
-      applyTheme(document.documentElement, resolveThemeId(preference, media.matches));
-    };
-
-    apply();
-    media.addEventListener("change", apply);
-
-    return () => media.removeEventListener("change", apply);
-  }, [preference]);
+    applyTheme(document.documentElement, id);
+  }, [id]);
 }

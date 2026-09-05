@@ -68,6 +68,7 @@ test.describe("Application experience", () => {
 
       await appPage.openSettings("Guest");
       await appPage.selectTheme("Dark");
+      await expect(page.locator("html")).toHaveAttribute("data-polychat-theme", "dark");
       await expect(page.locator("html")).toHaveClass(/dark/);
       await captureVisualSnapshots(page, "release-app-settings-dark", DEFAULT_VISUAL_CHECKPOINTS);
 

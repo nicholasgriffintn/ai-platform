@@ -175,6 +175,7 @@ export interface SidebarSettingsPopoverProps {
   links: SidebarSettingsLinks;
   sourceCodeIcon: ReactNode;
   usage: SidebarUsageMeter[];
+  themeControl?: ReactNode;
   onShowKeyboardShortcuts: () => void;
   onSignIn: () => void;
 }
@@ -187,6 +188,7 @@ export function SidebarSettingsPopover({
   links,
   sourceCodeIcon,
   usage,
+  themeControl,
   onShowKeyboardShortcuts,
   onSignIn,
 }: SidebarSettingsPopoverProps) {
@@ -269,6 +271,7 @@ export function SidebarSettingsPopover({
           </div>
 
           <div className="border-border space-y-1 border-t pt-2">
+            {themeControl && <div className="px-2.5 pb-2">{themeControl}</div>}
             <button
               type="button"
               onClick={onShowKeyboardShortcuts}
