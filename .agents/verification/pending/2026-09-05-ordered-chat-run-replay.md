@@ -19,6 +19,6 @@
 - [ ] Revoke project membership while a client is polling. Confirm the next snapshot and replay requests return not found and expose no event or message data.
 - [ ] Confirm local-only, anonymous and explicitly non-stored turns create no run events and perform no replay requests.
 
-**Expected bounds:** the server retains the newest 500 events for each run, returns at most 100 per replay page and active clients poll every two seconds. Large message and output content remains in authorised stored resources referenced by events.
+**Expected bounds:** the server retains the newest 500 events for each run, returns at most 100 per replay page and clients observing detached active runs poll every two seconds. The originating live client uses SSE and makes no replay requests. Large message and output content remains in authorised stored resources referenced by events.
 
 **Stop and report if:** a cursor gap is hidden, a repeated event duplicates visible state, terminal state regresses, the snapshot/replay boundary loses a write, a newer protocol breaks native conversation rendering, or revoked membership can still read activity.

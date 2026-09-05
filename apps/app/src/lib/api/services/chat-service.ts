@@ -64,7 +64,6 @@ import {
 import { parseCompactConversationResponse } from "../compact-conversation-response";
 import { normaliseConversationResponse } from "../conversation-response";
 import { fetchApi, fetchApiOrThrow } from "../fetch-wrapper";
-import { appendRecoveryTelemetry, type RecoveryRequestContext } from "../recovery-telemetry";
 
 export interface ConversationUpdateRequest {
   archived?: boolean;
@@ -101,7 +100,6 @@ function normaliseRunSnapshot(snapshot: ChatRunSnapshotResponse): AuthoritativeC
 }
 
 export interface GetChatOptions {
-  recovery?: RecoveryRequestContext;
   refreshPending?: boolean;
   messageLimit?: number;
 }
@@ -308,8 +306,6 @@ export class ChatService {
     }
 
     params.set("message_limit", String(options?.messageLimit ?? 100));
-    appendRecoveryTelemetry(params, options?.recovery);
-
     const query = params.toString();
     const url = `/chat/completions/${completion_id}${query ? `?${query}` : ""}`;
 
@@ -602,15 +598,11 @@ export class ChatService {
     });
   }
 
-  async getChatRun(runId: string, recovery?: RecoveryRequestContext): Promise<ChatRunSnapshot> {
-    const params = new URLSearchParams();
-
-    appendRecoveryTelemetry(params, recovery);
-
-    const query = params.toString();
-    const response = await fetchApiOrThrow(`/chat/runs/${runId}${query ? `?${query}` : ""}`, {
+  async getChatRun(runId: string, signal?: AbortSignal): Promise<ChatRunSnapshot> {
+    const response = await fetchApiOrThrow(`/chat/runs/${runId}`, {
       method: "GET",
       headers: await this.getHeaders(),
+      signal,
     });
     const parsed = chatRunRecoveryResponseSchema.parse(await returnFetchedData<unknown>(response));
 
@@ -623,10 +615,14 @@ export class ChatService {
     };
   }
 
-  async getChatRunSnapshot(runId: string): Promise<AuthoritativeChatRunSnapshot> {
+  async getChatRunSnapshot(
+    runId: string,
+    signal?: AbortSignal,
+  ): Promise<AuthoritativeChatRunSnapshot> {
     const response = await fetchApiOrThrow(`/chat/runs/${runId}/snapshot`, {
       method: "GET",
       headers: await this.getHeaders(),
+      signal,
     });
     const parsed = chatRunSnapshotResponseSchema.parse(await returnFetchedData<unknown>(response));
 
@@ -637,11 +633,13 @@ export class ChatService {
     runId: string,
     after: number,
     limit = 100,
+    signal?: AbortSignal,
   ): Promise<AppChatRunReplayResponse> {
     const query = new URLSearchParams({ after: String(after), limit: String(limit) });
     const response = await fetchApiOrThrow(`/chat/runs/${runId}/events?${query.toString()}`, {
       method: "GET",
       headers: await this.getHeaders(),
+      signal,
     });
     const parsed = chatRunReplayResponseSchema.parse(await returnFetchedData<unknown>(response));
 

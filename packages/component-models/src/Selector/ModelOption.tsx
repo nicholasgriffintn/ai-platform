@@ -142,7 +142,7 @@ export const ModelOption = ({
               </p>
             ) : null}
             {model.readiness && model.readiness.state !== "ready" ? (
-              <p className="mt-1 text-xs font-medium leading-5 text-amber-700 dark:text-amber-300 whitespace-normal break-words">
+              <p className="mt-1 text-xs font-medium leading-5 text-attention whitespace-normal break-words">
                 {model.readiness.reason}
               </p>
             ) : null}

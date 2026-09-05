@@ -9,38 +9,12 @@ vi.mock("~/lib/monitoring", () => ({
   Monitoring: { getInstance: mocks.getInstance },
 }));
 
-import {
-  classifyRecoveryOutcome,
-  countAssistantMessages,
-  normaliseContinuityPlatform,
-  recordTurnContinuityFinished,
-  recordTurnRecoveryAttempt,
-} from "../continuity-telemetry";
+import { normaliseContinuityPlatform, recordTurnContinuityFinished } from "../continuity-telemetry";
 
 describe("turn continuity telemetry", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getInstance.mockReturnValue({ recordMetric: mocks.recordMetric });
-  });
-
-  it("classifies recovery without inspecting message content", () => {
-    const attempt = {
-      platform: "web" as const,
-      attempt: 2,
-      elapsedMs: 4_000,
-      finalAttempt: false,
-      knownAssistantCount: 1,
-    };
-
-    expect(classifyRecoveryOutcome(2, attempt)).toBe("success");
-    expect(classifyRecoveryOutcome(1, attempt)).toBe("pending");
-    expect(classifyRecoveryOutcome(1, { ...attempt, finalAttempt: true })).toBe("timeout");
-    expect(
-      countAssistantMessages([
-        { role: "user", content: "private prompt" },
-        { role: "assistant", content: "private answer" },
-      ]),
-    ).toBe(1);
   });
 
   it("records only the continuity allowlist", () => {
@@ -86,16 +60,16 @@ describe("turn continuity telemetry", () => {
     });
 
     expect(() =>
-      recordTurnRecoveryAttempt(
+      recordTurnContinuityFinished(
         { env: {}, traceId: "completion-1" },
         {
           platform: "ios",
-          attempt: 1,
-          elapsedMs: 2_000,
-          finalAttempt: true,
-          knownAssistantCount: 0,
+          outcome: "failed",
+          startedAtMs: 1_000,
+          finishedAtMs: 2_000,
+          stream: { detached: true, detachedAtMs: 1_500, detachmentReason: "reader_closed" },
+          cancellationObserved: false,
         },
-        0,
       ),
     ).not.toThrow();
   });

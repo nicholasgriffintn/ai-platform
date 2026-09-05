@@ -29,7 +29,7 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
   const createShare = useCreateOutputShare();
   const revokeShare = useRevokeOutputShare();
   const restoreRevision = useRestoreOutputRevision();
-  const outputId = subpath.split("/").filter(Boolean)[0];
+  const outputId = subpath.split("/").find(Boolean);
   const { data: shares } = useOutputShares(outputId ?? null);
   const {
     data: outputs,
@@ -90,11 +90,14 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
 
               await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
               setCopiedOutputId(output.id);
-            } catch (error) {
+            } catch (shareFailure) {
               setCopiedOutputId(null);
               setShareError({
                 outputId: output.id,
-                message: error instanceof Error ? error.message : "Could not copy the share link",
+                message:
+                  shareFailure instanceof Error
+                    ? shareFailure.message
+                    : "Could not copy the share link",
               });
             }
           }}
@@ -117,7 +120,7 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
             }}
           />
         ) : outputHistoryError ? (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="text-sm text-failure">
             Revision history is unavailable.
           </p>
         ) : null}

@@ -731,7 +731,7 @@ async function mockExternalRequest(request) {
     return streamingResponse(
       "E2E response: recovery data so far",
       " and the interrupted stream completed",
-      prompt.includes("after refreshing") ? 10_000 : 2_500,
+      2_500,
     );
   }
 

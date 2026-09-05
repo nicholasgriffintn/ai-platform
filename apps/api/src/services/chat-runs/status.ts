@@ -11,6 +11,7 @@ import { formatStoredMessage } from "~/lib/conversation/stored-message";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { reconcileInactiveChatRun } from "./recovery";
 import { hydrateChatRunUsage } from "./usage";
 
 export async function requireChatRunAccess(
@@ -36,7 +37,7 @@ export async function requireChatRunAccess(
 }
 
 export async function handleGetChatRun(context: ServiceContext, runId: string) {
-  const run = await requireChatRunAccess(context, runId);
+  const run = await reconcileInactiveChatRun(context, await requireChatRunAccess(context, runId));
   const messages = await context.repositories.messages.getRunMessages(run.conversationId, run.id);
   const [hydratedRun] = await hydrateChatRunUsage(context.repositories, [run]);
 
@@ -47,9 +48,11 @@ export async function handleGetChatRunSnapshot(
   context: ServiceContext,
   runId: string,
 ): Promise<ChatRunSnapshotResponse> {
-  await requireChatRunAccess(context, runId);
   const cursor = await context.repositories.conversationRuns.getEventCursor(runId);
-  const authoritativeRun = await requireChatRunAccess(context, runId);
+  const authoritativeRun = await reconcileInactiveChatRun(
+    context,
+    await requireChatRunAccess(context, runId),
+  );
   const [run] = await hydrateChatRunUsage(context.repositories, [authoritativeRun]);
   const messages = await context.repositories.messages.getRunMessages(run.conversationId, run.id);
 

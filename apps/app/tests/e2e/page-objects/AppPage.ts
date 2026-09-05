@@ -89,6 +89,14 @@ export class AppPage extends BasePage {
     await this.clickElement(this.page.getByRole("link", { name, exact: true }));
   }
 
+  async followPrimaryLink(name: string) {
+    await this.clickElement(
+      this.page
+        .getByRole("navigation", { name: "Primary" })
+        .getByRole("link", { name, exact: true }),
+    );
+  }
+
   async dismissDialog() {
     await this.page.keyboard.press("Escape");
   }
@@ -96,7 +104,8 @@ export class AppPage extends BasePage {
   async selectTheme(
     theme: "System" | "Light" | "Paper" | "Dawn" | "Dark" | "Blue" | "Fern" | "Plum",
   ) {
-    await this.page.getByRole("combobox", { name: "Theme" }).selectOption({ label: theme });
+    await this.page.getByRole("button", { name: /^Theme / }).click();
+    await this.page.getByRole("menuitemradio", { name: theme, exact: true }).click();
   }
 
   async openKeyboardShortcuts() {

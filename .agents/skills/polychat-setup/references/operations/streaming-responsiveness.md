@@ -27,7 +27,7 @@ The iPhone 16 simulator exercised the same 10,000-delta coalescing invariant in 
 
 ## Enforced bounds
 
-- Reject an unterminated or completed inbound stream event above 4 MiB on web and iPhone. Recover from the exact stored run; never turn the parse failure into a completed transcript.
+- Reject an unterminated or completed inbound stream event above 4 MiB on web and iPhone. End the failed live SSE presentation without polling; if the conversation is reopened, catch up from the exact stored run and never turn the parse failure into a completed transcript.
 - Limit a live tool-result event to 64 KiB and its content preview to 32 KiB. Persist the full tool message before emitting the preview, retaining its message ID and interaction metadata for recovery.
 - Coalesce supersedable text once per display interval and yield after 64 consecutive progress events. Flush before tool, interaction, metadata, error and terminal events.
 - Load 100 newest visible messages initially and request older pages by the exact oldest message ID. Deduplicate page overlap and preserve ascending transcript order.

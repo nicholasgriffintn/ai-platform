@@ -368,7 +368,7 @@ export class ProfilePage extends BasePage {
     await this.page
       .getByLabel("Search Provider", { exact: true })
       .selectOption(settings.searchProvider);
-    await this.page.getByRole("button", { name: "Save Settings" }).click();
+    await this.page.getByRole("button", { name: "Save", exact: true }).click();
     await this.page.getByText("Settings saved successfully!", { exact: true }).waitFor();
   }
 
@@ -422,7 +422,10 @@ export class ProfilePage extends BasePage {
     await sourceConfirmation.getByRole("button", { name: "Delete source" }).click();
     await sourceConfirmation.waitFor({ state: "hidden" });
 
-    await this.page.getByRole("button", { name: `Delete ${collectionName}` }).click();
+    const deleteCollection = this.page.getByRole("button", { name: `Delete ${collectionName}` });
+
+    await this.page.getByRole("button", { name: new RegExp(`^${collectionName}`) }).hover();
+    await deleteCollection.click();
     const collectionConfirmation = this.page.getByRole("dialog", { name: "Delete collection" });
 
     await collectionConfirmation.getByRole("button", { name: "Delete collection" }).click();

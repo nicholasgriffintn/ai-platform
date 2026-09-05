@@ -19,6 +19,14 @@ export async function handleCancelChatRun(
   const user = context.requireUser();
   const run = await requireChatRunAccess(context, runId);
 
+  if (run.initiatorUserId !== user.id) {
+    throw new AssistantError(
+      "Only the run initiator can cancel this run",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
   if (run.attempt !== request.expected_attempt) {
     throw new AssistantError(
       "The run attempt changed before cancellation was accepted",

@@ -63,8 +63,8 @@ export function TaskNotificationSettings() {
   return (
     <Card className="mt-8 space-y-4 p-4">
       <div>
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Task notifications</h2>
-        <p className="mt-1 text-xs text-zinc-500">{status}</p>
+        <h2 className="text-sm font-semibold text-foreground">Task notifications</h2>
+        <p className="mt-1 text-xs text-muted-foreground">{status}</p>
       </div>
 
       <Switch
@@ -76,7 +76,7 @@ export function TaskNotificationSettings() {
       />
 
       {settings && (
-        <div className="grid gap-3 border-t border-zinc-200 pt-4 dark:border-zinc-800 sm:grid-cols-2">
+        <div className="grid gap-3 border-t border-border pt-4 sm:grid-cols-2">
           {(Object.keys(CATEGORY_LABELS) as TaskNotificationCategory[]).map((category) => (
             <Switch
               key={category}

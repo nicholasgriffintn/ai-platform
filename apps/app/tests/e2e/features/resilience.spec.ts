@@ -18,12 +18,23 @@ test.describe("Recovery and unavailable states", () => {
   test.describe("provider failure", () => {
     test.use({ persona: "pro" });
 
-    test("reports the failure and accepts the next message", async ({ appPage, homePage }) => {
+    test("reports one durable failure and accepts the next message", async ({
+      appPage,
+      homePage,
+      page,
+    }) => {
       await homePage.navigate("/chat");
       await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessage("Trigger an error");
-      await expect(appPage.notification(/Deterministic provider failure/)).toBeVisible();
+      await expect(page.getByText("Task failed", { exact: true })).toBeVisible();
+      await expect(page.getByText(/Deterministic provider failure/)).toBeVisible();
+      await expect(appPage.notification(/Deterministic provider failure/)).toHaveCount(0);
+      await expect(page.locator('[data-role="user"]')).toHaveText(["Trigger an error"]);
       await expect(homePage.chatInput).toBeEditable();
+
+      await page.reload();
+      await expect(page.locator('[data-role="user"]')).toHaveText(["Trigger an error"]);
+      await expect(page.getByText("Task failed", { exact: true })).toBeVisible();
 
       const previousCount = await homePage.getAssistantMessageCount();
 

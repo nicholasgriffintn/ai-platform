@@ -402,7 +402,7 @@ export class ConversationRunRepository extends BaseRepository {
       current.conversationId !== params.conversationId ||
       current.projectId !== (params.projectId ?? null) ||
       current.projectTaskId !== (params.projectTaskId ?? null) ||
-      (!current.projectId && current.initiatorUserId !== params.userId) ||
+      current.initiatorUserId !== params.userId ||
       (current.status !== "awaiting_input" && current.status !== "awaiting_approval")
     ) {
       throw new AssistantError(
@@ -454,7 +454,7 @@ export class ConversationRunRepository extends BaseRepository {
       const [commandResult, runResult] = await this.env.DB.batch([
         commandStatement,
         runStatement,
-        buildInsertRunEventStatement(this.env.DB, event),
+        buildInsertRunEventStatement(this.env.DB, event, { ignoreSequenceConflict: true }),
         buildTrimRunEventsStatement(this.env.DB, params.runId),
       ]);
       const command = commandResult.results[0];
@@ -521,7 +521,11 @@ export class ConversationRunRepository extends BaseRepository {
 
     const current = await this.getById(params.runId);
 
-    if (!current || current.attempt !== params.expectedAttempt) {
+    if (
+      !current ||
+      current.attempt !== params.expectedAttempt ||
+      isTerminalChatRunStatus(current.status)
+    ) {
       throw new AssistantError(
         "The run attempt changed before cancellation was accepted",
         ErrorType.CONFLICT_ERROR,
@@ -572,23 +576,20 @@ export class ConversationRunRepository extends BaseRepository {
     ).bind(now, now, now, params.runId, params.expectedAttempt);
 
     try {
-      const statements = [commandStatement, runStatement];
-
-      if (!isTerminalChatRunStatus(current.status)) {
-        const event = {
-          id: `event_${generateId()}`,
-          runId: params.runId,
-          type: "run.status_changed",
-          occurredAt: now,
-          data: { previousStatus: current.status, status: nextStatus },
-          expectedAttempt: params.expectedAttempt,
-        };
-
-        statements.push(
-          buildInsertRunEventStatement(this.env.DB, event),
-          buildTrimRunEventsStatement(this.env.DB, params.runId),
-        );
-      }
+      const event = {
+        id: `event_${generateId()}`,
+        runId: params.runId,
+        type: "run.status_changed",
+        occurredAt: now,
+        data: { previousStatus: current.status, status: nextStatus },
+        expectedAttempt: params.expectedAttempt,
+      };
+      const statements = [
+        commandStatement,
+        runStatement,
+        buildInsertRunEventStatement(this.env.DB, event, { ignoreSequenceConflict: true }),
+        buildTrimRunEventsStatement(this.env.DB, params.runId),
+      ];
 
       const [commandResult, runResult] = await this.env.DB.batch(statements);
 
@@ -691,7 +692,7 @@ export class ConversationRunRepository extends BaseRepository {
     };
     const [runResult] = await this.env.DB.batch([
       updateStatement,
-      buildInsertRunEventStatement(this.env.DB, event),
+      buildInsertRunEventStatement(this.env.DB, event, { ignoreSequenceConflict: true }),
       buildTrimRunEventsStatement(this.env.DB, params.runId),
     ]);
     const transitioned = runResult.results[0] as ConversationRunRow | undefined;

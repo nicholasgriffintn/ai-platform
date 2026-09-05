@@ -13,6 +13,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 import { modelConfig } from "./catalogue";
+import { isChatSurfaceModel } from "./chatSurface";
 import {
   getExecutableModelsForAccount,
   resolveDefaultChatModel,
@@ -34,6 +35,7 @@ let cachedCapabilities: string[] | null = null;
 export interface ModelsOptions {
   shouldUseCache?: boolean;
   excludeModalities?: ModelModality[];
+  chatSurfaceOnly?: boolean;
   includeTrainingDeployments?: boolean;
 }
 
@@ -267,7 +269,8 @@ export function getModels(
   cachedModels = Object.entries(modelConfig).reduce((acc, [key, model]) => {
     if (
       !model.beta &&
-      !options.excludeModalities?.some((excluded) => modelSupportsModality(model, excluded))
+      !options.excludeModalities?.some((excluded) => modelSupportsModality(model, excluded)) &&
+      (!options.chatSurfaceOnly || isChatSurfaceModel(model))
     ) {
       acc[key] = model;
     }

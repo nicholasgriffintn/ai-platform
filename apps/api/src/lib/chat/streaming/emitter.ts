@@ -51,11 +51,11 @@ export interface ChatStreamContinuitySnapshot {
 }
 
 export function createChatSseStreamWriter(): ChatSseStreamWriter {
-  const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
-  const writer = writable.getWriter();
   let detached = false;
+  let settled = false;
   let detachedAtMs: number | undefined;
   let detachmentReason: ChatStreamDetachmentReason | undefined;
+  let controller: ReadableStreamDefaultController<Uint8Array> | undefined;
 
   const markDetached = (reason: ChatStreamDetachmentReason) => {
     if (detached) {
@@ -67,31 +67,41 @@ export function createChatSseStreamWriter(): ChatSseStreamWriter {
     detachmentReason = reason;
   };
 
-  writer.closed.catch(() => {
-    markDetached("reader_closed");
+  const readable = new ReadableStream<Uint8Array>({
+    start(nextController) {
+      controller = nextController;
+    },
+    cancel() {
+      markDetached("reader_closed");
+      controller = undefined;
+    },
   });
 
   const write = async (chunk: Uint8Array) => {
-    if (detached) {
+    if (detached || settled) {
       return;
     }
 
     try {
-      await writer.write(chunk);
+      controller?.enqueue(chunk);
     } catch {
       markDetached("write_failed");
+      controller = undefined;
     }
   };
 
-  const settle = async (settleWriter: () => Promise<void>) => {
-    if (detached) {
+  const settle = async (settleStream: () => void) => {
+    if (detached || settled) {
       return;
     }
 
     try {
-      await settleWriter();
+      settleStream();
+      settled = true;
+      controller = undefined;
     } catch {
       markDetached("settle_failed");
+      controller = undefined;
     }
   };
 
@@ -103,8 +113,8 @@ export function createChatSseStreamWriter(): ChatSseStreamWriter {
       write(encodeEventData(createEventData(type, payload))),
     writeComment: (text: string) => write(encoder.encode(`: ${text}\n\n`)),
     writeDone: () => write(encodeEventData(formatChatStreamSseDone())),
-    close: () => settle(() => writer.close()),
-    abort: (error: unknown) => settle(() => writer.abort(error)),
+    close: () => settle(() => controller?.close()),
+    abort: (error: unknown) => settle(() => controller?.error(error)),
   };
 }
 

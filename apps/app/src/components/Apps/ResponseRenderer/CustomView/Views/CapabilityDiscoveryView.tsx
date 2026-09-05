@@ -60,6 +60,8 @@ function stateLabel(item: CapabilityDiscoveryItem) {
       return "Unavailable";
     case "unknown":
       return "Unknown";
+    default:
+      return "Unknown";
   }
 }
 
@@ -167,7 +169,7 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
 
   if (parsed.data.readiness?.state === "unknown") {
     return (
-      <div className="space-y-1 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+      <div className="space-y-1 rounded-md border border-border-strong bg-surface-elevated p-3 text-sm text-foreground">
         <p className="font-medium">Capability readiness is unknown</p>
         <p>{parsed.data.readiness.reason}</p>
       </div>
@@ -175,7 +177,7 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
   }
 
   return (
-    <div className="space-y-3" role="region" aria-label="Capability discovery results">
+    <section className="space-y-3" aria-label="Capability discovery results">
       <CapabilityDiscoveryList
         items={parsed.data.items.map((item) => ({
           id: item.id,
@@ -201,6 +203,6 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
         onSubmit={workflows.configurationDialog.submit}
         isLoading={workflows.configurationDialog.isLoading}
       />
-    </div>
+    </section>
   );
 }

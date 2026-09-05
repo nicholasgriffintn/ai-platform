@@ -6,6 +6,7 @@ import {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
+import { reconcileInactiveChatRun } from "./recovery";
 import { handleGetChatRunSnapshot, requireChatRunAccess } from "./status";
 
 export async function handleReplayChatRunEvents(
@@ -13,7 +14,7 @@ export async function handleReplayChatRunEvents(
   runId: string,
   query: ChatRunReplayQuery,
 ): Promise<ChatRunReplayResponse> {
-  await requireChatRunAccess(context, runId);
+  await reconcileInactiveChatRun(context, await requireChatRunAccess(context, runId));
   const window = await context.repositories.conversationRuns.getEventWindow(runId);
   const retentionGap = window.oldest !== null && query.after < window.oldest - 1;
   const invalidFutureCursor = query.after > window.latest;

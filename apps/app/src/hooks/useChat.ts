@@ -22,9 +22,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, Conversation, ConversationListOptions, Message } from "~/types";
 
-import { useChatRunReplay } from "./useChatRunReplay";
 import { useConversationStorage } from "./useConversationStorage";
-import { useRemoteConversationActivity } from "./useRemoteConversationActivity";
 
 const DEFAULT_CHAT_LIST_LIMIT = 30;
 const CHAT_LIST_STALE_TIME = 2 * 60 * 1000;
@@ -101,7 +99,10 @@ export function useChats(options: ConversationListOptions = {}) {
   };
 }
 
-export function useChat(completion_id: string | undefined) {
+export function useChat(
+  completion_id: string | undefined,
+  options: { monitorRemoteActivity?: boolean } = {},
+) {
   const {
     isAuthenticated,
     isPro,
@@ -185,22 +186,13 @@ export function useChat(completion_id: string | undefined) {
     enabled: !!completion_id,
     staleTime: CHAT_DETAIL_STALE_TIME,
     gcTime: CHAT_QUERY_GC_TIME,
-    refetchInterval: (currentQuery) => getConversationRefetchInterval(currentQuery.state.data),
+    refetchInterval: (currentQuery) =>
+      options.monitorRemoteActivity && streamSource !== "local"
+        ? getConversationRefetchInterval(currentQuery.state.data)
+        : false,
     refetchOnMount: "always",
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: options.monitorRemoteActivity === true,
   });
-
-  useChatRunReplay(
-    completion_id,
-    query.data?.latest_run,
-    isAuthenticated && isPro && !localOnlyMode && streamSource !== "local",
-  );
-
-  useRemoteConversationActivity(
-    completion_id,
-    query.data?.active_operation,
-    query.data?.latest_run,
-  );
 
   return query;
 }

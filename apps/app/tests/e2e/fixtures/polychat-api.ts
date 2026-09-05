@@ -2,7 +2,9 @@ import {
   authoredSkillDocumentSchema,
   authoredSkillHistoryResponseSchema,
   authoredSkillVersionedDocumentSchema,
+  chatRunCommandReceiptResponseSchema,
   conversationBranchesResponseSchema,
+  getChatCompletionResponseSchema,
   usageBalanceResponseSchema,
   usageEventsResponseSchema,
   usageSummaryResponseSchema,
@@ -31,6 +33,27 @@ function skillDocument(name: string, instructions: string): string {
 
 export class PolychatApi {
   constructor(private readonly request: APIRequestContext) {}
+
+  async getConversation(completionId: string) {
+    const response = await this.request.get(`${API_BASE_URL}/chat/completions/${completionId}`, {
+      headers: BROWSER_REQUEST_HEADERS,
+    });
+
+    await requireSuccessfulResponse(response, "Load conversation");
+
+    return getChatCompletionResponseSchema.parse(await response.json());
+  }
+
+  async cancelChatRun(runId: string, expectedAttempt: number, commandId: string) {
+    const response = await this.request.post(`${API_BASE_URL}/chat/runs/${runId}/cancel`, {
+      headers: BROWSER_REQUEST_HEADERS,
+      data: { command_id: commandId, expected_attempt: expectedAttempt },
+    });
+
+    await requireSuccessfulResponse(response, "Cancel chat run");
+
+    return chatRunCommandReceiptResponseSchema.parse(await response.json()).run;
+  }
 
   private async exerciseSkillRevisionLifecycle(
     directoryPath: string,

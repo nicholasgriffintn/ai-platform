@@ -258,28 +258,6 @@ describe("ChatService streaming", () => {
     expect(result.conversations[0]?.isUnread).toBe(true);
   });
 
-  it("adds bounded recovery context to an authorised conversation refresh", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      Response.json({ data: { id: "conversation-1", messages: [] } }),
-    );
-
-    vi.stubGlobal("fetch", fetchMock);
-    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
-
-    await service.getChat("conversation-1", {
-      recovery: {
-        attempt: 2,
-        elapsedMs: 4_000,
-        finalAttempt: false,
-        knownAssistantCount: 3,
-      },
-    });
-
-    expect(fetchMock.mock.calls[0]?.[0]).toContain(
-      "/chat/completions/conversation-1?refresh_pending=true&message_limit=100&recovery_platform=web&recovery_attempt=2&recovery_elapsed_ms=4000&recovery_known_assistant_count=3&recovery_final_attempt=false",
-    );
-  });
-
   it("preserves structured API errors when a conversation cannot be accessed", async () => {
     vi.stubGlobal(
       "fetch",
@@ -1633,16 +1611,9 @@ describe("ChatService run recovery", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
-    const snapshot = await service.getChatRun("run-1", {
-      attempt: 2,
-      elapsedMs: 4_000,
-      finalAttempt: false,
-      knownAssistantCount: 3,
-    });
+    const snapshot = await service.getChatRun("run-1");
 
-    expect(String(fetchMock.mock.calls[0]?.[0])).toContain(
-      "/chat/runs/run-1?recovery_platform=web&recovery_attempt=2&recovery_elapsed_ms=4000&recovery_known_assistant_count=3&recovery_final_attempt=false",
-    );
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/chat/runs/run-1");
     expect(snapshot).toMatchObject({
       run: { id: "run-1", status: "running" },
       messages: [{ id: "assistant-1", content: "Partial" }],

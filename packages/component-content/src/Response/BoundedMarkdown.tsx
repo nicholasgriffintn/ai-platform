@@ -16,7 +16,7 @@ export function BoundedMarkdown({ content }: { content: string }) {
       {isBounded ? (
         <button
           type="button"
-          className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          className="mt-2 text-xs font-medium text-active-work hover:text-active-work/80"
           onClick={() => setShowFull((current) => !current)}
           aria-expanded={showFull}
         >

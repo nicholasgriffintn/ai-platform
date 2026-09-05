@@ -45,10 +45,12 @@ import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useArtifactPanel } from "~/hooks/useArtifactPanel";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
+import { useChatRunReplay } from "~/hooks/useChatRunReplay";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { useModels } from "~/hooks/useModels";
 import { usePetNudgeSources } from "~/hooks/usePetNudgeSources";
 import { usePetFollowEnabled } from "~/hooks/usePetTravel";
+import { useRemoteConversationActivity } from "~/hooks/useRemoteConversationActivity";
 import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
 import type { ChatSuggestion } from "~/lib/chat-suggestions";
 import { openExternalUrl } from "~/lib/external-navigation";
@@ -139,11 +141,31 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     setChatInput,
     selectedAssistantAction,
     setSelectedAssistantAction,
+    isAuthenticated,
+    isPro,
+    localOnlyMode,
   } = useChatStore();
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const startNewConversation = useChatStore((state) => state.startNewConversation);
-  const { data: currentConversation } = useChat(currentConversationId);
+  const { data: currentConversation, isLoading: isConversationLoading } = useChat(
+    currentConversationId,
+    { monitorRemoteActivity: true },
+  );
+  const streamSource = useStreamActivityStore((state) =>
+    currentConversationId ? state.streams[currentConversationId]?.source : undefined,
+  );
+
+  useChatRunReplay(
+    currentConversationId,
+    currentConversation?.latest_run,
+    isAuthenticated && isPro && !localOnlyMode && streamSource !== "local",
+  );
+  useRemoteConversationActivity(
+    currentConversationId,
+    currentConversation?.active_operation,
+    currentConversation?.latest_run,
+  );
   const {
     goalView,
     canUseGoals,
@@ -503,7 +525,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         if (result?.status === "error") {
           setChatInput(originalInput);
           setSelectedAssistantAction(originalAssistantAction);
-          if (result.response) {
+          if (
+            result.response &&
+            (!("errorPresentation" in result) || result.errorPresentation !== "run")
+          ) {
             toast.error(result.response);
           }
         } else {
@@ -836,14 +861,15 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           />
         ) : null}
         {currentConversation?.latest_run &&
-        currentConversation.latest_run.status !== "succeeded" ? (
+        (currentConversation.latest_run.status === "failed" ||
+          currentConversation.latest_run.status === "interrupted") ? (
           <ChatRunStatusBanner run={currentConversation.latest_run} />
         ) : null}
         <ChatInput
           goalState={goalState}
           ref={chatInputRef}
           handleSubmit={handleSubmit}
-          isLoading={isStreamLoading || isModelInitializing}
+          isLoading={isStreamLoading || isModelInitializing || isConversationLoading}
           streamStarted={streamStarted}
           controller={controller}
           onStopResponse={abortStream}

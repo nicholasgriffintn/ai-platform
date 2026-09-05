@@ -34,7 +34,7 @@ export function ConversationPage({
       )}
       <div className="relative flex min-h-0 flex-1 flex-grow flex-row overflow-hidden">
         <div className="flex min-h-0 w-full flex-grow flex-col">
-          <div className="relative min-h-0 flex-1 overflow-hidden">
+          <div className="relative min-h-0 flex-1 overflow-clip">
             <ConversationThread modeConfig={effectiveModeConfig} />
           </div>
         </div>

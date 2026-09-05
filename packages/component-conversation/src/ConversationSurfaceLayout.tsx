@@ -11,7 +11,7 @@ export function ConversationSurfaceLayout({ header, children }: ConversationSurf
       {header}
       <div className="flex min-h-0 flex-1 flex-row overflow-hidden">
         <div className="flex min-h-0 w-full flex-1 flex-col">
-          <div className="relative min-h-0 flex-1 overflow-hidden">{children}</div>
+          <div className="relative min-h-0 flex-1 overflow-clip">{children}</div>
         </div>
       </div>
     </div>

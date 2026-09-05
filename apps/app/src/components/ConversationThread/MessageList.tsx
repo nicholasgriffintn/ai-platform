@@ -260,7 +260,7 @@ export const MessageList = ({
             <div className="flex justify-center pb-4">
               <button
                 type="button"
-                className="rounded-md border border-zinc-200 px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground hover:bg-selection hover:text-foreground disabled:opacity-60"
                 disabled={earlierMessages.isPending}
                 onClick={() => earlierMessages.mutate()}
               >

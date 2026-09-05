@@ -440,7 +440,9 @@ test.describe("Response controls as pro", () => {
 
     await homePage.selectModel(TEXT_MODEL);
     await expect((await homePage.openChatSettings()).getByLabel("Processing")).toHaveCount(0);
-    await page.getByRole("button", { name: "Done", exact: true }).click();
+    const textModelSettings = page.getByRole("dialog", { name: "Chat settings" });
+
+    await textModelSettings.getByRole("button", { name: "Done", exact: true }).click();
     await homePage.selectModel("GPT-6 Astra");
     await expect(
       (await homePage.openChatSettings()).getByLabel("Processing", { exact: true }),
@@ -620,6 +622,13 @@ test.describe("Pro message attachments", () => {
     homePage,
     page,
   }) => {
+    const replayRequests: string[] = [];
+
+    page.on("request", (request) => {
+      if (/\/chat\/runs\/[^/]+\/events$/.test(new URL(request.url()).pathname)) {
+        replayRequests.push(request.url());
+      }
+    });
     await homePage.navigate("/chat");
     await homePage.selectModel(TEXT_MODEL);
     const request = await homePage.sendMessageAndRequireCompletion(
@@ -628,6 +637,7 @@ test.describe("Pro message attachments", () => {
     const completionId = homePage.completionIdFromRequest(request);
 
     await expect(homePage.getLatestAssistantMessage()).toContainText("recovery data so far");
+    expect(replayRequests).toHaveLength(0);
     await homePage.startNewChat();
     await expect(page).toHaveURL(/\/chat$/);
     await homePage.openConversation(/Recover this interrupted stream|Release validation chat/);
@@ -643,6 +653,31 @@ test.describe("Pro message attachments", () => {
     homePage,
     page,
   }) => {
+    let activeReplayRequests = 0;
+    let maximumConcurrentReplayRequests = 0;
+    const isReplayRequest = (url: string) =>
+      /\/chat\/runs\/[^/]+\/(?:events|snapshot)$/.test(new URL(url).pathname);
+
+    page.on("request", (request) => {
+      if (isReplayRequest(request.url())) {
+        activeReplayRequests += 1;
+        maximumConcurrentReplayRequests = Math.max(
+          maximumConcurrentReplayRequests,
+          activeReplayRequests,
+        );
+      }
+    });
+    page.on("requestfinished", (request) => {
+      if (isReplayRequest(request.url())) {
+        activeReplayRequests -= 1;
+      }
+    });
+    page.on("requestfailed", (request) => {
+      if (isReplayRequest(request.url())) {
+        activeReplayRequests -= 1;
+      }
+    });
+
     await homePage.navigate("/chat");
     await homePage.selectModel(TEXT_MODEL);
     const request = await homePage.sendMessageAndRequireCompletion(
@@ -654,7 +689,7 @@ test.describe("Pro message attachments", () => {
 
     await homePage.navigate(`/chat/${completionId}`);
 
-    await homePage.sendMessageAndReadCompletionRequest(
+    await homePage.sendMessageAndRequireCompletion(
       "Recover this interrupted stream after refreshing",
     );
     await page.reload();
@@ -664,8 +699,59 @@ test.describe("Pro message attachments", () => {
       "the interrupted stream completed",
       { timeout: 20_000 },
     );
+    await expect(page.locator('[data-role="user"]')).toHaveText([
+      "Start the refresh recovery conversation",
+      "Recover this interrupted stream after refreshing",
+    ]);
     await expect(homePage.stopResponseButton).toBeHidden();
     await expect(homePage.chatInput).toBeEditable();
+    expect(maximumConcurrentReplayRequests).toBe(1);
+  });
+
+  test("cancels one run idempotently and stops detached recovery", async ({
+    homePage,
+    page,
+    polychatApi,
+  }) => {
+    let replayRequestCount = 0;
+
+    page.on("request", (request) => {
+      if (/\/chat\/runs\/[^/]+\/(?:events|snapshot)$/.test(new URL(request.url()).pathname)) {
+        replayRequestCount += 1;
+      }
+    });
+
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+    const request = await homePage.sendMessageAndRequireCompletion(
+      "Recover this interrupted stream after a repeated cancellation",
+    );
+    const completionId = homePage.completionIdFromRequest(request);
+
+    await expect(homePage.getLatestAssistantMessage()).toContainText("recovery data so far");
+    const run = (await polychatApi.getConversation(completionId)).latest_run;
+
+    if (!run) {
+      throw new Error("The conversation has no active run to cancel");
+    }
+
+    const receipts = await Promise.all([
+      polychatApi.cancelChatRun(run.id, run.attempt, "e2e-cancel-1"),
+      polychatApi.cancelChatRun(run.id, run.attempt, "e2e-cancel-2"),
+    ]);
+
+    expect(receipts.map((receipt) => receipt.run.status)).toEqual([
+      expect.stringMatching(/cancelling|cancelled/),
+      expect.stringMatching(/cancelling|cancelled/),
+    ]);
+
+    await page.reload();
+    await expect(homePage.stopResponseButton).toBeHidden({ timeout: 10_000 });
+    await expect(page.getByText("Stop requested", { exact: true })).toHaveCount(0);
+    const settledReplayRequestCount = replayRequestCount;
+
+    await page.waitForTimeout(4_500);
+    expect(replayRequestCount - settledReplayRequestCount).toBeLessThanOrEqual(1);
   });
 
   test("continues a streaming conversation after the browser closes and returns", async ({
@@ -766,7 +852,10 @@ test.describe("Pro message attachments", () => {
     }
 
     await homePage.returnToOriginalConversation();
-    await homePage.branchFromLatestUserMessageWithModel("Llama 4 Scout 17B", "Groq");
+    await homePage.branchFromLatestUserMessageWithModel(
+      "Llama 4 Scout 17B 16E Instruct",
+      "workers-ai",
+    );
     await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
     const siblingId = (await polychatApi.getConversationBranches(parentId)).branches.find(
       ({ id }) => id !== parentId && id !== childId,
@@ -784,9 +873,9 @@ test.describe("Pro message attachments", () => {
     await polychatApi.updateConversation(siblingId, { title: "Release branch sibling" });
     const branchFamily = await polychatApi.getConversationBranches(siblingId);
 
-    expect(
-      branchFamily.branches.map(({ id }) => id).toSorted((a, b) => a.localeCompare(b)),
-    ).toEqual([parentId, childId, siblingId].toSorted((a, b) => a.localeCompare(b)));
+    expect(new Set(branchFamily.branches.map(({ id }) => id))).toEqual(
+      new Set([parentId, childId, siblingId]),
+    );
     await homePage.openConversationBranches();
     await expect(homePage.conversationBranch("Release branch sibling")).toContainText("Current");
     await expect(homePage.conversationBranch("Release branch child")).toContainText("Archived");
@@ -953,11 +1042,14 @@ test.describe("Cold conversation history as pro", () => {
 
     await conversationButton.focus();
     await page.keyboard.press("Tab");
-    await expect(
-      conversation.getByRole("button", { name: "Edit conversation title" }),
-    ).toBeFocused();
-    await page.keyboard.press("Tab");
-    await expect(conversation.getByRole("button", { name: "Delete", exact: true })).toBeFocused();
+    const actions = conversation.getByRole("button", { name: "Conversation actions" });
+
+    await expect(actions).toBeFocused();
+    await actions.press("Enter");
+    await page.keyboard.press("ArrowDown");
+    await expect(page.getByRole("menuitem", { name: "Rename", exact: true })).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(actions).toBeFocused();
 
     const options = page.getByRole("button", { name: "Conversation list options" });
 

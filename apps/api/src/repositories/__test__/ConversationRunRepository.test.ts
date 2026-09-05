@@ -139,7 +139,7 @@ describe("ConversationRunRepository", () => {
     expect(batch.mock.calls[0]?.[0]).toHaveLength(4);
   });
 
-  it("allows another authorised project member to resume but not another personal user", async () => {
+  it("only allows the run initiator to resume project and personal runs", async () => {
     const projectRepository = createRepository();
 
     projectRepository.first.mockResolvedValueOnce(null).mockResolvedValueOnce({
@@ -147,13 +147,6 @@ describe("ConversationRunRepository", () => {
       project_id: "project-1",
       status: "awaiting_approval",
     });
-    projectRepository.batch.mockResolvedValueOnce([
-      { results: [{ id: "receipt-1" }] },
-      {
-        results: [{ ...runRow, project_id: "project-1", status: "running", attempt: 2 }],
-      },
-    ]);
-
     await expect(
       projectRepository.repository.acceptCommand({
         commandId: "command-project",
@@ -164,7 +157,8 @@ describe("ConversationRunRepository", () => {
         projectId: "project-1",
         runId: "run-1",
       }),
-    ).resolves.toMatchObject({ run: { attempt: 2 } });
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(projectRepository.batch).not.toHaveBeenCalled();
 
     const personalRepository = createRepository();
 
@@ -223,6 +217,23 @@ describe("ConversationRunRepository", () => {
     expect(receipt.kind).toBe("cancel");
     expect(receipt.run.status).toBe("cancelling");
     expect(batch.mock.calls[0]?.[0]).toHaveLength(4);
+  });
+
+  it("rejects a new cancellation command after the run has reached a terminal state", async () => {
+    const { batch, first, repository } = createRepository();
+
+    first.mockResolvedValueOnce(null).mockResolvedValueOnce({ ...runRow, status: "succeeded" });
+
+    await expect(
+      repository.acceptCancellation({
+        commandId: "cancel-terminal",
+        digest: "cancel-digest",
+        expectedAttempt: 1,
+        runId: "run-1",
+        userId: 42,
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(batch).not.toHaveBeenCalled();
   });
 
   it("persists a status transition and its ordered event atomically", async () => {

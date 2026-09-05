@@ -30,6 +30,7 @@ test.describe("Application experience", () => {
     test("moves keyboard focus from the skip link to main content", async ({
       appPage,
       homePage,
+      page,
     }) => {
       await homePage.navigate("/chat");
       await appPage.followSkipLink();
@@ -69,7 +70,7 @@ test.describe("Application experience", () => {
       await expect(page.getByRole("heading", { name: "What Polychat is for" })).toBeVisible();
       await captureVisualSnapshots(page, "release-app-discover", DEFAULT_VISUAL_CHECKPOINTS);
 
-      await appPage.followLink("Models");
+      await appPage.followPrimaryLink("Models");
       await expect(page).toHaveURL(/\/models$/);
       await expect(page.getByRole("heading", { name: "Every model, one perch" })).toBeVisible();
       await expect(page.getByRole("group", { name: "Filter by provider" })).toBeVisible();

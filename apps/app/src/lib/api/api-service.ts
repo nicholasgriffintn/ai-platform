@@ -18,7 +18,6 @@ import type {
   Message,
 } from "~/types";
 
-import type { RecoveryRequestContext } from "./recovery-telemetry";
 import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
 import {
@@ -103,13 +102,13 @@ class ApiService {
     return this.chatService.cancelChatCompletion(completion_id);
   }
 
-  getChatRun = (runId: string, recovery?: RecoveryRequestContext) =>
-    this.chatService.getChatRun(runId, recovery);
+  getChatRun = (runId: string, signal?: AbortSignal) => this.chatService.getChatRun(runId, signal);
 
-  getChatRunSnapshot = (runId: string) => this.chatService.getChatRunSnapshot(runId);
+  getChatRunSnapshot = (runId: string, signal?: AbortSignal) =>
+    this.chatService.getChatRunSnapshot(runId, signal);
 
-  getChatRunEvents = (runId: string, after: number, limit?: number) =>
-    this.chatService.getChatRunEvents(runId, after, limit);
+  getChatRunEvents = (runId: string, after: number, limit?: number, signal?: AbortSignal) =>
+    this.chatService.getChatRunEvents(runId, after, limit, signal);
 
   getChatRunCommand = (commandId: string) => this.chatService.getChatRunCommand(commandId);
 

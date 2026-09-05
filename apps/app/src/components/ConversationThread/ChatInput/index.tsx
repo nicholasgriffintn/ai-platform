@@ -278,10 +278,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           return false;
         }
 
-        if (hasConversationHistory) {
-          toast.info(decision.reason);
-        }
-
         return true;
       },
       [

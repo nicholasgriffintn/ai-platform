@@ -84,7 +84,7 @@ export class HomePage extends BasePage {
     }
 
     await this.fillInput(this.page.getByRole("textbox", { name: "Search models" }), modelName);
-    const options = this.page.getByRole("option");
+    const options = this.page.locator('[role="option"]:not([aria-disabled="true"])');
     const candidate = options.filter({ hasText: modelName }).first();
 
     if (!(await candidate.isVisible())) {
@@ -490,8 +490,7 @@ export class HomePage extends BasePage {
     const item = this.conversationItem(title);
 
     await item.hover();
-    await item.getByRole("button", { name: "Edit conversation title" }).waitFor();
-    await item.getByRole("button", { name: "Delete", exact: true }).waitFor();
+    await item.getByRole("button", { name: "Conversation actions" }).waitFor();
 
     return item;
   }
@@ -507,7 +506,8 @@ export class HomePage extends BasePage {
 
       await dialog.accept(replacement);
     });
-    await item.getByRole("button", { name: "Edit conversation title" }).click();
+    await item.getByRole("button", { name: "Conversation actions" }).click();
+    await this.page.getByRole("menuitem", { name: "Rename", exact: true }).click();
     await this.conversationItem(replacement).waitFor();
   }
 
@@ -559,7 +559,8 @@ export class HomePage extends BasePage {
   async deleteConversation(title: string | RegExp) {
     const item = await this.hoverConversation(title);
 
-    await item.getByRole("button", { name: "Delete", exact: true }).click();
+    await item.getByRole("button", { name: "Conversation actions" }).click();
+    await this.page.getByRole("menuitem", { name: "Delete", exact: true }).click();
     const confirmation = this.page.getByRole("dialog", { name: "Delete Conversation" });
 
     await confirmation.getByRole("button", { name: "Delete", exact: true }).click();

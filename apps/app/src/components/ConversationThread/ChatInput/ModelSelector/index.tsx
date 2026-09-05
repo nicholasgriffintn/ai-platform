@@ -329,7 +329,7 @@ export const ModelSelector = ({
 
   const closeSelector = useCallback(() => {
     setIsOpen(false);
-    triggerRef.current?.focus();
+    triggerRef.current?.focus({ preventScroll: true });
   }, []);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -370,14 +370,14 @@ export const ModelSelector = ({
     }
 
     if (!isMobile && searchInputRef.current) {
-      searchInputRef.current.focus();
+      searchInputRef.current.focus({ preventScroll: true });
 
       return;
     }
 
     const firstOpt = dropdownRef.current?.querySelector("[data-model-option]");
 
-    (firstOpt as HTMLElement | null)?.focus();
+    (firstOpt as HTMLElement | null)?.focus({ preventScroll: true });
   }, [isOpen, isMobile]);
 
   const panelLayout: ModelSelectorPanelLayout | null = useModelSelectorLayout(

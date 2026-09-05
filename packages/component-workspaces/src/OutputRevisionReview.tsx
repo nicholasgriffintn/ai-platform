@@ -33,7 +33,7 @@ export function OutputRevisionReview({
         <p className="flex items-center gap-2 text-sm font-medium">
           <History size={16} aria-hidden /> Revision history
         </p>
-        <p className="mt-1 text-sm text-zinc-500">No earlier revisions yet.</p>
+        <p className="mt-1 text-sm text-muted-foreground">No earlier revisions yet.</p>
       </section>
     );
   }
@@ -47,14 +47,14 @@ export function OutputRevisionReview({
           <p className="flex items-center gap-2 text-sm font-medium">
             <History size={16} aria-hidden /> Revision history
           </p>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Current revision {history.current.revision} · {history.current.operation}
             {history.current.restoredFromRevision
               ? ` from revision ${history.current.restoredFromRevision}`
               : ""}
           </p>
         </div>
-        <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+        <label className="text-xs font-medium text-muted-foreground">
           Compare with
           <select
             className="ml-2 rounded-md border bg-transparent px-2 py-1"
@@ -91,8 +91,8 @@ export function OutputRevisionReview({
         />
       </div>
 
-      <div className="rounded-md bg-zinc-50 p-3 dark:bg-zinc-900">
-        <p className="text-xs font-medium text-zinc-700 dark:text-zinc-200">
+      <div className="rounded-md bg-surface-elevated p-3">
+        <p className="text-xs font-medium text-foreground">
           Origin of revision {selected.revision}
         </p>
         <OutputProvenanceSummary provenance={selected.provenance} />
@@ -107,13 +107,13 @@ export function OutputRevisionReview({
           <RotateCcw size={15} aria-hidden />
           {isRestoring ? "Restoring…" : `Restore revision ${selected.revision}`}
         </Button>
-        <p className="mt-1.5 text-xs text-zinc-500">
+        <p className="mt-1.5 text-xs text-muted-foreground">
           {history.restore.supported
             ? "Restore appends a new local revision. It does not undo external actions."
             : history.restore.reason}
         </p>
         {errorMessage && (
-          <p role="alert" className="mt-1.5 text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="mt-1.5 text-sm text-failure">
             {errorMessage}
           </p>
         )}
@@ -132,10 +132,10 @@ function RevisionColumn({
   content: string;
 }) {
   return (
-    <article className="min-w-0 rounded-md border bg-white p-3 dark:bg-zinc-950">
-      <p className="text-xs font-medium text-zinc-500">{label}</p>
+    <article className="min-w-0 rounded-md border border-border bg-surface p-3">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm font-medium">{title}</p>
-      <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-words rounded bg-zinc-100 p-2 text-xs dark:bg-zinc-900">
+      <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-words rounded bg-surface-elevated p-2 text-xs">
         {content}
       </pre>
     </article>

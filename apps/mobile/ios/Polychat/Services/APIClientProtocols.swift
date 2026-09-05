@@ -23,8 +23,7 @@ protocol ConversationAPIClient {
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse
     func fetchConversation(
         id: String,
-        refreshPending: Bool,
-        recovery: TurnRecoveryAttemptContext?
+        refreshPending: Bool
     ) async throws -> ConversationDetailResponse
     func fetchConversationMessages(id: String, before: String, limit: Int) async throws -> ConversationMessagePageResponse
     func streamChatCompletion(
@@ -35,13 +34,8 @@ protocol ConversationAPIClient {
         settings: ChatSettings?,
         commandId: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
-    func fetchChatRun(
-        id: String,
-        recovery: TurnRecoveryAttemptContext?
-    ) async throws -> ChatRunRecoveryResponse
     func fetchChatRunSnapshot(id: String) async throws -> ChatRunSnapshotResponse
     func fetchChatRunEvents(id: String, after: Int, limit: Int) async throws -> ChatRunReplayResponse
-    func fetchChatRunCommand(id: String) async throws -> ChatRunCommandReceipt
     func cancelChatRun(id: String, expectedAttempt: Int, commandId: String) async throws -> ChatRunCommandReceipt
     func fetchConnectorApproval(id: String) async throws -> ConnectorOperationApproval
     func resolveConnectorApproval(id: String, resolution: String) async throws -> ConnectorApprovalResolution
@@ -113,14 +107,7 @@ extension ConversationAPIClient {
     }
 
     func fetchConversation(id: String) async throws -> ConversationDetailResponse {
-        try await fetchConversation(id: id, refreshPending: true, recovery: nil)
-    }
-
-    func fetchConversation(
-        id: String,
-        refreshPending: Bool
-    ) async throws -> ConversationDetailResponse {
-        try await fetchConversation(id: id, refreshPending: refreshPending, recovery: nil)
+        try await fetchConversation(id: id, refreshPending: true)
     }
 
     func fetchConversationMessages(id: String, before: String) async throws -> ConversationMessagePageResponse {
@@ -135,9 +122,6 @@ extension ConversationAPIClient {
         try await fetchChatRunEvents(id: id, after: after, limit: 100)
     }
 
-    func fetchChatRun(id: String) async throws -> ChatRunRecoveryResponse {
-        try await fetchChatRun(id: id, recovery: nil)
-    }
 }
 
 extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient, TaskNotificationsAPIClient, OutputRevisionsAPIClient, WorkAPIClient {}

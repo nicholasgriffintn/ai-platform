@@ -3,7 +3,6 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { BackendAnalyticsEnv } from "~/lib/analytics/types";
 import { Monitoring, type Metric } from "~/lib/monitoring";
 import { getLogger } from "~/utils/logger";
-import { readStringField } from "~/utils/recordFields";
 
 import type { ChatStreamContinuitySnapshot } from "./emitter";
 
@@ -12,28 +11,11 @@ const MAX_DURATION_MS = 24 * 60 * 60 * 1_000;
 
 export type ContinuityPlatform = "web" | "ios" | "api" | "unknown";
 export type TurnContinuityOutcome = "completed" | "failed" | "cancelled" | "waiting";
-export type RecoveryOutcome = "pending" | "success" | "timeout";
-
-export interface RecoveryAttemptTelemetry {
-  platform: ContinuityPlatform;
-  attempt: number;
-  elapsedMs: number;
-  finalAttempt: boolean;
-  knownAssistantCount: number;
-}
 
 export interface RecordMetricContext {
   env: BackendAnalyticsEnv;
   executionCtx?: ExecutionContext;
   traceId: string;
-}
-
-export function countAssistantMessages(messages: unknown): number {
-  if (!Array.isArray(messages)) {
-    return 0;
-  }
-
-  return messages.filter((message) => readStringField(message, "role") === "assistant").length;
 }
 
 export function normaliseContinuityPlatform(platform?: string | null): ContinuityPlatform {
@@ -48,17 +30,6 @@ export function normaliseContinuityPlatform(platform?: string | null): Continuit
     default:
       return "unknown";
   }
-}
-
-export function classifyRecoveryOutcome(
-  assistantMessageCount: number,
-  telemetry: RecoveryAttemptTelemetry,
-): RecoveryOutcome {
-  if (assistantMessageCount > telemetry.knownAssistantCount) {
-    return "success";
-  }
-
-  return telemetry.finalAttempt ? "timeout" : "pending";
 }
 
 export function recordTurnContinuityFinished(
@@ -113,29 +84,6 @@ export function recordTurnCancellationRequested(
       platform: normaliseContinuityPlatform(platform),
     },
     status: "success",
-  });
-}
-
-export function recordTurnRecoveryAttempt(
-  context: RecordMetricContext,
-  telemetry: RecoveryAttemptTelemetry,
-  assistantMessageCount: number,
-): void {
-  const outcome = classifyRecoveryOutcome(assistantMessageCount, telemetry);
-
-  recordContinuityMetric(context, {
-    traceId: context.traceId,
-    timestamp: Date.now(),
-    type: "performance",
-    name: "turn_continuity_recovery",
-    value: clampDuration(telemetry.elapsedMs),
-    metadata: {
-      platform: telemetry.platform,
-      outcome,
-      attempt: Math.max(1, Math.min(100, Math.trunc(telemetry.attempt))),
-      final_attempt: telemetry.finalAttempt,
-    },
-    status: outcome === "timeout" ? "error" : "success",
   });
 }
 
