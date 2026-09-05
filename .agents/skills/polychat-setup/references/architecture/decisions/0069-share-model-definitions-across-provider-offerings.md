@@ -1,4 +1,4 @@
-# ADR 0056: Share model definitions across provider offerings
+# ADR 0069: Share model definitions across provider offerings
 
 Status: Implemented.
 

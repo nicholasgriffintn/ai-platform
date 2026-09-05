@@ -12,6 +12,10 @@ enum StreamFailureClassifier {
             return .cancelled
         }
 
+        if error is ChatStreamBufferError {
+            return .transport
+        }
+
         if error is APIClientError {
             return .api
         }

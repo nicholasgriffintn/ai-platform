@@ -1,8 +1,11 @@
 import SwiftUI
+import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject var authManager: AuthenticationManager
     @EnvironmentObject var modelsStore: ModelsStore
+    @EnvironmentObject var notificationManager: TaskNotificationManager
+    @EnvironmentObject var pushNotificationManager: PushNotificationManager
     @State private var showingModelSelector = false
     @State private var autoTitleGeneration = true
     @State private var showingPrivacyPolicy = false
@@ -76,6 +79,20 @@ struct SettingsView: View {
                     .onChange(of: autoTitleGeneration) { _, newValue in
                         UserDefaults.standard.set(newValue, forKey: "autoTitleGeneration")
                     }
+            }
+
+            Section(header: Text("Task Notifications")) {
+                Toggle("Push notifications", isOn: notificationToggle)
+                    .disabled(pushNotificationManager.registrationState == .registering)
+
+                Text(notificationStatus)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                notificationCategoryToggle("Decisions and approvals", category: "decisions")
+                notificationCategoryToggle("Meaningful failures", category: "failures")
+                notificationCategoryToggle("Useful completions", category: "completions")
+                notificationCategoryToggle("New assignments", category: "assignments")
             }
             
             Section(header: Text("Account")) {
@@ -174,6 +191,84 @@ struct SettingsView: View {
             }
         }
     }
+
+    private var notificationToggle: Binding<Bool> {
+        Binding(
+            get: {
+                notificationManager.settings?.preferences.enabled == true &&
+                pushNotificationManager.registrationState == .registered
+            },
+            set: { enabled in
+                Task {
+                    if enabled {
+                        await notificationManager.enable()
+                        if notificationManager.settings?.preferences.enabled == true {
+                            await pushNotificationManager.enableForAuthenticatedUser()
+                        }
+                    } else {
+                        await notificationManager.disable()
+                        await pushNotificationManager.disableForAuthenticatedUser()
+                    }
+                }
+            }
+        )
+    }
+
+    private var notificationStatus: String {
+        if notificationManager.settings?.preferences.enabled != true {
+            return "Task notifications are disabled for this account."
+        }
+
+        switch pushNotificationManager.permission {
+        case .denied:
+            return "iOS permission is blocked. Allow notifications in Settings, then retry."
+        case .notDetermined:
+            return "iOS has not asked for notification permission yet."
+        default:
+            break
+        }
+
+        switch pushNotificationManager.registrationState {
+        case .registered:
+            return "iOS permission and server registration are active."
+        case .awaitingDeviceToken, .registering:
+            return "iOS permission is active. Waiting for server registration."
+        case .failed(let message):
+            return "iOS permission and server registration differ: \(message)"
+        case .disabled:
+            return "This device is not registered for notifications."
+        case .idle:
+            return "Enable notifications to register this device."
+        }
+    }
+
+    @ViewBuilder
+    private func notificationCategoryToggle(_ label: String, category: String) -> some View {
+        Toggle(
+            label,
+            isOn: Binding(
+                get: { notificationCategoryEnabled(category) },
+                set: { enabled in
+                    Task { await notificationManager.setCategory(category, enabled: enabled) }
+                }
+            )
+        )
+        .disabled(pushNotificationManager.registrationState != .registered)
+    }
+
+    private func notificationCategoryEnabled(_ category: String) -> Bool {
+        guard let preferences = notificationManager.settings?.preferences else {
+            return false
+        }
+
+        switch category {
+        case "decisions": return preferences.decisions
+        case "failures": return preferences.failures
+        case "completions": return preferences.completions
+        case "assignments": return preferences.assignments
+        default: return false
+        }
+    }
 }
 
 #Preview {
@@ -198,4 +293,6 @@ struct SettingsView: View {
     return SettingsView()
         .environmentObject(AuthenticationManager())
         .environmentObject(modelsStore)
+        .environmentObject(TaskNotificationManager())
+        .environmentObject(PushNotificationManager.shared)
 }

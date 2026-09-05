@@ -4,9 +4,20 @@ import UserNotifications
 
 @MainActor
 final class PushNotificationManager: ObservableObject {
+    enum RegistrationState: Equatable {
+        case idle
+        case awaitingDeviceToken
+        case registering
+        case registered
+        case failed(String)
+        case disabled
+    }
+
     static let shared = PushNotificationManager()
 
     @Published var targetToOpen: MobileWorkTarget?
+    @Published private(set) var permission: UNAuthorizationStatus = .notDetermined
+    @Published private(set) var registrationState: RegistrationState = .idle
 
     private var apiClient: APIClient?
     private var deviceToken: String?
@@ -18,17 +29,22 @@ final class PushNotificationManager: ObservableObject {
 
     func enableForAuthenticatedUser() async {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
-        var authorised = settings.authorizationStatus == .authorized ||
+        permission = settings.authorizationStatus
+        var authorised = permission == .authorized ||
             settings.authorizationStatus == .provisional
 
         if settings.authorizationStatus == .notDetermined {
             authorised = (try? await UNUserNotificationCenter.current()
                 .requestAuthorization(options: [.alert, .badge, .sound])) == true
+            permission = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
         }
 
         if authorised {
+            registrationState = deviceToken == nil ? .awaitingDeviceToken : .registering
             UIApplication.shared.registerForRemoteNotifications()
             await registerCurrentToken()
+        } else {
+            registrationState = .disabled
         }
     }
 
@@ -39,11 +55,27 @@ final class PushNotificationManager: ObservableObject {
 
         try? await apiClient?.unregisterMobilePushDevice(token: deviceToken)
         isRegistered = false
+        registrationState = .idle
+    }
+
+    func disableForAuthenticatedUser() async {
+        if let deviceToken, isRegistered {
+            try? await apiClient?.unregisterMobilePushDevice(token: deviceToken)
+        }
+        UIApplication.shared.unregisterForRemoteNotifications()
+        isRegistered = false
+        registrationState = .disabled
     }
 
     func receiveDeviceToken(_ data: Data) async {
         deviceToken = data.map { String(format: "%02x", $0) }.joined()
+        registrationState = .registering
         await registerCurrentToken()
+    }
+
+    func receiveRegistrationFailure(_ error: Error) {
+        isRegistered = false
+        registrationState = .failed(error.localizedDescription)
     }
 
     func receiveNotification(_ userInfo: [AnyHashable: Any]) {
@@ -107,8 +139,10 @@ final class PushNotificationManager: ObservableObject {
                 environment: environment
             )
             isRegistered = true
+            registrationState = .registered
         } catch {
             isRegistered = false
+            registrationState = .failed(error.localizedDescription)
         }
     }
 
@@ -139,10 +173,23 @@ final class PolychatAppDelegate: NSObject, UIApplicationDelegate, UNUserNotifica
         }
     }
 
+    func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+    ) {
+        Task { @MainActor in
+            PushNotificationManager.shared.receiveRegistrationFailure(error)
+        }
+    }
+
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
+        NotificationCenter.default.post(
+            name: .taskNotificationOpened,
+            object: response.notification.request.content.userInfo
+        )
         await MainActor.run {
             PushNotificationManager.shared.receiveNotification(
                 response.notification.request.content.userInfo
@@ -154,6 +201,7 @@ final class PolychatAppDelegate: NSObject, UIApplicationDelegate, UNUserNotifica
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        [.banner, .sound]
+        NotificationCenter.default.post(name: .taskNotificationReceived, object: nil)
+        return [.banner, .sound, .badge]
     }
 }

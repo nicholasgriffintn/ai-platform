@@ -29,7 +29,7 @@ struct ServiceStoreTests {
     }
 
     @MainActor
-    @Test func modelsStoreRepairsPersistedDeprecatedSelection() async throws {
+    @Test func modelsStorePreservesPersistedDeprecatedSelectionWithAnIssue() async throws {
         let defaults = try makeIsolatedUserDefaults()
         defaults.set("retired-model", forKey: "selectedModelId")
         let client = ModelsAPIClientStub(result: .success([
@@ -40,12 +40,13 @@ struct ServiceStoreTests {
 
         await store.fetchModels()
 
-        #expect(store.selectedModelId == "active-model")
-        #expect(defaults.string(forKey: "selectedModelId") == "active-model")
+        #expect(store.selectedModelId == "retired-model")
+        #expect(defaults.string(forKey: "selectedModelId") == "retired-model")
+        #expect(store.selectionIssue != nil)
     }
 
     @MainActor
-    @Test func modelsStoreRepairsPersistedInaccessibleSelection() async throws {
+    @Test func modelsStorePreservesPersistedInaccessibleSelectionWithAnIssue() async throws {
         let defaults = try makeIsolatedUserDefaults()
         defaults.set("pro-model", forKey: "selectedModelId")
         let client = ModelsAPIClientStub(result: .success([
@@ -56,12 +57,13 @@ struct ServiceStoreTests {
 
         await store.fetchModels()
 
-        #expect(store.selectedModelId == "free-model")
-        #expect(defaults.string(forKey: "selectedModelId") == "free-model")
+        #expect(store.selectedModelId == "pro-model")
+        #expect(defaults.string(forKey: "selectedModelId") == "pro-model")
+        #expect(store.selectionIssue != nil)
     }
 
     @MainActor
-    @Test func modelsStoreUsesAutomaticRoutingWhenTheCatalogueHasNoDefault() async throws {
+    @Test func modelsStorePreservesMissingSelectionWhenTheCatalogueHasNoDefault() async throws {
         let defaults = try makeIsolatedUserDefaults()
         defaults.set("retired-model", forKey: "selectedModelId")
         let client = ModelsAPIClientStub(result: .success([
@@ -71,8 +73,9 @@ struct ServiceStoreTests {
 
         await store.fetchModels()
 
-        #expect(store.selectedModelId == nil)
-        #expect(defaults.string(forKey: "selectedModelId") == nil)
+        #expect(store.selectedModelId == "retired-model")
+        #expect(defaults.string(forKey: "selectedModelId") == "retired-model")
+        #expect(store.selectionIssue?.contains("no longer available") == true)
     }
 
     @MainActor
@@ -138,7 +141,36 @@ struct ServiceStoreTests {
     }
 
     @MainActor
-    @Test func conversationManagerRepairsAStaleConversationModelBeforeStreaming() async throws {
+    @Test func conversationManagerPrependsAnAuthorisedEarlierMessagePageWithoutDuplicates() async {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.conversationMessagePage = ConversationMessagePageResponse(
+            messages: [
+                ChatMessage(id: "message-1", role: "user", content: "Earlier"),
+                ChatMessage(id: "message-2", role: "assistant", content: "Already loaded")
+            ],
+            hasMore: false,
+            oldestMessageId: "message-1"
+        )
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = makeConversation(
+            id: "conversation-1",
+            messages: [ChatMessage(id: "message-2", role: "assistant", content: "Already loaded")]
+        )
+        conversation.hasMoreMessages = true
+        conversation.oldestMessageId = "message-2"
+        manager.conversations = [conversation]
+        manager.currentConversation = conversation
+
+        await manager.loadEarlierMessages()
+
+        #expect(manager.currentConversation?.messages.map(\.id) == ["message-1", "message-2"])
+        #expect(manager.currentConversation?.hasMoreMessages == false)
+        #expect(manager.currentConversation?.oldestMessageId == "message-1")
+    }
+
+    @MainActor
+    @Test func conversationManagerDoesNotSubstituteAStaleConversationModelBeforeStreaming() async throws {
         let apiClient = ConversationAPIClientStub()
         apiClient.streamEvents = [.content("Hello"), .done]
         let defaults = try makeIsolatedUserDefaults()
@@ -161,7 +193,8 @@ struct ServiceStoreTests {
 
         try await manager.addMessage(ChatMessage(role: "user", content: "Hi"))
 
-        #expect(apiClient.streamedModelId == "active-model")
+        #expect(apiClient.streamCallCount == 0)
+        #expect(manager.currentConversation?.messages.last?.textContent.contains("compound is no longer available") == true)
     }
 
     @MainActor
@@ -197,6 +230,60 @@ struct ServiceStoreTests {
         #expect(manager.currentConversation?.messages[1].id == "snapshot-1-compaction")
         #expect(manager.currentConversation?.messages[1].compactionStatusLabel == "Context automatically compacted")
         #expect(manager.currentConversation?.messages.last?.textContent == "After compaction")
+    }
+
+    @MainActor
+    @Test func conversationManagerKeepsTheAuthoritativeRunFromTheStream() async throws {
+        let run = ChatRun(
+            protocolVersion: 1,
+            id: "run-1",
+            conversationId: "conversation-1",
+            projectId: nil,
+            projectTaskId: nil,
+            initiatorUserId: 7,
+            status: "running",
+            attempt: 1,
+            createdAt: "2026-09-05T12:00:00.000Z",
+            updatedAt: "2026-09-05T12:00:00.000Z",
+            startedAt: "2026-09-05T12:00:00.000Z",
+            completedAt: nil,
+            terminalReason: nil,
+            lastMessageId: nil
+        )
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [
+            .run(ChatRunCommandReceipt(
+                protocolVersion: 1,
+                commandId: "command-1",
+                run: run,
+                kind: "turn",
+                acceptedAt: "2026-09-05T12:00:00.000Z",
+                duplicate: false
+            )),
+            .content("Working"),
+            .done
+        ]
+
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = manager.startNewConversation()
+        conversation = Conversation(
+            id: "conversation-1",
+            title: conversation.title,
+            messages: conversation.messages,
+            createdAt: conversation.createdAt,
+            modelId: conversation.modelId,
+            isLoadedFromAPI: conversation.isLoadedFromAPI,
+            lastMessageAt: conversation.lastMessageAt,
+            messageCount: conversation.messageCount
+        )
+        manager.currentConversation = conversation
+        manager.conversations = [conversation]
+
+        try await manager.addMessage(ChatMessage(role: "user", content: "Continue"))
+
+        #expect(manager.currentConversation?.latestRun?.id == "run-1")
+        #expect(manager.conversations.first?.latestRun?.status == "running")
     }
 
     @MainActor
@@ -278,7 +365,7 @@ struct ServiceStoreTests {
         manager.configure(apiClient: apiClient)
         _ = manager.startNewConversation()
 
-        try await manager.addMessage(ChatMessage(role: "user", content: "Search please"))
+        try await manager.addMessage(ChatMessage(id: "user-1", role: "user", content: "Search please"))
 
         let messages = try #require(manager.currentConversation?.messages)
         #expect(messages.map(\.role) == ["user", "tool", "assistant"])
@@ -294,16 +381,15 @@ struct ServiceStoreTests {
     @Test func conversationManagerRecoversDetachedTurnAfterTransportFailure() async throws {
         let apiClient = ConversationAPIClientStub()
         apiClient.streamError = URLError(.networkConnectionLost)
-        apiClient.conversationDetail = try makeConversationDetail(id: "conversation-1", messagesJSON: """
-        {"id": "user-1", "role": "user", "content": "Search please"},
-        {
-            "id": "tool-1",
-            "role": "tool",
-            "content": "",
-            "parts": [{"type": "tool_result", "name": "web_search", "content": "Three results"}]
-        },
-        {"id": "assistant-1", "role": "assistant", "content": "Recovered answer", "model": "gpt-4o"}
-        """)
+        apiClient.chatRunCommandReceipt = makeChatRunReceipt(run: makeChatRun())
+        apiClient.chatRunSnapshot = ChatRunRecoveryResponse(
+            run: makeChatRun(status: "succeeded"),
+            messages: [
+                ChatMessage(id: "user-1", role: "user", content: "Search please"),
+                ChatMessage(id: "tool-1", role: "tool", content: "Three results"),
+                ChatMessage(id: "assistant-1", role: "assistant", content: "Recovered answer")
+            ]
+        )
 
         let manager = ConversationManager()
         manager.configure(
@@ -312,16 +398,136 @@ struct ServiceStoreTests {
         )
         _ = manager.startNewConversation()
 
-        try await manager.addMessage(ChatMessage(role: "user", content: "Search please"))
+        try await manager.addMessage(ChatMessage(id: "user-1", role: "user", content: "Search please"))
 
         let messages = try #require(manager.currentConversation?.messages)
-        #expect(apiClient.fetchConversationCallCount >= 1)
+        #expect(apiClient.fetchChatRunCommandCallCount >= 1)
+        #expect(apiClient.fetchChatRunCallCount >= 1)
         #expect(apiClient.recoveryAttempts.first?.attempt == 1)
         #expect(apiClient.recoveryAttempts.first?.knownAssistantCount == 0)
         #expect(messages.map(\.role) == ["user", "tool", "assistant"])
         #expect(messages.last?.id == "assistant-1")
         #expect(messages.last?.textContent == "Recovered answer")
         #expect(manager.currentConversation?.isLoadedFromAPI == true)
+        #expect(manager.currentConversation?.latestRun?.status == "succeeded")
+    }
+
+    @MainActor
+    @Test func conversationManagerAcceptsStopBeforeReportingCancellationComplete() async throws {
+        let apiClient = ConversationAPIClientStub()
+        let running = makeChatRun(status: "running", attempt: 2)
+        let cancelling = makeChatRun(status: "cancelling", attempt: 2)
+        apiClient.chatRunCommandReceipt = ChatRunCommandReceipt(
+            protocolVersion: 1,
+            commandId: "cancel-1",
+            run: cancelling,
+            kind: "cancel",
+            acceptedAt: "2026-09-05T12:00:02.000Z",
+            duplicate: false
+        )
+
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = makeConversation(id: "conversation-1")
+        conversation.latestRun = running
+        manager.currentConversation = conversation
+        manager.conversations = [conversation]
+
+        await manager.cancelCurrentRun()
+
+        #expect(apiClient.cancelledRuns.first?.id == "run-1")
+        #expect(apiClient.cancelledRuns.first?.expectedAttempt == 2)
+        #expect(manager.currentConversation?.latestRun?.status == "cancelling")
+    }
+
+    @MainActor
+    @Test func conversationManagerObservesAStopRequestedOnAnotherDevice() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.chatRunEventSnapshot = ChatRunSnapshotResponse(
+            protocolVersion: 1,
+            cursor: 4,
+            run: makeChatRun(status: "cancelled", attempt: 2),
+            messages: [
+                ChatMessage(id: "user-1", role: "user", content: "Search please"),
+                ChatMessage(id: "assistant-1", role: "assistant", content: "Partial result")
+            ]
+        )
+
+        let manager = ConversationManager()
+        manager.configure(
+            apiClient: apiClient,
+            turnRecoveryPolicy: makeInstantTurnRecoveryPolicy()
+        )
+        var conversation = makeConversation(
+            id: "conversation-1",
+            messages: [ChatMessage(id: "user-1", role: "user", content: "Search please")]
+        )
+        conversation.latestRun = makeChatRun(status: "running", attempt: 2)
+        manager.currentConversation = conversation
+        manager.conversations = [conversation]
+
+        await manager.observeCurrentRun()
+
+        #expect(apiClient.fetchChatRunSnapshotCallCount == 1)
+        #expect(manager.currentConversation?.latestRun?.status == "cancelled")
+        #expect(manager.currentConversation?.messages.last?.textContent == "Partial result")
+    }
+
+    @MainActor
+    @Test func conversationManagerReplaysAnOutOfOrderCrossDeviceCancellationOnce() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.chatRunEventSnapshot = ChatRunSnapshotResponse(
+            protocolVersion: 1,
+            cursor: 2,
+            run: makeChatRun(status: "running", attempt: 2),
+            messages: [ChatMessage(id: "user-1", role: "user", content: "Search please")]
+        )
+        apiClient.chatRunReplayResponse = ChatRunReplayResponse(
+            protocolVersion: 1,
+            runId: "run-1",
+            fromCursor: 2,
+            nextCursor: 4,
+            resetRequired: false,
+            events: [
+                ChatRunEvent(
+                    protocolVersion: 1,
+                    id: "event-4",
+                    runId: "run-1",
+                    sequence: 4,
+                    attempt: 2,
+                    type: "run.status_changed",
+                    occurredAt: "2026-09-05T12:00:04.000Z",
+                    data: ["status": .string("cancelled")]
+                ),
+                ChatRunEvent(
+                    protocolVersion: 1,
+                    id: "event-3",
+                    runId: "run-1",
+                    sequence: 3,
+                    attempt: 2,
+                    type: "run.status_changed",
+                    occurredAt: "2026-09-05T12:00:03.000Z",
+                    data: ["status": .string("cancelling")]
+                )
+            ],
+            snapshot: nil
+        )
+
+        let manager = ConversationManager()
+        manager.configure(
+            apiClient: apiClient,
+            turnRecoveryPolicy: makeInstantTurnRecoveryPolicy()
+        )
+        var conversation = makeConversation(id: "conversation-1")
+        conversation.latestRun = makeChatRun(status: "running", attempt: 2)
+        manager.currentConversation = conversation
+        manager.conversations = [conversation]
+
+        await manager.observeCurrentRun()
+
+        #expect(apiClient.fetchChatRunSnapshotCallCount == 1)
+        #expect(apiClient.fetchChatRunEventsCallCount == 1)
+        #expect(manager.currentConversation?.latestRun?.status == "cancelled")
     }
 
     @MainActor
@@ -677,5 +883,285 @@ struct ServiceStoreTests {
         #expect(manager.conversations.first?.title == "Renamed")
         #expect(apiClient.updatedConversationTitles.first?.id == "conversation-1")
         #expect(apiClient.updatedConversationTitles.first?.title == "Renamed")
+    }
+
+    @MainActor
+    @Test func conversationManagerAnswersStructuredTaskQuestionsAfterServerAcknowledgement() async throws {
+        let apiClient = ConversationAPIClientStub()
+        let pending = makeProjectTaskDetail(interaction: makeProjectTaskInteraction())
+        let resolvedTask = makeProjectTaskControlTask(status: "queued", blockedReason: nil)
+        let resolved = makeProjectTaskDetail(
+            task: resolvedTask,
+            interaction: makeProjectTaskInteraction(status: "resolved")
+        )
+        apiClient.projectTaskDetails = [pending, resolved]
+        apiClient.projectTaskResponse = ProjectTaskResponse(task: resolvedTask)
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = makeConversation(id: "conversation-1")
+        conversation.latestRun = makeChatRun(
+            status: "awaiting_input",
+            projectId: "project-1",
+            projectTaskId: "task-1"
+        )
+        manager.conversations = [conversation]
+        manager.currentConversation = conversation
+
+        await manager.refreshCurrentTaskInteraction()
+        await manager.answerCurrentTaskQuestions([
+            UserQuestionAnswer(questionId: "tone", answer: "Friendly")
+        ])
+
+        #expect(apiClient.answeredProjectTaskQuestions.count == 1)
+        #expect(apiClient.answeredProjectTaskQuestions.first?.interactionId == "question-1")
+        #expect(apiClient.answeredProjectTaskQuestions.first?.answers.first?.answer == "Friendly")
+        #expect(manager.currentTaskInteraction?.interaction.status == "resolved")
+        #expect(manager.currentTaskInteraction?.submission == .acknowledged)
+    }
+
+    @MainActor
+    @Test func conversationManagerRestoresAuthoritativeTaskActivityForTheExactProjectTask() async throws {
+        let apiClient = ConversationAPIClientStub()
+        let activity = makeProjectTaskActivity(items: [
+            makeProjectTaskActivityItem(
+                id: "failed-tool",
+                type: "tool.completed",
+                category: "tool",
+                status: "failed",
+                title: "Tool failed",
+                detail: "fetch sources",
+                actionable: false,
+                terminal: true
+            ),
+            makeProjectTaskActivityItem()
+        ])
+        apiClient.projectTaskDetails = [
+            makeProjectTaskDetail(interaction: makeProjectTaskInteraction(), activity: activity)
+        ]
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = makeConversation(id: "conversation-1")
+        conversation.latestRun = makeChatRun(
+            status: "awaiting_input",
+            projectId: "project-1",
+            projectTaskId: "task-1"
+        )
+        manager.conversations = [conversation]
+        manager.currentConversation = conversation
+
+        await manager.refreshCurrentTaskInteraction()
+
+        #expect(manager.currentTaskActivity == activity)
+        #expect(manager.currentTaskActivity?.items.first?.status == "failed")
+        #expect(manager.currentTaskActivity?.items.last?.actionable == true)
+    }
+
+    @MainActor
+    @Test func conversationManagerReconcilesAQuestionAnsweredOnAnotherDevice() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.projectTaskDetails = [
+            makeProjectTaskDetail(interaction: makeProjectTaskInteraction()),
+            makeProjectTaskDetail(
+                task: makeProjectTaskControlTask(status: "running", blockedReason: nil),
+                interaction: makeProjectTaskInteraction(status: "resolved")
+            )
+        ]
+        apiClient.answerProjectTaskError = APIClientError.httpStatus(
+            409,
+            "These questions are no longer waiting for an answer."
+        )
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = makeConversation(id: "conversation-1")
+        conversation.latestRun = makeChatRun(
+            status: "awaiting_input",
+            projectId: "project-1",
+            projectTaskId: "task-1"
+        )
+        manager.conversations = [conversation]
+        manager.currentConversation = conversation
+
+        await manager.refreshCurrentTaskInteraction()
+        await manager.answerCurrentTaskQuestions([
+            UserQuestionAnswer(questionId: "tone", answer: "Friendly")
+        ])
+
+        #expect(manager.currentTaskInteraction?.interaction.status == "resolved")
+        #expect(manager.currentTaskInteraction?.submission == .resolvedElsewhere)
+        #expect(manager.currentTaskInteraction?.acceptsSubmission == false)
+    }
+
+    @MainActor
+    @Test func conversationManagerDoesNotRetryTaskAuthorityAfterMembershipIsRevoked() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.projectTaskDetails = [
+            makeProjectTaskDetail(
+                interaction: makeProjectTaskInteraction(
+                    type: "approval",
+                    questions: nil,
+                    toolName: "use_recipe_connector",
+                    reason: "Read the connected service"
+                )
+            )
+        ]
+        apiClient.resolveProjectTaskApprovalError = APIClientError.httpStatus(404, "Project not found.")
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = makeConversation(id: "conversation-1")
+        conversation.latestRun = makeChatRun(
+            status: "awaiting_approval",
+            projectId: "project-1",
+            projectTaskId: "task-1"
+        )
+        manager.conversations = [conversation]
+        manager.currentConversation = conversation
+
+        await manager.refreshCurrentTaskInteraction()
+        await manager.resolveCurrentTaskApproval("approved")
+
+        #expect(apiClient.resolvedProjectTaskApprovals.count == 1)
+        #expect(manager.currentTaskInteraction?.submission == .failed(
+            message: "Project not found.",
+            retryable: false
+        ))
+        #expect(manager.currentTaskInteraction?.acceptsSubmission == false)
+    }
+
+    @MainActor
+    @Test func conversationManagerRecognisesAnApprovalSavedBeforeProviderInterruption() async throws {
+        let apiClient = ConversationAPIClientStub()
+        let pendingApproval = makeProjectTaskInteraction(
+            type: "approval",
+            questions: nil,
+            toolName: "use_recipe_connector",
+            reason: "Read the connected service"
+        )
+        let interruptedTask = makeProjectTaskControlTask(
+            blockedReason: "dispatch_failed",
+            blockedDetail: "The decision was saved, but the provider could not resume."
+        )
+        let interruptedApproval = makeProjectTaskInteraction(
+            type: "approval",
+            status: "interrupted",
+            questions: nil,
+            toolName: "use_recipe_connector",
+            reason: "Read the connected service",
+            resolution: "approved",
+            detail: interruptedTask.blockedDetail
+        )
+        apiClient.projectTaskDetails = [
+            makeProjectTaskDetail(interaction: pendingApproval),
+            makeProjectTaskDetail(task: interruptedTask, interaction: interruptedApproval)
+        ]
+        apiClient.resolveProjectTaskApprovalError = APIClientError.httpStatus(
+            503,
+            "Provider unavailable"
+        )
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = makeConversation(id: "conversation-1")
+        conversation.latestRun = makeChatRun(
+            status: "awaiting_approval",
+            projectId: "project-1",
+            projectTaskId: "task-1"
+        )
+        manager.conversations = [conversation]
+        manager.currentConversation = conversation
+
+        await manager.refreshCurrentTaskInteraction()
+        await manager.resolveCurrentTaskApproval("approved")
+
+        #expect(manager.currentTaskInteraction?.interaction.status == "interrupted")
+        #expect(manager.currentTaskInteraction?.interaction.resolution == "approved")
+        #expect(manager.currentTaskInteraction?.submission == .acknowledged)
+    }
+
+    @MainActor
+    @Test func stoppingTheExactRunDoesNotResolveItsPendingDecision() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.projectTaskDetails = [
+            makeProjectTaskDetail(interaction: makeProjectTaskInteraction())
+        ]
+        apiClient.chatRunCommandReceipt = makeChatRunReceipt(run: makeChatRun(
+            status: "cancelling",
+            projectId: "project-1",
+            projectTaskId: "task-1"
+        ))
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = makeConversation(id: "conversation-1")
+        conversation.latestRun = makeChatRun(
+            status: "awaiting_input",
+            projectId: "project-1",
+            projectTaskId: "task-1"
+        )
+        manager.conversations = [conversation]
+        manager.currentConversation = conversation
+
+        await manager.refreshCurrentTaskInteraction()
+        await manager.cancelCurrentRun()
+
+        #expect(apiClient.cancelledRuns.first?.id == "run-1")
+        #expect(apiClient.cancelledRuns.first?.expectedAttempt == 1)
+        #expect(manager.currentTaskInteraction?.interaction.status == "pending")
+        #expect(manager.currentTaskInteraction?.submission == .idle)
+    }
+
+    @MainActor
+    @Test func conversationManagerAcknowledgesAndContinuesAnExactConnectorApproval() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.connectorApprovals = [
+            makeConnectorApproval(),
+            makeConnectorApproval(state: "consumed")
+        ]
+        apiClient.streamEvents = [.content("Email sent"), .done]
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = makeConversation(
+            id: "conversation-1",
+            messages: [makeConnectorApprovalMessage()]
+        )
+        conversation.latestRun = makeChatRun(status: "awaiting_approval")
+        manager.conversations = [conversation]
+        manager.currentConversation = conversation
+
+        await manager.refreshCurrentConnectorApproval()
+        await manager.resolveCurrentConnectorApproval("approved")
+
+        #expect(apiClient.resolvedConnectorApprovals.first?.id == "coa_action")
+        #expect(apiClient.resolvedConnectorApprovals.first?.resolution == "approved")
+        #expect(apiClient.resumedConnectorApprovalId == "coa_action")
+        #expect(manager.currentConnectorApproval?.approval.state == "consumed")
+        #expect(manager.currentConnectorApproval?.submission == .acknowledged)
+    }
+
+    @MainActor
+    @Test func conversationManagerReconcilesAConnectorApprovalResolvedElsewhere() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.connectorApprovals = [
+            makeConnectorApproval(),
+            makeConnectorApproval(state: "rejected")
+        ]
+        apiClient.connectorApprovalResolutionError = APIClientError.httpStatus(
+            404,
+            "Connector approval is invalid or expired"
+        )
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        var conversation = makeConversation(
+            id: "conversation-1",
+            messages: [makeConnectorApprovalMessage()]
+        )
+        conversation.latestRun = makeChatRun(status: "awaiting_approval")
+        manager.conversations = [conversation]
+        manager.currentConversation = conversation
+
+        await manager.refreshCurrentConnectorApproval()
+        await manager.resolveCurrentConnectorApproval("approved")
+
+        #expect(manager.currentConnectorApproval?.approval.state == "rejected")
+        #expect(manager.currentConnectorApproval?.submission == .resolvedElsewhere)
+        #expect(manager.currentConnectorApproval?.acceptsResolution == false)
+        #expect(apiClient.resumedConnectorApprovalId == nil)
     }
 }

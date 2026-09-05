@@ -21,6 +21,20 @@ enum TurnRecoveryStatus {
     static let reconnectingNotice = "\n\n_Reconnecting to the response…_"
 }
 
+extension ChatRun {
+    var isTerminal: Bool {
+        ["succeeded", "failed", "cancelled", "interrupted"].contains(status)
+    }
+
+    var isWaiting: Bool {
+        status == "awaiting_input" || status == "awaiting_approval"
+    }
+
+    var isActive: Bool {
+        !isTerminal
+    }
+}
+
 struct TurnRecoveryAttemptContext: Equatable {
     let attempt: Int
     let elapsedMs: Int
@@ -30,34 +44,25 @@ struct TurnRecoveryAttemptContext: Equatable {
 
 @MainActor
 enum TurnRecovery {
-    static func selectRecoveredMessages(
-        _ messages: [ChatMessage],
-        knownMessageIds: Set<String>
-    ) -> [ChatMessage] {
-        let recovered = messages.filter { message in
-            message.role != "user" && !knownMessageIds.contains(message.id)
-        }
-
-        return recovered.contains { $0.role == "assistant" } ? recovered : []
-    }
-
     static func recoverDetachedTurn(
-        completionId: String,
-        knownMessageIds: Set<String>,
+        runId initialRunId: String?,
         knownAssistantCount: Int,
         policy: TurnRecoveryPolicy = TurnRecoveryPolicy(),
-        fetchMessages: (String, TurnRecoveryAttemptContext) async throws -> [ChatMessage]
-    ) async -> [ChatMessage] {
+        resolveCommand: () async throws -> String?,
+        fetchRun: (String, TurnRecoveryAttemptContext) async throws -> ChatRunRecoveryResponse,
+        onSnapshot: ((ChatRunRecoveryResponse) -> Void)? = nil
+    ) async -> ChatRunRecoveryResponse? {
         let clock = ContinuousClock()
         let startedAt = clock.now
         let deadline = startedAt.advanced(by: policy.maxWait)
         var attempt = 0
+        var runId = initialRunId
 
         while !Task.isCancelled, clock.now < deadline {
             do {
                 try await policy.sleep(policy.pollInterval)
             } catch {
-                return []
+                return nil
             }
 
             if Task.isCancelled {
@@ -75,14 +80,26 @@ enum TurnRecovery {
                 knownAssistantCount: knownAssistantCount
             )
 
-            guard let messages = try? await fetchMessages(completionId, context) else {
+            do {
+                if runId == nil {
+                    runId = try await resolveCommand()
+                }
+
+                guard let runId else {
+                    continue
+                }
+
+                let snapshot = try await fetchRun(runId, context)
+                onSnapshot?(snapshot)
+
+                if snapshot.run.isWaiting || snapshot.run.isTerminal {
+                    return snapshot
+                }
+            } catch {
+                if context.finalAttempt {
+                    break
+                }
                 continue
-            }
-
-            let recovered = selectRecoveredMessages(messages, knownMessageIds: knownMessageIds)
-
-            if !recovered.isEmpty {
-                return recovered
             }
 
             if context.finalAttempt {
@@ -90,6 +107,6 @@ enum TurnRecovery {
             }
         }
 
-        return []
+        return nil
     }
 }

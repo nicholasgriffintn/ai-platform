@@ -29,13 +29,26 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0053: Deliver mobile Work notifications without moving authority](decisions/0053-deliver-mobile-work-notifications-without-moving-authority.md).
 - [0054: Ship a house type pairing through font tokens](decisions/0054-house-type-pairing.md).
 - [0055: Keep the home route an app and put the tour beneath it](decisions/0055-keep-the-home-route-an-app.md).
-- [0056: Share model definitions across provider offerings](decisions/0056-share-model-definitions-across-provider-offerings.md).
+- [0056: Persist one identity and lifecycle for each stored chat run](decisions/0056-persist-chat-run-identity.md).
+- [0057: Order chat run events with snapshot reset](decisions/0057-order-chat-run-events-with-snapshot-reset.md).
+- [0058: Project native task decisions from authoritative interaction state](decisions/0058-project-native-task-interactions.md).
+- [0059: Reconstruct project task activity from authoritative records](decisions/0059-reconstruct-project-task-activity.md).
+- [0060: Budget and report the context of each model step](decisions/0060-budget-and-report-run-context.md).
+- [0061: Bound model retries and surface unknown writes](decisions/0061-bound-model-retries-and-surface-unknown-writes.md).
+- [0062: Expire readiness and make model handoffs explicit](decisions/0062-expire-readiness-and-make-model-handoffs-explicit.md).
+- [0063: Derive attention from current task state and revalidate notification delivery](decisions/0063-project-current-attention-and-notification-delivery.md).
+- [0064: Snapshot effective provenance on durable results](decisions/0064-snapshot-effective-provenance-on-durable-results.md).
+- [0065: Append safe local output restores](decisions/0065-append-safe-local-output-restores.md).
+- [0066: Snapshot project flows and derive stage evidence](decisions/0066-snapshot-project-flows-and-derive-stage-evidence.md).
+- [0067: Attribute run usage and settle reservations once](decisions/0067-attribute-run-usage-and-settle-reservations-once.md).
+- [0068: Bound live streams and page durable history](decisions/0068-bound-live-streams-and-page-durable-history.md).
+- [0069: Share model definitions across provider offerings](decisions/0069-share-model-definitions-across-provider-offerings.md).
 
 ## Accepted designs awaiting implementation
 
 - [0038: Scope future model lifecycle to a provider surface](decisions/0038-provider-surface-model-lifecycle.md).
 - [0040: Resolve future provider governance before execution](decisions/0040-provider-execution-governance-policy.md).
 
-Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0057.
+Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0070.
 
 Add a record only for a durable trade-off that code alone cannot explain. State the problem, decision, implementation status and consequence; update this index. Keep rollout plans and copied schemas out of ADRs.

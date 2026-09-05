@@ -7,6 +7,7 @@ class ModelsStore: ObservableObject {
     @Published var selectedModelId: String? = nil
     @Published var isLoading: Bool = false
     @Published var error: String? = nil
+    @Published var selectionIssue: String? = nil
     
     private let apiClient: any ModelsAPIClient
     private let userDefaults: UserDefaults
@@ -40,21 +41,25 @@ class ModelsStore: ObservableObject {
                     isDeprecated: model.isDeprecated,
                     isDefault: model.isDefault,
                     isExecutable: model.isExecutable,
+                    readiness: model.readiness,
                     status: model.status,
+                    supportsAttachments: model.supportsAttachments,
+                    supportsDocuments: model.supportsDocuments,
+                    supportsAudio: model.supportsAudio,
+                    supportsImageEdits: model.supportsImageEdits,
                     supportedServiceTiers: model.supportedServiceTiers,
                     serviceTierMultipliers: model.serviceTierMultipliers
                 )
             }
 
-            let selectedModel = selectedModelId.flatMap { model(withId: $0) }
-            let selectedModelIsUsable = selectedModel?.isAvailableForSelection ?? false
-
-            if !selectedModelIsUsable {
+            if selectedModelId == nil {
                 let defaultModel = models.first {
                     $0.isDefault == true &&
                     $0.isAvailableForSelection
                 }
                 selectModel(defaultModel?.id)
+            } else {
+                updateSelectionIssue()
             }
         } catch {
             self.error = "Failed to fetch models: \(error.localizedDescription)"
@@ -65,6 +70,7 @@ class ModelsStore: ObservableObject {
     
     func selectModel(_ modelId: String?) {
         selectedModelId = modelId
+        updateSelectionIssue()
         saveSelectedModel()
     }
     
@@ -91,6 +97,33 @@ class ModelsStore: ObservableObject {
         } else {
             userDefaults.removeObject(forKey: selectedModelKey)
         }
+    }
+
+    private func updateSelectionIssue() {
+        guard let selectedModelId else {
+            selectionIssue = nil
+            return
+        }
+
+        guard let selectedModel = model(withId: selectedModelId) else {
+            selectionIssue = "Your selected model is no longer available to this account. It was not replaced automatically."
+            return
+        }
+
+        if let readiness = selectedModel.readiness {
+            if !readiness.isFresh() {
+                selectionIssue = "Model readiness has expired. Refresh models before sending."
+            } else if !readiness.isReady {
+                selectionIssue = readiness.reason
+            } else {
+                selectionIssue = nil
+            }
+            return
+        }
+
+        selectionIssue = selectedModel.isAvailableForSelection
+            ? nil
+            : "This model cannot run under the current account and provider policy."
     }
     
     func getModelsByProvider() -> [String: [ModelConfigItem]] {

@@ -4,6 +4,7 @@ enum ChatStreamEvent: Equatable {
     case content(String)
     case reasoning(String)
     case state(String)
+    case run(ChatRunCommandReceipt)
     case conversationTitle(String)
     case compaction(ChatMessage)
     case toolUseStart(ChatToolCallEvent)
@@ -84,6 +85,7 @@ struct ChatToolResultEvent: Decodable, Equatable {
     let status: String?
     let content: JSONValue?
     let data: ChatMessageData?
+    let structuredData: JSONValue?
     let logId: String?
     let model: String?
     let timestamp: Double?
@@ -92,6 +94,44 @@ struct ChatToolResultEvent: Decodable, Equatable {
         case id, name, status, content, data, model, timestamp
         case toolCallId = "tool_call_id"
         case logId = "log_id"
+    }
+
+    init(
+        id: String?,
+        toolCallId: String?,
+        name: String?,
+        status: String?,
+        content: JSONValue?,
+        data: ChatMessageData?,
+        structuredData: JSONValue? = nil,
+        logId: String?,
+        model: String?,
+        timestamp: Double?
+    ) {
+        self.id = id
+        self.toolCallId = toolCallId
+        self.name = name
+        self.status = status
+        self.content = content
+        self.data = data
+        self.structuredData = structuredData
+        self.logId = logId
+        self.model = model
+        self.timestamp = timestamp
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(String.self, forKey: .id)
+        toolCallId = try container.decodeIfPresent(String.self, forKey: .toolCallId)
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+        status = try container.decodeIfPresent(String.self, forKey: .status)
+        content = try container.decodeIfPresent(JSONValue.self, forKey: .content)
+        data = try container.decodeIfPresent(ChatMessageData.self, forKey: .data)
+        structuredData = try container.decodeIfPresent(JSONValue.self, forKey: .data)
+        logId = try container.decodeIfPresent(String.self, forKey: .logId)
+        model = try container.decodeIfPresent(String.self, forKey: .model)
+        timestamp = try container.decodeIfPresent(Double.self, forKey: .timestamp)
     }
 }
 
