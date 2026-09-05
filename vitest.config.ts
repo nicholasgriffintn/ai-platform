@@ -14,7 +14,6 @@ export default defineConfig({
         "apps/*/src/**/*.test.{js,ts,tsx}",
         "apps/*/src/**/__test__/**",
         "apps/*/src/**/test/**",
-        "apps/api/src/data-model/models/families/**",
         "apps/*/node_modules/**",
         "packages/*/src/**/*.d.ts",
         "packages/*/src/**/*.test.{js,ts,tsx}",

@@ -72,7 +72,7 @@
     --polychat-surface: oklch(0.158 0.02 255);
     --polychat-surface-elevated: oklch(0.183 0.019 255);
     --polychat-text: oklch(0.94 0.008 255);
-    --polychat-text-muted: oklch(0.7 0.018 255);
+    --polychat-text-muted: oklch(0.74 0.016 255);
     --polychat-active-work: oklch(0.76 0.13 232);
     --polychat-human-action: oklch(0.56 0.17 262);
     --polychat-human-action-foreground: oklch(0.985 0.005 255);
@@ -97,7 +97,7 @@
     --polychat-surface: oklch(0.21 0.021 255);
     --polychat-surface-elevated: oklch(0.25 0.02 255);
     --polychat-text: oklch(0.95 0.008 255);
-    --polychat-text-muted: oklch(0.72 0.02 255);
+    --polychat-text-muted: oklch(0.75 0.018 255);
     --polychat-active-work: oklch(0.74 0.13 232);
     --polychat-human-action: oklch(0.55 0.17 262);
     --polychat-human-action-foreground: oklch(0.985 0.005 255);
@@ -172,7 +172,7 @@
     --polychat-surface: oklch(0.185 0.018 185);
     --polychat-surface-elevated: oklch(0.215 0.017 185);
     --polychat-text: oklch(0.94 0.01 160);
-    --polychat-text-muted: oklch(0.7 0.02 175);
+    --polychat-text-muted: oklch(0.75 0.014 175);
     --polychat-active-work: oklch(0.78 0.12 165);
     --polychat-human-action: oklch(0.72 0.15 55);
     --polychat-human-action-foreground: oklch(0.15 0.02 185);
@@ -197,7 +197,7 @@
     --polychat-surface: oklch(0.175 0.025 330);
     --polychat-surface-elevated: oklch(0.205 0.024 330);
     --polychat-text: oklch(0.95 0.008 330);
-    --polychat-text-muted: oklch(0.72 0.02 330);
+    --polychat-text-muted: oklch(0.75 0.016 330);
     --polychat-active-work: oklch(0.78 0.12 350);
     --polychat-human-action: oklch(0.55 0.17 300);
     --polychat-human-action-foreground: oklch(0.985 0.005 330);
