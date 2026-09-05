@@ -3,6 +3,7 @@ import { Home } from "lucide-react";
 import type { ReactNode } from "react";
 
 export interface StandardSidebarContentProps {
+  children?: ReactNode;
   footer?: ReactNode;
   header?: ReactNode;
   homeHref: string;
@@ -12,6 +13,7 @@ export interface StandardSidebarContentProps {
 }
 
 export function StandardSidebarContent({
+  children,
   footer,
   header,
   homeHref,
@@ -45,6 +47,7 @@ export function StandardSidebarContent({
             </Link>
           </li>
         </ul>
+        {children && <div className="mt-4">{children}</div>}
       </nav>
     </SidebarShell>
   );

@@ -4,8 +4,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   applyTheme,
   LEGACY_THEME_STORAGE_KEY,
+  parseThemePair,
   resolveThemeId,
   THEME_BOOTSTRAP_SCRIPT,
+  THEME_PAIR_STORAGE_KEY,
   THEME_STORAGE_KEY,
   THEMES,
   type ThemeId,
@@ -132,5 +134,32 @@ describe("theme bootstrap", () => {
     localStorage.setItem(LEGACY_THEME_STORAGE_KEY, "dark");
 
     expect(runBootstrap()).toEqual(expectedFor("dark"));
+  });
+
+  it.each([
+    ["paper:fern", true, "fern"],
+    ["paper:fern", false, "paper"],
+    ["fern:paper", true, "dark"],
+    ["paper", false, "light"],
+    ["nonsense:plum", true, "dark"],
+  ])(
+    "resolves System through the stored pair %s with prefers-dark %s exactly as the runtime does",
+    (storedPair, prefersDark, expected) => {
+      stubMatchMedia(prefersDark);
+      localStorage.setItem(THEME_PAIR_STORAGE_KEY, storedPair);
+
+      const pair = parseThemePair(storedPair) ?? undefined;
+
+      expect(resolveThemeId("system", prefersDark, pair)).toBe(expected);
+      expect(runBootstrap()).toEqual(expectedFor(expected as ThemeId));
+    },
+  );
+
+  it("ignores the pair when an explicit theme is stored", () => {
+    stubMatchMedia(true);
+    localStorage.setItem(THEME_STORAGE_KEY, "dawn");
+    localStorage.setItem(THEME_PAIR_STORAGE_KEY, "paper:fern");
+
+    expect(runBootstrap()).toEqual(expectedFor("dawn"));
   });
 });

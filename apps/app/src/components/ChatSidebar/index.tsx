@@ -41,6 +41,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
+import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
 
@@ -335,6 +336,11 @@ export const ChatSidebar = ({
                   </>
                 )}
               </SidebarNavSection>
+              {!isAuthenticated && (
+                <div className="mt-4">
+                  <DiscoverSidebarSection onNavigate={closeOnMobile} />
+                </div>
+              )}
             </div>
             <ConversationListSection
               isLoading={isLoading}
