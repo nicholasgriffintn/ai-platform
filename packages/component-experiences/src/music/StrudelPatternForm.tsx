@@ -117,7 +117,7 @@ export function StrudelPatternForm({
         />
       ) : (
         errorMessage && (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="text-sm text-failure">
             {errorMessage}
           </p>
         )

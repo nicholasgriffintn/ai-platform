@@ -1,4 +1,60 @@
+import z from "zod/v4";
+
 import { normaliseMessageParts, type MessagePart } from "./message-part-utils";
+
+const turnActivityStepSchema = z.number().int().positive();
+const turnActivityToolSchema = z.object({
+  step: turnActivityStepSchema,
+  toolCallId: z.string().min(1),
+  toolName: z.string().min(1),
+});
+
+export const chatTurnActivityEventSchema = z.discriminatedUnion("kind", [
+  z.object({ type: z.literal("turn_activity"), kind: z.literal("turn_started") }),
+  z.object({
+    type: z.literal("turn_activity"),
+    kind: z.literal("model_step_started"),
+    step: turnActivityStepSchema,
+  }),
+  z.object({
+    type: z.literal("turn_activity"),
+    kind: z.enum([
+      "reasoning_started",
+      "reasoning_finished",
+      "response_started",
+      "response_finished",
+    ]),
+    step: turnActivityStepSchema,
+  }),
+  turnActivityToolSchema.extend({
+    type: z.literal("turn_activity"),
+    kind: z.enum(["tool_input_started", "tool_input_finished", "tool_execution_started"]),
+  }),
+  turnActivityToolSchema.extend({
+    type: z.literal("turn_activity"),
+    kind: z.literal("tool_finished"),
+    outcome: z.enum(["success", "failure"]),
+  }),
+  turnActivityToolSchema.extend({
+    type: z.literal("turn_activity"),
+    kind: z.literal("waiting_for_user"),
+    reason: z.enum(["question", "approval", "selection"]),
+  }),
+  z.object({
+    type: z.literal("turn_activity"),
+    kind: z.literal("model_step_finished"),
+    step: turnActivityStepSchema,
+    outcome: z.enum(["tool_calls", "completed", "failed", "cancelled", "waiting"]),
+  }),
+  z.object({
+    type: z.literal("turn_activity"),
+    kind: z.literal("turn_finished"),
+    outcome: z.enum(["completed", "failed", "cancelled", "waiting"]),
+    errorType: z.string().min(1).optional(),
+  }),
+]);
+
+export type ChatTurnActivityEvent = z.infer<typeof chatTurnActivityEventSchema>;
 
 export interface ChatStreamToolCall {
   id?: string;
@@ -40,6 +96,7 @@ export type ChatStreamUpdate =
   | { type: "assistant_delta"; content: string; reasoning?: string }
   | { type: "assistant_final"; message: ChatStreamMessage }
   | { type: "tool_result"; message: ChatStreamMessage }
+  | { type: "activity"; activity: ChatTurnActivityEvent }
   | { type: "state"; state: string; event: Record<string, unknown> }
   | { type: "done"; message?: ChatStreamMessage };
 
@@ -79,6 +136,7 @@ export function isChatStreamProgressEvent(event: ParsedChatStreamSseEvent): bool
 interface PendingToolCall {
   id: string;
   name: string;
+  parameterFragments: string[];
   parameters: Record<string, unknown>;
 }
 
@@ -236,6 +294,7 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
   private toolCalls: ChatStreamToolCall[] = [];
   private responseProvider?: string;
   private responsePlatform?: string;
+  private status?: string | null;
   private readonly pendingToolCalls: Record<string, PendingToolCall> = {};
   private readonly emittedToolResponseIds = new Set<string>();
   private responseModel?: string;
@@ -282,6 +341,12 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
       return this.ingestMessageStart(event);
     }
 
+    if (event.type === "turn_activity") {
+      const activity = chatTurnActivityEventSchema.safeParse(event);
+
+      return activity.success ? [{ type: "activity", activity: activity.data }] : [];
+    }
+
     if (event.type === "state" && typeof event.state === "string") {
       return [{ type: "state", state: event.state, event }];
     }
@@ -304,6 +369,7 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
       this.pendingToolCalls[event.tool_id] = {
         id: event.tool_id,
         name: event.tool_name,
+        parameterFragments: [],
         parameters: {},
       };
 
@@ -314,10 +380,7 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
       const pendingToolCall = this.pendingToolCalls[event.tool_id];
 
       if (pendingToolCall) {
-        pendingToolCall.parameters = {
-          ...pendingToolCall.parameters,
-          ...this.toolUseParametersFromEvent(event.parameters),
-        };
+        this.appendToolUseParameters(pendingToolCall, event.parameters);
       }
 
       return [];
@@ -393,12 +456,14 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
       return [];
     }
 
+    const input = this.finaliseToolUseParameters(pendingToolCall);
+
     this.toolCalls.push({
       id: pendingToolCall.id,
       type: "function",
       function: {
         name: pendingToolCall.name,
-        arguments: pendingToolCall.parameters,
+        arguments: input,
       },
     });
 
@@ -407,7 +472,7 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
         type: "tool_use",
         name: pendingToolCall.name,
         toolCallId: pendingToolCall.id,
-        input: pendingToolCall.parameters,
+        input,
         timestamp: this.now(),
       });
     }
@@ -511,6 +576,10 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
       this.responsePlatform = event.platform;
     }
 
+    if (typeof event.status === "string" || event.status === null) {
+      this.status = event.status;
+    }
+
     const nextToolCalls = this.toolCallsFromEvent(event.tool_calls);
 
     if (nextToolCalls) {
@@ -596,6 +665,7 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
     this.responseModel = this.options.model;
     this.responseProvider = undefined;
     this.responsePlatform = undefined;
+    this.status = undefined;
     this.currentAssistantFinalised = false;
   }
 
@@ -626,6 +696,7 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
       usage: this.usage,
       tool_calls: this.toolCalls.length > 0 ? this.toolCalls : undefined,
       log_id: this.logId,
+      status: this.status,
     };
   }
 
@@ -736,21 +807,31 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
     return normaliseMessageParts(parts);
   }
 
-  private toolUseParametersFromEvent(parameters: unknown): Record<string, unknown> {
+  private appendToolUseParameters(pending: PendingToolCall, parameters: unknown): void {
     if (isRecord(parameters)) {
-      return parameters;
+      pending.parameters = { ...pending.parameters, ...parameters };
+
+      return;
     }
 
-    if (typeof parameters !== "string") {
-      return {};
+    if (typeof parameters === "string") {
+      pending.parameterFragments.push(parameters);
     }
+  }
+
+  private finaliseToolUseParameters(pending: PendingToolCall): string | Record<string, unknown> {
+    if (pending.parameterFragments.length === 0) {
+      return pending.parameters;
+    }
+
+    const rawParameters = pending.parameterFragments.join("");
 
     try {
-      const parsed: unknown = JSON.parse(parameters);
+      const parsed: unknown = JSON.parse(rawParameters);
 
-      return isRecord(parsed) ? parsed : {};
+      return isRecord(parsed) ? { ...pending.parameters, ...parsed } : rawParameters;
     } catch {
-      return {};
+      return rawParameters;
     }
   }
 

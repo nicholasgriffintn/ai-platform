@@ -1,4 +1,5 @@
 import { SUPPORTED_MODALITIES, SUPPORTED_REASONING_EFFORT_LEVELS } from "./constants.mjs";
+import { applyModelContractOverrides } from "./model-contract-overrides.mjs";
 import { hasOwn } from "./value-utils.mjs";
 
 export function getReasoningEffortLevels(remoteModel) {
@@ -333,5 +334,5 @@ export function buildUpdateValues(
 
   applyClaudeSamplingRules(values, remoteModel, remoteId);
 
-  return values;
+  return applyModelContractOverrides(values, provider, remoteId);
 }

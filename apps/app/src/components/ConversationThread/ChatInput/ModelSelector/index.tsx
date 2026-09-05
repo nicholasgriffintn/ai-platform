@@ -23,7 +23,7 @@ import {
   getModelsByMode,
   getRealtimeSessionModelsByProvider,
   getToolCallModels,
-  isActiveModel,
+  isModelReferenceSelectable,
   isModelSelectableForAccount,
   isTextInputChatModel,
 } from "@ngriffin_uk/polychat-schemas";
@@ -76,6 +76,7 @@ export const ModelSelector = ({
   const { trackEvent, trackFeatureUsage } = useTrackEvent();
   const { isMobile } = useUIStore();
   const {
+    isAuthenticationLoading,
     isPro,
     model,
     setModel,
@@ -220,6 +221,9 @@ export const ModelSelector = ({
     [availableModels, isPro],
   );
 
+  const isCatalogueUnverified =
+    isLoadingModels || isAuthenticationLoading || filteredModelReferences.size === 0;
+
   const selectModelWithDefaults = useCallback(
     (nextModel: string | null, settings: ChatSettings = chatSettings) => {
       setModel(nextModel);
@@ -246,13 +250,11 @@ export const ModelSelector = ({
       setSelectedTab("models");
     }
 
-    const currentModel = model ? getModelByReference(filteredModelReferences, model) : undefined;
+    if (isCatalogueUnverified) {
+      return;
+    }
 
-    if (
-      currentModel &&
-      isActiveModel(currentModel) &&
-      (currentModel.isExecutable ?? isModelSelectableForAccount(currentModel, isPro))
-    ) {
+    if (isModelReferenceSelectable(filteredModelReferences, model, isPro)) {
       return;
     }
 
@@ -277,6 +279,7 @@ export const ModelSelector = ({
     defaultModelId,
     filteredModels,
     filteredModelReferences,
+    isCatalogueUnverified,
     isLiveScope,
     isLoadingRealtimeProviders,
     isModelListOnlyScope,
@@ -296,13 +299,11 @@ export const ModelSelector = ({
       return;
     }
 
-    const currentModel = getModelByReference(filteredModelReferences, model);
+    if (isCatalogueUnverified) {
+      return;
+    }
 
-    if (
-      currentModel &&
-      isActiveModel(currentModel) &&
-      (currentModel.isExecutable ?? isModelSelectableForAccount(currentModel, isPro))
-    ) {
+    if (isModelReferenceSelectable(filteredModelReferences, model, isPro)) {
       return;
     }
 
@@ -311,6 +312,7 @@ export const ModelSelector = ({
     chatMode,
     defaultModelId,
     filteredModelReferences,
+    isCatalogueUnverified,
     isModelListOnlyScope,
     isPro,
     model,
@@ -453,7 +455,7 @@ export const ModelSelector = ({
 
   if (isLoadingModels || (isLiveScope && isLoadingRealtimeProviders)) {
     return (
-      <div className="flex items-center gap-2 text-sm text-zinc-500">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
         Loading models...
       </div>

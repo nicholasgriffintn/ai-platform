@@ -15,11 +15,11 @@ interface ToolResultViewProps {
 }
 
 const STATUS_TONE: Record<string, string> = {
-  error: "text-red-600 dark:text-red-400",
-  failed: "text-red-600 dark:text-red-400",
-  cancelled: "text-red-600 dark:text-red-400",
-  pending: "text-amber-600 dark:text-amber-400",
-  in_progress: "text-amber-600 dark:text-amber-400",
+  error: "text-failure",
+  failed: "text-failure",
+  cancelled: "text-failure",
+  pending: "text-attention",
+  in_progress: "text-attention",
 };
 
 const formatInput = (input: unknown): string | null => {
@@ -51,15 +51,11 @@ export const ToolResultView = ({
 
   return (
     <div className={cn("mb-2", className)} data-tool-name={display.name}>
-      <div className="flex items-center gap-1.5 pt-1 text-xs font-medium text-zinc-600 dark:text-zinc-300">
+      <div className="flex items-center gap-1.5 pt-1 text-xs font-medium text-muted-foreground">
         {isRunning ? (
-          <Loader2 size={14} className="shrink-0 animate-spin text-amber-500" />
+          <Loader2 size={14} className="shrink-0 animate-spin text-attention" />
         ) : (
-          <ToolIcon
-            icon={display.icon}
-            size={14}
-            className="shrink-0 text-zinc-500 dark:text-zinc-400"
-          />
+          <ToolIcon icon={display.icon} size={14} className="shrink-0 text-muted-foreground" />
         )}
         <span className="truncate">{display.label}</span>
         {display.status && display.status !== "success" && (
@@ -69,7 +65,7 @@ export const ToolResultView = ({
           <button
             type="button"
             onClick={() => setShowInput(!showInput)}
-            className="ml-auto flex shrink-0 cursor-pointer items-center gap-0.5 font-normal text-zinc-500 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
+            className="ml-auto flex shrink-0 cursor-pointer items-center gap-0.5 font-normal text-muted-foreground transition-colors hover:text-foreground"
             aria-expanded={showInput}
             aria-label={showInput ? "Hide tool arguments" : "Show tool arguments"}
           >
@@ -80,7 +76,7 @@ export const ToolResultView = ({
       </div>
 
       {showInput && formattedInput && (
-        <pre className="mt-1.5 overflow-x-auto rounded border border-zinc-200 bg-zinc-50 p-2 text-xs text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300">
+        <pre className="border-border bg-surface-elevated text-foreground mt-1.5 overflow-x-auto rounded border p-2 text-xs">
           {formattedInput}
         </pre>
       )}

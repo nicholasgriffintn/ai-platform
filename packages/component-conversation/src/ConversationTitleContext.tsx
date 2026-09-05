@@ -24,11 +24,7 @@ export function ConversationTitleContext({
           onClick={() => onOpenParent?.(parentConversationId)}
         />
       ) : null}
-      <span
-        className="truncate font-medium text-zinc-800 dark:text-zinc-200"
-        data-dynamic-copy=""
-        title={title}
-      >
+      <span className="truncate font-medium text-foreground" data-dynamic-copy="" title={title}>
         {title}
       </span>
     </div>

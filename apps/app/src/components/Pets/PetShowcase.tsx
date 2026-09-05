@@ -8,34 +8,33 @@ function TraitList({ traits }: { traits: PetLoreEntry["traits"] }) {
     <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-sm">
       {traits.map((trait) => (
         <div key={trait.label}>
-          <dt className="text-xs tracking-wide text-zinc-500 uppercase dark:text-zinc-500">
-            {trait.label}
-          </dt>
-          <dd className="mt-0.5 text-zinc-800 dark:text-zinc-200">{trait.value}</dd>
+          <dt className="polychat-eyebrow">{trait.label}</dt>
+          <dd className="text-foreground mt-0.5">{trait.value}</dd>
         </div>
       ))}
     </dl>
   );
 }
 
-function Perch({ entry, size }: { entry: PetLoreEntry; size: number }) {
+function SectionTitle({ children }: { children: string }) {
   return (
-    <div className="flex items-end justify-center rounded-xl border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-zinc-900/60">
-      <PetPreview sheetUrl={entry.sheetUrl} label={`${entry.name}, animated`} size={size} />
-    </div>
+    <h2 className="font-display text-foreground text-3xl font-medium tracking-tight text-balance">
+      {children}
+    </h2>
   );
 }
 
 export function PetShowcase() {
   return (
-    <div className="space-y-16 pb-16">
-      <header className="space-y-4">
-        <h1 className="text-3xl font-bold text-zinc-900 md:text-5xl dark:text-zinc-50">
-          Polychat Pets
+    <div className="mx-auto w-full max-w-5xl space-y-16 px-4 pb-16 sm:px-6">
+      <header className="space-y-4 pt-2">
+        <p className="polychat-eyebrow">Company</p>
+        <h1 className="font-display text-foreground text-4xl font-medium tracking-tight text-balance md:text-5xl">
+          The Polychat pets
         </h1>
-        <p className="max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
-          Pets are characters that perch or sit above the chat composer wider and react to whatever
-          Polychat is doing.
+        <p className="text-muted-foreground max-w-prose text-lg leading-relaxed">
+          A pet perches above the composer and reacts to whatever Polychat is doing. Four parrots
+          that used to be logos, and a few strays that turned up on their own.
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           <ButtonLink href="/profile?tab=pets">Choose yours</ButtonLink>
@@ -46,13 +45,11 @@ export function PetShowcase() {
       </header>
 
       <section className="space-y-6">
-        <div className="max-w-2xl space-y-4">
-          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            {PET_FLOCK.title}
-          </h2>
-          <p className="text-zinc-600 italic dark:text-zinc-400">{PET_FLOCK.standfirst}</p>
+        <div className="max-w-prose space-y-3">
+          <SectionTitle>{PET_FLOCK.title}</SectionTitle>
+          <p className="text-muted-foreground italic">{PET_FLOCK.standfirst}</p>
           {PET_FLOCK.lore.map((paragraph) => (
-            <p key={paragraph} className="text-zinc-600 dark:text-zinc-400">
+            <p key={paragraph} className="text-muted-foreground leading-relaxed">
               {paragraph}
             </p>
           ))}
@@ -62,9 +59,9 @@ export function PetShowcase() {
           {PET_FLOCK.members.map((member) => (
             <li
               key={member.slug}
-              className="flex flex-col gap-4 rounded-xl border border-zinc-200 p-5 sm:flex-row sm:items-start dark:border-zinc-800"
+              className="bg-surface border-border flex flex-col gap-4 rounded-xl border p-5 sm:flex-row sm:items-start"
             >
-              <div className="flex shrink-0 items-end justify-center rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900/60">
+              <div className="flex h-20 w-20 shrink-0 items-end justify-center overflow-hidden">
                 <PetPreview
                   sheetUrl={member.sheetUrl}
                   label={`${member.name}, animated`}
@@ -72,12 +69,12 @@ export function PetShowcase() {
                 />
               </div>
               <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                <h3 className="font-display text-foreground text-xl font-medium tracking-tight">
                   {member.name}
                 </h3>
-                <p className="text-sm text-zinc-500 dark:text-zinc-500">{member.tagline}</p>
+                <p className="text-muted-foreground text-sm">{member.tagline}</p>
                 {member.lore.map((paragraph) => (
-                  <p key={paragraph} className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+                  <p key={paragraph} className="text-muted-foreground mt-3 text-sm leading-relaxed">
                     {paragraph}
                   </p>
                 ))}
@@ -88,9 +85,9 @@ export function PetShowcase() {
         </ul>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">The strays</h2>
-        <p className="max-w-2xl text-zinc-600 dark:text-zinc-400">
+      <section className="space-y-3">
+        <SectionTitle>The strays</SectionTitle>
+        <p className="text-muted-foreground max-w-prose leading-relaxed">
           Not birds. They arrived separately, by routes nobody has fully established, and were
           allowed to stay on the grounds that they were already here.
         </p>
@@ -103,14 +100,16 @@ export function PetShowcase() {
             index % 2 === 1 ? "md:[&>div:first-child]:order-2" : ""
           }`}
         >
-          <Perch entry={stray} size={120} />
+          <div className="flex items-end justify-center overflow-hidden py-4">
+            <PetPreview sheetUrl={stray.sheetUrl} label={`${stray.name}, animated`} size={120} />
+          </div>
           <div>
-            <h2 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <h2 className="font-display text-foreground text-3xl font-medium tracking-tight">
               {stray.name}
             </h2>
-            <p className="mt-1 text-zinc-500 italic dark:text-zinc-500">{stray.tagline}</p>
+            <p className="text-muted-foreground mt-1 italic">{stray.tagline}</p>
             {stray.lore.map((paragraph) => (
-              <p key={paragraph} className="mt-4 text-zinc-600 dark:text-zinc-400">
+              <p key={paragraph} className="text-muted-foreground mt-4 leading-relaxed">
                 {paragraph}
               </p>
             ))}
@@ -119,8 +118,8 @@ export function PetShowcase() {
         </section>
       ))}
 
-      <footer className="border-t border-zinc-200 pt-8 dark:border-zinc-800">
-        <p className="max-w-2xl text-zinc-600 dark:text-zinc-400">
+      <footer className="border-border border-t pt-8">
+        <p className="text-muted-foreground max-w-prose leading-relaxed">
           You can also bring your own. Upload a sprite sheet, or describe something and let Polychat
           draw it, then keep it in your library.
         </p>

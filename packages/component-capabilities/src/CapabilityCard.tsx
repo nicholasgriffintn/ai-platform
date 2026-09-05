@@ -136,7 +136,7 @@ export function CapabilityCard({
         <div className="mb-4 flex items-center justify-between">
           <span
             className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-              app ? getIconContainerClass(app.theme) : "bg-zinc-100 dark:bg-zinc-800"
+              app ? getIconContainerClass(app.theme) : "bg-surface-elevated"
             }`}
           >
             {appIcon ? (
@@ -152,13 +152,13 @@ export function CapabilityCard({
             )}
           </span>
           {isIncluded && (
-            <span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+            <span className="rounded-full bg-surface-elevated px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               {statusLabel}
             </span>
           )}
         </div>
         <h4 className="font-semibold">{item.label}</h4>
-        <p className="mt-2 min-h-12 text-sm leading-6 text-zinc-500">{description}</p>
+        <p className="mt-2 min-h-12 text-sm leading-6 text-muted-foreground">{description}</p>
       </div>
       {showSkillToggle && skill ? (
         <div className="flex gap-2">
@@ -251,7 +251,7 @@ function CapabilityActionsMenu({ detach, detachLabel, kind, owner }: CapabilityA
       )}
       {detach && (
         <DropdownMenuItem
-          className="text-red-700 dark:text-red-300"
+          className="text-failure"
           icon={<Trash2 size={15} />}
           onClick={detach.onRemove}
         >
@@ -260,7 +260,7 @@ function CapabilityActionsMenu({ detach, detachLabel, kind, owner }: CapabilityA
       )}
       {owner && (
         <DropdownMenuItem
-          className="text-red-700 dark:text-red-300"
+          className="text-failure"
           icon={<Trash2 size={15} />}
           onClick={owner.onDelete}
         >

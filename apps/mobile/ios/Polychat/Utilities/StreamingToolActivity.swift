@@ -10,6 +10,7 @@ struct StreamingToolActivity {
         let toolCallId: String
         var name: String
         var parameters: JSONValue?
+        var parameterFragments: [String]
     }
 
     private var pendingToolCalls: [String: PendingToolCall] = [:]
@@ -32,16 +33,24 @@ struct StreamingToolActivity {
         pendingToolCalls[event.toolCallId] = PendingToolCall(
             toolCallId: event.toolCallId,
             name: event.name ?? "tool",
-            parameters: event.parameters
+            parameters: event.parameters,
+            parameterFragments: event.parameterFragment.map { [$0] } ?? []
         )
     }
 
     mutating func applyDelta(_ event: ChatToolCallEvent) {
-        guard var pending = pendingToolCalls[event.toolCallId], let parameters = event.parameters else {
+        guard var pending = pendingToolCalls[event.toolCallId] else {
             return
         }
 
-        pending.parameters = pending.parameters?.merging(parameters) ?? parameters
+        if let parameters = event.parameters {
+            pending.parameters = pending.parameters?.merging(parameters) ?? parameters
+        }
+
+        if let fragment = event.parameterFragment {
+            pending.parameterFragments.append(fragment)
+        }
+
         pendingToolCalls[event.toolCallId] = pending
     }
 
@@ -98,7 +107,7 @@ struct StreamingToolActivity {
                     type: "tool_use",
                     name: pending.name,
                     toolCallId: pending.toolCallId,
-                    input: pending.parameters,
+                    input: toolInput(for: pending),
                     timestamp: timestamp
                 )
             ],
@@ -106,6 +115,20 @@ struct StreamingToolActivity {
             name: pending.name,
             timestamp: timestamp
         )
+    }
+
+    private func toolInput(for pending: PendingToolCall) -> JSONValue? {
+        guard !pending.parameterFragments.isEmpty else {
+            return pending.parameters
+        }
+
+        let rawParameters = pending.parameterFragments.joined()
+        let streamedParameters = JSONObjectDecoding.decode(
+            JSONValue.self,
+            fromJSONString: rawParameters
+        ) ?? .string(rawParameters)
+
+        return pending.parameters?.merging(streamedParameters) ?? streamedParameters
     }
 
     private func toolResultMessage(

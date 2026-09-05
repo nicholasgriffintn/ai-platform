@@ -89,11 +89,11 @@ export function RecipeCard({
 
   return (
     <>
-      <Card className="flex h-full flex-col border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <Card className="flex h-full flex-col border-border bg-surface">
         <CardHeader className="space-y-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
-              <div className="rounded-md border border-zinc-200 bg-zinc-50 p-2 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+              <div className="rounded-md border border-border bg-surface-elevated p-2 text-foreground">
                 {recipe.kind === "automate" ? (
                   <WandSparkles className="h-4 w-4" />
                 ) : (
@@ -108,8 +108,8 @@ export function RecipeCard({
                 aria-label={`Status: ${setupStatus}`}
                 title={setupStatus}
                 className={cn(
-                  "size-2.5 rounded-full ring-2 ring-white dark:ring-zinc-900",
-                  isPaused ? "bg-amber-500" : isConfigured ? "bg-emerald-500" : "bg-zinc-400",
+                  "size-2.5 rounded-full ring-2",
+                  isPaused ? "bg-attention" : isConfigured ? "bg-success" : "bg-selection",
                 )}
               />
               {recipe.featured && (
@@ -117,7 +117,7 @@ export function RecipeCard({
                   role="img"
                   aria-label="Featured recipe"
                   title="Featured recipe"
-                  className="rounded-full bg-rose-100 p-1.5 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+                  className="rounded-full bg-failure/12 p-1.5 text-failure"
                 >
                   <Sparkles className="h-4 w-4" />
                 </span>
@@ -139,14 +139,14 @@ export function RecipeCard({
               className="group w-fit"
             >
               <span>Connections</span>
-              <span className="min-w-5 rounded-full bg-zinc-100 px-1.5 text-center text-xs tabular-nums text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+              <span className="min-w-5 rounded-full bg-surface-elevated px-1.5 text-center text-xs tabular-nums text-muted-foreground">
                 {recipe.integrations.length}
               </span>
-              <ChevronRight className="size-4 shrink-0 text-zinc-400 transition-transform group-hover:translate-x-0.5" />
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
             </Button>
           )}
 
-          <div className="mt-auto space-y-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+          <div className="mt-auto space-y-3 border-t border-border pt-4">
             {inactiveAction ?? (
               <>
                 <Button

@@ -24,9 +24,9 @@ export function ProjectRoutingCard({
   const [draft, setDraft] = useState<ModelRouterMode | null>(null);
 
   return (
-    <section className="space-y-3 border-t border-zinc-200 p-5 dark:border-zinc-800">
+    <section className="space-y-3 border-t border-border p-5">
       <h2 className="text-sm font-semibold">Automatic model preference</h2>
-      <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+      <p className="text-xs leading-5 text-muted-foreground">
         Auto uses this preference in project conversations. Choose another tier or a specific model
         in the composer to override it. This is not a spending limit.
       </p>
@@ -42,7 +42,7 @@ export function ProjectRoutingCard({
         onChange={(event) => setDraft(modelRouterModeSchema.parse(event.target.value))}
       />
       {errorMessage && (
-        <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+        <p role="alert" className="text-sm text-failure">
           {errorMessage}
         </p>
       )}

@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { conversationLabelSchema, conversationSnoozeSchema } from "./conversation-organisation";
+
 export const searchWebSchema = z.object({
   query: z.string(),
   provider: z.enum(["serper", "tavily"]),
@@ -44,6 +46,10 @@ export const globalSearchConversationSchema = z.object({
   id: z.string(),
   title: z.string().nullable(),
   updatedAt: z.string().nullable(),
+  isPinned: z.boolean(),
+  isUnread: z.boolean(),
+  snooze: conversationSnoozeSchema.nullable(),
+  labels: z.array(conversationLabelSchema),
   project: z
     .object({
       id: z.string(),

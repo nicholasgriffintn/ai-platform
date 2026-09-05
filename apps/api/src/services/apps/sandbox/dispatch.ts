@@ -1,18 +1,24 @@
 import {
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  sandboxEnvironmentCacheRecordSchema,
   sandboxRunDispatchMessageSchema,
   sandboxRunEventSchema,
+  sandboxRunResultSchema,
+  type SandboxEnvironmentCacheRecord,
   type SandboxRunDispatchMessage,
   type SandboxRunData,
   type SandboxRunEvent,
   type SandboxRunStatus,
+  SANDBOX_RUNS_CAPABILITY_ID,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { MAX_STORED_STREAM_EVENTS, SANDBOX_RUNS_APP_ID } from "~/constants/app";
+import { MAX_STORED_STREAM_EVENTS } from "~/constants/app";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { GoalService } from "~/services/goals/GoalService";
+import { notifyMobileProjectRun } from "~/services/mobile-push";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
 import { TaskService } from "~/services/tasks/TaskService";
+import { persistProjectEnvironmentCacheCandidate } from "~/services/workspaces/environment-cache";
 import type { IEnv, IUser } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
@@ -51,6 +57,23 @@ function toCoordinatorState(
   }
 
   return "cancelled";
+}
+
+function separateEnvironmentCache(result: SandboxRunData["result"]): {
+  result: SandboxRunData["result"];
+  environmentCache?: SandboxEnvironmentCacheRecord;
+} {
+  if (!result) {
+    return { result };
+  }
+
+  const parsedCache = sandboxEnvironmentCacheRecordSchema.safeParse(result.environmentCache);
+  const { environmentCache: _environmentCache, ...publicResult } = result;
+
+  return {
+    result: publicResult,
+    environmentCache: parsedCache.success ? parsedCache.data : undefined,
+  };
 }
 
 export function isSandboxRunDispatchMessage(
@@ -240,7 +263,13 @@ export async function processSandboxRunDispatch(params: {
       taskType: message.payload.taskType,
       model: message.payload.model,
       promptStrategy: message.payload.promptStrategy,
+      deliveryPolicy: message.payload.deliveryPolicy,
       shouldCommit: message.payload.shouldCommit,
+      environmentSetup: message.payload.environmentSetup,
+      environmentPreparationMode: message.payload.environmentPreparationMode,
+      environmentCache: message.payload.environmentCache,
+      environmentCacheGeneration: message.payload.environmentCacheGeneration,
+      projectId: message.payload.projectId,
       timeoutSeconds: message.payload.timeoutSeconds,
       trustLevel: message.payload.trustLevel,
       modelSettings: message.payload.modelSettings,
@@ -300,6 +329,17 @@ export async function processSandboxRunDispatch(params: {
       userId: message.userId,
       runData: nextRun,
     });
+    const record = await context.repositories.activities.getActivityById(message.recordId);
+
+    await notifyMobileProjectRun({
+      context,
+      userId: message.userId,
+      notificationId: `sandbox:${message.runId}:failed:${completedAt}`,
+      kind: "failed",
+      projectId: record?.project_id,
+      conversationId: record?.conversation_id ?? null,
+      runId: message.runId,
+    });
 
     return;
   }
@@ -309,6 +349,7 @@ export async function processSandboxRunDispatch(params: {
   let errorMessage: string | undefined;
   let cancellationReason: string | undefined;
   let result: SandboxRunData["result"];
+  let environmentCacheCandidate: SandboxEnvironmentCacheRecord | undefined;
   let events = runData.events ?? [];
   let pausedAt: string | undefined;
   let resumedAt: string | undefined;
@@ -363,7 +404,11 @@ export async function processSandboxRunDispatch(params: {
       status = payload.success ? "completed" : "failed";
       completedAt = now;
       errorMessage = typeof payload.error === "string" ? payload.error : undefined;
-      result = payload;
+      const parsedResult = sandboxRunResultSchema.parse(payload);
+      const separated = separateEnvironmentCache(parsedResult);
+
+      result = separated.result;
+      environmentCacheCandidate = separated.environmentCache;
       appendEvent({
         type: status === "completed" ? "run_completed" : "run_failed",
         runId: message.runId,
@@ -398,8 +443,14 @@ export async function processSandboxRunDispatch(params: {
               }
 
               const event = parsed.data;
+              const separated = separateEnvironmentCache(event.result);
+              const publicEvent = event.result ? { ...event, result: separated.result } : event;
 
-              appendEvent(event);
+              if (separated.environmentCache) {
+                environmentCacheCandidate = separated.environmentCache;
+              }
+
+              appendEvent(publicEvent);
 
               if (event.promptStrategy) {
                 promptStrategy = event.promptStrategy;
@@ -408,7 +459,7 @@ export async function processSandboxRunDispatch(params: {
               if (event.type === "run_completed") {
                 status = "completed";
                 completedAt = new Date().toISOString();
-                result = event.result;
+                result = separated.result;
                 errorMessage = undefined;
 
                 return;
@@ -418,6 +469,7 @@ export async function processSandboxRunDispatch(params: {
                 status = "failed";
                 completedAt = new Date().toISOString();
                 errorMessage = typeof event.error === "string" ? event.error : "Sandbox run failed";
+                result = separated.result;
 
                 return;
               }
@@ -432,6 +484,7 @@ export async function processSandboxRunDispatch(params: {
                       ? event.error
                       : "Run cancelled by user";
                 errorMessage = undefined;
+                result = separated.result;
 
                 return;
               }
@@ -478,8 +531,33 @@ export async function processSandboxRunDispatch(params: {
 
   await Promise.allSettled(coordinatorWritePromises);
 
+  if (environmentCacheCandidate && message.payload.projectId) {
+    try {
+      await persistProjectEnvironmentCacheCandidate({
+        context,
+        projectId: message.payload.projectId,
+        userId: message.userId,
+        repository: message.payload.repo,
+        installationId: message.payload.installationId,
+        candidate: environmentCacheCandidate,
+        candidateWasReused:
+          message.payload.environmentCache?.backupId === environmentCacheCandidate.backupId,
+        replaceExistingCache:
+          message.payload.environmentCache?.status === "ready" &&
+          message.payload.environmentCache.cacheKey === environmentCacheCandidate.cacheKey &&
+          message.payload.environmentCache.backupId !== environmentCacheCandidate.backupId,
+      });
+    } catch (error) {
+      logger.error("Failed to persist sandbox environment cache", {
+        run_id: message.runId,
+        error,
+      });
+    }
+  }
+
   const resolvedStatus = status as SandboxRunStatus;
   const finalUpdatedAt = new Date().toISOString();
+  const latestRunData = await loadRunData({ env, recordId: message.recordId });
   const nextRunData: PersistedSandboxRunData = {
     ...runData,
     status: resolvedStatus,
@@ -493,6 +571,7 @@ export async function processSandboxRunDispatch(params: {
     resumedAt,
     pauseReason,
     resumeReason,
+    infrastructureUsage: latestRunData?.infrastructureUsage ?? runData.infrastructureUsage,
     cancelRequestedAt:
       resolvedStatus === "cancelled"
         ? (runData.cancelRequestedAt ?? completedAt)
@@ -532,6 +611,20 @@ export async function processSandboxRunDispatch(params: {
     timeoutSeconds: persisted.timeoutSeconds,
     timeoutAt: persisted.timeoutAt,
   });
+
+  if (persisted.status === "completed" || persisted.status === "failed") {
+    const record = await context.repositories.activities.getActivityById(message.recordId);
+
+    await notifyMobileProjectRun({
+      context,
+      userId: message.userId,
+      notificationId: `sandbox:${message.runId}:${persisted.status}:${persisted.completedAt ?? persisted.updatedAt}`,
+      kind: persisted.status,
+      projectId: record?.project_id,
+      conversationId: record?.conversation_id ?? null,
+      runId: message.runId,
+    });
+  }
 }
 
 export function buildSandboxRunDispatchMessage(params: {
@@ -556,7 +649,7 @@ export async function getSandboxRunRecordForDispatch(params: {
 }): Promise<{ id: string; run: PersistedSandboxRunData } | null> {
   const context = createServiceContext({ env: params.env });
   const record = await context.repositories.activities.getActivityByGroup(
-    SANDBOX_RUNS_APP_ID,
+    SANDBOX_RUNS_CAPABILITY_ID,
     params.runId,
   );
 

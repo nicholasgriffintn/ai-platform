@@ -74,7 +74,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
             value={value || ""}
             onChange={handleChange}
             placeholder={field.placeholder}
-            className="text-base w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 bg-off-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 min-h-[100px]"
+            className="text-base w-full px-3 py-2 border border-border-strong bg-surface-elevated text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-active-work min-h-[100px]"
             required={field.required}
             aria-describedby={describedBy}
             aria-invalid={!!error}
@@ -123,7 +123,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
             multiple
             value={value || []}
             onChange={handleMultiSelectChange}
-            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 bg-off-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 min-h-[100px]"
+            className="w-full px-3 py-2 border border-border-strong bg-surface-elevated text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-active-work min-h-[100px]"
             required={field.required}
             aria-describedby={describedBy}
             aria-invalid={!!error}
@@ -169,7 +169,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
             type="file"
             id={field.id}
             onChange={handleFileChange}
-            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 bg-off-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+            className="w-full px-3 py-2 border border-border-strong bg-surface-elevated text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-active-work"
             required={field.required}
             aria-describedby={describedBy}
             aria-invalid={!!error}
@@ -184,13 +184,10 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
   return (
     <div className="mb-4">
       {field.type !== "checkbox" && (
-        <label
-          htmlFor={field.id}
-          className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
-        >
+        <label htmlFor={field.id} className="block text-sm font-medium text-foreground mb-1">
           {field.label}{" "}
           {field.required && (
-            <span className="text-red-500 dark:text-red-400" aria-hidden="true">
+            <span className="text-failure" aria-hidden="true">
               *
             </span>
           )}
@@ -199,7 +196,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
       )}
 
       {field.description && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1" id={`${field.id}-description`}>
+        <p className="text-sm text-muted-foreground mb-1" id={`${field.id}-description`}>
           {field.description}
         </p>
       )}
@@ -207,7 +204,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
       {renderField()}
 
       {error && (
-        <p id={errorId} className="text-sm text-red-600 dark:text-red-400 mt-1">
+        <p id={errorId} className="text-sm text-failure mt-1">
           {error}
         </p>
       )}

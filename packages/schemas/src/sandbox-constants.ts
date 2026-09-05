@@ -6,6 +6,9 @@ export const SANDBOX_PROMPT_STRATEGIES = [
   "test-hardening",
 ] as const;
 
+export const SANDBOX_RUNS_CAPABILITY_ID = "sandbox_runs";
+export const SANDBOX_RUN_PROOF_MAX_CHANGED_FILES = 200;
+
 export const SANDBOX_TASK_TYPES = [
   "feature-implementation",
   "code-review",

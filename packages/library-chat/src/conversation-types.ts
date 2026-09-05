@@ -9,6 +9,8 @@ import type {
   ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
   ChatHostedToolSettings as SchemaHostedToolSettings,
   ConversationModeMetadata,
+  ConversationLabel,
+  ConversationSnooze,
   MessageRole as SchemaMessageRole,
   ModelServiceTier,
   ReasoningEffort,
@@ -253,6 +255,10 @@ export interface Conversation {
   is_public?: boolean;
   share_id?: string;
   is_archived?: boolean;
+  isPinned?: boolean;
+  isUnread?: boolean;
+  snooze?: ConversationSnooze | null;
+  labels?: ConversationLabel[];
 }
 
 export type ConversationArchiveFilter = SchemaConversationArchiveFilter;

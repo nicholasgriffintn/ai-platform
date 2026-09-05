@@ -96,7 +96,7 @@ export const metaModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.00425,
 		reasoningConfig: {
-			supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+			supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh", "max"],
 			defaultEffort: "minimal",
 		},
 	}),

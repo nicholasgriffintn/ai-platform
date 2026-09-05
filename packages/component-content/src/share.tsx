@@ -84,11 +84,7 @@ export function ShareDialog({
         size="sm"
         collapseLabel={collapseLabel}
         onClick={() => onOpenChange(true)}
-        className={[
-          variant === "ghost" &&
-            "text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200",
-          className,
-        ]
+        className={[variant === "ghost" && "text-muted-foreground hover:text-foreground", className]
           .filter(Boolean)
           .join(" ")}
         title={isPublic ? `Manage shared ${type}` : `Share ${type}`}
@@ -107,9 +103,7 @@ export function ShareDialog({
           <div className="space-y-4 py-2">
             {isPublic && shareUrl ? (
               <>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {finalLabels.sharedDescription}
-                </p>
+                <p className="text-sm text-muted-foreground">{finalLabels.sharedDescription}</p>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <input
@@ -117,7 +111,7 @@ export function ShareDialog({
                       readOnly
                       value={shareUrl}
                       aria-label="Share link"
-                      className="w-full rounded-md border border-zinc-200 bg-off-white px-3 py-1.5 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                      className="w-full rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm text-foreground"
                     />
                   </div>
                   <Button
@@ -126,7 +120,7 @@ export function ShareDialog({
                     onClick={() => onCopy(shareUrl)}
                     title={copied ? "Copied!" : "Copy link"}
                     aria-label="Copy link"
-                    className={copied ? "text-green-500 dark:text-green-400" : ""}
+                    className={copied ? "text-success" : ""}
                     icon={copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                   />
                 </div>
@@ -141,9 +135,7 @@ export function ShareDialog({
               </>
             ) : (
               <>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {finalLabels.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{finalLabels.description}</p>
                 <Button
                   onClick={onShare}
                   isLoading={isSharing}

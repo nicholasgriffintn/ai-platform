@@ -16,13 +16,10 @@ export function CapabilityGroupSection({
   return (
     <section aria-labelledby={`capability-kind-${id}`}>
       <div className="mb-4 flex items-center gap-2">
-        <h2
-          id={`capability-kind-${id}`}
-          className="text-lg font-semibold text-zinc-950 dark:text-zinc-100"
-        >
+        <h2 id={`capability-kind-${id}`} className="text-lg font-semibold text-foreground">
           {label}
         </h2>
-        <span className="text-xs text-zinc-500">{count}</span>
+        <span className="text-xs text-muted-foreground">{count}</span>
       </div>
       <div className="space-y-7">{children}</div>
     </section>
@@ -37,7 +34,7 @@ export interface CapabilityCategoryGroupProps {
 export function CapabilityCategoryGroup({ category, children }: CapabilityCategoryGroupProps) {
   return (
     <div>
-      <h3 className="mb-3 text-sm font-medium text-zinc-600 dark:text-zinc-300">{category}</h3>
+      <h3 className="mb-3 text-sm font-medium text-muted-foreground">{category}</h3>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{children}</div>
     </div>
   );

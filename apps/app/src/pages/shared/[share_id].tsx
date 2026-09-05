@@ -74,7 +74,7 @@ export default function SharedConversationPage() {
   if (isLoading) {
     return (
       <PageShell
-        className="flex h-screen w-full items-center justify-center bg-off-white dark:bg-zinc-900"
+        className="bg-canvas flex h-screen w-full items-center justify-center"
         displayNavBar={false}
       >
         <LoadingSpinner message="Loading shared conversation..." />
@@ -86,7 +86,7 @@ export default function SharedConversationPage() {
     return (
       <PageShell
         title="Shared Conversation Not Available"
-        className="bg-off-white dark:bg-zinc-900"
+        className="bg-canvas"
         displayNavBar={false}
       >
         <PageStatus message={error}>
@@ -108,7 +108,7 @@ export default function SharedConversationPage() {
       }
       displayNavBar={false}
       fullBleed
-      className="flex min-h-screen flex-col bg-off-white dark:bg-zinc-900"
+      className="bg-canvas flex min-h-screen flex-col"
     >
       <div
         className={`flex h-full flex-col w-full ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
@@ -127,7 +127,7 @@ export default function SharedConversationPage() {
           </div>
         </div>
 
-        <footer className="border-t border-zinc-200 bg-off-white p-4 text-center text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+        <footer className="border-border bg-surface text-muted-foreground border-t p-4 text-center text-sm">
           This is a shared conversation from Polychat.
         </footer>
       </div>

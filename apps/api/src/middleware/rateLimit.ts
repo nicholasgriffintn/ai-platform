@@ -17,6 +17,10 @@ export async function rateLimit(context: Context, next: Next) {
     return next();
   }
 
+  if (context.get("servicePrincipal")) {
+    return next();
+  }
+
   const user = context.get("user");
   const anonymousUser = context.get("anonymousUser");
   const userId: string = user?.id;

@@ -1,3 +1,4 @@
+import { INTERNAL_SERVICE_AUTHORIZATION_HEADER } from "@ngriffin_uk/polychat-schemas";
 import type { Context, Next } from "hono";
 import { parse as parseCookieHeader } from "hono/utils/cookie";
 import { isbot } from "isbot";
@@ -5,6 +6,7 @@ import { isbot } from "isbot";
 import { KVCache } from "~/lib/cache";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { RepositoryManager } from "~/repositories";
+import { verifyInternalServiceToken } from "~/services/auth/internal-service";
 import { getUserByJwtToken } from "~/services/auth/jwt";
 import { createAssistantAuth } from "~/services/auth/sharedAuth";
 import type { AnonymousUser, User } from "~/types";
@@ -80,6 +82,14 @@ export async function authMiddleware(context: Context, next: Next) {
   const path = context.req.path;
 
   if (path === "/status" || path === "/openapi" || path.startsWith("/webhooks/")) {
+    return next();
+  }
+
+  const serviceToken = parseBearerToken(context.req.header(INTERNAL_SERVICE_AUTHORIZATION_HEADER));
+
+  if (serviceToken) {
+    context.set("servicePrincipal", await verifyInternalServiceToken(context.env, serviceToken));
+
     return next();
   }
 

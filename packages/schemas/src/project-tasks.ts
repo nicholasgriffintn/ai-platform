@@ -367,8 +367,6 @@ export const projectTaskListQuerySchema = z.object({
 
 export const projectTaskResponseSchema = z.object({ task: projectTaskSchema });
 
-export const answerProjectTaskQuestionsSchema = answerUserQuestionsSchema;
-
 export const projectTaskToolApprovalSchema = z.object({
   interactionId: z.string().min(1),
   toolName: z.string().min(1),
@@ -376,6 +374,8 @@ export const projectTaskToolApprovalSchema = z.object({
 });
 
 export type ProjectTaskToolApproval = z.infer<typeof projectTaskToolApprovalSchema>;
+
+export const answerProjectTaskQuestionsSchema = answerUserQuestionsSchema;
 
 export const resolveProjectTaskToolApprovalSchema = z.object({
   interactionId: z.string().min(1),
@@ -552,6 +552,7 @@ export const projectTaskDetailResponseSchema = z.object({
   task: projectTaskSchema,
   goal: goalSchema.nullable(),
   pendingQuestions: userQuestionSetSchema.nullable(),
+  pendingApproval: projectTaskToolApprovalSchema.nullable(),
   interaction: projectTaskInteractionSchema.nullable().default(null),
   activity: projectTaskActivityTimelineSchema,
   plan: projectTaskPlanEvidenceSchema,

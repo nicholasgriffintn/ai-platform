@@ -32,7 +32,7 @@ export function ShortcutTooltip({
           id={tooltipId}
           role="tooltip"
           className={cn(
-            "pointer-events-none absolute bottom-full right-0 z-[80] mb-2 flex items-center gap-2 whitespace-nowrap rounded-full border border-zinc-700/70 bg-zinc-900 px-3 py-1.5 text-xs font-medium text-zinc-50 shadow-lg transition duration-150 dark:border-zinc-600 dark:bg-zinc-800",
+            "border-border bg-popover text-popover-foreground polychat-motion-micro pointer-events-none absolute right-0 bottom-full z-[80] mb-2 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap shadow-[var(--polychat-elevated-shadow)] transition",
             isVisible ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0",
           )}
         >
@@ -40,13 +40,13 @@ export function ShortcutTooltip({
           <span className="flex items-center gap-1" aria-hidden="true">
             {keys.map((key) =>
               key === "or" ? (
-                <span key={key} className="text-[10px] text-zinc-400">
+                <span key={key} className="text-muted-foreground text-[10px]">
                   or
                 </span>
               ) : (
                 <kbd
                   key={key}
-                  className="min-w-5 rounded bg-zinc-700 px-1 py-0.5 text-center text-[10px] text-zinc-200"
+                  className="bg-selection text-foreground border-border min-w-5 rounded border px-1 py-0.5 text-center text-[10px]"
                 >
                   {key}
                 </kbd>

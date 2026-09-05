@@ -157,7 +157,7 @@ export function DeploymentCreateForm({
 
   if (deployableModels.length === 0) {
     return (
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="text-sm text-muted-foreground">
         No deployable SageMaker models are configured yet.
       </p>
     );

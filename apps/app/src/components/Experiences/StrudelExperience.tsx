@@ -68,7 +68,7 @@ export function StrudelExperience({ basePath, projectId, subpath }: ExperiencePr
   if (!patterns?.length) {
     return (
       <EmptyState
-        icon={<Music2 size={24} className="text-zinc-400" />}
+        icon={<Music2 size={24} className="text-muted-foreground" />}
         title="No patterns yet"
         message="Write or generate a live-coded music pattern."
         action={

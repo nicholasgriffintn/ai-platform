@@ -112,7 +112,7 @@ export function CouncilMemberPickerView({
 
     return (
       <section className="space-y-2" aria-label="Council convened">
-        <div className="flex items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
           <UsersRound className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span>Council convened</span>
         </div>
@@ -121,16 +121,14 @@ export function CouncilMemberPickerView({
             {selectedMembers.map((member) => (
               <li
                 key={member.id}
-                className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                className="rounded-full bg-surface-elevated px-2.5 py-1 text-xs text-foreground"
               >
                 {member.name}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            The selected members have been submitted.
-          </p>
+          <p className="text-xs text-muted-foreground">The selected members have been submitted.</p>
         )}
       </section>
     );
@@ -139,16 +137,16 @@ export function CouncilMemberPickerView({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+        <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-foreground">
           <UsersRound className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span>Choose the council</span>
         </div>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="text-xs text-muted-foreground">
           {selected.length}/{maxSelection}
         </span>
       </div>
 
-      {picker.reason && <p className="text-xs text-zinc-500 dark:text-zinc-400">{picker.reason}</p>}
+      {picker.reason && <p className="text-xs text-muted-foreground">{picker.reason}</p>}
 
       <fieldset
         disabled={isResolved}
@@ -163,13 +161,13 @@ export function CouncilMemberPickerView({
             <label
               key={member.id}
               className={cn(
-                "flex items-start gap-2 rounded-md border border-zinc-200 p-2 text-left transition-colors dark:border-zinc-700",
+                "flex items-start gap-2 rounded-md border border-border p-2 text-left transition-colors",
                 isSelected
-                  ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
-                  : "bg-transparent text-zinc-700 dark:text-zinc-300",
+                  ? "bg-surface-elevated text-foreground"
+                  : "bg-transparent text-foreground",
                 isResolved || isBlocked
                   ? "cursor-not-allowed opacity-60"
-                  : "cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900",
+                  : "cursor-pointer hover:bg-surface-elevated",
               )}
             >
               <Checkbox
@@ -181,7 +179,7 @@ export function CouncilMemberPickerView({
               <span className="min-w-0">
                 <span className="block text-sm font-medium leading-5">{member.name}</span>
                 {member.role && (
-                  <span className="block text-xs leading-4 text-zinc-500 dark:text-zinc-400">
+                  <span className="block text-xs leading-4 text-muted-foreground">
                     {member.role}
                   </span>
                 )}
@@ -192,7 +190,7 @@ export function CouncilMemberPickerView({
       </fieldset>
 
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="text-xs text-muted-foreground">
           {selected.length === 0
             ? "Pick at least one member."
             : "Members debate in the order the chamber decides."}

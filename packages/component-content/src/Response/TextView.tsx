@@ -13,7 +13,7 @@ export const TextView = ({ data }: TextViewProps) => {
     return (
       <div
         data-responsetype="text"
-        className="rounded-md border border-amber-200 bg-amber-100 p-4 text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
+        className="rounded-md border border-attention/45 bg-attention/12 p-4 text-attention"
       >
         No content available.
       </div>

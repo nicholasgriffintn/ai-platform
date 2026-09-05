@@ -6,13 +6,19 @@ const MAX_WAIT_MS = 180_000;
 export interface RecoverDetachedTurnParams {
   completionId: string;
   knownMessageIds: Set<string>;
-  fetchMessages: (completionId: string) => Promise<Message[]>;
+  fetchMessages: (completionId: string, attempt: RecoveryAttemptContext) => Promise<Message[]>;
   signal?: AbortSignal;
   onAttempt?: (attempt: number) => void;
   pollIntervalMs?: number;
   maxWaitMs?: number;
   wait?: (ms: number) => Promise<void>;
   now?: () => number;
+}
+
+export interface RecoveryAttemptContext {
+  attempt: number;
+  elapsedMs: number;
+  finalAttempt: boolean;
 }
 
 function defaultWait(ms: number): Promise<void> {
@@ -41,7 +47,8 @@ export async function recoverDetachedTurn({
   wait = defaultWait,
   now = Date.now,
 }: RecoverDetachedTurnParams): Promise<Message[]> {
-  const deadline = now() + maxWaitMs;
+  const startedAt = now();
+  const deadline = startedAt + maxWaitMs;
   let attempt = 0;
 
   while (!signal?.aborted && now() < deadline) {
@@ -55,10 +62,19 @@ export async function recoverDetachedTurn({
     }
 
     try {
-      const recovered = selectRecoveredMessages(await fetchMessages(completionId), knownMessageIds);
+      const elapsedMs = Math.max(0, now() - startedAt);
+      const finalAttempt = elapsedMs + pollIntervalMs >= maxWaitMs;
+      const recovered = selectRecoveredMessages(
+        await fetchMessages(completionId, { attempt, elapsedMs, finalAttempt }),
+        knownMessageIds,
+      );
 
       if (recovered.length) {
         return recovered;
+      }
+
+      if (finalAttempt) {
+        break;
       }
     } catch {
       continue;

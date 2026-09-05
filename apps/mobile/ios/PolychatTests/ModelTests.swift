@@ -77,6 +77,36 @@ struct ModelTests {
         #expect(part.metadata == .object(["source": .string("automatic-compaction")]))
     }
 
+    @Test func chatMessagePreservesAndDescribesPartialCompactionCoverage() throws {
+        let data = Data("""
+        {
+            "id": "snapshot-1-compaction",
+            "role": "compaction",
+            "content": "Context compacted",
+            "parts": [
+                {
+                    "type": "compaction",
+                    "status": "completed",
+                    "coverage": {
+                        "coveredMessageIds": ["message-1", "message-2"],
+                        "coveredMessageCount": 2,
+                        "candidateMessageCount": 3,
+                        "summaryInputCharacters": 1200,
+                        "strategy": "fallback_transcript"
+                    }
+                }
+            ]
+        }
+        """.utf8)
+
+        let message = try JSONDecoder().decode(ChatMessage.self, from: data)
+        let coverage = try #require(message.parts?.first?.coverage)
+
+        #expect(coverage.coveredMessageIds == ["message-1", "message-2"])
+        #expect(coverage.summaryInputCharacters == 1200)
+        #expect(message.compactionCoverageDetail == "2 messages preserved verbatim; 1 message retained")
+    }
+
     @Test func chatMessageProviderMessagesExcludeCompactionMarkers() throws {
         let userMessage = ChatMessage(id: "user-1", role: "user", content: "Continue")
         let assistantMessage = ChatMessage(id: "assistant-1", role: "assistant", content: "Ready")

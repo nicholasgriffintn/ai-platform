@@ -232,7 +232,7 @@ export function ModelsList({
   if (!providerEntries.length) {
     return (
       <div className="p-2">
-        <p className="pb-4 text-left text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="pb-4 text-left text-sm text-muted-foreground">
           No models could be found with your filters.
         </p>
       </div>
@@ -268,10 +268,10 @@ export function ModelsList({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-zinc-200/70 bg-white/60 dark:border-zinc-700/70 dark:bg-zinc-900/50">
+    <div className="border-border bg-surface flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
       <div className="flex min-h-0 flex-1 flex-col max-h-[320px] sm:max-h-[420px] sm:min-h-[320px] sm:flex-row">
         {!isSearchActive && (
-          <div className="border-b border-zinc-200/70 dark:border-zinc-700/70 sm:flex sm:w-16 sm:flex-col sm:border-b-0 sm:border-r md:w-20">
+          <div className="border-b border-border/70 sm:flex sm:w-16 sm:flex-col sm:border-b-0 sm:border-r md:w-20">
             <div className="overflow-x-auto px-2 py-2 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:px-2">
               <div className="flex gap-2 sm:space-y-1 sm:block">
                 {providerEntries.map((providerEntry) => {
@@ -289,8 +289,8 @@ export function ModelsList({
                       className={cn(
                         "flex min-w-[88px] flex-shrink-0 items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs transition-colors sm:w-full sm:min-w-0 sm:flex-col sm:gap-1 sm:px-1 sm:text-[11px]",
                         isSelected
-                          ? "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-700 dark:border-fuchsia-500/40 dark:bg-fuchsia-950/30 dark:text-fuchsia-200"
-                          : "border-transparent text-zinc-500 hover:border-zinc-300 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800",
+                          ? "border-creative/45 bg-creative/12 text-creative"
+                          : "border-transparent text-muted-foreground hover:border-border-strong hover:bg-surface-elevated",
                       )}
                       aria-pressed={isSelected}
                       title={providerEntry.label}
@@ -308,7 +308,7 @@ export function ModelsList({
                       <span className="line-clamp-1 min-w-0 flex-1 text-left sm:w-full sm:flex-none sm:text-center">
                         {isFeaturedProvider ? "Featured" : providerEntry.label.split(" ")[0]}
                       </span>
-                      <span className="rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
+                      <span className="bg-selection text-foreground rounded-full px-1.5 py-0.5 text-[10px]">
                         {providerEntry.models.length}
                       </span>
                     </button>
@@ -320,12 +320,12 @@ export function ModelsList({
         )}
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <div className="flex-shrink-0 border-b border-zinc-200/70 px-3 py-2 dark:border-zinc-700/70">
+          <div className="flex-shrink-0 border-b border-border/70 px-3 py-2">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
-              <h4 className="text-sm font-semibold text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
+              <h4 className="text-sm font-semibold text-foreground whitespace-normal break-words">
                 {isSearchActive ? "Search results" : selectedProviderEntry?.label || "Models"}
               </h4>
-              <span className="flex-shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="flex-shrink-0 text-xs text-muted-foreground">
                 {visibleModelCount} model{visibleModelCount === 1 ? "" : "s"}
               </span>
             </div>
@@ -350,10 +350,10 @@ export function ModelsList({
                     return (
                       <div key={providerEntry.key} className="space-y-1">
                         <div className="flex items-center justify-between gap-2 px-1 py-1">
-                          <h5 className="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">
+                          <h5 className="text-xs font-semibold uppercase text-muted-foreground">
                             {providerEntry.label}
                           </h5>
-                          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          <span className="text-xs text-muted-foreground">
                             {providerEntry.models.length}
                           </span>
                         </div>
@@ -362,7 +362,7 @@ export function ModelsList({
                           <div className="pt-1">
                             <button
                               type="button"
-                              className="w-full rounded-md border border-zinc-200 px-2 py-1 text-left text-xs text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                              className="w-full rounded-md border border-border px-2 py-1 text-left text-xs text-muted-foreground hover:bg-surface-elevated"
                               onClick={() =>
                                 setShowDeprecatedByProvider((prev) => ({
                                   ...prev,
@@ -391,7 +391,7 @@ export function ModelsList({
                     <div className="pt-1">
                       <button
                         type="button"
-                        className="w-full rounded-md border border-zinc-200 px-2 py-1 text-left text-xs text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        className="w-full rounded-md border border-border px-2 py-1 text-left text-xs text-muted-foreground hover:bg-surface-elevated"
                         onClick={() =>
                           setShowDeprecatedByProvider((prev) => ({
                             ...prev,
@@ -413,7 +413,7 @@ export function ModelsList({
               )}
             </div>
             {!isSearchActive && visibleModels.length === 0 && (
-              <div className="rounded-lg border border-dashed border-zinc-300 p-3 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+              <div className="rounded-lg border border-dashed border-border-strong p-3 text-xs text-muted-foreground">
                 No models available in this category.
               </div>
             )}

@@ -1,3 +1,6 @@
+import type { ExecutionContext } from "@cloudflare/workers-types";
+
+import { recordTurnCancellationRequested } from "~/lib/chat/streaming/continuity-telemetry";
 import { requestTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
@@ -11,6 +14,7 @@ export type CancelChatCompletionContext = Pick<
 export async function handleCancelChatCompletion(
   context: CancelChatCompletionContext,
   completion_id: string,
+  options: { executionCtx?: ExecutionContext; platform?: string | null } = {},
 ): Promise<{ cancelled: true; completion_id: string }> {
   const user = context.requireUser();
 
@@ -36,6 +40,14 @@ export async function handleCancelChatCompletion(
   }
 
   await requestTurnCancellation(context.env, completion_id);
+  recordTurnCancellationRequested(
+    {
+      env: context.env,
+      executionCtx: options.executionCtx,
+      traceId: completion_id,
+    },
+    options.platform,
+  );
 
   return { cancelled: true, completion_id };
 }

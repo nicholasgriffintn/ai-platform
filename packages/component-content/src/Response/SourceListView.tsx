@@ -31,19 +31,17 @@ export function SourceListView({ sources }: { sources: SourceRecord[] }) {
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex h-full flex-col gap-1 rounded-md border border-zinc-200 p-3 no-underline transition-colors hover:bg-zinc-50 hover:!no-underline dark:border-zinc-700 dark:hover:bg-zinc-800/60"
+              className="group flex h-full flex-col gap-1 rounded-md border border-border p-3 no-underline transition-colors hover:bg-surface-elevated hover:!no-underline"
             >
-              <span className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Favicon url={source.url} className="h-4 w-4 rounded-sm" />
                 <span className="truncate">{readDomain(source.url)}</span>
               </span>
-              <span className="line-clamp-2 text-sm font-medium text-zinc-800 group-hover:underline dark:text-zinc-100">
+              <span className="line-clamp-2 text-sm font-medium text-foreground group-hover:underline">
                 {source.title || readDomain(source.url)}
               </span>
               {source.snippet && (
-                <span className="line-clamp-2 text-xs text-zinc-600 dark:text-zinc-400">
-                  {source.snippet}
-                </span>
+                <span className="line-clamp-2 text-xs text-muted-foreground">{source.snippet}</span>
               )}
             </a>
           </li>
@@ -53,7 +51,7 @@ export function SourceListView({ sources }: { sources: SourceRecord[] }) {
         <button
           type="button"
           onClick={() => setShowAll(!showAll)}
-          className="cursor-pointer text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
+          className="cursor-pointer text-xs text-muted-foreground hover:text-foreground"
           aria-expanded={showAll}
         >
           {showAll ? "Show fewer" : `Show ${sources.length - DEFAULT_VISIBLE} more`}

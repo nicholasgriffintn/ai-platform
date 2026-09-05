@@ -4,7 +4,7 @@ import { Button } from "./Button";
 import { cn } from "./utils";
 
 const hoverActionButtonClassName =
-  "min-h-0 min-w-0 border-0 p-2 rounded-lg font-normal hover:bg-off-white-highlight dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-500";
+  "text-muted-foreground hover:bg-selection hover:text-foreground min-h-0 min-w-0 rounded-lg border-0 p-2 font-normal";
 
 interface HoverAction {
   /** Unique identifier */
@@ -45,12 +45,13 @@ export function HoverActions({
 
   return (
     <div
+      data-hover-actions=""
       className={cn(
         "absolute",
         positionClasses[position],
         alwaysVisible
           ? "opacity-100"
-          : "md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 opacity-100",
+          : "md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 opacity-100",
         "transition-opacity duration-200 flex items-center space-x-1 bg-inherit",
         className,
       )}

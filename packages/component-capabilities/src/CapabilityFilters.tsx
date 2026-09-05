@@ -60,8 +60,8 @@ export function CapabilityFilters({
             onClick={() => onFiltersChange([])}
             className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
               filters.length === 0
-                ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
-                : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                ? "border-foreground bg-foreground text-background"
+                : "border-border bg-surface text-muted-foreground hover:bg-surface-elevated"
             }`}
           >
             All
@@ -80,8 +80,8 @@ export function CapabilityFilters({
               }
               className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                 filters.includes(filter.value)
-                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
-                  : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border bg-surface text-muted-foreground hover:bg-surface-elevated"
               }`}
             >
               {filter.label}
@@ -91,7 +91,7 @@ export function CapabilityFilters({
         <div className="sm:hidden">
           <FormSelect
             aria-label="Filter capabilities by category"
-            className="h-10 bg-white dark:bg-zinc-900"
+            className="h-10 bg-surface"
             onChange={(event) => onCategoryChange(event.target.value)}
             options={categoryFilters}
             value={category}
@@ -110,8 +110,8 @@ export function CapabilityFilters({
               onClick={() => onCategoryChange(filter.value)}
               className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                 category === filter.value
-                  ? "border-zinc-400 bg-zinc-100 text-zinc-950 dark:border-zinc-500 dark:bg-zinc-800 dark:text-white"
-                  : "border-transparent text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                  ? "border-border-strong bg-surface-elevated text-foreground"
+                  : "border-transparent text-muted-foreground hover:bg-surface-elevated"
               }`}
             >
               {filter.label}

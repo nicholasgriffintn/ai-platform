@@ -39,7 +39,7 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
             id={controlId}
             type="checkbox"
             className={cn(
-              "h-4 w-4 rounded border-zinc-300 text-zinc-600 focus:ring-zinc-500",
+              "h-4 w-4 rounded border-border-strong text-muted-foreground focus:ring-border-strong",
               className,
             )}
             aria-describedby={describedBy}
@@ -48,7 +48,7 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
           {label && labelPosition === "right" && <Label htmlFor={controlId}>{label}</Label>}
         </div>
         {description && (
-          <p id={descriptionId} className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+          <p id={descriptionId} className="text-xs text-muted-foreground mt-1">
             {description}
           </p>
         )}

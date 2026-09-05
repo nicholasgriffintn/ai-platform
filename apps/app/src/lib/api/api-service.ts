@@ -23,6 +23,7 @@ import { AudioService, type SpeechGenerationResponse } from "./services/audio-se
 import {
   ChatService,
   type ConversationUpdateRequest,
+  type GetChatOptions,
   type StreamChatCompletionsParams,
 } from "./services/chat-service";
 import { ResearchService } from "./services/research-service";
@@ -82,10 +83,7 @@ class ApiService {
     return this.chatService.setAllConversationsArchived(options);
   };
 
-  getChat = (
-    completion_id: string,
-    options?: { refreshPending?: boolean },
-  ): Promise<Conversation> => {
+  getChat = (completion_id: string, options?: GetChatOptions): Promise<Conversation> => {
     return this.chatService.getChat(completion_id, options);
   };
 
@@ -278,6 +276,10 @@ class ApiService {
 
   fetchModels = (): Promise<ModelConfig> => {
     return this.userService.fetchModels();
+  };
+
+  fetchModelCatalogue = (): Promise<ModelConfig> => {
+    return this.userService.fetchModelCatalogue();
   };
 
   fetchTools = (): Promise<Tool[]> => {

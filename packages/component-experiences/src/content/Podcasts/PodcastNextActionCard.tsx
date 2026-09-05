@@ -29,7 +29,9 @@ export function PodcastNextActionCard({
     <Card className="flex-row items-center justify-between gap-4 p-4 shadow-none">
       <div>
         <p className="text-sm font-medium">Continue processing</p>
-        <p className="text-sm text-zinc-500">{label} to build the next part of this podcast.</p>
+        <p className="text-sm text-muted-foreground">
+          {label} to build the next part of this podcast.
+        </p>
       </div>
       <Button variant="primary" isLoading={isRunning} onClick={() => onRun(action)}>
         {label}

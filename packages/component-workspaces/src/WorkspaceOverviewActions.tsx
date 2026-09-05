@@ -33,7 +33,7 @@ export function WorkspaceOverviewActions({
         {isOwner ? (
           <DropdownMenuItem
             onClick={onDeleteWorkspace}
-            className="text-red-700 dark:text-red-400"
+            className="text-failure"
             icon={<Trash2 size={16} />}
           >
             Delete

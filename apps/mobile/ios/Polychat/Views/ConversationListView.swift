@@ -10,15 +10,18 @@ struct ConversationListView: View {
     @State private var renameTitle = ""
     let onShowSettings: () -> Void
     let onShowRecipes: () -> Void
+    let onShowWork: () -> Void
 
     init(
         selectedConversationID: Binding<String?>,
         onShowSettings: @escaping () -> Void = {},
-        onShowRecipes: @escaping () -> Void = {}
+        onShowRecipes: @escaping () -> Void = {},
+        onShowWork: @escaping () -> Void = {}
     ) {
         self._selectedConversationID = selectedConversationID
         self.onShowSettings = onShowSettings
         self.onShowRecipes = onShowRecipes
+        self.onShowWork = onShowWork
     }
 
     private var filteredConversations: [Conversation] {
@@ -126,6 +129,14 @@ struct ConversationListView: View {
                     Image(systemName: "square.and.pencil")
                 }
                 .accessibilityLabel("New Message")
+            }
+
+            ToolbarItem(placement: .secondaryAction) {
+                Button {
+                    onShowWork()
+                } label: {
+                    Label("Work", systemImage: "briefcase")
+                }
             }
 
             ToolbarItem(placement: .secondaryAction) {

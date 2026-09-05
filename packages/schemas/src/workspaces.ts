@@ -2,7 +2,15 @@ import z from "zod/v4";
 
 import { conversationTypeSchema } from "./chat";
 import { modelRouterModeSchema } from "./chat-completions";
+import { conversationLabelSchema, conversationSnoozeSchema } from "./conversation-organisation";
 import { projectFlowSchema } from "./project-tasks";
+import { sandboxEnvironmentCacheSummarySchema } from "./sandbox-cache";
+import {
+  DEFAULT_SANDBOX_DELIVERY_POLICY,
+  resolveSandboxDeliveryPolicy,
+  sandboxDeliveryPolicySchema,
+} from "./sandbox-delivery";
+import { sandboxEnvironmentSetupSchema } from "./sandbox-environment";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
 export const projectCapabilityKindSchema = z.enum(["app", "recipe", "skill", "tool", "agent"]);
@@ -14,17 +22,28 @@ export const projectCodingPromptStrategySchema = z.enum([
   "test-hardening",
 ]);
 
-export const projectCodingEnvironmentSchema = z.object({
-  installationId: z.number().int().positive(),
-  repository: z
-    .string()
-    .trim()
-    .min(1)
-    .regex(/^[\w.-]+\/[\w.-]+$/, "Repository must be in owner/repository format"),
-  promptStrategy: projectCodingPromptStrategySchema.default("auto"),
-  shouldCommit: z.boolean().default(true),
-  timeoutSeconds: z.number().int().min(30).max(7200).default(900),
-});
+export const projectCodingEnvironmentSchema = z
+  .object({
+    installationId: z.number().int().positive(),
+    repository: z
+      .string()
+      .trim()
+      .min(1)
+      .regex(/^[\w.-]+\/[\w.-]+$/, "Repository must be in owner/repository format"),
+    promptStrategy: projectCodingPromptStrategySchema.default("auto"),
+    deliveryPolicy: sandboxDeliveryPolicySchema.optional(),
+    shouldCommit: z.boolean().optional(),
+    environmentSetup: sandboxEnvironmentSetupSchema.optional(),
+    timeoutSeconds: z.number().int().min(30).max(7200).default(900),
+  })
+  .transform(({ deliveryPolicy, shouldCommit, ...environment }) => ({
+    ...environment,
+    deliveryPolicy:
+      deliveryPolicy ??
+      (shouldCommit === undefined
+        ? DEFAULT_SANDBOX_DELIVERY_POLICY
+        : resolveSandboxDeliveryPolicy(undefined, shouldCommit)),
+  }));
 
 export const workspaceMemberSchema = z.object({
   userId: z.number().int().positive(),
@@ -69,6 +88,7 @@ export const projectSummarySchema = z.object({
   capabilityCount: z.number().int().nonnegative().default(0),
   defaultRouterMode: modelRouterModeSchema.optional(),
   codingEnvironment: projectCodingEnvironmentSchema.nullable(),
+  environmentCache: sandboxEnvironmentCacheSummarySchema.nullable().optional(),
 });
 
 export const workspaceSummarySchema = z.object({
@@ -179,6 +199,10 @@ export const projectConversationSchema = z.object({
   updatedAt: z.string().nullable(),
   lastMessageAt: z.string().nullable(),
   messageCount: z.number().int().nonnegative(),
+  isPinned: z.boolean(),
+  isUnread: z.boolean(),
+  snooze: conversationSnoozeSchema.nullable(),
+  labels: z.array(conversationLabelSchema),
   createdBy: z.object({
     id: z.number().int().positive(),
     name: z.string().nullable(),

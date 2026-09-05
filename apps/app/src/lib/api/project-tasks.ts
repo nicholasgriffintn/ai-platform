@@ -139,7 +139,7 @@ export async function setProjectFlow(
 }
 
 export async function listTaskAttention(): Promise<ProjectTaskAttentionResponse> {
-  const response = await fetchApiOrThrow("/workspaces/attention", {
+  const response = await fetchApiOrThrow("/workspaces/attention/tasks", {
     method: "GET",
     headers: await authHeaders(),
   });

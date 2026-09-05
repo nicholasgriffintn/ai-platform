@@ -49,7 +49,7 @@ export function ProjectOverviewActions({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={onArchive}
-              className="text-red-700 dark:text-red-400"
+              className="text-failure"
               icon={<Archive size={16} />}
             >
               Archive

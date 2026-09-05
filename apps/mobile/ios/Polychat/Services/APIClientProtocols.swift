@@ -21,7 +21,11 @@ extension RecipesAPIClient {
 
 protocol ConversationAPIClient {
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse
-    func fetchConversation(id: String, refreshPending: Bool) async throws -> ConversationDetailResponse
+    func fetchConversation(
+        id: String,
+        refreshPending: Bool,
+        recovery: TurnRecoveryAttemptContext?
+    ) async throws -> ConversationDetailResponse
     func streamChatCompletion(
         messages: [ChatMessage],
         modelId: String?,
@@ -32,6 +36,15 @@ protocol ConversationAPIClient {
     func generateTitle(conversationId: String, messages: [ChatMessage]) async throws -> TitleGenerationResponse
     func updateConversation(id: String, title: String?, messages: [ChatMessage]?, parentConversationId: String?, parentMessageId: String?) async throws
     func deleteConversation(id: String) async throws
+}
+
+protocol WorkAPIClient {
+    func fetchWorkAttention(limit: Int) async throws -> WorkAttentionResponse
+    func fetchProjectTask(projectId: String, taskId: String) async throws -> MobileProjectTaskDetail
+    func fetchSandboxRun(id: String) async throws -> SandboxRunDetail
+    func fetchSandboxRunEvents(id: String) async throws -> SandboxRunEventsResponse
+    func fetchSandboxRunInstructions(id: String) async throws -> SandboxRunInstructionsResponse
+    func fetchSandboxRunControl(id: String) async throws -> SandboxRunControl
 }
 
 extension ConversationAPIClient {
@@ -50,8 +63,8 @@ extension ConversationAPIClient {
     }
 
     func fetchConversation(id: String) async throws -> ConversationDetailResponse {
-        try await fetchConversation(id: id, refreshPending: true)
+        try await fetchConversation(id: id, refreshPending: true, recovery: nil)
     }
 }
 
-extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient {}
+extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient, WorkAPIClient {}

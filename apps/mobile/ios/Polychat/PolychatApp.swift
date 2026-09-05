@@ -2,10 +2,12 @@ import SwiftUI
 
 @main
 struct PolychatApp: App {
+    @UIApplicationDelegateAdaptor(PolychatAppDelegate.self) private var appDelegate
     @StateObject private var authManager = AuthenticationManager()
     @StateObject private var conversationManager = ConversationManager()
     @StateObject private var apiClient = APIClient.shared
     @StateObject private var modelsStore = ModelsStore()
+    @StateObject private var pushNotificationManager = PushNotificationManager.shared
     
     var body: some Scene {
         WindowGroup {
@@ -14,9 +16,11 @@ struct PolychatApp: App {
                 .environmentObject(conversationManager)
                 .environmentObject(apiClient)
                 .environmentObject(modelsStore)
+                .environmentObject(pushNotificationManager)
                 .onAppear {
                     authManager.configure(apiClient: apiClient)
                     conversationManager.configure(apiClient: apiClient, modelsStore: modelsStore)
+                    pushNotificationManager.configure(apiClient: apiClient)
                 }
         }
     }

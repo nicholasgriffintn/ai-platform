@@ -56,8 +56,8 @@ export function LiveComposerTransport({
         className={cn(
           "flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-60",
           isActive
-            ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-off-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-            : "bg-white text-zinc-800 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800",
+            ? "bg-human-action text-human-action-foreground hover:bg-human-action/88"
+            : "bg-surface text-foreground hover:bg-selection",
         )}
       >
         {isConnecting ? (
@@ -77,8 +77,8 @@ export function LiveComposerTransport({
         className={cn(
           "flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors",
           microphoneEnabled
-            ? "bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-300 dark:text-emerald-950 dark:hover:bg-emerald-200"
-            : "bg-red-600 text-zinc-500 hover:bg-red-700 dark:bg-red-900 dark:text-red-400 dark:hover:bg-red-800",
+            ? "bg-success text-canvas hover:bg-success/88"
+            : "bg-failure text-canvas hover:bg-failure/88",
         )}
       >
         {microphoneEnabled ? (
@@ -109,8 +109,8 @@ export function LiveComposerTransport({
         className={cn(
           "flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-45",
           videoEnabled
-            ? "bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-300 dark:text-sky-950 dark:hover:bg-sky-200"
-            : "bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800",
+            ? "bg-active-work text-canvas hover:bg-active-work/88"
+            : "bg-surface text-foreground hover:bg-selection",
         )}
       >
         {videoEnabled ? (

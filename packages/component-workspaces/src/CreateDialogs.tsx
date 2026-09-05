@@ -65,7 +65,7 @@ export function CreateWorkspaceDialog({
             placeholder="Describe this workspace"
           />
           {errorMessage && (
-            <p role="alert" className="text-sm text-red-700">
+            <p role="alert" className="text-sm text-failure">
               {errorMessage}
             </p>
           )}
@@ -146,12 +146,12 @@ export function CreateProjectDialog({
               onChange={(event) => setInstructions(event.target.value)}
               maxLength={8000}
               rows={5}
-              className="w-full rounded-md border border-zinc-200 bg-off-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              className="w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm"
               placeholder="Add context, terminology, constraints, or working preferences."
             />
           </div>
           {errorMessage && (
-            <p role="alert" className="text-sm text-red-700">
+            <p role="alert" className="text-sm text-failure">
               {errorMessage}
             </p>
           )}

@@ -11,7 +11,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { PageShell } from "~/components/Core/PageShell";
+import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 import {
   useBillingPortalAvailability,
   useCancelSubscription,
@@ -90,56 +90,45 @@ function CreditBillingView() {
   );
 }
 
-export function ProfileBillingTab() {
+function BillingBody() {
   const { error: subError } = useSubscription();
   const { data: balance, isLoading: isBalanceLoading, error: balanceError } = useUsageBalance();
   const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
 
   if (IS_DISABLED) {
-    return (
-      <>
-        <PageShell.Header title="Billing" />
-        <EmptyState message="Billing features are currently disabled." />
-      </>
-    );
+    return <EmptyState message="Billing features are currently disabled." />;
   }
 
   if (isAuthenticationError(subError) || isAuthenticationError(balanceError)) {
     return (
-      <>
-        <PageShell.Header title="Billing" />
-        <SignInEmptyState
-          message="Sign in to see your credit balance and billing."
-          onSignIn={() => setShowLoginModal(true)}
-        />
-      </>
+      <SignInEmptyState
+        message="Sign in to see your credit balance and billing."
+        onSignIn={() => setShowLoginModal(true)}
+      />
     );
   }
 
   if (isBalanceLoading) {
     return (
-      <>
-        <PageShell.Header title="Billing" />
-        <div className="flex items-center justify-center py-12 text-zinc-500 dark:text-zinc-400">
-          <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-        </div>
-      </>
+      <div className="text-muted-foreground flex items-center justify-center py-12">
+        <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+      </div>
     );
   }
 
   if (!balance) {
     return (
-      <>
-        <PageShell.Header title="Billing" />
-        <EmptyState message="We could not read your credit balance just now. Try again shortly." />
-      </>
+      <EmptyState message="We could not read your credit balance just now. Try again shortly." />
     );
   }
 
+  return <CreditBillingView />;
+}
+
+export function ProfileBillingTab() {
   return (
-    <>
-      <PageShell.Header title="Billing" />
-      <CreditBillingView />
-    </>
+    <ProfileTab title="Billing">
+      <BillingBody />
+    </ProfileTab>
   );
 }

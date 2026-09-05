@@ -30,7 +30,7 @@ export function CompactSettingSelect({
 
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+      <label htmlFor={id} className="text-xs font-medium text-foreground">
         {label}
       </label>
       <select
@@ -39,7 +39,7 @@ export function CompactSettingSelect({
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
         aria-describedby={descriptionId}
-        className="h-9 w-full rounded-md border border-zinc-200 bg-off-white px-2.5 text-sm text-zinc-900 outline-none transition-colors focus:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
+        className="border-border bg-surface text-foreground focus:border-active-work h-9 w-full rounded-md border px-2.5 text-sm outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-60"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -48,7 +48,7 @@ export function CompactSettingSelect({
         ))}
       </select>
       {description && (
-        <p id={descriptionId} className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p id={descriptionId} className="text-xs text-muted-foreground">
           {description}
         </p>
       )}
@@ -84,7 +84,7 @@ export function CompactSettingNumber({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-3">
-        <label htmlFor={id} className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+        <label htmlFor={id} className="text-xs font-medium text-foreground">
           {label}
         </label>
         <input
@@ -97,11 +97,11 @@ export function CompactSettingNumber({
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
           aria-describedby={descriptionId}
-          className="h-8 w-28 rounded-md border border-zinc-200 bg-off-white px-2 text-right text-sm text-zinc-900 outline-none transition-colors focus:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
+          className="border-border bg-surface text-foreground focus:border-active-work h-8 w-28 rounded-md border px-2 text-right text-sm outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-60"
         />
       </div>
       {description && (
-        <p id={descriptionId} className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p id={descriptionId} className="text-xs text-muted-foreground">
           {description}
         </p>
       )}
@@ -149,11 +149,11 @@ export function CompactSettingRange({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">
-        <label htmlFor={id} className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+        <label htmlFor={id} className="text-xs font-medium text-foreground">
           {label}
         </label>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          <span className="text-xs font-medium text-muted-foreground">
             {isAutomatic ? automaticLabel : value}
           </span>
           {onReset && !isAutomatic && (
@@ -161,7 +161,7 @@ export function CompactSettingRange({
               type="button"
               onClick={onReset}
               disabled={disabled}
-              className="text-[11px] font-medium text-blue-600 underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400"
+              className="text-[11px] font-medium text-active-work underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
             >
               Reset
             </button>
@@ -179,11 +179,11 @@ export function CompactSettingRange({
           disabled={disabled}
           onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
           aria-describedby={descriptionId}
-          className="h-4 w-full appearance-none bg-transparent disabled:cursor-not-allowed disabled:opacity-60 [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-zinc-200 dark:[&::-webkit-slider-runnable-track]:bg-zinc-700 [&::-webkit-slider-thumb]:mt-[-5px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow"
+          className="h-4 w-full appearance-none bg-transparent disabled:cursor-not-allowed disabled:opacity-60 [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-border [&::-webkit-slider-thumb]:mt-[-5px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-human-action [&::-webkit-slider-thumb]:shadow"
         />
         <div
           className={cn(
-            "pointer-events-none absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-blue-500",
+            "pointer-events-none absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-active-work",
             isAutomatic && "opacity-40",
           )}
           style={{ width: `${percentage}%` }}
@@ -191,14 +191,14 @@ export function CompactSettingRange({
         />
       </div>
       {markers && (
-        <div className="flex justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex justify-between text-[11px] text-muted-foreground">
           {markers.map((marker) => (
             <span key={marker}>{marker}</span>
           ))}
         </div>
       )}
       {description && (
-        <p id={descriptionId} className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p id={descriptionId} className="text-xs text-muted-foreground">
           {description}
         </p>
       )}
@@ -232,9 +232,7 @@ export function CompactSettingSwitch({
         className={cn(
           "flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-2 text-sm transition-colors",
           disabled && "cursor-not-allowed opacity-60",
-          checked
-            ? "bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-zinc-50"
-            : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
+          checked ? "bg-selection text-foreground" : "text-foreground hover:bg-surface-elevated",
         )}
       >
         <span className="font-medium">{label}</span>
@@ -245,11 +243,11 @@ export function CompactSettingSwitch({
           disabled={disabled}
           onChange={(event) => onChange(event.target.checked)}
           aria-describedby={descriptionId}
-          className="h-4 w-4 rounded border-zinc-300 text-zinc-700 focus:ring-zinc-500 dark:border-zinc-700 dark:text-zinc-200"
+          className="h-4 w-4 rounded border-border-strong text-foreground focus:ring-border-strong"
         />
       </label>
       {description && (
-        <p id={descriptionId} className="px-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <p id={descriptionId} className="px-2 text-xs text-muted-foreground">
           {description}
         </p>
       )}

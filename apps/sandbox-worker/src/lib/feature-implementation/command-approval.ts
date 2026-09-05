@@ -12,7 +12,12 @@ const RISKY_APPROVAL_ESCALATE_AFTER_SECONDS = 45;
 function shouldRequireApproval(params: {
   trustLevel: SandboxTrustLevel;
   riskLevel: "low" | "network" | "risky";
+  alwaysRequireApproval?: boolean;
 }): boolean {
+  if (params.alwaysRequireApproval) {
+    return true;
+  }
+
   if (params.trustLevel === "trusted") {
     return false;
   }
@@ -54,6 +59,7 @@ export interface ResolveCommandApprovalParams {
   approvalClient?: RunControlClient;
   abortSignal?: AbortSignal;
   guardExecution: (abortMessage: string) => Promise<void>;
+  alwaysRequireApproval?: boolean;
 }
 
 export interface ResolveCommandApprovalResult {
@@ -75,9 +81,10 @@ export async function resolveCommandApproval(
     approvalClient,
     abortSignal,
     guardExecution,
+    alwaysRequireApproval,
   } = params;
 
-  if (!shouldRequireApproval({ trustLevel, riskLevel })) {
+  if (!shouldRequireApproval({ trustLevel, riskLevel, alwaysRequireApproval })) {
     return {
       allowNetwork: false,
       allowRisky: false,

@@ -26,6 +26,7 @@ export const activityRecordSchema = z.object({
 
 export const activityListQuerySchema = z.object({
   projectId: z.string().min(1).optional(),
+  conversationId: z.string().min(1).optional(),
   capabilityId: z.string().min(1).optional(),
   status: activityStatusSchema.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),

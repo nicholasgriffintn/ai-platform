@@ -5,6 +5,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
+import { SettingsSection } from "../SettingsSection";
 import { PetModelRuleDialog } from "./PetModelRuleDialog";
 import {
   describePetModelTarget,
@@ -46,15 +47,10 @@ export function PetModelAssignments({
   const petOptions = pets.map((pet) => ({ value: petKey(pet), label: pet.name }));
 
   return (
-    <section className="space-y-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100">Model companions</h3>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Give a maker a pet and every model they make gets it, whoever serves it. Narrow it to a
-            provider or a single family when you want to. Everything else keeps your default pet.
-          </p>
-        </div>
+    <SettingsSection
+      title="Model companions"
+      description="Give a maker a pet and every model they make gets it, whoever serves it. Narrow it to a provider or a single family when you want to. Everything else keeps your default pet."
+      actions={
         <Button
           type="button"
           variant="outline"
@@ -64,8 +60,8 @@ export function PetModelAssignments({
           <Plus className="mr-2 h-4 w-4" />
           Add a rule
         </Button>
-      </div>
-
+      }
+    >
       {assignments.length > 0 ? (
         <>
           <ul className="space-y-2">
@@ -82,7 +78,7 @@ export function PetModelAssignments({
               return (
                 <li
                   key={petModelTargetKey(target)}
-                  className="flex flex-wrap items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700"
+                  className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3"
                 >
                   <ModelIcon
                     modelName={target.iconModelName ?? target.label}
@@ -90,10 +86,8 @@ export function PetModelAssignments({
                     size={22}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                      {target.label}
-                    </p>
-                    <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="truncate text-sm font-medium text-foreground">{target.label}</p>
+                    <p className="truncate text-xs text-muted-foreground">
                       {describePetModelTarget(target)}
                       {target.modelCount ? ` · ${target.modelCount} models` : ""}
                     </p>
@@ -138,12 +132,12 @@ export function PetModelAssignments({
               );
             })}
           </ul>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-muted-foreground">
             When rules overlap, the narrowest one wins: family, then provider, then maker.
           </p>
         </>
       ) : (
-        <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+        <p className="rounded-lg border border-dashed border-border-strong p-4 text-sm text-muted-foreground">
           No rules yet, so every model gets your default pet.
         </p>
       )}
@@ -165,6 +159,6 @@ export function PetModelAssignments({
           setIsAddOpen(false);
         }}
       />
-    </section>
+    </SettingsSection>
   );
 }

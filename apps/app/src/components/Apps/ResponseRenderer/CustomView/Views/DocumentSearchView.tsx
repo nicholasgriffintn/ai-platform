@@ -55,7 +55,7 @@ export function DocumentSearchView({ data }: { data: unknown }) {
 
   if (documents.length === 0) {
     return (
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="text-sm text-muted-foreground">
         {query
           ? `No passages matched “${query}” in your documents.`
           : "No matching passages were found."}
@@ -65,7 +65,7 @@ export function DocumentSearchView({ data }: { data: unknown }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="text-xs text-muted-foreground">
         {documents.length} {documents.length === 1 ? "passage" : "passages"}
         {query ? ` for “${query}”` : ""}
       </p>
@@ -73,11 +73,11 @@ export function DocumentSearchView({ data }: { data: unknown }) {
         {documents.map((document, index) => (
           <li
             key={document.chunkId ?? `${document.id}:${index}`}
-            className="rounded-md border border-zinc-200 p-3 dark:border-zinc-700"
+            className="rounded-md border border-border p-3"
           >
-            <div className="mb-1 flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
               <FileText size={13} aria-hidden="true" />
-              <span className="truncate font-medium text-zinc-700 dark:text-zinc-200">
+              <span className="truncate font-medium text-foreground">
                 {document.title || "Untitled"}
               </span>
               {document.type && <span>{document.type}</span>}

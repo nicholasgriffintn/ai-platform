@@ -8,16 +8,16 @@ import { ToolPicker } from "./ToolPicker";
 
 export function DrawingEditorControls({ drawing }: { drawing: DrawingStudioState }) {
   return (
-    <div className="space-y-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+    <div className="border-border bg-surface space-y-4 rounded-xl border p-4 shadow-sm">
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Tools
         </h3>
         <ToolPicker isFillMode={drawing.isFillMode} setIsFillMode={drawing.setIsFillMode} />
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Colours
         </h3>
         <ColorPicker
@@ -80,7 +80,7 @@ export function DrawingEditorControls({ drawing }: { drawing: DrawingStudioState
       </div>
 
       {drawing.guessResult && (
-        <div className="rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:bg-blue-950/40 dark:text-blue-200">
+        <div className="rounded-lg bg-active-work/12 px-3 py-2 text-xs text-active-work">
           <p className="mb-1 font-medium">AI Guess</p>
           <p>{drawing.guessResult}</p>
         </div>

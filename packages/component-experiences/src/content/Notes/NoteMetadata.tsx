@@ -65,37 +65,36 @@ export function NoteMetadata({
   const getSentimentColor = (sentiment?: string) => {
     switch (sentiment) {
       case "positive":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100";
+        return "bg-success/12 text-success";
       case "negative":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100";
+        return "bg-failure/12 text-failure";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+        return "bg-selection text-muted-foreground";
     }
   };
 
   const getSourceTypeIcon = (sourceType?: string) => {
     switch (sourceType) {
       case "tab_recording":
-        return <Monitor size={14} className="text-gray-600 dark:text-gray-400" />;
+        return <Monitor size={14} className="text-muted-foreground" />;
       case "manual":
-        return <User size={14} className="text-gray-600 dark:text-gray-400" />;
+        return <User size={14} className="text-muted-foreground" />;
       default:
-        return <FileText size={14} className="text-gray-600 dark:text-gray-400" />;
+        return <FileText size={14} className="text-muted-foreground" />;
     }
   };
 
   if (isEditing) {
     return (
-      <div className="border rounded-lg p-4 space-y-4 bg-gray-50 dark:bg-gray-800">
+      <div className="border-border bg-surface-elevated space-y-4 rounded-lg border p-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium flex items-center gap-2 text-gray-900 dark:text-gray-100">
-            <Hash size={16} className="text-gray-600 dark:text-gray-400" />
+          <h3 className="text-sm font-medium flex items-center gap-2 text-foreground">
+            <Hash size={16} className="text-muted-foreground" />
             Edit Metadata
           </h3>
           <div className="flex gap-2">
             {canRegenerate && (
               <Button
-                className="text-white"
                 variant="outline"
                 size="sm"
                 onClick={onRegenerateMetadata}
@@ -115,10 +114,7 @@ export function NoteMetadata({
 
         <div className="grid gap-4">
           <div>
-            <label
-              htmlFor="summary-input"
-              className="text-xs font-medium text-gray-500 dark:text-gray-400"
-            >
+            <label htmlFor="summary-input" className="text-xs font-medium text-muted-foreground">
               Summary
             </label>
             <Textarea
@@ -136,33 +132,27 @@ export function NoteMetadata({
           </div>
 
           <div>
-            <label
-              htmlFor="tags-input"
-              className="text-xs font-medium text-gray-500 dark:text-gray-400"
-            >
+            <label htmlFor="tags-input" className="text-xs font-medium text-muted-foreground">
               Tags (comma separated)
             </label>
             <Input
               id="tags-input"
               value={editingMetadata.tags?.join(", ") || ""}
               onChange={(e) => handleTagsChange(e.target.value)}
-              className="mt-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="bg-surface text-foreground mt-1"
               placeholder="tag1, tag2, tag3"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="topics-input"
-              className="text-xs font-medium text-gray-500 dark:text-gray-400"
-            >
+            <label htmlFor="topics-input" className="text-xs font-medium text-muted-foreground">
               Key Topics (comma separated)
             </label>
             <Input
               id="topics-input"
               value={editingMetadata.keyTopics?.join(", ") || ""}
               onChange={(e) => handleKeyTopicsChange(e.target.value)}
-              className="mt-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="bg-surface text-foreground mt-1"
               placeholder="topic1, topic2, topic3"
             />
           </div>
@@ -171,7 +161,7 @@ export function NoteMetadata({
             <div>
               <label
                 htmlFor="content-type-select"
-                className="text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="text-xs font-medium text-muted-foreground"
               >
                 Content Type
               </label>
@@ -184,7 +174,7 @@ export function NoteMetadata({
                     contentType: e.target.value,
                   }))
                 }
-                className="mt-1 w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
+                className="border-border bg-surface text-foreground mt-1 w-full rounded-md border px-3 py-2"
               >
                 <option value="text">Text</option>
                 <option value="list">List</option>
@@ -196,7 +186,7 @@ export function NoteMetadata({
             <div>
               <label
                 htmlFor="sentiment-select"
-                className="text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="text-xs font-medium text-muted-foreground"
               >
                 Sentiment
               </label>
@@ -209,7 +199,7 @@ export function NoteMetadata({
                     sentiment: e.target.value,
                   }))
                 }
-                className="mt-1 w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
+                className="border-border bg-surface text-foreground mt-1 w-full rounded-md border px-3 py-2"
               >
                 <option value="positive">Positive</option>
                 <option value="neutral">Neutral</option>
@@ -220,15 +210,15 @@ export function NoteMetadata({
 
           {editingMetadata.tabSource && (
             <div className="pt-4 border-t">
-              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
-                <Monitor size={14} className="text-gray-600 dark:text-gray-400" />
+              <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+                <Monitor size={14} className="text-muted-foreground" />
                 Capture Source
               </h4>
               <div className="grid gap-3">
                 <div>
                   <label
                     htmlFor="tab-title-input"
-                    className="text-xs font-medium text-gray-500 dark:text-gray-400"
+                    className="text-xs font-medium text-muted-foreground"
                   >
                     Title
                   </label>
@@ -241,14 +231,14 @@ export function NoteMetadata({
                         tabSource: { ...prev.tabSource, title: e.target.value },
                       }))
                     }
-                    className="mt-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="bg-surface text-foreground mt-1"
                     placeholder="Source title"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="tab-url-input"
-                    className="text-xs font-medium text-gray-500 dark:text-gray-400"
+                    className="text-xs font-medium text-muted-foreground"
                   >
                     URL
                   </label>
@@ -261,7 +251,7 @@ export function NoteMetadata({
                         tabSource: { ...prev.tabSource, url: e.target.value },
                       }))
                     }
-                    className="mt-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="bg-surface text-foreground mt-1"
                     placeholder="https://example.com"
                   />
                 </div>
@@ -274,16 +264,15 @@ export function NoteMetadata({
   }
 
   return (
-    <div className="border rounded-lg p-4 space-y-3 bg-gray-50 dark:bg-gray-800">
+    <div className="border-border bg-surface-elevated space-y-3 rounded-lg border p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium flex items-center gap-2 text-gray-900 dark:text-gray-100">
-          <Hash size={16} className="text-gray-600 dark:text-gray-400" />
+        <h3 className="text-sm font-medium flex items-center gap-2 text-foreground">
+          <Hash size={16} className="text-muted-foreground" />
           Note Metadata
         </h3>
         <div className="flex items-center gap-2">
           {canRegenerate && (
             <Button
-              className="text-white"
               variant="outline"
               size="sm"
               onClick={onRegenerateMetadata}
@@ -308,15 +297,15 @@ export function NoteMetadata({
       <div className="space-y-3">
         {metadata?.summary && (
           <div>
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Summary</div>
-            <p className="text-sm text-gray-800 dark:text-gray-200">{metadata.summary}</p>
+            <div className="text-xs font-medium text-muted-foreground mb-1">Summary</div>
+            <p className="text-sm text-foreground">{metadata.summary}</p>
           </div>
         )}
 
         {metadata?.tags && metadata.tags.length > 0 && (
           <div>
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
-              <Tag size={12} className="text-gray-600 dark:text-gray-400" />
+            <div className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+              <Tag size={12} className="text-muted-foreground" />
               Tags
             </div>
             <div className="flex flex-wrap gap-1">
@@ -331,9 +320,7 @@ export function NoteMetadata({
 
         {metadata?.keyTopics && metadata.keyTopics.length > 0 && (
           <div>
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-              Key Topics
-            </div>
+            <div className="text-xs font-medium text-muted-foreground mb-2">Key Topics</div>
             <div className="flex flex-wrap gap-1">
               {metadata.keyTopics.map((topic: string) => (
                 <Badge key={topic} variant="outline" className="text-xs">
@@ -347,29 +334,25 @@ export function NoteMetadata({
         <div className="grid grid-cols-2 gap-4 text-xs">
           {metadata?.wordCount !== undefined && (
             <div className="flex items-center gap-1">
-              <FileText size={12} className="text-gray-600 dark:text-gray-400" />
-              <span className="text-gray-500 dark:text-gray-400">Words:</span>
-              <span className="text-gray-800 dark:text-gray-200">
-                {metadata.wordCount.toLocaleString()}
-              </span>
+              <FileText size={12} className="text-muted-foreground" />
+              <span className="text-muted-foreground">Words:</span>
+              <span className="text-foreground">{metadata.wordCount.toLocaleString()}</span>
             </div>
           )}
 
           {metadata?.readingTime !== undefined && (
             <div className="flex items-center gap-1">
-              <Clock size={12} className="text-gray-600 dark:text-gray-400" />
-              <span className="text-gray-500 dark:text-gray-400">Read:</span>
-              <span className="text-gray-800 dark:text-gray-200">{metadata.readingTime}min</span>
+              <Clock size={12} className="text-muted-foreground" />
+              <span className="text-muted-foreground">Read:</span>
+              <span className="text-foreground">{metadata.readingTime}min</span>
             </div>
           )}
 
           {metadata?.contentType && (
             <div className="flex items-center gap-1">
-              <FileText size={12} className="text-gray-600 dark:text-gray-400" />
-              <span className="text-gray-500 dark:text-gray-400">Type:</span>
-              <span className="capitalize text-gray-800 dark:text-gray-200">
-                {metadata.contentType}
-              </span>
+              <FileText size={12} className="text-muted-foreground" />
+              <span className="text-muted-foreground">Type:</span>
+              <span className="capitalize text-foreground">{metadata.contentType}</span>
             </div>
           )}
 
@@ -389,8 +372,8 @@ export function NoteMetadata({
           {metadata?.sourceType && (
             <div className="flex items-center gap-1">
               {getSourceTypeIcon(metadata.sourceType)}
-              <span className="text-gray-500 dark:text-gray-400">Source:</span>
-              <span className="capitalize text-gray-800 dark:text-gray-200">
+              <span className="text-muted-foreground">Source:</span>
+              <span className="capitalize text-foreground">
                 {metadata.sourceType.replace("_", " ")}
               </span>
             </div>
@@ -399,22 +382,20 @@ export function NoteMetadata({
 
         {metadata?.tabSource && (
           <div className="pt-2 border-t">
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
-              <Monitor size={12} className="text-gray-600 dark:text-gray-400" />
+            <div className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+              <Monitor size={12} className="text-muted-foreground" />
               Capture Source
             </div>
             <div className="text-xs space-y-1">
               {metadata.tabSource.title && (
                 <div>
-                  <span className="text-gray-500 dark:text-gray-400">Title:</span>{" "}
-                  <span className="text-gray-800 dark:text-gray-200">
-                    {metadata.tabSource.title}
-                  </span>
+                  <span className="text-muted-foreground">Title:</span>{" "}
+                  <span className="text-foreground">{metadata.tabSource.title}</span>
                 </div>
               )}
               {metadata.tabSource.url && (
                 <div>
-                  <span className="text-gray-500 dark:text-gray-400">URL:</span>
+                  <span className="text-muted-foreground">URL:</span>
                   <a
                     href={metadata.tabSource.url}
                     target="_blank"
@@ -427,9 +408,9 @@ export function NoteMetadata({
               )}
               {metadata.tabSource.timestamp && (
                 <div className="flex items-center gap-1">
-                  <Calendar size={12} className="text-gray-600 dark:text-gray-400" />
-                  <span className="text-gray-500 dark:text-gray-400">Captured:</span>
-                  <span className="text-gray-800 dark:text-gray-200">
+                  <Calendar size={12} className="text-muted-foreground" />
+                  <span className="text-muted-foreground">Captured:</span>
+                  <span className="text-foreground">
                     {new Date(metadata.tabSource.timestamp).toLocaleString()}
                   </span>
                 </div>

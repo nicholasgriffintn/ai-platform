@@ -5,6 +5,7 @@ import type {
   CreateWorkspaceInvitationInput,
   ProjectDetail,
   ProjectSummary,
+  SandboxEnvironmentCacheAction,
   UpdateProjectInput,
   UpdateWorkspaceInput,
   WorkspaceDetail,
@@ -26,6 +27,7 @@ import {
   removeProjectCapability,
   revokeWorkspaceInvitation,
   updateProject,
+  updateProjectEnvironmentCache,
   updateWorkspace,
 } from "~/lib/api/workspaces";
 import { requireProjectRouteScope } from "~/lib/work/project-route-scope";
@@ -54,6 +56,7 @@ function projectSummaryFromDetail(project: ProjectDetail): ProjectSummary {
     conversationCount: project.conversationCount,
     capabilityCount: project.capabilityCount,
     codingEnvironment: project.codingEnvironment,
+    environmentCache: project.environmentCache,
   };
 }
 
@@ -278,6 +281,25 @@ export function useUpdateProject() {
       updateProject(projectId, input),
     onSuccess: (project) => {
       updateProjectInWorkspaceCaches(queryClient, project);
+    },
+  });
+}
+
+export function useProjectEnvironmentCacheAction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      projectId,
+      input,
+    }: {
+      projectId: string;
+      input: SandboxEnvironmentCacheAction;
+    }) => updateProjectEnvironmentCache(projectId, input),
+    onSuccess: (_, { projectId }) => {
+      void queryClient.invalidateQueries({ queryKey: projectQueryKey(projectId) });
+      void queryClient.invalidateQueries({ queryKey: ["workspace"] });
+      void queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
     },
   });
 }

@@ -28,6 +28,7 @@ export * from "./transcription-settings";
 export * from "./user-settings";
 export * from "./UserSettingsForm";
 export * from "./Providers/ProviderCatalogue";
+export * from "./SettingsSection";
 export * from "./Tasks/TaskList";
 export * from "./Passkeys/PasskeyList";
 export * from "./History/ChatHistoryControls";

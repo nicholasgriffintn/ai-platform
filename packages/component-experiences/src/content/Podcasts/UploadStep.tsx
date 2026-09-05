@@ -33,10 +33,8 @@ export function UploadStep({
   uploaderAnalytics,
 }: UploadStepProps) {
   return (
-    <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-6">
-      <h2 className="text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200">
-        Upload Your Podcast
-      </h2>
+    <div className="border-border bg-surface rounded-lg border p-6">
+      <h2 className="text-xl font-semibold mb-4 text-foreground">Upload Your Podcast</h2>
 
       <div className="space-y-4">
         <FormInput
@@ -68,9 +66,9 @@ export function UploadStep({
                 value="file"
                 checked={formData.audioSource === "file"}
                 onChange={() => setFormData((prev) => ({ ...prev, audioSource: "file" }))}
-                className="h-4 w-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 border-zinc-300 dark:border-zinc-600"
+                className="h-4 w-4 text-active-work focus:ring-active-work border-border-strong"
               />
-              <span className="ml-2 text-zinc-700 dark:text-zinc-300">Upload File</span>
+              <span className="ml-2 text-foreground">Upload File</span>
             </label>
             <label className="inline-flex items-center">
               <input
@@ -79,18 +77,15 @@ export function UploadStep({
                 value="url"
                 checked={formData.audioSource === "url"}
                 onChange={() => setFormData((prev) => ({ ...prev, audioSource: "url" }))}
-                className="h-4 w-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 border-zinc-300 dark:border-zinc-600"
+                className="h-4 w-4 text-active-work focus:ring-active-work border-border-strong"
               />
-              <span className="ml-2 text-zinc-700 dark:text-zinc-300">Enter URL</span>
+              <span className="ml-2 text-foreground">Enter URL</span>
             </label>
           </div>
 
           {formData.audioSource === "file" ? (
             <>
-              <label
-                htmlFor="audioFile"
-                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
-              >
+              <label htmlFor="audioFile" className="block text-sm font-medium text-foreground mb-1">
                 Audio File * (MP3, WAV, M4A)
               </label>
               <SingleFileUploader
@@ -119,7 +114,7 @@ export function UploadStep({
                 className="pl-10"
               />
               <div className="absolute left-3 top-[37px] pointer-events-none">
-                <LinkIcon className="h-5 w-5 text-zinc-400" aria-hidden="true" />
+                <LinkIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
               </div>
             </div>
           )}

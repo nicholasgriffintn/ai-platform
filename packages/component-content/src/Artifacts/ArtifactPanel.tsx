@@ -18,7 +18,7 @@ const ArtifactSandbox = lazy(() =>
 );
 
 const SandboxLoading = () => (
-  <div className="flex items-center justify-center h-full w-full bg-white dark:bg-zinc-800 p-4 text-sm text-zinc-500 dark:text-zinc-400">
+  <div className="flex items-center justify-center h-full w-full bg-surface p-4 text-sm text-muted-foreground">
     Loading sandbox...
   </div>
 );
@@ -33,15 +33,15 @@ const FileTabs = ({
   onSelectTab: (index: number) => void;
 }) => {
   return (
-    <div className="file-tabs overflow-x-auto whitespace-nowrap px-1 border-b border-zinc-200 dark:border-zinc-700 flex">
+    <div className="file-tabs overflow-x-auto whitespace-nowrap px-1 border-b border-border flex">
       {artifacts.map((artifact, index) => (
         <button
           key={artifact.identifier || index}
           type="button"
           className={`py-2 px-3 text-xs inline-block ${
             activeIndex === index
-              ? "border-b-2 border-blue-500 font-medium text-blue-600 dark:text-blue-400"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-300"
+              ? "border-b-2 border-active-work font-medium text-active-work"
+              : "text-muted-foreground hover:text-foreground"
           }`}
           onClick={() => onSelectTab(index)}
         >
@@ -70,10 +70,10 @@ const ContentViewer = ({
 
   return (
     <div className="p-4 flex-1 overflow-auto">
-      <div className="mb-2 text-xs text-zinc-500 dark:text-zinc-400 flex justify-between items-center">
+      <div className="mb-2 text-xs text-muted-foreground flex justify-between items-center">
         <div>
           {artifact.language && (
-            <span className="mr-2 px-2 py-1 bg-zinc-100 dark:bg-zinc-700 rounded text-zinc-700 dark:text-zinc-300">
+            <span className="mr-2 px-2 py-1 bg-surface-elevated rounded text-foreground">
               {artifact.language}
             </span>
           )}
@@ -87,7 +87,7 @@ const ContentViewer = ({
             title={copied ? "Copied!" : "Copy file"}
             aria-label={copied ? "Copied to clipboard" : "Copy file"}
           >
-            <Copy size={14} className={copied ? "text-green-500" : ""} />
+            <Copy size={14} className={copied ? "text-success" : ""} />
           </Button>
         )}
       </div>
@@ -228,19 +228,16 @@ export const ArtifactPanel = ({
       // Closed, the panel is only translated off-screen, so hide it from tab order too.
       inert={!isVisible}
       className={`absolute right-0 top-0 h-full 
-        w-full 2xl:w-[650px]
-        bg-white dark:bg-zinc-800 
-        border-l border-zinc-200 dark:border-zinc-700 
-        shadow-xl z-50 
-        transition-transform duration-300 ease-in-out ${isVisible ? "translate-x-0" : "translate-x-full"} `}
+ w-full 2xl:w-[650px]
+ bg-surface border-l border-border shadow-xl z-50 transition-transform duration-300 ease-in-out ${isVisible ? "translate-x-0" : "translate-x-full"} `}
     >
       <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700">
-          <div className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100 min-w-0 flex-1 overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center gap-2 text-foreground min-w-0 flex-1 overflow-hidden">
             {icon}
             <span
               id="artifact-panel-title"
-              className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 truncate"
+              className="font-semibold text-lg text-foreground truncate"
             >
               {allArtifacts.length > 1
                 ? `Combined Artifacts (${allArtifacts.length})`
@@ -255,7 +252,7 @@ export const ArtifactPanel = ({
                 title={copied ? "Copied!" : "Copy content"}
                 aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
               >
-                <Copy size={16} className={copied ? "text-green-500" : ""} />
+                <Copy size={16} className={copied ? "text-success" : ""} />
               </Button>
             )}
             <Button variant="icon" onClick={onClose} title="Close panel" aria-label="Close panel">
@@ -265,13 +262,13 @@ export const ArtifactPanel = ({
         </div>
 
         {showPreviewTab && (
-          <div className="flex border-b border-zinc-200 dark:border-zinc-700">
+          <div className="flex border-b border-border">
             <button
               type="button"
               className={`px-4 py-2 text-sm font-medium ${
                 activeTab === "code"
-                  ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
-                  : "text-zinc-600 dark:text-zinc-400"
+                  ? "border-b-2 border-active-work text-active-work"
+                  : "text-muted-foreground"
               }`}
               onClick={() => handleSetActiveTab("code")}
             >
@@ -284,8 +281,8 @@ export const ArtifactPanel = ({
               type="button"
               className={`px-4 py-2 text-sm font-medium ${
                 activeTab === "preview"
-                  ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
-                  : "text-zinc-600 dark:text-zinc-400"
+                  ? "border-b-2 border-active-work text-active-work"
+                  : "text-muted-foreground"
               }`}
               onClick={() => handleSetActiveTab("preview")}
             >
@@ -302,14 +299,14 @@ export const ArtifactPanel = ({
                   title={copied ? "Copied!" : "Copy all files"}
                   aria-label={copied ? "Copied to clipboard" : "Copy all files"}
                 >
-                  <Copy size={16} className={copied ? "text-green-500" : ""} />
+                  <Copy size={16} className={copied ? "text-success" : ""} />
                 </Button>
               </div>
             )}
           </div>
         )}
 
-        <div className="flex-1 overflow-hidden bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex flex-col">
+        <div className="flex-1 overflow-hidden bg-surface text-foreground flex flex-col">
           {(activeTab === "code" || !showPreviewTab) && (
             <>
               {showFileTabs && (
@@ -338,18 +335,18 @@ export const ArtifactPanel = ({
 
           {activeTab === "preview" && codeArtifact && (
             <div className="h-full flex flex-col">
-              <div className="p-2 bg-zinc-100 dark:bg-zinc-700 text-xs text-zinc-600 dark:text-zinc-300">
+              <div className="p-2 bg-surface-elevated text-xs text-muted-foreground">
                 Live Preview (React + DOM)
               </div>
 
               {previewError && (
-                <div className="p-3 m-3 border border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800 text-red-800 dark:text-red-300 rounded text-sm">
+                <div className="p-3 m-3 border border-failure/45 bg-failure/12 text-failure rounded text-sm">
                   <h4 className="font-medium mb-1">Error rendering preview:</h4>
                   <pre className="text-xs overflow-auto whitespace-pre-wrap">{previewError}</pre>
                 </div>
               )}
 
-              <div className="flex-1 bg-white">
+              <div className="flex-1 bg-surface">
                 <Suspense fallback={<SandboxLoading />}>
                   <ArtifactSandbox
                     code={codeArtifact}

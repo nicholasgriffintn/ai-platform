@@ -1,9 +1,26 @@
 import z from "zod/v4";
 
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
+import { sandboxEnvironmentCacheRecordSchema } from "./sandbox-cache";
+import { sandboxDeliveryPolicySchema } from "./sandbox-delivery";
+import {
+  sandboxEnvironmentPreparationModeSchema,
+  sandboxEnvironmentPreparationStatusSchema,
+  sandboxEnvironmentSetupSchema,
+  sandboxPackageManagerRequirementSchema,
+  sandboxRuntimeRequirementSchema,
+} from "./sandbox-environment";
+import {
+  sandboxRunServiceEvidenceSchema,
+  sandboxServiceActionSchema,
+  sandboxServiceNameSchema,
+  sandboxServicePortSchema,
+  sandboxServiceStatusSchema,
+} from "./sandbox-services";
 export * from "./sandbox-constants";
 import {
   SANDBOX_PROMPT_STRATEGIES,
+  SANDBOX_RUN_PROOF_MAX_CHANGED_FILES,
   SANDBOX_TASK_TYPES,
   SANDBOX_TIMEOUT_MAX_SECONDS,
   SANDBOX_TIMEOUT_MIN_SECONDS,
@@ -49,7 +66,9 @@ export const executeSandboxRunSchema = z.object({
   taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
   model: z.string().trim().min(1).optional(),
   promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
+  deliveryPolicy: sandboxDeliveryPolicySchema.optional(),
   shouldCommit: z.boolean().optional(),
+  environmentSetup: sandboxEnvironmentSetupSchema.optional(),
   timeoutSeconds: z
     .number()
     .int()
@@ -61,13 +80,19 @@ export const executeSandboxRunSchema = z.object({
 });
 
 export const sandboxRunDispatchPayloadSchema = z.object({
+  projectId: z.string().trim().min(1).optional(),
   installationId: z.number().int().positive(),
   repo: sandboxRepoSchema,
   task: z.string().trim().min(1),
   taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
   model: z.string().trim().min(1).optional(),
   promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
-  shouldCommit: z.boolean(),
+  deliveryPolicy: sandboxDeliveryPolicySchema.optional(),
+  shouldCommit: z.boolean().optional(),
+  environmentSetup: sandboxEnvironmentSetupSchema.optional(),
+  environmentPreparationMode: sandboxEnvironmentPreparationModeSchema.optional(),
+  environmentCache: sandboxEnvironmentCacheRecordSchema.optional(),
+  environmentCacheGeneration: z.number().int().nonnegative().optional(),
   timeoutSeconds: z.number().int().positive().optional(),
   trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
   modelSettings: sandboxModelSettingsSchema.optional(),
@@ -105,17 +130,39 @@ export const sandboxRunInstructionKindSchema = z.enum([
   "continue",
   "approval_request",
   "approval_response",
+  "service_action",
 ]);
 
-export const submitRunInstructionSchema = z.object({
-  kind: sandboxRunInstructionKindSchema.default("message"),
-  content: z.string().trim().max(2000).optional(),
-  command: z.string().trim().min(1).max(500).optional(),
-  requestId: z.string().trim().min(1).optional(),
-  approvalStatus: z.enum(["approved", "rejected"]).optional(),
-  timeoutSeconds: z.number().int().min(5).max(1800).optional(),
-  escalateAfterSeconds: z.number().int().min(1).max(900).optional(),
-});
+export const submitRunInstructionSchema = z
+  .object({
+    kind: sandboxRunInstructionKindSchema.default("message"),
+    idempotencyKey: z.string().trim().min(1).max(100).optional(),
+    content: z.string().trim().max(2000).optional(),
+    command: z.string().trim().min(1).max(1000).optional(),
+    requestId: z.string().trim().min(1).optional(),
+    approvalStatus: z.enum(["approved", "rejected"]).optional(),
+    serviceName: sandboxServiceNameSchema.optional(),
+    serviceAction: sandboxServiceActionSchema.optional(),
+    timeoutSeconds: z.number().int().min(5).max(1800).optional(),
+    escalateAfterSeconds: z.number().int().min(1).max(900).optional(),
+  })
+  .superRefine((input, context) => {
+    if (input.kind !== "approval_request" && !input.idempotencyKey) {
+      context.addIssue({
+        code: "custom",
+        path: ["idempotencyKey"],
+        message: "idempotencyKey is required for operator instructions",
+      });
+    }
+
+    if (input.kind === "service_action" && (!input.serviceName || !input.serviceAction)) {
+      context.addIssue({
+        code: "custom",
+        path: input.serviceName ? ["serviceAction"] : ["serviceName"],
+        message: "Service name and action are required for service controls",
+      });
+    }
+  });
 
 export const sandboxConnectionSchema = z.object({
   installationId: z.number().int().positive(),
@@ -141,6 +188,176 @@ export const sandboxRunStatusSchema = z.enum([
   "cancelled",
 ]);
 
+export const sandboxRunTerminalStatusSchema = z.enum(["completed", "failed", "cancelled"]);
+
+export const sandboxRunValidationCheckSchema = z
+  .object({
+    command: z.string().trim().min(1),
+    status: z.enum(["passed", "failed"]),
+    exitCode: z.number().int().optional(),
+  })
+  .strict();
+
+export const sandboxRunEnvironmentEvidenceSchema = z
+  .object({
+    source: z.enum(["polychat", "repository"]),
+    configurationRevision: z.string().trim().min(1),
+    configurationPath: z.string().trim().min(1).optional(),
+    preparationMode: sandboxEnvironmentPreparationModeSchema,
+    status: sandboxEnvironmentPreparationStatusSchema,
+    runtimes: z.array(sandboxRuntimeRequirementSchema),
+    packageManager: sandboxPackageManagerRequirementSchema.optional(),
+    durationSeconds: z.number().nonnegative(),
+    commandCount: z.number().int().nonnegative(),
+    cache: z
+      .object({
+        status: z.enum(["created", "reused", "miss", "failed"]),
+        cacheKey: z.string().trim().min(1),
+        createdAt: z.string().trim().min(1).optional(),
+        ageSeconds: z.number().nonnegative().optional(),
+        invalidationReason: z.string().trim().min(1).optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
+export const sandboxRunProofEvidenceSchema = z
+  .object({
+    repository: z
+      .object({
+        baseRevision: z.string().trim().min(1).optional(),
+        headRevision: z.string().trim().min(1).optional(),
+      })
+      .strict()
+      .optional(),
+    changedFileCount: z.number().int().nonnegative().optional(),
+    changedFiles: z
+      .array(z.string().trim().min(1))
+      .max(SANDBOX_RUN_PROOF_MAX_CHANGED_FILES)
+      .optional(),
+    validation: z
+      .object({
+        qualityGate: z.enum(["passed", "failed", "skipped"]),
+        checks: z.array(sandboxRunValidationCheckSchema),
+      })
+      .strict()
+      .optional(),
+    environment: sandboxRunEnvironmentEvidenceSchema.optional(),
+    services: z.array(sandboxRunServiceEvidenceSchema).max(8).optional(),
+    delivery: z
+      .object({
+        policy: sandboxDeliveryPolicySchema.optional(),
+        branch: z.string().trim().min(1).optional(),
+        commit: z.string().trim().min(1).optional(),
+        pullRequestUrl: z.url().optional(),
+      })
+      .strict()
+      .optional(),
+    residualRisks: z.array(z.string().trim().min(1)).optional(),
+    incompleteWork: z.array(z.string().trim().min(1)).optional(),
+  })
+  .strict();
+
+export const sandboxRunArtifactReferenceSchema = z
+  .object({
+    outputId: z.string().trim().min(1),
+    name: z.string().trim().min(1),
+    kind: z.string().trim().min(1),
+    contentType: z.string().trim().min(1),
+    sizeBytes: z.number().int().nonnegative(),
+    url: z.string().trim().min(1),
+  })
+  .strict();
+
+export const sandboxRunManifestOutcomeSchema = z.discriminatedUnion("status", [
+  z
+    .object({
+      status: z.literal("completed"),
+      success: z.literal(true),
+      summary: z.string().trim().min(1).optional(),
+    })
+    .strict(),
+  z
+    .object({
+      status: z.literal("failed"),
+      success: z.literal(false),
+      summary: z.string().trim().min(1).optional(),
+      error: z.string().trim().min(1),
+    })
+    .strict(),
+  z
+    .object({
+      status: z.literal("cancelled"),
+      success: z.literal(false),
+      summary: z.string().trim().min(1).optional(),
+      cancellationReason: z.string().trim().min(1).optional(),
+    })
+    .strict(),
+]);
+
+export const sandboxRunManifestSchema = z
+  .object({
+    version: z.literal(1),
+    runId: z.string().trim().min(1),
+    objective: z.string().trim().min(1),
+    outcome: sandboxRunManifestOutcomeSchema,
+    timestamps: z
+      .object({
+        startedAt: z.string().trim().min(1),
+        updatedAt: z.string().trim().min(1),
+        completedAt: z.string().trim().min(1),
+      })
+      .strict(),
+    repository: z
+      .object({
+        name: sandboxRepoSchema,
+        baseRevision: z.string().trim().min(1).optional(),
+        headRevision: z.string().trim().min(1).optional(),
+      })
+      .strict(),
+    changes: z
+      .object({
+        fileCount: z.number().int().nonnegative(),
+        files: z.array(z.string().trim().min(1)).max(SANDBOX_RUN_PROOF_MAX_CHANGED_FILES),
+        filesTruncated: z.boolean(),
+        summary: z.string().trim().min(1).optional(),
+      })
+      .strict(),
+    validation: z
+      .object({
+        qualityGate: z.enum(["passed", "failed", "skipped", "unavailable"]),
+        checks: z.array(sandboxRunValidationCheckSchema),
+      })
+      .strict(),
+    environment: sandboxRunEnvironmentEvidenceSchema.optional(),
+    services: z.array(sandboxRunServiceEvidenceSchema).max(8).optional(),
+    delivery: z
+      .object({
+        policy: sandboxDeliveryPolicySchema.optional(),
+        branch: z.string().trim().min(1).optional(),
+        commit: z.string().trim().min(1).optional(),
+        pullRequestUrl: z.url().optional(),
+      })
+      .strict(),
+    artifacts: z.array(sandboxRunArtifactReferenceSchema),
+    usage: z
+      .object({
+        model: z.object({ id: z.string().trim().min(1) }).strict(),
+        infrastructure: z
+          .object({
+            instanceType: z.string().trim().min(1),
+            durationSeconds: z.number().nonnegative(),
+          })
+          .strict()
+          .optional(),
+      })
+      .strict(),
+    residualRisks: z.array(z.string().trim().min(1)),
+    incompleteWork: z.array(z.string().trim().min(1)),
+  })
+  .strict();
+
 export const sandboxRunResultSchema = z
   .object({
     success: z.boolean().optional(),
@@ -153,6 +370,8 @@ export const sandboxRunResultSchema = z
     errorType: z.string().optional(),
     retryable: z.boolean().optional(),
     branchName: z.string().optional(),
+    pullRequestUrl: z.url().optional(),
+    proof: sandboxRunProofEvidenceSchema.optional(),
   })
   .catchall(z.unknown());
 
@@ -165,6 +384,9 @@ export const sandboxTaskResultSchema = z
     error: z.string().optional(),
     errorType: z.string().optional(),
     branchName: z.string().optional(),
+    pullRequestUrl: z.url().optional(),
+    environmentCache: sandboxEnvironmentCacheRecordSchema.optional(),
+    proof: sandboxRunProofEvidenceSchema.optional(),
   })
   .catchall(z.unknown());
 
@@ -184,6 +406,31 @@ export const sandboxRunEventSchema = z
     commandTotal: z.number().optional(),
     exitCode: z.number().optional(),
     branchName: z.string().optional(),
+    commitSha: z.string().optional(),
+    targetBranch: z.string().optional(),
+    deliveryAction: z.string().optional(),
+    pullRequestUrl: z.url().optional(),
+    configurationSource: z.enum(["polychat", "repository"]).optional(),
+    configurationRevision: z.string().optional(),
+    configurationPath: z.string().optional(),
+    preparationMode: sandboxEnvironmentPreparationModeSchema.optional(),
+    preparationStatus: sandboxEnvironmentPreparationStatusSchema.optional(),
+    runtimeRequirements: z.array(sandboxRuntimeRequirementSchema).optional(),
+    packageManagerRequirement: sandboxPackageManagerRequirementSchema.optional(),
+    durationSeconds: z.number().nonnegative().optional(),
+    cacheKey: z.string().optional(),
+    cacheStatus: z.enum(["created", "reused", "miss", "failed"]).optional(),
+    cacheCreatedAt: z.string().optional(),
+    cacheAgeSeconds: z.number().nonnegative().optional(),
+    cacheInvalidationReason: z.string().optional(),
+    serviceName: sandboxServiceNameSchema.optional(),
+    serviceWorkingDirectory: z.string().trim().min(1).optional(),
+    serviceStatus: sandboxServiceStatusSchema.optional(),
+    servicePort: sandboxServicePortSchema.optional(),
+    serviceAction: sandboxServiceActionSchema.optional(),
+    serviceRestartCount: z.number().int().nonnegative().optional(),
+    serviceHealthPath: z.string().trim().min(1).optional(),
+    serviceHealthCheckType: z.enum(["http", "tcp"]).optional(),
     plan: z.string().optional(),
     error: z.string().optional(),
     errorType: z.string().optional(),
@@ -216,6 +463,7 @@ export const sandboxRunEventSchema = z
     instructionId: z.string().optional(),
     instructionKind: sandboxRunInstructionKindSchema.optional(),
     instructionContent: z.string().optional(),
+    createdByUserId: z.number().int().positive().optional(),
     repeatCount: z.number().int().positive().optional(),
     maxSteps: z.number().int().positive().optional(),
     extendedBy: z.number().int().positive().optional(),
@@ -224,6 +472,7 @@ export const sandboxRunEventSchema = z
 
 export const sandboxRunDataSchema = z.object({
   runId: z.string().trim().min(1),
+  projectId: z.string().trim().min(1).optional(),
   installationId: z.number().int().positive(),
   repo: sandboxRepoSchema,
   task: z.string().trim().min(1),
@@ -231,7 +480,11 @@ export const sandboxRunDataSchema = z.object({
   model: z.string().trim().min(1),
   trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
   promptStrategy: sandboxPromptStrategySchema.optional(),
-  shouldCommit: z.boolean(),
+  deliveryPolicy: sandboxDeliveryPolicySchema.optional(),
+  shouldCommit: z.boolean().optional(),
+  environmentSetup: sandboxEnvironmentSetupSchema.optional(),
+  environmentPreparationMode: sandboxEnvironmentPreparationModeSchema.optional(),
+  environmentCacheGeneration: z.number().int().nonnegative().optional(),
   status: sandboxRunStatusSchema,
   startedAt: z.string().trim().min(1),
   updatedAt: z.string().trim().min(1),
@@ -239,6 +492,14 @@ export const sandboxRunDataSchema = z.object({
   error: z.string().optional(),
   events: z.array(sandboxRunEventSchema).optional(),
   result: sandboxRunResultSchema.optional(),
+  manifest: sandboxRunManifestSchema.optional(),
+  infrastructureUsage: z
+    .object({
+      instanceType: z.string().trim().min(1),
+      durationSeconds: z.number().nonnegative(),
+    })
+    .strict()
+    .optional(),
   cancelRequestedAt: z.string().optional(),
   cancellationReason: z.string().optional(),
   timeoutSeconds: z.number().int().positive().optional(),
@@ -256,6 +517,15 @@ export const sandboxRunDataSchema = z.object({
   processingStartedAt: z.string().optional(),
 });
 
+export const sandboxRunDetailSchema = z.object({
+  run: sandboxRunDataSchema,
+  createdByUserId: z.number().int().positive(),
+  projectId: z.string().nullable(),
+  conversationId: z.string().nullable(),
+});
+
+export type SandboxRunDetail = z.infer<typeof sandboxRunDetailSchema>;
+
 export const sandboxTaskTypeSchema = z.enum(SANDBOX_TASK_TYPES);
 export const sandboxTrustLevelSchema = z.enum(SANDBOX_TRUST_LEVELS);
 
@@ -267,7 +537,9 @@ export const sandboxRequestOptionsSchema = z
     model: z.string().trim().min(1).optional(),
     taskType: sandboxTaskTypeSchema.optional(),
     promptStrategy: sandboxPromptStrategySchema.optional(),
+    deliveryPolicy: sandboxDeliveryPolicySchema.optional(),
     shouldCommit: z.boolean().optional(),
+    environmentSetup: sandboxEnvironmentSetupSchema.optional(),
     timeoutSeconds: z.number().int().positive().optional(),
     maxSteps: z.number().int().positive().optional(),
     modelSettings: sandboxModelSettingsSchema.optional(),
@@ -277,6 +549,16 @@ export const sandboxRequestOptionsSchema = z
 export type SandboxRequestOptions = z.infer<typeof sandboxRequestOptionsSchema>;
 
 export const sandboxRunControlStateSchema = z.enum(["queued", "running", "paused", "cancelled"]);
+
+export const sandboxRunControlActionSchema = z.enum(["pause", "resume", "cancel"]);
+
+export const updateSandboxRunControlSchema = z
+  .object({
+    action: sandboxRunControlActionSchema,
+    reason: z.string().trim().min(1).max(500).optional(),
+    expectedUpdatedAt: z.string().trim().min(1),
+  })
+  .strict();
 
 export const sandboxRunControlSchema = z.object({
   runId: z.string().trim().min(1),
@@ -290,12 +572,15 @@ export const sandboxRunControlSchema = z.object({
 
 export const sandboxRunInstructionSchema = z.object({
   id: z.string().trim().min(1),
+  idempotencyKey: z.string().trim().min(1).max(100).optional(),
   runId: z.string().trim().min(1),
   kind: sandboxRunInstructionKindSchema,
   content: z.string().optional(),
   command: z.string().optional(),
   requestId: z.string().optional(),
   approvalStatus: z.enum(["pending", "escalated", "timed_out", "approved", "rejected"]).optional(),
+  serviceName: sandboxServiceNameSchema.optional(),
+  serviceAction: sandboxServiceActionSchema.optional(),
   timeoutSeconds: z.number().int().positive().optional(),
   escalateAfterSeconds: z.number().int().positive().optional(),
   expiresAt: z.string().optional(),
@@ -304,6 +589,7 @@ export const sandboxRunInstructionSchema = z.object({
   timedOutAt: z.string().optional(),
   resolvedAt: z.string().optional(),
   resolutionReason: z.string().optional(),
+  createdByUserId: z.number().int().positive().optional(),
   createdAt: z.string().trim().min(1),
 });
 
@@ -313,14 +599,26 @@ export const sandboxRunInstructionEnvelopeSchema = z.object({
   instruction: sandboxRunInstructionSchema,
 });
 
+export const sandboxRunEventEnvelopeSchema = z.object({
+  index: z.number().int().positive(),
+  recordedAt: z.string().trim().min(1),
+  event: sandboxRunEventSchema,
+});
+
 export const sandboxWorkerExecuteRequestSchema = z.object({
   userId: z.number().int().positive(),
+  projectId: z.string().trim().min(1).optional(),
   taskType: sandboxTaskTypeSchema.optional(),
   repo: sandboxRepoSchema,
   task: z.string().trim().min(1),
   model: z.string().trim().min(1).optional(),
   promptStrategy: sandboxPromptStrategySchema.optional(),
+  deliveryPolicy: sandboxDeliveryPolicySchema.optional(),
   shouldCommit: z.boolean().optional(),
+  environmentSetup: sandboxEnvironmentSetupSchema.optional(),
+  environmentPreparationMode: sandboxEnvironmentPreparationModeSchema.optional(),
+  environmentCache: sandboxEnvironmentCacheRecordSchema.optional(),
+  environmentCacheGeneration: z.number().int().nonnegative().optional(),
   timeoutSeconds: z
     .number()
     .int()
@@ -360,6 +658,13 @@ export type SubmitRunInstructionPayload = z.infer<typeof submitRunInstructionSch
 export type SandboxConnection = z.infer<typeof sandboxConnectionSchema>;
 export type SandboxInstallConfig = z.infer<typeof sandboxInstallConfigSchema>;
 export type SandboxRunStatus = z.infer<typeof sandboxRunStatusSchema>;
+export type SandboxRunTerminalStatus = z.infer<typeof sandboxRunTerminalStatusSchema>;
+export type SandboxRunValidationCheck = z.infer<typeof sandboxRunValidationCheckSchema>;
+export type SandboxRunEnvironmentEvidence = z.infer<typeof sandboxRunEnvironmentEvidenceSchema>;
+export type SandboxRunProofEvidence = z.infer<typeof sandboxRunProofEvidenceSchema>;
+export type SandboxRunArtifactReference = z.infer<typeof sandboxRunArtifactReferenceSchema>;
+export type SandboxRunManifestOutcome = z.infer<typeof sandboxRunManifestOutcomeSchema>;
+export type SandboxRunManifest = z.infer<typeof sandboxRunManifestSchema>;
 export type SandboxRunResult = z.infer<typeof sandboxRunResultSchema>;
 export type SandboxTaskResult = z.infer<typeof sandboxTaskResultSchema>;
 export type SandboxRunEvent = z.infer<typeof sandboxRunEventSchema>;
@@ -367,10 +672,13 @@ export type SandboxRunData = z.infer<typeof sandboxRunDataSchema>;
 export type { SandboxPromptStrategy, SandboxTaskType, SandboxTrustLevel };
 export type SandboxWebhookCommand = z.infer<typeof sandboxWebhookCommandSchema>;
 export type SandboxRunControlState = z.infer<typeof sandboxRunControlStateSchema>;
+export type SandboxRunControlAction = z.infer<typeof sandboxRunControlActionSchema>;
+export type UpdateSandboxRunControl = z.infer<typeof updateSandboxRunControlSchema>;
 export type SandboxRunControl = z.infer<typeof sandboxRunControlSchema>;
 export type SandboxRunInstructionKind = z.infer<typeof sandboxRunInstructionKindSchema>;
 export type SandboxRunInstruction = z.infer<typeof sandboxRunInstructionSchema>;
 export type SandboxRunInstructionEnvelope = z.infer<typeof sandboxRunInstructionEnvelopeSchema>;
+export type SandboxRunEventEnvelope = z.infer<typeof sandboxRunEventEnvelopeSchema>;
 export type SandboxWorkerExecuteRequest = z.infer<typeof sandboxWorkerExecuteRequestSchema>;
 
 export type CreateSandboxConnectionInput = GitHubConnectionPayload;

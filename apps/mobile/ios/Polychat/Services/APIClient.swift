@@ -137,6 +137,129 @@ final class APIClient: ObservableObject {
         try await send(path: "/apps/recipes", method: "GET")
     }
 
+    func fetchWorkAttention(limit: Int = 25) async throws -> WorkAttentionResponse {
+        try await send(
+            path: "/workspaces/attention",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "limit", value: String(limit))]
+        )
+    }
+
+    func fetchSandboxRun(id: String) async throws -> SandboxRunDetail {
+        try await send(path: "/apps/sandbox/runs/\(id)", method: "GET")
+    }
+
+    func fetchProjectTask(projectId: String, taskId: String) async throws -> MobileProjectTaskDetail {
+        try await send(path: "/projects/\(projectId)/tasks/\(taskId)", method: "GET")
+    }
+
+    func answerProjectTaskQuestions(
+        projectId: String,
+        taskId: String,
+        interactionId: String,
+        answers: [MobileUserQuestionAnswer]
+    ) async throws -> MobileProjectTaskResponse {
+        try await send(
+            path: "/projects/\(projectId)/tasks/\(taskId)/answers",
+            method: "POST",
+            body: AnswerMobileProjectTaskQuestionsRequest(
+                interactionId: interactionId,
+                answers: answers
+            )
+        )
+    }
+
+    func resolveProjectTaskApproval(
+        projectId: String,
+        taskId: String,
+        interactionId: String,
+        resolution: String
+    ) async throws -> MobileProjectTaskResponse {
+        try await send(
+            path: "/projects/\(projectId)/tasks/\(taskId)/tool-approval",
+            method: "POST",
+            body: ResolveMobileProjectTaskApprovalRequest(
+                interactionId: interactionId,
+                resolution: resolution
+            )
+        )
+    }
+
+    func acceptProjectTask(projectId: String, taskId: String) async throws -> MobileProjectTaskResponse {
+        try await send(
+            path: "/projects/\(projectId)/tasks/\(taskId)/accept",
+            method: "POST",
+            emptyBody: true
+        )
+    }
+
+    func fetchSandboxRunEvents(id: String) async throws -> SandboxRunEventsResponse {
+        try await send(path: "/apps/sandbox/runs/\(id)/events", method: "GET")
+    }
+
+    func fetchSandboxRunInstructions(id: String) async throws -> SandboxRunInstructionsResponse {
+        try await send(path: "/apps/sandbox/runs/\(id)/instructions", method: "GET")
+    }
+
+    func fetchSandboxRunControl(id: String) async throws -> SandboxRunControl {
+        try await send(path: "/apps/sandbox/runs/\(id)/control", method: "GET")
+    }
+
+    func sendSandboxRunInstruction(
+        id: String,
+        kind: String,
+        content: String? = nil,
+        requestId: String? = nil,
+        approvalStatus: String? = nil
+    ) async throws -> SandboxRunInstructionResponse {
+        try await send(
+            path: "/apps/sandbox/runs/\(id)/instructions",
+            method: "POST",
+            body: SubmitSandboxRunInstructionRequest(
+                kind: kind,
+                idempotencyKey: UUID().uuidString,
+                content: content,
+                requestId: requestId,
+                approvalStatus: approvalStatus
+            )
+        )
+    }
+
+    func updateSandboxRunControl(
+        id: String,
+        action: String,
+        expectedUpdatedAt: String
+    ) async throws -> SandboxRunControl {
+        try await send(
+            path: "/apps/sandbox/runs/\(id)/control",
+            method: "PATCH",
+            body: UpdateSandboxRunControlRequest(
+                action: action,
+                expectedUpdatedAt: expectedUpdatedAt
+            )
+        )
+    }
+
+    func registerMobilePushDevice(token: String, environment: String) async throws {
+        let _: SuccessResponse = try await send(
+            path: "/user/push-devices",
+            method: "PUT",
+            body: RegisterMobilePushDeviceRequest(
+                token: token,
+                environment: environment,
+                appBundleId: Bundle.main.bundleIdentifier ?? "app.polychat"
+            )
+        )
+    }
+
+    func unregisterMobilePushDevice(token: String) async throws {
+        let _: SuccessResponse = try await send(
+            path: "/user/push-devices",
+            method: "DELETE",
+            body: UnregisterMobilePushDeviceRequest(token: token)
+        )
+    }
+
     func installAssistantRecipe(
         id: String,
         triggers: [RecipeInstallationTrigger]? = nil,
@@ -177,11 +300,30 @@ final class APIClient: ObservableObject {
         )
     }
 
-    func fetchConversation(id: String, refreshPending: Bool = true) async throws -> ConversationDetailResponse {
-        try await send(
+    func fetchConversation(
+        id: String,
+        refreshPending: Bool = true,
+        recovery: TurnRecoveryAttemptContext? = nil
+    ) async throws -> ConversationDetailResponse {
+        var queryItems = refreshPending ? [URLQueryItem(name: "refresh_pending", value: "true")] : []
+
+        if let recovery {
+            queryItems.append(contentsOf: [
+                URLQueryItem(name: "recovery_platform", value: "ios"),
+                URLQueryItem(name: "recovery_attempt", value: String(recovery.attempt)),
+                URLQueryItem(name: "recovery_elapsed_ms", value: String(recovery.elapsedMs)),
+                URLQueryItem(
+                    name: "recovery_known_assistant_count",
+                    value: String(recovery.knownAssistantCount)
+                ),
+                URLQueryItem(name: "recovery_final_attempt", value: String(recovery.finalAttempt))
+            ])
+        }
+
+        return try await send(
             path: "/chat/completions/\(id)",
             method: "GET",
-            queryItems: refreshPending ? [URLQueryItem(name: "refresh_pending", value: "true")] : []
+            queryItems: queryItems
         )
     }
 

@@ -57,9 +57,7 @@ export function ProjectExperienceRoute({
         <PageShell.Header title={title ?? "Experience"} />
         <BackLink href={backLink.to} label={backLink.label} />
         {definition && (
-          <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-            {definition.description}
-          </p>
+          <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{definition.description}</p>
         )}
 
         {isLoading || isCatalogLoading ? (
@@ -82,7 +80,7 @@ export function ProjectExperienceRoute({
           />
         ) : !isEnabled ? (
           <EmptyState
-            icon={<Puzzle size={24} className="text-zinc-400" />}
+            icon={<Puzzle size={24} className="text-muted-foreground" />}
             title="Capability not enabled"
             message={`Add ${title} to the project before opening this experience.`}
             action={

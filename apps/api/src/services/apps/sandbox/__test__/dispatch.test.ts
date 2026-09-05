@@ -277,4 +277,43 @@ describe("sandbox dispatch", () => {
     );
     expect(indexSandboxRunResult).not.toHaveBeenCalled();
   });
+
+  it("folds an early infrastructure usage report into terminal persistence", async () => {
+    mockGetActivityById
+      .mockResolvedValueOnce({ data: JSON.stringify(baseRunRecord) })
+      .mockResolvedValueOnce({
+        data: JSON.stringify({
+          ...baseRunRecord,
+          status: "running",
+          infrastructureUsage: { instanceType: "basic", durationSeconds: 18 },
+        }),
+      })
+      .mockResolvedValue({ data: JSON.stringify(baseRunRecord) });
+
+    await processSandboxRunDispatch({
+      env: {} as any,
+      message: {
+        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+        runId: "run-123",
+        recordId: "record-1",
+        userId: 42,
+        payload: {
+          installationId: 99,
+          repo: "owner/repo",
+          task: "Implement feature",
+          model: "mistral-large",
+          shouldCommit: true,
+        },
+      },
+    });
+
+    expect(persistSandboxRunArtifact).toHaveBeenCalledWith(
+      expect.objectContaining({
+        run: expect.objectContaining({
+          status: "completed",
+          infrastructureUsage: { instanceType: "basic", durationSeconds: 18 },
+        }),
+      }),
+    );
+  });
 });

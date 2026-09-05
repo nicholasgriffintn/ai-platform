@@ -304,14 +304,14 @@ function normaliseTokens(value: string, tokens: ComposerInputToken[]) {
 function getTokenClassName(kind: ComposerInputToken["kind"]) {
   switch (kind) {
     case "agent":
-      return "border-blue-400/45 bg-blue-500/10 text-blue-100";
+      return "border-active-work/45 bg-active-work/10 text-active-work";
     case "skill":
-      return "border-fuchsia-400/45 bg-fuchsia-500/10 text-fuchsia-100";
+      return "border-creative/45 bg-creative/10 text-creative";
     case "tool":
-      return "border-violet-400/45 bg-violet-500/10 text-violet-100";
+      return "border-creative/45 bg-creative/10 text-creative";
     case "action":
     default:
-      return "border-cyan-400/45 bg-cyan-500/10 text-cyan-100";
+      return "border-active-work/45 bg-active-work/10 text-active-work";
   }
 }
 
@@ -511,7 +511,7 @@ export const TokenizedComposerInput = forwardRef<
           aria-disabled={disabled}
           contentEditable={!disabled}
           suppressContentEditableWarning
-          className="min-h-[36px] w-full whitespace-pre-wrap break-words bg-transparent text-base leading-6 outline-none dark:text-white"
+          className="min-h-[36px] w-full whitespace-pre-wrap break-words bg-transparent text-base leading-6 outline-none"
           onInput={(event) =>
             emitCurrentState(
               event.nativeEvent instanceof InputEvent && event.nativeEvent.isComposing,
@@ -532,7 +532,7 @@ export const TokenizedComposerInput = forwardRef<
         />
         {isEmpty && (
           <span
-            className="pointer-events-none absolute left-0 top-0 leading-6 text-zinc-400 dark:text-zinc-500"
+            className="pointer-events-none absolute left-0 top-0 leading-6 text-muted-foreground"
             data-dynamic-copy=""
           >
             {placeholder}

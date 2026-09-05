@@ -30,7 +30,7 @@ export function MessageStats({
 
   return (
     <span
-      className={cn("text-xs text-zinc-500 tabular-nums dark:text-zinc-500", className)}
+      className={cn("text-xs text-muted-foreground tabular-nums", className)}
       data-testid="message-stats"
     >
       {segments.join(" · ")}

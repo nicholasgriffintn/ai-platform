@@ -1,6 +1,6 @@
 import { AccountOverview } from "@ngriffin_uk/polychat-component-account";
 
-import { PageShell } from "~/components/Core/PageShell";
+import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useUsageBalance } from "~/hooks/useUsage";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -11,8 +11,7 @@ export function ProfileAccountTab() {
   const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
 
   return (
-    <>
-      <PageShell.Header title="Account" />
+    <ProfileTab title="Account">
       <AccountOverview
         user={user}
         isAuthenticated={isAuthenticated}
@@ -20,6 +19,6 @@ export function ProfileAccountTab() {
         usageBalance={usageBalance.data}
         onSignIn={() => setShowLoginModal(true)}
       />
-    </>
+    </ProfileTab>
   );
 }

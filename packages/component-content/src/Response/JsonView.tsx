@@ -20,19 +20,19 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
 
   const renderValue = (value: unknown, path: string, depth: number): JSX.Element => {
     if (value === null) {
-      return <span className="text-zinc-500 dark:text-zinc-400">null</span>;
+      return <span className="text-muted-foreground">null</span>;
     }
 
     if (value === undefined) {
-      return <span className="text-zinc-500 dark:text-zinc-400">undefined</span>;
+      return <span className="text-muted-foreground">undefined</span>;
     }
 
     if (typeof value === "boolean") {
-      return <span className="text-blue-600 dark:text-blue-400">{value.toString()}</span>;
+      return <span className="text-active-work">{value.toString()}</span>;
     }
 
     if (typeof value === "number") {
-      return <span className="text-green-600 dark:text-green-400">{value}</span>;
+      return <span className="text-success">{value}</span>;
     }
 
     if (typeof value === "string") {
@@ -40,7 +40,7 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
         value.length > MAX_INLINE_STRING ? `${value.slice(0, MAX_INLINE_STRING)}…` : value;
 
       return (
-        <span className="break-words text-red-600 dark:text-red-400" title={value}>
+        <span className="break-words text-failure" title={value}>
           "{truncated}"
         </span>
       );
@@ -48,7 +48,7 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
 
     if (Array.isArray(value)) {
       if (value.length === 0) {
-        return <span className="text-zinc-500 dark:text-zinc-400">[]</span>;
+        return <span className="text-muted-foreground">[]</span>;
       }
 
       return renderBranch(
@@ -68,7 +68,7 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
       const keys = Object.keys(record);
 
       if (keys.length === 0) {
-        return <span className="text-zinc-500 dark:text-zinc-400">{"{}"}</span>;
+        return <span className="text-muted-foreground">{"{}"}</span>;
       }
 
       return renderBranch(
@@ -98,19 +98,17 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
       <div>
         <button
           type="button"
-          className="cursor-pointer text-zinc-700 hover:text-blue-500 dark:text-zinc-300 dark:hover:text-blue-400"
+          className="cursor-pointer text-foreground hover:text-active-work"
           onClick={() => toggleExpand(path, isExpanded)}
           aria-expanded={isExpanded}
         >
           {isExpanded ? "▼" : "▶"} {summary}
         </button>
         {isExpanded && (
-          <div className="ml-2 border-l border-zinc-300 pl-4 dark:border-zinc-600">
+          <div className="ml-2 border-l border-border-strong pl-4">
             {children.map((child) => (
               <div key={child.key} className="my-1">
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                  {child.label}:{" "}
-                </span>
+                <span className="font-medium text-foreground">{child.label}: </span>
                 {renderValue(child.value, child.key, depth + 1)}
               </div>
             ))}
@@ -123,7 +121,7 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
   return (
     <div
       data-responsetype="json"
-      className="relative mt-1 overflow-x-auto rounded border border-zinc-200 bg-off-white-highlight/50 p-2 pr-9 text-xs dark:border-zinc-700 dark:bg-zinc-800/50"
+      className="relative mt-1 overflow-x-auto rounded border border-border bg-selection p-2 pr-9 text-xs"
     >
       <Button
         variant="icon"

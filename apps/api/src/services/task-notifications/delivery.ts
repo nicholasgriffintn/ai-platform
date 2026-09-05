@@ -6,11 +6,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { RepositoryManager } from "~/repositories";
-import {
-  attentionState,
-  isTaskInboxEligible,
-  isTaskNotificationPreferenceEnabled,
-} from "~/services/project-tasks/attention";
+import { isTaskNotificationPreferenceEnabled } from "~/services/notifications/preferences";
+import { attentionState, isTaskInboxEligible } from "~/services/project-tasks/attention";
 import type { IEnv } from "~/types";
 import { getErrorMessage } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";

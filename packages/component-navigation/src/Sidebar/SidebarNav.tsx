@@ -5,8 +5,8 @@ export function sidebarNavLinkClass({ isActive }: { isActive: boolean }): string
   return cn(
     "flex w-full items-center gap-2 rounded-lg p-2 text-sm no-underline transition-colors hover:!no-underline",
     isActive
-      ? "bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
-      : "text-zinc-600 hover:bg-zinc-200 hover:text-black dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white",
+      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+      : "text-muted-foreground hover:text-foreground",
   );
 }
 
@@ -14,7 +14,7 @@ export function SidebarNavSection({ children, title }: { children: ReactNode; ti
   return (
     <div className="space-y-1">
       {title && (
-        <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+        <p className="text-muted-foreground px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.2em]">
           {title}
         </p>
       )}
@@ -61,9 +61,7 @@ export function SidebarNavButton({
     <button type="button" className={sidebarNavLinkClass({ isActive })} onClick={onClick}>
       {icon}
       <span className="min-w-0 flex-1 truncate text-left">{children}</span>
-      {shortcut && (
-        <kbd className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">{shortcut}</kbd>
-      )}
+      {shortcut && <kbd className="text-muted-foreground text-[10px] font-medium">{shortcut}</kbd>}
     </button>
   );
 }

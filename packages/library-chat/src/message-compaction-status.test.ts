@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getCompactionCoverageDetail,
   getCompactionMessageLabel,
   isCompactionMarkerMessage,
   readCompactionStatusMessage,
@@ -36,5 +37,30 @@ describe("readCompactionStatusMessage", () => {
         content: "Context compacted",
       }),
     ).toBeNull();
+  });
+
+  it("describes represented and retained coverage without implying omitted history was summarised", () => {
+    const message = {
+      id: "snapshot-1-compaction",
+      role: "compaction",
+      content: "Context compacted",
+      parts: [
+        {
+          type: "compaction",
+          status: "completed",
+          coverage: {
+            coveredMessageIds: ["message-1", "message-2"],
+            coveredMessageCount: 2,
+            candidateMessageCount: 3,
+            summaryInputCharacters: 150,
+            strategy: "fallback_transcript",
+          },
+        },
+      ],
+    };
+
+    expect(getCompactionCoverageDetail(message)).toBe(
+      "2 messages preserved verbatim; 1 message retained",
+    );
   });
 });

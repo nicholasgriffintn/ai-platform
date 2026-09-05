@@ -14,23 +14,22 @@
     border-radius: 0.375rem;
     padding: 0.5rem 0.75rem;
     background: transparent;
-    color: #52525b;
+    color: var(--polychat-text-muted);
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.25rem;
     text-align: left;
     cursor: pointer;
     transition:
-      color 150ms ease-in-out,
-      background-color 150ms ease-in-out;
+      color var(--polychat-motion-duration-micro) var(--polychat-motion-ease-micro),
+      background-color var(--polychat-motion-duration-micro) var(--polychat-motion-ease-micro);
   }
   .polychat-account-navigation button:hover {
-    background: #fafafa;
-    color: #18181b;
+    color: var(--polychat-text);
   }
   .polychat-account-navigation button[aria-current="page"] {
-    background: #f4f4f5;
-    color: #18181b;
+    background: var(--polychat-selection);
+    color: var(--polychat-text);
   }
   .polychat-account-navigation button:disabled {
     cursor: not-allowed;
@@ -39,7 +38,7 @@
   .polychat-account-prompt {
     display: grid;
     gap: 0.75rem;
-    border: 1px solid #e4e4e7;
+    border: 1px solid var(--polychat-border);
     border-radius: 0.75rem;
     padding: 1.25rem;
   }
@@ -49,33 +48,15 @@
   }
   .polychat-account-prompt p,
   .polychat-account-prompt small {
-    color: #71717a;
+    color: var(--polychat-text-muted);
   }
   .polychat-account-prompt button {
     justify-self: start;
     border: 0;
     border-radius: 0.5rem;
     padding: 0.55rem 0.8rem;
-    background: #18181b;
-    color: white;
+    background: var(--polychat-human-action);
+    color: var(--polychat-human-action-foreground);
     cursor: pointer;
-  }
-  .dark .polychat-account-navigation button,
-  [data-polychat-theme="dark"] .polychat-account-navigation button {
-    color: #a1a1aa;
-  }
-  .dark .polychat-account-navigation button:hover,
-  [data-polychat-theme="dark"] .polychat-account-navigation button:hover {
-    background: #27272a;
-    color: #f4f4f5;
-  }
-  .dark .polychat-account-navigation button[aria-current="page"],
-  [data-polychat-theme="dark"] .polychat-account-navigation button[aria-current="page"] {
-    background: #27272a;
-    color: white;
-  }
-  .dark .polychat-account-prompt,
-  [data-polychat-theme="dark"] .polychat-account-prompt {
-    border-color: #3f3f46;
   }
 }

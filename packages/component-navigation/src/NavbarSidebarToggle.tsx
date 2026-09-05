@@ -13,7 +13,7 @@ export function NavbarSidebarToggle({
   onToggleSidebar,
 }: NavbarSidebarToggleProps) {
   return (
-    <div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 z-10 w-full">
+    <div className="border-sidebar-border bg-sidebar sticky top-0 z-10 w-full border-b">
       <div className="m-2 flex items-center justify-between max-w-full">
         <div className="flex items-center min-w-0">
           <div className="flex-shrink-0">

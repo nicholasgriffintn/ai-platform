@@ -57,18 +57,14 @@ function ConnectorAccountRow({
     <li
       className={cn(
         "rounded-xl border p-3 transition-colors",
-        account.isSelected
-          ? "border-emerald-300 bg-emerald-50/70 dark:border-emerald-800 dark:bg-emerald-950/20"
-          : "border-zinc-200 bg-white/70 dark:border-zinc-800 dark:bg-zinc-950/30",
+        account.isSelected ? "border-success/45 bg-success/12" : "border-border bg-surface",
       )}
     >
       <div className="flex items-start gap-3">
         <div
           className={cn(
             "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg",
-            isSelectable
-              ? "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-              : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+            isSelectable ? "bg-selection text-foreground" : "bg-attention/12 text-attention",
           )}
           aria-hidden="true"
         >
@@ -121,9 +117,7 @@ function ConnectorAccountRow({
             </div>
           ) : (
             <div className="flex min-w-0 items-center gap-2">
-              <span className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                {label}
-              </span>
+              <span className="truncate text-sm font-medium text-foreground">{label}</span>
               <Button
                 variant="icon"
                 size="xs"
@@ -138,16 +132,12 @@ function ConnectorAccountRow({
           {!isEditing && (
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
               {account.isSelected && (
-                <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-300">
+                <span className="inline-flex items-center gap-1 font-medium text-success">
                   <Check className="size-3" /> Selected
                 </span>
               )}
               <span
-                className={
-                  isSelectable
-                    ? "text-zinc-500 dark:text-zinc-400"
-                    : "font-medium text-amber-700 dark:text-amber-300"
-                }
+                className={isSelectable ? "text-muted-foreground" : "font-medium text-attention"}
               >
                 {isSelectable ? "Ready" : "Needs reconnection"}
               </span>
@@ -199,18 +189,15 @@ export function ConnectorAccountsPanel({
     <section className="w-full text-left" aria-labelledby="connector-accounts-heading">
       <div className="mb-2 flex items-end justify-between gap-3">
         <div>
-          <h3
-            id="connector-accounts-heading"
-            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
-          >
+          <h3 id="connector-accounts-heading" className="text-sm font-semibold text-foreground">
             Connected accounts
           </h3>
-          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Choose which account recipes use by default.
           </p>
         </div>
         {accounts.length > 0 && (
-          <span className="shrink-0 font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
+          <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
             {accounts.length} {accounts.length === 1 ? "account" : "accounts"}
           </span>
         )}
@@ -218,18 +205,14 @@ export function ConnectorAccountsPanel({
 
       {isLoading ? (
         <div className="space-y-2" aria-label="Loading connected accounts">
-          <div className="h-16 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-800" />
-          <div className="h-16 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-800" />
+          <div className="bg-selection h-16 animate-pulse rounded-xl" />
+          <div className="bg-selection h-16 animate-pulse rounded-xl" />
         </div>
       ) : hasLoadError ? (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 dark:border-amber-900 dark:bg-amber-950/30">
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-attention/45 bg-attention/12 px-3 py-2.5">
           <div>
-            <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
-              Accounts unavailable
-            </p>
-            <p className="text-xs text-amber-700 dark:text-amber-300">
-              You can still reconnect or disconnect below.
-            </p>
+            <p className="text-sm font-medium text-attention">Accounts unavailable</p>
+            <p className="text-xs text-attention">You can still reconnect or disconnect below.</p>
           </div>
           <Button
             size="xs"
@@ -241,7 +224,7 @@ export function ConnectorAccountsPanel({
           </Button>
         </div>
       ) : accounts.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-zinc-300 px-3 py-4 text-center text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+        <p className="rounded-xl border border-dashed border-border-strong px-3 py-4 text-center text-xs text-muted-foreground">
           No connected accounts were returned. Reconnect to add one.
         </p>
       ) : (
@@ -260,7 +243,7 @@ export function ConnectorAccountsPanel({
         </ul>
       )}
       {hasUpdateError && (
-        <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-400">
+        <p role="alert" className="mt-2 text-xs text-failure">
           Could not update that account. Try again.
         </p>
       )}

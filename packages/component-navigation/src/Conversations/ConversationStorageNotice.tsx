@@ -12,13 +12,13 @@ export function ConversationStorageNotice({
   return (
     <div className="mb-2">
       {!isAuthenticated && (
-        <div className="px-3 py-2 text-xs text-zinc-500 dark:text-zinc-400 bg-off-white-highlight dark:bg-zinc-800">
+        <div className="bg-surface-elevated text-muted-foreground border-sidebar-border border-y px-3 py-2 text-xs">
           Chats are only stored on this device while you are not signed in
         </div>
       )}
 
       {!isPro && isAuthenticated && (
-        <div className="px-3 py-2 text-xs text-zinc-500 dark:text-zinc-400 bg-off-white-highlight dark:bg-zinc-800">
+        <div className="bg-surface-elevated text-muted-foreground border-sidebar-border border-y px-3 py-2 text-xs">
           {localOnlyMode
             ? "Local-only mode: Chats are only stored on this device"
             : "Free plan: Chats are only stored on this device"}
@@ -26,7 +26,7 @@ export function ConversationStorageNotice({
       )}
 
       {isPro && isAuthenticated && localOnlyMode && (
-        <div className="px-3 py-2 text-xs text-zinc-500 dark:text-zinc-400 bg-off-white-highlight dark:bg-zinc-800">
+        <div className="bg-surface-elevated text-muted-foreground border-sidebar-border border-y px-3 py-2 text-xs">
           Local-only mode: Chats are only stored on this device
         </div>
       )}

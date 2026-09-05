@@ -16,7 +16,7 @@ export function SharedAgentCard({ agent, onInstall, isInstalling = false }: Shar
     <Card className="justify-between p-5 shadow-none">
       <div>
         <div className="mb-4 flex items-center justify-between gap-3">
-          <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
+          <span className="bg-selection flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl">
             {agent.avatar_url ? (
               <img
                 src={agent.avatar_url}
@@ -29,13 +29,13 @@ export function SharedAgentCard({ agent, onInstall, isInstalling = false }: Shar
               <Bot size={18} />
             )}
           </span>
-          <span className="flex items-center gap-1 text-xs text-zinc-500">
-            <Star size={13} className="fill-amber-400 text-amber-400" />
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Star size={13} className="fill-attention text-attention" />
             {agent.rating_average ?? 0} ({agent.rating_count ?? 0})
           </span>
         </div>
-        <h4 className="font-semibold">{agent.name}</h4>
-        <p className="mt-2 min-h-12 text-sm leading-6 text-zinc-500">{agent.description}</p>
+        <h3 className="text-foreground text-lg font-bold">{agent.name}</h3>
+        <p className="mt-2 min-h-12 text-sm leading-6 text-muted-foreground">{agent.description}</p>
         {(agent.category || tagsList.length > 0) && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {agent.category && (
@@ -58,7 +58,7 @@ export function SharedAgentCard({ agent, onInstall, isInstalling = false }: Shar
       </div>
       <div className="mt-4 flex items-center justify-between gap-3">
         {agent.author_name ? (
-          <span className="flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
+          <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
             {agent.author_avatar_url && (
               <img
                 src={agent.author_avatar_url}

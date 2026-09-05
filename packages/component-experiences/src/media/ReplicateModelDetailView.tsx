@@ -26,15 +26,15 @@ export function ReplicateModelDetailView({
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{model.name}</h1>
-        <p className="text-zinc-600 dark:text-zinc-400 mb-4">{model.description}</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">{model.name}</h1>
+        <p className="text-muted-foreground mb-4">{model.description}</p>
 
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm rounded-full"
+                className="px-3 py-1 bg-active-work/12 text-active-work text-sm rounded-full"
               >
                 {tag}
               </span>
@@ -42,7 +42,7 @@ export function ReplicateModelDetailView({
           </div>
         )}
 
-        <div className="text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="text-sm text-muted-foreground">
           Cost: ${model.costPerRun} per run
           {model.reference && (
             <>
@@ -60,14 +60,12 @@ export function ReplicateModelDetailView({
         </div>
       </div>
 
-      <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-          Model Parameters
-        </h2>
+      <div className="border-border bg-surface rounded-lg border p-6">
+        <h2 className="text-xl font-semibold text-foreground mb-4">Model Parameters</h2>
         {form}
         {errorMessage && (
-          <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <p className="text-red-800 dark:text-red-200">{errorMessage}</p>
+          <div className="mt-4 bg-failure/12 border border-failure/45 rounded-lg p-4">
+            <p className="text-failure">{errorMessage}</p>
           </div>
         )}
       </div>

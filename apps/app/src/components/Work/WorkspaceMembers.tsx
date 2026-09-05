@@ -46,7 +46,7 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
 
   if (error || !workspace) {
     return (
-      <div role="alert" className="p-10 text-sm text-red-700">
+      <div role="alert" className="p-10 text-sm text-failure">
         {error?.message ?? "Workspace not found"}
       </div>
     );
@@ -80,9 +80,7 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
     <>
       <PageShell.Content className="max-w-5xl">
         <PageShell.Header title="People & access" actions={headerActions} />
-        <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
-          Manage access to {workspace.name}.
-        </p>
+        <p className="mb-6 text-sm text-muted-foreground">Manage access to {workspace.name}.</p>
         <WorkspaceMemberList
           members={workspace.members}
           viewerRole={workspace.role}

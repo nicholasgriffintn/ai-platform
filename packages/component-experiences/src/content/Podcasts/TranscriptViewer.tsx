@@ -33,12 +33,12 @@ export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptVi
       ),
     ];
     const colors = {
-      SPEAKER_00: "bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700",
-      SPEAKER_01: "bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-700",
-      SPEAKER_02: "bg-amber-100 dark:bg-amber-900 border-amber-300 dark:border-amber-700",
-      SPEAKER_03: "bg-purple-100 dark:bg-purple-900 border-purple-300 dark:border-purple-700",
-      SPEAKER_04: "bg-rose-100 dark:bg-rose-900 border-rose-300 dark:border-rose-700",
-      SPEAKER_05: "bg-cyan-100 dark:bg-cyan-900 border-cyan-300 dark:border-cyan-700",
+      SPEAKER_00: "bg-active-work/12 border-active-work/45",
+      SPEAKER_01: "bg-success/12 border-success/45",
+      SPEAKER_02: "bg-attention/12 border-attention/45",
+      SPEAKER_03: "bg-creative/12 border-creative/45",
+      SPEAKER_04: "bg-failure/12 border-failure/45",
+      SPEAKER_05: "bg-active-work/12 border-active-work/45",
     };
 
     const speakerColorMap: Record<string, string> = {};
@@ -46,8 +46,7 @@ export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptVi
     uniqueSpeakers.forEach((speaker, index) => {
       const colorKey = `SPEAKER_0${index % 6}` as keyof typeof colors;
 
-      speakerColorMap[speaker] =
-        colors[colorKey] || "bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700";
+      speakerColorMap[speaker] = colors[colorKey] || "bg-surface-elevated border-border";
     });
 
     setSpeakerColors(speakerColorMap);
@@ -61,7 +60,7 @@ export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptVi
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Transcript</h3>
-        <div className="text-sm text-zinc-500">
+        <div className="text-sm text-muted-foreground">
           {transcript.num_speakers ?? uniqueSpeakerCount(transcript.segments)} speakers
           {transcript.language ? ` • ${transcript.language}` : ""}
         </div>
@@ -71,17 +70,17 @@ export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptVi
         {transcript.segments.map((segment, index) => (
           <div
             key={index}
-            className={`p-3 rounded-lg border ${speakerColors[getSegmentSpeaker(segment.speaker, index)] || "bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700"}`}
+            className={`p-3 rounded-lg border ${speakerColors[getSegmentSpeaker(segment.speaker, index)] || "bg-surface-elevated border-border"}`}
           >
             <div className="flex items-center justify-between mb-1">
               <div className="font-medium text-sm">
                 {getSpeakerName(getSegmentSpeaker(segment.speaker, index))}
               </div>
-              <div className="text-xs text-zinc-500">
+              <div className="text-xs text-muted-foreground">
                 {formatTime(segment.start ?? 0)} - {formatTime(segment.end ?? 0)}
               </div>
             </div>
-            <p className="text-sm text-zinc-800 dark:text-zinc-200">{segment.text}</p>
+            <p className="text-sm text-foreground">{segment.text}</p>
           </div>
         ))}
       </div>
