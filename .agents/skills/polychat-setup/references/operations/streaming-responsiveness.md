@@ -7,12 +7,12 @@ Long responses must keep stop, approval, question and terminal state usable. Tre
 From the repository root, run:
 
 ```sh
-node --experimental-strip-types scripts/measure-chat-stream-bounds.ts
+pnpm --filter @assistant/api test src/lib/chat/streaming/__test__/tool-result-preview.test.ts src/repositories/__test__/MessageRepository.test.ts
 pnpm --filter @assistant/app test src/lib/chat/__test__/stream-progress-coalescer.test.ts
 pnpm test:mobile
 ```
 
-The bounded fixture uses 10,000 text deltas, one 8 MiB tool result and a 2,000-message transcript whose messages carry 4 KiB each. The 5 September 2026 Apple Silicon run recorded:
+The focused fixtures cover 10,000 text deltas, tool-result previews near the event limit, exact-cursor history paging and the native presentation boundary. The 5 September 2026 Apple Silicon baseline recorded:
 
 | Measurement                                            |    Before |   After |
 | ------------------------------------------------------ | --------: | ------: |
