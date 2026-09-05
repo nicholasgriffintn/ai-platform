@@ -55,6 +55,10 @@ import {
   countAssistantMessages,
   recordTurnRecoveryAttempt,
 } from "~/lib/chat/streaming/continuity-telemetry";
+import {
+  recoveryTelemetryQueryFields,
+  validateRecoveryTelemetryQuery,
+} from "~/lib/chat/streaming/recovery-telemetry-query";
 import { requireCloudflareExecutionContext } from "~/lib/cloudflare/execution-context";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
@@ -128,29 +132,13 @@ const getChatCompletionQuerySchema = z
   .object({
     refresh_pending: z.enum(["true", "false"]).optional().default("false"),
     message_limit: z.coerce.number().int().min(1).max(100).optional().default(100),
-    recovery_platform: z.enum(["web", "ios"]).optional(),
-    recovery_attempt: z.coerce.number().int().min(1).max(100).optional(),
-    recovery_elapsed_ms: z.coerce.number().int().min(0).max(86_400_000).optional(),
-    recovery_known_assistant_count: z.coerce.number().int().min(0).max(10_000).optional(),
-    recovery_final_attempt: z.enum(["true", "false"]).optional(),
+    ...recoveryTelemetryQueryFields,
   })
-  .superRefine((query, context) => {
-    const recoveryFields = [
-      query.recovery_platform,
-      query.recovery_attempt,
-      query.recovery_elapsed_ms,
-      query.recovery_known_assistant_count,
-      query.recovery_final_attempt,
-    ];
-    const providedCount = recoveryFields.filter((value) => value !== undefined).length;
+  .superRefine(validateRecoveryTelemetryQuery);
 
-    if (providedCount > 0 && providedCount !== recoveryFields.length) {
-      context.addIssue({
-        code: "custom",
-        message: "Recovery telemetry fields must be provided together",
-      });
-    }
-  });
+const chatRunRecoveryQuerySchema = z
+  .object(recoveryTelemetryQueryFields)
+  .superRefine(validateRecoveryTelemetryQuery);
 const chatCompletionsListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional().default(25),
   page: z.coerce.number().int().min(1).optional().default(1),
@@ -484,6 +472,7 @@ addRoute(app, "get", "/runs/:run_id", {
   summary: "Get chat run status",
   description: "Returns the authoritative lifecycle state for an authorised stored chat run.",
   paramSchema: chatRunParamsSchema,
+  querySchema: chatRunRecoveryQuerySchema,
   responses: {
     200: {
       description: "Chat run status and stored messages",
@@ -491,7 +480,41 @@ addRoute(app, "get", "/runs/:run_id", {
     },
     404: { description: "Run not found", schema: errorResponseSchema },
   },
-  handler: ({ serviceContext, params }) => handleGetChatRun(serviceContext, params.run_id),
+  handler: ({ raw }) =>
+    (async (context: Context) => {
+      const { run_id } = context.req.valid("param" as never) as z.infer<typeof chatRunParamsSchema>;
+      const query = context.req.valid("query" as never) as z.infer<
+        typeof chatRunRecoveryQuerySchema
+      >;
+      const serviceContext = getServiceContext(context);
+      const data = await handleGetChatRun(serviceContext, run_id);
+
+      if (
+        query.recovery_platform &&
+        query.recovery_attempt !== undefined &&
+        query.recovery_elapsed_ms !== undefined &&
+        query.recovery_known_assistant_count !== undefined &&
+        query.recovery_final_attempt
+      ) {
+        recordTurnRecoveryAttempt(
+          {
+            env: serviceContext.env,
+            executionCtx: requireCloudflareExecutionContext(context.executionCtx),
+            traceId: run_id,
+          },
+          {
+            platform: query.recovery_platform,
+            attempt: query.recovery_attempt,
+            elapsedMs: query.recovery_elapsed_ms,
+            knownAssistantCount: query.recovery_known_assistant_count,
+            finalAttempt: query.recovery_final_attempt === "true",
+          },
+          countAssistantMessages(data.messages),
+        );
+      }
+
+      return ResponseFactory.success(context, data);
+    })(raw),
 });
 
 addRoute(app, "get", "/run-commands/:command_id", {
