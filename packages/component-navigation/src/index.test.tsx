@@ -107,7 +107,7 @@ describe("ConversationList", () => {
     { id: "older", title: "Older", conversations: [] },
   ];
 
-  it("emits selection, edit, and delete intents without owning the data", () => {
+  it("emits selection, edit, and delete intents without owning the data", async () => {
     const onSelect = vi.fn();
     const onEditTitle = vi.fn();
     const onDelete = vi.fn();
@@ -128,10 +128,12 @@ describe("ConversationList", () => {
     fireEvent.click(screen.getByText("Ideas"));
     expect(onSelect).toHaveBeenCalledWith("two");
 
-    fireEvent.click(screen.getAllByLabelText("Edit conversation title")[0]);
+    fireEvent.pointerDown(screen.getAllByRole("button", { name: "Conversation actions" })[0]);
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Rename" }));
     expect(onEditTitle).toHaveBeenCalledWith("one", "Roadmap");
 
-    fireEvent.click(screen.getAllByLabelText("Delete")[0]);
+    fireEvent.pointerDown(screen.getAllByRole("button", { name: "Conversation actions" })[0]);
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
     expect(onDelete).toHaveBeenCalledWith("one");
   });
 

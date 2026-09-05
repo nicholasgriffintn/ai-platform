@@ -1270,7 +1270,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.014,
 
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+	    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
     	defaultEffort: "medium",
     },
     verbosityConfig: {

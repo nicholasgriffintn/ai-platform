@@ -75,3 +75,32 @@ describe("buildUpdateValues Claude sampling rules", () => {
     ]);
   });
 });
+
+describe("buildUpdateValues model contract overrides", () => {
+  it("removes the unsupported none effort from GPT-5.3-Codex", () => {
+    const values = buildUpdateValues(
+      {
+        id: "gpt-5.3-codex",
+        reasoning: true,
+        reasoning_options: [{ type: "effort", values: ["none", "low", "medium", "high", "xhigh"] }],
+      },
+      {
+        modelKey: "gpt-5.3-codex",
+        existingMatchingModel: "gpt-5.3-codex",
+        allowMatchingModelUpdate: false,
+        isNewEntry: false,
+        includeProvider: false,
+        provider: "openai",
+        existingReasoningConfig: {
+          supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+          defaultEffort: "medium",
+        },
+      },
+    );
+
+    expect(values.reasoningConfig).toEqual({
+      supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+      defaultEffort: "medium",
+    });
+  });
+});

@@ -11,6 +11,10 @@ describe("assertSafeCommand", () => {
     expect(() => assertSafeCommand("git add -A", { readOnly: true })).toThrow(/read-only/);
   });
 
+  it("retains the global sandbox policy outside read-only mode", () => {
+    expect(() => assertSafeCommand("git add -A")).toThrow(/sandbox policy/);
+  });
+
   it("blocks shell redirection in read-only mode", () => {
     expect(() => assertSafeCommand("echo hi > /tmp/test.txt", { readOnly: true })).toThrow(
       /read-only/,

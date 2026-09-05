@@ -76,7 +76,7 @@ function sortConversations(
   sortBy: ConversationSortBy,
 ): ConversationGroupSource[] {
   return sortCopy(conversations, (left, right) => {
-    const pinOrder = Number(right.isPinned) - Number(left.isPinned);
+    const pinOrder = Number(Boolean(right.isPinned)) - Number(Boolean(left.isPinned));
 
     if (pinOrder !== 0) {
       return pinOrder;

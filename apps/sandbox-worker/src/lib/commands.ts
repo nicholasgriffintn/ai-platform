@@ -250,12 +250,6 @@ export function assertSafeCommand(
     throw new Error(`Command contains blocked shell evaluation: ${command}`);
   }
 
-  for (const pattern of FORBIDDEN_COMMAND_PATTERNS) {
-    if (pattern.test(command)) {
-      throw new Error(`Command is blocked by sandbox policy: ${command}`);
-    }
-  }
-
   if (options?.readOnly) {
     for (const pattern of READ_ONLY_BLOCKED_OPERATOR_PATTERNS) {
       if (pattern.test(command)) {
@@ -271,6 +265,12 @@ export function assertSafeCommand(
 
     if (!READ_ONLY_ALLOWED_COMMAND_PATTERNS.some((pattern) => pattern.test(command))) {
       throw new Error(`Command is not allowed in read-only mode: ${command}`);
+    }
+  }
+
+  for (const pattern of FORBIDDEN_COMMAND_PATTERNS) {
+    if (pattern.test(command)) {
+      throw new Error(`Command is blocked by sandbox policy: ${command}`);
     }
   }
 
