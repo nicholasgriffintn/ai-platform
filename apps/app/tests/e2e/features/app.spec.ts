@@ -35,6 +35,7 @@ test.describe("Application experience", () => {
       await appPage.followSkipLink();
 
       await expect(appPage.mainContent).toBeFocused();
+      await expect(page.getByRole("complementary", { name: "Discover Polychat" })).toHaveCount(0);
     });
   });
 
@@ -53,6 +54,22 @@ test.describe("Application experience", () => {
         viewports: [{ name: "desktop", width: 1280, height: 720 }],
       });
 
+      const discoverTour = page.getByRole("complementary", { name: "Discover Polychat" });
+
+      await discoverTour.getByRole("heading", { name: "Chat, then Work" }).scrollIntoViewIfNeeded();
+      await expect(discoverTour.getByRole("heading", { name: "Chat, then Work" })).toBeVisible();
+      await expect(discoverTour.getByRole("heading", { name: "Meet the flock" })).toBeVisible();
+      await captureVisualSnapshots(page, "release-app-logged-out-discover", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        viewports: [{ name: "desktop", width: 1280, height: 720 }],
+      });
+
+      await appPage.followLink("Tour");
+      await expect(page).toHaveURL(/\/discover$/);
+      await expect(page.getByRole("heading", { name: "What Polychat is for" })).toBeVisible();
+      await captureVisualSnapshots(page, "release-app-discover", DEFAULT_VISUAL_CHECKPOINTS);
+
+      await homePage.navigate("/chat");
       await appPage.switchProduct("Work");
       await expect(page).toHaveURL(/\/work$/);
       await expect(

@@ -16,6 +16,7 @@ import {
   GoalStatusCard,
   WelcomeScreen,
 } from "@ngriffin_uk/polychat-component-conversation";
+import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { isCompactConversationCommand } from "@ngriffin_uk/polychat-library-chat/compaction-command";
 import { resolveGoalSubmission } from "@ngriffin_uk/polychat-library-chat/goal-command";
@@ -76,6 +77,7 @@ export interface ConversationThreadModeConfig {
   welcomeLoading?: boolean;
   welcomeSuggestions?: ChatSuggestion[] | null;
   welcomeCapabilitySuggestions?: boolean;
+  welcomeFooter?: ReactNode;
   inputPlaceholder?: {
     newConversation: string;
     followUp: string;
@@ -673,9 +675,19 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       {showWelcomeScreen ? (
         <div
           data-header-scroll-source
-          className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-0 py-6 sm:py-8"
+          className={cn(
+            "flex min-h-0 flex-1 overflow-y-auto px-0 py-6 sm:py-8",
+            modeConfig?.welcomeFooter ? "flex-col" : "items-start justify-center",
+          )}
         >
-          <div className="my-auto w-full">
+          <div
+            className={cn(
+              "w-full",
+              modeConfig?.welcomeFooter
+                ? "flex min-h-full shrink-0 flex-col justify-center"
+                : "my-auto",
+            )}
+          >
             <WelcomeScreen
               title={modeConfig?.welcomeTitle}
               description={modeConfig?.welcomeDescription}
@@ -700,6 +712,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               }
             />
           </div>
+          {modeConfig?.welcomeFooter}
         </div>
       ) : (
         <ConversationMessageColumn>

@@ -28,12 +28,13 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0052: Keep repeatable scheduling in recipes](decisions/0052-keep-repeatable-scheduling-in-recipes.md).
 - [0053: Deliver mobile Work notifications without moving authority](decisions/0053-deliver-mobile-work-notifications-without-moving-authority.md).
 - [0054: Ship a house type pairing through font tokens](decisions/0054-house-type-pairing.md).
+- [0055: Keep the home route an app and put the tour beneath it](decisions/0055-keep-the-home-route-an-app.md).
 
 ## Accepted designs awaiting implementation
 
 - [0038: Scope future model lifecycle to a provider surface](decisions/0038-provider-surface-model-lifecycle.md).
 - [0040: Resolve future provider governance before execution](decisions/0040-provider-execution-governance-policy.md).
 
-Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0055.
+Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0056.
 
 Add a record only for a durable trade-off that code alone cannot explain. State the problem, decision, implementation status and consequence; update this index. Keep rollout plans and copied schemas out of ADRs.

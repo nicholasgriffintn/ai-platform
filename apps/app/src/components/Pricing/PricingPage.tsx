@@ -6,6 +6,7 @@ import { Check, Loader2 } from "lucide-react";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useCreateCheckoutSession, usePlans } from "~/hooks/useBilling";
+import { formatPlanPrice } from "~/lib/plan-format";
 import { useUIStore } from "~/state/stores/uiStore";
 
 const CREDIT_EXAMPLES = [
@@ -52,14 +53,6 @@ const HOW_IT_WORKS = [
     body: "Off by default. Leave it off and new turns simply pause until the month resets; switch it on and extra credits are billed at period end.",
   },
 ];
-
-function formatPlanPrice(price: number): string {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    minimumFractionDigits: Number.isInteger(price) ? 0 : 2,
-  }).format(price);
-}
 
 function comparePlansByPrice(a: Plan, b: Plan): number {
   return (a.price ?? 0) - (b.price ?? 0);
