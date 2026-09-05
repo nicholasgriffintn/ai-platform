@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -10,7 +11,7 @@ import {
   resolveModelCatalogue,
 } from "../../src/lib/providers/models/catalogue-definition.mts";
 import { convertCatalogue } from "./catalogue-conversion.mjs";
-import { readCatalogue } from "./catalogue-files.mjs";
+import { catalogueFiles, readCatalogue } from "./catalogue-files.mjs";
 import { syncCatalogue } from "./catalogue-sync.mjs";
 import { readProviderSources } from "./convert-source.mjs";
 import { runSyncModelsDev } from "./run-sync.mjs";
@@ -78,6 +79,32 @@ const providers = {
 };
 
 describe("layered model catalogue", () => {
+  it("writes namespaced family imports that coverage can resolve and sync can read without collisions", async () => {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), "polychat-catalogue-paths-"));
+
+    directories.push(directory);
+    const catalogue = modelCatalogueSchema.parse({
+      families: Object.fromEntries(
+        ["azure-openai/o1-preview", "azure-openai~2Fo1-preview", "literal%2Ffamily"].map(
+          (family) => [family, { description: family, defaults: {}, models: {} }],
+        ),
+      ),
+      providers: {},
+    });
+    const files = catalogueFiles(catalogue);
+
+    expect([...files.keys()].filter((file) => file.startsWith("families/"))).toHaveLength(3);
+    for (const [relative, contents] of files) {
+      const filename = path.join(directory, relative);
+
+      expect(fileURLToPath(new URL(`file://${filename}`))).toBe(filename);
+      await fs.mkdir(path.dirname(filename), { recursive: true });
+      await fs.writeFile(filename, contents);
+    }
+
+    expect(await readCatalogue(directory)).toEqual(catalogue);
+  });
+
   it("shares model descriptions while retaining provider prices, reasoning contracts and public IDs", () => {
     const catalogue = convertCatalogue(providers, remote);
 

@@ -12,6 +12,8 @@ Use `apps/api/src/data-model/models/`:
 - **Ordering:** `providers/index.json` preserves catalogue precedence when providers expose the same local ID. Keep this order stable to retain public IDs.
 - **Imports:** the root `index.ts` file contains generated imports only. Regenerate it with the sync command after adding or removing definitions.
 
+Encode reserved filename characters with `~HH` escapes through the sync tooling, including `~7E` for a literal tilde. Keep percent escapes out of generated paths: names such as `%2F` break file URL resolution in coverage and module tooling. Retain the original family IDs inside catalogue references.
+
 Resolve **family defaults → model defaults → provider defaults → offering overrides**, then remove fields listed in `unset`. Replace arrays and nested objects as complete values; do not merge reasoning effort lists, modality lists or hosted-tool prices piecemeal. Use `false`, `0` and empty arrays as explicit values, and remove an `unset` entry before restoring that field.
 
 Use the family description when a model has no narrower description. Keep provider-specific prices, API operations, hosted tools, enablement and lifecycle on the provider surface. Shared defaults do not grant platform or BYOK execution authority.

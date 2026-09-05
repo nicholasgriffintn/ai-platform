@@ -224,7 +224,7 @@ export const ChatMessageView = ({
       <div
         className={`flex flex-col ${
           message.role === "user"
-            ? "border-human-action/25 bg-human-action/12 text-foreground max-w-[80%] rounded-2xl border"
+            ? "border-border bg-selection text-foreground max-w-[80%] rounded-2xl border"
             : "text-foreground w-full"
         } `}
       >

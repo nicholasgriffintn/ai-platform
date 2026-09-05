@@ -11,6 +11,7 @@ import {
   type ModelCatalogItem,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
+import { scrollIntoContainerView } from "@ngriffin_uk/polychat-utility-react";
 import { Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -222,11 +223,14 @@ export function ModelsList({
       return;
     }
 
-    const selectedModelOption = modelListRef.current?.querySelector<HTMLElement>(
+    const list = modelListRef.current;
+    const selectedModelOption = list?.querySelector<HTMLElement>(
       '[data-model-option][aria-selected="true"]',
     );
 
-    selectedModelOption?.scrollIntoView({ block: "center" });
+    if (list && selectedModelOption) {
+      scrollIntoContainerView(list, selectedModelOption, "center");
+    }
   }, [isSearchActive, selectedId, visibleModels]);
 
   if (!providerEntries.length) {
