@@ -1,3 +1,4 @@
+import { chatRetrySnapshotSchema } from "@ngriffin_uk/polychat-schemas";
 import { compactionStatusLabels } from "@ngriffin_uk/polychat-schemas/compaction-status";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
@@ -45,6 +46,14 @@ export function getChatStreamLoadingMessage(state: string, data?: unknown): stri
       return compactionStatusLabels.automaticPending;
     case "post_processing":
       return pick(POST_PROCESSING_MESSAGES);
+    case "retry": {
+      const retry = isRecord(data) ? chatRetrySnapshotSchema.safeParse(data.retry) : null;
+
+      return retry?.success
+        ? `Retrying model — attempt ${retry.data.attempt} of ${retry.data.maxAttempts}, run retry ${retry.data.runRetry} of ${retry.data.maxRunRetries}...`
+        : null;
+    }
+
     case "tool_use_start": {
       const toolName =
         isRecord(data) && typeof data.tool_name === "string" ? data.tool_name.trim() : "";

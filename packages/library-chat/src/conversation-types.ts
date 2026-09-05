@@ -7,6 +7,7 @@ import type {
   ToolResponseType,
   SandboxTaskType,
   ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
+  ChatRun,
   ChatHostedToolSettings as SchemaHostedToolSettings,
   ConversationModeMetadata,
   ConversationLabel,
@@ -56,6 +57,7 @@ export interface MessageContent {
     | "markdown_document"
     | "artifact_selection"
     | "thinking";
+  source_id?: string;
   text?: string;
   image_url?: {
     url: string;
@@ -115,6 +117,12 @@ export interface MessageData {
   responseType?: ToolResponseType;
   icon?: string;
   formattedName?: string;
+  streamPreview?: {
+    truncated: boolean;
+    fullMessageId?: string;
+    originalCharacters?: number;
+    previewCharacters?: number;
+  };
   attachments?: Attachment[];
   searchGrounding?: {
     searchEntryPoint?: {
@@ -204,6 +212,7 @@ export interface MessageUsage extends Record<string, unknown> {
 
 export interface Message {
   completion_id?: string;
+  run_id?: string;
   role: ChatRole;
   content: string | MessageContent[] | Record<string, unknown>;
   parts?: SchemaMessagePart[];
@@ -240,9 +249,13 @@ export interface Message {
 export interface Conversation {
   id?: string;
   active_operation?: ThreadOperation | null;
+  latest_run?: ChatRun | null;
   type?: SchemaConversationType;
   title: string;
   messages: Message[];
+  message_count?: number;
+  has_more_messages?: boolean;
+  oldest_message_id?: string | null;
   created_at?: string;
   updated_at?: string;
   last_message_at?: string;

@@ -2,6 +2,7 @@ import { Card, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat
 import {
   OutputCardGrid,
   OutputDetailHeader,
+  OutputRevisionReview,
   ShareLinkList,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { Puzzle } from "lucide-react";
@@ -12,9 +13,11 @@ import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import {
   useCreateOutputShare,
   useOutput,
+  useOutputHistory,
   useOutputs,
   useOutputShares,
   useRevokeOutputShare,
+  useRestoreOutputRevision,
 } from "~/hooks/useOutputs";
 import { useRunnableTool } from "~/hooks/useRunnableTools";
 import { isAuthenticationError } from "~/lib/errors";
@@ -25,6 +28,7 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
   const mintedShareTokens = useRef(new Map<string, string>());
   const createShare = useCreateOutputShare();
   const revokeShare = useRevokeOutputShare();
+  const restoreRevision = useRestoreOutputRevision();
   const outputId = subpath.split("/").filter(Boolean)[0];
   const { data: shares } = useOutputShares(outputId ?? null);
   const {
@@ -40,6 +44,7 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
     error: outputError,
   } = useOutput(outputId ?? null);
   const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
+  const { data: outputHistory, error: outputHistoryError } = useOutputHistory(outputId ?? null);
 
   if (outputId) {
     if (isOutputLoading) {
@@ -69,6 +74,7 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
         <OutputDetailHeader
           capabilityId={output.capabilityId}
           title={output.title}
+          provenance={output.provenance}
           isSharing={createShare.isPending}
           hasCopiedLink={copiedOutputId === output.id}
           errorMessage={shareError?.outputId === output.id ? shareError.message : undefined}
@@ -94,6 +100,27 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
           }}
         />
         <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
+        {outputHistory ? (
+          <OutputRevisionReview
+            history={outputHistory}
+            isRestoring={restoreRevision.isPending}
+            errorMessage={
+              restoreRevision.error?.message ??
+              (outputHistoryError ? "Revision history is unavailable." : undefined)
+            }
+            onRestore={async (revision, expectedRevision) => {
+              await restoreRevision.mutateAsync({
+                outputId: output.id,
+                revision,
+                expectedRevision,
+              });
+            }}
+          />
+        ) : outputHistoryError ? (
+          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+            Revision history is unavailable.
+          </p>
+        ) : null}
         <ShareLinkList
           shares={shares ?? []}
           revokingShareId={revokeShare.isPending ? (revokeShare.variables?.shareId ?? null) : null}

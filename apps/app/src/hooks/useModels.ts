@@ -10,8 +10,10 @@ export function useModels() {
   return useQuery({
     queryKey: [MODELS_QUERY_KEY],
     queryFn: apiService.fetchModels,
-    staleTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 60,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
   });
 }
 

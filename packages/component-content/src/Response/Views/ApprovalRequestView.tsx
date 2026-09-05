@@ -1,37 +1,17 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
+import { readApprovalRequest } from "../approval-request";
 import { JsonView } from "../JsonView";
 import type { ToolInteractionHandler } from "../registry";
 
 const TOOL_NAME = "request_approval";
 
-interface ApprovalRequestData {
-  message?: string;
-  options?: string[];
-  context?: unknown;
-  timestamp?: string;
-  resolved?: boolean;
-  approval?: {
-    interactionId?: string;
-    toolName?: string;
-  };
-}
-
-function readApprovalData(data: unknown): ApprovalRequestData {
-  if (!data || typeof data !== "object" || Array.isArray(data)) {
-    return {};
-  }
-
-  const record = data as ApprovalRequestData;
-
-  return {
-    ...record,
-    options: Array.isArray(record.options)
-      ? record.options.filter((option): option is string => typeof option === "string")
-      : undefined,
-  };
+interface ApprovalSubmission {
+  key: string;
+  option: string;
+  status: "submitting" | "acknowledged" | "failed";
 }
 
 export function ApprovalRequestView({
@@ -42,34 +22,60 @@ export function ApprovalRequestView({
   embedded: boolean;
   onToolInteraction?: ToolInteractionHandler;
 }) {
-  const approval = readApprovalData(data);
-  const [chosen, setChosen] = useState<string | null>(null);
+  const approval = readApprovalRequest(data);
+  const [submission, setSubmission] = useState<ApprovalSubmission | null>(null);
+  const submittingRef = useRef(false);
+  const activeSubmission = submission?.key === approval.key ? submission : null;
   const options = approval.options?.length ? approval.options : ["Approve", "Reject"];
-  const isResolved = approval.resolved === true || chosen !== null;
+  const authoritativeState = approval.authoritativeState;
+  const isAuthoritativelyResolved = authoritativeState.status !== "pending";
+  const isSubmitting = activeSubmission?.status === "submitting";
+  const isAcknowledged = activeSubmission?.status === "acknowledged";
 
-  const choose = (option: string) => {
-    if (isResolved || !onToolInteraction) {
+  const choose = async (option: string) => {
+    if (isAuthoritativelyResolved || submittingRef.current || !onToolInteraction) {
       return;
     }
 
-    setChosen(option);
+    submittingRef.current = true;
+    setSubmission({ key: approval.key, option, status: "submitting" });
     const pendingTool = approval.approval;
     const resolution = option.toLowerCase() === "approve" ? "approved" : "rejected";
     const interactionInput = `${option}: ${approval.message ?? "the requested action"}`;
 
-    onToolInteraction(pendingTool?.toolName ?? TOOL_NAME, "submitPrompt", {
-      option,
-      message: approval.message,
-      input: interactionInput,
-      ...(pendingTool?.interactionId && pendingTool.toolName
-        ? {
-            interactionId: pendingTool.interactionId,
-            resolution,
-            ...(resolution === "approved" ? { approvedToolName: pendingTool.toolName } : {}),
-          }
-        : {}),
-    });
+    try {
+      await onToolInteraction(pendingTool?.toolName ?? TOOL_NAME, "submitPrompt", {
+        option,
+        message: approval.message,
+        input: interactionInput,
+        ...(pendingTool?.interactionId && pendingTool.toolName
+          ? {
+              interactionId: pendingTool.interactionId,
+              resolution,
+              ...(resolution === "approved" ? { approvedToolName: pendingTool.toolName } : {}),
+            }
+          : {}),
+      });
+      setSubmission({ key: approval.key, option, status: "acknowledged" });
+    } catch {
+      setSubmission({ key: approval.key, option, status: "failed" });
+    } finally {
+      submittingRef.current = false;
+    }
   };
+
+  const statusText =
+    authoritativeState.status === "expired"
+      ? "This approval request expired."
+      : authoritativeState.status === "resolved"
+        ? authoritativeState.resolution === "approved"
+          ? "Approved."
+          : authoritativeState.resolution === "rejected"
+            ? "Rejected."
+            : "This request has been answered."
+        : isAcknowledged
+          ? `You chose ${activeSubmission.option}.`
+          : null;
 
   return (
     <section
@@ -96,22 +102,32 @@ export function ApprovalRequestView({
         </details>
       )}
 
-      {isResolved ? (
-        <output className="block text-xs font-medium text-muted-foreground">
-          {chosen ? `You chose ${chosen}.` : "This request has been answered."}
-        </output>
+      {statusText ? (
+        <output className="block text-xs font-medium text-muted-foreground">{statusText}</output>
       ) : onToolInteraction ? (
-        <div className="flex flex-wrap gap-2">
-          {options.map((option, index) => (
-            <Button
-              key={option}
-              size="xs"
-              variant={index === 0 ? "default" : "outline"}
-              onClick={() => choose(option)}
-            >
-              {option}
-            </Button>
-          ))}
+        <div className="space-y-2">
+          {activeSubmission?.status === "failed" ? (
+            <p role="alert" className="text-xs font-medium text-red-700 dark:text-red-300">
+              Approval was not submitted. Try again.
+            </p>
+          ) : isSubmitting ? (
+            <p aria-live="polite" className="text-xs text-muted-foreground">
+              Submitting {activeSubmission.option}…
+            </p>
+          ) : null}
+          <div className="flex flex-wrap gap-2">
+            {options.map((option, index) => (
+              <Button
+                key={option}
+                size="xs"
+                variant={index === 0 ? "default" : "outline"}
+                disabled={isSubmitting}
+                onClick={() => void choose(option)}
+              >
+                {option}
+              </Button>
+            ))}
+          </div>
         </div>
       ) : null}
     </section>

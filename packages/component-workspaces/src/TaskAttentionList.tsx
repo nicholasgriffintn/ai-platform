@@ -1,4 +1,4 @@
-import { Badge, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, Button, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import type {
   ProjectTaskAttentionItem,
   ProjectTaskAttentionKind,
@@ -8,6 +8,8 @@ import {
   CheckCircle2,
   CircleQuestionMark,
   Inbox,
+  Eye,
+  X,
   ShieldQuestion,
   UserCheck,
 } from "lucide-react";
@@ -45,9 +47,17 @@ export interface TaskAttentionListProps {
   items: ProjectTaskAttentionItem[];
   itemHref: (item: ProjectTaskAttentionItem) => string;
   emptyMessage?: string;
+  onRead?: (item: ProjectTaskAttentionItem) => void;
+  onDismiss?: (item: ProjectTaskAttentionItem) => void;
 }
 
-export function TaskAttentionList({ items, itemHref, emptyMessage }: TaskAttentionListProps) {
+export function TaskAttentionList({
+  items,
+  itemHref,
+  emptyMessage,
+  onRead,
+  onDismiss,
+}: TaskAttentionListProps) {
   if (items.length === 0) {
     return (
       <EmptyState
@@ -62,13 +72,17 @@ export function TaskAttentionList({ items, itemHref, emptyMessage }: TaskAttenti
   return (
     <ul className="space-y-2">
       {items.map((item) => (
-        <li key={`${item.kind}-${item.taskId}`}>
+        <li
+          key={item.id}
+          className="flex items-start gap-2 rounded-lg border border-border bg-surface p-3"
+        >
           <Link
             href={itemHref(item)}
             aria-label={item.objective}
-            className="group block no-underline hover:!no-underline"
+            className="group min-w-0 flex-1 no-underline hover:!no-underline"
+            onClick={() => onRead?.(item)}
           >
-            <div className="border-border bg-surface group-hover:border-border-strong flex items-start gap-3 rounded-lg border p-3">
+            <div className="flex items-start gap-3">
               <span className="mt-0.5">{kindIcon(item.kind)}</span>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -76,6 +90,7 @@ export function TaskAttentionList({ items, itemHref, emptyMessage }: TaskAttenti
                     {KIND_LABELS[item.kind]}
                   </Badge>
                   <span className="text-muted-foreground truncate text-xs">{item.projectName}</span>
+                  {!item.isRead && <span className="size-2 rounded-full bg-active-work" />}
                 </div>
                 <p className="text-foreground mt-1 line-clamp-2 text-sm font-medium group-hover:underline">
                   {item.objective}
@@ -86,6 +101,30 @@ export function TaskAttentionList({ items, itemHref, emptyMessage }: TaskAttenti
               </div>
             </div>
           </Link>
+          <div className="flex shrink-0 gap-1">
+            {!item.isRead && onRead && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={`Mark ${item.objective} read`}
+                onClick={() => onRead(item)}
+              >
+                <Eye size={15} />
+              </Button>
+            )}
+            {onDismiss && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={`Dismiss ${item.objective}`}
+                onClick={() => onDismiss(item)}
+              >
+                <X size={15} />
+              </Button>
+            )}
+          </div>
         </li>
       ))}
     </ul>

@@ -4,6 +4,8 @@ import type {
   GoalEvidenceStatus,
   ProjectFlow,
   ProjectTask,
+  ProjectTaskActivityTimeline,
+  ProjectTaskPlanEvidence,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   isProjectTaskAwaitingInput,
@@ -11,12 +13,11 @@ import {
   isTerminalProjectTaskStatus,
   projectTaskBlockedReasonLabels,
 } from "@ngriffin_uk/polychat-schemas";
-import { formatRelativeTime, reverseCopy } from "@ngriffin_uk/polychat-utility-core";
+import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import {
   AlertTriangle,
   Check,
   Circle,
-  Loader2,
   MessageSquareText,
   Play,
   RotateCcw,
@@ -24,17 +25,23 @@ import {
 } from "lucide-react";
 
 import { isTaskCriterionMet } from "./task-evidence";
+import { TaskActivityTimeline as TaskActivityTimelineView } from "./TaskActivityTimeline";
+import { TaskStageEvidence } from "./TaskStageEvidence";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 
 export interface TaskDetailProps {
   task: ProjectTask;
   goal: Goal | null;
+  activity: ProjectTaskActivityTimeline;
+  plan: ProjectTaskPlanEvidence;
   flow: ProjectFlow | null;
   members: { userId: number; name: string | null }[];
   agents: { id: string; name: string }[];
   blockedBy: ProjectTask[];
   conversationHref: string | null;
   taskHref: (task: ProjectTask) => string;
+  runHref: (conversationId: string, runId: string) => string;
+  outputHref: (outputId: string) => string;
   isBusy?: boolean;
   onRun: () => void;
   onAccept: () => void;
@@ -82,12 +89,16 @@ function Aside({ label, children }: { label: string; children: React.ReactNode }
 export function TaskDetail({
   task,
   goal,
+  activity,
+  plan,
   flow,
   members,
   agents,
   blockedBy,
   conversationHref,
   taskHref,
+  runHref,
+  outputHref,
   isBusy = false,
   onRun,
   onAccept,
@@ -97,13 +108,17 @@ export function TaskDetail({
   renderProgressSummary,
 }: TaskDetailProps) {
   const owner = members.find((member) => member.userId === task.assigneeUserId);
-  const stage = flow?.stages.find((candidate) => candidate.id === task.stageId);
+  const effectiveFlow = task.flowSnapshot ?? flow;
+  const stage = effectiveFlow?.stages.find((candidate) => candidate.id === task.stageId);
   const agentId = stage?.agentId ?? task.runner?.agentId;
   const agent = agents.find((candidate) => candidate.id === agentId);
   const isFinished = isTerminalProjectTaskStatus(task.status);
-  const canRetry = isProjectTaskRetryable(task);
+  const hasExecutionEvidence = Boolean(
+    task.status === "done" || task.runId || task.completions.length > 0,
+  );
+  const canReopen = isFinished && !hasExecutionEvidence;
+  const canRetry = isProjectTaskRetryable(task) && plan.resume.supported;
   const needsInput = isProjectTaskAwaitingInput(task);
-  const progress = reverseCopy(goal?.progress ?? []);
   const evidence = goal?.evidence ?? [];
   const latestCompletion = task.completions.at(-1) ?? null;
 
@@ -234,57 +249,7 @@ export function TaskDetail({
           </section>
         ) : null}
 
-        {flow ? (
-          <section className="space-y-3">
-            <h2 className="text-sm font-semibold text-foreground">Agent pipeline</h2>
-            <ol className="grid gap-2 md:grid-cols-3">
-              {flow.stages.map((flowStage, index) => {
-                const currentIndex = flow.stages.findIndex(
-                  (candidate) => candidate.id === task.stageId,
-                );
-                const completed = task.status === "done" || index < currentIndex;
-                const current = flowStage.id === task.stageId && task.status !== "done";
-                const flowAgent = agents.find((candidate) => candidate.id === flowStage.agentId);
-
-                return (
-                  <li
-                    key={flowStage.id}
-                    className={`rounded-lg border p-3 ${
-                      current ? "border-active-work/45 bg-active-work/12" : "border-border"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {completed ? (
-                        <Check size={14} className="text-success" />
-                      ) : current ? (
-                        <Loader2
-                          size={14}
-                          className={
-                            task.status === "running"
-                              ? "animate-spin text-active-work"
-                              : "text-active-work"
-                          }
-                        />
-                      ) : (
-                        <Circle size={14} className="text-muted-foreground" />
-                      )}
-                      <p className="text-sm font-medium">{flowStage.name}</p>
-                    </div>
-                    <p className="mt-1 pl-[22px] text-xs text-muted-foreground">
-                      {flowAgent?.name ?? "Project default agent"} ·{" "}
-                      {flowStage.mode ?? "default mode"}
-                    </p>
-                    {flowStage.instructions ? (
-                      <p className="mt-2 pl-[22px] text-xs text-muted-foreground">
-                        {flowStage.instructions}
-                      </p>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
-        ) : null}
+        <TaskStageEvidence plan={plan} runHref={runHref} outputHref={outputHref} />
 
         <section className="space-y-3">
           <div className="flex items-baseline justify-between">
@@ -297,55 +262,7 @@ export function TaskDetail({
             )}
           </div>
 
-          {task.status === "running" && (
-            <p className="flex items-center gap-2 text-sm text-active-work">
-              <Loader2 size={14} className="animate-spin" /> Working now…
-            </p>
-          )}
-
-          {progress.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {task.status === "backlog"
-                ? "Nothing yet. Run it and each step will appear here."
-                : "No steps recorded yet."}
-            </p>
-          ) : (
-            <ol className="space-y-3 border-l border-border pl-4">
-              {progress.map((entry) => (
-                <li key={`${entry.iteration}-${entry.at}`} className="relative">
-                  <span className="absolute top-1.5 -left-[21px] h-2 w-2 rounded-full bg-selection" />
-                  <div className="min-w-0 text-sm text-foreground">
-                    {renderProgressSummary ? (
-                      renderProgressSummary(entry.summary)
-                    ) : (
-                      <p className="whitespace-pre-wrap">{entry.summary}</p>
-                    )}
-                  </div>
-                  {entry.evidence.length > 0 && (
-                    <ul className="mt-1 space-y-0.5">
-                      {entry.evidence.map((item) => (
-                        <li
-                          key={`${entry.iteration}:${item}`}
-                          className="text-xs text-muted-foreground"
-                        >
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {entry.next && (
-                    <p className="mt-1 text-xs text-muted-foreground">Next: {entry.next}</p>
-                  )}
-                  {entry.steer && (
-                    <p className="mt-1 text-xs text-active-work">You steered: {entry.steer}</p>
-                  )}
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    Step {entry.iteration} · {new Date(entry.at).toLocaleString()}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          )}
+          <TaskActivityTimelineView timeline={activity} renderDetail={renderProgressSummary} />
 
           {goal?.stopped_reason && goal.status !== "completed" && (
             <p className="text-sm text-muted-foreground">Stopped: {goal.stopped_reason}</p>
@@ -416,11 +333,13 @@ export function TaskDetail({
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-muted-foreground">
-                  {isFinished
-                    ? "Reopen returns this task to the backlog without removing its history."
-                    : "Cancel stops this task but keeps its conversation and history so it can be reopened."}
+                  {canReopen
+                    ? "Reopen returns this untouched task to the backlog."
+                    : isFinished
+                      ? "Executed plans keep their evidence. Create a new task to run the work again."
+                      : "Cancel stops this task but keeps its conversation and history so it can be reopened."}
                 </p>
-                {isFinished ? (
+                {canReopen ? (
                   <Button
                     variant="outline"
                     size="sm"
@@ -445,8 +364,9 @@ export function TaskDetail({
               </div>
               <div className="border-t border-border pt-3">
                 <p className="text-xs text-muted-foreground">
-                  Delete removes the task from this project. Its conversation remains in project
-                  history.
+                  {hasExecutionEvidence
+                    ? "Executed plans stay in project history with their run and result evidence."
+                    : "Delete removes this unstarted task from the project."}
                 </p>
                 <Button
                   variant="ghost"
@@ -454,7 +374,7 @@ export function TaskDetail({
                   icon={<Trash2 size={13} />}
                   className="mt-2 text-failure hover:bg-failure/12"
                   onClick={onDelete}
-                  disabled={isBusy || task.status === "running"}
+                  disabled={isBusy || task.status === "running" || hasExecutionEvidence}
                 >
                   Delete task
                 </Button>

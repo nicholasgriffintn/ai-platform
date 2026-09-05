@@ -27,6 +27,7 @@ describe("createSourceAttachment", () => {
     expect(createSourceAttachment(source, "https://api.test/sources/source-1/content")).toEqual({
       type: "markdown_document",
       data: "https://api.test/sources/source-1/content",
+      sourceId: "source-1",
       name: "Launch brief",
       markdown: "# Launch brief\n\nLaunch in October.",
     });
@@ -51,6 +52,7 @@ describe("createSourceAttachment", () => {
     ).toEqual({
       type: "image",
       data: "https://api.test/sources/source-1/content",
+      sourceId: "source-1",
       name: "source.png",
     });
   });

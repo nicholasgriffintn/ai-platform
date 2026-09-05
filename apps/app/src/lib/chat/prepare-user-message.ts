@@ -44,6 +44,7 @@ export function prepareUserMessage(
     if (attachment.type === "image") {
       contentItems.push({
         type: "image_url",
+        ...(attachment.sourceId ? { source_id: attachment.sourceId } : {}),
         image_url: {
           url: attachment.data,
           detail: "auto",
@@ -52,6 +53,7 @@ export function prepareUserMessage(
     } else if (attachment.type === "document") {
       contentItems.push({
         type: "document_url",
+        ...(attachment.sourceId ? { source_id: attachment.sourceId } : {}),
         document_url: {
           url: attachment.data,
           name: attachment.name,
@@ -60,11 +62,13 @@ export function prepareUserMessage(
     } else if (attachment.type === "audio") {
       contentItems.push({
         type: "audio_url",
+        ...(attachment.sourceId ? { source_id: attachment.sourceId } : {}),
         audio_url: { url: attachment.data },
       });
     } else if (attachment.type === "markdown_document" && attachment.markdown) {
       contentItems.push({
         type: "markdown_document",
+        ...(attachment.sourceId ? { source_id: attachment.sourceId } : {}),
         markdown_document: {
           markdown: attachment.markdown,
           name: attachment.name,

@@ -1,7 +1,7 @@
 import { ApiError } from "./index";
 
 const DEFAULT_QUERY_RETRY_COUNT = 2;
-const RETRYABLE_HTTP_STATUS_CODES = new Set([408, 409, 425, 429]);
+const RETRYABLE_HTTP_STATUS_CODES = new Set([408, 425, 429]);
 const RETRYABLE_ERROR_NAMES = new Set(["AbortError", "FetchError", "TimeoutError"]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {

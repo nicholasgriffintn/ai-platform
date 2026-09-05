@@ -17,7 +17,13 @@ import {
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
-import { getModelInteractionCapabilities } from "@ngriffin_uk/polychat-schemas";
+import {
+  evaluateModelContinuity,
+  getModelInteractionCapabilities,
+  isTerminalChatRunStatus,
+  type ChatRunStatus,
+  type ModelConfigItem,
+} from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { File, FileText, Paperclip, Pause, Send, Volume2 } from "lucide-react";
 import {
@@ -34,6 +40,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 
 import { useModels } from "~/hooks/useModels";
 import { SOURCE_QUERY_KEYS } from "~/hooks/useSources";
@@ -137,6 +144,8 @@ interface ChatInputProps {
   modelProviderFilter?: string;
   modelScope?: ModelSelectorScope;
   onModelChange?: ModelSelectionChangeHandler;
+  activeRunStatus?: ChatRunStatus | null;
+  hasConversationHistory?: boolean;
   disableAttachments?: boolean;
   hideDefaultControls?: boolean;
   hideComposerActionMenu?: boolean;
@@ -176,6 +185,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       modelProviderFilter,
       modelScope = "default",
       onModelChange,
+      activeRunStatus,
+      hasConversationHistory = false,
       disableAttachments = false,
       hideDefaultControls = false,
       hideComposerActionMenu = false,
@@ -244,6 +255,43 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         supportsImages: isImageModel || isMultimodalModel,
       },
     });
+    const modelSelectionBlocked = Boolean(
+      activeRunStatus && !isTerminalChatRunStatus(activeRunStatus),
+    );
+    const handleBeforeModelChange = useCallback(
+      (_modelId: string, nextModel: ModelConfigItem) => {
+        const attachmentTypes = [
+          ...contextAttachments,
+          ...composerSources.attachments,
+          ...selectedAttachments,
+        ].map((attachment) => attachment.type);
+        const decision = evaluateModelContinuity({
+          activeRunStatus,
+          attachmentTypes,
+          hasConversationHistory,
+          nextModel,
+        });
+
+        if (decision.state !== "next_run") {
+          toast.error(decision.reason);
+
+          return false;
+        }
+
+        if (hasConversationHistory) {
+          toast.info(decision.reason);
+        }
+
+        return true;
+      },
+      [
+        activeRunStatus,
+        composerSources.attachments,
+        contextAttachments,
+        hasConversationHistory,
+        selectedAttachments,
+      ],
+    );
 
     const composerInputRef = useRef<TokenizedComposerInputHandle>(null);
     const [requestedComposerCursorPosition, setRequestedComposerCursorPosition] = useState<
@@ -844,11 +892,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               <>
                 <div className="min-w-0 flex-shrink">
                   <ModelSelector
-                    isDisabled={isLoading}
+                    isDisabled={isLoading || modelSelectionBlocked}
                     mono
                     modelProviderFilter={modelProviderFilter}
                     modelScope={modelScope}
                     onModelChange={onModelChange}
+                    onBeforeModelChange={handleBeforeModelChange}
                   />
                 </div>
                 {!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}

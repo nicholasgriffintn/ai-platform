@@ -9,6 +9,7 @@ export * from "./Composer/HostedToolSettings";
 export * from "./Composer/TokenizedComposerInput";
 export * from "./KeyboardShortcutsHelp";
 export * from "./AgentTracePanel";
+export * from "./ContextDetailsPanel";
 export * from "./RunActivityPanel";
 export * from "./composerCommandTypes";
 export * from "./Message/CitationList";

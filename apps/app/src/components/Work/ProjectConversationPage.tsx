@@ -97,7 +97,7 @@ export function ProjectConversationPage({
   const handleTaskQuestionInteraction = useCallback<
     NonNullable<ConversationThreadModeConfig["onToolInteraction"]>
   >(
-    (toolName, action, data) => {
+    async (toolName, action, data) => {
       if (action !== "submitPrompt") {
         return false;
       }
@@ -109,24 +109,23 @@ export function ProjectConversationPage({
           return false;
         }
 
-        void (async () => {
-          try {
-            await approval.mutateAsync({
-              taskId: pendingApprovalTask.id,
-              input: parsedApproval.data,
-            });
-            await queryClient.invalidateQueries({
-              queryKey: [CHATS_QUERY_KEY, currentConversationId],
-            });
-            toast.success(
-              parsedApproval.data.resolution === "approved"
-                ? "Approved. The task is continuing."
-                : "Rejected. The task is continuing without that tool.",
-            );
-          } catch (mutationError) {
-            toast.error(getErrorMessage(mutationError, "Unable to continue this task"));
-          }
-        })();
+        try {
+          await approval.mutateAsync({
+            taskId: pendingApprovalTask.id,
+            input: parsedApproval.data,
+          });
+          await queryClient.invalidateQueries({
+            queryKey: [CHATS_QUERY_KEY, currentConversationId],
+          });
+          toast.success(
+            parsedApproval.data.resolution === "approved"
+              ? "Approved. The task is continuing."
+              : "Rejected. The task is continuing without that tool.",
+          );
+        } catch (mutationError) {
+          toast.error(getErrorMessage(mutationError, "Unable to continue this task"));
+          throw mutationError;
+        }
 
         return true;
       }

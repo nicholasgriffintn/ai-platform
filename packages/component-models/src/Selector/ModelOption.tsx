@@ -141,6 +141,11 @@ export const ModelOption = ({
                 {model.description}
               </p>
             ) : null}
+            {model.readiness && model.readiness.state !== "ready" ? (
+              <p className="mt-1 text-xs font-medium leading-5 text-amber-700 dark:text-amber-300 whitespace-normal break-words">
+                {model.readiness.reason}
+              </p>
+            ) : null}
           </div>
         </div>
         <div className="flex w-full flex-wrap items-center gap-1.5 pl-[2.6rem] sm:w-[124px] sm:flex-shrink-0 sm:justify-end sm:pl-0">

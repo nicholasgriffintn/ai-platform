@@ -14,16 +14,25 @@ import {
   createApiErrorFromResponse,
   returnFetchedData,
 } from "@ngriffin_uk/polychat-library-client";
-import type {
-  ChatCompletionResponseBody,
-  Goal,
-  ModelConfigItem,
-  ModelRouterMode,
-  ToolSelectionMode,
-} from "@ngriffin_uk/polychat-schemas";
-import { conversationLabelSchema } from "@ngriffin_uk/polychat-schemas";
 import {
+  chatRunCommandReceiptResponseSchema,
+  chatRunRecoveryResponseSchema,
+  chatRunReplayResponseSchema,
+  chatRunSnapshotResponseSchema,
+  conversationLabelSchema,
+  type ChatCompletionResponseBody,
+  type ChatRun,
+  type ChatRunCommandReceipt,
+  type ChatRunSnapshotResponse,
+  type Goal,
+  type ModelConfigItem,
+  type ModelRouterMode,
+  type ToolSelectionMode,
+} from "@ngriffin_uk/polychat-schemas";
+import {
+  CHAT_STREAM_PROGRESS_BATCH_EVENTS,
   createChatStreamAssembler,
+  isChatStreamProgressEvent,
   parseChatStreamSseBuffer,
   type ChatStreamUpdate,
   type ParsedChatStreamSseEvent,
@@ -32,6 +41,8 @@ import { goalSchema } from "@ngriffin_uk/polychat-schemas/goals";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
 import { isRecord, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
+import { yieldToMainThread } from "~/lib/async/yield-to-main-thread";
+import type { AppChatRunReplayResponse, AuthoritativeChatRunSnapshot } from "~/lib/chat/run-replay";
 import { getSandboxTaskToolNames } from "~/lib/sandbox/task-tools";
 import type {
   ChatMode,
@@ -53,6 +64,7 @@ import {
 import { parseCompactConversationResponse } from "../compact-conversation-response";
 import { normaliseConversationResponse } from "../conversation-response";
 import { fetchApi, fetchApiOrThrow } from "../fetch-wrapper";
+import { appendRecoveryTelemetry, type RecoveryRequestContext } from "../recovery-telemetry";
 
 export interface ConversationUpdateRequest {
   archived?: boolean;
@@ -67,16 +79,31 @@ export interface ConversationCompactionResult {
   conversation: Conversation;
 }
 
-export interface RecoveryRequestContext {
-  attempt: number;
-  elapsedMs: number;
-  finalAttempt: boolean;
-  knownAssistantCount: number;
+export interface ChatRunSnapshot {
+  run: ChatRun;
+  messages: Message[];
+}
+
+export interface ConversationMessagePage {
+  messages: Message[];
+  hasMore: boolean;
+  oldestMessageId: string | null;
+}
+
+function normaliseRunSnapshot(snapshot: ChatRunSnapshotResponse): AuthoritativeChatRunSnapshot {
+  return {
+    ...snapshot,
+    messages: normaliseConversationResponse(
+      { id: snapshot.run.conversationId, messages: snapshot.messages },
+      snapshot.run.conversationId,
+    ).messages,
+  };
 }
 
 export interface GetChatOptions {
   recovery?: RecoveryRequestContext;
   refreshPending?: boolean;
+  messageLimit?: number;
 }
 
 type StreamProgressHandler = (
@@ -280,13 +307,8 @@ export class ChatService {
       params.set("refresh_pending", "true");
     }
 
-    if (options?.recovery) {
-      params.set("recovery_platform", "web");
-      params.set("recovery_attempt", String(options.recovery.attempt));
-      params.set("recovery_elapsed_ms", String(options.recovery.elapsedMs));
-      params.set("recovery_known_assistant_count", String(options.recovery.knownAssistantCount));
-      params.set("recovery_final_attempt", String(options.recovery.finalAttempt));
-    }
+    params.set("message_limit", String(options?.messageLimit ?? 100));
+    appendRecoveryTelemetry(params, options?.recovery);
 
     const query = params.toString();
     const url = `/chat/completions/${completion_id}${query ? `?${query}` : ""}`;
@@ -306,6 +328,36 @@ export class ChatService {
     const conversation = await returnFetchedData<any>(response);
 
     return normaliseConversationResponse(conversation, completion_id);
+  }
+
+  async getEarlierChatMessages(
+    completionId: string,
+    beforeMessageId: string,
+    limit = 100,
+  ): Promise<ConversationMessagePage> {
+    const query = new URLSearchParams({
+      before: beforeMessageId,
+      limit: String(limit),
+    });
+    const response = await fetchApiOrThrow(
+      `/chat/completions/${completionId}/messages?${query.toString()}`,
+      { method: "GET", headers: await this.getHeaders() },
+    );
+    const data = await returnFetchedData<{
+      messages?: unknown[];
+      has_more?: boolean;
+      oldest_message_id?: string | null;
+    }>(response);
+    const messages = normaliseConversationResponse(
+      { id: completionId, messages: data.messages },
+      completionId,
+    ).messages;
+
+    return {
+      messages,
+      hasMore: data.has_more === true,
+      oldestMessageId: typeof data.oldest_message_id === "string" ? data.oldest_message_id : null,
+    };
   }
 
   async compactConversation(completion_id: string): Promise<ConversationCompactionResult> {
@@ -550,6 +602,84 @@ export class ChatService {
     });
   }
 
+  async getChatRun(runId: string, recovery?: RecoveryRequestContext): Promise<ChatRunSnapshot> {
+    const params = new URLSearchParams();
+
+    appendRecoveryTelemetry(params, recovery);
+
+    const query = params.toString();
+    const response = await fetchApiOrThrow(`/chat/runs/${runId}${query ? `?${query}` : ""}`, {
+      method: "GET",
+      headers: await this.getHeaders(),
+    });
+    const parsed = chatRunRecoveryResponseSchema.parse(await returnFetchedData<unknown>(response));
+
+    return {
+      run: parsed.run,
+      messages: normaliseConversationResponse(
+        { id: parsed.run.conversationId, messages: parsed.messages },
+        parsed.run.conversationId,
+      ).messages,
+    };
+  }
+
+  async getChatRunSnapshot(runId: string): Promise<AuthoritativeChatRunSnapshot> {
+    const response = await fetchApiOrThrow(`/chat/runs/${runId}/snapshot`, {
+      method: "GET",
+      headers: await this.getHeaders(),
+    });
+    const parsed = chatRunSnapshotResponseSchema.parse(await returnFetchedData<unknown>(response));
+
+    return normaliseRunSnapshot(parsed);
+  }
+
+  async getChatRunEvents(
+    runId: string,
+    after: number,
+    limit = 100,
+  ): Promise<AppChatRunReplayResponse> {
+    const query = new URLSearchParams({ after: String(after), limit: String(limit) });
+    const response = await fetchApiOrThrow(`/chat/runs/${runId}/events?${query.toString()}`, {
+      method: "GET",
+      headers: await this.getHeaders(),
+    });
+    const parsed = chatRunReplayResponseSchema.parse(await returnFetchedData<unknown>(response));
+
+    return {
+      ...parsed,
+      snapshot: parsed.snapshot ? normaliseRunSnapshot(parsed.snapshot) : null,
+    };
+  }
+
+  async getChatRunCommand(commandId: string): Promise<ChatRunCommandReceipt> {
+    const response = await fetchApiOrThrow(`/chat/run-commands/${commandId}`, {
+      method: "GET",
+      headers: await this.getHeaders(),
+    });
+    const parsed = chatRunCommandReceiptResponseSchema.parse(
+      await returnFetchedData<unknown>(response),
+    );
+
+    return parsed.run;
+  }
+
+  async cancelChatRun(
+    runId: string,
+    expectedAttempt: number,
+    commandId: string = crypto.randomUUID(),
+  ): Promise<ChatRunCommandReceipt> {
+    const response = await fetchApiOrThrow(`/chat/runs/${runId}/cancel`, {
+      method: "POST",
+      headers: await this.getHeaders(),
+      body: { command_id: commandId, expected_attempt: expectedAttempt },
+    });
+    const parsed = chatRunCommandReceiptResponseSchema.parse(
+      await returnFetchedData<unknown>(response),
+    );
+
+    return parsed.run;
+  }
+
   async unshareConversation(completion_id: string): Promise<void> {
     if (!completion_id) {
       throw new Error("No completion ID provided");
@@ -658,6 +788,7 @@ export class ChatService {
     const { options: featureOptions, ...requestOptionFields } = requestOptions ?? {};
     const requestBody: Record<string, any> = {
       ...requestOptionFields,
+      command_id: requestOptionFields.command_id ?? crypto.randomUUID(),
       completion_id: completionId,
       messages: formattedMessages,
       platform: "web",
@@ -729,6 +860,14 @@ export class ChatService {
           type: "state",
           state: "compaction",
           message: compactionMessage,
+        });
+      }
+
+      if (data.run) {
+        onStateChange("run", {
+          type: "state",
+          state: "run",
+          receipt: data.run satisfies ChatRunCommandReceipt,
         });
       }
 
@@ -827,10 +966,11 @@ export class ChatService {
       }
     };
 
-    const processBufferedEvents = (flush = false) => {
+    const processBufferedEvents = async (flush = false) => {
       const parsed = parseChatStreamSseBuffer(buffer, { flush });
 
       buffer = parsed.remainingBuffer;
+      let progressEventsSinceYield = 0;
 
       for (const parsedData of parsed.events) {
         try {
@@ -841,6 +981,18 @@ export class ChatService {
           }
 
           console.error("Error handling SSE data:", error, parsedData);
+        }
+
+        if (!isChatStreamProgressEvent(parsedData)) {
+          progressEventsSinceYield = 0;
+          continue;
+        }
+
+        progressEventsSinceYield += 1;
+
+        if (progressEventsSinceYield >= CHAT_STREAM_PROGRESS_BATCH_EVENTS) {
+          progressEventsSinceYield = 0;
+          await yieldToMainThread();
         }
       }
     };
@@ -854,11 +1006,11 @@ export class ChatService {
         }
 
         buffer += decoder.decode(value, { stream: true });
-        processBufferedEvents();
+        await processBufferedEvents();
       }
 
       if (buffer.trim()) {
-        processBufferedEvents(true);
+        await processBufferedEvents(true);
       }
 
       if (!assembler.getFinalMessage()) {

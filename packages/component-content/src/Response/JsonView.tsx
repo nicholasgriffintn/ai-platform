@@ -9,9 +9,11 @@ interface JsonViewProps {
 }
 
 const MAX_INLINE_STRING = 400;
+const MAX_VISIBLE_BRANCH_CHILDREN = 100;
 
 export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
+  const [fullyExpandedBranches, setFullyExpandedBranches] = useState<Record<string, boolean>>({});
   const { copied, copy } = useCopyToClipboard();
 
   const toggleExpand = (path: string, isExpanded: boolean) => {
@@ -51,16 +53,11 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
         return <span className="text-muted-foreground">[]</span>;
       }
 
-      return renderBranch(
-        path,
-        depth,
-        `Array[${value.length}]`,
-        value.map((item, index) => ({
-          key: `${path}-${index}`,
-          label: String(index),
-          value: item,
-        })),
-      );
+      return renderBranch(path, depth, `Array[${value.length}]`, value.length, (index) => ({
+        key: `${path}-${index}`,
+        label: String(index),
+        value: value[index],
+      }));
     }
 
     if (typeof value === "object") {
@@ -71,16 +68,15 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
         return <span className="text-muted-foreground">{"{}"}</span>;
       }
 
-      return renderBranch(
-        path,
-        depth,
-        `Object{${keys.length}}`,
-        keys.map((key) => ({
+      return renderBranch(path, depth, `Object{${keys.length}}`, keys.length, (index) => {
+        const key = keys[index];
+
+        return {
           key: `${path}-${key}`,
           label: key,
           value: record[key],
-        })),
-      );
+        };
+      });
     }
 
     return <span>{JSON.stringify(value)}</span>;
@@ -90,9 +86,15 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
     path: string,
     depth: number,
     summary: string,
-    children: Array<{ key: string; label: string; value: unknown }>,
+    childCount: number,
+    childAt: (index: number) => { key: string; label: string; value: unknown },
   ): JSX.Element => {
     const isExpanded = overrides[path] ?? depth < defaultExpandedDepth;
+    const showAllChildren = fullyExpandedBranches[path] ?? false;
+    const visibleChildCount = showAllChildren
+      ? childCount
+      : Math.min(childCount, MAX_VISIBLE_BRANCH_CHILDREN);
+    const visibleChildren = Array.from({ length: visibleChildCount }, (_, index) => childAt(index));
 
     return (
       <div>
@@ -106,12 +108,28 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
         </button>
         {isExpanded && (
           <div className="ml-2 border-l border-border-strong pl-4">
-            {children.map((child) => (
+            {visibleChildren.map((child) => (
               <div key={child.key} className="my-1">
                 <span className="font-medium text-foreground">{child.label}: </span>
                 {renderValue(child.value, child.key, depth + 1)}
               </div>
             ))}
+            {childCount > MAX_VISIBLE_BRANCH_CHILDREN ? (
+              <button
+                type="button"
+                className="my-1 cursor-pointer text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                onClick={() =>
+                  setFullyExpandedBranches((current) => ({
+                    ...current,
+                    [path]: !showAllChildren,
+                  }))
+                }
+              >
+                {showAllChildren
+                  ? "Show fewer entries"
+                  : `Show ${childCount - MAX_VISIBLE_BRANCH_CHILDREN} more entries`}
+              </button>
+            ) : null}
           </div>
         )}
       </div>

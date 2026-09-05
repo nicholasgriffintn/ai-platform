@@ -34,7 +34,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { VList, type VListHandle } from "virtua";
 
 import { useCanAccessProFeatures } from "~/hooks/useCanAccessProFeatures";
-import { useChat } from "~/hooks/useChat";
+import { useChat, useLoadEarlierChatMessages } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
@@ -96,6 +96,9 @@ export const MessageList = ({
   const { chatMode, currentConversationId } = useChatStore();
 
   const { data: conversation, isLoading: isLoadingConversation } = useChat(
+    !isSharedView ? currentConversationId : undefined,
+  );
+  const earlierMessages = useLoadEarlierChatMessages(
     !isSharedView ? currentConversationId : undefined,
   );
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
@@ -239,21 +242,32 @@ export const MessageList = ({
 
   return (
     <ResolvedToolCallsProvider resolvedToolCallIds={resolvedToolCallIds}>
-      <div
+      <section
         className="relative flex flex-1 flex-col"
         data-conversation-id={currentConversationId || undefined}
-        role="region"
         aria-label="Conversation messages"
       >
-        <span className="sr-only" role="status" aria-live="polite">
+        <output className="sr-only" aria-live="polite">
           {streamAnnouncement}
-        </span>
+        </output>
         <VList
           ref={virtualRef}
           data-header-scroll-source
           className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
           onScroll={handleScroll}
         >
+          {!isSharedView && conversation?.has_more_messages ? (
+            <div className="flex justify-center pb-4">
+              <button
+                type="button"
+                className="rounded-md border border-zinc-200 px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                disabled={earlierMessages.isPending}
+                onClick={() => earlierMessages.mutate()}
+              >
+                {earlierMessages.isPending ? "Loading earlier messages…" : "Load earlier messages"}
+              </button>
+            </div>
+          ) : null}
           {!isSharedView && isLoadingConversation
             ? [...Array(3)].map((_, i) => <MessageSkeleton key={`skeleton-item-${i}`} />)
             : visibleRows.map(
@@ -346,7 +360,7 @@ export const MessageList = ({
             />
           </div>
         )}
-      </div>
+      </section>
     </ResolvedToolCallsProvider>
   );
 };

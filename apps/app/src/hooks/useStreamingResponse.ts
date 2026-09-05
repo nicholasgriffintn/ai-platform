@@ -8,9 +8,13 @@ import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { updateConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import {
+  chatRunCommandReceiptSchema,
   chatTurnActivityEventSchema,
   EMPTY_MODEL_CONFIG,
   getModelProvider,
+  isTerminalChatRunStatus,
+  type ChatRun,
+  type ChatRunStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
@@ -22,7 +26,7 @@ import { USAGE_QUERY_KEYS } from "~/hooks/useUsage";
 import { apiService } from "~/lib/api/api-service";
 import { createStreamProgressCoalescer } from "~/lib/chat/stream-progress-coalescer";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
-import { recoverDetachedTurn } from "~/lib/chat/turn-recovery";
+import { recoverDetachedTurn, resolveAcceptedRunCommand } from "~/lib/chat/turn-recovery";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
@@ -94,6 +98,10 @@ export function useStreamingResponse(
   );
   const assistantResponseRef = useRef<string>("");
   const assistantReasoningRef = useRef<string>("");
+  const observedRunsRef = useRef<
+    Record<string, { id: string; attempt: number; status: ChatRunStatus }>
+  >({});
+  const pendingCommandIdsRef = useRef<Record<string, string>>({});
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
 
   const {
@@ -102,6 +110,45 @@ export function useStreamingResponse(
     addAssistantMessage,
     updateAssistantMessage,
   } = useMessageOperations(requestOptions);
+
+  const cancelObservedRun = useCallback(
+    async (conversationId: string) => {
+      const cachedRun = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        conversationId,
+      ])?.latest_run;
+      let observedRun: Pick<ChatRun, "id" | "attempt" | "status"> | null | undefined =
+        observedRunsRef.current[conversationId] ?? cachedRun;
+      const pendingCommandId = pendingCommandIdsRef.current[conversationId];
+
+      if (!observedRun && pendingCommandId) {
+        observedRun =
+          (await resolveAcceptedRunCommand({
+            fetchCommand: () => apiService.getChatRunCommand(pendingCommandId),
+          })) ?? undefined;
+      }
+
+      if (!observedRun || isTerminalChatRunStatus(observedRun.status)) {
+        return;
+      }
+
+      const receipt = await apiService.cancelChatRun(observedRun.id, observedRun.attempt);
+
+      observedRunsRef.current[conversationId] = {
+        id: receipt.run.id,
+        attempt: receipt.run.attempt,
+        status: receipt.run.status,
+      };
+      updateConversationInChatCaches<Conversation>(
+        queryClient,
+        conversationId,
+        (conversation) => ({ ...conversation, latest_run: receipt.run }),
+        CHATS_QUERY_KEY,
+        getLocalChatScope(user?.id),
+      );
+    },
+    [queryClient, user?.id],
+  );
 
   const generateResponse = useCallback(
     async (
@@ -144,6 +191,10 @@ export function useStreamingResponse(
       );
       const assistantMessageData = options?.assistantMessageData;
       let shouldRefreshStoredConversation = false;
+      let acceptedRunId: string | undefined;
+      const commandId = effectiveRequestOptions?.command_id ?? crypto.randomUUID();
+
+      pendingCommandIdsRef.current[conversationId] = commandId;
 
       const placeholderMessage = await addAssistantMessage(conversationId, "", undefined, {
         ...assistantMessageData,
@@ -420,6 +471,28 @@ export function useStreamingResponse(
               return;
             }
 
+            if (state === "run") {
+              const receipt = chatRunCommandReceiptSchema.safeParse(data?.receipt);
+
+              if (receipt.success) {
+                acceptedRunId = receipt.data.run.id;
+                observedRunsRef.current[conversationId] = {
+                  id: receipt.data.run.id,
+                  attempt: receipt.data.run.attempt,
+                  status: receipt.data.run.status,
+                };
+                updateConversationInChatCaches<Conversation>(
+                  queryClient,
+                  conversationId,
+                  (conversation) => ({ ...conversation, latest_run: receipt.data.run }),
+                  CHATS_QUERY_KEY,
+                  getLocalChatScope(user?.id),
+                );
+              }
+
+              return;
+            }
+
             if (state === "compaction") {
               const compactionMessage = readCompactionStatusMessage(data?.message);
 
@@ -464,7 +537,7 @@ export function useStreamingResponse(
               onProgress: streamProgress.handleUpdate,
               onStateChange: handleStateChange,
               provider: providerToSend,
-              requestOptions: effectiveRequestOptions,
+              requestOptions: { ...effectiveRequestOptions, command_id: commandId },
               signal: requestSignal,
               store: shouldStore,
               streamingEnabled: true,
@@ -540,28 +613,54 @@ export function useStreamingResponse(
         markStreamActivityReconnecting(conversationId);
         updateLoading("stream-response", undefined, "Reconnecting to the response...");
 
-        const recoveredMessages = await recoverDetachedTurn({
-          completionId: conversationId,
-          knownMessageIds,
-          fetchMessages: async (completionId, recovery) =>
-            (
-              await apiService.getChat(completionId, {
-                recovery: {
-                  ...recovery,
-                  knownAssistantCount: messages.filter((message) => message.role === "assistant")
-                    .length,
-                },
-              })
-            ).messages ?? [],
+        const recovered = await recoverDetachedTurn({
+          runId: acceptedRunId,
+          resolveCommand: async () => (await apiService.getChatRunCommand(commandId)).run.id,
+          fetchRun: (runId, recovery) =>
+            apiService.getChatRun(runId, {
+              ...recovery,
+              knownAssistantCount: messages.filter((message) => message.role === "assistant")
+                .length,
+            }),
           signal: requestSignal,
         });
+
+        if (!recovered) {
+          throw error;
+        }
+
+        const recoveredMessages = recovered.messages.filter(
+          (message) => message.role !== "user" && !knownMessageIds.has(message.id),
+        );
+
+        updateConversationInChatCaches<Conversation>(
+          queryClient,
+          conversationId,
+          (conversation) => ({ ...conversation, latest_run: recovered.run }),
+          CHATS_QUERY_KEY,
+          getLocalChatScope(user?.id),
+        );
+        observedRunsRef.current[conversationId] = {
+          id: recovered.run.id,
+          attempt: recovered.run.attempt,
+          status: recovered.run.status,
+        };
 
         const recoveredAssistantMessage = recoveredMessages.find(
           (message) => message.role === "assistant",
         );
 
         if (!recoveredAssistantMessage) {
-          throw error;
+          await messageWriteQueue;
+          await queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, conversationId] });
+
+          return {
+            status: "success" as const,
+            response: recovered.run.terminalReason ?? recovered.run.status,
+            messages: recoveredMessages,
+            toolResponses: recoveredMessages.filter((message) => message.role === "tool"),
+            titled: Boolean(serverTitle),
+          };
         }
 
         markConversationRemoteAvailable(conversationId);
@@ -647,7 +746,7 @@ export function useStreamingResponse(
             return;
           }
 
-          void apiService.cancelChatCompletion(conversationId).catch(() => {});
+          void cancelObservedRun(conversationId).catch(() => {});
         },
         { once: true },
       );
@@ -705,6 +804,7 @@ export function useStreamingResponse(
     },
     [
       beginStreamActivity,
+      cancelObservedRun,
       generateResponse,
       stopLoading,
       endStreamActivity,
@@ -717,11 +817,11 @@ export function useStreamingResponse(
     if (currentStream?.controller) {
       currentStream.controller.abort();
     } else if (currentStream?.source === "remote" && currentConversationId) {
-      void apiService.cancelChatCompletion(currentConversationId).catch(() => {
+      void cancelObservedRun(currentConversationId).catch(() => {
         toast.error("Could not stop the response. Please try again.");
       });
     }
-  }, [currentStream, currentConversationId]);
+  }, [cancelObservedRun, currentStream, currentConversationId]);
 
   return {
     streamStarted: currentStream?.status === "streaming",

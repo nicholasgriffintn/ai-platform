@@ -23,7 +23,6 @@ import {
   getModelsByMode,
   getRealtimeSessionModelsByProvider,
   getToolCallModels,
-  isModelReferenceSelectable,
   isModelSelectableForAccount,
   isTextInputChatModel,
 } from "@ngriffin_uk/polychat-schemas";
@@ -62,6 +61,7 @@ interface ModelSelectorProps {
   modelProviderFilter?: string;
   modelScope?: ModelSelectorScope;
   onModelChange?: ModelSelectionChangeHandler;
+  onBeforeModelChange?: (modelId: string, model: ModelConfigItem) => boolean;
 }
 
 export const ModelSelector = ({
@@ -72,6 +72,7 @@ export const ModelSelector = ({
   modelProviderFilter,
   modelScope = "default",
   onModelChange,
+  onBeforeModelChange,
 }: ModelSelectorProps) => {
   const { trackEvent, trackFeatureUsage } = useTrackEvent();
   const { isMobile } = useUIStore();
@@ -254,7 +255,7 @@ export const ModelSelector = ({
       return;
     }
 
-    if (isModelReferenceSelectable(filteredModelReferences, model, isPro)) {
+    if (model !== null) {
       return;
     }
 
@@ -292,31 +293,6 @@ export const ModelSelector = ({
     selectedTab,
     setChatMode,
     setSelectedAgentId,
-  ]);
-
-  useEffect(() => {
-    if (isModelListOnlyScope || chatMode !== "remote" || model === null) {
-      return;
-    }
-
-    if (isCatalogueUnverified) {
-      return;
-    }
-
-    if (isModelReferenceSelectable(filteredModelReferences, model, isPro)) {
-      return;
-    }
-
-    selectModelWithDefaults(defaultModelId ?? null);
-  }, [
-    chatMode,
-    defaultModelId,
-    filteredModelReferences,
-    isCatalogueUnverified,
-    isModelListOnlyScope,
-    isPro,
-    model,
-    selectModelWithDefaults,
   ]);
 
   const clearHoverPreview = useCallback(() => setHoverPreview(null), []);
@@ -463,8 +439,14 @@ export const ModelSelector = ({
   }
 
   const handleModelChange = (newModel: string) => {
+    const nextModel = availableModels[newModel];
+
+    if (!nextModel || onBeforeModelChange?.(newModel, nextModel) === false) {
+      return false;
+    }
+
     selectModelWithDefaults(newModel);
-    onModelChange?.(newModel, availableModels[newModel]);
+    onModelChange?.(newModel, nextModel);
 
     trackEvent({
       name: "set_model",
@@ -472,6 +454,8 @@ export const ModelSelector = ({
       label: "select_model",
       value: newModel,
     });
+
+    return true;
   };
 
   const handleInfoHoverStart = (modelInfo: ModelConfigItem, anchorRect: DOMRect) => {
@@ -648,8 +632,9 @@ export const ModelSelector = ({
               model_provider: modelInfo.provider,
               is_free_model: String(modelInfo.isFree),
             });
-            handleModelChange(id);
-            closeSelector();
+            if (handleModelChange(id)) {
+              closeSelector();
+            }
           }}
           onInfoHoverStart={handleInfoHoverStart}
           onInfoHoverEnd={handleInfoHoverEnd}

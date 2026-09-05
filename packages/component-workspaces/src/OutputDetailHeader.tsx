@@ -1,5 +1,8 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import type { OutputProvenance } from "@ngriffin_uk/polychat-schemas";
 import { Check, Share2 } from "lucide-react";
+
+import { OutputProvenanceSummary } from "./OutputProvenanceSummary";
 
 export interface OutputDetailHeaderProps {
   capabilityId: string;
@@ -8,6 +11,7 @@ export interface OutputDetailHeaderProps {
   isSharing?: boolean;
   hasCopiedLink?: boolean;
   errorMessage?: string;
+  provenance?: OutputProvenance;
 }
 
 export function OutputDetailHeader({
@@ -17,6 +21,7 @@ export function OutputDetailHeader({
   isSharing = false,
   hasCopiedLink = false,
   errorMessage,
+  provenance,
 }: OutputDetailHeaderProps) {
   return (
     <>
@@ -32,6 +37,7 @@ export function OutputDetailHeader({
           {hasCopiedLink ? "Link copied" : "Share"}
         </Button>
       </div>
+      {provenance && <OutputProvenanceSummary provenance={provenance} />}
       {errorMessage && (
         <p role="alert" className="text-sm text-failure">
           {errorMessage}
