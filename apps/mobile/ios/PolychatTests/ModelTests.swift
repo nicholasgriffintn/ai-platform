@@ -493,7 +493,7 @@ struct ModelTests {
         #expect(json["rag_options"] == nil)
         #expect(json["enabled_tools"] == nil)
         #expect(json["tool_selection_mode"] as? String == "managed")
-        #expect(json["model_router_mode"] == nil)
+        #expect(json["model_tier"] == nil)
         #expect((json["command_id"] as? String)?.isEmpty == false)
     }
 
@@ -513,7 +513,7 @@ struct ModelTests {
         #expect(json["run_id"] as? String == "run-1")
     }
 
-    @Test func chatCompletionRequestUsesAutomaticRoutingWithoutAModel() throws {
+    @Test func chatCompletionRequestLeavesTheDefaultTierToTheServerWithoutAModel() throws {
         let request = ChatCompletionRequest(
             messages: [ChatMessage(role: "user", content: "Hi")],
             model: nil
@@ -524,7 +524,31 @@ struct ModelTests {
 
         #expect(json["model"] == nil)
         #expect(json["provider"] == nil)
-        #expect(json["model_router_mode"] as? String == "auto")
+        #expect(json["model_tier"] == nil)
+    }
+
+    @Test func chatCompletionRequestSendsAnExplicitTierOnlyWithoutAModel() throws {
+        let tiered = ChatCompletionRequest(
+            messages: [ChatMessage(role: "user", content: "Hi")],
+            model: nil,
+            modelTier: "high"
+        )
+        let tieredJson = try #require(
+            JSONSerialization.jsonObject(with: try JSONEncoder().encode(tiered)) as? [String: Any]
+        )
+
+        #expect(tieredJson["model_tier"] as? String == "high")
+
+        let explicit = ChatCompletionRequest(
+            messages: [ChatMessage(role: "user", content: "Hi")],
+            model: "gpt-6-astra",
+            modelTier: "high"
+        )
+        let explicitJson = try #require(
+            JSONSerialization.jsonObject(with: try JSONEncoder().encode(explicit)) as? [String: Any]
+        )
+
+        #expect(explicitJson["model_tier"] == nil)
     }
 
     @Test func chatCompletionRequestSendsSelectedProcessingTier() throws {

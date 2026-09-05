@@ -29,7 +29,7 @@ vi.mock("~/services/conversations/coordinator/client", async (importOriginal) =>
 }));
 
 vi.mock("~/lib/providers/models", () => ({
-  getAuxiliaryModel: vi.fn().mockResolvedValue({
+  getCompactionModel: vi.fn().mockResolvedValue({
     model: "summary-model",
     provider: "test-provider",
   }),

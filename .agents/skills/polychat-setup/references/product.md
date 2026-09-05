@@ -9,7 +9,7 @@ Chat is conversation-first, with personal capabilities and rich experiences belo
 - Use a conversation for interactive work, an experience for a richer workflow, a recipe for reusable configured work, and a project task/flow for durable agent execution and hand-offs.
 - Configure skills and saved agents in the capability library. Skills supply instructions; agents supply personas and capability requests. Their runner still needs access to everything they use.
 - Keep connector installations and credentials attributable to the person running the work. Project membership does not grant another member's external account.
-- Use the project's **Automatic model preference** for its default routing tier. Explicit request tiers or models override it; it is not a spending cap.
+- Use the project's **Default model tier** for project conversations and coding runs. Explicit request tiers or models override it; it is not a spending cap.
 - Treat **sources** as durable inputs and **outputs** as durable results. Project scope adds collaboration; conversation links add provenance.
 - Show durable output origin from its captured run, effective model/provider, skill revisions, source references and approval outcomes. Label incomplete history as partial or legacy, and never treat an old reference as current access.
 - Compare output revisions before restoring supported local text results. Restore appends a revision and preserves provenance; files, connector or publication effects, provider jobs and sandbox repository changes are review-only and need their own external compensation.

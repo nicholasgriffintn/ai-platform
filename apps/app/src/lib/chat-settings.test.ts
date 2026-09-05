@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   clearModelResponseSettings,
   migrateChatStore,
+  migrateLegacyAutoMode,
   migrateLegacyMaxOutputTokens,
   migrateLegacySamplingDefaults,
 } from "./chat-settings";
@@ -70,5 +71,25 @@ describe("chat sampling defaults", () => {
     expect(
       migrateChatStore({ chatSettings: { max_tokens: 8_192, temperature: 0.7, top_p: 0.5 } }, 0),
     ).toEqual({ chatSettings: { top_p: 0.5 } });
+  });
+});
+
+describe("model tier migration", () => {
+  it("maps the retired automatic modes onto tiers and drops the old key", () => {
+    expect(migrateLegacyAutoMode({ autoMode: "pro", model: null }, 2)).toEqual({
+      model: null,
+      modelTier: "high",
+    });
+    expect(migrateLegacyAutoMode({ autoMode: "auto" }, 2)).toEqual({ modelTier: null });
+  });
+
+  it("leaves already migrated state alone", () => {
+    const persistedState = { modelTier: "low" };
+
+    expect(migrateLegacyAutoMode(persistedState, 3)).toBe(persistedState);
+    expect(migrateChatStore({ chatSettings: {}, modelTier: "ultra" }, 3)).toEqual({
+      chatSettings: {},
+      modelTier: "ultra",
+    });
   });
 });

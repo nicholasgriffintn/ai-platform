@@ -101,15 +101,15 @@ export class HomePage extends BasePage {
     await this.clickElement((await named.count()) > 0 ? named : candidate);
   }
 
-  async selectAutomaticMode(mode: "Auto" | "Lite" | "Standard" | "Pro" | "Max") {
+  async selectModelTier(tier: "Default" | "Low" | "Medium" | "High" | "Ultra") {
     await this.clickElement(this.modelSelector);
-    const autoTab = this.page.getByRole("tab", { name: "Auto", exact: true });
+    const tiersTab = this.page.getByRole("tab", { name: "Tiers", exact: true });
 
-    if (await autoTab.isVisible()) {
-      await autoTab.click();
+    if (await tiersTab.isVisible()) {
+      await tiersTab.click();
     }
 
-    await this.clickElement(this.page.getByRole("option", { name: `${mode} automatic mode` }));
+    await this.clickElement(this.page.getByRole("option", { name: `${tier} tier` }));
   }
 
   chatModeCommand(mode: "Chat" | "Live") {

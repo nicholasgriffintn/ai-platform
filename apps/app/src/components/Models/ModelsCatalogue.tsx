@@ -16,6 +16,7 @@ import { getModelDisplayName, type ModelConfigItem } from "@ngriffin_uk/polychat
 import { formatCompactCount } from "@ngriffin_uk/polychat-utility-core";
 import { useDeferredValue, useMemo, useState } from "react";
 
+import { ModelLineup } from "~/components/Models/ModelLineup";
 import { useModelCatalogue } from "~/hooks/useModels";
 import {
   filterModelsByQuery,
@@ -258,16 +259,17 @@ export function ModelsCatalogue() {
   );
   const lede =
     models.length > 0
-      ? `${models.length} models from ${groups.length} providers. Pick one per message, or leave it to Auto and let Polychat route by task.`
-      : "Every model Polychat can reach, grouped by provider. Pick one per message, or leave it to Auto and let Polychat route by task.";
+      ? `${models.length} models from ${groups.length} providers. Pick one per message when you want a particular bird, or pick a tier and let the lineup decide.`
+      : "Every model Polychat can reach, grouped by provider. Pick one per message when you want a particular bird, or pick a tier and let the lineup decide.";
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-12 px-4 pb-16 sm:px-6">
-      <header className="space-y-4 pt-2">
+    <div className="mx-auto w-full max-w-5xl space-y-16 px-4 pb-16 sm:px-6">
+      <ModelLineup />
+      <header id="catalogue" className="border-border space-y-4 border-t pt-12">
         <p className="polychat-eyebrow">The catalogue</p>
-        <h1 className="font-display text-foreground text-4xl font-medium tracking-tight text-balance md:text-5xl">
+        <h2 className="font-display text-foreground text-4xl font-medium tracking-tight text-balance md:text-5xl">
           Every model, one perch
-        </h1>
+        </h2>
         <p className="text-muted-foreground max-w-prose text-lg leading-relaxed">{lede}</p>
         {groups.length > 0 && (
           <ProviderFilter

@@ -6,20 +6,13 @@ import { ErrorType } from "~/utils/errors";
 
 const mocks = vi.hoisted(() => ({
   filterModelsForUserAccess: vi.fn(),
+  getLineupModelsForUser: vi.fn(),
   getModels: vi.fn(),
-  selectModel: vi.fn(),
-  selectMultipleModels: vi.fn(),
-}));
-
-vi.mock("~/lib/modelRouter", () => ({
-  ModelRouter: {
-    selectModel: mocks.selectModel,
-    selectMultipleModels: mocks.selectMultipleModels,
-  },
 }));
 
 vi.mock("~/lib/providers/models", () => ({
   filterModelsForUserAccess: mocks.filterModelsForUserAccess,
+  getLineupModelsForUser: mocks.getLineupModelsForUser,
   getModels: mocks.getModels,
 }));
 
@@ -43,15 +36,13 @@ const user = {
   terms_accepted_at: null,
   plan_id: "free",
 } satisfies IUser;
+const proUser = { ...user, plan_id: "pro" } satisfies IUser;
 
 function model(id: string, overrides: Partial<ModelConfigItem> = {}): ModelConfigItem {
   return {
     matchingModel: id,
     provider: "test-provider",
     modalities: { input: ["text"], output: ["text"] },
-    contextComplexity: 3,
-    reliability: 3,
-    speed: 4,
     ...overrides,
   };
 }
@@ -69,35 +60,37 @@ describe("explicit model access", () => {
 
   it("rejects an inaccessible singular model request", async () => {
     await expect(
-      selectModels(env, "hello", [], undefined, user, "completion-1", "paid"),
+      selectModels({ env, user, attachments: [], tier: "medium", requestedModel: "paid" }),
     ).rejects.toMatchObject({
       type: ErrorType.AUTHORISATION_ERROR,
       statusCode: 403,
     });
 
-    expect(mocks.selectModel).not.toHaveBeenCalled();
+    expect(mocks.getLineupModelsForUser).not.toHaveBeenCalled();
   });
 
   it("rejects a plural request if any requested model is inaccessible", async () => {
     await expect(
-      selectModels(env, "hello", [], undefined, user, "completion-1", undefined, true, [
-        "allowed",
-        "paid",
-      ]),
+      selectModels({
+        env,
+        user,
+        attachments: [],
+        tier: "medium",
+        useMultiModel: true,
+        requestedModels: ["allowed", "paid"],
+      }),
     ).rejects.toMatchObject({
       type: ErrorType.AUTHORISATION_ERROR,
       statusCode: 403,
     });
-
-    expect(mocks.selectMultipleModels).not.toHaveBeenCalled();
   });
 
-  it("preserves an accessible explicit selection without invoking the router", async () => {
+  it("preserves an accessible explicit selection without consulting the lineup", async () => {
     await expect(
-      selectModels(env, "hello", [], undefined, user, "completion-1", "allowed"),
-    ).resolves.toEqual(["allowed"]);
+      selectModels({ env, user, attachments: [], tier: "ultra", requestedModel: "allowed" }),
+    ).resolves.toEqual({ models: ["allowed"] });
 
-    expect(mocks.selectModel).not.toHaveBeenCalled();
+    expect(mocks.getLineupModelsForUser).not.toHaveBeenCalled();
   });
 
   it("requires the accessible model and requested provider to match atomically", async () => {
@@ -110,18 +103,14 @@ describe("explicit model access", () => {
     mocks.filterModelsForUserAccess.mockResolvedValue({ shared: sharedModel });
 
     await expect(
-      selectModels(
+      selectModels({
         env,
-        "hello",
-        [],
-        undefined,
         user,
-        "completion-1",
-        "shared",
-        false,
-        undefined,
-        "provider-b",
-      ),
+        attachments: [],
+        tier: "medium",
+        requestedModel: "shared",
+        requestedProvider: "provider-b",
+      }),
     ).rejects.toMatchObject({
       type: ErrorType.AUTHORISATION_ERROR,
       statusCode: 403,
@@ -159,8 +148,6 @@ describe("explicit model access", () => {
   });
 
   it("allows a Pro account to execute an active paid model", async () => {
-    const proUser = { ...user, plan_id: "pro" } satisfies IUser;
-
     mocks.getModels.mockReturnValue({ paid: paidModel });
     mocks.filterModelsForUserAccess.mockResolvedValue({ paid: paidModel });
 
@@ -171,5 +158,95 @@ describe("explicit model access", () => {
       config: paidModel,
       credentialAuthority: "platform",
     });
+  });
+});
+
+describe("tier model selection", () => {
+  const fable = model("claude-fable-5-1", {
+    provider: "anthropic",
+    family: "claude-fable",
+    modalities: { input: ["text", "image", "pdf"], output: ["text"] },
+    reasoningConfig: { supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"] },
+  });
+  const astra = model("gpt-6-astra", {
+    provider: "openai",
+    family: "gpt-astra",
+    modalities: { input: ["text", "image", "pdf"], output: ["text"] },
+    reasoningConfig: { supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"] },
+  });
+  const geminiFlash = model("gemini-3.5-flash", {
+    provider: "google-ai-studio",
+    isFree: true,
+    modalities: { input: ["text", "image", "video", "audio", "pdf"], output: ["text"] },
+    reasoningConfig: { supportedEffortLevels: ["minimal", "low", "medium", "high"] },
+  });
+  const deepseekFlash = model("deepseek-v4-flash", {
+    provider: "deepseek",
+    isFree: true,
+    reasoningConfig: { supportedEffortLevels: ["low", "high", "max"] },
+  });
+  const geminiLite = model("gemini-3.1-flash-lite", {
+    provider: "google-ai-studio",
+    isFree: true,
+    modalities: { input: ["text", "image", "pdf"], output: ["text"] },
+    reasoningConfig: { supportedEffortLevels: ["minimal", "low", "medium", "high"] },
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getLineupModelsForUser.mockResolvedValue({
+      "claude-fable-5-1": fable,
+      "gpt-6-astra": astra,
+      "google-ai-studio/gemini-3.5-flash": geminiFlash,
+      "deepseek-v4-flash": deepseekFlash,
+      "google-ai-studio/gemini-3.1-flash-lite": geminiLite,
+    });
+  });
+
+  it("walks the tier hierarchy down to what a Free account can execute", async () => {
+    await expect(selectModels({ env, user, attachments: [], tier: "ultra" })).resolves.toEqual({
+      models: ["google-ai-studio/gemini-3.5-flash"],
+      reasoningEffort: "high",
+    });
+  });
+
+  it("gives a Pro account the top of the hierarchy with the tier effort", async () => {
+    await expect(
+      selectModels({ env, user: proUser, attachments: [], tier: "ultra" }),
+    ).resolves.toEqual({
+      models: ["claude-fable-5-1"],
+      reasoningEffort: "high",
+    });
+  });
+
+  it("skips candidates that cannot take the attached input", async () => {
+    await expect(
+      selectModels({
+        env,
+        user,
+        attachments: [{ type: "image", url: "https://example.com/cat.png" }],
+        tier: "low",
+      }),
+    ).resolves.toEqual({
+      models: ["google-ai-studio/gemini-3.1-flash-lite"],
+      reasoningEffort: "low",
+    });
+  });
+
+  it("pairs a comparison alternate from another provider and family", async () => {
+    await expect(
+      selectModels({ env, user: proUser, attachments: [], tier: "ultra", useMultiModel: true }),
+    ).resolves.toEqual({
+      models: ["claude-fable-5-1", "gpt-6-astra"],
+      reasoningEffort: "high",
+    });
+  });
+
+  it("fails closed when no candidate in the tier is executable", async () => {
+    mocks.getLineupModelsForUser.mockResolvedValue({});
+
+    await expect(
+      selectModels({ env, user, attachments: [], tier: "medium" }),
+    ).rejects.toMatchObject({ type: ErrorType.PARAMS_ERROR });
   });
 });

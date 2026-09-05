@@ -15,11 +15,11 @@ export function ProjectRoutingCard({
   return (
     <ControlledProjectRoutingCard
       canManage={canManage}
-      defaultRouterMode={project.defaultRouterMode ?? "auto"}
+      defaultModelTier={project.defaultModelTier ?? null}
       isSaving={updateProject.isPending}
       errorMessage={updateProject.error?.message}
-      onSave={async (defaultRouterMode) => {
-        await updateProject.mutateAsync({ projectId: project.id, input: { defaultRouterMode } });
+      onSave={async (defaultModelTier) => {
+        await updateProject.mutateAsync({ projectId: project.id, input: { defaultModelTier } });
       }}
     />
   );

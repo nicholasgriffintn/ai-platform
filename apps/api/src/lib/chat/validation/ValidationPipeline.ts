@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import type { ModelConfigItem, ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
 
 import type { CoreChatOptions, Message } from "~/types";
 
@@ -23,6 +23,7 @@ export interface ValidationContext {
   modelConfig?: ModelConfigItem;
   guardrails?: any;
   selectedModels?: string[];
+  reasoningEffort?: ReasoningEffort;
 }
 
 export interface ValidatorResult {

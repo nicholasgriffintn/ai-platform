@@ -195,7 +195,7 @@ export async function instantiateProjectTemplate(
       colour:
         configuration.project.colour ??
         deriveProjectColour(projectName, configuration.project.description),
-      defaultRouterMode: configuration.project.defaultRouterMode,
+      defaultModelTier: configuration.project.defaultModelTier,
       codingEnvironment: configuration.project.codingEnvironment,
       createdBy: userId,
     },

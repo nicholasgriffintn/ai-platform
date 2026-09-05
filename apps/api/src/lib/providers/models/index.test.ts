@@ -1,8 +1,13 @@
 import {
+  findModelByReference,
   isActiveModel,
-  MODEL_POLICY_REFERENCES,
+  MODEL_TIER_LINEUP,
+  MODEL_TIER_ROLES,
+  MODEL_TIERS,
   type ModelConfigItem,
   REALTIME_LIVE_PROVIDER_MANIFEST,
+  resolveLineupReasoningEffort,
+  SYSTEM_MODEL_LINEUP,
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
@@ -112,21 +117,34 @@ describe("model response defaults", () => {
 });
 
 describe("central model policy catalogue", () => {
-  it("resolves every policy reference to an active model from the expected provider", () => {
+  it("resolves every hosted and local-server lineup candidate to an active catalogue model", () => {
     const models = getModels({ shouldUseCache: false });
-    const references = MODEL_POLICY_REFERENCES;
+    const candidates = [
+      ...(["hosted", "local-server"] as const).flatMap((runtime) =>
+        MODEL_TIERS.flatMap((tier) =>
+          MODEL_TIER_ROLES.flatMap((role) => [...MODEL_TIER_LINEUP[runtime][tier][role]]),
+        ),
+      ),
+      ...SYSTEM_MODEL_LINEUP.flatMap((role) => [...role.candidates]),
+    ];
 
-    expect(references.length).toBeGreaterThan(0);
+    expect(candidates.length).toBeGreaterThan(0);
 
-    for (const reference of references) {
-      const entry = models[reference.model];
+    for (const candidate of candidates) {
+      const entry = findModelByReference(models, candidate);
 
       if (!entry) {
-        throw new Error(`${reference.provider}:${reference.model} is absent from the catalogue`);
+        throw new Error(`${candidate.provider}:${candidate.model} is absent from the catalogue`);
       }
 
-      expect(entry.provider, reference.model).toBe(reference.provider);
-      expect(isActiveModel(entry), `${reference.model} is inactive`).toBe(true);
+      expect(isActiveModel(entry.config), `${candidate.model} is inactive`).toBe(true);
+
+      if (candidate.effort) {
+        expect(
+          resolveLineupReasoningEffort(entry.config, candidate.effort),
+          `${candidate.model} cannot map effort ${candidate.effort}`,
+        ).toBeDefined();
+      }
     }
   });
 

@@ -1,8 +1,10 @@
-import { MODEL_DEFAULTS, isActiveRouterModel } from "@ngriffin_uk/polychat-schemas";
-import type {
-  ModelConfigItem,
-  ModelModalities,
-  ModelModality,
+import {
+  getSystemModelLineup,
+  isLineupEligibleModel,
+  type ModelConfigItem,
+  type ModelModalities,
+  type ModelModality,
+  type SystemModelRole,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { availableModalities } from "~/constants/models";
@@ -28,7 +30,7 @@ const logger = getLogger({ prefix: "lib/models" });
 let cachedModels: typeof modelConfig | null = null;
 let cachedFreeModels: typeof modelConfig | null = null;
 let cachedFeaturedModels: typeof modelConfig | null = null;
-let cachedRouterModels: typeof modelConfig | null = null;
+let cachedLineupModels: typeof modelConfig | null = null;
 let cachedCapabilities: string[] | null = null;
 
 export interface ModelsOptions {
@@ -342,18 +344,18 @@ export function getFeaturedModels(
   return cachedFeaturedModels;
 }
 
-export function getIncludedInRouterModels(
+export function getLineupModels(
   options: ModelsOptions = {
     shouldUseCache: true,
   },
 ) {
-  if (cachedRouterModels && options.shouldUseCache) {
-    return cachedRouterModels;
+  if (cachedLineupModels && options.shouldUseCache) {
+    return cachedLineupModels;
   }
 
-  cachedRouterModels = Object.entries(modelConfig).reduce(
+  cachedLineupModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
-      if (isActiveRouterModel(model)) {
+      if (isLineupEligibleModel(model)) {
         acc[key] = model;
       }
 
@@ -362,15 +364,15 @@ export function getIncludedInRouterModels(
     {} as typeof modelConfig,
   );
 
-  return cachedRouterModels;
+  return cachedLineupModels;
 }
 
-export function getIncludedInRouterFreeModels(
+export function getLineupFreeModels(
   options: ModelsOptions = {
     shouldUseCache: true,
   },
 ) {
-  return Object.entries(getIncludedInRouterModels(options)).reduce(
+  return Object.entries(getLineupModels(options)).reduce(
     (acc, [key, model]) => {
       if (model.isFree) {
         acc[key] = model;
@@ -382,7 +384,7 @@ export function getIncludedInRouterFreeModels(
   );
 }
 
-export async function getIncludedInRouterModelsForUser(
+export async function getLineupModelsForUser(
   env: IEnv,
   user?: IUser,
   options: ModelsOptions = {
@@ -390,14 +392,14 @@ export async function getIncludedInRouterModelsForUser(
   },
 ): Promise<Record<string, ModelConfigItem>> {
   if (!user?.id) {
-    const freeModels = getIncludedInRouterFreeModels(options);
+    const freeModels = getLineupFreeModels(options);
     const visibleModels = await filterModelsForUserAccess(freeModels, env, undefined, options);
 
     return getExecutableModelsForAccount(visibleModels, user);
   }
 
-  const allRouterModels = getIncludedInRouterModels(options);
-  const visibleModels = await filterModelsForUserAccess(allRouterModels, env, user.id, options);
+  const lineupModels = getLineupModels(options);
+  const visibleModels = await filterModelsForUserAccess(lineupModels, env, user.id, options);
 
   return getExecutableModelsForAccount(visibleModels, user);
 }
@@ -406,7 +408,7 @@ export async function getDefaultChatModel(
   env: IEnv,
   user?: IUser,
 ): Promise<{ model: string; provider: string }> {
-  const availableModels = await getIncludedInRouterModelsForUser(env, user, {
+  const availableModels = await getLineupModelsForUser(env, user, {
     shouldUseCache: false,
   });
   const selected = resolveDefaultChatModel(availableModels, user);
@@ -533,39 +535,41 @@ export async function filterModelsForUserAccess(
   }
 }
 
-/**
- * Get the appropriate model to use for auxiliary tasks like summarization,
- * classification, etc., based on which models are available.
- * @param env The environment object
- * @param user Optional user for model access check
- * @returns Object containing model ID and provider
- */
-export async function getAuxiliaryModel(
-  env: IEnv,
-  user?: IUser,
-): Promise<{ model: string; provider: string }> {
-  const availableModels = await getIncludedInRouterModelsForUser(env, user);
+async function resolveSystemModel(env: IEnv, user: IUser | undefined, role: SystemModelRole) {
+  const availableModels = await getLineupModelsForUser(env, user);
+  const lineup = getSystemModelLineup(role);
   const selected =
-    resolvePolicyModel(availableModels, MODEL_DEFAULTS.auxiliary, user) ??
+    resolvePolicyModel(availableModels, lineup.candidates, user) ??
     resolveDefaultChatModel(availableModels, user);
 
   return { model: selected.config.matchingModel, provider: selected.config.provider };
 }
 
-export const getAuxiliaryModelForRetrieval = async (env: IEnv, user?: IUser) => {
-  const availableModels = await getIncludedInRouterModelsForUser(env, user);
-  const selected =
-    resolvePolicyModel(availableModels, MODEL_DEFAULTS.retrieval, user) ??
-    resolveDefaultChatModel(availableModels, user);
+export async function getAuxiliaryModel(
+  env: IEnv,
+  user?: IUser,
+): Promise<{ model: string; provider: string }> {
+  return resolveSystemModel(env, user, "housekeeping");
+}
 
-  return { model: selected.config.matchingModel, provider: selected.config.provider };
-};
+export const getTitlingModel = async (env: IEnv, user?: IUser) =>
+  resolveSystemModel(env, user, "titling");
+
+export const getCompactionModel = async (env: IEnv, user?: IUser) =>
+  resolveSystemModel(env, user, "compaction");
+
+export const getAuxiliaryModelForRetrieval = async (env: IEnv, user?: IUser) =>
+  resolveSystemModel(env, user, "retrieval");
 
 export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
   const visibleModels = await filterModelsForUserAccess(getModels(), env, user?.id, {
     shouldUseCache: false,
   });
-  const selected = resolvePolicyModel(visibleModels, MODEL_DEFAULTS.guardrails, user);
+  const selected = resolvePolicyModel(
+    visibleModels,
+    getSystemModelLineup("guardrails").candidates,
+    user,
+  );
 
   if (!selected) {
     throw new AssistantError(

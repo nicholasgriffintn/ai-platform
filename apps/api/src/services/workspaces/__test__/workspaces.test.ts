@@ -328,34 +328,34 @@ describe("workspace and project isolation", () => {
     };
     const repository = new WorkspaceRepository(context.env);
 
-    await repository.updateProject(PROJECT_ID, { default_router_mode: "lite" });
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining("default_router_mode = ?"));
-    expect(statement.bind).toHaveBeenLastCalledWith("lite", PROJECT_ID);
+    await repository.updateProject(PROJECT_ID, { default_model_tier: "low" });
+    expect(prepare).toHaveBeenCalledWith(expect.stringContaining("default_model_tier = ?"));
+    expect(statement.bind).toHaveBeenLastCalledWith("low", PROJECT_ID);
     expect(statement.run).toHaveBeenCalledOnce();
 
-    await repository.updateProject(PROJECT_ID, { default_router_mode: "auto" });
-    expect(statement.bind).toHaveBeenLastCalledWith("auto", PROJECT_ID);
+    await repository.updateProject(PROJECT_ID, { default_model_tier: null });
+    expect(statement.bind).toHaveBeenLastCalledWith(null, PROJECT_ID);
     expect(statement.run).toHaveBeenCalledTimes(2);
   });
 
   it("saves and clears the project routing preference with an audit record", async () => {
     const { context, repositories, audit } = createHarness();
 
-    for (const defaultRouterMode of ["lite", "auto"] as const) {
+    for (const defaultModelTier of ["low", null] as const) {
       repositories.getProject.mockResolvedValue({
         ...project,
-        default_router_mode: defaultRouterMode,
+        default_model_tier: defaultModelTier,
       });
-      const result = await updateProject(context, PROJECT_ID, { defaultRouterMode });
+      const result = await updateProject(context, PROJECT_ID, { defaultModelTier });
 
       expect(repositories.updateProject).toHaveBeenLastCalledWith(PROJECT_ID, {
-        default_router_mode: defaultRouterMode,
+        default_model_tier: defaultModelTier,
       });
-      expect(result.defaultRouterMode).toBe(defaultRouterMode);
+      expect(result.defaultModelTier).toBe(defaultModelTier);
       expect(audit.createRecord).toHaveBeenLastCalledWith(
         expect.objectContaining({
           action: "project.updated",
-          metadata: { fields: ["defaultRouterMode"] },
+          metadata: { fields: ["defaultModelTier"] },
         }),
       );
     }
@@ -371,7 +371,7 @@ describe("workspace and project isolation", () => {
       const { context, repositories } = createHarness({ role });
 
       await expect(
-        updateProject(context, PROJECT_ID, { defaultRouterMode: "max" }),
+        updateProject(context, PROJECT_ID, { defaultModelTier: "ultra" }),
       ).rejects.toMatchObject({ statusCode: role ? 403 : 404 });
       expect(repositories.updateProject).not.toHaveBeenCalled();
     }
@@ -402,11 +402,11 @@ describe("workspace and project isolation", () => {
       description: "Summarise interview themes",
       instructions: "",
       colour: "#2563EB",
-      defaultRouterMode: "pro",
+      defaultModelTier: "high",
     });
 
     expect(repositories.createProject).toHaveBeenCalledWith(
-      expect.objectContaining({ colour: "#2563EB", defaultRouterMode: "pro" }),
+      expect.objectContaining({ colour: "#2563EB", defaultModelTier: "high" }),
     );
   });
 

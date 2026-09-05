@@ -297,7 +297,7 @@ test.describe("Work experience", () => {
       await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
     });
 
-    test("submits saved Auto routing while explicit tiers and models remain authoritative", async ({
+    test("follows the saved project tier while explicit tiers and models remain authoritative", async ({
       homePage,
       polychatApi,
       workPage,
@@ -305,41 +305,42 @@ test.describe("Work experience", () => {
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
       const projectId = workPage.currentProjectId();
 
-      await workPage.setProjectRoutingPreference("lite");
+      await workPage.setProjectRoutingPreference("low");
       await workPage.openNewProjectConversation();
-      await homePage.selectAutomaticMode("Auto");
-      const automatic = await homePage.sendMessageAndRequireCompletion(
-        "Use the saved project automatic preference",
+      await homePage.selectModelTier("Default");
+      const inherited = await homePage.sendMessageAndRequireCompletion(
+        "Use the saved project default tier",
       );
 
-      expect(automatic.model_router_mode).toBe("auto");
-      expect(automatic.metadata).toMatchObject({ project_id: projectId });
+      expect(inherited.model_tier).toBeUndefined();
+      expect(inherited.model).toBeUndefined();
+      expect(inherited.metadata).toMatchObject({ project_id: projectId });
       await homePage.waitForChatResponse(0);
 
-      await homePage.selectAutomaticMode("Max");
+      await homePage.selectModelTier("Ultra");
       const explicitTier = await homePage.sendMessageAndRequireCompletion(
-        "Override the saved project preference with Max",
+        "Override the saved project tier with Ultra",
       );
 
-      expect(explicitTier.model_router_mode).toBe("max");
+      expect(explicitTier.model_tier).toBe("ultra");
       await homePage.waitForChatResponse(1);
 
       await homePage.selectModel("GPT-5.5");
       const explicitModel = await homePage.sendMessageAndRequireCompletion(
-        "Override the saved project preference with a named model",
+        "Override the saved project tier with a named model",
       );
 
       expect(explicitModel.model).toBe("gpt-5.5");
-      expect(explicitModel.model_router_mode).toBeUndefined();
+      expect(explicitModel.model_tier).toBeUndefined();
       await homePage.waitForChatResponse(2);
 
       await homePage.navigate("/chat");
-      await homePage.selectAutomaticMode("Auto");
+      await homePage.selectModelTier("Default");
       const personalAutomatic = await homePage.sendMessageAndRequireCompletion(
-        "Keep personal automatic routing outside Work",
+        "Keep the personal default tier outside Work",
       );
 
-      expect(personalAutomatic.model_router_mode).toBe("auto");
+      expect(personalAutomatic.model_tier).toBeUndefined();
       expect(personalAutomatic.metadata).toBeUndefined();
       await homePage.waitForChatResponse(0);
       expect(
@@ -517,12 +518,12 @@ test.describe("Work experience", () => {
       await expect(
         page.getByText("Use concise answers and cite the release context.", { exact: true }),
       ).toBeVisible();
-      await workPage.setProjectRoutingPreference("lite");
+      await workPage.setProjectRoutingPreference("low");
       await workPage.reload();
-      await expect(workPage.projectRoutingPreference()).toHaveValue("lite");
-      await workPage.setProjectRoutingPreference("auto");
+      await expect(workPage.projectRoutingPreference()).toHaveValue("low");
+      await workPage.setProjectRoutingPreference("");
       await workPage.reload();
-      await expect(workPage.projectRoutingPreference()).toHaveValue("auto");
+      await expect(workPage.projectRoutingPreference()).toHaveValue("");
       await captureVisualSnapshots(page, "release-work-project-config", {
         ...DEFAULT_VISUAL_CHECKPOINTS,
         viewports: [{ name: "desktop", width: 1280, height: 720 }],
@@ -547,7 +548,7 @@ test.describe("Work experience", () => {
       );
 
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-      await workPage.setProjectRoutingPreference("lite");
+      await workPage.setProjectRoutingPreference("low");
       const projectId = workPage.currentProjectId();
       const workspaceId = workPage.currentWorkspaceId();
       const projectPath = new URL(page.url()).pathname;
@@ -603,7 +604,7 @@ test.describe("Work experience", () => {
 
         await inviteeWorkPage.acceptInvitation(inviteUrl);
         await inviteeWorkPage.navigate(projectPath);
-        await expect(inviteeWorkPage.projectRoutingPreference()).toHaveValue("lite");
+        await expect(inviteeWorkPage.projectRoutingPreference()).toHaveValue("low");
         await expect(inviteeWorkPage.projectRoutingPreference()).toBeDisabled();
         const inviteeApi = new PolychatApi(inviteeContext.request);
         const visibleSkill = await inviteeApi.getProjectSkill(projectId, memberSkill.name);
@@ -617,10 +618,10 @@ test.describe("Work experience", () => {
             memberSkillRevision.id,
           ),
         ).toBe(403);
-        expect(await inviteeApi.projectUpdateStatus(projectId, "max")).toBe(403);
+        expect(await inviteeApi.projectUpdateStatus(projectId, "ultra")).toBe(403);
         expect(await inviteeApi.workspaceUsageStatus(workspaceId)).toBe(403);
         expect(
-          await new PolychatApi(outsiderContext.request).projectUpdateStatus(projectId, "max"),
+          await new PolychatApi(outsiderContext.request).projectUpdateStatus(projectId, "ultra"),
         ).toBe(404);
         expect(
           await new PolychatApi(outsiderContext.request).workspaceUsageStatus(workspaceId),
@@ -633,7 +634,7 @@ test.describe("Work experience", () => {
 
       await workPage.promoteAndRemoveMember(invitee.email);
       await workPage.navigate(projectPath);
-      await expect(workPage.projectRoutingPreference()).toHaveValue("lite");
+      await expect(workPage.projectRoutingPreference()).toHaveValue("low");
       await polychatApi.deleteProjectSkill(projectId, memberSkill.name);
       await captureVisualSnapshots(page, "release-work-invitee-cycle", {
         ...DEFAULT_VISUAL_CHECKPOINTS,
@@ -649,9 +650,9 @@ test.describe("Work experience", () => {
         "Validates governed templates.",
         "Use the saved template instructions.",
       );
-      await workPage.setProjectRoutingPreference("lite");
+      await workPage.setProjectRoutingPreference("low");
       expect(await workPage.saveUseAndDeleteProjectTemplate("Release template project")).toBe(
-        "lite",
+        "low",
       );
       await expect(
         page.getByRole("heading", { name: "Release template project", exact: true }),

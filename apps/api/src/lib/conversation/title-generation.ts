@@ -5,7 +5,7 @@ import { sanitiseMessages } from "~/lib/chat/messages/sanitise";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { createInitialConversationTitle } from "~/lib/conversation/title-source";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel } from "~/lib/providers/models";
+import { getTitlingModel } from "~/lib/providers/models";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { stripSurroundingQuotes } from "~/utils/strings";
@@ -47,7 +47,7 @@ export async function generateConversationTitle(
     return DEFAULT_CONVERSATION_TITLE;
   }
 
-  const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(runtimeEnv, user);
+  const { model: modelToUse, provider: providerToUse } = await getTitlingModel(runtimeEnv, user);
   const provider = getChatProvider(providerToUse, { env: runtimeEnv, user });
   const response: any = await provider.getResponse({
     env: runtimeEnv,

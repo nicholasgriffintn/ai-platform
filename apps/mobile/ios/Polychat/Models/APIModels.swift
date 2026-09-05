@@ -29,7 +29,7 @@ public struct ChatCompletionRequest: Encodable {
     let serviceTier: String?
     let enabledTools: [String]?
     let toolSelectionMode: String
-    let modelRouterMode: String?
+    let modelTier: String?
     let commandId: String
     let runId: String?
     let connectorApprovalId: String?
@@ -45,7 +45,7 @@ public struct ChatCompletionRequest: Encodable {
         case serviceTier = "service_tier"
         case enabledTools = "enabled_tools"
         case toolSelectionMode = "tool_selection_mode"
-        case modelRouterMode = "model_router_mode"
+        case modelTier = "model_tier"
         case commandId = "command_id"
         case runId = "run_id"
         case connectorApprovalId = "connector_approval_id"
@@ -59,6 +59,7 @@ public struct ChatCompletionRequest: Encodable {
         completionId: String? = nil,
         settings: ChatSettings? = nil,
         stream: Bool = false,
+        modelTier: String? = nil,
         commandId: String = UUID().uuidString,
         runId: String? = nil,
         connectorApprovalId: String? = nil
@@ -83,7 +84,7 @@ public struct ChatCompletionRequest: Encodable {
         self.serviceTier = settings?.serviceTier?.rawValue
         self.enabledTools = settings?.enabledTools.isEmpty == false ? settings?.enabledTools : nil
         self.toolSelectionMode = "managed"
-        self.modelRouterMode = model == nil ? "auto" : nil
+        self.modelTier = model == nil ? modelTier : nil
         self.commandId = commandId
         self.runId = runId
         self.connectorApprovalId = connectorApprovalId

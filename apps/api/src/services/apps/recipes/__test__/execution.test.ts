@@ -91,7 +91,6 @@ describe("executeRecipeInvocationChat", () => {
       request: expect.objectContaining({
         completion_id: "recipe_generated-id",
         conversation_type: "task",
-        model_router_mode: "auto",
         mode: "agent",
         stream: false,
         store: true,

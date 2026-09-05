@@ -97,7 +97,7 @@ export function formatProjectSummary(row: ProjectRow): ProjectSummary {
     updatedAt: row.updated_at,
     conversationCount: Number(row.conversation_count),
     capabilityCount: Number(row.capability_count),
-    defaultRouterMode: row.default_router_mode ?? "auto",
+    defaultModelTier: row.default_model_tier ?? null,
     codingEnvironment:
       row.coding_enabled === 1 && codingEnvironment.success ? codingEnvironment.data : null,
     environmentCache: environmentCache.success

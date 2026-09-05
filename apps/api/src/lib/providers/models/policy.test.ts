@@ -5,6 +5,7 @@ import {
   getExecutableModelsForAccount,
   getModelCredentialAuthority,
   resolveDefaultChatModel,
+  resolveTierModel,
 } from "./policy";
 
 function model(overrides: Partial<ModelConfigItem> = {}): ModelConfigItem {
@@ -12,36 +13,31 @@ function model(overrides: Partial<ModelConfigItem> = {}): ModelConfigItem {
     matchingModel: "model",
     provider: "provider",
     modalities: { input: ["text"], output: ["text"] },
-    contextComplexity: 3,
-    reliability: 3,
-    speed: 4,
-    artificialAnalysis: { intelligenceIndex: 20 },
     ...overrides,
   };
 }
 
 describe("resolveDefaultChatModel", () => {
-  it("selects defaults from the models executable by each account tier", () => {
+  it("selects the Medium tier model each account can execute", () => {
     const models: ModelConfig = {
-      "free-standard": model({
-        matchingModel: "free-standard",
+      "google-ai-studio/gemini-3.5-flash": model({
+        matchingModel: "gemini-3.5-flash",
+        provider: "google-ai-studio",
         isFree: true,
       }),
-      "pro-capable": model({
-        matchingModel: "pro-capable",
-        contextComplexity: 5,
-        reliability: 5,
-        speed: 3,
-        strengths: ["reasoning", "coding", "tool_use"],
-        artificialAnalysis: { intelligenceIndex: 45 },
+      "gpt-5.6-sol": model({
+        matchingModel: "gpt-5.6-sol",
+        provider: "openai",
       }),
     };
 
-    expect(resolveDefaultChatModel(models, { plan_id: "free" }).id).toBe("free-standard");
-    expect(resolveDefaultChatModel(models, { plan_id: "pro" }).id).toBe("pro-capable");
+    expect(resolveDefaultChatModel(models, { plan_id: "free" }).id).toBe(
+      "google-ai-studio/gemini-3.5-flash",
+    );
+    expect(resolveDefaultChatModel(models, { plan_id: "pro" }).id).toBe("gpt-5.6-sol");
   });
 
-  it("prefers an enabled BYOK provider for a free account", () => {
+  it("falls back to an enabled BYOK provider when nothing in the lineup is executable", () => {
     const models: ModelConfig = {
       "platform-free": model({
         matchingModel: "platform-free",
@@ -59,21 +55,15 @@ describe("resolveDefaultChatModel", () => {
     expect(resolveDefaultChatModel(models, { plan_id: "free" }).id).toBe("configured-byok");
   });
 
-  it("never selects inactive, non-chat, or non-router entries", () => {
+  it("never selects inactive or non-chat entries", () => {
     const models: ModelConfig = {
       deprecated: model({ deprecated: true, isFree: true }),
       "status-deprecated": model({ status: "deprecated", isFree: true }),
       image: model({
         isFree: true,
         modalities: { input: ["image"], output: ["image"] },
-        contextComplexity: 5,
-        reliability: 5,
-        speed: 5,
       }),
-      "missing-router-scores": model({
-        isFree: true,
-        contextComplexity: undefined,
-      }),
+      realtime: model({ isFree: true, supportsRealtimeSession: true }),
       eligible: model({
         matchingModel: "eligible",
         isFree: true,
@@ -93,7 +83,24 @@ describe("resolveDefaultChatModel", () => {
       "No active chat model is available for this account",
     );
   });
+});
 
+describe("resolveTierModel", () => {
+  it("resolves the coding role separately from the agent role", () => {
+    const models: ModelConfig = {
+      "claude-sonnet-5": model({ matchingModel: "claude-sonnet-5", provider: "anthropic" }),
+      "gpt-5.6-sol": model({ matchingModel: "gpt-5.6-sol", provider: "openai" }),
+    };
+
+    expect(resolveTierModel(models, { plan_id: "pro" }, "medium", "agent")?.id).toBe("gpt-5.6-sol");
+    expect(resolveTierModel(models, { plan_id: "pro" }, "medium", "coding")?.id).toBe(
+      "claude-sonnet-5",
+    );
+    expect(resolveTierModel(models, { plan_id: "free" }, "medium", "coding")).toBeNull();
+  });
+});
+
+describe("credential authority", () => {
   it("requires BYOK for Free models visible only through a configured provider", () => {
     const byokFreeModel = model({
       isFree: true,

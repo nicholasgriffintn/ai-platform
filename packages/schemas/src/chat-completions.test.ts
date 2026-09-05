@@ -14,15 +14,19 @@ describe("chat completions schema", () => {
     expect(connectorApprovalIdSchema.safeParse("ccs_approval-123").success).toBe(false);
   });
 
-  it("accepts automatic router mode without an explicit model", () => {
+  it("accepts a model tier without an explicit model", () => {
     expect(
       createChatCompletionsJsonSchema.parse({
-        model_router_mode: "pro",
+        model_tier: "high",
         messages,
       }),
     ).toMatchObject({
-      model_router_mode: "pro",
+      model_tier: "high",
     });
+  });
+
+  it("accepts a request with neither model nor tier so the default tier applies", () => {
+    expect(createChatCompletionsJsonSchema.parse({ messages })).not.toHaveProperty("model_tier");
   });
 
   it("accepts and strips retired request-level retrieval settings during rollout", () => {
@@ -100,10 +104,10 @@ describe("chat completions schema", () => {
     });
   });
 
-  it("rejects automatic router mode with an explicit model", () => {
+  it("rejects a model tier with an explicit model", () => {
     const result = createChatCompletionsJsonSchema.safeParse({
       model: "gpt-5",
-      model_router_mode: "pro",
+      model_tier: "high",
       messages,
     });
 
@@ -112,17 +116,17 @@ describe("chat completions schema", () => {
       expect(result.error.issues).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            path: ["model_router_mode"],
-            message: "model_router_mode is only valid when no explicit model is provided",
+            path: ["model_tier"],
+            message: "model_tier is only valid when no explicit model is provided",
           }),
         ]),
       );
     }
   });
 
-  it("rejects automatic router mode with explicit multi-model selection", () => {
+  it("rejects a model tier with explicit multi-model selection", () => {
     const result = createChatCompletionsJsonSchema.safeParse({
-      model_router_mode: "pro",
+      model_tier: "high",
       models: ["gpt-5", "claude-opus"],
       messages,
       use_multi_model: true,
@@ -133,8 +137,8 @@ describe("chat completions schema", () => {
       expect(result.error.issues).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            path: ["model_router_mode"],
-            message: "model_router_mode is only valid when no explicit model is provided",
+            path: ["model_tier"],
+            message: "model_tier is only valid when no explicit model is provided",
           }),
         ]),
       );

@@ -26,7 +26,7 @@ import {
   type ChatRunSnapshotResponse,
   type Goal,
   type ModelConfigItem,
-  type ModelRouterMode,
+  type ModelTier,
   type ToolSelectionMode,
 } from "@ngriffin_uk/polychat-schemas";
 import {
@@ -123,7 +123,7 @@ export interface StreamChatCompletionsParams {
   mode: ChatMode;
   model?: string;
   modelConfig?: ModelConfigItem;
-  modelRouterMode?: ModelRouterMode;
+  modelTier?: ModelTier;
   models?: string[];
   onProgress: StreamProgressHandler;
   onStateChange: (state: string, data?: any) => void;
@@ -738,7 +738,7 @@ export class ChatService {
     mode,
     model,
     modelConfig,
-    modelRouterMode,
+    modelTier,
     models,
     onProgress,
     onStateChange,
@@ -796,7 +796,7 @@ export class ChatService {
       stream: streamingEnabled,
       ...generationSettings,
       models,
-      model_router_mode: modelRouterMode,
+      model_tier: modelTier,
       provider,
       mode,
       use_multi_model: useMultiModel,

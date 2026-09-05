@@ -8,7 +8,7 @@ export function meta() {
     {
       name: "description",
       content:
-        "Every model Polychat can reach, grouped by provider, with what each one takes in and how much context it holds. Pick one per message or leave it to Auto.",
+        "The models Polychat uses for each tier and system task, then every model it can reach grouped by provider. Pick one per message or pick a tier.",
     },
   ];
 }

@@ -3,16 +3,17 @@ import type {
   ChatMode,
   ModelCatalogItem,
   ModelConfigItem,
+  ModelLineupRuntime,
   ModelModality,
-  ModelRouterMode,
+  ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { Cloud, Computer, Filter, Gauge, Search, Server } from "lucide-react";
 import type { KeyboardEvent, RefObject } from "react";
 
-import { AutoModePicker } from "./AutoModePicker";
 import { ModelsList } from "./ModelsList";
+import { ModelTierPicker, type ModelTierSelection } from "./ModelTierPicker";
 
-export type ModelSelectorTab = "auto" | "models";
+export type ModelSelectorTab = "tiers" | "models";
 
 export interface ModelSelectorPanelLayout {
   left: number;
@@ -27,7 +28,7 @@ export interface ModelSelectorPanelProps {
 
   selectedTab: ModelSelectorTab;
   onTabChange: (tab: ModelSelectorTab) => void;
-  showAutoTab: boolean;
+  showTiersTab: boolean;
 
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
@@ -38,9 +39,10 @@ export interface ModelSelectorPanelProps {
   chatMode?: ChatMode;
   onChatModeChange?: (mode: ChatMode) => void;
 
-  autoModeModels: ModelConfigItem[];
-  autoMode: ModelRouterMode;
-  onAutoModeChange: (mode: ModelRouterMode) => void;
+  tierModels: ModelConfigItem[];
+  tierRuntime: ModelLineupRuntime;
+  modelTier: ModelTier | null;
+  onModelTierChange: (selection: ModelTierSelection) => void;
 
   models: ModelCatalogItem[];
   featuredModelIds: Record<string, ModelCatalogItem>;
@@ -61,7 +63,7 @@ export function ModelSelectorPanel({
   onKeyDown,
   selectedTab,
   onTabChange,
-  showAutoTab,
+  showTiersTab,
   searchQuery,
   onSearchQueryChange,
   capabilities,
@@ -69,9 +71,10 @@ export function ModelSelectorPanel({
   onCapabilityChange,
   chatMode,
   onChatModeChange,
-  autoModeModels,
-  autoMode,
-  onAutoModeChange,
+  tierModels,
+  tierRuntime,
+  modelTier,
+  onModelTierChange,
   models,
   featuredModelIds,
   isDisabled,
@@ -146,7 +149,7 @@ export function ModelSelectorPanel({
         onValueChange={(value) => {
           const tab = value as ModelSelectorTab;
 
-          if (!showAutoTab && tab !== "models") {
+          if (!showTiersTab && tab !== "models") {
             return;
           }
 
@@ -154,12 +157,12 @@ export function ModelSelectorPanel({
         }}
         className="min-h-0 flex-1 px-2 pb-2 pt-2"
       >
-        {showAutoTab && (
+        {showTiersTab && (
           <>
             <TabsList className="grid h-auto w-full grid-cols-2 gap-1">
-              <TabsTrigger value="auto" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
+              <TabsTrigger value="tiers" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
                 <Gauge className="h-4 w-4" />
-                Auto
+                Tiers
               </TabsTrigger>
               <TabsTrigger value="models" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
                 <Server className="h-4 w-4" />
@@ -168,12 +171,14 @@ export function ModelSelectorPanel({
             </TabsList>
             <div className="w-full border-b border-border" />
 
-            <TabsContent value="auto" className="min-h-0 overflow-y-auto">
-              <AutoModePicker
-                models={autoModeModels}
-                selectedMode={autoMode}
+            <TabsContent value="tiers" className="min-h-0 overflow-y-auto">
+              <ModelTierPicker
+                models={tierModels}
+                runtime={tierRuntime}
+                selectedTier={modelTier}
+                allowInherit={tierRuntime === "hosted"}
                 disabled={isDisabled || isModelLocked}
-                onSelectMode={onAutoModeChange}
+                onSelectTier={onModelTierChange}
               />
             </TabsContent>
           </>

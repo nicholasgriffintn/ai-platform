@@ -1,10 +1,21 @@
-import type { ModelConfigItem, ModelRouterMode } from "@ngriffin_uk/polychat-schemas";
+import {
+  getModelInputModalities,
+  type ModelConfigItem,
+  type ModelModality,
+  type ModelTier,
+  type ReasoningEffort,
+} from "@ngriffin_uk/polychat-schemas";
 
-import { ModelRouter } from "~/lib/modelRouter";
-import { filterModelsForUserAccess, getModels } from "~/lib/providers/models";
+import {
+  filterModelsForUserAccess,
+  getLineupModelsForUser,
+  getModels,
+} from "~/lib/providers/models";
 import {
   getExecutableModelsForAccount,
   getModelCredentialAuthority,
+  resolveTierAlternateModel,
+  resolveTierModel,
 } from "~/lib/providers/models/policy";
 import type { Attachment, CredentialAuthority, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -106,69 +117,109 @@ async function assertExplicitModelsAccessible(
   );
 }
 
-/**
- * Chooses one or multiple models based on flags and user request.
- * @param env - The environment variables
- * @param lastMessageText - The last message text
- * @param attachments - The attachments
- * @param budgetConstraint - The budget constraint
- * @param user - The user
- * @param completionId - The completion ID
- * @param requestedModel - The requested model
- * @param use_multi_model - Whether to use multiple models
- * @param requestedModels - Explicit model IDs requested by the caller
- * @param requestedProvider - Optional provider constraint for requested models
- * @param routerMode - Automatic router mode used when no explicit model is requested
- * @returns The selected models
- */
-export async function selectModels(
-  env: IEnv,
-  lastMessageText: string,
-  attachments: Attachment[],
-  budgetConstraint: number | undefined,
-  user: IUser | undefined,
-  completionId: string,
-  requestedModel?: string,
-  use_multi_model?: boolean,
-  requestedModels?: string[],
-  requestedProvider?: string,
-  routerMode: ModelRouterMode = "auto",
-): Promise<string[]> {
+const ATTACHMENT_INPUT_MODALITIES: Partial<Record<Attachment["type"], ModelModality>> = {
+  image: "image",
+  document: "pdf",
+  audio: "audio",
+  video: "video",
+};
+
+function requiredInputModalities(attachments: Attachment[]): ModelModality[] {
+  const required = new Set<ModelModality>();
+
+  for (const attachment of attachments) {
+    const modality = ATTACHMENT_INPUT_MODALITIES[attachment.type];
+
+    if (modality) {
+      required.add(modality);
+    }
+  }
+
+  return [...required];
+}
+
+function supportsRequiredInputs(model: ModelConfigItem, required: ModelModality[]) {
+  const inputs = getModelInputModalities(model);
+
+  return required.every((modality) => {
+    if (modality === "pdf") {
+      return (
+        model.supportsDocuments === true || inputs.includes("pdf") || inputs.includes("document")
+      );
+    }
+
+    if (modality === "image") {
+      return model.multimodal === true || inputs.includes("image");
+    }
+
+    return inputs.includes(modality);
+  });
+}
+
+export interface SelectModelsRequest {
+  env: IEnv;
+  user?: IUser;
+  attachments: Attachment[];
+  tier: ModelTier;
+  requestedModel?: string;
+  requestedModels?: string[];
+  requestedProvider?: string;
+  useMultiModel?: boolean;
+}
+
+export interface SelectedModels {
+  models: string[];
+  reasoningEffort?: ReasoningEffort;
+}
+
+export async function selectModels({
+  env,
+  user,
+  attachments,
+  tier,
+  requestedModel,
+  requestedModels,
+  requestedProvider,
+  useMultiModel,
+}: SelectModelsRequest): Promise<SelectedModels> {
   const explicitModels = normaliseExplicitModels(requestedModels);
 
   if (explicitModels.length) {
     await assertExplicitModelsAccessible(env, user, explicitModels, requestedProvider);
 
-    return explicitModels;
+    return { models: explicitModels };
   }
 
   if (requestedModel) {
     await assertExplicitModelsAccessible(env, user, [requestedModel], requestedProvider);
 
-    return [requestedModel];
+    return { models: [requestedModel] };
   }
 
-  if (use_multi_model && !requestedModel) {
-    return ModelRouter.selectMultipleModels(
-      env,
-      lastMessageText,
-      attachments,
-      budgetConstraint,
-      user,
-      completionId,
-      routerMode,
+  const availableModels = await getLineupModelsForUser(env, user);
+  const required = requiredInputModalities(attachments);
+  const options = {
+    isEligible: (model: ModelConfigItem) =>
+      supportsRequiredInputs(model, required) &&
+      (!requestedProvider || model.provider === requestedProvider),
+  };
+  const primary = resolveTierModel(availableModels, user, tier, "agent", options);
+
+  if (!primary) {
+    throw new AssistantError(
+      `No model in the ${tier} tier is available for this account${
+        required.length ? ` with ${required.join(", ")} input` : ""
+      }`,
+      ErrorType.PARAMS_ERROR,
     );
   }
 
-  const model = await ModelRouter.selectModel(
-    env,
-    lastMessageText,
-    attachments,
-    budgetConstraint,
-    user,
-    completionId,
-    routerMode,
-  );
+  const alternate = useMultiModel
+    ? resolveTierAlternateModel(availableModels, user, tier, "agent", primary, options)
+    : null;
 
-  return [model];
+  return {
+    models: alternate ? [primary.id, alternate.id] : [primary.id],
+    reasoningEffort: primary.effort,
+  };
 }

@@ -20,8 +20,8 @@ export function ModelsBand() {
   );
   const lede =
     isLoading || models.length === 0
-      ? "Every frontier model in one picker, chosen per message or left to Auto. Bring your own keys and the usage is yours."
-      : `${models.length} models from ${providers.length} providers in one picker, chosen per message or left to Auto. Bring your own keys and the usage is yours.`;
+      ? "Every frontier model in one picker, chosen per message or by tier. Bring your own keys and the usage is yours."
+      : `${models.length} models from ${providers.length} providers in one picker, chosen per message or by tier. Bring your own keys and the usage is yours.`;
 
   return (
     <DiscoverBand

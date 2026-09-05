@@ -218,8 +218,8 @@ export class WorkPage extends BasePage {
     await this.page.getByText(instructions, { exact: true }).waitFor();
   }
 
-  async setProjectRoutingPreference(mode: "auto" | "lite" | "standard" | "pro" | "max") {
-    await this.page.getByLabel("Project default", { exact: true }).selectOption(mode);
+  async setProjectRoutingPreference(tier: "" | "low" | "medium" | "high" | "ultra") {
+    await this.page.getByLabel("Project default", { exact: true }).selectOption(tier);
     await this.page.getByRole("button", { name: "Save preference" }).click();
     await this.page.getByRole("button", { name: "Save preference" }).waitFor({ state: "hidden" });
   }

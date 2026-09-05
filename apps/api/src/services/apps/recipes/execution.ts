@@ -137,7 +137,6 @@ export async function executeRecipeInvocationChat(params: {
           content: params.invocation.conversationStarter,
         },
       ],
-      model_router_mode: "auto",
       mode: "agent",
       stream: false,
       store: true,
