@@ -58,6 +58,8 @@ function stateLabel(item: CapabilityDiscoveryItem) {
       return "Setup required";
     case "unavailable":
       return "Unavailable";
+    case "unknown":
+      return "Unknown";
   }
 }
 
