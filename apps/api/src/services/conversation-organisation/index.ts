@@ -13,6 +13,7 @@ import type {
 } from "~/repositories/ConversationOrganisationRepository";
 import { requireConversationAccess } from "~/services/conversations/access";
 import { requireProjectAccess } from "~/services/workspaces/access";
+import { isConversationUnread } from "~/utils/conversation-organisation";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 function conversationProjectId(conversation: Record<string, unknown>): string | null {
@@ -57,7 +58,7 @@ async function readOrganisation(
     conversationId,
     revision: state?.revision ?? 0,
     isPinned: state?.is_pinned === 1,
-    isUnread: state?.is_unread === 1 || state?.next_response_arrived === 1,
+    isUnread: isConversationUnread(state),
     snooze: effectiveSnooze(state),
     labels,
     availableLabels,
@@ -106,7 +107,7 @@ export async function updateConversationOrganisation(
     userId: user.id,
     expectedRevision: input.expectedRevision,
     isPinned: input.isPinned ?? current?.is_pinned === 1,
-    isUnread: input.isUnread ?? current?.is_unread === 1,
+    isUnread: input.isUnread ?? isConversationUnread(current),
     snooze: input.snooze === undefined ? effectiveSnooze(current) : input.snooze,
     updatedAt: now,
   });

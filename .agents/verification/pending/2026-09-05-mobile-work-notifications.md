@@ -2,7 +2,7 @@
 
 - **Change:** iOS receives generic project-work alerts and opens compact Activity, Proof and existing run controls.
 - **Surfaces:** iOS, API and APNs delivery.
-- **Prerequisites:** apply migration `0027_magenta_sway.sql`; configure `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY` and `APNS_TOPIC`; enable Push Notifications for the signed iOS application identifier.
+- **Prerequisites:** apply migration `0026_wild_rawhide_kid.sql`; configure `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY` and `APNS_TOPIC`; enable Push Notifications for the signed iOS application identifier.
 - **Risk if wrong:** alerts may not arrive, may open stale work or may offer an action the API no longer permits.
 
 ## Verify

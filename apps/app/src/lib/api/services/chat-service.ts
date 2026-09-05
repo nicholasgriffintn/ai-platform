@@ -171,6 +171,7 @@ export class ChatService {
         is_archived?: boolean;
         is_pinned?: number;
         is_unread?: number;
+        next_response_arrived?: number;
         labels?: string | unknown[];
       }[];
       pageNumber?: number;
@@ -210,7 +211,7 @@ export class ChatService {
         parent_conversation_id: conversation.parent_conversation_id,
         parent_message_id: conversation.parent_message_id,
         isPinned: conversation.is_pinned === 1,
-        isUnread: conversation.is_unread === 1,
+        isUnread: conversation.is_unread === 1 || conversation.next_response_arrived === 1,
         labels: parsedLabels.success ? parsedLabels.data : [],
       };
     });

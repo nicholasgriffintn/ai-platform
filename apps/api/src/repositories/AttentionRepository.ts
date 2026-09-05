@@ -6,6 +6,8 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { SANDBOX_RUNS_CAPABILITY_ID } from "@ngriffin_uk/polychat-schemas";
 
+import { isConversationUnread } from "~/utils/conversation-organisation";
+
 import { BaseRepository } from "./BaseRepository";
 
 interface AttentionRow {
@@ -21,6 +23,7 @@ interface AttentionRow {
   owner_user_id: number;
   owner_name: string;
   is_unread: number;
+  next_response_arrived: number;
   title: string;
   detail: string | null;
   occurred_at: string;
@@ -52,6 +55,13 @@ const CANDIDATES_QUERY = `
       COALESCE(pt.runner_identity_user_id, pt.assignee_user_id, pt.created_by_user_id) AS owner_user_id,
       COALESCE(owner.name, owner.email) AS owner_name,
       COALESCE(org.is_unread, 0) AS is_unread,
+      EXISTS (
+        SELECT 1 FROM message response
+        WHERE response.conversation_id = pt.conversation_id
+          AND response.role = 'assistant'
+          AND org.snoozed_next_response_at IS NOT NULL
+          AND julianday(response.created_at) > julianday(org.snoozed_next_response_at)
+      ) AS next_response_arrived,
       pt.objective AS title,
       pt.blocked_detail AS detail,
       COALESCE(pt.updated_at, pt.created_at) AS occurred_at
@@ -103,6 +113,13 @@ const CANDIDATES_QUERY = `
       ar.created_by_user_id AS owner_user_id,
       COALESCE(owner.name, owner.email) AS owner_name,
       COALESCE(org.is_unread, 0) AS is_unread,
+      EXISTS (
+        SELECT 1 FROM message response
+        WHERE response.conversation_id = ar.conversation_id
+          AND response.role = 'assistant'
+          AND org.snoozed_next_response_at IS NOT NULL
+          AND julianday(response.created_at) > julianday(org.snoozed_next_response_at)
+      ) AS next_response_arrived,
       ar.summary AS title,
       CASE WHEN ar.status = 'failed' THEN json_extract(ar.data, '$.error') ELSE NULL END AS detail,
       COALESCE(ar.updated_at, ar.created_at) AS occurred_at
@@ -189,7 +206,7 @@ function formatItem(row: AttentionRow): WorkAttentionItem {
     conversationId: row.conversation_id,
     ownerUserId: row.owner_user_id,
     ownerName: row.owner_name,
-    isUnread: row.is_unread === 1,
+    isUnread: isConversationUnread(row),
     title: row.title,
     detail: row.detail,
     occurredAt: row.occurred_at,

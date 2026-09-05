@@ -6,6 +6,7 @@ import type {
   GlobalWorkspaceSearchRow,
   WorkspaceRepository,
 } from "~/repositories/WorkspaceRepository";
+import { isConversationUnread } from "~/utils/conversation-organisation";
 import { safeParseJson } from "~/utils/json";
 
 export interface GlobalSearchContext {
@@ -45,7 +46,7 @@ export async function searchPolychat(
         title: conversation.title,
         updatedAt: conversation.updated_at,
         isPinned: conversation.is_pinned === 1,
-        isUnread: conversation.is_unread === 1,
+        isUnread: isConversationUnread(conversation),
         snooze:
           conversation.snoozed_until && Date.parse(conversation.snoozed_until) > Date.now()
             ? { kind: "until" as const, until: conversation.snoozed_until }

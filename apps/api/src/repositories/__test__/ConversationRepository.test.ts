@@ -65,6 +65,7 @@ describe("ConversationRepository", () => {
     expect(calls[1]?.query).toContain(
       "ORDER BY COALESCE(state.is_pinned, 0) DESC, c.created_at DESC, c.id DESC",
     );
+    expect(calls[1]?.query).toContain("AS next_response_arrived");
     expect(calls[1]?.params).toEqual([123, 123, "%50\\%\\_plan%", 10, 10]);
   });
 
@@ -88,6 +89,7 @@ describe("ConversationRepository", () => {
     );
     expect(calls[0]?.params).toEqual([123, 123, "2026-06-01T00:00:00.000Z"]);
     expect(calls[1]?.params).toEqual([123, 123, "2026-06-01T00:00:00.000Z"]);
+    expect(calls[1]?.query).toContain("AS next_response_arrived");
     expect(result.conversations.map((conversation) => conversation.id)).toEqual(["one", "two"]);
     expect(result.total).toBe(3);
     expect(result.totalPages).toBe(2);

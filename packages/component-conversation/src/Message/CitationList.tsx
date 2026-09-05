@@ -47,8 +47,7 @@ export const CitationList = ({ citations, maxDisplayed = 3 }: CitationListProps)
             >
               <Favicon
                 url={typeof url === "string" ? url : url.url}
-                className={`w-6 h-6 rounded-full border border-border 
- bg-surface object-contain p-[2px] ${hoveredIndex === index ? "shadow-md" : ""} `}
+                className={`w-6 h-6 rounded-full border border-border bg-surface object-contain p-[2px] ${hoveredIndex === index ? "shadow-md" : ""} `}
               />
             </a>
           </div>

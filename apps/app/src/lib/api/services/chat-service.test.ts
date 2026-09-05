@@ -202,6 +202,33 @@ describe("ChatService streaming", () => {
     );
   });
 
+  it("marks a next-response snooze as unread once the response arrives", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({
+          data: {
+            conversations: [
+              {
+                id: "conversation-1",
+                title: "Follow up",
+                messages: [],
+                last_message_at: "2026-09-05T12:00:00.000Z",
+                is_unread: 0,
+                next_response_arrived: 1,
+              },
+            ],
+          },
+        }),
+      ),
+    );
+
+    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+    const result = await service.listChats();
+
+    expect(result.conversations[0]?.isUnread).toBe(true);
+  });
+
   it("adds bounded recovery context to an authorised conversation refresh", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       Response.json({ data: { id: "conversation-1", messages: [] } }),

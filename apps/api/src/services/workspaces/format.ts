@@ -24,6 +24,7 @@ import type {
   WorkspaceMemberRow,
   WorkspaceSummaryRow,
 } from "~/repositories/WorkspaceRepository";
+import { isConversationUnread } from "~/utils/conversation-organisation";
 import { safeParseJson } from "~/utils/json";
 
 export function formatWorkspaceSummary(row: WorkspaceSummaryRow): WorkspaceSummary {
@@ -140,7 +141,7 @@ export function formatProjectConversation(row: ProjectConversationRow): ProjectC
     lastMessageAt: row.last_message_at,
     messageCount: Number(row.message_count ?? 0),
     isPinned: row.is_pinned === 1,
-    isUnread: row.is_unread === 1,
+    isUnread: isConversationUnread(row),
     snooze,
     labels,
     createdBy: {

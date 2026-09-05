@@ -235,6 +235,13 @@ export class ConversationRepository extends BaseRepository {
           COALESCE(state.is_unread, 0) AS is_unread,
           state.snoozed_until,
           state.snoozed_next_response_at,
+          EXISTS (
+            SELECT 1 FROM message response
+            WHERE response.conversation_id = c.id
+              AND response.role = 'assistant'
+              AND state.snoozed_next_response_at IS NOT NULL
+              AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
+          ) AS next_response_arrived,
           COALESCE((
             SELECT json_group_array(json_object(
               'id', label.id,
@@ -256,6 +263,13 @@ export class ConversationRepository extends BaseRepository {
           COALESCE(state.is_unread, 0) AS is_unread,
           state.snoozed_until,
           state.snoozed_next_response_at,
+          EXISTS (
+            SELECT 1 FROM message response
+            WHERE response.conversation_id = c.id
+              AND response.role = 'assistant'
+              AND state.snoozed_next_response_at IS NOT NULL
+              AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
+          ) AS next_response_arrived,
           COALESCE((
             SELECT json_group_array(json_object(
               'id', label.id,
