@@ -54,7 +54,7 @@ export function UserQuestionView({
     }
 
     setSubmitted(true);
-    onToolInteraction(TOOL_NAME, "submitPrompt", {
+    void onToolInteraction(TOOL_NAME, "submitPrompt", {
       interactionId: questionSet.interactionId,
       answers: nextAnswers,
       input: formatAnswers(nextAnswers),
