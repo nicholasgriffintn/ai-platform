@@ -14,7 +14,7 @@ export function SidebarNavSection({ children, title }: { children: ReactNode; ti
   return (
     <div className="space-y-1">
       {title && (
-        <p className="text-muted-foreground px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.2em]">
+        <p className="text-muted-foreground px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.2em]">
           {title}
         </p>
       )}

@@ -2,7 +2,7 @@ import { ProviderGlyph } from "@ngriffin_uk/polychat-component-models";
 import { ButtonLink, Skeleton } from "@ngriffin_uk/polychat-component-ui";
 import { useMemo } from "react";
 
-import { useModels } from "~/hooks/useModels";
+import { useModelCatalogue } from "~/hooks/useModels";
 import { summariseModelProviders } from "~/lib/model-providers";
 
 import { DiscoverBand } from "../DiscoverBand";
@@ -11,7 +11,7 @@ const PROVIDER_LIMIT = 12;
 const FEATURED_LIMIT = 6;
 
 export function ModelsBand() {
-  const { data, isLoading } = useModels();
+  const { data, isLoading } = useModelCatalogue();
   const models = useMemo(() => Object.values(data ?? {}), [data]);
   const providers = useMemo(() => summariseModelProviders(models), [models]);
   const featured = useMemo(
@@ -49,7 +49,15 @@ export function ModelsBand() {
                   title={`${provider.id}: ${provider.modelCount} models`}
                   className="bg-surface border-border text-foreground flex h-11 w-11 items-center justify-center rounded-lg border"
                 >
-                  <ProviderGlyph name={provider.id} size={20} />
+                  <ProviderGlyph
+                    name={provider.id}
+                    size={20}
+                    fallback={
+                      <span aria-hidden className="font-mono text-sm font-semibold uppercase">
+                        {provider.id.charAt(0)}
+                      </span>
+                    }
+                  />
                   <span className="sr-only">
                     {provider.id}, {provider.modelCount} models
                   </span>

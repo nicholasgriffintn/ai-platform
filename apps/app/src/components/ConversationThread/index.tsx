@@ -32,6 +32,7 @@ import {
   isImageGenerationOutputModel,
 } from "@ngriffin_uk/polychat-schemas";
 import type { ConversationModeMetadata, UserQuestionSet } from "@ngriffin_uk/polychat-schemas";
+import { ChevronDown } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -78,6 +79,7 @@ export interface ConversationThreadModeConfig {
   welcomeSuggestions?: ChatSuggestion[] | null;
   welcomeCapabilitySuggestions?: boolean;
   welcomeFooter?: ReactNode;
+  welcomeFooterHint?: string;
   inputPlaceholder?: {
     newConversation: string;
     followUp: string;
@@ -676,18 +678,27 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         <div
           data-header-scroll-source
           className={cn(
-            "flex min-h-0 flex-1 overflow-y-auto px-0 py-6 sm:py-8",
-            modeConfig?.welcomeFooter ? "flex-col" : "items-start justify-center",
+            "flex min-h-0 flex-1 overflow-y-auto px-0",
+            modeConfig?.welcomeFooter ? "flex-col" : "items-start justify-center py-6 sm:py-8",
           )}
         >
           <div
             className={cn(
               "w-full",
               modeConfig?.welcomeFooter
-                ? "flex min-h-full shrink-0 flex-col justify-center"
+                ? "relative flex min-h-full shrink-0 flex-col justify-center pt-6 pb-12 sm:pt-8"
                 : "my-auto",
             )}
           >
+            {modeConfig?.welcomeFooter && modeConfig.welcomeFooterHint && (
+              <p
+                aria-hidden
+                className="polychat-eyebrow absolute inset-x-0 bottom-3 flex items-center justify-center gap-1.5"
+              >
+                <span>{modeConfig.welcomeFooterHint}</span>
+                <ChevronDown size={12} className="motion-safe:animate-bounce" />
+              </p>
+            )}
             <WelcomeScreen
               title={modeConfig?.welcomeTitle}
               description={modeConfig?.welcomeDescription}

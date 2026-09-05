@@ -31,10 +31,7 @@ function DiscoverSectionNav() {
 export function DiscoverBands({ variant }: DiscoverBandsProps) {
   return (
     <div
-      className={cn(
-        "mx-auto w-full max-w-5xl px-4 sm:px-6",
-        variant === "home" && "border-border mt-16 border-t pt-12 pb-8",
-      )}
+      className={cn("mx-auto w-full max-w-5xl px-4 sm:px-6", variant === "home" && "pt-10 pb-8")}
     >
       {variant === "page" && (
         <header className="mb-12 space-y-5">
@@ -49,7 +46,6 @@ export function DiscoverBands({ variant }: DiscoverBandsProps) {
           <DiscoverSectionNav />
         </header>
       )}
-      {variant === "home" && <p className="polychat-eyebrow mb-8">Keep scrolling for the tour</p>}
       <ChatAndWorkBand />
       <ModelsBand />
       <CapabilitiesBand />

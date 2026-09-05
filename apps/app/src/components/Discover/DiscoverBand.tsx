@@ -18,7 +18,7 @@ export function DiscoverBand({ id, eyebrow, title, lede, actions, children }: Di
       aria-labelledby={headingId}
       className="border-border scroll-mt-20 border-t py-12 first:border-t-0 first:pt-0 md:py-16"
     >
-      <div className="grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-12">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-12">
         <div className="space-y-4">
           <p className="polychat-eyebrow">{eyebrow}</p>
           <h2

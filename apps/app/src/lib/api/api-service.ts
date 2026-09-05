@@ -278,6 +278,10 @@ class ApiService {
     return this.userService.fetchModels();
   };
 
+  fetchModelCatalogue = (): Promise<ModelConfig> => {
+    return this.userService.fetchModelCatalogue();
+  };
+
   fetchTools = (): Promise<Tool[]> => {
     return this.userService.fetchTools();
   };

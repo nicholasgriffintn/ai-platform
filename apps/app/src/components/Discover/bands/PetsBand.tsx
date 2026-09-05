@@ -24,7 +24,7 @@ export function PetsBand() {
             key={member.slug}
             className="bg-surface border-border flex flex-col items-center gap-2 rounded-xl border p-4 text-center"
           >
-            <span className="bg-surface-elevated flex h-20 w-20 items-end justify-center rounded-lg">
+            <span className="flex h-20 w-20 items-end justify-center overflow-hidden">
               <PetPreview
                 sheetUrl={member.sheetUrl}
                 label={`${member.name}, animated`}

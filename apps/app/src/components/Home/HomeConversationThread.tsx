@@ -59,6 +59,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
         welcomeDescription: hasModeWelcome ? modeConfig?.welcomeDescription : welcome.description,
         welcomeLoading: isWelcomeLoading,
         welcomeFooter: showDiscover ? <HomeDiscover /> : undefined,
+        welcomeFooterHint: showDiscover ? "Keep scrolling for the tour" : undefined,
       }}
     />
   );

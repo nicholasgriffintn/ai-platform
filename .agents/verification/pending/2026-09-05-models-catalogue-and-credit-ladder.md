@@ -2,7 +2,7 @@
 
 - **Change:** A public `/models` page lists every non-deprecated, non-hidden model grouped by provider, with badges for featured, free, beta and open weights, input modalities and context size, and provider anchors. The Discover sidebar segment and the tour's models band link to it. The pricing page replaces the credit examples list with a logarithmic ladder and uses the display face for its headings.
 - **Surfaces:** `/models`, the standard sidebar Discover segment, the tour models band, `/pricing`.
-- **Prerequisites:** None. The page reads the public models endpoint.
+- **Prerequisites:** None. The page and the tour band read the new public `GET /models/catalogue` endpoint, which returns every model without filtering by the caller's access; the picker still uses `GET /models`.
 - **Risk if wrong:** A provider without a registered glyph could show an empty square, a model without a name could render blank, or the ladder widths could misrepresent the examples.
 - **Commits:** None yet.
 

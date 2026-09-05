@@ -17,11 +17,11 @@ const Icon: IconType = memo(({ size = "1em", style, ...rest }) => {
       <title>{TITLE}</title>
       <path
         d="M3.5 3.5h6.2v6.2H3.5zm10.8 0h6.2v6.2h-6.2zM3.5 14.3h6.2v6.2H3.5zm10.8 0h6.2v6.2h-6.2z"
-        fill="#111827"
+        fill="currentColor"
       />
       <path
         d="M9.7 6h4.6v1.2H9.7zm0 10.8h4.6V18H9.7zM6 9.7h1.2v4.6H6zm10.8 0H18v4.6h-1.2z"
-        fill="#111827"
+        fill="currentColor"
         opacity=".55"
       />
     </svg>

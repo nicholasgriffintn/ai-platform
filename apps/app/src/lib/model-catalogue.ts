@@ -26,6 +26,29 @@ function compareModels(a: ModelConfigItem, b: ModelConfigItem): number {
   return getModelDisplayName(a).localeCompare(getModelDisplayName(b));
 }
 
+export function filterModelsByQuery(models: ModelConfigItem[], query: string): ModelConfigItem[] {
+  const needle = query.trim().toLowerCase();
+
+  if (!needle) {
+    return models;
+  }
+
+  return models.filter((model) => {
+    const haystack = [
+      getModelDisplayName(model),
+      model.matchingModel,
+      model.family,
+      model.description,
+      ...(model.modalities?.input ?? []),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(needle);
+  });
+}
+
 export function groupModelsByProvider(models: ModelConfigItem[]): ModelProviderGroup[] {
   const groups = new Map<string, ModelConfigItem[]>();
 

@@ -72,7 +72,7 @@ test.describe("Application experience", () => {
       await appPage.followLink("Models");
       await expect(page).toHaveURL(/\/models$/);
       await expect(page.getByRole("heading", { name: "Every model, one perch" })).toBeVisible();
-      await expect(page.getByRole("navigation", { name: "Providers" })).toBeVisible();
+      await expect(page.getByRole("group", { name: "Filter by provider" })).toBeVisible();
       await captureVisualSnapshots(page, "release-app-models", {
         ...DEFAULT_VISUAL_CHECKPOINTS,
         viewports: [{ name: "desktop", width: 1280, height: 720 }],

@@ -61,6 +61,7 @@ export type {
   AssistantRecipeActionContext,
 } from "./assistant-actions";
 export * from "./apps";
+export * from "./capability-catalogue";
 export * from "./activity";
 export * from "./audit";
 export * from "./audio";

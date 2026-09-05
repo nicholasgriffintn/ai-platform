@@ -207,6 +207,14 @@
     background: var(--polychat-selection);
     color: var(--polychat-text);
   }
+  .font-display {
+    font-optical-sizing: none;
+    font-variation-settings:
+      "opsz" 120,
+      "SOFT" 0,
+      "WONK" 0;
+    letter-spacing: -0.015em;
+  }
 }
 
 input,
