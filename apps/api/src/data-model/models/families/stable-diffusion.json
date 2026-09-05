@@ -1,0 +1,109 @@
+{
+  "defaults": {
+    "strengths": [
+      "creative"
+    ],
+    "contextComplexity": 4,
+    "reliability": 4
+  },
+  "description": "The stable diffusion family includes models that produce image.",
+  "models": {
+    "stable-diffusion-1-5-img2img": {
+      "defaults": {
+        "name": "Stable Diffusion 1.5 Img2Img",
+        "description": "Stable Diffusion 1.5 Img2Img accepts image and produces image.",
+        "modalities": {
+          "input": [
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "contextComplexity": 3
+      }
+    },
+    "stable-diffusion-1-5-inpainting": {
+      "defaults": {
+        "name": "Stable Diffusion 1.5 Inpainting",
+        "description": "Stable Diffusion 1.5 Inpainting accepts image and produces image.",
+        "modalities": {
+          "input": [
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "contextComplexity": 3
+      }
+    },
+    "stable-diffusion-3-5-large": {
+      "defaults": {
+        "name": "Stable Diffusion 3.5 Large",
+        "description": "A text-to-image model that generates high-resolution images with fine details. It supports various artistic styles and produces diverse outputs from the same prompt, thanks to Query-Key Normalization.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
+        "reliability": 2,
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1024,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
+        }
+      }
+    },
+    "stable-diffusion-xl-base-1-0": {
+      "defaults": {
+        "name": "Stable Diffusion XL Base 1.0",
+        "description": "Diffusion-based text-to-image generative model by Stability AI. Generates and modify images based on text prompts.",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        }
+      }
+    },
+    "stable-diffusion-xl-lightning": {
+      "defaults": {
+        "name": "Stable Diffusion XL Lightning",
+        "description": "SDXL-Lightning is a lightning-fast text-to-image generation model. It can generate high-quality 1024px images in a few steps.",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        }
+      }
+    }
+  }
+}

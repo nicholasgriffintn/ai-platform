@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 3,
+    "reliability": 1,
+    "releaseDate": "May 21, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 11.8,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The chutes/chutesai/Devstral Small 2505 family includes models that produce text.",
+  "models": {
+    "devstral-small-2505": {
+      "defaults": {
+        "name": "Devstral Small (2505)",
+        "description": "Efficient small model optimized for fast text generation and tool use."
+      }
+    }
+  }
+}

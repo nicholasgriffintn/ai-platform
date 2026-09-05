@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "January 6, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The chutes/OpenGVLab/InternVL3 78B TEE family includes models that produce text.",
+  "models": {
+    "internvl3-78b-tee": {
+      "defaults": {
+        "name": "InternVL3 78B TEE",
+        "description": "InternVL3 78B TEE accepts text, image and produces text."
+      }
+    }
+  }
+}

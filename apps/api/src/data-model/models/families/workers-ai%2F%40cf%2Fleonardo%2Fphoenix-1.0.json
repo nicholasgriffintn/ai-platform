@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "creative"
+    ],
+    "contextComplexity": 4,
+    "reliability": 4
+  },
+  "description": "The workers ai/@cf/leonardo/phoenix 1.0 family includes models that produce text.",
+  "models": {
+    "leonardo-phoenix-1-0": {
+      "defaults": {
+        "name": "Leonardo Phoenix 1.0",
+        "description": "Phoenix 1.0 is a model by Leonardo.Ai that generates images with exceptional prompt adherence and coherent text."
+      }
+    }
+  }
+}

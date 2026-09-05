@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "thinkingmachines/Inkling": {
+      "model": "ling/inkling",
+      "matchingModel": "thinkingmachines/Inkling",
+      "overrides": {
+        "contextWindow": 65536,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "July 15, 2026",
+        "costPer1kInputTokens": 0.00187,
+        "costPer1kOutputTokens": 0.00468,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "thinkingmachines/Inkling:peft:262144": {
+      "model": "ling/inkling-256k",
+      "matchingModel": "thinkingmachines/Inkling:peft:262144",
+      "overrides": {
+        "lastUpdated": "July 15, 2026",
+        "costPer1kInputTokens": 0.00374,
+        "costPer1kOutputTokens": 0.00936
+      }
+    }
+  }
+}

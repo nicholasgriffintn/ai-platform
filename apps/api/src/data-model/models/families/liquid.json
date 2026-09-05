@@ -1,0 +1,94 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32768,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 3,
+    "reliability": 1,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The liquid family includes models that produce text.",
+  "models": {
+    "lfm2-24b-a2b": {
+      "defaults": {
+        "name": "LFM2-24B-A2B",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads",
+        "releaseDate": "February 25, 2026",
+        "supportsToolCalls": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "lfm2-5-1-2b-instruct-free": {
+      "defaults": {
+        "name": "LFM2.5-1.2B-Instruct (free)",
+        "description": "LFM2.5-1.2B-Instruct (free) accepts text and produces text.",
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "January 20, 2026",
+        "supportsToolCalls": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 2.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "lfm2-5-1-2b-thinking-free": {
+      "defaults": {
+        "name": "LFM2.5-1.2B-Thinking (free)",
+        "description": "LFM2.5-1.2B-Thinking (free) accepts text and produces text.",
+        "strengths": [
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "January 20, 2026",
+        "supportsToolCalls": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 2.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "lfm2-5-2-6b-free": {
+      "defaults": {
+        "name": "LFM2.5-2.6B (free)",
+        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
+        "contextWindow": 65536,
+        "maxTokens": 8192,
+        "releaseDate": "August 11, 2026",
+        "supportsToolCalls": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

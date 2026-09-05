@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "video",
+      "vision"
+    ],
+    "contextComplexity": 4,
+    "reliability": 4,
+    "supportsAttachments": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 1223,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 8
+        }
+      ]
+    }
+  },
+  "description": "The replicate/runwayml/gen 4.5 family includes models that produce video.",
+  "models": {
+    "runway-gen-4-5": {
+      "defaults": {
+        "name": "Runway Gen-4.5",
+        "description": "State-of-the-art video motion quality, prompt adherence and visual fidelity"
+      }
+    }
+  }
+}

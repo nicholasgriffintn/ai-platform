@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "creative"
+    ],
+    "contextComplexity": 3,
+    "reliability": 4
+  },
+  "description": "The workers ai/@cf/lykon/dreamshaper 8 lcm family includes models that produce image.",
+  "models": {
+    "dreamshaper-8-lcm": {
+      "defaults": {
+        "name": "Dreamshaper 8 LCM",
+        "description": "Stable Diffusion model that has been fine-tuned to be better at photorealism without sacrificing range."
+      }
+    }
+  }
+}

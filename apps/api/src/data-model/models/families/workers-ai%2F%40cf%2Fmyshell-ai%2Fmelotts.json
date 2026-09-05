@@ -1,0 +1,32 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "strengths": [
+      "audio"
+    ],
+    "contextComplexity": 3,
+    "reliability": 4,
+    "releaseDate": "November 14, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/myshell ai/melotts family includes models that produce audio.",
+  "models": {
+    "myshell-melotts": {
+      "defaults": {
+        "name": "MyShell MeloTTS",
+        "description": "Melotts is a text-to-speech model that can generate high-quality speech from text."
+      }
+    }
+  }
+}

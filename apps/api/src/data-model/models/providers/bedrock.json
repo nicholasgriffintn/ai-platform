@@ -1,0 +1,2351 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "nova-2-lite": {
+      "model": "nova/amazon-nova-2-lite",
+      "matchingModel": "global.amazon.nova-2-lite-v1:0",
+      "overrides": {
+        "speed": 4,
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.0016,
+        "supportsDocuments": true,
+        "supportsPromptCaching": true
+      }
+    },
+    "nova-lite": {
+      "model": "nova-lite/nova-lite",
+      "matchingModel": "amazon.nova-lite-v1:0",
+      "overrides": {
+        "strengths": [
+          "analysis",
+          "multilingual",
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024,
+        "supportsDocuments": true,
+        "supportsPromptCaching": true
+      }
+    },
+    "nova-micro": {
+      "model": "nova-micro/nova-micro",
+      "matchingModel": "amazon.nova-micro-v1:0",
+      "overrides": {
+        "strengths": [
+          "coding",
+          "analysis",
+          "multilingual",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": false,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.000035,
+        "costPer1kOutputTokens": 0.00014,
+        "supportsAttachments": false,
+        "supportsPromptCaching": true
+      }
+    },
+    "nova-pro": {
+      "model": "nova-pro/nova-pro",
+      "matchingModel": "amazon.nova-pro-v1:0",
+      "overrides": {
+        "strengths": [
+          "coding",
+          "analysis",
+          "math",
+          "reasoning",
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "multimodal": true,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.0032,
+        "supportsDocuments": true,
+        "supportsPromptCaching": true
+      }
+    },
+    "nova-canvas": {
+      "model": "nova/amazon-nova-canvas",
+      "matchingModel": "amazon.nova-canvas-v1:0",
+      "overrides": {
+        "deprecated": true,
+        "costPer1kInputTokens": 0.002,
+        "bedrockApiOperation": "invoke"
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
+    },
+    "nova-reel": {
+      "model": "nova/amazon-nova-reel",
+      "matchingModel": "amazon.nova-reel-v1:1",
+      "overrides": {
+        "deprecated": true,
+        "bedrockApiOperation": "async-invoke"
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
+    },
+    "nova-2-sonic": {
+      "model": "nova/amazon-nova-2-sonic",
+      "matchingModel": "amazon.nova-2-sonic-v1:0",
+      "overrides": {},
+      "unset": [
+        "supportsAttachments",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
+    },
+    "openai.gpt-oss-safeguard-120b": {
+      "model": "gpt-oss/gpt-oss-safeguard-120b",
+      "matchingModel": "openai.gpt-oss-safeguard-120b",
+      "overrides": {
+        "maxTokens": 16384,
+        "lastUpdated": "October 29, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
+    },
+    "openai.gpt-oss-safeguard-20b": {
+      "model": "gpt-oss/gpt-oss-safeguard-20b",
+      "matchingModel": "openai.gpt-oss-safeguard-20b",
+      "overrides": {
+        "name": "GPT OSS Safeguard 20B",
+        "maxTokens": 16384,
+        "lastUpdated": "October 29, 2025",
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.0002,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
+    },
+    "minimax.minimax-m2": {
+      "model": "minimax/minimax-m2",
+      "matchingModel": "minimax.minimax-m2",
+      "overrides": {
+        "contextWindow": 204608,
+        "maxTokens": 128000,
+        "speed": 4,
+        "lastUpdated": "October 27, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
+    "moonshot.kimi-k2-thinking": {
+      "model": "kimi-thinking/kimi-k2-thinking",
+      "matchingModel": "moonshot.kimi-k2-thinking",
+      "overrides": {
+        "contextWindow": 262143,
+        "maxTokens": 16000,
+        "contextComplexity": 3,
+        "speed": 4,
+        "releaseDate": "December 2, 2025",
+        "lastUpdated": "December 2, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsResponseFormat": true,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    },
+    "nvidia.nemotron-nano-12b-v2": {
+      "model": "nemotron/nvidia-nemotron-nano-12b-v2-vl-bf16",
+      "matchingModel": "nvidia.nemotron-nano-12b-v2",
+      "overrides": {
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
+    },
+    "nvidia.nemotron-nano-9b-v2": {
+      "model": "nemotron/nvidia-nemotron-nano-9b-v2",
+      "matchingModel": "nvidia.nemotron-nano-9b-v2",
+      "overrides": {
+        "name": "NVIDIA Nemotron Nano 9B v2",
+        "openWeights": false,
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "contextComplexity": 3,
+        "speed": 3,
+        "releaseDate": "December 1, 2024",
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00023,
+        "supportsResponseFormat": true,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
+    },
+    "anthropic.claude-sonnet-4.5": {
+      "model": "claude-sonnet/claude-sonnet-4-5-us",
+      "matchingModel": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "lastUpdated": "September 29, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsDocuments": true,
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsPromptCaching": true
+      }
+    },
+    "anthropic.claude-sonnet-4": {
+      "model": "claude-sonnet/claude-sonnet-4-us",
+      "matchingModel": "us.anthropic.claude-sonnet-4-20250514-v1:0",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsDocuments": true,
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsPromptCaching": true
+      },
+      "unset": [
+        "supportsResponseFormat",
+        "openWeights"
+      ]
+    },
+    "anthropic.claude-3-5-haiku": {
+      "model": "claude/claude-3-5-haiku-bedrock-us",
+      "matchingModel": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      "overrides": {
+        "speed": 5,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "October 22, 2024",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsTokenCounting": true,
+        "supportsPromptCaching": true
+      }
+    },
+    "anthropic.claude-opus-4": {
+      "model": "claude-opus/claude-opus-4-us",
+      "matchingModel": "us.anthropic.claude-opus-4-20250514-v1:0",
+      "overrides": {
+        "speed": 3,
+        "isFeatured": false,
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.015,
+        "costPer1kOutputTokens": 0.075,
+        "supportsDocuments": true,
+        "supportsSearchGrounding": true,
+        "supportsCodeExecution": true,
+        "supportsTokenCounting": true,
+        "supportsPromptCaching": true
+      },
+      "unset": [
+        "openWeights",
+        "supportsTopP"
+      ]
+    },
+    "anthropic.claude-3-7-sonnet": {
+      "model": "claude/claude-3-7-sonnet-bedrock-us",
+      "matchingModel": "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+      "overrides": {
+        "speed": 3,
+        "isFeatured": false,
+        "lastUpdated": "February 19, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsTokenCounting": true,
+        "supportsPromptCaching": true
+      }
+    },
+    "cohere.embed-english": {
+      "model": "bedrock/cohere.embed-english-v3/cohere-embed-english",
+      "matchingModel": "cohere.embed-english-v3",
+      "overrides": {
+        "costPer1kInputTokens": 0.0001
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "cohere.embed-multilingual": {
+      "model": "bedrock/cohere.embed-multilingual-v3/cohere-embed-multilingual",
+      "matchingModel": "cohere.embed-multilingual-v3",
+      "overrides": {
+        "costPer1kInputTokens": 0.0001
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "cohere.command-r": {
+      "model": "command/command-r",
+      "matchingModel": "cohere.command-r-v1:0",
+      "overrides": {
+        "name": "Command R",
+        "strengths": [
+          "summarization",
+          "analysis",
+          "tool_use"
+        ],
+        "speed": 3,
+        "releaseDate": "March 11, 2024",
+        "lastUpdated": "March 11, 2024",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0015,
+        "supportsAttachments": false
+      }
+    },
+    "cohere.command-r-plus": {
+      "model": "command/command-r",
+      "matchingModel": "cohere.command-r-plus-v1:0",
+      "overrides": {
+        "name": "Command R+",
+        "description": "Command R+ is an instruction-following conversational model that performs language tasks at a higher quality, more reliably, and with a longer context than previous models. It is best suited for complex RAG workflows and multi-step tool use.",
+        "strengths": [
+          "summarization",
+          "analysis",
+          "reasoning",
+          "tool_use"
+        ],
+        "speed": 2,
+        "releaseDate": "April 4, 2024",
+        "lastUpdated": "April 4, 2024",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsAttachments": false
+      }
+    },
+    "ai21.jamba-1-5-large": {
+      "model": "jamba/jamba-1-5-large",
+      "matchingModel": "ai21.jamba-1-5-large-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "August 15, 2024",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.008,
+        "supportsAttachments": false
+      }
+    },
+    "ai21.jamba-1-5-mini": {
+      "model": "jamba/jamba-1-5-mini",
+      "matchingModel": "ai21.jamba-1-5-mini-v1:0",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "August 15, 2024",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0004,
+        "supportsAttachments": false
+      }
+    },
+    "ai21.jamba-instruct": {
+      "model": "jamba/ai21-jambda-instruct",
+      "matchingModel": "ai21.jamba-instruct-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "August 15, 2024",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0007,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsToolCalls"
+      ]
+    },
+    "nova-premier": {
+      "model": "nova/nova-premier",
+      "matchingModel": "amazon.nova-premier-v1:0",
+      "overrides": {
+        "maxTokens": 16384,
+        "strengths": [
+          "coding",
+          "analysis",
+          "math",
+          "reasoning",
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 2,
+        "multimodal": true,
+        "knowledgeCutoffDate": "October 2024",
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.0125,
+        "supportsDocuments": true,
+        "supportsPromptCaching": true
+      }
+    },
+    "llama-3-2-90b-bedrock": {
+      "model": "llama/llama-3-2-90b-instruct",
+      "matchingModel": "meta.llama3-2-90b-instruct-v1:0",
+      "overrides": {
+        "speed": 3,
+        "deprecated": true,
+        "lastUpdated": "September 25, 2024",
+        "costPer1kInputTokens": 0.00072,
+        "costPer1kOutputTokens": 0.00072
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "meta/llama-3-1-70b-bedrock": {
+      "model": "llama/llama-3-1-70b-instruct",
+      "matchingModel": "meta.llama3-1-70b-instruct-v1:0",
+      "overrides": {
+        "maxTokens": 4096,
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "speed": 3,
+        "deprecated": true,
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0.00072,
+        "costPer1kOutputTokens": 0.00072,
+        "supportsAttachments": false
+      }
+    },
+    "deepseek.r1-bedrock": {
+      "model": "deepseek-thinking/deepseek-r1",
+      "matchingModel": "deepseek.r1-v1:0",
+      "overrides": {
+        "openWeights": false,
+        "contextWindow": 128000,
+        "strengths": [
+          "math",
+          "reasoning",
+          "analysis",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "May 29, 2025",
+        "costPer1kInputTokens": 0.00135,
+        "costPer1kOutputTokens": 0.0054,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "twelvelabs.marengo-embed-2-7-v1": {
+      "model": "bedrock/twelvelabs.marengo-embed-2-7-v1:0/twelve-labs-marengo-embed",
+      "matchingModel": "twelvelabs.marengo-embed-2-7-v1:0",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "2024",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0001,
+        "supportsTemperature": false,
+        "bedrockApiOperation": "start-async-invoke"
+      },
+      "unset": [
+        "supportsToolCalls"
+      ]
+    },
+    "twelvelabs.pegasus-1-2-v1": {
+      "model": "bedrock/us.twelvelabs.pegasus-1-2-v1:0/twelve-labs-pegasus-bedrock-us",
+      "matchingModel": "us.twelvelabs.pegasus-1-2-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "2024",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.006,
+        "supportsStreaming": true,
+        "supportsDocuments": false,
+        "bedrockApiOperation": "invoke",
+        "bedrockStreamingApiOperation": "invoke-with-response-stream"
+      },
+      "unset": [
+        "supportsToolCalls"
+      ]
+    },
+    "amazon.nova-2-lite-v1:0": {
+      "model": "nova/nova-2-lite",
+      "matchingModel": "amazon.nova-2-lite-v1:0",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 1, 2024",
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.00033,
+        "costPer1kOutputTokens": 0.00275,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "amazon.titan-text-express-v1": {
+      "model": "bedrock/amazon.titan-text-express-v1/titan-text-g1-express",
+      "matchingModel": "amazon.titan-text-express-v1",
+      "overrides": {
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false
+      }
+    },
+    "amazon.titan-text-express-v1:0:8k": {
+      "model": "bedrock/amazon.titan-text-express-v1:0:8k/titan-text-g1-express",
+      "matchingModel": "amazon.titan-text-express-v1:0:8k",
+      "overrides": {
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false
+      }
+    },
+    "anthropic.claude-3-5-haiku-20241022-v1:0": {
+      "model": "claude/claude-haiku-3-5",
+      "matchingModel": "anthropic.claude-3-5-haiku-20241022-v1:0",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "October 22, 2024",
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.004
+      }
+    },
+    "anthropic.claude-3-5-sonnet-20240620-v1:0": {
+      "model": "claude/claude-sonnet-3-5",
+      "matchingModel": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "June 20, 2024",
+        "lastUpdated": "June 20, 2024",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "anthropic.claude-3-5-sonnet-20241022-v2:0": {
+      "model": "claude/claude-sonnet-3-5-v2",
+      "matchingModel": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "overrides": {
+        "lastUpdated": "October 22, 2024",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "anthropic.claude-3-7-sonnet-20250219-v1:0": {
+      "model": "claude/claude-sonnet-3-7",
+      "matchingModel": "anthropic.claude-3-7-sonnet-20250219-v1:0",
+      "overrides": {
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2024",
+        "lastUpdated": "February 19, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "anthropic.claude-3-haiku-20240307-v1:0": {
+      "model": "claude/claude-haiku-3",
+      "matchingModel": "anthropic.claude-3-haiku-20240307-v1:0",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "March 13, 2024",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00125
+      }
+    },
+    "anthropic.claude-3-opus-20240229-v1:0": {
+      "model": "claude/claude-opus-3",
+      "matchingModel": "anthropic.claude-3-opus-20240229-v1:0",
+      "overrides": {
+        "lastUpdated": "February 29, 2024",
+        "costPer1kInputTokens": 0.015,
+        "costPer1kOutputTokens": 0.075
+      }
+    },
+    "anthropic.claude-3-sonnet-20240229-v1:0": {
+      "model": "claude/claude-sonnet-3",
+      "matchingModel": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "March 4, 2024",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "model": "claude-haiku/claude-haiku-4-5",
+      "matchingModel": "anthropic.claude-haiku-4-5-20251001-v1:0",
+      "overrides": {
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none",
+          "thinkingApi": "budget"
+        }
+      }
+    },
+    "anthropic.claude-instant-v1": {
+      "model": "claude/claude-instant",
+      "matchingModel": "anthropic.claude-instant-v1",
+      "overrides": {
+        "lastUpdated": "March 1, 2023",
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.0024,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "anthropic.claude-opus-4-20250514-v1:0": {
+      "model": "claude-opus/claude-opus-4",
+      "matchingModel": "anthropic.claude-opus-4-20250514-v1:0",
+      "overrides": {
+        "knowledgeCutoffDate": "April 2024",
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.015,
+        "costPer1kOutputTokens": 0.075
+      },
+      "unset": [
+        "openWeights",
+        "contextComplexity",
+        "supportsTopP",
+        "reasoningConfig"
+      ]
+    },
+    "anthropic.claude-opus-4-5-20251101-v1:0": {
+      "model": "claude-opus/claude-opus-4-5",
+      "matchingModel": "anthropic.claude-opus-4-5-20251101-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "August 1, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "budget"
+        }
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "anthropic.claude-opus-4-6-v1": {
+      "model": "claude-opus/claude-opus-4-6",
+      "matchingModel": "anthropic.claude-opus-4-6-v1",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "anthropic.claude-sonnet-4-20250514-v1:0": {
+      "model": "claude-sonnet/claude-sonnet-4",
+      "matchingModel": "anthropic.claude-sonnet-4-20250514-v1:0",
+      "overrides": {
+        "contextWindow": 200000,
+        "deprecated": true,
+        "knowledgeCutoffDate": "April 2024",
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      },
+      "unset": [
+        "supportsResponseFormat",
+        "openWeights",
+        "reasoningConfig"
+      ]
+    },
+    "anthropic.claude-sonnet-4-5-20250929-v1:0": {
+      "model": "claude-sonnet/claude-sonnet-4-5",
+      "matchingModel": "anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "overrides": {
+        "contextWindow": 200000,
+        "lastUpdated": "September 29, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none",
+          "thinkingApi": "budget"
+        }
+      }
+    },
+    "anthropic.claude-v2": {
+      "model": "claude/claude-2",
+      "matchingModel": "anthropic.claude-v2",
+      "overrides": {
+        "lastUpdated": "July 11, 2023",
+        "costPer1kInputTokens": 0.008,
+        "costPer1kOutputTokens": 0.024,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "anthropic.claude-v2:1": {
+      "model": "claude/claude-2-1",
+      "matchingModel": "anthropic.claude-v2:1",
+      "overrides": {
+        "lastUpdated": "November 21, 2023",
+        "costPer1kInputTokens": 0.008,
+        "costPer1kOutputTokens": 0.024,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "cohere.command-light-text-v14": {
+      "model": "command/command-light",
+      "matchingModel": "cohere.command-light-text-v14",
+      "overrides": {
+        "lastUpdated": "November 1, 2023",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "cohere.command-text-v14": {
+      "model": "command/command",
+      "matchingModel": "cohere.command-text-v14",
+      "overrides": {
+        "lastUpdated": "November 1, 2023",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.002,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "deepseek.v3-v1:0": {
+      "model": "deepseek/deepseek-v3-1",
+      "matchingModel": "deepseek.v3-v1:0",
+      "overrides": {
+        "maxTokens": 81920,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "September 18, 2025",
+        "lastUpdated": "September 18, 2025",
+        "costPer1kInputTokens": 0.00058,
+        "costPer1kOutputTokens": 0.00168,
+        "supportsAttachments": false
+      }
+    },
+    "eu.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "model": "claude-haiku/claude-haiku-4-5-eu",
+      "matchingModel": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "overrides": {
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0055
+      }
+    },
+    "eu.anthropic.claude-opus-4-5-20251101-v1:0": {
+      "model": "claude-opus/claude-opus-4-5-eu",
+      "matchingModel": "eu.anthropic.claude-opus-4-5-20251101-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "August 1, 2025",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "eu.anthropic.claude-opus-4-6-v1": {
+      "model": "claude-opus/claude-opus-4-6-eu",
+      "matchingModel": "eu.anthropic.claude-opus-4-6-v1",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "eu.anthropic.claude-sonnet-4-20250514-v1:0": {
+      "model": "claude-sonnet/claude-sonnet-4-eu",
+      "matchingModel": "eu.anthropic.claude-sonnet-4-20250514-v1:0",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      },
+      "unset": [
+        "supportsResponseFormat",
+        "openWeights"
+      ]
+    },
+    "eu.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+      "model": "claude-sonnet/claude-sonnet-4-5-eu",
+      "matchingModel": "eu.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "overrides": {
+        "lastUpdated": "September 29, 2025",
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165
+      }
+    },
+    "global.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "model": "claude-haiku/claude-haiku-4-5-global",
+      "matchingModel": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "overrides": {
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005
+      }
+    },
+    "global.anthropic.claude-opus-4-5-20251101-v1:0": {
+      "model": "claude-opus/claude-opus-4-5-global",
+      "matchingModel": "global.anthropic.claude-opus-4-5-20251101-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "August 1, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "global.anthropic.claude-opus-4-6-v1": {
+      "model": "claude-opus/claude-opus-4-6-global",
+      "matchingModel": "global.anthropic.claude-opus-4-6-v1",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "global.anthropic.claude-sonnet-4-20250514-v1:0": {
+      "model": "claude-sonnet/claude-sonnet-4-global",
+      "matchingModel": "global.anthropic.claude-sonnet-4-20250514-v1:0",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      },
+      "unset": [
+        "supportsResponseFormat",
+        "openWeights"
+      ]
+    },
+    "global.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+      "model": "claude-sonnet/claude-sonnet-4-5-global",
+      "matchingModel": "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "overrides": {
+        "lastUpdated": "September 29, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "google.gemma-3-12b-it": {
+      "model": "gemma/google-gemma-3-12b",
+      "matchingModel": "google.gemma-3-12b-it",
+      "overrides": {
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.0001,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "google.gemma-3-27b-it": {
+      "model": "gemma/google-gemma-3-27b-instruct",
+      "matchingModel": "google.gemma-3-27b-it",
+      "overrides": {
+        "lastUpdated": "July 27, 2025",
+        "costPer1kInputTokens": 0.00012,
+        "costPer1kOutputTokens": 0.0002
+      }
+    },
+    "google.gemma-3-4b-it": {
+      "model": "gemma/gemma-3-4b-it",
+      "matchingModel": "google.gemma-3-4b-it",
+      "overrides": {
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.00008,
+        "supportsAttachments": false
+      }
+    },
+    "meta.llama3-1-8b-instruct-v1:0": {
+      "model": "llama/llama-3-1-8b-instruct",
+      "matchingModel": "meta.llama3-1-8b-instruct-v1:0",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "deprecated": true,
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00022,
+        "supportsAttachments": false
+      }
+    },
+    "meta.llama3-2-11b-instruct-v1:0": {
+      "model": "llama/llama-3-2-11b-instruct",
+      "matchingModel": "meta.llama3-2-11b-instruct-v1:0",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "September 25, 2024",
+        "costPer1kInputTokens": 0.00016,
+        "costPer1kOutputTokens": 0.00016
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "meta.llama3-2-1b-instruct-v1:0": {
+      "model": "llama/llama-3-2-1b-instruct",
+      "matchingModel": "meta.llama3-2-1b-instruct-v1:0",
+      "overrides": {
+        "contextWindow": 131000,
+        "maxTokens": 4096,
+        "deprecated": true,
+        "lastUpdated": "September 25, 2024",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0001,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "meta.llama3-2-3b-instruct-v1:0": {
+      "model": "llama/llama-3-2-3b-instruct",
+      "matchingModel": "meta.llama3-2-3b-instruct-v1:0",
+      "overrides": {
+        "contextWindow": 131000,
+        "maxTokens": 4096,
+        "deprecated": true,
+        "lastUpdated": "September 25, 2024",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00015,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "meta.llama3-3-70b-instruct-v1:0": {
+      "model": "llama/llama-3-3-70b-instruct",
+      "matchingModel": "meta.llama3-3-70b-instruct-v1:0",
+      "overrides": {
+        "name": "Llama 3.3 70B Instruct",
+        "maxTokens": 4096,
+        "deprecated": true,
+        "lastUpdated": "December 6, 2024",
+        "costPer1kInputTokens": 0.00072,
+        "costPer1kOutputTokens": 0.00072,
+        "supportsAttachments": false
+      }
+    },
+    "meta.llama3-70b-instruct-v1:0": {
+      "model": "llama/llama-3-70b-instruct",
+      "matchingModel": "meta.llama3-70b-instruct-v1:0",
+      "overrides": {
+        "maxTokens": 2048,
+        "deprecated": true,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024",
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0.00265,
+        "costPer1kOutputTokens": 0.0035,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "meta.llama3-8b-instruct-v1:0": {
+      "model": "llama/llama-3-8b-instruct",
+      "matchingModel": "meta.llama3-8b-instruct-v1:0",
+      "overrides": {
+        "maxTokens": 2048,
+        "deprecated": true,
+        "knowledgeCutoffDate": "March 2023",
+        "releaseDate": "July 23, 2024",
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "meta.llama4-maverick-17b-instruct-v1:0": {
+      "model": "llama/llama-4-maverick-17b-instruct",
+      "matchingModel": "meta.llama4-maverick-17b-instruct-v1:0",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "April 5, 2025",
+        "costPer1kInputTokens": 0.00024,
+        "costPer1kOutputTokens": 0.00097
+      }
+    },
+    "meta.llama4-scout-17b-instruct-v1:0": {
+      "model": "llama/llama-4-scout-17b-instruct",
+      "matchingModel": "meta.llama4-scout-17b-instruct-v1:0",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "April 5, 2025",
+        "costPer1kInputTokens": 0.00017,
+        "costPer1kOutputTokens": 0.00066
+      }
+    },
+    "minimax.minimax-m2.1": {
+      "model": "minimax/minimax-m2-1",
+      "matchingModel": "minimax.minimax-m2.1",
+      "overrides": {
+        "name": "MiniMax M2.1",
+        "speed": 4,
+        "lastUpdated": "December 23, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.ministral-3-14b-instruct": {
+      "model": "ministral/ministral-14b-3-0",
+      "matchingModel": "mistral.ministral-3-14b-instruct",
+      "overrides": {
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0002,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.ministral-3-8b-instruct": {
+      "model": "ministral/ministral-3-8b",
+      "matchingModel": "mistral.ministral-3-8b-instruct",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00015,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.mistral-7b-instruct-v0:2": {
+      "model": "mistral/mistral-7b-instruct-v0-3",
+      "matchingModel": "mistral.mistral-7b-instruct-v0:2",
+      "overrides": {
+        "lastUpdated": "April 1, 2025",
+        "costPer1kInputTokens": 0.00011,
+        "costPer1kOutputTokens": 0.00011,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.mistral-large-2402-v1:0": {
+      "model": "mistral/mistral-large-24-02",
+      "matchingModel": "mistral.mistral-large-2402-v1:0",
+      "overrides": {
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0015,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.mixtral-8x7b-instruct-v0:1": {
+      "model": "mistral/mixtral-8x7b-instruct-v0-1",
+      "matchingModel": "mistral.mixtral-8x7b-instruct-v0:1",
+      "overrides": {
+        "lastUpdated": "April 1, 2025",
+        "costPer1kInputTokens": 0.0007,
+        "costPer1kOutputTokens": 0.0007,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.voxtral-mini-3b-2507": {
+      "model": "mistral/voxtral-mini-3b-2507",
+      "matchingModel": "mistral.voxtral-mini-3b-2507",
+      "overrides": {
+        "lastUpdated": "December 1, 2024",
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.00004,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.voxtral-small-24b-2507": {
+      "model": "mistral/voxtral-small-24b-2507",
+      "matchingModel": "mistral.voxtral-small-24b-2507",
+      "overrides": {
+        "contextWindow": 32000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 1, 2025",
+        "lastUpdated": "July 1, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00035
+      }
+    },
+    "moonshotai.kimi-k2.5": {
+      "model": "kimi/kimi-k2-5",
+      "matchingModel": "moonshotai.kimi-k2.5",
+      "overrides": {
+        "openWeights": true,
+        "contextWindow": 262143,
+        "maxTokens": 16000,
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
+        "speed": 3,
+        "releaseDate": "February 6, 2026",
+        "lastUpdated": "February 6, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.003,
+        "supportsResponseFormat": true,
+        "supportsAttachments": false
+      }
+    },
+    "openai.gpt-oss-120b-1:0": {
+      "model": "gpt-oss/gpt-oss-120b",
+      "matchingModel": "openai.gpt-oss-120b-1:0",
+      "overrides": {
+        "name": "gpt-oss-120b",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "speed": 5,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false
+      }
+    },
+    "openai.gpt-oss-20b-1:0": {
+      "model": "gpt-oss/gpt-oss-20b",
+      "matchingModel": "openai.gpt-oss-20b-1:0",
+      "overrides": {
+        "name": "gpt-oss-20b",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "speed": 5,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.0003,
+        "supportsAttachments": false
+      }
+    },
+    "qwen.qwen3-235b-a22b-2507-v1:0": {
+      "model": "qwen/qwen3-235b-a22b-2507",
+      "matchingModel": "qwen.qwen3-235b-a22b-2507-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "September 18, 2025",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00088,
+        "supportsAttachments": false
+      }
+    },
+    "qwen.qwen3-32b-v1:0": {
+      "model": "qwen/qwen3-32b-dense",
+      "matchingModel": "qwen.qwen3-32b-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "September 18, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false
+      }
+    },
+    "qwen.qwen3-coder-30b-a3b-v1:0": {
+      "model": "qwen/qwen3-coder-30b-a3b-instruct",
+      "matchingModel": "qwen.qwen3-coder-30b-a3b-v1:0",
+      "overrides": {
+        "name": "Qwen3 Coder 30B A3B Instruct",
+        "openWeights": false,
+        "maxTokens": 131072,
+        "speed": 4,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "September 18, 2025",
+        "lastUpdated": "September 18, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false
+      }
+    },
+    "qwen.qwen3-coder-480b-a35b-v1:0": {
+      "model": "qwen/qwen3-coder-480b-a35b-instruct",
+      "matchingModel": "qwen.qwen3-coder-480b-a35b-v1:0",
+      "overrides": {
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "speed": 3,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "September 18, 2025",
+        "lastUpdated": "September 18, 2025",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.0018,
+        "supportsResponseFormat": true,
+        "supportsAttachments": false
+      }
+    },
+    "qwen.qwen3-next-80b-a3b": {
+      "model": "qwen/qwen-qwen3-next-80b-a3b-instruct",
+      "matchingModel": "qwen.qwen3-next-80b-a3b",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "November 25, 2025",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.0014,
+        "supportsAttachments": false
+      }
+    },
+    "qwen.qwen3-vl-235b-a22b": {
+      "model": "qwen/qwen-qwen3-vl-235b-a22b-instruct",
+      "matchingModel": "qwen.qwen3-vl-235b-a22b",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "November 25, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0015
+      }
+    },
+    "us.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "model": "claude-haiku/claude-haiku-4-5-us",
+      "matchingModel": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "overrides": {
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005
+      }
+    },
+    "us.anthropic.claude-opus-4-5-20251101-v1:0": {
+      "model": "claude-opus/claude-opus-4-5-us",
+      "matchingModel": "us.anthropic.claude-opus-4-5-20251101-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "August 1, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "us.anthropic.claude-opus-4-6-v1": {
+      "model": "claude-opus/claude-opus-4-6-us",
+      "matchingModel": "us.anthropic.claude-opus-4-6-v1",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025
+      },
+      "unset": [
+        "supportsTopP"
+      ]
+    },
+    "zai.glm-4.7": {
+      "model": "glm/glm-4-7",
+      "matchingModel": "zai.glm-4.7",
+      "overrides": {
+        "name": "GLM-4.7",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "speed": 4,
+        "lastUpdated": "December 22, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0022,
+        "supportsAttachments": false
+      }
+    },
+    "zai.glm-4.7-flash": {
+      "model": "glm-flash/glm-4-7-flash",
+      "matchingModel": "zai.glm-4.7-flash",
+      "overrides": {
+        "contextWindow": 200000,
+        "maxTokens": 131072,
+        "speed": 4,
+        "lastUpdated": "January 19, 2026",
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.0004,
+        "supportsAttachments": false
+      }
+    },
+    "anthropic.claude-opus-4-7": {
+      "model": "claude-opus/claude-opus-4-7",
+      "matchingModel": "anthropic.claude-opus-4-7",
+      "overrides": {
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "speed": 2,
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "anthropic.claude-sonnet-4-6": {
+      "model": "claude-sonnet/claude-sonnet-4-6",
+      "matchingModel": "anthropic.claude-sonnet-4-6",
+      "overrides": {
+        "maxTokens": 64000,
+        "contextComplexity": 4,
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "au.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "model": "claude-haiku/claude-haiku-4-5-au",
+      "matchingModel": "au.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "overrides": {
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005
+      }
+    },
+    "au.anthropic.claude-opus-4-6-v1": {
+      "model": "claude-opus/au-anthropic-claude-opus-4-6",
+      "matchingModel": "au.anthropic.claude-opus-4-6-v1",
+      "overrides": {
+        "lastUpdated": "February 5, 2026",
+        "costPer1kInputTokens": 0.0165,
+        "costPer1kOutputTokens": 0.0825
+      },
+      "unset": [
+        "contextComplexity",
+        "supportsTopP"
+      ]
+    },
+    "au.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+      "model": "claude-sonnet/claude-sonnet-4-5-au",
+      "matchingModel": "au.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "overrides": {
+        "lastUpdated": "September 29, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "au.anthropic.claude-sonnet-4-6": {
+      "model": "claude-sonnet/au-anthropic-claude-sonnet-4-6",
+      "matchingModel": "au.anthropic.claude-sonnet-4-6",
+      "overrides": {
+        "lastUpdated": "February 17, 2026",
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165
+      }
+    },
+    "deepseek.v3.2": {
+      "model": "deepseek/deepseek-v3-2",
+      "matchingModel": "deepseek.v3.2",
+      "overrides": {
+        "name": "DeepSeek-V3.2",
+        "maxTokens": 81920,
+        "releaseDate": "February 6, 2026",
+        "lastUpdated": "February 6, 2026",
+        "costPer1kInputTokens": 0.00062,
+        "costPer1kOutputTokens": 0.00185,
+        "supportsAttachments": false
+      }
+    },
+    "eu.anthropic.claude-opus-4-7": {
+      "model": "claude-opus/claude-opus-4-7-eu",
+      "matchingModel": "eu.anthropic.claude-opus-4-7",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "eu.anthropic.claude-sonnet-4-6": {
+      "model": "claude-sonnet/claude-sonnet-4-6-eu",
+      "matchingModel": "eu.anthropic.claude-sonnet-4-6",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "global.anthropic.claude-opus-4-7": {
+      "model": "claude-opus/claude-opus-4-7-global",
+      "matchingModel": "global.anthropic.claude-opus-4-7",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      }
+    },
+    "global.anthropic.claude-sonnet-4-6": {
+      "model": "claude-sonnet/claude-sonnet-4-6-global",
+      "matchingModel": "global.anthropic.claude-sonnet-4-6",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "jp.anthropic.claude-opus-4-7": {
+      "model": "claude-opus/claude-opus-4-7-jp",
+      "matchingModel": "jp.anthropic.claude-opus-4-7",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      }
+    },
+    "jp.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+      "model": "claude-sonnet/claude-sonnet-4-5-jp",
+      "matchingModel": "jp.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "overrides": {
+        "lastUpdated": "September 29, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "model": "claude-sonnet/claude-sonnet-4-6-jp",
+      "matchingModel": "jp.anthropic.claude-sonnet-4-6",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "minimax.minimax-m2.5": {
+      "model": "minimax/minimax-m2-5",
+      "matchingModel": "minimax.minimax-m2.5",
+      "overrides": {
+        "name": "MiniMax M2.5",
+        "contextWindow": 196608,
+        "maxTokens": 98304,
+        "speed": 4,
+        "releaseDate": "March 18, 2026",
+        "lastUpdated": "March 18, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.devstral-2-123b": {
+      "model": "devstral/devstral-2-123b",
+      "matchingModel": "mistral.devstral-2-123b",
+      "overrides": {
+        "lastUpdated": "February 17, 2026",
+        "costPer1kInputTokens": 0.0004,
+        "costPer1kOutputTokens": 0.002,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.magistral-small-2509": {
+      "model": "magistral/magistral-small-1-2",
+      "matchingModel": "mistral.magistral-small-2509",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 2, 2025",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0015,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.ministral-3-3b-instruct": {
+      "model": "ministral/ministral-3-3b",
+      "matchingModel": "mistral.ministral-3-3b-instruct",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 2, 2025",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0001,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.mistral-large-3-675b-instruct": {
+      "model": "mistral/mistral-large-3",
+      "matchingModel": "mistral.mistral-large-3-675b-instruct",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "December 2, 2025",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0015,
+        "supportsAttachments": false
+      }
+    },
+    "mistral.pixtral-large-2502-v1:0": {
+      "model": "mistral/pixtral-large-25-02",
+      "matchingModel": "mistral.pixtral-large-2502-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 8, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": false
+      }
+    },
+    "nvidia.nemotron-nano-3-30b": {
+      "model": "nemotron/nvidia-nemotron-nano-3-30b",
+      "matchingModel": "nvidia.nemotron-nano-3-30b",
+      "overrides": {
+        "lastUpdated": "December 23, 2025",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024,
+        "supportsAttachments": false
+      }
+    },
+    "nvidia.nemotron-super-3-120b": {
+      "model": "nemotron/nvidia-nemotron-3-super-120b-a12b",
+      "matchingModel": "nvidia.nemotron-super-3-120b",
+      "overrides": {
+        "maxTokens": 131072,
+        "speed": 4,
+        "lastUpdated": "March 11, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00065,
+        "supportsAttachments": false
+      }
+    },
+    "qwen.qwen3-coder-next": {
+      "model": "qwen/qwen3-coder-next",
+      "matchingModel": "qwen.qwen3-coder-next",
+      "overrides": {
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "speed": 4,
+        "releaseDate": "February 6, 2026",
+        "lastUpdated": "February 6, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.0018,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "us.anthropic.claude-opus-4-7": {
+      "model": "claude-opus/claude-opus-4-7-us",
+      "matchingModel": "us.anthropic.claude-opus-4-7",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      }
+    },
+    "us.anthropic.claude-sonnet-4-6": {
+      "model": "claude-sonnet/claude-sonnet-4-6-us",
+      "matchingModel": "us.anthropic.claude-sonnet-4-6",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "us.deepseek.r1-v1:0": {
+      "model": "deepseek-thinking/deepseek-r1-us",
+      "matchingModel": "us.deepseek.r1-v1:0",
+      "overrides": {
+        "lastUpdated": "May 29, 2025",
+        "costPer1kInputTokens": 0.00135,
+        "costPer1kOutputTokens": 0.0054,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "us.meta.llama4-maverick-17b-instruct-v1:0": {
+      "model": "llama/llama-4-maverick-17b-instruct-us",
+      "matchingModel": "us.meta.llama4-maverick-17b-instruct-v1:0",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "April 5, 2025",
+        "costPer1kInputTokens": 0.00024,
+        "costPer1kOutputTokens": 0.00097
+      }
+    },
+    "us.meta.llama4-scout-17b-instruct-v1:0": {
+      "model": "llama/llama-4-scout-17b-instruct-us",
+      "matchingModel": "us.meta.llama4-scout-17b-instruct-v1:0",
+      "overrides": {
+        "deprecated": true,
+        "lastUpdated": "April 5, 2025",
+        "costPer1kInputTokens": 0.00017,
+        "costPer1kOutputTokens": 0.00066
+      }
+    },
+    "writer.palmyra-x4-v1:0": {
+      "model": "palmyra/palmyra-x4",
+      "matchingModel": "writer.palmyra-x4-v1:0",
+      "overrides": {
+        "lastUpdated": "April 28, 2025",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": false
+      }
+    },
+    "writer.palmyra-x5-v1:0": {
+      "model": "palmyra/palmyra-x5",
+      "matchingModel": "writer.palmyra-x5-v1:0",
+      "overrides": {
+        "releaseDate": "April 28, 2025",
+        "lastUpdated": "April 28, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "zai.glm-5": {
+      "model": "glm/glm-5",
+      "matchingModel": "zai.glm-5",
+      "overrides": {
+        "name": "GLM-5",
+        "maxTokens": 101376,
+        "speed": 3,
+        "releaseDate": "March 18, 2026",
+        "lastUpdated": "March 18, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.0032,
+        "supportsAttachments": false
+      }
+    },
+    "anthropic.claude-opus-4-8": {
+      "model": "claude-opus/claude-opus-4-8",
+      "matchingModel": "anthropic.claude-opus-4-8",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "au.anthropic.claude-opus-4-8": {
+      "model": "claude-opus/claude-opus-4-8-au",
+      "matchingModel": "au.anthropic.claude-opus-4-8",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      }
+    },
+    "eu.anthropic.claude-opus-4-8": {
+      "model": "claude-opus/claude-opus-4-8-eu",
+      "matchingModel": "eu.anthropic.claude-opus-4-8",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "global.anthropic.claude-opus-4-8": {
+      "model": "claude-opus/claude-opus-4-8-global",
+      "matchingModel": "global.anthropic.claude-opus-4-8",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      }
+    },
+    "jp.anthropic.claude-opus-4-8": {
+      "model": "claude-opus/claude-opus-4-8-jp",
+      "matchingModel": "jp.anthropic.claude-opus-4-8",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      }
+    },
+    "us.anthropic.claude-opus-4-8": {
+      "model": "claude-opus/claude-opus-4-8-us",
+      "matchingModel": "us.anthropic.claude-opus-4-8",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      }
+    },
+    "openai.gpt-5.4": {
+      "model": "gpt/gpt-5-4",
+      "matchingModel": "openai.gpt-5.4",
+      "overrides": {
+        "contextWindow": 272000,
+        "contextComplexity": 4,
+        "speed": 4,
+        "lastUpdated": "June 1, 2026",
+        "costPer1kInputTokens": 0.00275,
+        "costPer1kOutputTokens": 0.0165
+      }
+    },
+    "openai.gpt-5.5": {
+      "model": "gpt/gpt-5-5",
+      "matchingModel": "openai.gpt-5.5",
+      "overrides": {
+        "contextWindow": 272000,
+        "contextComplexity": 4,
+        "speed": 3,
+        "lastUpdated": "June 1, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.033,
+        "supportsTemperature": false
+      }
+    },
+    "openai.gpt-oss-120b": {
+      "model": "gpt-oss/gpt-oss-120b",
+      "matchingModel": "openai.gpt-oss-120b",
+      "overrides": {
+        "name": "gpt-oss-120b",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "math",
+          "tool_use"
+        ],
+        "speed": 5,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false
+      }
+    },
+    "openai.gpt-oss-20b": {
+      "model": "gpt-oss/gpt-oss-20b",
+      "matchingModel": "openai.gpt-oss-20b",
+      "overrides": {
+        "name": "gpt-oss-20b",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "tool_use"
+        ],
+        "speed": 5,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.0003,
+        "supportsAttachments": false
+      }
+    },
+    "eu.anthropic.claude-fable-5": {
+      "model": "claude-fable/claude-fable-5-eu",
+      "matchingModel": "eu.anthropic.claude-fable-5",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0.011,
+        "costPer1kOutputTokens": 0.055,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "global.anthropic.claude-fable-5": {
+      "model": "claude-fable/claude-fable-5-global",
+      "matchingModel": "global.anthropic.claude-fable-5",
+      "overrides": {
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false
+      }
+    },
+    "us.anthropic.claude-fable-5": {
+      "model": "claude-fable/claude-fable-5-us",
+      "matchingModel": "us.anthropic.claude-fable-5",
+      "overrides": {
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false
+      }
+    },
+    "xai.grok-4.3": {
+      "model": "grok/grok-4-3",
+      "matchingModel": "xai.grok-4.3",
+      "overrides": {
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 4,
+        "lastUpdated": "June 28, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.0025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "anthropic.claude-sonnet-5": {
+      "model": "claude-sonnet/claude-sonnet-5",
+      "matchingModel": "anthropic.claude-sonnet-5",
+      "overrides": {
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "au.anthropic.claude-sonnet-5": {
+      "model": "claude-sonnet/claude-sonnet-5-au",
+      "matchingModel": "au.anthropic.claude-sonnet-5",
+      "overrides": {
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "eu.anthropic.claude-sonnet-5": {
+      "model": "claude-sonnet/claude-sonnet-5-eu",
+      "matchingModel": "eu.anthropic.claude-sonnet-5",
+      "overrides": {
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "global.anthropic.claude-sonnet-5": {
+      "model": "claude-sonnet/claude-sonnet-5-global",
+      "matchingModel": "global.anthropic.claude-sonnet-5",
+      "overrides": {
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "jp.anthropic.claude-sonnet-5": {
+      "model": "claude-sonnet/claude-sonnet-5-jp",
+      "matchingModel": "jp.anthropic.claude-sonnet-5",
+      "overrides": {
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "us.anthropic.claude-sonnet-5": {
+      "model": "claude-sonnet/claude-sonnet-5-us",
+      "matchingModel": "us.anthropic.claude-sonnet-5",
+      "overrides": {
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "anthropic.claude-fable-5": {
+      "model": "claude-fable/claude-fable-5",
+      "matchingModel": "anthropic.claude-fable-5",
+      "overrides": {
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "model": "claude-haiku/claude-haiku-4-5-jp",
+      "matchingModel": "jp.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "overrides": {
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005
+      }
+    },
+    "openai.gpt-5.6-luna": {
+      "model": "gpt-luna/gpt-5-6-luna",
+      "matchingModel": "openai.gpt-5.6-luna",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00132,
+        "supportsTemperature": false
+      }
+    },
+    "openai.gpt-5.6-sol": {
+      "model": "gpt-sol/gpt-5-6-sol",
+      "matchingModel": "openai.gpt-5.6-sol",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0044,
+        "costPer1kOutputTokens": 0.022,
+        "supportsTemperature": false
+      }
+    },
+    "openai.gpt-5.6-terra": {
+      "model": "gpt-terra/gpt-5-6-terra",
+      "matchingModel": "openai.gpt-5.6-terra",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.0132,
+        "supportsTemperature": false
+      }
+    },
+    "anthropic.claude-opus-5": {
+      "model": "claude-opus/claude-opus-5",
+      "matchingModel": "anthropic.claude-opus-5",
+      "overrides": {
+        "lastUpdated": "July 24, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      },
+      "unset": [
+        "contextComplexity",
+        "supportsResponseFormat"
+      ]
+    },
+    "au.anthropic.claude-opus-5": {
+      "model": "claude-opus/claude-opus-5-au",
+      "matchingModel": "au.anthropic.claude-opus-5",
+      "overrides": {
+        "lastUpdated": "July 24, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "eu.anthropic.claude-opus-5": {
+      "model": "claude-opus/claude-opus-5-eu",
+      "matchingModel": "eu.anthropic.claude-opus-5",
+      "overrides": {
+        "lastUpdated": "July 24, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "global.anthropic.claude-opus-5": {
+      "model": "claude-opus/claude-opus-5-global",
+      "matchingModel": "global.anthropic.claude-opus-5",
+      "overrides": {
+        "lastUpdated": "July 24, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "jp.anthropic.claude-opus-5": {
+      "model": "claude-opus/claude-opus-5-jp",
+      "matchingModel": "jp.anthropic.claude-opus-5",
+      "overrides": {
+        "lastUpdated": "July 24, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "us.anthropic.claude-opus-5": {
+      "model": "claude-opus/claude-opus-5-us",
+      "matchingModel": "us.anthropic.claude-opus-5",
+      "overrides": {
+        "lastUpdated": "July 24, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "global.openai.gpt-5.6-luna": {
+      "model": "gpt-luna/gpt-5-6-luna-global",
+      "matchingModel": "global.openai.gpt-5.6-luna",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsTemperature": false
+      }
+    },
+    "global.openai.gpt-5.6-sol": {
+      "model": "gpt-sol/gpt-5-6-sol-global",
+      "matchingModel": "global.openai.gpt-5.6-sol",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsTemperature": false
+      }
+    },
+    "global.openai.gpt-5.6-terra": {
+      "model": "gpt-terra/gpt-5-6-terra-global",
+      "matchingModel": "global.openai.gpt-5.6-terra",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012,
+        "supportsTemperature": false
+      }
+    },
+    "xai.grok-4.6": {
+      "model": "grok/grok-4-6",
+      "matchingModel": "xai.grok-4.6",
+      "overrides": {
+        "lastUpdated": "August 18, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.0066
+      }
+    },
+    "anthropic.claude-fable-5-1": {
+      "model": "claude-fable/claude-fable-5-1",
+      "matchingModel": "anthropic.claude-fable-5-1",
+      "overrides": {
+        "lastUpdated": "September 1, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false
+      }
+    },
+    "global.anthropic.claude-fable-5-1": {
+      "model": "claude-fable/claude-fable-5-1-global",
+      "matchingModel": "global.anthropic.claude-fable-5-1",
+      "overrides": {
+        "lastUpdated": "September 1, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false
+      }
+    },
+    "us.anthropic.claude-fable-5-1": {
+      "model": "claude-fable/claude-fable-5-1-us",
+      "matchingModel": "us.anthropic.claude-fable-5-1",
+      "overrides": {
+        "lastUpdated": "September 1, 2026",
+        "costPer1kInputTokens": 0.011,
+        "costPer1kOutputTokens": 0.055,
+        "supportsTemperature": false
+      }
+    }
+  }
+}

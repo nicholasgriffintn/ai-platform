@@ -1,6 +1,5 @@
-import { replicateModelConfig } from "~/data-model/models/replicate";
-import { workersAiModelConfig } from "~/data-model/models/workersai";
 import { imagePrompts } from "~/lib/prompts/image";
+import { getProviderModels } from "~/lib/providers/models/catalogue";
 import { getModelIdsByOutput } from "~/utils/models";
 
 import { jsonSchemaToZod } from "../../../utils/jsonSchema";
@@ -8,8 +7,8 @@ import type { FunctionToolDescriptor } from "./types";
 
 export const IMAGE_PROVIDERS = ["workers-ai", "replicate"] as const;
 export const IMAGE_MODELS = [
-  ...getModelIdsByOutput(replicateModelConfig, "replicate", "image"),
-  ...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "image"),
+  ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "image"),
+  ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "image"),
 ].sort();
 
 export const create_image: FunctionToolDescriptor = {

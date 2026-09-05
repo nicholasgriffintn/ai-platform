@@ -1,0 +1,424 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "mistral-small-creative": {
+      "model": "mistral/mistral-small-creative-labs",
+      "matchingModel": "labs-mistral-small-creative",
+      "overrides": {
+        "deprecated": true
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "mistral-ocr-latest": {
+      "model": "mistral/mistral-ocr-4-1-latest",
+      "matchingModel": "mistral-ocr-latest",
+      "overrides": {
+        "hiddenFromDefaultList": true,
+        "supportsDocuments": true
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "mistral-ocr-4-1": {
+      "model": "mistral/mistral-ocr-4-1",
+      "matchingModel": "mistral-ocr-4-1",
+      "overrides": {
+        "hiddenFromDefaultList": true,
+        "supportsDocuments": true
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "leanstral": {
+      "model": "leanstral/leanstral-1-5",
+      "matchingModel": "labs-leanstral-1-5",
+      "overrides": {
+        "isFree": true,
+        "speed": 3,
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "magistral-small": {
+      "model": "magistral-small/magistral-small",
+      "matchingModel": "magistral-small-latest",
+      "overrides": {
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "chat",
+          "general_knowledge",
+          "tool_use"
+        ],
+        "speed": 3,
+        "isFeatured": false,
+        "lastUpdated": "March 17, 2025",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0015
+      }
+    },
+    "open-mixtral-8x22b": {
+      "model": "mixtral/mixtral-8x22b",
+      "matchingModel": "open-mixtral-8x22b",
+      "overrides": {
+        "speed": 3,
+        "deprecated": true,
+        "lastUpdated": "April 17, 2024",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
+      }
+    },
+    "mistral-large": {
+      "model": "mistral-large/mistral-large-latest",
+      "matchingModel": "mistral-large-latest",
+      "overrides": {
+        "speed": 3,
+        "isFeatured": false,
+        "lastUpdated": "December 2, 2025",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0015,
+        "supportsAttachments": true,
+        "supportsFim": true
+      }
+    },
+    "open-mistral-7b": {
+      "model": "mistral/mistral-7b",
+      "matchingModel": "open-mistral-7b",
+      "overrides": {
+        "speed": 5,
+        "deprecated": true,
+        "lastUpdated": "September 27, 2023",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00025
+      }
+    },
+    "pixtral-large": {
+      "model": "pixtral/pixtral-large-latest",
+      "matchingModel": "pixtral-large-latest",
+      "overrides": {
+        "speed": 3,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "November 4, 2024",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": true
+      }
+    },
+    "mistral-medium": {
+      "model": "mistral-medium/mistral-medium-latest",
+      "matchingModel": "mistral-medium-latest",
+      "overrides": {
+        "name": "Mistral Medium 3.5",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "card": "https://www.prompthub.us/models/mistral-medium",
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "isFeatured": true,
+        "knowledgeCutoffDate": "May 2025",
+        "lastUpdated": "April 29, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0075,
+        "supportsAttachments": true
+      }
+    },
+    "codestral": {
+      "model": "codestral/codestral-latest",
+      "matchingModel": "codestral-latest",
+      "overrides": {
+        "card": "https://www.prompthub.us/models/codestral",
+        "strengths": [
+          "coding",
+          "analysis",
+          "multilingual"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "speed": 3,
+        "lastUpdated": "January 4, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0009,
+        "supportsFim": true
+      }
+    },
+    "open-mixtral-8x7b": {
+      "model": "mixtral/mixtral-8x7b",
+      "matchingModel": "open-mixtral-8x7b",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "December 11, 2023",
+        "costPer1kInputTokens": 0.0007,
+        "costPer1kOutputTokens": 0.0007
+      }
+    },
+    "pixtral-12b": {
+      "model": "pixtral/pixtral-12b",
+      "matchingModel": "pixtral-12b",
+      "overrides": {
+        "strengths": [
+          "vision",
+          "analysis",
+          "multilingual"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
+        "speed": 4,
+        "multimodal": true,
+        "deprecated": true,
+        "lastUpdated": "September 1, 2024",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00015,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "artificialAnalysis"
+      ]
+    },
+    "mistral-small": {
+      "model": "mistral-small/mistral-small-latest",
+      "matchingModel": "mistral-small-latest",
+      "overrides": {
+        "name": "Mistral Small 4",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
+        "card": "https://www.prompthub.us/models/mistral-small",
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "speed": 4,
+        "multimodal": true,
+        "isFeatured": true,
+        "releaseDate": "March 16, 2026",
+        "lastUpdated": "March 16, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ministral-14b": {
+      "model": "mistral/ministral-14b-latest/ministral-14b",
+      "matchingModel": "ministral-14b-latest",
+      "overrides": {
+        "speed": 3,
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0002,
+        "supportsAttachments": true
+      }
+    },
+    "ministral-8b": {
+      "model": "ministral/ministral-8b-latest",
+      "matchingModel": "ministral-8b-latest",
+      "overrides": {
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual",
+          "vision"
+        ],
+        "contextComplexity": 2,
+        "reliability": 3,
+        "speed": 3,
+        "multimodal": true,
+        "lastUpdated": "October 4, 2024",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0001
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "ministral-3-3b": {
+      "model": "ministral/ministral-3b-latest",
+      "matchingModel": "ministral-3b-latest",
+      "overrides": {
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual",
+          "vision",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "speed": 4,
+        "multimodal": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "lastUpdated": "October 4, 2024",
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.00004,
+        "artificialAnalysis": {
+          "intelligenceIndex": 5.6,
+          "codingIndex": 4.8,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "magistral-medium": {
+      "model": "magistral-medium/magistral-medium-latest",
+      "matchingModel": "magistral-medium-latest",
+      "overrides": {
+        "speed": 3,
+        "isFeatured": false,
+        "lastUpdated": "March 20, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.005
+      }
+    },
+    "mistral-tiny": {
+      "model": "mistral/mistral-tiny",
+      "matchingModel": "mistral-tiny-latest",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "lastUpdated": "July 1, 2024",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00015
+      }
+    },
+    "voxtral-small": {
+      "model": "voxtral/voxtral-small-latest",
+      "matchingModel": "voxtral-small-latest",
+      "overrides": {
+        "lastUpdated": "July 15, 2025",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0003,
+        "supportsAttachments": true,
+        "supportsAudio": true
+      }
+    },
+    "voxtral-mini": {
+      "model": "voxtral/voxtral-mini-latest",
+      "matchingModel": "voxtral-mini-latest",
+      "overrides": {
+        "lastUpdated": "February 1, 2026",
+        "supportsToolCalls": false,
+        "supportsAudio": true,
+        "supportsTemperature": false
+      }
+    },
+    "voxtral-mini-transcribe-realtime": {
+      "model": "mistral/voxtral-mini-transcribe-realtime-2602/voxtral-mini-transcribe-realtime",
+      "matchingModel": "voxtral-mini-transcribe-realtime-2602",
+      "overrides": {
+        "lastUpdated": "February 4, 2026",
+        "supportsToolCalls": false,
+        "supportsStreaming": true,
+        "supportsAudio": true,
+        "supportsRealtimeSession": true,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsAttachments"
+      ]
+    },
+    "mistral-embed": {
+      "model": "mistral-embed/mistral-embed",
+      "matchingModel": "mistral-embed",
+      "overrides": {
+        "contextWindow": 8000,
+        "maxTokens": 3072,
+        "lastUpdated": "December 11, 2023",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false,
+        "apiOperation": "embeddings"
+      }
+    },
+    "codestral-embed": {
+      "model": "mistral/codestral-embed/codestral-embed",
+      "matchingModel": "codestral-embed",
+      "overrides": {
+        "apiOperation": "codestralEmbeddings"
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "mistral-moderation-latest": {
+      "model": "mistral/mistral-moderation",
+      "matchingModel": "mistral-moderation-latest",
+      "overrides": {
+        "apiOperation": "moderations"
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "voxtral-mini-tts-latest": {
+      "model": "voxtral/voxtral-mini-tts-latest",
+      "matchingModel": "voxtral-mini-tts-latest",
+      "overrides": {
+        "lastUpdated": "March 1, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "zai-glm-5-2": {
+      "model": "glm/glm-5-2",
+      "matchingModel": "zai-glm-5-2",
+      "overrides": {
+        "status": "beta",
+        "contextWindow": 1000000,
+        "speed": 4,
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044
+      }
+    }
+  }
+}

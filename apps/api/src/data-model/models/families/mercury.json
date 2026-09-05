@@ -1,0 +1,76 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The mercury family includes models that produce text.",
+  "models": {
+    "mercury-2": {
+      "defaults": {
+        "name": "Mercury 2",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 128000,
+        "maxTokens": 50000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "February 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mercury-2-5-preview": {
+      "defaults": {
+        "name": "Mercury 2.5 Preview",
+        "description": "Preview model for early access evaluation, prototyping, and compatibility testing",
+        "contextWindow": 260000,
+        "maxTokens": 65536,
+        "releaseDate": "August 31, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "mercury-coder-small-beta": {
+      "defaults": {
+        "name": "Mercury Coder Small Beta",
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+        "contextWindow": 32000,
+        "maxTokens": 16384,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "February 26, 2025"
+      }
+    }
+  }
+}

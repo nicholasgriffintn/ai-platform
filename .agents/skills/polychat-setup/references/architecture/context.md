@@ -161,6 +161,10 @@ Composio owns configured connector credentials and tool schemas. Polychat owns s
 
 Credit admission reads persisted plan allowances; missing allowances refuse work. The signed-in ledger records idempotent vendor-unit spend, while anonymous actors use running totals. BYOK model/hosted-tool spend is uncharged; other metered work is not. Workspace reporting is attribution, not a shared balance. See [usage operations](../operations/loop-cost-controls.md).
 
+## Model catalogue boundary
+
+The API model catalogue separates **families**, shared **model definitions** and provider **offerings** under `apps/api/src/data-model/models/`. Each family has one JSON file containing its description, defaults and model definitions; each provider has one JSON definition. `lib/providers/models/catalogue-definition.mts` validates and resolves family → model → provider → offering precedence, and `catalogue.ts` supplies the catalogue and provider views. `scripts/sync-models-dev/` owns conversion, upstream metadata, explicit execution corrections and generated imports. Keep current public IDs and provider ordering stable; see [ADR 0056](decisions/0056-share-model-definitions-across-provider-offerings.md) and [catalogue operations](../operations/model-catalogue.md).
+
 ## Web boundaries
 
 `apps/app/src/lib/api/fetch-wrapper.ts` owns credentials, CSRF, timeouts and API error handling. React Query hooks own remote/local coordination and invalidation; the authenticated store owns hydrated user/settings state. `lib/local/local-chat-service.ts` owns local conversation persistence.

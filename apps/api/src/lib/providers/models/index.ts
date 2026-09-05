@@ -1,78 +1,18 @@
 import { MODEL_DEFAULTS, isActiveRouterModel } from "@ngriffin_uk/polychat-schemas";
 import type {
-  ModelConfig,
   ModelConfigItem,
   ModelModalities,
   ModelModality,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { availableModalities } from "~/constants/models";
-import { alibabaModelConfig } from "~/data-model/models/alibaba";
-import { anthropicModelConfig } from "~/data-model/models/anthropic";
-import { azureModelConfig } from "~/data-model/models/azure";
-import { bedrockModelConfig } from "~/data-model/models/bedrock";
-import { cartesiaModelConfig } from "~/data-model/models/cartesia";
-import { cerebrasModelConfig } from "~/data-model/models/cerebras";
-import { chutesModelConfig } from "~/data-model/models/chutes";
-import { cohereModelConfig } from "~/data-model/models/cohere";
-import { cortecsModelConfig } from "~/data-model/models/cortecs";
-import { deepinfraModelConfig } from "~/data-model/models/deepinfra";
-import { deepseekModelConfig } from "~/data-model/models/deepseek";
-import { elevenLabsModelConfig } from "~/data-model/models/elevenlabs";
-import { exaModelConfig } from "~/data-model/models/exa";
-import { falModelConfig } from "~/data-model/models/fal";
-import { fireworksModelConfig } from "~/data-model/models/fireworks";
-import { githubCopilotModelConfig } from "~/data-model/models/githubcopilot";
-import { githubModelsConfig } from "~/data-model/models/githubmodels";
-import { googleAiStudioModelConfig } from "~/data-model/models/google-ai-studio";
-import { googleVertexModelConfig } from "~/data-model/models/google-vertex";
-import { greenPtModelConfig } from "~/data-model/models/greenpt";
-import { groqModelConfig } from "~/data-model/models/groq";
-import { hetznerModelConfig } from "~/data-model/models/hetzner";
-import { huggingfaceModelConfig } from "~/data-model/models/huggingface";
-import { hyperbolicModelConfig } from "~/data-model/models/hyperbolic";
-import { ideogramModelConfig } from "~/data-model/models/ideogram";
-import { inceptionModelConfig } from "~/data-model/models/inception";
-import { inferenceModelConfig } from "~/data-model/models/inference";
-import { kimiForCodingModelConfig } from "~/data-model/models/kimi-for-coding";
-import { lmstudioModelConfig } from "~/data-model/models/lmstudio";
-import { lucidQueryModelConfig } from "~/data-model/models/lucidquery";
-import { metaModelConfig } from "~/data-model/models/meta";
-import { minimaxModelConfig } from "~/data-model/models/minimax";
-import { mistralModelConfig } from "~/data-model/models/mistral";
-import { moonshotModelConfig } from "~/data-model/models/moonshot";
-import { morphModelConfig } from "~/data-model/models/morph";
-import { novaModelConfig } from "~/data-model/models/nova";
-import { ollamaModelConfig } from "~/data-model/models/ollama";
-import { ollamaCloudModelConfig } from "~/data-model/models/ollama-cloud";
-import { openaiModelConfig } from "~/data-model/models/openai";
-import { opencodeModelConfig } from "~/data-model/models/opencode";
-import { opencodeGoModelConfig } from "~/data-model/models/opencode-go";
-import { openrouterModelConfig } from "~/data-model/models/openrouter";
-import { ovhCloudModelConfig } from "~/data-model/models/ovhcloud";
-import { parallelModelConfig } from "~/data-model/models/parallel";
-import { perplexityModelConfig } from "~/data-model/models/perplexity";
-import { poolsideModelConfig } from "~/data-model/models/poolside";
-import { regoloModelConfig } from "~/data-model/models/regolo-ai";
-import { replicateModelConfig } from "~/data-model/models/replicate";
-import { requestyModelConfig } from "~/data-model/models/requesty";
-import { sakanaModelConfig } from "~/data-model/models/sakana";
-import { standardComputeModelConfig } from "~/data-model/models/standardcompute";
-import { theGridModelConfig } from "~/data-model/models/the-grid-ai";
-import { thinkingMachinesModelConfig } from "~/data-model/models/thinkingmachines";
-import { togetherAiModelConfig } from "~/data-model/models/together-ai";
-import { upstageModelConfig } from "~/data-model/models/upstage";
-import { v0ModelConfig } from "~/data-model/models/v0";
-import { vercelModelConfig } from "~/data-model/models/vercel";
-import { workersAiModelConfig } from "~/data-model/models/workersai";
-import { xaiModelConfig } from "~/data-model/models/xai";
-import { zaiModelConfig } from "~/data-model/models/zai";
 import { KVCache } from "~/lib/cache";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv, IUser, IUserSettings, ResearchProviderName, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
+import { modelConfig } from "./catalogue";
 import {
   getExecutableModelsForAccount,
   resolveDefaultChatModel,
@@ -82,7 +22,6 @@ import {
   findTrainingDeploymentModelConfig,
   getTrainingDeploymentModelConfigs,
 } from "./trainingDeployments";
-import { mergeModelConfigs } from "./utils";
 
 const logger = getLogger({ prefix: "lib/models" });
 
@@ -104,69 +43,6 @@ export interface ResolveModelProviderOptions {
   defaultProvider: string;
   env?: IEnv;
 }
-
-const modelConfig: ModelConfig = mergeModelConfigs(
-  openaiModelConfig,
-  anthropicModelConfig,
-  mistralModelConfig,
-  morphModelConfig,
-  bedrockModelConfig,
-  deepinfraModelConfig,
-  deepseekModelConfig,
-  ollamaModelConfig,
-  azureModelConfig,
-  githubModelsConfig,
-  xaiModelConfig,
-  groqModelConfig,
-  huggingfaceModelConfig,
-  openrouterModelConfig,
-  parallelModelConfig,
-  perplexityModelConfig,
-  requestyModelConfig,
-  workersAiModelConfig,
-  togetherAiModelConfig,
-  googleAiStudioModelConfig,
-  elevenLabsModelConfig,
-  cartesiaModelConfig,
-  fireworksModelConfig,
-  hyperbolicModelConfig,
-  inferenceModelConfig,
-  chutesModelConfig,
-  vercelModelConfig,
-  upstageModelConfig,
-  githubCopilotModelConfig,
-  inceptionModelConfig,
-  v0ModelConfig,
-  replicateModelConfig,
-  exaModelConfig,
-  falModelConfig,
-  ideogramModelConfig,
-  cerebrasModelConfig,
-  cohereModelConfig,
-  opencodeModelConfig,
-  opencodeGoModelConfig,
-  cortecsModelConfig,
-  novaModelConfig,
-  poolsideModelConfig,
-  hetznerModelConfig,
-  alibabaModelConfig,
-  zaiModelConfig,
-  moonshotModelConfig,
-  minimaxModelConfig,
-  googleVertexModelConfig,
-  ollamaCloudModelConfig,
-  lmstudioModelConfig,
-  metaModelConfig,
-  greenPtModelConfig,
-  lucidQueryModelConfig,
-  ovhCloudModelConfig,
-  regoloModelConfig,
-  sakanaModelConfig,
-  standardComputeModelConfig,
-  theGridModelConfig,
-  kimiForCodingModelConfig,
-  thinkingMachinesModelConfig,
-);
 
 const MODEL_CACHE_TTL = 14400;
 let modelCache: KVCache | null = null;

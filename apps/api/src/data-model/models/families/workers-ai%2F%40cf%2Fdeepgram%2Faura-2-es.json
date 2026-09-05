@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 14, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/deepgram/aura 2 es family includes models that produce text.",
+  "models": {
+    "deepgram-aura-2-es": {
+      "defaults": {
+        "name": "Deepgram Aura 2 (ES)",
+        "description": "Deepgram Aura 2 (ES) accepts text and produces text."
+      }
+    }
+  }
+}

@@ -1,153 +1,119 @@
+import fs from "node:fs/promises";
 import path from "node:path";
 
 import { buildArtificialAnalysisLookup } from "./artificial-analysis.mjs";
-import { inspectModelFile, listTsFiles, processFile } from "./model-file-processing.mjs";
-import { fetchApiData, fetchArtificialAnalysisData } from "./remote-clients.mjs";
+import { convertCatalogue } from "./catalogue-conversion.mjs";
+import {
+  catalogueFiles,
+  listCatalogueFiles,
+  readCatalogue,
+  removeCatalogueFiles,
+} from "./catalogue-files.mjs";
+import { syncCatalogue } from "./catalogue-sync.mjs";
+import { readProviderSources } from "./convert-source.mjs";
+import {
+  fetchApiData,
+  fetchArtificialAnalysisData,
+  validateRemoteProviders,
+} from "./remote-clients.mjs";
 
 export async function runSyncModelsDev(options) {
-  const remoteProviders = await fetchApiData(options.apiUrl);
-  const artificialAnalysisModels = await fetchArtificialAnalysisData({
-    apiUrl: options.polychatApiBaseUrl,
-    apiKey: options.polychatApiKey,
-  });
-  const artificialAnalysisLookup = buildArtificialAnalysisLookup(artificialAnalysisModels);
-  const files = (await listTsFiles(options.modelsDir))
-    .filter((filePath) => path.basename(filePath) !== "index.ts")
-    .sort((left, right) => left.localeCompare(right));
+  const remoteProviders = options.snapshot
+    ? validateRemoteProviders(JSON.parse(await fs.readFile(options.snapshot, "utf8")))
+    : await fetchApiData(options.apiUrl);
+  let catalogue;
+  let stats;
 
-  const inspections = await Promise.all(
-    files.map((filePath) =>
-      inspectModelFile({
-        filePath,
-        remoteProviders,
-        selectedProviders: options.providers,
-      }),
-    ),
-  );
-  const providerRepresentedRemoteModelIds = new Map();
-  const providerFileCounts = new Map();
+  if (options.convertFrom) {
+    const providers = await readProviderSources(options.convertFrom);
 
-  for (const inspection of inspections) {
-    if (inspection.status !== "processable") {
-      continue;
-    }
+    catalogue = convertCatalogue(providers, remoteProviders);
+    stats = {
+      convertedOfferings: Object.values(providers).reduce(
+        (sum, models) => sum + Object.keys(models).length,
+        0,
+      ),
+    };
+  } else {
+    const current = await readCatalogue(options.modelsDir);
+    const analysis = options.snapshot
+      ? []
+      : await fetchArtificialAnalysisData({
+          apiUrl: options.polychatApiBaseUrl,
+          apiKey: options.polychatApiKey,
+        });
 
-    providerFileCounts.set(
-      inspection.remoteProviderId,
-      (providerFileCounts.get(inspection.remoteProviderId) ?? 0) + 1,
-    );
-
-    let representedRemoteModelIds = providerRepresentedRemoteModelIds.get(
-      inspection.remoteProviderId,
-    );
-
-    if (!representedRemoteModelIds) {
-      representedRemoteModelIds = new Set();
-      providerRepresentedRemoteModelIds.set(inspection.remoteProviderId, representedRemoteModelIds);
-    }
-
-    for (const remoteModelId of inspection.representedRemoteModelIds) {
-      representedRemoteModelIds.add(remoteModelId);
-    }
-  }
-
-  const reports = [];
-
-  for (const filePath of files) {
-    const inspection = inspections.find((candidate) => candidate.filePath === filePath);
-    const providerFileCount =
-      inspection?.status === "processable"
-        ? (providerFileCounts.get(inspection.remoteProviderId) ?? 1)
-        : 1;
-    const report = await processFile({
-      filePath,
+    ({ catalogue, stats } = syncCatalogue(
+      current,
       remoteProviders,
-      artificialAnalysisLookup,
-      write: options.write,
-      selectedProviders: options.providers,
-      verbose: options.verbose,
-      providerRepresentedRemoteModelIds:
-        inspection?.status === "processable"
-          ? providerRepresentedRemoteModelIds.get(inspection.remoteProviderId)
-          : undefined,
-      allowAddingMissingModels: providerFileCount === 1,
-    });
-
-    reports.push(report);
+      buildArtificialAnalysisLookup(analysis),
+      options.providers,
+    ));
   }
 
-  const changed = reports.filter((report) => report.status === "changed");
-  const unchanged = reports.filter((report) => report.status === "unchanged");
-  const skipped = reports.filter((report) => report.status === "skipped");
-
-  const totalUpdatedExisting = changed.reduce((total, report) => {
-    return total + (report.updatedExisting ?? 0);
-  }, 0);
-
-  const totalAddedModels = changed.reduce((total, report) => {
-    return total + (report.addedModels ?? 0);
-  }, 0);
-
-  const totalUpdatedArtificialAnalysis = changed.reduce((total, report) => {
-    return total + (report.updatedArtificialAnalysis ?? 0);
-  }, 0);
-
-  const totalRemovedDeprecatedModels = changed.reduce((total, report) => {
-    return total + (report.removedDeprecatedModels ?? 0);
-  }, 0);
-
-  const totalRemovedDuplicateModels = changed.reduce((total, report) => {
-    return total + (report.removedDuplicateModels ?? 0);
-  }, 0);
-
-  console.log(
-    `Processed ${reports.length} files (${changed.length} changed, ${unchanged.length} unchanged, ${skipped.length} skipped).`,
+  const outputs = [];
+  const plannedFiles = catalogueFiles(catalogue);
+  const removedFiles = (await listCatalogueFiles(options.modelsDir)).filter(
+    (file) => !plannedFiles.has(file),
   );
-  console.log(
-    `Updated existing models: ${totalUpdatedExisting}. Added new models: ${totalAddedModels}. Removed deprecated models: ${totalRemovedDeprecatedModels}. Removed duplicate models: ${totalRemovedDuplicateModels}.`,
-  );
-  if (options.polychatApiKey) {
-    console.log(
-      `Synced Artificial Analysis data for ${totalUpdatedArtificialAnalysis} models from ${artificialAnalysisModels.length} cached records.`,
-    );
+
+  for (const [relative, content] of plannedFiles) {
+    const filename = path.join(options.modelsDir, relative);
+    let previous;
+
+    try {
+      previous = await fs.readFile(filename, "utf8");
+    } catch (error) {
+      if (error.code !== "ENOENT") {
+        throw error;
+      }
+    }
+
+    if (content !== previous) {
+      outputs.push({ filename, content });
+    }
   }
 
-  const stats = {
-    processedFiles: reports.length,
-    changedFiles: changed.length,
-    unchangedFiles: unchanged.length,
-    skippedFiles: skipped.length,
-    updatedExistingModels: totalUpdatedExisting,
-    updatedArtificialAnalysisModels: totalUpdatedArtificialAnalysis,
-    addedModels: totalAddedModels,
-    removedDeprecatedModels: totalRemovedDeprecatedModels,
-    removedDuplicateModels: totalRemovedDuplicateModels,
-  };
+  if (options.write) {
+    if (options.saveSnapshot) {
+      await fs.writeFile(options.saveSnapshot, `${JSON.stringify(remoteProviders, null, 2)}\n`);
+    }
 
-  if (!options.write) {
+    await fs.mkdir(options.modelsDir, { recursive: true });
+    for (const { filename, content } of outputs) {
+      await fs.mkdir(path.dirname(filename), { recursive: true });
+      await fs.writeFile(filename, content);
+    }
+
+    await removeCatalogueFiles(options.modelsDir, removedFiles);
+  }
+
+  if (options.verbose) {
+    for (const { filename } of outputs) {
+      console.log(`Write ${path.relative(options.modelsDir, filename)}`);
+    }
+
+    for (const relative of removedFiles) {
+      console.log(`Remove ${relative}`);
+    }
+  }
+
+  console.log(
+    JSON.stringify({
+      ...stats,
+      families: Object.keys(catalogue.families).length,
+      models: Object.values(catalogue.families).reduce(
+        (sum, family) => sum + Object.keys(family.models).length,
+        0,
+      ),
+      providers: Object.keys(catalogue.providers).length,
+      changedFiles: outputs.length + removedFiles.length,
+      written: options.write,
+    }),
+  );
+  if (!options.write && (outputs.length || removedFiles.length)) {
     console.log("Dry run only. Re-run with --write to apply changes.");
   }
 
-  const splitProviders = [...providerFileCounts.entries()]
-    .filter(([, fileCount]) => fileCount > 1)
-    .map(([remoteProviderId]) => remoteProviderId)
-    .sort((left, right) => left.localeCompare(right));
-
-  if (splitProviders.length > 0) {
-    console.log(`Skipped adding missing models for split providers: ${splitProviders.join(", ")}`);
-  }
-
-  const skippedProviders = skipped
-    .filter((report) => report.reason === "remote-provider-missing")
-    .map((report) => `${report.localProvider} -> ${report.remoteProviderId}`);
-
-  if (skippedProviders.length > 0) {
-    const uniqueSkippedProviders = [...new Set(skippedProviders)].sort((a, b) =>
-      a.localeCompare(b),
-    );
-
-    console.log(`Providers without models.dev mapping: ${uniqueSkippedProviders.join(", ")}`);
-  }
-
-  return stats;
+  return { ...stats, changedFiles: outputs.length + removedFiles.length };
 }

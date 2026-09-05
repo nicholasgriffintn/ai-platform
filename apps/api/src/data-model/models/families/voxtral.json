@@ -1,0 +1,56 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "speech"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The voxtral family includes models that produce audio, speech.",
+  "models": {
+    "voxtral-mini-latest": {
+      "defaults": {
+        "name": "Voxtral Mini",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "releaseDate": "February 1, 2026"
+      }
+    },
+    "voxtral-mini-tts-latest": {
+      "defaults": {
+        "name": "Voxtral Mini TTS (latest)",
+        "description": "Multilingual text-to-speech model with zero-shot voice cloning",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "March 1, 2026"
+      }
+    },
+    "voxtral-small-latest": {
+      "defaults": {
+        "name": "Voxtral Small",
+        "openWeights": true,
+        "description": "Instruct model with native audio input for speech understanding and tool use",
+        "contextWindow": 32000,
+        "maxTokens": 32000,
+        "releaseDate": "July 15, 2025",
+        "supportsToolCalls": true,
+        "supportsAttachments": true,
+        "supportsTemperature": true
+      }
+    }
+  }
+}

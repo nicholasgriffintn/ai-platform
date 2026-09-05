@@ -1,0 +1,98 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 11, 2023",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The mixtral family includes models that produce text.",
+  "models": {
+    "mixtral-8x22b": {
+      "defaults": {
+        "name": "Mixtral 8x22B",
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "contextWindow": 64000,
+        "maxTokens": 64000,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "April 17, 2024"
+      }
+    },
+    "mixtral-8x7b": {
+      "defaults": {
+        "name": "Mixtral 8x7B",
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "contextWindow": 32000,
+        "maxTokens": 32000,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "knowledgeCutoffDate": "January 2024"
+      }
+    },
+    "mixtral-8x7b-instruct": {
+      "defaults": {
+        "name": "Mixtral 8x7B Instruct",
+        "description": "Mixtral 8x7B Instruct accepts text and produces text.",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "coding",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "September 2023",
+        "artificialAnalysis": {
+          "intelligenceIndex": 2.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mixtral-8x7b-instruct-v0-1": {
+      "defaults": {
+        "name": "Mixtral 8x7B Instruct v0.1",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 32000,
+        "maxTokens": 4096,
+        "knowledgeCutoffDate": "September 2023",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

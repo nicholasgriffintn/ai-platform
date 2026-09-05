@@ -1,0 +1,48 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "search",
+      "research",
+      "analysis",
+      "multilingual",
+      "academic",
+      "general_knowledge"
+    ],
+    "contextComplexity": 5,
+    "reliability": 4,
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "February 1, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "minimal",
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "minimal"
+    }
+  },
+  "description": "The perplexity ai/sonar deep research family includes models that produce text.",
+  "models": {
+    "perplexity-sonar-deep-research": {
+      "defaults": {
+        "name": "Perplexity Sonar Deep Research",
+        "description": "Sonar search model for current answers, retrieval, and citation-backed chat"
+      }
+    }
+  }
+}

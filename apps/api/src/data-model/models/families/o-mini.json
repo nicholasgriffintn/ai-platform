@@ -1,0 +1,338 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 200000,
+    "maxTokens": 100000,
+    "contextComplexity": 4,
+    "reliability": 1,
+    "supportsToolCalls": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The o mini family includes models that produce audio, text.",
+  "models": {
+    "gpt-4o-mini-search-preview": {
+      "defaults": {
+        "name": "GPT-4o-mini Search Preview",
+        "description": "GPT-4o-mini Search Preview accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "October 31, 2023",
+        "releaseDate": "March 12, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "supportsAttachments": false,
+        "supportsTopP": false
+      }
+    },
+    "gpt-4o-mini-transcribe": {
+      "defaults": {
+        "name": "GPT-4o mini Transcribe",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 13, 2024",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": true
+      }
+    },
+    "gpt-audio-mini": {
+      "defaults": {
+        "name": "GPT Audio Mini",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "releaseDate": "January 19, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": true
+      }
+    },
+    "o1-mini": {
+      "defaults": {
+        "name": "o1-mini",
+        "description": "o1-mini accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "September 12, 2024",
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 14,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "o3-mini": {
+      "defaults": {
+        "name": "o3 Mini",
+        "description": "Smaller o-series reasoner for economical coding, math, and planning tasks",
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "May 2024",
+        "releaseDate": "December 20, 2024",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 19,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "o4-mini": {
+      "defaults": {
+        "name": "o4 Mini",
+        "description": "Fast o-series model for compact reasoning, coding, and tool use",
+        "multimodal": true,
+        "releaseDate": "April 16, 2025",
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "o4-mini-deep-research": {
+      "defaults": {
+        "description": "o4-mini-deep-research accepts text, image and produces text.",
+        "knowledgeCutoffDate": "May 2024",
+        "releaseDate": "June 26, 2024",
+        "supportsAttachments": true
+      }
+    },
+    "o4-mini-eu": {
+      "defaults": {
+        "name": "o4-mini (EU)",
+        "description": "Fast o-series model for compact reasoning, coding, and tool use",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "May 2024",
+        "releaseDate": "April 16, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "o4-mini-fast": {
+      "defaults": {
+        "name": "o4-mini (Fast)",
+        "description": "Fast o-series model for compact reasoning, coding, and tool use",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "May 2024",
+        "releaseDate": "April 16, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "openai-o1-mini": {
+      "defaults": {
+        "name": "OpenAI o1-mini",
+        "description": "Compact reasoning model for mathematical and logical problem-solving.",
+        "contextWindow": 128000,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis"
+        ],
+        "knowledgeCutoffDate": "October 2023",
+        "releaseDate": "September 12, 2024",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 14,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "openai-o3-mini": {
+      "defaults": {
+        "name": "OpenAI o3-mini",
+        "description": "Latest compact reasoning model with enhanced problem-solving capabilities.",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding"
+        ],
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "January 31, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 19,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "openai-o4-mini": {
+      "defaults": {
+        "name": "OpenAI o4-mini",
+        "description": "Reasoning model optimized for complex problem-solving with enhanced mathematical capabilities.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding",
+          "vision"
+        ],
+        "multimodal": true,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "January 31, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    }
+  }
+}

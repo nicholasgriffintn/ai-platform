@@ -1,0 +1,49 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 1048576,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "coding",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 5,
+    "reliability": 2,
+    "knowledgeCutoffDate": "December 2024",
+    "releaseDate": "April 22, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 42.2,
+      "codingIndex": 60.2,
+      "agenticIndex": 29.1,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The mimo v2.5 pro family includes models that produce text.",
+  "models": {
+    "mimo-v2-5-pro": {
+      "defaults": {
+        "name": "MiMo V2.5 Pro",
+        "description": "MiMo pro model for strong multimodal reasoning and agent execution"
+      }
+    }
+  }
+}

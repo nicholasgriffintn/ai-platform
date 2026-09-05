@@ -1,0 +1,93 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+  "models": {
+    "glm-4-5-flash": {
+      "defaults": {
+        "name": "GLM-4.5-Flash",
+        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+        "contextWindow": 131072,
+        "maxTokens": 98304,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "July 28, 2025"
+      }
+    },
+    "glm-4-7-flash": {
+      "defaults": {
+        "name": "GLM-4.7-Flash",
+        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "January 19, 2026",
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 15.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-7-flashx": {
+      "defaults": {
+        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+        "contextWindow": 200000,
+        "releaseDate": "January 19, 2026"
+      }
+    },
+    "glm-flash-latest": {
+      "defaults": {
+        "name": "GLM Flash Latest",
+        "openWeights": false,
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 1310720,
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    }
+  }
+}

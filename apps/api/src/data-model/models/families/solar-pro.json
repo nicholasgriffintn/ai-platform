@@ -1,0 +1,113 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+  "models": {
+    "solar-pro-3": {
+      "defaults": {
+        "name": "Solar Pro 3",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "contextWindow": 131072,
+        "maxTokens": 117964,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "January 27, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 14.1,
+          "codingIndex": 16.2,
+          "agenticIndex": 2.7,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "solar-pro-4": {
+      "defaults": {
+        "name": "Solar Pro 4",
+        "description": "Upstage's flagship model, specialized for agentic use",
+        "contextWindow": 524288,
+        "maxTokens": 131072,
+        "knowledgeCutoffDate": "February 2026",
+        "releaseDate": "August 6, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "solar-pro2": {
+      "defaults": {
+        "name": "solar-pro2",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "contextWindow": 65536,
+        "maxTokens": 8192,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "general_knowledge"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "knowledgeCutoffDate": "March 2025",
+        "releaseDate": "May 20, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "solar-pro3": {
+      "defaults": {
+        "name": "solar-pro3",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "contextWindow": 131072,
+        "maxTokens": 8192,
+        "knowledgeCutoffDate": "March 2025",
+        "releaseDate": "January 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    }
+  }
+}

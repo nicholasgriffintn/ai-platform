@@ -1,0 +1,55 @@
+{
+  "defaults": {
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "models": {
+    "morph-auto": {
+      "model": "auto/auto",
+      "matchingModel": "auto",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "June 1, 2024",
+        "costPer1kInputTokens": 0.00085,
+        "costPer1kOutputTokens": 0.00155
+      },
+      "unset": [
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
+    },
+    "morph-v3-large": {
+      "model": "morph/morph-v3-large",
+      "matchingModel": "morph-v3-large",
+      "overrides": {
+        "strengths": [
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "speed": 3,
+        "knowledgeCutoffDate": "August 2024",
+        "lastUpdated": "August 15, 2024",
+        "costPer1kInputTokens": 0.0009,
+        "costPer1kOutputTokens": 0.0019
+      }
+    },
+    "morph-v3-fast": {
+      "model": "morph/morph-v3-fast",
+      "matchingModel": "morph-v3-fast",
+      "overrides": {
+        "strengths": [
+          "coding"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "speed": 5,
+        "knowledgeCutoffDate": "August 2024",
+        "lastUpdated": "August 15, 2024",
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.0012
+      }
+    }
+  }
+}

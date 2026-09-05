@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 131072,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 29, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The chutes/NousResearch/Hermes 4 405B FP8 TEE family includes models that produce text.",
+  "models": {
+    "hermes-4-405b-fp8-tee": {
+      "defaults": {
+        "name": "Hermes 4 405B FP8 TEE",
+        "description": "Hermes 4 405B FP8 TEE accepts text and produces text."
+      }
+    }
+  }
+}

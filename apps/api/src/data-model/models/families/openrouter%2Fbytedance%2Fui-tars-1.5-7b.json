@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 2048,
+    "modalities": {
+      "input": [
+        "image",
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "January 31, 2025",
+    "releaseDate": "July 22, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/bytedance/ui tars 1.5 7b family includes models that produce text.",
+  "models": {
+    "ui-tars-7b": {
+      "defaults": {
+        "name": "UI-TARS 7B ",
+        "description": "Multimodal model for analyzing text, images, documents, and rich media"
+      }
+    }
+  }
+}

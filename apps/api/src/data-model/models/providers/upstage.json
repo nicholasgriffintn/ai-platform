@@ -1,0 +1,48 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "solar-mini": {
+      "model": "solar-mini/solar-mini",
+      "matchingModel": "solar-mini",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "April 22, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00015
+      }
+    },
+    "solar-pro2": {
+      "model": "solar-pro/solar-pro2",
+      "matchingModel": "solar-pro2",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "lastUpdated": "May 20, 2025",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00025
+      }
+    },
+    "solar-pro3": {
+      "model": "solar-pro/solar-pro3",
+      "matchingModel": "solar-pro3",
+      "overrides": {
+        "lastUpdated": "January 2026",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00025
+      }
+    },
+    "solar-pro4": {
+      "model": "solar-pro/solar-pro-4",
+      "matchingModel": "solar-pro4",
+      "overrides": {
+        "lastUpdated": "August 6, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
+      }
+    }
+  }
+}

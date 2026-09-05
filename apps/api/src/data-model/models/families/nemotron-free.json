@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The nemotron free family includes models that produce text.",
+  "models": {
+    "nemotron-3-5-lightning-free": {
+      "defaults": {
+        "name": "Nemotron 3.5 Lightning Free",
+        "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "releaseDate": "August 11, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "nemotron-3-ultra-free": {
+      "defaults": {
+        "name": "Nemotron 3 Ultra Free",
+        "description": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "knowledgeCutoffDate": "February 2026",
+        "releaseDate": "June 4, 2026"
+      }
+    }
+  }
+}

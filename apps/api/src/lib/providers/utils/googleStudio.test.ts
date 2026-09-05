@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { googleAiStudioModelConfig } from "~/data-model/models/google-ai-studio";
 import { MessageFormatter } from "~/lib/formatter";
 import { GoogleStudioProvider } from "~/lib/providers/capabilities/chat/providers/googlestudio";
+import { getProviderModels } from "~/lib/providers/models/catalogue";
 import type { ChatCompletionParameters, IEnv } from "~/types";
 
 import { buildGoogleStudioTools, formatGoogleStudioContents } from "./googleStudio";
@@ -83,7 +83,7 @@ describe("buildGoogleStudioTools", () => {
       {
         enabled_tools: ["search_grounding", "code_execution"],
       },
-      googleAiStudioModelConfig["gemini-flash-latest"],
+      getProviderModels("google-ai-studio")["gemini-flash-latest"],
     );
 
     expect(tools).toEqual([{ code_execution: {} }, { google_search: {} }]);
@@ -94,7 +94,7 @@ describe("buildGoogleStudioTools", () => {
       {
         enabled_tools: ["web_fetch"],
       },
-      googleAiStudioModelConfig["gemini-flash-latest"],
+      getProviderModels("google-ai-studio")["gemini-flash-latest"],
     );
 
     expect(tools).toEqual([{ url_context: {} }]);
@@ -132,7 +132,7 @@ describe("buildGoogleStudioTools", () => {
           },
         ],
       },
-      googleAiStudioModelConfig["gemini-flash-latest"],
+      getProviderModels("google-ai-studio")["gemini-flash-latest"],
     );
 
     expect(tools).toEqual([
@@ -178,7 +178,7 @@ describe("Google AI Studio native tool capabilities", () => {
     "gemini-3.6-flash",
     "gemini-3.7-flash",
   ])("exposes the supported native tools for %s", (modelId) => {
-    expect(googleAiStudioModelConfig[modelId]).toMatchObject({
+    expect(getProviderModels("google-ai-studio")[modelId]).toMatchObject({
       supportsCodeExecution: true,
       supportsSearchGrounding: true,
       supportsUrlContext: true,

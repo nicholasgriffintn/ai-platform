@@ -1,0 +1,41 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "Qwen/Qwen3.6-35B-A3B-FP8": {
+      "model": "qwen/qwen3-6-35b-a3b-fp8",
+      "matchingModel": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "overrides": {
+        "status": "beta",
+        "isFree": true,
+        "lastUpdated": "April 17, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "Qwen3.8-27B": {
+      "model": "qwen/qwen3-8-27b",
+      "matchingModel": "Qwen3.8-27B",
+      "overrides": {
+        "name": "Qwen3.8-27B",
+        "status": "beta",
+        "maxTokens": 262144,
+        "isFree": true,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

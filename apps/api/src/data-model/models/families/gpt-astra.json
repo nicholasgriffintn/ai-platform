@@ -1,0 +1,58 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1050000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 4, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The gpt astra family includes models that produce text.",
+  "models": {
+    "gpt-6-astra": {
+      "defaults": {
+        "name": "GPT-6 Astra",
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-6-astra-fast": {
+      "defaults": {
+        "name": "GPT-6 Astra (Fast)",
+        "description": "Fast variant of GPT-6 Astra for low-latency assistance and high-volume workloads.",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,598 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "grok-3-mini-fast-latest": {
+      "model": "grok/grok-3-mini-fast-latest",
+      "matchingModel": "grok-3-mini-fast-latest",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "February 17, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.004,
+        "costPer1kReasoningTokens": 0.004,
+        "supportsAttachments": false
+      }
+    },
+    "grok-2-vision-latest": {
+      "model": "grok/grok-2-vision-latest",
+      "matchingModel": "grok-2-vision-latest",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 12, 2024",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "grok-2-latest": {
+      "model": "grok/grok-2-latest",
+      "matchingModel": "grok-2-latest",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "December 12, 2024",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": false
+      }
+    },
+    "grok-3-mini": {
+      "model": "grok/grok-3-mini",
+      "matchingModel": "grok-3-mini",
+      "overrides": {
+        "description": "A lightweight model that thinks before responding. Fast, smart, and great for logic-based tasks that do not require deep domain knowledge.",
+        "speed": 4,
+        "isFeatured": false,
+        "lastUpdated": "February 17, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0005,
+        "costPer1kReasoningTokens": 0.0005,
+        "supportsAttachments": false
+      }
+    },
+    "grok-3-fast-latest": {
+      "model": "grok/grok-3-fast-latest",
+      "matchingModel": "grok-3-fast-latest",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "February 17, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsAttachments": false
+      }
+    },
+    "grok-3": {
+      "model": "grok/grok-3",
+      "matchingModel": "grok-3",
+      "overrides": {
+        "description": "Excels at enterprise use cases like data extraction, coding, and text summarization. Possesses deep domain knowledge in finance, healthcare, law, and science.",
+        "speed": 3,
+        "isFeatured": false,
+        "lastUpdated": "February 17, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsAttachments": false
+      }
+    },
+    "grok-3-mini-latest": {
+      "model": "grok/grok-3-mini-latest",
+      "matchingModel": "grok-3-mini-latest",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "February 17, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0005,
+        "costPer1kReasoningTokens": 0.0005,
+        "supportsAttachments": false
+      }
+    },
+    "grok-3-mini-fast": {
+      "model": "grok/grok-3-mini-fast",
+      "matchingModel": "grok-3-mini-fast",
+      "overrides": {
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "chat"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
+        "speed": 5,
+        "lastUpdated": "February 17, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.004,
+        "costPer1kReasoningTokens": 0.004,
+        "supportsAttachments": false
+      }
+    },
+    "grok-3-latest": {
+      "model": "grok/grok-3-latest",
+      "matchingModel": "grok-3-latest",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "February 17, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsAttachments": false
+      }
+    },
+    "grok-4": {
+      "model": "grok/grok-4",
+      "matchingModel": "grok-4",
+      "overrides": {
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "math",
+          "coding",
+          "tool_use"
+        ],
+        "speed": 2,
+        "isFeatured": false,
+        "lastUpdated": "July 9, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "costPer1kReasoningTokens": 0.015,
+        "hostedToolCosts": {
+          "live_search": 0.025
+        },
+        "supportsAttachments": false,
+        "supportsRepetitionPenalty": false,
+        "supportsFrequencyPenalty": false,
+        "supportsPresencePenalty": false
+      }
+    },
+    "grok-vision-beta": {
+      "model": "grok/grok-vision-beta",
+      "matchingModel": "grok-vision-beta",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "November 1, 2024",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "grok-2": {
+      "model": "grok/grok-2",
+      "matchingModel": "grok-2",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "August 20, 2024",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": false
+      }
+    },
+    "grok-3-fast": {
+      "model": "grok/grok-3-fast",
+      "matchingModel": "grok-3-fast",
+      "overrides": {
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "chat",
+          "general_knowledge"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "speed": 5,
+        "lastUpdated": "February 17, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsAttachments": false
+      }
+    },
+    "grok-2-1212": {
+      "model": "grok/grok-2-1212",
+      "matchingModel": "grok-2-1212",
+      "overrides": {
+        "lastUpdated": "December 12, 2024",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": false
+      }
+    },
+    "grok-2-vision": {
+      "model": "grok/grok-2-vision",
+      "matchingModel": "grok-2-vision",
+      "overrides": {
+        "lastUpdated": "August 20, 2024",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "grok-2-vision-1212": {
+      "model": "grok/grok-2-vision-1212",
+      "matchingModel": "grok-2-vision-1212",
+      "overrides": {
+        "lastUpdated": "December 12, 2024",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "grok-4-1-fast": {
+      "model": "grok/grok-4-1-fast",
+      "matchingModel": "grok-4-1-fast",
+      "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "July 2025",
+        "lastUpdated": "November 19, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0005,
+        "hostedToolCosts": {
+          "live_search": 0.025
+        }
+      }
+    },
+    "grok-4-1-fast-non-reasoning": {
+      "model": "grok/grok-4-1-fast-non-reasoning",
+      "matchingModel": "grok-4-1-fast-non-reasoning",
+      "overrides": {
+        "name": "Grok 4.1 Fast (Non-Reasoning)",
+        "contextWindow": 2000000,
+        "maxTokens": 30000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "July 2025",
+        "lastUpdated": "November 19, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0005,
+        "hostedToolCosts": {
+          "live_search": 0.025
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 16.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "grok-4-fast": {
+      "model": "grok/grok-4-fast",
+      "matchingModel": "grok-4-fast",
+      "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "July 2025",
+        "lastUpdated": "September 19, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0005,
+        "hostedToolCosts": {
+          "live_search": 0.025
+        }
+      }
+    },
+    "grok-4-fast-non-reasoning": {
+      "model": "grok/grok-4-fast-non-reasoning",
+      "matchingModel": "grok-4-fast-non-reasoning",
+      "overrides": {
+        "lastUpdated": "September 19, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0005
+      }
+    },
+    "grok-beta": {
+      "model": "grok/grok-beta",
+      "matchingModel": "grok-beta",
+      "overrides": {
+        "lastUpdated": "November 1, 2024",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.015,
+        "supportsAttachments": false
+      }
+    },
+    "grok-code-fast-1": {
+      "model": "grok/grok-code-fast-1",
+      "matchingModel": "grok-code-fast-1",
+      "overrides": {
+        "lastUpdated": "August 28, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0015,
+        "supportsAttachments": false
+      }
+    },
+    "grok-4.20-0309-non-reasoning": {
+      "model": "grok/grok-4-20-non-reasoning",
+      "matchingModel": "grok-4.20-0309-non-reasoning",
+      "overrides": {
+        "name": "Grok 4.20 (Non-Reasoning)",
+        "contextWindow": 1000000,
+        "maxTokens": 30000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "speed": 5,
+        "releaseDate": "March 9, 2026",
+        "lastUpdated": "March 9, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 22.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "grok-4.20-0309-reasoning": {
+      "model": "grok/grok-4-20-reasoning",
+      "matchingModel": "grok-4.20-0309-reasoning",
+      "overrides": {
+        "name": "Grok 4.20 (Reasoning)",
+        "description": "Reasoning Grok for document-heavy analysis and long-horizon tool use",
+        "contextWindow": 1000000,
+        "maxTokens": 30000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "speed": 4,
+        "releaseDate": "March 9, 2026",
+        "lastUpdated": "March 9, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 37,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "grok-4.20-multi-agent-0309": {
+      "model": "grok/grok-4-20-multi-agent",
+      "matchingModel": "grok-4.20-multi-agent-0309",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 30000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 9, 2026",
+        "lastUpdated": "March 9, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "grok-4.3": {
+      "model": "grok/grok-4-3",
+      "matchingModel": "grok-4.3",
+      "overrides": {
+        "description": "xAI's Grok for chat, coding, agentic tools, and lower hallucination risk",
+        "maxTokens": 30000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "speed": 4,
+        "lastUpdated": "April 17, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.0025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "grok-imagine-image": {
+      "model": "grok/grok-imagine-image",
+      "matchingModel": "grok-imagine-image",
+      "overrides": {
+        "contextWindow": 16000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
+        "contextComplexity": 3,
+        "lastUpdated": "January 28, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "grok-imagine-image-quality": {
+      "model": "grok/grok-imagine-image-quality",
+      "matchingModel": "grok-imagine-image-quality",
+      "overrides": {
+        "lastUpdated": "April 3, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "grok-imagine-video": {
+      "model": "grok/grok-imagine-video",
+      "matchingModel": "grok-imagine-video",
+      "overrides": {
+        "openWeights": false,
+        "contextWindow": 1024,
+        "maxTokens": 0,
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "creative"
+        ],
+        "contextComplexity": 3,
+        "releaseDate": "January 28, 2026",
+        "lastUpdated": "January 28, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "grok-build-0.1": {
+      "model": "grok-build/grok-build-0-1",
+      "matchingModel": "grok-build-0.1",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.002
+      }
+    },
+    "grok-4.5": {
+      "model": "grok/grok-4-5",
+      "matchingModel": "grok-4.5",
+      "overrides": {
+        "lastUpdated": "July 8, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
+      }
+    },
+    "grok-imagine-video-1.5": {
+      "model": "grok/grok-imagine-video-1-5",
+      "matchingModel": "grok-imagine-video-1.5",
+      "overrides": {
+        "contextWindow": 1024,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "lastUpdated": "May 30, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "grok-4.6": {
+      "model": "grok/grok-4-6",
+      "matchingModel": "grok-4.6",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "isFeatured": true,
+        "lastUpdated": "August 12, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
+      }
+    },
+    "grok-imagine-image-2.0": {
+      "model": "grok/grok-imagine-image-2-0",
+      "matchingModel": "grok-imagine-image-2.0",
+      "overrides": {
+        "contextWindow": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "image",
+            "pdf"
+          ]
+        },
+        "lastUpdated": "August 7, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision"
+    ],
+    "contextComplexity": 3,
+    "reliability": 4,
+    "multimodal": true
+  },
+  "description": "The workers ai/@cf/llava hf/llava 1.5 7b hf family includes models that produce text.",
+  "models": {
+    "huggingface-llava-1-5-7b": {
+      "defaults": {
+        "name": "HuggingFace Llava 1.5 7B",
+        "description": "HuggingFace Llava 1.5 7B accepts image and produces text."
+      }
+    }
+  }
+}

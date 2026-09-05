@@ -10,8 +10,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 
-import { replicateModelConfig } from "~/data-model/models/replicate";
 import { addRoute } from "~/lib/http/routeBuilder";
+import { getProviderModels } from "~/lib/providers/models/catalogue";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
 import { getReplicatePredictionDetails } from "~/services/apps/replicate/get-details";
@@ -124,7 +124,7 @@ addRoute(app, "get", "/models", {
     200: { description: "List of Replicate models", schema: replicateModelsResponseSchema },
   },
   handler: async () => {
-    const models = Object.entries(replicateModelConfig).map(([id, model]) => {
+    const models = Object.entries(getProviderModels("replicate")).map(([id, model]) => {
       const metadata = replicateModelMetadata[id] || {};
       const { signature, label } = getModalitySignature(model.modalities);
       const signatureDefaults = signatureMetadata[signature] || null;

@@ -1,0 +1,574 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "green-l-raw": {
+      "model": "mistral-small/green-l-raw",
+      "matchingModel": "green-l-raw",
+      "overrides": {
+        "lastUpdated": "June 20, 2025",
+        "costPer1kInputTokens": 0.000285,
+        "costPer1kOutputTokens": 0.000912,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "green-s": {
+      "model": "greenpt/green-s/green-s",
+      "matchingModel": "green-s",
+      "overrides": {
+        "lastUpdated": "January 2025",
+        "costPer1kInputTokens": 0.00000437,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "deepseek-v4-flash-0731": {
+      "model": "deepseek-flash/deepseek-v4-flash-0731",
+      "matchingModel": "deepseek-v4-flash-0731",
+      "overrides": {
+        "lastUpdated": "July 31, 2026",
+        "costPer1kInputTokens": 0.0001596,
+        "costPer1kOutputTokens": 0.000399,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "devstral-2-123b-instruct-2512": {
+      "model": "devstral/devstral-2",
+      "matchingModel": "devstral-2-123b-instruct-2512",
+      "overrides": {
+        "description": "Mistral's coding-agent model for repository work, terminal tasks, and software fixes",
+        "contextWindow": 200000,
+        "maxTokens": 16384,
+        "contextComplexity": 3,
+        "speed": 2,
+        "lastUpdated": "December 9, 2025",
+        "costPer1kInputTokens": 0.00057,
+        "costPer1kOutputTokens": 0.002736
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "gemma-3-27b-it": {
+      "model": "gemma/gemma-3-27b",
+      "matchingModel": "gemma-3-27b-it",
+      "overrides": {
+        "description": "Google Gemma 3 multimodal model for chat, reasoning, and image understanding",
+        "contextWindow": 40000,
+        "knowledgeCutoffDate": "August 2024",
+        "lastUpdated": "March 12, 2025",
+        "costPer1kInputTokens": 0.000342,
+        "costPer1kOutputTokens": 0.000684,
+        "supportsAttachments": true
+      }
+    },
+    "gemma4": {
+      "model": "gemma/gemma4",
+      "matchingModel": "gemma4",
+      "overrides": {
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0.00057,
+        "costPer1kOutputTokens": 0.00171,
+        "supportsAttachments": true
+      }
+    },
+    "glm-5.2": {
+      "model": "glm/glm-5-2",
+      "matchingModel": "glm-5.2",
+      "overrides": {
+        "contextWindow": 1000000,
+        "speed": 4,
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.005016,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5.2-caveman": {
+      "model": "glm/glm-5-2-caveman",
+      "matchingModel": "glm-5.2-caveman",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.005016
+      }
+    },
+    "glm-5.2-caveman-lite": {
+      "model": "glm/glm-5-2-caveman-lite",
+      "matchingModel": "glm-5.2-caveman-lite",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.005016
+      }
+    },
+    "glm-5.2-caveman-ultra": {
+      "model": "glm/glm-5-2-caveman-ultra",
+      "matchingModel": "glm-5.2-caveman-ultra",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.005016
+      }
+    },
+    "glm-5.2-honey": {
+      "model": "glm/glm-5-2-honey",
+      "matchingModel": "glm-5.2-honey",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.005016
+      }
+    },
+    "glm-5.2-honey-lite": {
+      "model": "glm/glm-5-2-honey-lite",
+      "matchingModel": "glm-5.2-honey-lite",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.005016
+      }
+    },
+    "glm-5.2-honey-ultra": {
+      "model": "glm/glm-5-2-honey-ultra",
+      "matchingModel": "glm-5.2-honey-ultra",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.005016
+      }
+    },
+    "glm-5.2-ponytail": {
+      "model": "glm/glm-5-2-ponytail",
+      "matchingModel": "glm-5.2-ponytail",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.005016
+      }
+    },
+    "glm-5.2-ponytail-lite": {
+      "model": "glm/glm-5-2-ponytail-lite",
+      "matchingModel": "glm-5.2-ponytail-lite",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.005016
+      }
+    },
+    "glm-5.2-ponytail-ultra": {
+      "model": "glm/glm-5-2-ponytail-ultra",
+      "matchingModel": "glm-5.2-ponytail-ultra",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.005016
+      }
+    },
+    "gpt-oss-120b": {
+      "model": "gpt-oss/gpt-oss-120b",
+      "matchingModel": "gpt-oss-120b",
+      "overrides": {
+        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "speed": 5,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.000228,
+        "costPer1kOutputTokens": 0.000798,
+        "supportsAttachments": true
+      }
+    },
+    "green-l": {
+      "model": "mistral-small/green-l",
+      "matchingModel": "green-l",
+      "overrides": {
+        "lastUpdated": "June 20, 2025",
+        "costPer1kInputTokens": 0.000285,
+        "costPer1kOutputTokens": 0.000912,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "green-r": {
+      "model": "gpt-oss/green-r",
+      "matchingModel": "green-r",
+      "overrides": {
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.000399,
+        "costPer1kOutputTokens": 0.001083,
+        "supportsAttachments": true
+      }
+    },
+    "green-r-raw": {
+      "model": "gpt-oss/green-r-raw",
+      "matchingModel": "green-r-raw",
+      "overrides": {
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.000399,
+        "costPer1kOutputTokens": 0.001083,
+        "supportsAttachments": true
+      }
+    },
+    "green-s-pro": {
+      "model": "greenpt/green-s-pro/green-s-pro",
+      "matchingModel": "green-s-pro",
+      "overrides": {
+        "lastUpdated": "February 2025",
+        "costPer1kInputTokens": 0.00000437,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "holo2-30b-a3b": {
+      "model": "greenpt/holo2-30b-a3b/holo2-30b-a3b",
+      "matchingModel": "holo2-30b-a3b",
+      "overrides": {
+        "lastUpdated": "November 2025",
+        "costPer1kInputTokens": 0.000399,
+        "costPer1kOutputTokens": 0.000969,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true
+      }
+    },
+    "kimi-k2.6": {
+      "model": "kimi-k2/kimi-k2-6",
+      "matchingModel": "kimi-k2.6",
+      "overrides": {
+        "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "April 21, 2026",
+        "costPer1kInputTokens": 0.0007524,
+        "costPer1kOutputTokens": 0.004275,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kimi-k2.7-code": {
+      "model": "kimi-k2/kimi-k2-7-code",
+      "matchingModel": "kimi-k2.7-code",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
+        "lastUpdated": "June 12, 2026",
+        "costPer1kInputTokens": 0.0009006,
+        "costPer1kOutputTokens": 0.004389,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kimi-k3": {
+      "model": "kimi-k3/kimi-k3",
+      "matchingModel": "kimi-k3",
+      "overrides": {
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.003762,
+        "costPer1kOutputTokens": 0.01881,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "llama-3.3-70b-instruct": {
+      "model": "llama/llama-3-3-70b-instruct",
+      "matchingModel": "llama-3.3-70b-instruct",
+      "overrides": {
+        "description": "Popular open Llama workhorse for multilingual chat, coding, and self-hosting",
+        "contextWindow": 100000,
+        "maxTokens": 16384,
+        "lastUpdated": "December 6, 2024",
+        "costPer1kInputTokens": 0.001254,
+        "costPer1kOutputTokens": 0.001254
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "minimax-m2.5": {
+      "model": "minimax/minimax-m2-5",
+      "matchingModel": "minimax-m2.5",
+      "overrides": {
+        "name": "MiniMax-M2.5",
+        "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
+        "speed": 4,
+        "lastUpdated": "February 12, 2026",
+        "costPer1kInputTokens": 0.0001938,
+        "costPer1kOutputTokens": 0.001129,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "mistral-medium-3.5-128b": {
+      "model": "mistral-medium/mistral-medium-3-5",
+      "matchingModel": "mistral-medium-3.5-128b",
+      "overrides": {
+        "openWeights": true,
+        "description": "Balanced Mistral model for enterprise assistants, multilingual work, and tools",
+        "maxTokens": 16384,
+        "speed": 4,
+        "releaseDate": "April 29, 2026",
+        "lastUpdated": "April 29, 2026",
+        "costPer1kInputTokens": 0.002052,
+        "costPer1kOutputTokens": 0.01026,
+        "supportsAttachments": true
+      }
+    },
+    "mistral-small-3.2-24b-instruct-2506": {
+      "model": "mistral-small/mistral-small-3-2",
+      "matchingModel": "mistral-small-3.2-24b-instruct-2506",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "June 20, 2025",
+        "costPer1kInputTokens": 0.000228,
+        "costPer1kOutputTokens": 0.000456,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "pixtral-12b-2409": {
+      "model": "pixtral/pixtral-12b",
+      "matchingModel": "pixtral-12b-2409",
+      "overrides": {
+        "maxTokens": 4096,
+        "lastUpdated": "September 1, 2024",
+        "costPer1kInputTokens": 0.000285,
+        "costPer1kOutputTokens": 0.000285,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis",
+        "supportsResponseFormat"
+      ]
+    },
+    "qwen3-235b-a22b-instruct-2507": {
+      "model": "qwen/qwen3-235b-a22b-instruct-2507",
+      "matchingModel": "qwen3-235b-a22b-instruct-2507",
+      "overrides": {
+        "description": "Qwen3 235B MoE instruct model for long-context multilingual chat and reasoning",
+        "speed": 3,
+        "lastUpdated": "July 21, 2025",
+        "costPer1kInputTokens": 0.001026,
+        "costPer1kOutputTokens": 0.003078
+      }
+    },
+    "qwen3-coder-30b-a3b-instruct": {
+      "model": "qwen/qwen3-coder-30b-a3b-instruct",
+      "matchingModel": "qwen3-coder-30b-a3b-instruct",
+      "overrides": {
+        "name": "Qwen3-Coder 30B-A3B Instruct",
+        "description": "Smaller Qwen coder for efficient local agents and repo-level fixes",
+        "contextWindow": 128000,
+        "maxTokens": 32768,
+        "contextComplexity": 3,
+        "speed": 4,
+        "lastUpdated": "April 2025",
+        "costPer1kInputTokens": 0.000285,
+        "costPer1kOutputTokens": 0.001083
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "qwen3.5-397b-a17b": {
+      "model": "qwen/qwen3-5-397b-a17b",
+      "matchingModel": "qwen3.5-397b-a17b",
+      "overrides": {
+        "name": "Qwen3.5 397B-A17B",
+        "description": "Large open Qwen multimodal MoE for visual agents and long technical tasks",
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "speed": 2,
+        "lastUpdated": "February 15, 2026",
+        "costPer1kInputTokens": 0.000798,
+        "costPer1kOutputTokens": 0.004959,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3.6-35b-a3b": {
+      "model": "qwen/qwen3-6-35b-a3b",
+      "matchingModel": "qwen3.6-35b-a3b",
+      "overrides": {
+        "name": "Qwen3.6 35B-A3B",
+        "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "April 17, 2026",
+        "costPer1kInputTokens": 0.000342,
+        "costPer1kOutputTokens": 0.002052,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "voxtral-small-24b-2507": {
+      "model": "mistral/voxtral-small-24b",
+      "matchingModel": "voxtral-small-24b-2507",
+      "overrides": {
+        "lastUpdated": "July 15, 2025",
+        "costPer1kInputTokens": 0.000228,
+        "costPer1kOutputTokens": 0.000513,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true
+      }
+    }
+  }
+}

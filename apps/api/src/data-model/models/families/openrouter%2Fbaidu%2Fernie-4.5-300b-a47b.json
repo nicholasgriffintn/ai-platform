@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "contextWindow": 123000,
+    "maxTokens": 12000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 2,
+    "reliability": 1,
+    "knowledgeCutoffDate": "March 31, 2025",
+    "releaseDate": "June 30, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 9,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The openrouter/baidu/ernie 4.5 300b a47b family includes models that produce text.",
+  "models": {
+    "ernie-4-5-300b-a47b": {
+      "defaults": {
+        "name": "ERNIE 4.5 300B A47B ",
+        "description": "ERNIE 4.5 300B A47B  accepts text and produces text."
+      }
+    }
+  }
+}

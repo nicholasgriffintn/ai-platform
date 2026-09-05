@@ -1,0 +1,43 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "January 31, 2026",
+    "releaseDate": "June 9, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "supportsTopP": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The claude mythos family includes models that produce text.",
+  "models": {
+    "claude-mythos-5": {
+      "defaults": {
+        "name": "Claude Mythos 5",
+        "description": "Restricted Claude model for advanced cybersecurity and biology research workflows"
+      }
+    }
+  }
+}

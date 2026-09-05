@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "contextWindow": 36864,
+    "maxTokens": 36864,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 2025",
+    "releaseDate": "January 9, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The olmo family includes models that produce text.",
+  "models": {
+    "molmo2-8b-free": {
+      "defaults": {
+        "name": "Molmo2 8B (free)",
+        "description": "Molmo2 8B (free) accepts text, image, video and produces text."
+      }
+    }
+  }
+}

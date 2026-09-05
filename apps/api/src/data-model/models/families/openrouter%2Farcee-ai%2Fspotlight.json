@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "contextWindow": 131072,
+    "maxTokens": 65537,
+    "modalities": {
+      "input": [
+        "image",
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "March 31, 2025",
+    "releaseDate": "May 5, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/arcee ai/spotlight family includes models that produce text.",
+  "models": {
+    "spotlight": {
+      "defaults": {
+        "name": "Spotlight",
+        "description": "Spotlight accepts image, text and produces text."
+      }
+    }
+  }
+}

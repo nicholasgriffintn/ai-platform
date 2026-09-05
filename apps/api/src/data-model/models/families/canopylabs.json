@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 4000,
+    "maxTokens": 50000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "Speech generation model for controllable voice, narration, and audio delivery",
+  "models": {
+    "canopy-labs-orpheus-arabic-saudi": {
+      "defaults": {
+        "name": "Orpheus Arabic Saudi",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "knowledgeCutoffDate": "December 16, 2025",
+        "releaseDate": "December 16, 2025"
+      }
+    },
+    "canopy-labs-orpheus-v1-english": {
+      "defaults": {
+        "name": "Orpheus V1 English",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "knowledgeCutoffDate": "December 19, 2025",
+        "releaseDate": "December 19, 2025"
+      }
+    }
+  }
+}

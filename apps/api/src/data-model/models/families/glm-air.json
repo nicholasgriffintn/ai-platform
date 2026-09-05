@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131072,
+    "maxTokens": 98304,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "knowledgeCutoffDate": "April 2025",
+    "releaseDate": "July 28, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 16.5,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The glm air family includes models that produce text.",
+  "models": {
+    "glm-4-5-air": {
+      "defaults": {
+        "name": "GLM 4.5 Air",
+        "description": "Lighter GLM-4.5 variant for fast coding assistance and cheaper agents"
+      }
+    }
+  }
+}
