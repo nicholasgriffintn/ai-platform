@@ -1,5 +1,5 @@
 import { ProviderGlyph } from "@ngriffin_uk/polychat-component-models";
-import { Skeleton } from "@ngriffin_uk/polychat-component-ui";
+import { ButtonLink, Skeleton } from "@ngriffin_uk/polychat-component-ui";
 import { useMemo } from "react";
 
 import { useModels } from "~/hooks/useModels";
@@ -24,7 +24,17 @@ export function ModelsBand() {
       : `${models.length} models from ${providers.length} providers in one picker, chosen per message or left to Auto. Bring your own keys and the usage is yours.`;
 
   return (
-    <DiscoverBand id="models" eyebrow="The catalogue" title="Every model, one perch" lede={lede}>
+    <DiscoverBand
+      id="models"
+      eyebrow="The catalogue"
+      title="Every model, one perch"
+      lede={lede}
+      actions={
+        <ButtonLink variant="outline" href="/models">
+          Browse the catalogue
+        </ButtonLink>
+      }
+    >
       <div className="space-y-5">
         <ul aria-label="Providers" className="flex flex-wrap gap-2">
           {isLoading
