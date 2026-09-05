@@ -28,6 +28,7 @@ export async function listActivity(
   userId: number,
   filters: {
     projectId?: string;
+    conversationId?: string;
     capabilityId?: string;
     status?: ActivityStatus;
     limit: number;
@@ -35,6 +36,7 @@ export async function listActivity(
   },
 ): Promise<{ activities: Activity[]; hasMore: boolean }> {
   const pageOptions = {
+    conversationId: filters.conversationId,
     capabilityId: filters.capabilityId,
     status: filters.status,
     limit: filters.limit + 1,

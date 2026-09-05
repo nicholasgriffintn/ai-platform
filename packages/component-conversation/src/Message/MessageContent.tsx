@@ -236,11 +236,11 @@ const renderDocumentContent = (
   return (
     <div
       key={`document-attachment-${index ?? 0}`}
-      className="flex flex-col items-start gap-2 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 bg-zinc-50 dark:bg-zinc-800/50 text-sm"
+      className="border-border bg-surface-elevated flex flex-col items-start gap-2 rounded-lg border p-3 text-sm"
     >
       <div className="flex items-center gap-2">
-        <File className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-        <span className="text-zinc-700 dark:text-zinc-300">
+        <File className="h-5 w-5 text-active-work" />
+        <span className="text-foreground">
           {documentName || "Document"}
           {isMarkdown && <span className="text-xs ml-2 italic">(converted to text)</span>}
         </span>
@@ -269,16 +269,14 @@ const renderArtifactSelectionContent = (
   return (
     <div
       key={`artifact-selection-${index ?? 0}`}
-      className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white/80 p-3 text-sm shadow-sm dark:border-zinc-700 dark:bg-zinc-900/70"
+      className="border-border bg-surface flex items-center gap-3 rounded-lg border p-3 text-sm shadow-sm"
     >
-      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300">
+      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-active-work/12 text-active-work">
         <FileText className="h-4 w-4" aria-hidden="true" />
       </div>
       <div className="min-w-0">
-        <div className="truncate font-medium text-zinc-800 dark:text-zinc-100">
-          selection from {title}
-        </div>
-        <div className="text-xs text-zinc-500 dark:text-zinc-400">Text · {byteCount} B</div>
+        <div className="truncate font-medium text-foreground">selection from {title}</div>
+        <div className="text-xs text-muted-foreground">Text · {byteCount} B</div>
       </div>
     </div>
   );
@@ -288,11 +286,11 @@ const renderAudioContent = (audioUrl: string, audioName?: string, index?: number
   return (
     <div
       key={`audio-attachment-${index ?? 0}`}
-      className="flex flex-col items-start gap-2 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 bg-zinc-50 dark:bg-zinc-800/50 text-sm"
+      className="border-border bg-surface-elevated flex flex-col items-start gap-2 rounded-lg border p-3 text-sm"
     >
       <div className="flex items-center gap-2">
-        <Volume2 className="h-5 w-5 text-purple-500 dark:text-purple-400" />
-        <span className="text-zinc-700 dark:text-zinc-300">{audioName || "Audio"}</span>
+        <Volume2 className="h-5 w-5 text-creative" />
+        <span className="text-foreground">{audioName || "Audio"}</span>
       </div>
       {audioUrl && (
         <audio controls crossOrigin="use-credentials" className="w-full rounded-lg">
@@ -341,14 +339,9 @@ const renderSnapshotPart = (
   index: number,
 ): ReactNode => {
   return (
-    <div
-      key={`snapshot-${index}`}
-      className="rounded border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/40"
-    >
+    <div key={`snapshot-${index}`} className="border-border bg-surface-elevated rounded border p-3">
       {part.title ? (
-        <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-          {part.title}
-        </div>
+        <div className="mb-1 text-xs font-semibold text-muted-foreground">{part.title}</div>
       ) : null}
       <MemoizedMarkdown className="text-sm">{part.summary}</MemoizedMarkdown>
     </div>
@@ -658,13 +651,13 @@ export const MessageContent = memo((props: MessageContentProps) => {
   return (
     <div className="space-y-3">
       {isPending && (
-        <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span>{progressHint || "Content generation in progress..."}</span>
         </div>
       )}
       {isFailed && (
-        <div className="text-sm text-red-500 dark:text-red-400">
+        <div className="text-sm text-failure">
           {failureHint || errorMessage || "Generation failed. Please try again."}
         </div>
       )}

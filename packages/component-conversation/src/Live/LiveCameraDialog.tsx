@@ -30,7 +30,7 @@ function LiveCameraPreview({ stream }: { stream?: MediaStream | null }) {
   }
 
   return (
-    <div className="relative aspect-video min-h-16 overflow-hidden rounded-md border border-zinc-200 bg-zinc-950 dark:border-zinc-800">
+    <div className="relative aspect-video min-h-16 overflow-hidden rounded-md border border-border bg-surface">
       <video
         ref={videoRef}
         autoPlay
@@ -54,7 +54,7 @@ export function LiveCameraSelector({
 }) {
   if (!cameraDevices.length) {
     return (
-      <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-400">
+      <div className="border-border bg-surface-elevated text-muted-foreground rounded-md border px-3 py-2 text-sm">
         No cameras found
       </div>
     );
@@ -72,13 +72,13 @@ export function LiveCameraSelector({
           className={cn(
             "flex min-h-10 w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left text-sm transition-colors",
             device.deviceId === selectedCameraDeviceId
-              ? "border-sky-300 bg-sky-50 text-sky-950 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-100"
-              : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-900",
+              ? "border-active-work/45 bg-active-work/12 text-active-work"
+              : "border-border bg-surface text-foreground hover:bg-selection",
           )}
         >
           <span className="min-w-0 truncate">{device.label}</span>
           {device.deviceId === selectedCameraDeviceId && (
-            <Check className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-300" aria-hidden="true" />
+            <Check className="h-4 w-4 shrink-0 text-active-work" aria-hidden="true" />
           )}
         </button>
       ))}
@@ -109,10 +109,10 @@ export function LiveCameraDialog({
           <DialogDescription>Choose the camera used for Gemini Live.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
-          <div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-950 dark:border-zinc-800">
+          <div className="overflow-hidden rounded-lg border border-border bg-surface">
             <LiveCameraPreview stream={videoPreviewStream} />
             {!videoPreviewStream && (
-              <div className="flex aspect-video items-center justify-center text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="flex aspect-video items-center justify-center text-sm text-muted-foreground">
                 Preview starting
               </div>
             )}

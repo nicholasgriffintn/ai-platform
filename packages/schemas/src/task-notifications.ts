@@ -33,35 +33,25 @@ export type NotificationPermission = z.infer<typeof notificationPermissionSchema
 
 export const taskNotificationRegistrationStateSchema = z.enum(["registered", "failed", "disabled"]);
 
-export const taskNotificationPlatformSchema = z.enum(["web", "ios"]);
+export const taskNotificationPlatformSchema = z.literal("web");
 export type TaskNotificationPlatform = z.infer<typeof taskNotificationPlatformSchema>;
 
 const registrationFields = {
   installationId: z.string().trim().min(1).max(128),
 };
 
-export const registerTaskNotificationSchema = z.discriminatedUnion("platform", [
-  z.object({
-    ...registrationFields,
-    platform: z.literal("ios"),
-    token: z
-      .string()
-      .trim()
-      .regex(/^[a-fA-F0-9]{32,4096}$/),
-  }),
-  z.object({
-    ...registrationFields,
-    platform: z.literal("web"),
-    subscription: z.object({
-      endpoint: z.url().max(2048),
-      expirationTime: z.number().nonnegative().nullable().default(null),
-      keys: z.object({
-        p256dh: z.string().trim().min(1).max(1024),
-        auth: z.string().trim().min(1).max(1024),
-      }),
+export const registerTaskNotificationSchema = z.object({
+  ...registrationFields,
+  platform: z.literal("web"),
+  subscription: z.object({
+    endpoint: z.url().max(2048),
+    expirationTime: z.number().nonnegative().nullable().default(null),
+    keys: z.object({
+      p256dh: z.string().trim().min(1).max(1024),
+      auth: z.string().trim().min(1).max(1024),
     }),
   }),
-]);
+});
 
 export type RegisterTaskNotification = z.infer<typeof registerTaskNotificationSchema>;
 

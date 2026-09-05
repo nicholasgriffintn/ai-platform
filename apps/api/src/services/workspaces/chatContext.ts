@@ -1,6 +1,8 @@
 import {
   PROJECT_TASK_TOOL_IDS,
   projectCodingEnvironmentSchema,
+  resolveSandboxDeliveryPolicy,
+  sandboxDeliveryPolicyCreatesCommit,
   type ChatHostedToolSettings,
   type RecipeConnectorProvider,
   type SandboxRequestOptions,
@@ -14,6 +16,7 @@ import {
 } from "~/services/apps/recipes/catalog";
 import { resolveProjectSkillGrants } from "~/services/skills/scope";
 import type { CoreChatOptions } from "~/types";
+import { safeParseJson } from "~/utils/json";
 
 import { resolveChatProjectAccess } from "./chatProjectAccess";
 import { resolveProjectRecipeConnectorScope } from "./projectRecipeConnectorScope";
@@ -80,7 +83,13 @@ export async function resolveProjectChatContext(
     installationId: project.coding_installation_id,
     repository: project.coding_repository,
     promptStrategy: project.coding_prompt_strategy,
-    shouldCommit: Boolean(project.coding_should_commit),
+    deliveryPolicy: resolveSandboxDeliveryPolicy(
+      project.coding_delivery_policy ? safeParseJson(project.coding_delivery_policy) : null,
+      Boolean(project.coding_should_commit),
+    ),
+    environmentSetup: project.coding_environment_setup
+      ? safeParseJson(project.coding_environment_setup)
+      : undefined,
     timeoutSeconds: project.coding_timeout_seconds,
   });
   const toolIds = [
@@ -121,7 +130,9 @@ export async function resolveProjectChatContext(
             repo: codingEnvironment.data.repository,
             taskType: "feature-implementation",
             promptStrategy: codingEnvironment.data.promptStrategy,
-            shouldCommit: codingEnvironment.data.shouldCommit,
+            deliveryPolicy: codingEnvironment.data.deliveryPolicy,
+            shouldCommit: sandboxDeliveryPolicyCreatesCommit(codingEnvironment.data.deliveryPolicy),
+            environmentSetup: codingEnvironment.data.environmentSetup,
             timeoutSeconds: codingEnvironment.data.timeoutSeconds,
           }
         : undefined,

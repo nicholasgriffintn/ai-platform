@@ -6,6 +6,16 @@ import { formatFunctionName } from "~/utils/functions";
 
 import { getToolCategory } from "./toolCategories";
 
+export function listCatalogueTools(): Tool[] {
+  return listFunctionToolDefinitions().map((tool) => ({
+    id: tool.name,
+    name: formatFunctionName(tool.name),
+    description: tool.description,
+    category: getToolCategory(tool.name),
+    type: tool.type,
+  }));
+}
+
 export function getAvailableTools(isPro = false, isSignedIn = false): Tool[] {
   const managedToolNames = new Set(resolveManagedFunctionToolNames({ isSignedIn }));
 

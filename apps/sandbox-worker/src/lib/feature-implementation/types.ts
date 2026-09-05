@@ -78,6 +78,7 @@ export interface QualityGateCheckResult {
   name: string;
   command: string;
   passed: boolean;
+  exitCode: number;
   output: string;
 }
 

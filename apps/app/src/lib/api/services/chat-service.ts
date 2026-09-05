@@ -14,21 +14,20 @@ import {
   createApiErrorFromResponse,
   returnFetchedData,
 } from "@ngriffin_uk/polychat-library-client";
-import type {
-  ChatCompletionResponseBody,
-  ChatRun,
-  ChatRunCommandReceipt,
-  ChatRunSnapshotResponse,
-  Goal,
-  ModelConfigItem,
-  ModelRouterMode,
-  ToolSelectionMode,
-} from "@ngriffin_uk/polychat-schemas";
 import {
   chatRunCommandReceiptResponseSchema,
   chatRunRecoveryResponseSchema,
   chatRunReplayResponseSchema,
   chatRunSnapshotResponseSchema,
+  conversationLabelSchema,
+  type ChatCompletionResponseBody,
+  type ChatRun,
+  type ChatRunCommandReceipt,
+  type ChatRunSnapshotResponse,
+  type Goal,
+  type ModelConfigItem,
+  type ModelRouterMode,
+  type ToolSelectionMode,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   CHAT_STREAM_PROGRESS_BATCH_EVENTS,
@@ -40,7 +39,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas/chat-stream";
 import { goalSchema } from "@ngriffin_uk/polychat-schemas/goals";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { yieldToMainThread } from "~/lib/async/yield-to-main-thread";
 import type { AppChatRunReplayResponse, AuthoritativeChatRunSnapshot } from "~/lib/chat/run-replay";
@@ -65,6 +64,7 @@ import {
 import { parseCompactConversationResponse } from "../compact-conversation-response";
 import { normaliseConversationResponse } from "../conversation-response";
 import { fetchApi, fetchApiOrThrow } from "../fetch-wrapper";
+import { appendRecoveryTelemetry, type RecoveryRequestContext } from "../recovery-telemetry";
 
 export interface ConversationUpdateRequest {
   archived?: boolean;
@@ -98,6 +98,12 @@ function normaliseRunSnapshot(snapshot: ChatRunSnapshotResponse): AuthoritativeC
       snapshot.run.conversationId,
     ).messages,
   };
+}
+
+export interface GetChatOptions {
+  recovery?: RecoveryRequestContext;
+  refreshPending?: boolean;
+  messageLimit?: number;
 }
 
 type StreamProgressHandler = (
@@ -190,6 +196,10 @@ export class ChatService {
         parent_conversation_id?: string;
         parent_message_id?: string;
         is_archived?: boolean;
+        is_pinned?: number;
+        is_unread?: number;
+        next_response_arrived?: number;
+        labels?: string | unknown[];
       }[];
       pageNumber?: number;
       pageSize?: number;
@@ -209,15 +219,35 @@ export class ChatService {
       };
     }
 
-    const results = data.conversations.map((conversation) => ({
-      ...conversation,
-      messages: [],
-      parent_conversation_id: conversation.parent_conversation_id,
-      parent_message_id: conversation.parent_message_id,
-    }));
+    const results = data.conversations.map((conversation) => {
+      let labels: unknown = conversation.labels ?? [];
+
+      if (typeof labels === "string") {
+        try {
+          labels = JSON.parse(labels);
+        } catch {
+          labels = [];
+        }
+      }
+
+      const parsedLabels = conversationLabelSchema.array().safeParse(labels);
+
+      return {
+        ...conversation,
+        messages: [],
+        parent_conversation_id: conversation.parent_conversation_id,
+        parent_message_id: conversation.parent_message_id,
+        isPinned: conversation.is_pinned === 1,
+        isUnread: conversation.is_unread === 1 || conversation.next_response_arrived === 1,
+        labels: parsedLabels.success ? parsedLabels.data : [],
+      };
+    });
 
     const sortBy = options.sortBy ?? "updated";
-    const conversations = results.sort((a, b) => compareConversationsBySort(a, b, sortBy));
+    const conversations = sortCopy(
+      results,
+      (a, b) => Number(b.isPinned) - Number(a.isPinned) || compareConversationsBySort(a, b, sortBy),
+    );
 
     return {
       conversations,
@@ -258,10 +288,7 @@ export class ChatService {
     return data.archived ?? 0;
   }
 
-  async getChat(
-    completion_id: string,
-    options?: { refreshPending?: boolean; messageLimit?: number },
-  ): Promise<Conversation> {
+  async getChat(completion_id: string, options?: GetChatOptions): Promise<Conversation> {
     if (!completion_id) {
       throw new Error("No completion ID provided");
     }
@@ -274,16 +301,17 @@ export class ChatService {
       console.error("Error getting chat:", error);
     }
 
-    const refreshPending = options?.refreshPending ?? true;
-    const query = new URLSearchParams();
+    const params = new URLSearchParams();
 
-    if (refreshPending) {
-      query.set("refresh_pending", "true");
+    if (options?.refreshPending ?? true) {
+      params.set("refresh_pending", "true");
     }
 
-    query.set("message_limit", String(options?.messageLimit ?? 100));
+    params.set("message_limit", String(options?.messageLimit ?? 100));
+    appendRecoveryTelemetry(params, options?.recovery);
 
-    const url = `/chat/completions/${completion_id}?${query.toString()}`;
+    const query = params.toString();
+    const url = `/chat/completions/${completion_id}${query ? `?${query}` : ""}`;
 
     const response = await fetchApi(url, {
       method: "GET",
@@ -570,12 +598,17 @@ export class ChatService {
 
     await fetchApi(`/chat/completions/${completion_id}/cancel`, {
       method: "POST",
-      headers,
+      headers: { ...headers, "X-Platform": "web" },
     });
   }
 
-  async getChatRun(runId: string): Promise<ChatRunSnapshot> {
-    const response = await fetchApiOrThrow(`/chat/runs/${runId}`, {
+  async getChatRun(runId: string, recovery?: RecoveryRequestContext): Promise<ChatRunSnapshot> {
+    const params = new URLSearchParams();
+
+    appendRecoveryTelemetry(params, recovery);
+
+    const query = params.toString();
+    const response = await fetchApiOrThrow(`/chat/runs/${runId}${query ? `?${query}` : ""}`, {
       method: "GET",
       headers: await this.getHeaders(),
     });
@@ -892,6 +925,12 @@ export class ChatService {
 
       if (update.type === "state") {
         onStateChange(update.state, update.event);
+
+        return;
+      }
+
+      if (update.type === "activity") {
+        onStateChange("turn_activity", update.activity);
 
         return;
       }

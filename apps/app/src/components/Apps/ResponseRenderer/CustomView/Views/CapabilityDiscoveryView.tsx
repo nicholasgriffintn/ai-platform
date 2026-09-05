@@ -75,7 +75,7 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
   const connectorSetup = useConnectorSetup();
 
   if (!parsed.success) {
-    return <p className="text-sm text-red-600 dark:text-red-300">Discovery results are invalid.</p>;
+    return <p className="text-sm text-failure">Discovery results are invalid.</p>;
   }
 
   const recipes = recipesQuery.data?.recipes ?? [];

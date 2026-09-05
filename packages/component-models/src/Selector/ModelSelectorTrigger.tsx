@@ -47,7 +47,7 @@ export function ModelSelectorTrigger({
       aria-haspopup="listbox"
       aria-expanded={isOpen}
       aria-label="Select a model"
-      className={`cursor-pointer disabled:cursor-not-allowed flex items-center gap-2 rounded-md w-full ${minimal ? "px-2 py-1" : "px-3 py-1.5"} bg-off-white-highlight dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors`}
+      className={`bg-selection text-foreground hover:bg-active-work/15 flex w-full cursor-pointer items-center gap-2 rounded-md transition-colors disabled:cursor-not-allowed ${minimal ? "px-2 py-1" : "px-3 py-1.5"}`}
     >
       {loading ? (
         <div className="flex items-center gap-2 w-full min-w-0">

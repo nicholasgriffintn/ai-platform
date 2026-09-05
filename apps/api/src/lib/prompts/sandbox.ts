@@ -1,3 +1,5 @@
+import { resolveSandboxDeliveryPolicy } from "@ngriffin_uk/polychat-schemas";
+
 import type { ChatRequestOptions, IUserSettings } from "~/types";
 
 import type { PromptRequest } from ".";
@@ -10,6 +12,17 @@ function buildSandboxContext(options: ChatRequestOptions["sandbox"]): string {
     return "";
   }
 
+  const deliveryPolicy = resolveSandboxDeliveryPolicy(options.deliveryPolicy, options.shouldCommit);
+  const delivery =
+    deliveryPolicy.mode === "leave_uncommitted"
+      ? "Leave changes uncommitted"
+      : deliveryPolicy.mode === "review_branch"
+        ? deliveryPolicy.destination === "pull_request"
+          ? "Prepare a review branch and pull request after approval"
+          : "Prepare a review branch after approval"
+        : deliveryPolicy.mode === "commit_to_branch"
+          ? `Commit to ${deliveryPolicy.targetBranch} after approval`
+          : `Custom local delivery instructions: ${deliveryPolicy.instructions}`;
   const lines = [
     "<sandbox_context>",
     options.repo ? `Repository: ${options.repo}` : "Repository: not selected",
@@ -18,9 +31,10 @@ function buildSandboxContext(options: ChatRequestOptions["sandbox"]): string {
       : "GitHub installation ID: not selected",
     options.taskType ? `Task type: ${options.taskType}` : "Task type: feature-implementation",
     options.promptStrategy ? `Prompt strategy: ${options.promptStrategy}` : "Prompt strategy: auto",
-    typeof options.shouldCommit === "boolean"
-      ? `Commit changes: ${options.shouldCommit ? "yes" : "no"}`
-      : "Commit changes: no",
+    `Delivery policy: ${delivery}`,
+    options.environmentSetup
+      ? `Environment setup: ${options.environmentSetup.source === "repository" ? "repository .polychat/environment.json" : "project configuration"}`
+      : "Environment setup: none",
     typeof options.timeoutSeconds === "number"
       ? `Timeout seconds: ${options.timeoutSeconds}`
       : "Timeout seconds: default",

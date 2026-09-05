@@ -54,14 +54,14 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
             />
             <span
               className={cn(
-                "absolute inset-0 rounded-full transition-colors peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-zinc-500 peer-focus-visible:ring-offset-2 peer-disabled:cursor-not-allowed peer-disabled:opacity-60",
-                checked ? "bg-zinc-600 dark:bg-zinc-400" : "bg-zinc-300 dark:bg-zinc-700",
+                "peer-focus-visible:ring-ring absolute inset-0 rounded-full transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:outline-none peer-disabled:cursor-not-allowed peer-disabled:opacity-60",
+                checked ? "bg-active-work" : "bg-border-strong",
               )}
               aria-hidden="true"
             />
             <span
               className={cn(
-                "absolute left-1 top-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ease-in-out",
+                "bg-surface absolute top-1 left-1 h-4 w-4 rounded-full transition-transform duration-200 ease-in-out",
                 checked ? "translate-x-4" : "translate-x-0",
               )}
               aria-hidden="true"
@@ -70,7 +70,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
           {label && labelPosition === "right" && <Label htmlFor={id}>{label}</Label>}
         </div>
         {description && (
-          <p id={descriptionId} className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+          <p id={descriptionId} className="text-muted-foreground mt-1 text-xs">
             {description}
           </p>
         )}

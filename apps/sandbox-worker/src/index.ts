@@ -2,6 +2,7 @@ import { sandboxWorkerExecuteRequestSchema, NO_STORE } from "@ngriffin_uk/polych
 
 import { verifySandboxJwt } from "./lib/auth";
 import { SandboxCancellationError } from "./lib/cancellation";
+import { handleSandboxPreviewRequest } from "./lib/preview-gateway";
 import { buildSandboxRunUsageReport, reportSandboxRunUsage } from "./lib/usage-report";
 import { executeSandboxTask } from "./tasks";
 import type { TaskEvent, TaskParams, TaskSecrets, Env } from "./types";
@@ -36,6 +37,12 @@ function isSafePolychatApiUrl(polychatApiUrl: string): boolean {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    const previewResponse = await handleSandboxPreviewRequest(request, env);
+
+    if (previewResponse) {
+      return previewResponse;
+    }
+
     const url = new URL(request.url);
 
     if (url.pathname !== "/execute") {

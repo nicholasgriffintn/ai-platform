@@ -83,6 +83,19 @@ export class UserService {
     return responseData;
   }
 
+  async fetchModelCatalogue(): Promise<ModelConfig> {
+    const response = await fetchApi("/models/catalogue", {
+      method: "GET",
+      timeoutMs: 10000,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch model catalogue: ${response.statusText}`);
+    }
+
+    return returnFetchedData<ModelConfig>(response);
+  }
+
   async fetchTools(): Promise<Tool[]> {
     let headers = {};
 

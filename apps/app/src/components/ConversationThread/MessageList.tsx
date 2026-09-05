@@ -331,12 +331,16 @@ export const MessageList = ({
                 <CompactionStatusRow label={streamLoadingMessage} pending />
               ) : null
             ) : (
-              <StreamActivityIndicator label={streamLoadingMessage} activity={streamActivity} />
+              <StreamActivityIndicator
+                label={streamLoadingMessage}
+                activity={streamActivity}
+                turnActivity={currentStream?.turnActivity}
+              />
             )
           ) : null}
           {!isSharedView && isModelInitializing && (
-            <div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
-              <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
+            <div className="flex items-center gap-2 py-2 px-4 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin text-active-work flex-shrink-0" />
               <span>
                 {modelInitMessage}
                 {modelInitProgress !== undefined ? ` ${Math.round(modelInitProgress)}%` : null}

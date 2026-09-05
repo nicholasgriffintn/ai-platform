@@ -1,1 +1,4 @@
-JWT_SECRET=<JWT_SECRET>
+APP_BASE_URL="http://localhost:5173"
+ENV="development"
+JWT_SECRET="REPLACE_ME"
+SANDBOX_PREVIEW_HOST="localhost:8788"

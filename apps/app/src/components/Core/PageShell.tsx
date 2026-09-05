@@ -25,6 +25,7 @@ interface PageShellProps {
   isBeta?: boolean;
   displayNavBar?: boolean;
   bgClassName?: string;
+  projectColour?: string;
 }
 
 function PageShellRoot({
@@ -38,6 +39,7 @@ function PageShellRoot({
   isBeta = false,
   displayNavBar,
   bgClassName,
+  projectColour,
 }: PageShellProps) {
   useResponsiveSidebar();
   const { headerContext, registeredHeader } = usePageShellHeaderRegistry();
@@ -54,11 +56,12 @@ function PageShellRoot({
     (effectiveTitle && (
       <ProductModeHeader
         showSidebarToggle={Boolean(sidebarContent)}
+        projectColour={projectColour}
         context={
           <div className="min-w-0">
             <PageTitle
               title={effectiveTitle}
-              className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200"
+              className="truncate text-sm font-medium text-foreground"
             />
           </div>
         }

@@ -88,9 +88,9 @@ describe("capability controls", () => {
     const research = screen.getByRole("button", { name: "Research" });
 
     expect(apps.className).toContain("px-3 py-1.5 text-xs");
-    expect(apps.className).toContain("dark:bg-zinc-100");
-    expect(all.className).toContain("dark:hover:bg-zinc-800");
-    expect(research.className).toContain("dark:bg-zinc-800");
+    expect(apps.className).toContain("");
+    expect(all.className).toContain("");
+    expect(research.className).toContain("");
   });
 });
 

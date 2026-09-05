@@ -170,7 +170,7 @@ export function DropdownMenu({
 
       {isOpen && (
         <div
-          className={`absolute ${positionClasses[position]} z-50 w-48 rounded-md bg-off-white shadow-lg ring-1 ring-black/5 dark:bg-zinc-800 ${menuClassName}`}
+          className={`bg-popover text-popover-foreground ring-border absolute ${positionClasses[position]} z-50 w-48 rounded-md shadow-[var(--polychat-elevated-shadow)] ring-1 ${menuClassName}`}
           role="menu"
           tabIndex={-1}
           aria-orientation="vertical"
@@ -200,7 +200,7 @@ export function DropdownMenuItem({
   disabled = false,
   asChild = false,
 }: DropdownMenuItemProps) {
-  const itemClassName = `z-10 flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-sm text-zinc-700 hover:bg-off-white-highlight disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-200 dark:hover:bg-zinc-700 ${className}`;
+  const itemClassName = `text-popover-foreground hover:bg-accent hover:text-accent-foreground z-10 flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50 ${className}`;
 
   if (asChild && isValidElement<MenuItemChildProps>(children)) {
     const child = children;

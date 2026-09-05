@@ -37,7 +37,7 @@ function recover(
     resolveCommand: options.resolveCommand,
     fetchRun,
     pollIntervalMs: 0,
-    maxWaitMs: 50,
+    maxWaitMs: 100,
     wait: async () => {},
     now: (() => {
       let value = 0;
@@ -104,6 +104,31 @@ describe("recoverDetachedTurn", () => {
     await expect(recover(fetchRun, { runId: "run-1" })).resolves.toMatchObject({
       run: { status: "failed" },
     });
+  });
+
+  it("classifies the last scheduled exact-run poll for timeout telemetry", async () => {
+    const attempts: Array<{ attempt: number; elapsedMs: number; finalAttempt: boolean }> = [];
+    let currentTime = 0;
+
+    await recoverDetachedTurn({
+      runId: "run-1",
+      fetchRun: async (_runId, attempt) => {
+        attempts.push(attempt);
+
+        return { run: run("running"), messages: [userMessage] };
+      },
+      pollIntervalMs: 20,
+      maxWaitMs: 50,
+      wait: async (ms) => {
+        currentTime += ms;
+      },
+      now: () => currentTime,
+    });
+
+    expect(attempts).toEqual([
+      { attempt: 1, elapsedMs: 20, finalAttempt: false },
+      { attempt: 2, elapsedMs: 40, finalAttempt: true },
+    ]);
   });
 });
 

@@ -805,4 +805,27 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
   		defaultEffort: "minimal",
   	},
   }),
+  createModelConfig("omen-alpha", PROVIDER, {
+  	name: "Omen Alpha",
+  	matchingModel: "omen-alpha",
+  	openWeights: false,
+  	releaseDate: "September 4, 2026",
+  	lastUpdated: "September 4, 2026",
+  	modalities: {
+  		input: ["text", "image"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: true,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 500000,
+  	maxTokens: 128000,
+  	costPer1kInputTokens: 0.0002,
+  	costPer1kOutputTokens: 0.00066,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["low", "high"],
+  		defaultEffort: "low",
+  	},
+  }),
 ]);

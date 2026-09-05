@@ -46,7 +46,7 @@ export function ConnectorAuthConfigModal({
             >
               <span className="flex w-full items-center justify-between gap-4 text-left">
                 <span>{config.name}</span>
-                <span className="text-xs text-zinc-500">{config.authScheme}</span>
+                <span className="text-xs text-muted-foreground">{config.authScheme}</span>
               </span>
             </Button>
           ))}

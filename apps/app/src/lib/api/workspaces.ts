@@ -5,6 +5,8 @@ import type {
   CreateWorkspaceInput,
   CreateWorkspaceInvitationInput,
   ProjectDetail,
+  SandboxEnvironmentCacheAction,
+  SandboxEnvironmentCacheActionResponse,
   UpdateProjectInput,
   UpdateWorkspaceInput,
   WorkspaceDetail,
@@ -107,6 +109,19 @@ export async function archiveProject(projectId: string): Promise<void> {
     method: "DELETE",
     headers: await authHeaders(),
   });
+}
+
+export async function updateProjectEnvironmentCache(
+  projectId: string,
+  input: SandboxEnvironmentCacheAction,
+): Promise<SandboxEnvironmentCacheActionResponse> {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/environment-cache`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: input,
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function inviteWorkspaceMember(

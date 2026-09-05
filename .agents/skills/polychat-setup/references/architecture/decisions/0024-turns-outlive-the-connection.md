@@ -14,7 +14,7 @@ Expose the current coordinator operation through authorised conversation reads. 
 
 Make Stop explicit through `/chat/completions/:id/cancel` before aborting the fetch. The detached turn watches a timestamped KV cancellation flag. Background execution is not a separate product mode.
 
-Persist the accepted operation and its command acknowledgement through the shared run contract in [ADR 0042](0042-persist-chat-run-identity.md). That identity makes lifecycle authoritative but does not upgrade `waitUntil` into durable execution ownership for interactive Chat.
+Persist the accepted operation and its command acknowledgement through the shared run contract in [ADR 0056](0056-persist-chat-run-identity.md). That identity makes lifecycle authoritative but does not upgrade `waitUntil` into durable execution ownership for interactive Chat.
 
 Treat queue-dispatched, stored project-task turns as the supported durable cohort. The existing Cloudflare task queue owns those executions independently of the HTTP request that enqueued them. Persist an opaque execution owner and five-minute lease on the queue task, renew it every minute, and fence both generic task settlement and project-task state changes through that owner. A redelivery waits while the live lease remains valid and may recover only after expiry.
 

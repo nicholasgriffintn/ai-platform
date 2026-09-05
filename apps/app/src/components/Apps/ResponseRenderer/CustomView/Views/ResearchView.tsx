@@ -88,7 +88,7 @@ export function ResearchView({ data, embedded }: { data: any; embedded: boolean 
   const statusData = researchQuery.data ?? initialStatus;
 
   if (!data) {
-    return <p className="text-red-500 dark:text-red-300">No research data available</p>;
+    return <p className="text-failure">No research data available</p>;
   }
 
   const run = statusData?.run;

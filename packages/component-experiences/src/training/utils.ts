@@ -224,18 +224,18 @@ export function getStatusClassName(status: string): string {
   const normalised = status.toLowerCase();
 
   if (["completed", "inservice", "in service"].includes(normalised)) {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300";
+    return "border-success/45 bg-success/12 text-success";
   }
 
   if (["failed", "error", "outofservice", "out of service"].includes(normalised)) {
-    return "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300";
+    return "border-failure/45 bg-failure/12 text-failure";
   }
 
   if (["starting", "creating", "inprogress", "in progress", "updating"].includes(normalised)) {
-    return "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300";
+    return "border-active-work/45 bg-active-work/12 text-active-work";
   }
 
-  return "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300";
+  return "border-border bg-surface-elevated text-muted-foreground";
 }
 
 function isTrainingHyperparameterValue(value: unknown): value is TrainingHyperparameterValue {

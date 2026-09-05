@@ -18,6 +18,7 @@ export function SandboxView({ type, data }: SandboxViewProps) {
           await submitSandboxRunInstruction({
             runId,
             kind: "approval_response",
+            idempotencyKey: crypto.randomUUID(),
             requestId: approvalId,
             command,
             approvalStatus,

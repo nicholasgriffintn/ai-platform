@@ -71,17 +71,17 @@ const EVIDENCE_STATUS_LABEL: Record<GoalEvidenceStatus, string> = {
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[11px] tracking-wide text-zinc-500 uppercase">{label}</p>
-      <p className="text-sm text-zinc-900 dark:text-zinc-100">{value}</p>
+      <p className="text-[11px] tracking-wide text-muted-foreground uppercase">{label}</p>
+      <p className="text-sm text-foreground">{value}</p>
     </div>
   );
 }
 
 function Aside({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1 border-t border-zinc-200 py-3 first:border-t-0 first:pt-0 dark:border-zinc-800">
-      <p className="text-[11px] tracking-wide text-zinc-500 uppercase">{label}</p>
-      <div className="text-sm text-zinc-800 dark:text-zinc-200">{children}</div>
+    <div className="space-y-1 border-t border-border py-3 first:border-t-0 first:pt-0">
+      <p className="text-[11px] tracking-wide text-muted-foreground uppercase">{label}</p>
+      <div className="text-sm text-foreground">{children}</div>
     </div>
   );
 }
@@ -132,7 +132,7 @@ export function TaskDetail({
         </div>
 
         {task.status === "blocked" && task.blockedReason && (
-          <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+          <div className="flex items-start gap-2 rounded-lg border border-attention/45 bg-attention/12 p-3 text-sm text-attention">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />
             <div>
               <p className="font-medium">{projectTaskBlockedReasonLabels[task.blockedReason]}</p>
@@ -185,7 +185,7 @@ export function TaskDetail({
         </div>
 
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Done when</h2>
+          <h2 className="text-sm font-semibold text-foreground">Done when</h2>
           {task.acceptanceCriteria.length > 0 ? (
             <ul className="space-y-2">
               {task.acceptanceCriteria.map((criterion) => {
@@ -196,13 +196,13 @@ export function TaskDetail({
                     {isMet ? (
                       <Check
                         size={14}
-                        className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+                        className="mt-0.5 shrink-0 text-success"
                         aria-label={`Met: ${criterion.text}`}
                       />
                     ) : (
                       <Circle
                         size={14}
-                        className="mt-0.5 shrink-0 text-zinc-400"
+                        className="mt-0.5 shrink-0 text-muted-foreground"
                         aria-label={`Not yet met: ${criterion.text}`}
                       />
                     )}
@@ -212,18 +212,16 @@ export function TaskDetail({
               })}
             </ul>
           ) : (
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-muted-foreground">
               No acceptance criteria, so the goal has nothing to check itself against.
             </p>
           )}
         </section>
 
         {latestCompletion ? (
-          <section className="space-y-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+          <section className="space-y-3 rounded-xl border border-border p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Latest result
-              </h2>
+              <h2 className="text-sm font-semibold text-foreground">Latest result</h2>
               <Badge
                 variant={latestCompletion.approval.status === "approved" ? "success" : "warning"}
               >
@@ -235,7 +233,7 @@ export function TaskDetail({
               </Badge>
             </div>
             {latestCompletion.output ? (
-              <div className="text-sm leading-6 text-zinc-900 dark:text-zinc-100">
+              <div className="text-sm leading-6 text-foreground">
                 {renderProgressSummary ? (
                   renderProgressSummary(latestCompletion.output)
                 ) : (
@@ -243,7 +241,7 @@ export function TaskDetail({
                 )}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-foreground">
                 This stage completed without a written result. Open the conversation to inspect its
                 tool evidence.
               </p>
@@ -255,11 +253,9 @@ export function TaskDetail({
 
         <section className="space-y-3">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              What happened
-            </h2>
+            <h2 className="text-sm font-semibold text-foreground">What happened</h2>
             {goal && (
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-muted-foreground">
                 {goal.iteration_count} iteration{goal.iteration_count === 1 ? "" : "s"}
                 {goal.tokens_spent > 0 ? ` · ${goal.tokens_spent.toLocaleString()} tokens` : ""}
               </span>
@@ -269,33 +265,31 @@ export function TaskDetail({
           <TaskActivityTimelineView timeline={activity} renderDetail={renderProgressSummary} />
 
           {goal?.stopped_reason && goal.status !== "completed" && (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Stopped: {goal.stopped_reason}
-            </p>
+            <p className="text-sm text-muted-foreground">Stopped: {goal.stopped_reason}</p>
           )}
         </section>
 
         {evidence.length > 0 && (
           <section className="space-y-3">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Evidence it gave
-            </h2>
+            <h2 className="text-sm font-semibold text-foreground">Evidence it gave</h2>
             <ul className="space-y-3">
               {evidence.map((entry) => (
                 <li
                   key={`${entry.claim}:${entry.evidence_surface}`}
-                  className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                  className="rounded-lg border border-border p-3"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm text-zinc-900 dark:text-zinc-100">{entry.claim}</p>
+                    <p className="text-sm text-foreground">{entry.claim}</p>
                     <Badge variant={EVIDENCE_BADGE_VARIANT[entry.status]}>
                       {EVIDENCE_STATUS_LABEL[entry.status]}
                     </Badge>
                   </div>
-                  <p className="mt-1 text-xs text-zinc-500">{entry.route}</p>
-                  <p className="mt-0.5 text-xs text-zinc-500">Where: {entry.evidence_surface}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{entry.route}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Where: {entry.evidence_surface}
+                  </p>
                   {entry.remaining_uncertainty && (
-                    <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+                    <p className="mt-1 text-xs text-attention">
                       Still unproven: {entry.remaining_uncertainty}
                     </p>
                   )}
@@ -338,7 +332,7 @@ export function TaskDetail({
           <Aside label="Task management">
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-muted-foreground">
                   {canReopen
                     ? "Reopen returns this untouched task to the backlog."
                     : isFinished
@@ -368,8 +362,8 @@ export function TaskDetail({
                   </Button>
                 )}
               </div>
-              <div className="border-t border-zinc-200 pt-3 dark:border-zinc-800">
-                <p className="text-xs text-zinc-500">
+              <div className="border-t border-border pt-3">
+                <p className="text-xs text-muted-foreground">
                   {hasExecutionEvidence
                     ? "Executed plans stay in project history with their run and result evidence."
                     : "Delete removes this unstarted task from the project."}
@@ -378,7 +372,7 @@ export function TaskDetail({
                   variant="ghost"
                   size="sm"
                   icon={<Trash2 size={13} />}
-                  className="mt-2 text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                  className="mt-2 text-failure hover:bg-failure/12"
                   onClick={onDelete}
                   disabled={isBusy || task.status === "running" || hasExecutionEvidence}
                 >
@@ -393,9 +387,9 @@ export function TaskDetail({
                 {blockedBy.map((dependency) => (
                   <li key={dependency.id} className="flex items-start gap-1.5">
                     {dependency.status === "done" ? (
-                      <Check size={13} className="mt-0.5 shrink-0 text-emerald-500" />
+                      <Check size={13} className="mt-0.5 shrink-0 text-success" />
                     ) : (
-                      <Circle size={13} className="mt-0.5 shrink-0 text-zinc-400" />
+                      <Circle size={13} className="mt-0.5 shrink-0 text-muted-foreground" />
                     )}
                     <TextLink href={taskHref(dependency)} size="xs">
                       {dependency.objective}

@@ -6,13 +6,10 @@ import { Check, Loader2 } from "lucide-react";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useCreateCheckoutSession, usePlans } from "~/hooks/useBilling";
+import { formatPlanPrice } from "~/lib/plan-format";
 import { useUIStore } from "~/state/stores/uiStore";
 
-const CREDIT_EXAMPLES = [
-  "a quick question ≈ 0.1 credits",
-  "a couple of hours of sandboxed coding ≈ 6 credits",
-  "a long agent task ≈ 100 credits",
-];
+import { CreditLadder } from "./CreditLadder";
 
 const PLAN_FEATURES: Record<string, string[]> = {
   free: [
@@ -53,14 +50,6 @@ const HOW_IT_WORKS = [
   },
 ];
 
-function formatPlanPrice(price: number): string {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    minimumFractionDigits: Number.isInteger(price) ? 0 : 2,
-  }).format(price);
-}
-
 function comparePlansByPrice(a: Plan, b: Plan): number {
   return (a.price ?? 0) - (b.price ?? 0);
 }
@@ -100,27 +89,19 @@ function PlanCard({
 
   return (
     <Card className="flex flex-col p-6">
-      <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{plan.name}</h3>
-      <p className="mt-2 text-4xl font-bold text-zinc-900 dark:text-zinc-100">
+      <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
+      <p className="mt-2 text-4xl font-bold text-foreground">
         {plan.price > 0 ? formatPlanPrice(plan.price) : "Free"}
         {plan.price > 0 && (
-          <span className="text-base font-normal text-zinc-500 dark:text-zinc-400">/month</span>
+          <span className="text-base font-normal text-muted-foreground">/month</span>
         )}
       </p>
-      {plan.description && (
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{plan.description}</p>
-      )}
+      {plan.description && <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>}
 
       <ul className="mt-4 flex-1 space-y-2">
         {describePlanAllowance(plan).map((line) => (
-          <li
-            key={line}
-            className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300"
-          >
-            <Check
-              className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400"
-              aria-hidden="true"
-            />
+          <li key={line} className="flex items-start gap-2 text-sm text-foreground">
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
             <span>{line}</span>
           </li>
         ))}
@@ -184,15 +165,18 @@ export function PricingPage() {
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
       <header className="text-center">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">Pricing</h1>
-        <p className="mx-auto mt-2 max-w-xl text-zinc-600 dark:text-zinc-400">
+        <p className="polychat-eyebrow">Plans</p>
+        <h1 className="font-display text-foreground mt-2 text-4xl font-medium tracking-tight text-balance md:text-5xl">
+          Pricing
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
           One pot of credits per month, spent on whatever you actually run. No meters spinning
           behind your back, and nothing cut off mid-thought.
         </p>
       </header>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-16 text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center justify-center py-16 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
         </div>
       ) : (
@@ -210,7 +194,7 @@ export function PricingPage() {
           ))}
           {(plans ?? []).length === 0 && (
             <Card className="p-6 sm:col-span-2">
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-muted-foreground">
                 Plans are being arranged on the perch. In the meantime, everything here works on the
                 free tier and your own provider keys.
               </p>
@@ -220,22 +204,19 @@ export function PricingPage() {
       )}
 
       <section className="mt-10">
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">How credits work</h2>
+        <h2 className="font-display text-2xl font-medium tracking-tight text-foreground">
+          How credits work
+        </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {HOW_IT_WORKS.map((item) => (
             <Card key={item.title} className="p-5">
-              <h3 className="font-medium text-zinc-900 dark:text-zinc-100">{item.title}</h3>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{item.body}</p>
+              <h3 className="font-medium text-foreground">{item.title}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
             </Card>
           ))}
-          <Card className="p-5">
-            <h3 className="font-medium text-zinc-900 dark:text-zinc-100">What a credit buys</h3>
-            <ul className="mt-2 space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-              {CREDIT_EXAMPLES.map((example) => (
-                <li key={example}>{example}</li>
-              ))}
-            </ul>
-          </Card>
+          <div className="sm:col-span-2">
+            <CreditLadder />
+          </div>
         </div>
       </section>
     </div>

@@ -9,7 +9,10 @@ import {
   usesAdaptiveThinkingApi,
 } from "~/lib/providers/models/reasoning";
 import { limitAnthropicCacheControlBlocks } from "~/lib/providers/utils/anthropicCacheControl";
-import { buildAnthropicHostedTools } from "~/lib/providers/utils/anthropicTools";
+import {
+  buildAnthropicHostedTools,
+  buildAnthropicToolChoice,
+} from "~/lib/providers/utils/anthropicTools";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import type { StorageService } from "~/lib/storage";
@@ -149,6 +152,11 @@ export class AnthropicProvider extends BaseProvider {
     const anthropicSpecificTools =
       modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
 
+    const toolChoice =
+      allTools.length > 0 && modelConfig?.supportsToolChoice !== false
+        ? buildAnthropicToolChoice(providerParams.tool_choice, providerParams.parallel_tool_calls)
+        : undefined;
+
     const thinking = buildAnthropicThinkingParameters(
       providerParams,
       modelConfig,
@@ -170,8 +178,8 @@ export class AnthropicProvider extends BaseProvider {
     const payload: Record<string, any> = {
       ...commonParams,
       ...streamingParams,
-      ...toolsParams,
       ...anthropicSpecificTools,
+      ...(toolChoice ? { tool_choice: toolChoice } : {}),
       ...thinking.params,
       ...systemPromptParams,
       stop_sequences: providerParams.stop,

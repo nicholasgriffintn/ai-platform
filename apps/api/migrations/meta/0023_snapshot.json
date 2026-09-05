@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4858b223-18f7-4936-ba3d-89d57d8a007c",
-  "prevId": "200149eb-d481-4a71-9dd3-b317a60a7618",
+  "id": "af73b219-f461-4a39-b937-7cb195198828",
+  "prevId": "e34d0503-c4e1-4c38-80e3-3a13f03ef23b",
   "tables": {
     "activity_record": {
       "name": "activity_record",
@@ -1737,335 +1737,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "conversation_run": {
-      "name": "conversation_run",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "project_task_id": {
-          "name": "project_task_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "initiator_user_id": {
-          "name": "initiator_user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'accepted'"
-        },
-        "attempt": {
-          "name": "attempt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "event_sequence": {
-          "name": "event_sequence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "terminal_reason": {
-          "name": "terminal_reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "last_message_id": {
-          "name": "last_message_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "started_at": {
-          "name": "started_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "completed_at": {
-          "name": "completed_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "conversation_run_conversation_updated_idx": {
-          "name": "conversation_run_conversation_updated_idx",
-          "columns": ["conversation_id", "updated_at"],
-          "isUnique": false
-        },
-        "conversation_run_project_updated_idx": {
-          "name": "conversation_run_project_updated_idx",
-          "columns": ["project_id", "updated_at"],
-          "isUnique": false
-        },
-        "conversation_run_project_task_idx": {
-          "name": "conversation_run_project_task_idx",
-          "columns": ["project_task_id"],
-          "isUnique": false
-        },
-        "conversation_run_initiator_idx": {
-          "name": "conversation_run_initiator_idx",
-          "columns": ["initiator_user_id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "conversation_run_project_id_project_id_fk": {
-          "name": "conversation_run_project_id_project_id_fk",
-          "tableFrom": "conversation_run",
-          "tableTo": "project",
-          "columnsFrom": ["project_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "conversation_run_initiator_user_id_user_id_fk": {
-          "name": "conversation_run_initiator_user_id_user_id_fk",
-          "tableFrom": "conversation_run",
-          "tableTo": "user",
-          "columnsFrom": ["initiator_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "conversation_run_command": {
-      "name": "conversation_run_command",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "run_id": {
-          "name": "run_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "command_id": {
-          "name": "command_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "kind": {
-          "name": "kind",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "input_digest": {
-          "name": "input_digest",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "accepted_at": {
-          "name": "accepted_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "conversation_run_command_user_command_idx": {
-          "name": "conversation_run_command_user_command_idx",
-          "columns": ["user_id", "command_id"],
-          "isUnique": true
-        },
-        "conversation_run_command_run_accepted_idx": {
-          "name": "conversation_run_command_run_accepted_idx",
-          "columns": ["run_id", "accepted_at"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "conversation_run_command_run_id_conversation_run_id_fk": {
-          "name": "conversation_run_command_run_id_conversation_run_id_fk",
-          "tableFrom": "conversation_run_command",
-          "tableTo": "conversation_run",
-          "columnsFrom": ["run_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "conversation_run_command_user_id_user_id_fk": {
-          "name": "conversation_run_command_user_id_user_id_fk",
-          "tableFrom": "conversation_run_command",
-          "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "conversation_run_event": {
-      "name": "conversation_run_event",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "run_id": {
-          "name": "run_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "sequence": {
-          "name": "sequence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "protocol_version": {
-          "name": "protocol_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "attempt": {
-          "name": "attempt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "occurred_at": {
-          "name": "occurred_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "data": {
-          "name": "data",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'{}'"
-        }
-      },
-      "indexes": {
-        "conversation_run_event_run_sequence_idx": {
-          "name": "conversation_run_event_run_sequence_idx",
-          "columns": ["run_id", "sequence"],
-          "isUnique": true
-        },
-        "conversation_run_event_run_occurred_idx": {
-          "name": "conversation_run_event_run_occurred_idx",
-          "columns": ["run_id", "occurred_at"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "conversation_run_event_run_id_conversation_run_id_fk": {
-          "name": "conversation_run_event_run_id_conversation_run_id_fk",
-          "tableFrom": "conversation_run_event",
-          "tableTo": "conversation_run",
-          "columnsFrom": ["run_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "embedding": {
       "name": "embedding",
       "columns": {
@@ -2948,13 +2619,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "run_id": {
-          "name": "run_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "parent_message_id": {
           "name": "parent_message_id",
           "type": "text",
@@ -3126,11 +2790,6 @@
           "name": "message_role_idx",
           "columns": ["role"],
           "isUnique": false
-        },
-        "message_run_id_idx": {
-          "name": "message_run_id_idx",
-          "columns": ["run_id"],
-          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -3141,15 +2800,6 @@
           "columnsFrom": ["conversation_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "message_run_id_conversation_run_id_fk": {
-          "name": "message_run_id_conversation_run_id_fk",
-          "tableFrom": "message",
-          "tableTo": "conversation_run",
-          "columnsFrom": ["run_id"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -4199,6 +3849,35 @@
           "autoincrement": false,
           "default": true
         },
+        "coding_delivery_policy": {
+          "name": "coding_delivery_policy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coding_environment_setup": {
+          "name": "coding_environment_setup",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coding_environment_cache": {
+          "name": "coding_environment_cache",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coding_cache_generation": {
+          "name": "coding_cache_generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
         "coding_timeout_seconds": {
           "name": "coding_timeout_seconds",
           "type": "integer",
@@ -4527,13 +4206,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "run_id": {
-          "name": "run_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "completions": {
           "name": "completions",
           "type": "text",
@@ -4616,11 +4288,6 @@
           "columns": ["conversation_id"],
           "isUnique": true,
           "where": "\"project_task\".\"conversation_id\" IS NOT NULL"
-        },
-        "project_task_run_idx": {
-          "name": "project_task_run_idx",
-          "columns": ["run_id"],
-          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -4674,15 +4341,6 @@
           "tableFrom": "project_task",
           "tableTo": "conversation",
           "columnsFrom": ["conversation_id"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "project_task_run_id_conversation_run_id_fk": {
-          "name": "project_task_run_id_conversation_run_id_fk",
-          "tableFrom": "project_task",
-          "tableTo": "conversation_run",
-          "columnsFrom": ["run_id"],
           "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
@@ -5867,20 +5525,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "execution_owner_token": {
-          "name": "execution_owner_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "execution_lease_expires_at": {
-          "name": "execution_lease_expires_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "completed_at": {
           "name": "completed_at",
           "type": "text",
@@ -5943,11 +5587,6 @@
         "tasks_scheduled_at_idx": {
           "name": "tasks_scheduled_at_idx",
           "columns": ["scheduled_at"],
-          "isUnique": false
-        },
-        "tasks_execution_lease_idx": {
-          "name": "tasks_execution_lease_idx",
-          "columns": ["status", "execution_lease_expires_at"],
           "isUnique": false
         }
       },

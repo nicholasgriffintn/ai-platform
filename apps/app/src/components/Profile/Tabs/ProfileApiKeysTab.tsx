@@ -3,11 +3,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { CopyButton } from "~/components/Content/CopyButton";
+import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 import { useApiKeys } from "~/hooks/useApiKeys";
 import { isAuthenticationError } from "~/lib/errors";
 import { useUIStore } from "~/state/stores/uiStore";
-
-import { PageShell } from "../../Core/PageShell";
 
 export function ProfileApiKeysTab() {
   const {
@@ -28,8 +27,7 @@ export function ProfileApiKeysTab() {
   const requiresSignIn = isAuthenticationError(errorLoadingApiKeys);
 
   return (
-    <div>
-      <PageShell.Header title="API Keys" />
+    <ProfileTab title="API Keys">
       <ApiKeysPanel
         apiKeys={apiKeys}
         isLoading={isLoadingApiKeys}
@@ -73,6 +71,6 @@ export function ProfileApiKeysTab() {
         isDeleting={isDeletingApiKey}
         deletingKeyId={deletingKeyId}
       />
-    </div>
+    </ProfileTab>
   );
 }

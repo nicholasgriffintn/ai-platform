@@ -1,57 +1,20 @@
 import Combine
 import Foundation
-import UIKit
-import UserNotifications
 
 @MainActor
 final class TaskNotificationManager: ObservableObject {
-    enum RegistrationState: Equatable {
-        case idle
-        case awaitingDeviceToken
-        case registering
-        case registered
-        case failed(String)
-        case disabled
-    }
-
     @Published private(set) var items: [TaskInboxItem] = []
     @Published private(set) var unread = 0
-    @Published private(set) var permission: UNAuthorizationStatus = .notDetermined
-    @Published private(set) var registrationState: RegistrationState = .idle
     @Published private(set) var settings: TaskNotificationSettings?
     @Published private(set) var isLoading = false
     @Published var requestedInboxItemId: String?
     @Published var error: String?
 
-    private static let tokenKey = "polychat-notification-device-token"
     private var apiClient: TaskNotificationsAPIClient?
     private var observers: [NSObjectProtocol] = []
 
     init(notificationCenter: NotificationCenter = .default) {
         observers = [
-            notificationCenter.addObserver(
-                forName: .taskNotificationDeviceToken,
-                object: nil,
-                queue: .main
-            ) { [weak self] notification in
-                guard let token = notification.object as? String else {
-                    return
-                }
-
-                Task { @MainActor in
-                    await self?.receivedDeviceToken(token)
-                }
-            },
-            notificationCenter.addObserver(
-                forName: .taskNotificationRegistrationFailed,
-                object: nil,
-                queue: .main
-            ) { [weak self] notification in
-                Task { @MainActor in
-                    let message = notification.object as? String ?? "Device registration failed"
-                    self?.registrationState = .failed(message)
-                }
-            },
             notificationCenter.addObserver(
                 forName: .taskNotificationReceived,
                 object: nil,
@@ -87,27 +50,10 @@ final class TaskNotificationManager: ObservableObject {
             unread = 0
             settings = nil
             requestedInboxItemId = nil
-            registrationState = .idle
             return
         }
 
         await refresh()
-
-        guard settings?.preferences.enabled == true else {
-            registrationState = .disabled
-            return
-        }
-
-        await refreshPermission()
-
-        if permission == .authorized || permission == .provisional || permission == .ephemeral {
-            if let token = UserDefaults.standard.string(forKey: Self.tokenKey) {
-                await register(token: token)
-            } else {
-                registrationState = .awaitingDeviceToken
-                UIApplication.shared.registerForRemoteNotifications()
-            }
-        }
     }
 
     func refresh() async {
@@ -125,8 +71,6 @@ final class TaskNotificationManager: ObservableObject {
             let nextInbox = try await inbox
             items = nextInbox.items
             unread = nextInbox.unread
-            await refreshPermission()
-            reconcileRegistrationState()
             error = nil
         } catch {
             self.error = error.localizedDescription
@@ -154,28 +98,11 @@ final class TaskNotificationManager: ObservableObject {
         }
 
         do {
-            let granted = try await UNUserNotificationCenter.current().requestAuthorization(
-                options: [.alert, .badge, .sound]
-            )
-            await refreshPermission()
-
-            guard granted else {
-                registrationState = .failed("Notifications are blocked in iOS Settings")
-                return
-            }
-
             settings = try await apiClient.updateTaskNotificationPreferences(
                 UpdateTaskNotificationPreferencesRequest(enabled: true)
             )
-
-            if let token = UserDefaults.standard.string(forKey: Self.tokenKey) {
-                await register(token: token)
-            } else {
-                registrationState = .awaitingDeviceToken
-                UIApplication.shared.registerForRemoteNotifications()
-            }
         } catch {
-            registrationState = .failed(error.localizedDescription)
+            self.error = error.localizedDescription
         }
     }
 
@@ -188,26 +115,10 @@ final class TaskNotificationManager: ObservableObject {
             settings = try await apiClient.updateTaskNotificationPreferences(
                 UpdateTaskNotificationPreferencesRequest(enabled: false)
             )
-            _ = try await apiClient.removeTaskNotificationRegistration()
-            UIApplication.shared.unregisterForRemoteNotifications()
-            UserDefaults.standard.removeObject(forKey: Self.tokenKey)
-            registrationState = .disabled
             error = nil
         } catch {
             self.error = error.localizedDescription
         }
-    }
-
-    func removeRegistrationForLogout() async {
-        do {
-            _ = try await apiClient?.removeTaskNotificationRegistration()
-        } catch {
-            self.error = error.localizedDescription
-        }
-
-        UIApplication.shared.unregisterForRemoteNotifications()
-        UserDefaults.standard.removeObject(forKey: Self.tokenKey)
-        registrationState = .idle
     }
 
     func setCategory(_ category: String, enabled: Bool) async {
@@ -260,55 +171,12 @@ final class TaskNotificationManager: ObservableObject {
         }
     }
 
-    private func receivedDeviceToken(_ token: String) async {
-        UserDefaults.standard.set(token, forKey: Self.tokenKey)
-        await register(token: token)
-    }
-
-    private func register(token: String) async {
-        guard let apiClient else {
-            return
-        }
-
-        registrationState = .registering
-
-        do {
-            let registration = try await apiClient.registerTaskNotifications(token: token)
-            registrationState = registration.state == "registered"
-                ? .registered
-                : .failed(registration.failureCode ?? "Server registration failed")
-            settings = try await apiClient.fetchTaskNotificationSettings()
-            error = nil
-        } catch {
-            registrationState = .failed(error.localizedDescription)
-        }
-    }
-
     private func updateReceipt(_ item: TaskInboxItem, action: String) async {
         do {
             _ = try await apiClient?.updateTaskInbox(itemIds: [item.id], action: action)
             await loadInbox()
         } catch {
             self.error = error.localizedDescription
-        }
-    }
-
-    private func refreshPermission() async {
-        permission = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-    }
-
-    private func reconcileRegistrationState() {
-        guard settings?.preferences.enabled == true else {
-            registrationState = .disabled
-            return
-        }
-
-        if let registration = settings?.registrations.first(where: {
-            $0.platform == "ios" && $0.installationId == NotificationInstallation.id
-        }) {
-            registrationState = registration.state == "registered"
-                ? .registered
-                : .failed(registration.failureCode ?? "Server registration failed")
         }
     }
 

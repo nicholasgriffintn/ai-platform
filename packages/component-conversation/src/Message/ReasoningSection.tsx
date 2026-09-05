@@ -33,7 +33,7 @@ export const ReasoningSection = ({ reasoning }: ReasoningSectionProps) => {
         onClick={() => {
           setCollapsed(!collapsed);
         }}
-        className="cursor-pointer flex items-center text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
+        className="cursor-pointer flex items-center text-xs text-muted-foreground hover:text-foreground"
         aria-label="Toggle reasoning"
         aria-expanded={!collapsed}
       >
@@ -42,7 +42,7 @@ export const ReasoningSection = ({ reasoning }: ReasoningSectionProps) => {
       </button>
       {!collapsed && (
         <div>
-          <MemoizedMarkdown className="prose dark:prose-invert prose-zinc prose-xs text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <MemoizedMarkdown className="prose dark:prose-invert prose-zinc prose-xs text-xs text-muted-foreground mt-1">
             {content}
           </MemoizedMarkdown>
         </div>

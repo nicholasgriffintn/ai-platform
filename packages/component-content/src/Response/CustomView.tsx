@@ -89,7 +89,7 @@ export function CustomView({
         <div className="space-y-2">
           <ToolNarrative content={messageContent} />
           <details>
-            <summary className="cursor-pointer text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100">
+            <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
               Raw response
             </summary>
             <div className="mt-1">

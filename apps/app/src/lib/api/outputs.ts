@@ -8,6 +8,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service";
+import { readBoundedTextResponse, type BoundedTextResponse } from "./bounded-response";
 import { fetchApiOrThrow } from "./fetch-wrapper";
 
 async function getHeaders(): Promise<Record<string, string>> {
@@ -77,6 +78,18 @@ export async function restoreOutputRevision(
   );
 
   return returnFetchedData<Output>(response);
+}
+
+export async function getOutputArtifactContent(
+  outputId: string,
+  maxBytes = 1_000_000,
+): Promise<BoundedTextResponse> {
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/content`, {
+    method: "GET",
+    headers: await getHeaders(),
+  });
+
+  return readBoundedTextResponse(response, maxBytes);
 }
 
 export async function createOutputShare(

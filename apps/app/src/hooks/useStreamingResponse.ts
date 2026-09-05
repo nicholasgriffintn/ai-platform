@@ -9,6 +9,7 @@ import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { updateConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import {
   chatRunCommandReceiptSchema,
+  chatTurnActivityEventSchema,
   EMPTY_MODEL_CONFIG,
   getModelProvider,
   isTerminalChatRunStatus,
@@ -70,15 +71,27 @@ export function useStreamingResponse(
     user,
   } = useChatStore();
   const setUsageLimits = useUsageStore((state) => state.setUsageLimits);
-  const {
-    beginStreamActivity,
-    completeStreamActivityMessage,
-    endStreamActivity,
-    recordStreamActivityState,
-    recordStreamActivityText,
-    recordStreamActivityToolResult,
-    updateStreamLoadingMessage,
-  } = useStreamActivityStore.getState();
+  const beginStreamActivity = useStreamActivityStore((state) => state.beginStreamActivity);
+  const completeStreamActivityMessage = useStreamActivityStore(
+    (state) => state.completeStreamActivityMessage,
+  );
+  const endStreamActivity = useStreamActivityStore((state) => state.endStreamActivity);
+  const markStreamActivityReconnecting = useStreamActivityStore(
+    (state) => state.markStreamActivityReconnecting,
+  );
+  const recordStreamActivityState = useStreamActivityStore(
+    (state) => state.recordStreamActivityState,
+  );
+  const recordStreamActivityText = useStreamActivityStore(
+    (state) => state.recordStreamActivityText,
+  );
+  const recordStreamActivityToolResult = useStreamActivityStore(
+    (state) => state.recordStreamActivityToolResult,
+  );
+  const recordTurnActivity = useStreamActivityStore((state) => state.recordTurnActivity);
+  const updateStreamLoadingMessage = useStreamActivityStore(
+    (state) => state.updateStreamLoadingMessage,
+  );
   const currentConversationId = useChatStore((state) => state.currentConversationId);
   const currentStream = useStreamActivityStore((state) =>
     currentConversationId ? state.streams[currentConversationId] : undefined,
@@ -389,7 +402,7 @@ export function useStreamingResponse(
 
           try {
             response = await webLLMService.generate(
-              String(conversationId),
+              conversationId,
               lastMessageContent,
               async (_chatId: string, content: any, _model: any, _mode: any, role: string) => {
                 if (role !== "user") {
@@ -419,6 +432,16 @@ export function useStreamingResponse(
           const modelConfigToSend = selectedModel ? apiModels[selectedModel] : undefined;
 
           const handleStateChange = (state: string, data?: any) => {
+            if (state === "turn_activity") {
+              const activity = chatTurnActivityEventSchema.safeParse(data);
+
+              if (activity.success) {
+                recordTurnActivity(conversationId, activity.data);
+              }
+
+              return;
+            }
+
             recordStreamActivityState(conversationId, state, data);
 
             if (state === "conversation_title") {
@@ -587,12 +610,18 @@ export function useStreamingResponse(
         }
 
         updateStreamLoadingMessage(conversationId, "Reconnecting to the response...");
+        markStreamActivityReconnecting(conversationId);
         updateLoading("stream-response", undefined, "Reconnecting to the response...");
 
         const recovered = await recoverDetachedTurn({
           runId: acceptedRunId,
           resolveCommand: async () => (await apiService.getChatRunCommand(commandId)).run.id,
-          fetchRun: (runId) => apiService.getChatRun(runId),
+          fetchRun: (runId, recovery) =>
+            apiService.getChatRun(runId, {
+              ...recovery,
+              knownAssistantCount: messages.filter((message) => message.role === "assistant")
+                .length,
+            }),
           signal: requestSignal,
         });
 
@@ -688,6 +717,8 @@ export function useStreamingResponse(
       recordStreamActivityState,
       recordStreamActivityText,
       recordStreamActivityToolResult,
+      recordTurnActivity,
+      markStreamActivityReconnecting,
       updateStreamLoadingMessage,
       user?.id,
     ],

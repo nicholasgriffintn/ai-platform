@@ -51,6 +51,14 @@ import {
 import { type Context, Hono, type Next } from "hono";
 import z from "zod/v4";
 
+import {
+  countAssistantMessages,
+  recordTurnRecoveryAttempt,
+} from "~/lib/chat/streaming/continuity-telemetry";
+import {
+  recoveryTelemetryQueryFields,
+  validateRecoveryTelemetryQuery,
+} from "~/lib/chat/streaming/recovery-telemetry-query";
 import { requireCloudflareExecutionContext } from "~/lib/cloudflare/execution-context";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
@@ -100,6 +108,8 @@ import type { ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { readNumericField, readRecordObjectField } from "~/utils/recordFields";
 
+import { registerConversationOrganisationRoutes } from "./chat-organisation";
+
 const app = new Hono();
 
 const routeLogger = createRouteLogger("chat");
@@ -118,11 +128,17 @@ const sharedChatMessageListQuerySchema = z.object({
   after: z.string().optional(),
 });
 
-const chatCompletionDetailQuerySchema = z.object({
-  refresh_pending: z.enum(["true", "false"]).optional().default("false"),
-  message_limit: z.coerce.number().int().min(1).max(100).optional().default(100),
-});
+const getChatCompletionQuerySchema = z
+  .object({
+    refresh_pending: z.enum(["true", "false"]).optional().default("false"),
+    message_limit: z.coerce.number().int().min(1).max(100).optional().default(100),
+    ...recoveryTelemetryQueryFields,
+  })
+  .superRefine(validateRecoveryTelemetryQuery);
 
+const chatRunRecoveryQuerySchema = z
+  .object(recoveryTelemetryQueryFields)
+  .superRefine(validateRecoveryTelemetryQuery);
 const chatCompletionsListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional().default(25),
   page: z.coerce.number().int().min(1).optional().default(1),
@@ -393,7 +409,7 @@ addRoute(app, "get", "/completions/:completion_id", {
   description:
     "Get a stored chat completion. Only chat completions that have been created with the store parameter set to true will be returned.",
   paramSchema: getChatCompletionParamsSchema,
-  querySchema: chatCompletionDetailQuerySchema,
+  querySchema: getChatCompletionQuerySchema,
   responses: {
     200: {
       description: "Chat completion details",
@@ -410,16 +426,41 @@ addRoute(app, "get", "/completions/:completion_id", {
       const { completion_id } = context.req.valid("param" as never) as {
         completion_id: string;
       };
-      const { refresh_pending, message_limit } = context.req.valid("query" as never) as z.infer<
-        typeof chatCompletionDetailQuerySchema
+      const query = context.req.valid("query" as never) as z.infer<
+        typeof getChatCompletionQuerySchema
       >;
 
       const serviceContext = getServiceContext(context);
+      const refreshPending = query.refresh_pending === "true";
 
       const data = await handleGetChatCompletion(serviceContext, completion_id, {
-        refreshPending: refresh_pending === "true",
-        messageLimit: message_limit,
+        refreshPending,
+        messageLimit: query.message_limit,
       });
+
+      if (
+        query.recovery_platform &&
+        query.recovery_attempt !== undefined &&
+        query.recovery_elapsed_ms !== undefined &&
+        query.recovery_known_assistant_count !== undefined &&
+        query.recovery_final_attempt
+      ) {
+        recordTurnRecoveryAttempt(
+          {
+            env: serviceContext.env,
+            executionCtx: requireCloudflareExecutionContext(context.executionCtx),
+            traceId: completion_id,
+          },
+          {
+            platform: query.recovery_platform,
+            attempt: query.recovery_attempt,
+            elapsedMs: query.recovery_elapsed_ms,
+            knownAssistantCount: query.recovery_known_assistant_count,
+            finalAttempt: query.recovery_final_attempt === "true",
+          },
+          countAssistantMessages(data.messages),
+        );
+      }
 
       return ResponseFactory.success(context, data);
     })(raw),
@@ -431,6 +472,7 @@ addRoute(app, "get", "/runs/:run_id", {
   summary: "Get chat run status",
   description: "Returns the authoritative lifecycle state for an authorised stored chat run.",
   paramSchema: chatRunParamsSchema,
+  querySchema: chatRunRecoveryQuerySchema,
   responses: {
     200: {
       description: "Chat run status and stored messages",
@@ -438,7 +480,41 @@ addRoute(app, "get", "/runs/:run_id", {
     },
     404: { description: "Run not found", schema: errorResponseSchema },
   },
-  handler: ({ serviceContext, params }) => handleGetChatRun(serviceContext, params.run_id),
+  handler: ({ raw }) =>
+    (async (context: Context) => {
+      const { run_id } = context.req.valid("param" as never) as z.infer<typeof chatRunParamsSchema>;
+      const query = context.req.valid("query" as never) as z.infer<
+        typeof chatRunRecoveryQuerySchema
+      >;
+      const serviceContext = getServiceContext(context);
+      const data = await handleGetChatRun(serviceContext, run_id);
+
+      if (
+        query.recovery_platform &&
+        query.recovery_attempt !== undefined &&
+        query.recovery_elapsed_ms !== undefined &&
+        query.recovery_known_assistant_count !== undefined &&
+        query.recovery_final_attempt
+      ) {
+        recordTurnRecoveryAttempt(
+          {
+            env: serviceContext.env,
+            executionCtx: requireCloudflareExecutionContext(context.executionCtx),
+            traceId: run_id,
+          },
+          {
+            platform: query.recovery_platform,
+            attempt: query.recovery_attempt,
+            elapsedMs: query.recovery_elapsed_ms,
+            knownAssistantCount: query.recovery_known_assistant_count,
+            finalAttempt: query.recovery_final_attempt === "true",
+          },
+          countAssistantMessages(data.messages),
+        );
+      }
+
+      return ResponseFactory.success(context, data);
+    })(raw),
 });
 
 addRoute(app, "get", "/run-commands/:command_id", {
@@ -586,7 +662,10 @@ addRoute(app, "post", "/completions/:completion_id/cancel", {
       };
 
       const serviceContext = getServiceContext(context);
-      const response = await handleCancelChatCompletion(serviceContext, completion_id);
+      const response = await handleCancelChatCompletion(serviceContext, completion_id, {
+        executionCtx: requireCloudflareExecutionContext(context.executionCtx),
+        platform: context.req.header("X-Platform"),
+      });
 
       return ResponseFactory.success(context, response);
     })(raw),
@@ -1111,5 +1190,7 @@ addRoute(app, "get", "/shared/:share_id", {
       return ResponseFactory.success(context, result);
     })(raw),
 });
+
+registerConversationOrganisationRoutes(app);
 
 export default app;

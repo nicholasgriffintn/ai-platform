@@ -2,7 +2,7 @@ import type {
   ConversationGroup,
   ConversationGroupBy,
 } from "@ngriffin_uk/polychat-component-navigation";
-import type { ConversationType } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationLabel, ConversationType } from "@ngriffin_uk/polychat-schemas";
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ConversationSortBy } from "~/types";
@@ -20,6 +20,9 @@ export interface ConversationGroupSource {
   parentConversationId?: string | null;
   needsInput?: boolean;
   isStreaming?: boolean;
+  isPinned?: boolean;
+  isUnread?: boolean;
+  labels?: ConversationLabel[];
 }
 
 const DATE_GROUPS: readonly {
@@ -62,6 +65,9 @@ function toGroupItem(conversation: ConversationGroupSource) {
     parentConversationId: conversation.parentConversationId,
     needsInput: conversation.needsInput,
     isStreaming: conversation.isStreaming,
+    isPinned: conversation.isPinned,
+    isUnread: conversation.isUnread,
+    labels: conversation.labels,
   };
 }
 
@@ -70,6 +76,12 @@ function sortConversations(
   sortBy: ConversationSortBy,
 ): ConversationGroupSource[] {
   return sortCopy(conversations, (left, right) => {
+    const pinOrder = Number(Boolean(right.isPinned)) - Number(Boolean(left.isPinned));
+
+    if (pinOrder !== 0) {
+      return pinOrder;
+    }
+
     if (sortBy === "title") {
       return compareNaturalText(
         left.title || "New conversation",

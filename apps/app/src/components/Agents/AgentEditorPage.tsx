@@ -41,8 +41,8 @@ export function AgentEditorPage({
     return (
       <div className="mx-auto max-w-xl px-6 py-16">
         <Card className="p-8 text-center shadow-none">
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Agent unavailable</h1>
-          <p className="text-sm leading-6 text-zinc-500">
+          <h1 className="text-2xl font-bold text-foreground">Agent unavailable</h1>
+          <p className="text-sm leading-6 text-muted-foreground">
             This agent no longer exists, or it is not yours to open.
           </p>
           <BackLink href={backPath} label={backLabel} />
@@ -55,7 +55,7 @@ export function AgentEditorPage({
     <div className="mx-auto max-w-4xl px-6 py-10 md:px-10 md:py-14">
       <header className="mb-8 space-y-3">
         <BackLink href={backPath} label={backLabel} />
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-2xl font-bold text-foreground">
           {controller.agent ? controller.agent.name : "New agent"}
         </h1>
       </header>

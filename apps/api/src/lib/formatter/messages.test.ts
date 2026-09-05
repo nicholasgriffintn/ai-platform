@@ -99,3 +99,67 @@ describe("Mistral reasoning history formatting", () => {
     ]);
   });
 });
+
+describe("Anthropic history formatting", () => {
+  const formatForAnthropic = (messages: any[]) =>
+    MessageFormatter.formatMessages(messages, { provider: "anthropic" });
+
+  it("drops a tool-calling assistant turn that carried no text", () => {
+    expect(
+      formatForAnthropic([
+        { role: "user", content: "Run my briefing." },
+        {
+          role: "assistant",
+          content: "",
+          tool_calls: [
+            { id: "toolu_1", type: "function", function: { name: "discover", arguments: "{}" } },
+          ],
+        },
+      ]),
+    ).toEqual([
+      {
+        role: "user",
+        content: [{ type: "text", text: "Run my briefing.", cache_control: { type: "ephemeral" } }],
+      },
+    ]);
+  });
+
+  it("drops an assistant turn left empty once thinking blocks are stripped", () => {
+    expect(
+      formatForAnthropic([
+        { role: "user", content: "Run my briefing." },
+        {
+          role: "assistant",
+          content: [
+            { type: "thinking", thinking: "Working through it", signature: "sig" },
+            { type: "text", text: "" },
+          ],
+          tool_calls: [
+            { id: "toolu_1", type: "function", function: { name: "discover", arguments: "{}" } },
+          ],
+        },
+      ]),
+    ).toHaveLength(1);
+  });
+
+  it("keeps the text block an assistant turn actually produced", () => {
+    const [, assistant] = formatForAnthropic([
+      { role: "user", content: "Run my briefing." },
+      {
+        role: "assistant",
+        content: [
+          { type: "thinking", thinking: "Working through it", signature: "sig" },
+          { type: "text", text: "Here is the briefing." },
+        ],
+      },
+    ]);
+
+    expect(assistant.content).toEqual([
+      {
+        type: "text",
+        text: "Here is the briefing.",
+        cache_control: { type: "ephemeral" },
+      },
+    ]);
+  });
+});

@@ -152,71 +152,50 @@
     {
       "idx": 21,
       "version": "6",
-      "when": 1788574959906,
-      "tag": "0021_late_grandmaster",
+      "when": 1788577351124,
+      "tag": "0021_tearful_jetstream",
       "breakpoints": true
     },
     {
       "idx": 22,
       "version": "6",
-      "when": 1788577022702,
-      "tag": "0022_eager_cargill",
+      "when": 1788578456244,
+      "tag": "0022_silly_lenny_balinger",
       "breakpoints": true
     },
     {
       "idx": 23,
       "version": "6",
-      "when": 1788579827838,
-      "tag": "0023_glossy_stephen_strange",
+      "when": 1788580428615,
+      "tag": "0023_material_storm",
       "breakpoints": true
     },
     {
       "idx": 24,
       "version": "6",
-      "when": 1788606981229,
-      "tag": "0024_purple_morgan_stark",
+      "when": 1788609299693,
+      "tag": "0024_pale_mathemanic",
       "breakpoints": true
     },
     {
       "idx": 25,
       "version": "6",
-      "when": 1788609471647,
-      "tag": "0025_high_kronos",
+      "when": 1788609676949,
+      "tag": "0025_illegal_guardsmen",
       "breakpoints": true
     },
     {
       "idx": 26,
       "version": "6",
-      "when": 1788613105376,
-      "tag": "0026_melodic_black_panther",
+      "when": 1788615219308,
+      "tag": "0026_wild_rawhide_kid",
       "breakpoints": true
     },
     {
       "idx": 27,
       "version": "6",
-      "when": 1788614881253,
-      "tag": "0027_flippant_whistler",
-      "breakpoints": true
-    },
-    {
-      "idx": 28,
-      "version": "6",
-      "when": 1788616238347,
-      "tag": "0028_boring_gateway",
-      "breakpoints": true
-    },
-    {
-      "idx": 29,
-      "version": "6",
-      "when": 1788617719266,
-      "tag": "0029_dapper_alex_power",
-      "breakpoints": true
-    },
-    {
-      "idx": 30,
-      "version": "6",
-      "when": 1788619259248,
-      "tag": "0030_many_lizard",
+      "when": 1788628612152,
+      "tag": "0027_clean_nightcrawler",
       "breakpoints": true
     }
   ]

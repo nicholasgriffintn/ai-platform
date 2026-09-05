@@ -21,19 +21,15 @@ export interface ComposerBannerDescriptor {
 }
 
 const toneClasses: Record<ComposerBannerTone, string> = {
-  info: "border-zinc-200 bg-off-white text-zinc-700 dark:border-zinc-700 dark:bg-[#121212] dark:text-zinc-300",
-  warning:
-    "border-amber-300 bg-amber-100 text-amber-800 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-200",
-  critical:
-    "border-red-300 bg-red-100 text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-200",
+  info: "border-border bg-surface-elevated text-foreground",
+  warning: "border-attention/40 bg-attention/12 text-foreground",
+  critical: "border-failure/40 bg-failure/12 text-foreground",
 };
 
 const actionClasses: Record<ComposerBannerTone, string> = {
-  info: "border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700",
-  warning:
-    "border-amber-400 bg-amber-50 text-amber-900 hover:bg-white dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-100 dark:hover:bg-amber-950",
-  critical:
-    "border-red-400 bg-red-50 text-red-900 hover:bg-white dark:border-red-700 dark:bg-red-950/60 dark:text-red-100 dark:hover:bg-red-950",
+  info: "border-border bg-surface text-foreground hover:bg-selection",
+  warning: "border-attention/50 bg-surface text-foreground hover:bg-attention/15",
+  critical: "border-failure/50 bg-surface text-foreground hover:bg-failure/15",
 };
 
 export interface ComposerBannerCardProps {
@@ -70,7 +66,7 @@ export function ComposerBannerCard({ banner, onDismiss }: ComposerBannerCardProp
               aria-label={
                 banner.dismissal?.scope === "day" ? "Dismiss for today" : "Dismiss notification"
               }
-              className="text-current opacity-60 hover:bg-black/5 hover:text-current hover:opacity-100 dark:hover:bg-white/10"
+              className="hover:bg-selection text-current opacity-60 hover:text-current hover:opacity-100"
               onClick={onDismiss}
             >
               <X size={14} aria-hidden="true" />

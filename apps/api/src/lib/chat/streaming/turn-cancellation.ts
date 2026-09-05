@@ -45,6 +45,7 @@ async function isTurnCancellationRequested(
 
 export interface TurnStopSignal {
   shouldStop: () => boolean;
+  wasCancellationObserved: () => boolean;
   stop: () => void;
 }
 
@@ -108,6 +109,7 @@ export function watchTurnCancellation(params: {
 
   return {
     shouldStop: () => stopRequested,
+    wasCancellationObserved: () => stopRequested,
     stop: () => {
       stopped = true;
       clearTimeout(timer);

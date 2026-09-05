@@ -14,6 +14,7 @@ class ConversationManager: ObservableObject {
     @Published private(set) var currentTaskInteraction: ProjectTaskInteractionControl?
     @Published private(set) var currentTaskActivity: ProjectTaskActivityTimeline?
     @Published private(set) var currentConnectorApproval: ConnectorApprovalControl?
+    @Published private(set) var turnActivities: [String: TurnActivityProjection] = [:]
 
     private var apiClient: (any ConversationAPIClient)?
     private var modelsStore: ModelsStore?
@@ -41,6 +42,7 @@ class ConversationManager: ObservableObject {
         currentTaskInteraction = nil
         currentTaskActivity = nil
         currentConnectorApproval = nil
+        turnActivities = [:]
     }
 
     func loadConversations() async {
@@ -629,10 +631,19 @@ class ConversationManager: ObservableObject {
 
         let commandId = UUID().uuidString
         var observedRun = conversation.latestRun
+        let knownAssistantCount = conversation.messages.filter { $0.role == "assistant" }.count
         var toolActivity = StreamingToolActivity()
+        turnActivities[conversationId] = TurnActivityProjection()
+        defer { turnActivities.removeValue(forKey: conversationId) }
 
         let assistantMessageId = UUID().uuidString
-        let loadingMessage = ChatMessage(id: assistantMessageId, role: "assistant", content: "")
+        let loadingMessage = ChatMessage(
+            id: assistantMessageId,
+            role: "assistant",
+            content: "",
+            completionId: conversationId,
+            status: "in_progress"
+        )
         conversation.messages.append(loadingMessage)
         conversation.lastMessageAt = Date()
         conversation.messageCount = conversation.messages.count
@@ -766,6 +777,10 @@ class ConversationManager: ObservableObject {
                             beforeMessageId: assistantMessageId
                         )
                     }
+                case .turnActivity(let event):
+                    var projection = turnActivities[conversationId] ?? TurnActivityProjection()
+                    projection.apply(event)
+                    turnActivities[conversationId] = projection
                 case .usageLimits(let limits):
                     usageLimits = limits
                 case .conversationTitle(let title):
@@ -845,6 +860,7 @@ class ConversationManager: ObservableObject {
                 conversationId: conversationId,
                 commandId: commandId,
                 runId: observedRun?.id,
+                knownAssistantCount: knownAssistantCount,
                 assistantMessageId: finalMessageId,
                 fallbackMessageId: assistantMessageId,
                 modelId: conversation.modelId,
@@ -876,6 +892,7 @@ class ConversationManager: ObservableObject {
         conversationId: String,
         commandId: String,
         runId: String?,
+        knownAssistantCount: Int,
         assistantMessageId: String,
         fallbackMessageId: String,
         modelId: String?,
@@ -884,6 +901,10 @@ class ConversationManager: ObservableObject {
         guard StreamFailureClassifier.classify(error) == .transport, let apiClient else {
             return false
         }
+
+        var projection = turnActivities[conversationId] ?? TurnActivityProjection()
+        projection.markReconnecting()
+        turnActivities[conversationId] = projection
 
         updateAssistantMessage(
             conversationId: conversationId,
@@ -898,12 +919,13 @@ class ConversationManager: ObservableObject {
 
         let snapshot = await TurnRecovery.recoverDetachedTurn(
             runId: runId,
+            knownAssistantCount: knownAssistantCount,
             policy: turnRecoveryPolicy,
             resolveCommand: {
                 try await apiClient.fetchChatRunCommand(id: commandId).run.id
             },
-            fetchRun: { runId in
-                try await apiClient.fetchChatRun(id: runId)
+            fetchRun: { runId, recovery in
+                try await apiClient.fetchChatRun(id: runId, recovery: recovery)
             }
         )
 
@@ -916,6 +938,14 @@ class ConversationManager: ObservableObject {
             snapshot: snapshot,
             placeholderIds: [assistantMessageId, fallbackMessageId]
         )
+    }
+
+    func turnActivityLabel(for conversationId: String?) -> String? {
+        guard let conversationId else {
+            return nil
+        }
+
+        return turnActivities[conversationId]?.label
     }
 
     private func applyRunSnapshot(

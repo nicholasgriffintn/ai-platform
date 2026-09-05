@@ -8,6 +8,7 @@ import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useChatStore } from "~/state/stores/chatStore";
 
+import { useWorkData } from "./WorkDataContext";
 import { WorkSidebar } from "./WorkSidebar";
 
 export function WorkPageShell({
@@ -23,6 +24,8 @@ export function WorkPageShell({
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const isPro = useChatStore((state) => state.isPro);
+  const { projectQuery } = useWorkData();
+  const projectColour = projectQuery.data?.colour;
   const requiresAuthentication = Boolean(workspaceId || projectId);
   const isProjectConversation = Boolean(projectId) && pathname.endsWith("/chat");
   const content =
@@ -45,10 +48,15 @@ export function WorkPageShell({
   return (
     <PageShell
       title={isProjectConversation ? undefined : "Work"}
-      headerContent={isProjectConversation ? <ConversationProductHeader /> : undefined}
+      headerContent={
+        isProjectConversation ? (
+          <ConversationProductHeader projectColour={projectColour} />
+        ) : undefined
+      }
       sidebarContent={<WorkSidebar workspaceId={workspaceId} projectId={projectId} />}
       fullBleed
       displayNavBar={false}
+      projectColour={projectId ? projectColour : undefined}
     >
       <div className="flex h-full min-h-0 flex-col overflow-hidden">
         <div data-header-scroll-source className="min-h-0 flex-1 overflow-y-auto">

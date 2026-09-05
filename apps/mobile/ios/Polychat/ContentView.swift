@@ -6,12 +6,15 @@ struct ContentView: View {
     @EnvironmentObject var conversationManager: ConversationManager
     @EnvironmentObject var modelsStore: ModelsStore
     @EnvironmentObject var notificationManager: TaskNotificationManager
+    @EnvironmentObject var pushNotificationManager: PushNotificationManager
     @State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
     @State private var selectedConversationID: String?
     @State private var showingSettings = false
     @State private var showingRecipes = false
     @State private var showingInbox = false
     @State private var outputReviewTarget: OutputReviewTarget?
+    @State private var showingWork = false
+    @State private var selectedWorkTarget: MobileWorkTarget?
     @State private var conversationLoadTask: Task<Void, Never>?
 
     private var isLoadingSelectedConversation: Bool {
@@ -39,6 +42,9 @@ struct ContentView: View {
                         },
                         onShowInbox: {
                             showingInbox = true
+                        },
+                        onShowWork: {
+                            showingWork = true
                         }
                     )
                 } detail: {
@@ -65,12 +71,36 @@ struct ContentView: View {
                 .sheet(item: $outputReviewTarget) { target in
                     OutputRevisionReviewView(outputId: target.id)
                 }
+                .sheet(isPresented: $showingWork) {
+                    WorkView { conversationId in
+                        selectedConversationID = conversationId
+                    }
+                }
+                .sheet(item: $selectedWorkTarget) { target in
+                    if let runId = target.runId {
+                        WorkRunView(runId: runId)
+                    } else if let taskId = target.taskId {
+                        WorkTaskView(
+                            projectId: target.projectId,
+                            taskId: taskId,
+                            focusedInteractionId: target.interactionId
+                        ) { conversationId in
+                            selectedWorkTarget = nil
+                            selectedConversationID = conversationId
+                        }
+                    }
+                }
                 .task(id: authManager.isAuthenticated) {
                     if authManager.isAuthenticated {
                         await conversationManager.loadConversations()
                         await modelsStore.fetchModels()
                         await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
+                        await pushNotificationManager.enableForAuthenticatedUser()
+                        if let target = pushNotificationManager.targetToOpen {
+                            openWorkTarget(target)
+                        }
                     } else {
+                        await pushNotificationManager.unregisterForSignedOutUser()
                         conversationManager.reset()
                         selectedConversationID = nil
                         await notificationManager.reconcileAuthenticatedState(isAuthenticated: false)
@@ -85,6 +115,10 @@ struct ContentView: View {
                     if phase == .active {
                         Task { await notificationManager.refresh() }
                     }
+                }
+                .onChange(of: pushNotificationManager.targetToOpen) { _, target in
+                    guard let target else { return }
+                    openWorkTarget(target)
                 }
                 .onChange(of: selectedConversationID) { _, conversationID in
                     guard let conversationID else {
@@ -106,10 +140,12 @@ struct ContentView: View {
             }
         }
         .onOpenURL { url in
-            authManager.handleOpenURL(url)
-            notificationManager.handleDeepLink(url)
-            if let outputId = OutputReviewDeepLink.outputId(from: url) {
-                outputReviewTarget = OutputReviewTarget(id: outputId)
+            if !pushNotificationManager.handleOpenURL(url) {
+                authManager.handleOpenURL(url)
+                notificationManager.handleDeepLink(url)
+                if let outputId = OutputReviewDeepLink.outputId(from: url) {
+                    outputReviewTarget = OutputReviewTarget(id: outputId)
+                }
             }
         }
     }
@@ -131,6 +167,17 @@ struct ContentView: View {
                 conversationManager.error = "Failed to start recipe: \(error.localizedDescription)"
             }
         }
+    }
+
+    private func openWorkTarget(_ target: MobileWorkTarget) {
+        if target.runId != nil || target.taskId != nil {
+            selectedWorkTarget = target
+        } else if let conversationId = target.conversationId {
+            selectedConversationID = conversationId
+        } else {
+            showingWork = true
+        }
+        pushNotificationManager.targetToOpen = nil
     }
 }
 
@@ -197,4 +244,5 @@ private struct EmptyConversationView: View {
         .environmentObject(ConversationManager())
         .environmentObject(ModelsStore())
         .environmentObject(TaskNotificationManager())
+        .environmentObject(PushNotificationManager.shared)
 }

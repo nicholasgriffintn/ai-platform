@@ -21,3 +21,11 @@ export {
 } from "./conversations";
 export { normalizeSelectedModel, resolveRequestModel } from "./model-selection";
 export { mergeChatRequestOptions } from "./request-options";
+export {
+  applyTurnActivityEvent,
+  createTurnActivityProjection,
+  markTurnActivityReconnecting,
+  type TurnActivityPhase,
+  type TurnActivityProjection,
+  type TurnActivityTool,
+} from "./turn-activity";

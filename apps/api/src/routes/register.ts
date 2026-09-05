@@ -6,6 +6,7 @@ import activity from "./activity";
 import admin from "./admin";
 import agents from "./agents";
 import apps from "./apps";
+import { registerSandboxPreviewAuthorisationRoute } from "./apps/sandbox/preview-authorisation";
 import audio from "./audio";
 import auth from "./auth";
 import capabilities from "./capabilities";
@@ -33,6 +34,7 @@ import workspaces from "./workspaces/index";
 type ApiApp = Hono<{ Bindings: IEnv }>;
 
 export function registerApiRoutes(app: ApiApp): void {
+  registerSandboxPreviewAuthorisationRoute(app);
   app.route("/auth", auth);
   app.route("/activity", activity);
   app.route("/chat", chat);

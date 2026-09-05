@@ -327,13 +327,21 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var fetchChatRunSnapshotCallCount = 0
     var fetchChatRunEventsCallCount = 0
     var fetchChatRunCommandCallCount = 0
+    var recoveryAttempts: [TurnRecoveryAttemptContext] = []
 
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse {
         throw TestFailure.unexpectedCall
     }
 
-    func fetchConversation(id: String, refreshPending: Bool) async throws -> ConversationDetailResponse {
+    func fetchConversation(
+        id: String,
+        refreshPending: Bool,
+        recovery: TurnRecoveryAttemptContext?
+    ) async throws -> ConversationDetailResponse {
         fetchConversationCallCount += 1
+        if let recovery {
+            recoveryAttempts.append(recovery)
+        }
 
         guard let conversationDetail else {
             throw TestFailure.unexpectedCall
@@ -376,8 +384,14 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         }
     }
 
-    func fetchChatRun(id: String) async throws -> ChatRunRecoveryResponse {
+    func fetchChatRun(
+        id: String,
+        recovery: TurnRecoveryAttemptContext?
+    ) async throws -> ChatRunRecoveryResponse {
         fetchChatRunCallCount += 1
+        if let recovery {
+            recoveryAttempts.append(recovery)
+        }
         guard let chatRunSnapshot else {
             throw TestFailure.unexpectedCall
         }

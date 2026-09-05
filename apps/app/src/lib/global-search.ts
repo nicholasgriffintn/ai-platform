@@ -84,12 +84,12 @@ export function buildGlobalSearchResults({
           kind: "conversation" as const,
           title: conversation.title || "Untitled conversation",
           description: conversation.project
-            ? `${conversation.project.name} · ${conversation.project.workspaceName}`
-            : "Personal chat",
+            ? `${conversation.project.name} · ${conversation.project.workspaceName}${conversation.isUnread ? " · Unread" : ""}${conversation.snooze ? " · Snoozed" : ""}`
+            : `Personal chat${conversation.isUnread ? " · Unread" : ""}${conversation.snooze ? " · Snoozed" : ""}`,
           href: conversation.project
             ? `/work/${conversation.project.workspaceId}/projects/${conversation.project.id}/chat?completion_id=${encodeURIComponent(conversation.id)}`
             : getPersonalConversationPath(conversation.id),
-          searchText: `${conversation.title ?? ""} ${conversation.project?.name ?? ""} ${conversation.project?.workspaceName ?? ""}`,
+          searchText: `${conversation.title ?? ""} ${conversation.project?.name ?? ""} ${conversation.project?.workspaceName ?? ""} ${conversation.labels.map((label) => label.name).join(" ")}`,
           updatedAt: conversation.updatedAt,
         })),
         ...remote.projects.map((project) => ({

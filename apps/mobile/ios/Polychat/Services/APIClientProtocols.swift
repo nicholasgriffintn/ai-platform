@@ -21,7 +21,11 @@ extension RecipesAPIClient {
 
 protocol ConversationAPIClient {
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse
-    func fetchConversation(id: String, refreshPending: Bool) async throws -> ConversationDetailResponse
+    func fetchConversation(
+        id: String,
+        refreshPending: Bool,
+        recovery: TurnRecoveryAttemptContext?
+    ) async throws -> ConversationDetailResponse
     func fetchConversationMessages(id: String, before: String, limit: Int) async throws -> ConversationMessagePageResponse
     func streamChatCompletion(
         messages: [ChatMessage],
@@ -31,7 +35,10 @@ protocol ConversationAPIClient {
         settings: ChatSettings?,
         commandId: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
-    func fetchChatRun(id: String) async throws -> ChatRunRecoveryResponse
+    func fetchChatRun(
+        id: String,
+        recovery: TurnRecoveryAttemptContext?
+    ) async throws -> ChatRunRecoveryResponse
     func fetchChatRunSnapshot(id: String) async throws -> ChatRunSnapshotResponse
     func fetchChatRunEvents(id: String, after: Int, limit: Int) async throws -> ChatRunReplayResponse
     func fetchChatRunCommand(id: String) async throws -> ChatRunCommandReceipt
@@ -71,8 +78,6 @@ protocol TaskNotificationsAPIClient {
     func updateTaskNotificationPreferences(
         _ request: UpdateTaskNotificationPreferencesRequest
     ) async throws -> TaskNotificationSettings
-    func registerTaskNotifications(token: String) async throws -> TaskNotificationRegistration
-    func removeTaskNotificationRegistration() async throws -> SuccessResponse
     func updateTaskInbox(itemIds: [String], action: String) async throws -> TaskInboxMutationResponse
 }
 
@@ -85,6 +90,13 @@ protocol OutputRevisionsAPIClient {
     ) async throws -> RestoredOutputResponse
 }
 
+protocol WorkAPIClient {
+    func fetchWorkAttention(limit: Int) async throws -> WorkAttentionResponse
+    func fetchSandboxRun(id: String) async throws -> SandboxRunDetail
+    func fetchSandboxRunEvents(id: String) async throws -> SandboxRunEventsResponse
+    func fetchSandboxRunInstructions(id: String) async throws -> SandboxRunInstructionsResponse
+    func fetchSandboxRunControl(id: String) async throws -> SandboxRunControl
+}
 extension ConversationAPIClient {
     func updateConversation(id: String, title: String) async throws {
         try await updateConversation(
@@ -101,7 +113,14 @@ extension ConversationAPIClient {
     }
 
     func fetchConversation(id: String) async throws -> ConversationDetailResponse {
-        try await fetchConversation(id: id, refreshPending: true)
+        try await fetchConversation(id: id, refreshPending: true, recovery: nil)
+    }
+
+    func fetchConversation(
+        id: String,
+        refreshPending: Bool
+    ) async throws -> ConversationDetailResponse {
+        try await fetchConversation(id: id, refreshPending: refreshPending, recovery: nil)
     }
 
     func fetchConversationMessages(id: String, before: String) async throws -> ConversationMessagePageResponse {
@@ -115,6 +134,10 @@ extension ConversationAPIClient {
     func fetchChatRunEvents(id: String, after: Int) async throws -> ChatRunReplayResponse {
         try await fetchChatRunEvents(id: id, after: after, limit: 100)
     }
+
+    func fetchChatRun(id: String) async throws -> ChatRunRecoveryResponse {
+        try await fetchChatRun(id: id, recovery: nil)
+    }
 }
 
-extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient, TaskNotificationsAPIClient, OutputRevisionsAPIClient {}
+extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient, TaskNotificationsAPIClient, OutputRevisionsAPIClient, WorkAPIClient {}

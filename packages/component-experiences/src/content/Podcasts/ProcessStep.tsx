@@ -22,10 +22,8 @@ export function ProcessStep({
   isProcessing,
 }: ProcessStepProps) {
   return (
-    <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-6">
-      <h2 className="text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200">
-        Processing Options
-      </h2>
+    <div className="border-border bg-surface rounded-lg border p-6">
+      <h2 className="text-xl font-semibold mb-4 text-foreground">Processing Options</h2>
 
       <div className="space-y-4">
         <div className="flex items-start">
@@ -39,10 +37,10 @@ export function ProcessStep({
             />
           </div>
           <div className="ml-3">
-            <label htmlFor="transcribe" className="font-medium text-zinc-700 dark:text-zinc-300">
+            <label htmlFor="transcribe" className="font-medium text-foreground">
               Transcribe Podcast
             </label>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Generate a text transcript of your podcast
             </p>
 
@@ -85,18 +83,16 @@ export function ProcessStep({
             />
           </div>
           <div className="ml-3">
-            <label htmlFor="summarise" className="font-medium text-zinc-700 dark:text-zinc-300">
+            <label htmlFor="summarise" className="font-medium text-foreground">
               Generate Summary
             </label>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Create a brief summary of your podcast content
             </p>
 
             {formData.summarise && formData.transcribe && (
               <div className="mt-2 space-y-2">
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Speaker Names (for summary)
-                </p>
+                <p className="text-sm font-medium text-foreground">Speaker Names (for summary)</p>
                 {Array.from({ length: formData.numberOfSpeakers }).map((_, i) => {
                   const speakerId = String(i + 1);
 
@@ -104,7 +100,7 @@ export function ProcessStep({
                     <div key={speakerId} className="flex items-center">
                       <label
                         htmlFor={`speaker_${speakerId}`}
-                        className="text-sm text-zinc-500 dark:text-zinc-400 w-24"
+                        className="text-sm text-muted-foreground w-24"
                       >
                         Speaker {speakerId}:
                       </label>
@@ -134,10 +130,10 @@ export function ProcessStep({
             />
           </div>
           <div className="ml-3">
-            <label htmlFor="generateImage" className="font-medium text-zinc-700 dark:text-zinc-300">
+            <label htmlFor="generateImage" className="font-medium text-foreground">
               Generate Cover Image
             </label>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Create a cover image based on your podcast title and description
             </p>
           </div>

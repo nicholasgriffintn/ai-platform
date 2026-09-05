@@ -16,20 +16,20 @@ const features = [
 ] as const;
 
 const workspacePreviewItems = [
-  { label: "Discovery notes", detail: "3 people", colour: "bg-blue-500" },
-  { label: "Launch plan", detail: "In progress", colour: "bg-amber-400" },
-  { label: "Project brief", detail: "Updated today", colour: "bg-emerald-400" },
+  { label: "Discovery notes", detail: "3 people", colour: "bg-active-work" },
+  { label: "Launch plan", detail: "In progress", colour: "bg-attention" },
+  { label: "Project brief", detail: "Updated today", colour: "bg-success" },
 ] as const;
 
 export function WorkAccessEmptyState() {
   return (
     <section
       aria-labelledby="work-access-title"
-      className="relative isolate w-full overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-white px-6 py-8 shadow-2xl shadow-zinc-950/5 sm:px-10 sm:py-10 lg:px-12 lg:py-12 dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-black/20"
+      className="relative isolate w-full overflow-hidden rounded-[1.75rem] border border-border bg-surface px-6 py-8 shadow-2xl sm:px-10 sm:py-10 lg:px-12 lg:py-12"
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-active-work/20 blur-3xl" />
+        <div className="absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-creative/10 blur-3xl" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.12),transparent_34%)]" />
       </div>
 
@@ -37,11 +37,11 @@ export function WorkAccessEmptyState() {
         <div className="max-w-xl">
           <h2
             id="work-access-title"
-            className="max-w-lg text-3xl font-semibold tracking-[-0.03em] text-zinc-950 sm:text-4xl dark:text-white"
+            className="max-w-lg text-3xl font-semibold tracking-[-0.03em] text-foreground sm:text-4xl"
           >
             Unlock shared workspaces.
           </h2>
-          <p className="mt-4 max-w-xl text-base leading-7 text-zinc-600 dark:text-zinc-300">
+          <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
             Workspaces are included with Pro. Upgrade to organise projects, keep decisions in one
             place, and collaborate with your team.
           </p>
@@ -61,13 +61,13 @@ export function WorkAccessEmptyState() {
             </ButtonLink>
           </div>
 
-          <div className="mt-9 grid max-w-xl gap-3 border-t border-zinc-200 pt-5 sm:grid-cols-3 dark:border-zinc-800">
+          <div className="mt-9 grid max-w-xl gap-3 border-t border-border pt-5 sm:grid-cols-3">
             {features.map(({ icon: Icon, label }) => (
               <div
                 key={label}
-                className="flex items-center gap-2 text-xs font-medium text-zinc-600 dark:text-zinc-300"
+                className="flex items-center gap-2 text-xs font-medium text-muted-foreground"
               >
-                <Icon size={15} className="shrink-0 text-blue-500" />
+                <Icon size={15} className="shrink-0 text-active-work" />
                 {label}
               </div>
             ))}
@@ -78,22 +78,18 @@ export function WorkAccessEmptyState() {
           aria-hidden="true"
           className="relative mx-auto w-full max-w-[350px] lg:mx-0 lg:justify-self-end"
         >
-          <div className="absolute inset-x-8 top-1/2 h-40 -translate-y-1/2 rounded-full bg-blue-500/20 blur-3xl" />
-          <div className="relative rotate-2 rounded-[1.25rem] border border-zinc-200 bg-zinc-100/90 p-2 shadow-xl shadow-zinc-950/10 dark:border-zinc-700 dark:bg-zinc-900/90 dark:shadow-black/40">
-            <div className="rounded-[0.9rem] border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="absolute inset-x-8 top-1/2 h-40 -translate-y-1/2 rounded-full bg-active-work/20 blur-3xl" />
+          <div className="relative rotate-2 rounded-[1.25rem] border border-border bg-surface-elevated/90 p-2 shadow-xl">
+            <div className="rounded-[0.9rem] border border-border bg-surface p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-active-work text-canvas shadow-sm">
                   <BriefcaseBusiness size={17} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-zinc-950 dark:text-white">
-                    Product launch
-                  </p>
-                  <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
-                    Shared workspace
-                  </p>
+                  <p className="truncate text-sm font-semibold text-foreground">Product launch</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">Shared workspace</p>
                 </div>
-                <span className="rounded-full bg-blue-500/10 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-300">
+                <span className="rounded-full bg-active-work/10 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-active-work">
                   Pro
                 </span>
               </div>
@@ -102,33 +98,31 @@ export function WorkAccessEmptyState() {
                 {workspacePreviewItems.map(({ colour, detail, label }) => (
                   <div
                     key={label}
-                    className="flex items-center gap-3 rounded-lg border border-zinc-200/80 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900"
+                    className="flex items-center gap-3 rounded-lg border border-border/80 bg-surface-elevated px-3 py-2.5"
                   >
                     <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${colour}`} />
-                    <span className="min-w-0 flex-1 truncate text-xs font-medium text-zinc-700 dark:text-zinc-200">
+                    <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
                       {label}
                     </span>
-                    <span className="shrink-0 text-[10px] text-zinc-500 dark:text-zinc-400">
-                      {detail}
-                    </span>
+                    <span className="shrink-0 text-[10px] text-muted-foreground">{detail}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-5 flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-zinc-800">
+              <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
                 <div className="flex -space-x-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-amber-400 text-[10px] font-bold text-amber-950 dark:border-zinc-950">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-attention text-[10px] font-bold text-attention">
                     A
                   </span>
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-emerald-400 text-[10px] font-bold text-emerald-950 dark:border-zinc-950">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-success text-[10px] font-bold text-success">
                     M
                   </span>
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-blue-500 text-[10px] font-bold text-white dark:border-zinc-950">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-active-work text-[10px] font-bold text-background">
                     +
                   </span>
                 </div>
-                <span className="flex items-center gap-1.5 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-                  <Check size={13} className="text-emerald-500" />
+                <span className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+                  <Check size={13} className="text-success" />
                   In sync
                 </span>
               </div>

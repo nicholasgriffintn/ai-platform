@@ -34,7 +34,7 @@ export function ReplicatePredictionView({
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 dark:border-blue-400" />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-active-work" />
       </div>
     );
   }
@@ -52,7 +52,7 @@ export function ReplicatePredictionView({
     }
 
     return (
-      <div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
+      <div className="p-4 bg-attention/12 text-attention rounded-md border border-attention/45">
         <h3 className="font-semibold mb-2">Failed to load prediction</h3>
         <p>Please try again later.</p>
       </div>
@@ -60,14 +60,14 @@ export function ReplicatePredictionView({
   }
 
   const statusColors: Record<string, string> = {
-    queued: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
-    starting: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
-    processing: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
-    in_progress: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
-    succeeded: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
-    completed: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
-    failed: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
-    canceled: "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200",
+    queued: "bg-attention/12 text-attention",
+    starting: "bg-attention/12 text-attention",
+    processing: "bg-attention/12 text-attention",
+    in_progress: "bg-attention/12 text-attention",
+    succeeded: "bg-success/12 text-success",
+    completed: "bg-success/12 text-success",
+    failed: "bg-failure/12 text-failure",
+    canceled: "bg-selection text-muted-foreground",
   };
   const createdAt = prediction.created_at ?? prediction.createdAt;
   const prompt = getStringProperty(prediction.input, "prompt");
@@ -80,10 +80,10 @@ export function ReplicatePredictionView({
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 break-words">
+          <h1 className="text-3xl font-bold text-foreground mb-2 break-words">
             {prompt || prediction.modelName || prediction.modelId}
           </h1>
-          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="font-medium">{prediction.modelName || prediction.modelId}</span>
             {createdAt && (
               <>
@@ -95,8 +95,7 @@ export function ReplicatePredictionView({
         </div>
         <span
           className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap shrink-0 ${
-            statusColors[prediction.status ?? ""] ??
-            "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+            statusColors[prediction.status ?? ""] ?? "bg-selection text-muted-foreground"
           }`}
         >
           {prediction.status}
@@ -104,12 +103,12 @@ export function ReplicatePredictionView({
       </div>
 
       {prediction.status === "processing" && (
-        <Card className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+        <Card className="p-6 bg-attention/12 border-attention/45">
           <div className="flex items-center gap-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-800 dark:border-yellow-200" />
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-attention/45" />
             <div>
-              <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">Processing</h3>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300">
+              <h3 className="font-semibold text-attention">Processing</h3>
+              <p className="text-sm text-attention">
                 Your prediction is being processed. This page will automatically update when
                 complete.
               </p>
@@ -119,9 +118,9 @@ export function ReplicatePredictionView({
       )}
 
       {prediction.status === "failed" && prediction.error && (
-        <Card className="p-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
-          <h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">Prediction Failed</h3>
-          <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+        <Card className="p-6 bg-failure/12 border-failure/45">
+          <h3 className="font-semibold text-failure mb-2">Prediction Failed</h3>
+          <p role="alert" className="text-sm text-failure">
             {prediction.error}
           </p>
         </Card>
@@ -131,9 +130,7 @@ export function ReplicatePredictionView({
         {(prediction.status === "succeeded" || prediction.status === "completed") &&
           hasPredictionOutput && (
             <Card className="p-6 lg:col-span-2 order-2 lg:order-1">
-              <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-                Output
-              </h2>
+              <h2 className="text-xl font-semibold text-foreground mb-4">Output</h2>
               <OutputRenderer output={predictionOutput} />
             </Card>
           )}
@@ -141,16 +138,12 @@ export function ReplicatePredictionView({
         <Card
           className={`p-6 order-1 lg:order-2 ${(prediction.status === "succeeded" || prediction.status === "completed") && hasPredictionOutput ? "" : "lg:col-span-3"}`}
         >
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-            Input Parameters
-          </h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Input Parameters</h2>
           <div className="space-y-3">
             {Object.entries(prediction.input || {}).map(([key, value]) => (
               <div key={key} className="flex flex-col">
-                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                  {key}:
-                </span>
-                <span className="text-sm text-zinc-600 dark:text-zinc-400 break-all font-mono bg-zinc-100 dark:bg-zinc-900 p-2 rounded">
+                <span className="text-sm font-medium text-foreground mb-1">{key}:</span>
+                <span className="bg-surface-elevated text-muted-foreground rounded p-2 font-mono text-sm break-all">
                   {formatUnknownValue(value)}
                 </span>
               </div>
@@ -216,7 +209,7 @@ function OutputRenderer({ output }: OutputRendererProps) {
   }
 
   return (
-    <pre className="bg-zinc-100 dark:bg-zinc-900 p-4 rounded-lg overflow-auto text-sm font-mono">
+    <pre className="bg-surface-elevated overflow-auto rounded-lg p-4 font-mono text-sm">
       {formatUnknownValue(output)}
     </pre>
   );
@@ -234,7 +227,7 @@ function OutputItem({ item }: OutputItemProps) {
 
   if (!url) {
     return (
-      <pre className="bg-zinc-100 dark:bg-zinc-900 p-4 rounded-lg overflow-auto text-sm font-mono">
+      <pre className="bg-surface-elevated overflow-auto rounded-lg p-4 font-mono text-sm">
         {formatUnknownValue(item)}
       </pre>
     );
@@ -258,7 +251,7 @@ function OutputItem({ item }: OutputItemProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block text-blue-600 dark:text-blue-400 no-underline hover:underline text-sm"
+          className="mt-2 inline-block text-active-work no-underline hover:underline text-sm"
         >
           Open in new tab →
         </a>
@@ -277,7 +270,7 @@ function OutputItem({ item }: OutputItemProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block text-blue-600 dark:text-blue-400 no-underline hover:underline text-sm"
+          className="mt-2 inline-block text-active-work no-underline hover:underline text-sm"
         >
           Open in new tab →
         </a>
@@ -296,7 +289,7 @@ function OutputItem({ item }: OutputItemProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block text-blue-600 dark:text-blue-400 no-underline hover:underline text-sm"
+          className="mt-2 inline-block text-active-work no-underline hover:underline text-sm"
         >
           Open in new tab →
         </a>

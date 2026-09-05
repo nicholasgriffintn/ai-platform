@@ -403,6 +403,8 @@ struct ServiceStoreTests {
         let messages = try #require(manager.currentConversation?.messages)
         #expect(apiClient.fetchChatRunCommandCallCount >= 1)
         #expect(apiClient.fetchChatRunCallCount >= 1)
+        #expect(apiClient.recoveryAttempts.first?.attempt == 1)
+        #expect(apiClient.recoveryAttempts.first?.knownAssistantCount == 0)
         #expect(messages.map(\.role) == ["user", "tool", "assistant"])
         #expect(messages.last?.id == "assistant-1")
         #expect(messages.last?.textContent == "Recovered answer")

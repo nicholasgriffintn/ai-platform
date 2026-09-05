@@ -22,20 +22,20 @@ export function WorkspaceCardGrid({ workspaces }: { workspaces: WorkspaceCardIte
           href={workspace.href}
           className="group no-underline hover:!no-underline"
         >
-          <Card className="h-full p-6 transition-colors group-hover:border-zinc-400 dark:group-hover:border-zinc-600">
+          <Card className="h-full p-6 transition-colors group-hover:border-border-strong">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs capitalize text-zinc-500">{workspace.role}</p>
-                <h2 className="mt-1 text-lg font-semibold text-zinc-950 group-hover:underline dark:text-white">
+                <p className="text-xs capitalize text-muted-foreground">{workspace.role}</p>
+                <h2 className="mt-1 text-lg font-semibold text-foreground group-hover:underline">
                   {workspace.name}
                 </h2>
               </div>
-              <BriefcaseBusiness size={18} className="text-zinc-400" />
+              <BriefcaseBusiness size={18} className="text-muted-foreground" />
             </div>
-            <p className="min-h-10 text-sm leading-5 text-zinc-500">
+            <p className="min-h-10 text-sm leading-5 text-muted-foreground">
               {workspace.description || "No description"}
             </p>
-            <div className="flex gap-4 border-t border-zinc-100 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
+            <div className="flex gap-4 border-t border-border pt-4 text-xs text-muted-foreground">
               <span>{workspace.projectCount} projects</span>
               <span className="flex items-center gap-1">
                 <Users size={13} /> {workspace.memberCount}
@@ -66,18 +66,18 @@ export function ProjectCardGrid({ projects }: { projects: ProjectCardItem[] }) {
           href={project.href}
           className="group no-underline hover:!no-underline"
         >
-          <Card className="h-full p-6 transition-colors group-hover:border-zinc-400 dark:group-hover:border-zinc-600">
+          <Card className="h-full p-6 transition-colors group-hover:border-border-strong">
             <div className="flex items-start justify-between">
-              <FolderKanban size={20} className="text-zinc-500" />
-              <ArrowRight size={18} className="text-zinc-400" />
+              <FolderKanban size={20} className="text-muted-foreground" />
+              <ArrowRight size={18} className="text-muted-foreground" />
             </div>
-            <h3 className="mt-4 text-xl font-semibold text-zinc-950 group-hover:underline dark:text-white">
+            <h3 className="mt-4 text-xl font-semibold text-foreground group-hover:underline">
               {project.name}
             </h3>
-            <p className="min-h-12 text-sm leading-6 text-zinc-500">
+            <p className="min-h-12 text-sm leading-6 text-muted-foreground">
               {project.description || "No description"}
             </p>
-            <div className="flex gap-4 border-t border-zinc-100 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
+            <div className="flex gap-4 border-t border-border pt-4 text-xs text-muted-foreground">
               <span>
                 {project.conversationCount} conversation
                 {project.conversationCount !== 1 ? "s" : ""}

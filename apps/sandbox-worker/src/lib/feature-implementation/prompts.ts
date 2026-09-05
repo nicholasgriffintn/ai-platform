@@ -115,6 +115,7 @@ export function buildAgentSystemPrompt(params: {
     "- Must be a single command.",
     "- Do not include cd.",
     "- Do not chain commands with &&, ||, ;, pipes, or command substitution.",
+    "- Do not run git add, branch, checkout, commit, push or switch; delivery is handled after validation.",
     "- Prefer safe inspection/edit/build/test commands.",
     readOnlyCommands
       ? "- This run is read-only: use only inspection and test/lint/typecheck commands."

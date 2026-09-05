@@ -121,13 +121,11 @@ export function ArtificialAnalysisScorePanel({
   }
 
   return (
-    <div className="rounded-lg border border-zinc-200/70 p-2.5 dark:border-zinc-700/70">
+    <div className="rounded-lg border border-border/70 p-2.5">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="font-semibold text-zinc-500 dark:text-zinc-400">
-          {getPanelTitle(analysis)}
-        </span>
+        <span className="font-semibold text-muted-foreground">{getPanelTitle(analysis)}</span>
         {analysis.intelligenceIndexVersion ? (
-          <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
+          <span className="text-[11px] text-muted-foreground">
             v{analysis.intelligenceIndexVersion}
           </span>
         ) : null}
@@ -140,25 +138,23 @@ export function ArtificialAnalysisScorePanel({
             target="_blank"
             rel="noreferrer"
             aria-label={`${item.label} score ${formatScore(item.value)}`}
-            className="group rounded-md border border-zinc-200/70 bg-zinc-50/80 px-2 py-1.5 transition-colors hover:border-zinc-300 hover:bg-white dark:border-zinc-700/70 dark:bg-zinc-800/70 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
+            className="border-border bg-surface group rounded-md border px-2 py-1.5 transition-colors hover:border-border-strong hover:bg-selection/60"
           >
             <div className="mb-1 flex items-center justify-between gap-2">
-              <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
-                {item.label}
-              </span>
-              <span className="flex items-center gap-1 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <span className="text-[11px] font-medium text-muted-foreground">{item.label}</span>
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-foreground">
                 {formatScore(item.value)}
                 {typeof item.confidenceInterval95 === "number" ? (
-                  <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="text-muted-foreground">
                     ±{formatScore(item.confidenceInterval95)}
                   </span>
                 ) : null}
-                <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-200" />
+                <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-muted-foreground" />
               </span>
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+            <div className="bg-selection h-1.5 overflow-hidden rounded-full">
               <div
-                className="h-full rounded-full bg-emerald-500 dark:bg-emerald-400"
+                className="h-full rounded-full bg-success"
                 style={{ width: getScoreWidth(item) }}
               />
             </div>
@@ -169,7 +165,7 @@ export function ArtificialAnalysisScorePanel({
         href={ARTIFICIAL_ANALYSIS_SOURCE_URL}
         target="_blank"
         rel="noreferrer"
-        className="mt-2 inline-flex items-center gap-1 text-[11px] text-zinc-500 underline-offset-2 hover:text-zinc-800 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
+        className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
       >
         Data from {ARTIFICIAL_ANALYSIS_SOURCE_LABEL}
         <ExternalLink className="h-3 w-3" />

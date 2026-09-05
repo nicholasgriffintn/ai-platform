@@ -19,15 +19,13 @@ export function WorkspaceList({
         <li key={workspace.id}>
           <button
             type="button"
-            className="grid w-full cursor-pointer rounded-lg border border-zinc-200 bg-transparent p-3 text-left transition-colors hover:bg-zinc-50 aria-[current=page]:border-blue-500 dark:border-zinc-700 dark:hover:bg-zinc-800"
+            className="grid w-full cursor-pointer rounded-lg border border-border bg-transparent p-3 text-left transition-colors hover:bg-surface-elevated aria-[current=page]:border-active-work"
             aria-current={workspace.id === activeWorkspaceId ? "page" : undefined}
             onClick={() => onSelect(workspace)}
           >
-            <strong className="text-sm text-zinc-950 dark:text-zinc-100">{workspace.name}</strong>
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
-              {workspace.description}
-            </span>
-            <small className="text-xs capitalize text-zinc-500">{workspace.role}</small>
+            <strong className="text-sm text-foreground">{workspace.name}</strong>
+            <span className="text-sm text-muted-foreground">{workspace.description}</span>
+            <small className="text-xs capitalize text-muted-foreground">{workspace.role}</small>
           </button>
         </li>
       ))}

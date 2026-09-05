@@ -21,7 +21,7 @@ function context(overrides: Record<string, unknown> = {}): ServiceContext {
         upsertRegistration: vi.fn().mockResolvedValue({
           id: "registration-1",
           installationId: "installation-1",
-          platform: "ios",
+          platform: "web",
           state: "registered",
           failureCode: null,
           updatedAt: "2026-09-05T12:00:00.000Z",
@@ -110,9 +110,13 @@ describe("task attention inbox", () => {
   it("owns registration by the authenticated account and installation", async () => {
     const serviceContext = context();
     const input = {
-      platform: "ios" as const,
+      platform: "web" as const,
       installationId: "installation-1",
-      token: "a".repeat(64),
+      subscription: {
+        endpoint: "https://push.example.test/subscription",
+        expirationTime: null,
+        keys: { p256dh: "public-key", auth: "auth-secret" },
+      },
     };
 
     await expect(registerTaskNotification(serviceContext, input)).resolves.toMatchObject({

@@ -11,17 +11,20 @@ struct ConversationListView: View {
     let onShowSettings: () -> Void
     let onShowRecipes: () -> Void
     let onShowInbox: () -> Void
+    let onShowWork: () -> Void
 
     init(
         selectedConversationID: Binding<String?>,
         onShowSettings: @escaping () -> Void = {},
         onShowRecipes: @escaping () -> Void = {},
-        onShowInbox: @escaping () -> Void = {}
+        onShowInbox: @escaping () -> Void = {},
+        onShowWork: @escaping () -> Void = {}
     ) {
         self._selectedConversationID = selectedConversationID
         self.onShowSettings = onShowSettings
         self.onShowRecipes = onShowRecipes
         self.onShowInbox = onShowInbox
+        self.onShowWork = onShowWork
     }
 
     private var filteredConversations: [Conversation] {
@@ -136,6 +139,14 @@ struct ConversationListView: View {
                     Image(systemName: "square.and.pencil")
                 }
                 .accessibilityLabel("New Message")
+            }
+
+            ToolbarItem(placement: .secondaryAction) {
+                Button {
+                    onShowWork()
+                } label: {
+                    Label("Work", systemImage: "briefcase")
+                }
             }
 
             ToolbarItem(placement: .secondaryAction) {

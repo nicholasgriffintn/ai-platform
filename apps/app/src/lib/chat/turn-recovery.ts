@@ -17,7 +17,7 @@ export interface ChatRunSnapshot {
 export interface RecoverDetachedTurnParams {
   runId?: string;
   resolveCommand?: () => Promise<string | null>;
-  fetchRun: (runId: string) => Promise<ChatRunSnapshot>;
+  fetchRun: (runId: string, attempt: RecoveryAttemptContext) => Promise<ChatRunSnapshot>;
   signal?: AbortSignal;
   onSnapshot?: (snapshot: ChatRunSnapshot) => void | Promise<void>;
   onAttempt?: (attempt: number) => void;
@@ -25,6 +25,12 @@ export interface RecoverDetachedTurnParams {
   maxWaitMs?: number;
   wait?: (ms: number) => Promise<void>;
   now?: () => number;
+}
+
+export interface RecoveryAttemptContext {
+  attempt: number;
+  elapsedMs: number;
+  finalAttempt: boolean;
 }
 
 function defaultWait(ms: number): Promise<void> {
@@ -74,7 +80,8 @@ export async function recoverDetachedTurn({
   wait = defaultWait,
   now = Date.now,
 }: RecoverDetachedTurnParams): Promise<ChatRunSnapshot | null> {
-  const deadline = now() + maxWaitMs;
+  const startedAt = now();
+  const deadline = startedAt + maxWaitMs;
   let attempt = 0;
   let runId = initialRunId;
 
@@ -88,21 +95,36 @@ export async function recoverDetachedTurn({
       break;
     }
 
+    const elapsedMs = Math.max(0, now() - startedAt);
+    const finalAttempt = elapsedMs + pollIntervalMs >= maxWaitMs;
+
     try {
       runId ??= (await resolveCommand?.()) ?? undefined;
 
       if (!runId) {
+        if (finalAttempt) {
+          break;
+        }
+
         continue;
       }
 
-      const snapshot = await fetchRun(runId);
+      const snapshot = await fetchRun(runId, { attempt, elapsedMs, finalAttempt });
 
       await onSnapshot?.(snapshot);
 
       if (isRecoveryCheckpoint(snapshot.run)) {
         return snapshot;
       }
+
+      if (finalAttempt) {
+        break;
+      }
     } catch {
+      if (finalAttempt) {
+        break;
+      }
+
       continue;
     }
   }

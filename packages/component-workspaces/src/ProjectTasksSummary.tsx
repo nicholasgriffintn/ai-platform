@@ -11,18 +11,18 @@ const MAX_VISIBLE_TASKS = 4;
 
 function statusIcon(status: ProjectTaskStatus) {
   if (status === "running") {
-    return <Loader2 className="animate-spin text-blue-500" size={14} />;
+    return <Loader2 className="text-active-work animate-spin" size={14} />;
   }
 
   if (status === "blocked") {
-    return <AlertTriangle className="text-amber-500" size={14} />;
+    return <AlertTriangle className="text-attention" size={14} />;
   }
 
   if (status === "review") {
-    return <CheckCircle2 className="text-emerald-500" size={14} />;
+    return <CheckCircle2 className="text-success" size={14} />;
   }
 
-  return <ListChecks className="text-zinc-400" size={14} />;
+  return <ListChecks className="text-muted-foreground" size={14} />;
 }
 
 export interface ProjectTasksSummaryProps {
@@ -50,17 +50,17 @@ export function ProjectTasksSummary({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Tasks</h2>
+        <h2 className="text-foreground text-sm font-semibold">Tasks</h2>
         <TextLink href={boardHref} size="xs" trailingIcon={<ArrowRight size={13} />}>
           Open tasks
         </TextLink>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-zinc-500">Loading tasks…</p>
+        <p className="text-muted-foreground text-sm">Loading tasks…</p>
       ) : openTasks.length === 0 ? (
         <EmptyState
-          icon={<ListChecks className="text-zinc-400" size={24} />}
+          icon={<ListChecks className="text-muted-foreground" size={24} />}
           title="No tasks yet"
           message="Capture work this project needs done, then run one and the assistant works it in its own conversation."
           action={
@@ -78,24 +78,24 @@ export function ProjectTasksSummary({
               href={taskHref(task)}
               className="group block no-underline hover:!no-underline"
             >
-              <div className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-3 group-hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:group-hover:border-zinc-600">
+              <div className="border-border bg-surface group-hover:border-border-strong flex items-center gap-3 rounded-lg border p-3">
                 {statusIcon(task.status)}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-zinc-950 group-hover:underline dark:text-white">
+                  <p className="text-foreground truncate text-sm font-medium group-hover:underline">
                     {task.objective}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-muted-foreground text-xs">
                     {projectTaskStatusLabels[task.status]}
                     {task.blockedDetail ? ` · ${task.blockedDetail}` : ""}
                   </p>
                 </div>
-                <ArrowRight size={16} className="text-zinc-400" />
+                <ArrowRight size={16} className="text-muted-foreground" />
               </div>
             </Link>
           ))}
 
           <div className="flex items-center justify-between pt-1">
-            <p className="text-xs text-zinc-500">
+            <p className="text-muted-foreground text-xs">
               {openTasks.length} open
               {needsAttention.length > 0 ? ` · ${needsAttention.length} needing a look` : ""}
             </p>

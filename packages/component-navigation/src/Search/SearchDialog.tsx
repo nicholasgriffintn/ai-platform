@@ -134,7 +134,7 @@ export function SearchDialog({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} width="min(840px, 100%)">
       <DialogContent
-        className="gap-0 overflow-hidden border-zinc-200 bg-off-white p-0 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 [&_[data-slot=dialog-close]]:right-5 [&_[data-slot=dialog-close]]:top-6"
+        className="border-border bg-surface-elevated gap-0 overflow-hidden p-0 shadow-[var(--polychat-elevated-shadow)] [&_[data-slot=dialog-close]]:right-5 [&_[data-slot=dialog-close]]:top-6"
         onKeyDown={handleKeyDown}
       >
         <DialogTitle className="sr-only">Search Polychat</DialogTitle>
@@ -142,10 +142,10 @@ export function SearchDialog({
           Search conversations, projects, workspaces, and capabilities.
         </DialogDescription>
 
-        <div className="relative border-b border-zinc-200 px-5 py-4 pr-14 dark:border-zinc-700">
+        <div className="border-border relative border-b px-5 py-4 pr-14">
           <Search
             size={21}
-            className="pointer-events-none absolute left-6 top-1/2 -translate-y-1/2 text-zinc-400"
+            className="text-muted-foreground pointer-events-none absolute left-6 top-1/2 -translate-y-1/2"
           />
           <FormInput
             id="global-search-input"
@@ -164,8 +164,8 @@ export function SearchDialog({
             fullWidth
           />
           <div className="pointer-events-none absolute right-14 top-1/2 hidden -translate-y-1/2 items-center gap-2 sm:flex">
-            {isUpdating && <Loader2 size={15} className="animate-spin text-zinc-400" />}
-            <kbd className="rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[11px] text-zinc-500 shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
+            {isUpdating && <Loader2 size={15} className="text-active-work animate-spin" />}
+            <kbd className="border-border bg-surface text-muted-foreground rounded border px-1.5 py-0.5 text-[11px] shadow-sm">
               ⌘K
             </kbd>
           </div>
@@ -182,7 +182,7 @@ export function SearchDialog({
         >
           {results.length > 0 ? (
             <div className="space-y-1">
-              <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+              <p className="text-muted-foreground px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-[0.2em]">
                 {hasQuery ? "Best matches" : "Recent"}
               </p>
               {results.map((result, index) => (
@@ -196,8 +196,8 @@ export function SearchDialog({
                   className={cn(
                     "group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors",
                     focusedIndex === index
-                      ? "bg-zinc-900 text-white dark:bg-zinc-800 dark:text-zinc-50"
-                      : "text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800",
+                      ? "bg-selection text-foreground"
+                      : "text-foreground hover:bg-selection/60",
                   )}
                   onClick={() => selectResult(index, "click")}
                   onMouseEnter={() => setFocusedIndex(index)}
@@ -206,22 +206,15 @@ export function SearchDialog({
                     className={cn(
                       "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
                       focusedIndex === index
-                        ? "bg-white/12 text-white dark:bg-white/10 dark:text-zinc-50"
-                        : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
+                        ? "bg-active-work/15 text-active-work"
+                        : "bg-surface text-muted-foreground",
                     )}
                   >
                     {RESULT_ICONS[result.kind]}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{result.title}</span>
-                    <span
-                      className={cn(
-                        "block truncate text-xs",
-                        focusedIndex === index
-                          ? "text-zinc-300 dark:text-zinc-300"
-                          : "text-zinc-500 dark:text-zinc-400",
-                      )}
-                    >
+                    <span className={cn("block truncate text-xs", "text-muted-foreground")}>
                       {result.description}
                     </span>
                   </span>
@@ -232,24 +225,24 @@ export function SearchDialog({
               ))}
             </div>
           ) : isLoading ? (
-            <div className="flex items-center justify-center gap-2 py-16 text-sm text-zinc-500">
+            <div className="text-muted-foreground flex items-center justify-center gap-2 py-16 text-sm">
               <Loader2 size={17} className="animate-spin" /> Searching Polychat…
             </div>
           ) : hasError ? (
-            <p className="py-16 text-center text-sm text-zinc-500">
+            <p className="text-muted-foreground py-16 text-center text-sm">
               Search is temporarily unavailable. Try again in a moment.
             </p>
           ) : (
             <div className="py-16 text-center">
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-                No matches found
+              <p className="text-foreground text-sm font-medium">No matches found</p>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Try another name, topic, or capability.
               </p>
-              <p className="mt-1 text-xs text-zinc-500">Try another name, topic, or capability.</p>
             </div>
           )}
         </div>
 
-        <div className="hidden items-center justify-between border-t border-zinc-200 px-5 py-2.5 text-[11px] text-zinc-500 dark:text-zinc-400 dark:border-zinc-700 sm:flex">
+        <div className="border-border text-muted-foreground hidden items-center justify-between border-t px-5 py-2.5 text-[11px] sm:flex">
           <span>Search across your accessible Polychat</span>
           <span>↑↓ Navigate · ↵ Open · Esc Close</span>
         </div>

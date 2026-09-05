@@ -1,6 +1,9 @@
-import { HoverActions, ListItem } from "@ngriffin_uk/polychat-component-ui";
-import { CircleQuestionMark, CloudOff, Edit, GitBranch, LoaderCircle, Trash2 } from "lucide-react";
+import { ListItem } from "@ngriffin_uk/polychat-component-ui";
+import type { ConversationLabel } from "@ngriffin_uk/polychat-schemas";
+import { CircleQuestionMark, CloudOff, GitBranch, LoaderCircle, Mail, Pin } from "lucide-react";
 import type { Ref } from "react";
+
+import { ConversationListItemActions } from "./ConversationListItemActions";
 
 export interface ConversationSummary {
   id?: string;
@@ -9,6 +12,9 @@ export interface ConversationSummary {
   parentConversationId?: string | null;
   needsInput?: boolean;
   isStreaming?: boolean;
+  isPinned?: boolean;
+  isUnread?: boolean;
+  labels?: ConversationLabel[];
 }
 
 export interface ConversationGroup {
@@ -27,6 +33,7 @@ export interface ConversationListProps {
   onSelect: (conversationId: string | undefined) => void;
   onEditTitle: (conversationId: string, currentTitle: string) => void;
   onDelete: (conversationId: string) => void;
+  onOrganise?: (conversationId: string) => void;
 }
 
 export function ConversationList({
@@ -39,6 +46,7 @@ export function ConversationList({
   onSelect,
   onEditTitle,
   onDelete,
+  onOrganise,
 }: ConversationListProps) {
   return (
     <>
@@ -46,7 +54,7 @@ export function ConversationList({
         conversations.length === 0 ? null : (
           <div key={id}>
             {title && (
-              <h3 className="px-2 py-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 tracking-wider">
+              <h3 className="text-muted-foreground px-2 py-1 text-xs font-semibold tracking-wider">
                 {title}
               </h3>
             )}
@@ -61,19 +69,30 @@ export function ConversationList({
                       {conversation.isStreaming && (
                         <LoaderCircle
                           size={16}
-                          className="animate-spin text-blue-500"
+                          className="text-active-work animate-spin"
                           aria-label="Response in progress"
                         />
                       )}
                       {conversation.needsInput && (
                         <CircleQuestionMark
                           size={16}
-                          className="text-amber-500"
+                          className="text-attention"
                           aria-label="Action required"
                         />
                       )}
+                      {conversation.isPinned && (
+                        <Pin size={14} className="text-active-work" aria-label="Pinned" />
+                      )}
+                      {conversation.isUnread && (
+                        <Mail size={14} className="text-attention" aria-label="Unread" />
+                      )}
+                      {conversation.labels?.[0] && (
+                        <span className="bg-muted text-muted-foreground max-w-20 truncate rounded px-1.5 py-0.5 text-[10px]">
+                          {conversation.labels[0].name}
+                        </span>
+                      )}
                       {(conversation.isLocalOnly || localOnlyMode) && (
-                        <span className="text-xs text-blue-500 dark:text-blue-400 inline-flex items-center">
+                        <span className="text-active-work inline-flex items-center text-xs">
                           <CloudOff size={14} />
                           <span className="sr-only">Local only</span>
                         </span>
@@ -81,7 +100,7 @@ export function ConversationList({
                       {conversation.parentConversationId && (
                         <button
                           type="button"
-                          className="text-xs text-zinc-600 dark:text-zinc-400 inline-flex items-center cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100"
+                          className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center text-xs"
                           title="Go to original conversation"
                           aria-label="Go to original conversation"
                           onClick={(event) => {
@@ -98,29 +117,18 @@ export function ConversationList({
                     <span data-dynamic-copy="">{conversation.title || "New conversation"}</span>
                   }
                   onClick={() => onSelect(conversation.id)}
+                  actionsWidth="compact"
                   actions={
                     conversation.id ? (
-                      <HoverActions
-                        actions={[
-                          {
-                            id: "edit",
-                            icon: <Edit size={14} />,
-                            label: "Edit conversation title",
-                            onClick: (event) => {
-                              event.stopPropagation();
-                              onEditTitle(conversation.id || "", conversation.title || "");
-                            },
-                          },
-                          {
-                            id: "delete",
-                            icon: <Trash2 size={14} />,
-                            label: "Delete",
-                            onClick: (event) => {
-                              event.stopPropagation();
-                              onDelete(conversation.id || "");
-                            },
-                          },
-                        ]}
+                      <ConversationListItemActions
+                        conversationId={conversation.id}
+                        title={conversation.title || ""}
+                        canOrganise={
+                          Boolean(onOrganise) && !conversation.isLocalOnly && !localOnlyMode
+                        }
+                        onEditTitle={onEditTitle}
+                        onDelete={onDelete}
+                        onOrganise={onOrganise}
                       />
                     ) : undefined
                   }

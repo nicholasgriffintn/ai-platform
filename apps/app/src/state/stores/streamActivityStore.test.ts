@@ -41,4 +41,47 @@ describe("streamActivityStore", () => {
       status: "action-required",
     });
   });
+
+  it("projects canonical activity independently for each conversation", () => {
+    const store = useStreamActivityStore.getState();
+
+    store.beginStreamActivity("conversation-1");
+    store.beginStreamActivity("conversation-2");
+    store.recordTurnActivity("conversation-1", {
+      type: "turn_activity",
+      kind: "reasoning_started",
+      step: 1,
+    });
+
+    expect(useStreamActivityStore.getState().streams["conversation-1"]).toMatchObject({
+      loadingMessage: "Reasoning...",
+      turnActivity: { phase: "reasoning", step: 1 },
+    });
+    expect(useStreamActivityStore.getState().streams["conversation-2"]).toMatchObject({
+      loadingMessage: "Generating response...",
+      turnActivity: null,
+    });
+  });
+
+  it("preserves semantic context while detached recovery reconnects", () => {
+    const store = useStreamActivityStore.getState();
+
+    store.beginStreamActivity("conversation-1");
+    store.recordTurnActivity("conversation-1", {
+      type: "turn_activity",
+      kind: "tool_execution_started",
+      step: 1,
+      toolCallId: "call-weather",
+      toolName: "weather",
+    });
+    store.markStreamActivityReconnecting("conversation-1");
+
+    expect(useStreamActivityStore.getState().streams["conversation-1"]).toMatchObject({
+      loadingMessage: "Reconnecting to the response...",
+      turnActivity: {
+        phase: "reconnecting",
+        tools: [{ id: "call-weather", name: "weather", status: "running" }],
+      },
+    });
+  });
 });

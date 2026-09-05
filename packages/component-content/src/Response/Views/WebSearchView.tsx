@@ -20,7 +20,7 @@ export function WebSearchView({
   const [showAllSources, setShowAllSources] = useState(false);
 
   if (!data) {
-    return <p className="text-red-500">No search data available</p>;
+    return <p className="text-failure">No search data available</p>;
   }
 
   const { answer, sources, similarQuestions, completion_id, provider, providerWarning } = data;
@@ -52,7 +52,7 @@ export function WebSearchView({
     <div className="max-w-full overflow-x-hidden">
       <div className={embedded ? "mb-4" : "mb-6"}>
         {sources && sources.length > 0 && (
-          <div className="flex items-center text-sm mb-2 text-zinc-600 dark:text-zinc-300">
+          <div className="flex items-center text-sm mb-2 text-muted-foreground">
             <ArrowRight className="h-5 w-5 mr-2" aria-hidden="true" />
             <span>{sources.length} sources</span>
           </div>
@@ -66,16 +66,16 @@ export function WebSearchView({
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group no-underline hover:!no-underline flex-1 min-w-[150px] rounded-md border border-zinc-200 p-3 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60"
+                className="group no-underline hover:!no-underline flex-1 min-w-[150px] rounded-md border border-border p-3 transition-colors hover:bg-surface-elevated"
                 aria-label={`View source: ${source.title}`}
               >
                 <div className="flex items-center mb-2">
                   <Favicon url={source.url} />
-                  <div className="text-xs text-zinc-600 dark:text-zinc-300 truncate">
+                  <div className="text-xs text-muted-foreground truncate">
                     {getDomain(source.url)}
                   </div>
                 </div>
-                <p className="text-sm font-medium line-clamp-2 text-zinc-600 group-hover:underline dark:text-zinc-300">
+                <p className="text-sm font-medium line-clamp-2 text-muted-foreground group-hover:underline">
                   {source.title}
                 </p>
               </a>
@@ -85,13 +85,11 @@ export function WebSearchView({
               <button
                 type="button"
                 onClick={handleToggleSources}
-                className="flex min-w-[100px] cursor-pointer items-center justify-center rounded-md border border-zinc-200 p-3 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60"
+                className="flex min-w-[100px] cursor-pointer items-center justify-center rounded-md border border-border p-3 transition-colors hover:bg-surface-elevated"
                 aria-expanded={showAllSources}
                 aria-controls="source-list"
               >
-                <span className="text-zinc-600 dark:text-zinc-300">
-                  +{sources.length - 3} sources
-                </span>
+                <span className="text-muted-foreground">+{sources.length - 3} sources</span>
               </button>
             )}
 
@@ -99,11 +97,11 @@ export function WebSearchView({
               <button
                 type="button"
                 onClick={handleToggleSources}
-                className="flex min-w-[100px] cursor-pointer items-center justify-center rounded-md border border-zinc-200 p-3 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60"
+                className="flex min-w-[100px] cursor-pointer items-center justify-center rounded-md border border-border p-3 transition-colors hover:bg-surface-elevated"
                 aria-expanded={showAllSources}
                 aria-controls="source-list"
               >
-                <span className="text-zinc-600 dark:text-zinc-300">Show less</span>
+                <span className="text-muted-foreground">Show less</span>
               </button>
             )}
           </div>
@@ -111,7 +109,7 @@ export function WebSearchView({
 
         {providerLabel && (
           <div className="mt-2">
-            <div className="inline-flex items-center gap-2 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full w-fit">
+            <div className="inline-flex items-center gap-2 bg-active-work/10 text-active-work px-3 py-1 rounded-full w-fit">
               <span className="font-medium tracking-wide uppercase text-xs">Provider</span>
               <span className="font-medium text-xs">{providerLabel}</span>
             </div>
@@ -119,8 +117,8 @@ export function WebSearchView({
         )}
       </div>
 
-      <div className={`text-zinc-600 dark:text-zinc-300 ${embedded ? "mb-4" : "mb-6"}`}>
-        <div className="prose dark:prose-invert text-zinc-600 dark:text-zinc-300">
+      <div className={`text-muted-foreground ${embedded ? "mb-4" : "mb-6"}`}>
+        <div className="prose dark:prose-invert text-muted-foreground">
           <MemoizedMarkdown>{answer}</MemoizedMarkdown>
         </div>
       </div>
@@ -129,7 +127,7 @@ export function WebSearchView({
         <div className={embedded ? "mt-4" : "mt-8"} aria-labelledby="similar-questions-heading">
           <h2
             id="similar-questions-heading"
-            className={`mb-3 font-medium text-zinc-600 dark:text-zinc-300 ${embedded ? "text-sm" : "text-xl"}`}
+            className={`mb-3 font-medium text-muted-foreground ${embedded ? "text-sm" : "text-xl"}`}
           >
             People also ask
           </h2>
@@ -137,12 +135,12 @@ export function WebSearchView({
             {similarQuestions.map((question: string, index: number) => (
               <li
                 key={`question-${question}`}
-                className={`border-t border-zinc-200 py-4 dark:border-zinc-700 ${
+                className={`border-t border-border py-4 ${
                   index === similarQuestions.length - 1 ? "border-b" : ""
                 }`}
               >
                 <div className="flex justify-between items-center">
-                  <p className="text-zinc-600 dark:text-zinc-300">{question}</p>
+                  <p className="text-muted-foreground">{question}</p>
                   {embedded && onToolInteraction && (
                     <Button
                       type="button"
@@ -179,7 +177,7 @@ export function WebSearchView({
       )}
 
       {providerWarning && (
-        <div className="mt-6 rounded-md border border-yellow-400/60 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 px-4 py-3">
+        <div className="mt-6 rounded-md border border-attention/60 bg-attention/12 text-attention px-4 py-3">
           {providerWarning}
         </div>
       )}

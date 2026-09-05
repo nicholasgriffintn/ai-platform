@@ -71,6 +71,7 @@ export const handleToolCalls = async (
     onToolResult?: (message: Message) => Promise<void> | void;
     recoverUnknownToolCalls?: boolean;
     callLedger?: ToolCallLedger;
+    onToolExecutionStart?: (tool: { id: string; name: string }) => Promise<void> | void;
   },
 ): Promise<Message[]> => {
   const functionResults: Message[] = [];
@@ -252,6 +253,8 @@ export const handleToolCalls = async (
       }
 
       if (functionName === "memory") {
+        await options?.onToolExecutionStart?.({ id: toolCall.id, name: functionName });
+
         const rawArgs = toolCall.function?.arguments || toolCall.arguments || "{}";
         const memoryArgs = safeParseJson(rawArgs);
 
@@ -291,6 +294,9 @@ export const handleToolCalls = async (
       }
 
       const rawArgs = toolCall.function?.arguments || toolCall.arguments;
+
+      await options?.onToolExecutionStart?.({ id: toolCall.id, name: functionName });
+
       const functionArgs = safeParseJson(rawArgs);
 
       if (!functionArgs) {

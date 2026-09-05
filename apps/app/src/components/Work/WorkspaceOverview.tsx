@@ -44,7 +44,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 
   if (error || !workspace) {
     return (
-      <div role="alert" className="p-10 text-sm text-red-700">
+      <div role="alert" className="p-10 text-sm text-failure">
         {error?.message ?? "Workspace not found"}
       </div>
     );
@@ -69,7 +69,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
             ) : undefined
           }
         />
-        <p className="mb-6 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
           {workspace.description || `Your role: ${workspace.role}`}
         </p>
 
@@ -86,9 +86,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 
         {workspaceAttention.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-              Waiting on you
-            </h2>
+            <h2 className="text-foreground mb-3 text-sm font-semibold">Waiting on you</h2>
             <TaskAttentionList
               items={workspaceAttention}
               itemHref={(item) =>
@@ -123,7 +121,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
         }}
       >
         {deleteWorkspace.error && (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="text-sm text-failure">
             {deleteWorkspace.error.message}
           </p>
         )}

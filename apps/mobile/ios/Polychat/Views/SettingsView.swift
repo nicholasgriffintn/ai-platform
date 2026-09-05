@@ -5,6 +5,7 @@ struct SettingsView: View {
     @EnvironmentObject var authManager: AuthenticationManager
     @EnvironmentObject var modelsStore: ModelsStore
     @EnvironmentObject var notificationManager: TaskNotificationManager
+    @EnvironmentObject var pushNotificationManager: PushNotificationManager
     @State private var showingModelSelector = false
     @State private var autoTitleGeneration = true
     @State private var showingPrivacyPolicy = false
@@ -82,7 +83,7 @@ struct SettingsView: View {
 
             Section(header: Text("Task Notifications")) {
                 Toggle("Push notifications", isOn: notificationToggle)
-                    .disabled(notificationManager.registrationState == .registering)
+                    .disabled(pushNotificationManager.registrationState == .registering)
 
                 Text(notificationStatus)
                     .font(.caption)
@@ -108,10 +109,7 @@ struct SettingsView: View {
                         }
                     }
                     Button("Log Out", role: .destructive) {
-                        Task {
-                            await notificationManager.removeRegistrationForLogout()
-                            authManager.logout()
-                        }
+                        authManager.logout()
                     }
                 } else {
                     Button("Refresh Login") {
@@ -198,14 +196,18 @@ struct SettingsView: View {
         Binding(
             get: {
                 notificationManager.settings?.preferences.enabled == true &&
-                notificationManager.registrationState == .registered
+                pushNotificationManager.registrationState == .registered
             },
             set: { enabled in
                 Task {
                     if enabled {
                         await notificationManager.enable()
+                        if notificationManager.settings?.preferences.enabled == true {
+                            await pushNotificationManager.enableForAuthenticatedUser()
+                        }
                     } else {
                         await notificationManager.disable()
+                        await pushNotificationManager.disableForAuthenticatedUser()
                     }
                 }
             }
@@ -213,7 +215,11 @@ struct SettingsView: View {
     }
 
     private var notificationStatus: String {
-        switch notificationManager.permission {
+        if notificationManager.settings?.preferences.enabled != true {
+            return "Task notifications are disabled for this account."
+        }
+
+        switch pushNotificationManager.permission {
         case .denied:
             return "iOS permission is blocked. Allow notifications in Settings, then retry."
         case .notDetermined:
@@ -222,7 +228,7 @@ struct SettingsView: View {
             break
         }
 
-        switch notificationManager.registrationState {
+        switch pushNotificationManager.registrationState {
         case .registered:
             return "iOS permission and server registration are active."
         case .awaitingDeviceToken, .registering:
@@ -230,7 +236,7 @@ struct SettingsView: View {
         case .failed(let message):
             return "iOS permission and server registration differ: \(message)"
         case .disabled:
-            return "Task notifications are disabled for this account."
+            return "This device is not registered for notifications."
         case .idle:
             return "Enable notifications to register this device."
         }
@@ -247,7 +253,7 @@ struct SettingsView: View {
                 }
             )
         )
-        .disabled(notificationManager.registrationState != .registered)
+        .disabled(pushNotificationManager.registrationState != .registered)
     }
 
     private func notificationCategoryEnabled(_ category: String) -> Bool {
@@ -288,4 +294,5 @@ struct SettingsView: View {
         .environmentObject(AuthenticationManager())
         .environmentObject(modelsStore)
         .environmentObject(TaskNotificationManager())
+        .environmentObject(PushNotificationManager.shared)
 }

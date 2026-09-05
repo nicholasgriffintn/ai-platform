@@ -1,7 +1,10 @@
-import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
+import {
+  SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  SANDBOX_RUNS_CAPABILITY_ID,
+} from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SANDBOX_RUN_ITEM_TYPE, SANDBOX_RUNS_APP_ID } from "~/constants/app";
+import { SANDBOX_RUN_ITEM_TYPE } from "~/constants/app";
 import { resolveSandboxModel } from "~/services/sandbox/worker";
 
 import { executeSandboxRunStream } from "../execute-stream";
@@ -38,14 +41,23 @@ vi.mock("~/services/tasks/TaskService", () => ({
 const mockCreateActivity = vi.fn();
 const mockUpdateActivity = vi.fn();
 const mockListPersonalActivities = vi.fn();
+const mockGetProject = vi.fn();
+const mockGetWorkspace = vi.fn();
+const mockGetMembership = vi.fn();
 
 const mockContext = {
   env: {},
+  requireUser: () => ({ id: 42, plan_id: "pro" }),
   repositories: {
     activities: {
       createActivity: mockCreateActivity,
       updateActivity: mockUpdateActivity,
       listRecentUserActivities: mockListPersonalActivities,
+    },
+    workspaces: {
+      getProject: mockGetProject,
+      getWorkspace: mockGetWorkspace,
+      getMembership: mockGetMembership,
     },
   },
 } as any;
@@ -58,6 +70,16 @@ describe("executeSandboxRunStream", () => {
     mockCreateActivity.mockResolvedValue({ id: "record-1" });
     mockUpdateActivity.mockResolvedValue(undefined);
     mockListPersonalActivities.mockResolvedValue([]);
+    mockGetProject.mockResolvedValue({
+      id: "project-1",
+      workspace_id: "workspace-1",
+      coding_enabled: 1,
+      coding_repository: "owner/repo",
+      coding_installation_id: 99,
+      coding_cache_generation: 0,
+    });
+    mockGetWorkspace.mockResolvedValue({ id: "workspace-1" });
+    mockGetMembership.mockResolvedValue({ role: "member" });
     mockEnqueueTask.mockResolvedValue("task-123");
     mockContext.env = { TASK_QUEUE: { send: vi.fn() } };
     vi.mocked(resolveSandboxModel).mockResolvedValue("mistral-large");
@@ -119,7 +141,7 @@ describe("executeSandboxRunStream", () => {
         createdByUserId: 42,
         projectId: "project-1",
         conversationId: "conversation-1",
-        capabilityId: SANDBOX_RUNS_APP_ID,
+        capabilityId: SANDBOX_RUNS_CAPABILITY_ID,
         groupId: "run-123",
         kind: SANDBOX_RUN_ITEM_TYPE,
         status: "queued",

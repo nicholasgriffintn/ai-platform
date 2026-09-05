@@ -43,10 +43,10 @@ export const AppCard = ({
         !isWrappedInGroup && "group",
         isDisabled
           ? "cursor-not-allowed opacity-60"
-          : "cursor-pointer hover:shadow-lg hover:border-zinc-300 dark:hover:border-zinc-600",
+          : "cursor-pointer hover:shadow-lg hover:border-border-strong",
         "w-full h-full",
         "transition-all duration-200",
-        "focus:outline-none focus:ring-2 focus:ring-blue-500/40",
+        "focus:outline-none focus:ring-2 focus:ring-active-work/40",
         "bg-transparent",
         "bg-gradient-to-br",
         getCardGradient(app.theme),
@@ -55,16 +55,13 @@ export const AppCard = ({
       {isDisabled && (
         <div className="absolute top-3 right-3 z-10">
           <div
-            className={cn(
-              "p-1.5 rounded-full",
-              isDisabled ? "bg-zinc-400 dark:bg-zinc-600" : "bg-amber-500 dark:bg-amber-600",
-            )}
+            className={cn("p-1.5 rounded-full", isDisabled ? "bg-selection" : "bg-attention")}
             title={requiresSignIn ? "Sign in required" : "Premium Feature"}
           >
             {requiresSignIn ? (
-              <Lock className="w-4 h-4 text-white" />
+              <Lock className="w-4 h-4 text-foreground" />
             ) : (
-              <Crown className="w-4 h-4 text-white" />
+              <Crown className="w-4 h-4 text-foreground" />
             )}
           </div>
         </div>
@@ -81,7 +78,7 @@ export const AppCard = ({
             {getIcon(app.icon, app.theme)}
           </div>
           <div className="flex flex-col items-start flex-grow min-w-0">
-            <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 group-hover:underline">
+            <h3 className="font-semibold text-lg text-foreground group-hover:underline">
               {app.name}
             </h3>
             {app.category && (
@@ -97,7 +94,7 @@ export const AppCard = ({
           </div>
         </div>
 
-        <p className="text-zinc-600 dark:text-zinc-300 text-sm mb-4 flex-grow text-left overflow-x-hidden no-underline">
+        <p className="text-muted-foreground text-sm mb-4 flex-grow text-left overflow-x-hidden no-underline">
           {app.description}
         </p>
       </div>

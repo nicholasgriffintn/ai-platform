@@ -117,17 +117,14 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
 
   return (
     <div>
-      <label
-        htmlFor={fieldId}
-        className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
-      >
+      <label htmlFor={fieldId} className="block text-sm font-medium text-foreground mb-2">
         {field.name}
-        {field.required && <span className="text-red-500 ml-1">*</span>}
+        {field.required && <span className="text-failure ml-1">*</span>}
         {field.required && <span className="sr-only"> (required)</span>}
       </label>
 
       {field.description && (
-        <p id={descriptionId} className="text-sm text-zinc-500 dark:text-zinc-400 mb-2">
+        <p id={descriptionId} className="text-sm text-muted-foreground mb-2">
           {field.description}
         </p>
       )}
@@ -140,7 +137,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border-border bg-surface text-foreground focus:ring-ring w-full rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
         >
           <option value="">Select...</option>
           {field.enum!.map((option) => (
@@ -158,7 +155,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-zinc-300 rounded"
+          className="h-4 w-4 text-active-work focus:ring-active-work border-border-strong rounded"
         />
       ) : fieldTypes.includes("integer") ? (
         <input
@@ -170,7 +167,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border-border bg-surface text-foreground focus:ring-ring w-full rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
         />
       ) : fieldTypes.includes("number") ? (
         <input
@@ -182,7 +179,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border-border bg-surface text-foreground focus:ring-ring w-full rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
         />
       ) : isFileField ? (
         <div className="space-y-2">
@@ -195,9 +192,9 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
             required={field.required}
             aria-describedby={describedBy}
             aria-invalid={Boolean(error)}
-            className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border-border bg-surface text-foreground focus:ring-ring w-full rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
           />
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-muted-foreground">
             Provide a publicly accessible URL to the file
           </p>
         </div>
@@ -211,7 +208,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border-border bg-surface text-foreground focus:ring-ring w-full rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
         />
       ) : (
         <input
@@ -222,20 +219,18 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border-border bg-surface text-foreground focus:ring-ring w-full rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
         />
       )}
 
       {error && (
-        <p id={errorId} className="mt-1 text-sm text-red-600 dark:text-red-400">
+        <p id={errorId} className="mt-1 text-sm text-failure">
           {error}
         </p>
       )}
 
       {field.default !== undefined && (value === undefined || value === null || value === "") && (
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          Default: {String(field.default)}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">Default: {String(field.default)}</p>
       )}
     </div>
   );

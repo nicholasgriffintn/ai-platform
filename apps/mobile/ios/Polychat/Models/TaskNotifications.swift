@@ -47,16 +47,6 @@ struct TaskNotificationSettings: Codable, Equatable {
     let webPushPublicKey: String?
 }
 
-struct RegisterIOSNotificationRequest: Encodable {
-    let installationId: String
-    let platform = "ios"
-    let token: String
-}
-
-struct TaskNotificationRegistrationResponse: Decodable {
-    let registration: TaskNotificationRegistration
-}
-
 struct UpdateTaskNotificationPreferencesRequest: Encodable {
     let enabled: Bool?
     let decisions: Bool?
@@ -85,18 +75,4 @@ struct TaskInboxReceiptRequest: Encodable {
 
 struct TaskInboxMutationResponse: Decodable {
     let updated: Int
-}
-
-enum NotificationInstallation {
-    private static let key = "polychat-notification-installation"
-
-    static var id: String {
-        if let current = UserDefaults.standard.string(forKey: key) {
-            return current
-        }
-
-        let value = UUID().uuidString.lowercased()
-        UserDefaults.standard.set(value, forKey: key)
-        return value
-    }
 }

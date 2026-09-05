@@ -16,7 +16,7 @@ export const ConversationFooterInfo = ({
 }: ConversationFooterInfoProps) => {
   return (
     <div
-      className={`shrink-0 px-4 py-2 text-center text-sm text-zinc-600 dark:text-zinc-400 ${
+      className={`shrink-0 px-4 py-2 text-center text-sm text-muted-foreground ${
         isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""
       }`}
     >
@@ -39,14 +39,14 @@ export const ConversationFooterInfo = ({
               By using Polychat, you agree to our{" "}
               <Link
                 href="/terms"
-                className="hover:text-zinc-800 dark:hover:text-zinc-200 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
+                className="hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-active-work focus:ring-offset-2 rounded-sm"
               >
                 Terms
               </Link>{" "}
               &{" "}
               <Link
                 href="/privacy"
-                className="hover:text-zinc-800 dark:hover:text-zinc-200 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
+                className="hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-active-work focus:ring-offset-2 rounded-sm"
               >
                 Privacy
               </Link>

@@ -116,7 +116,7 @@ export function ComposerActionMenuMobile({
 
         {page.kind === "sources" ? (
           isLoadingSources ? (
-            <div className="flex items-center gap-2 px-3 py-4 text-sm text-zinc-500">
+            <div className="flex items-center gap-2 px-3 py-4 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               Loading sources…
             </div>
@@ -142,9 +142,7 @@ export function ComposerActionMenuMobile({
               </OptionsMenuAction>
             ))
           ) : (
-            <p className="px-3 py-4 text-sm text-zinc-500 dark:text-zinc-400">
-              No available sources.
-            </p>
+            <p className="px-3 py-4 text-sm text-muted-foreground">No available sources.</p>
           )
         ) : page.kind === "tools" || selectedGroup?.label === "Tools" ? (
           <>
@@ -235,7 +233,7 @@ export function ComposerActionMenuMobile({
       ) : null}
 
       {isLoadingActions && groups.length === 0 ? (
-        <div className="flex items-center gap-2 px-3 py-2.5 text-sm text-zinc-500">
+        <div className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
           Loading capabilities…
         </div>

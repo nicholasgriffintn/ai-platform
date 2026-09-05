@@ -1,5 +1,7 @@
-import { Button, Card, cn } from "@ngriffin_uk/polychat-component-ui";
+import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import { Database, Plus, Trash2 } from "lucide-react";
+
+import { SettingsSection } from "../SettingsSection";
 
 export interface SourceCollection {
   id: string;
@@ -18,9 +20,7 @@ export interface SourceCollectionListProps {
 function collectionButtonClass(isActive: boolean, extra = "") {
   return cn(
     "rounded-lg p-2 text-left text-sm transition-colors",
-    isActive
-      ? "bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
-      : "text-zinc-600 hover:bg-zinc-200 dark:text-zinc-300 dark:hover:bg-zinc-900",
+    isActive ? "bg-selection text-foreground" : "text-muted-foreground hover:text-foreground",
     extra,
   );
 }
@@ -33,9 +33,9 @@ export function SourceCollectionList({
   onDeleteCollection,
 }: SourceCollectionListProps) {
   return (
-    <Card className="gap-2 p-3 shadow-none">
-      <div className="flex items-center justify-between px-2 pb-1">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Collections</h2>
+    <SettingsSection
+      title="Collections"
+      actions={
         <Button
           variant="icon"
           size="icon"
@@ -43,7 +43,9 @@ export function SourceCollectionList({
           aria-label="Create collection"
           onClick={onCreateCollection}
         />
-      </div>
+      }
+      contentClassName="grid gap-1"
+    >
       <button
         type="button"
         className={collectionButtonClass(
@@ -66,7 +68,7 @@ export function SourceCollectionList({
             onClick={() => onSelectCollection(collection.id)}
           >
             <span className="block truncate">{collection.title}</span>
-            <span className="block text-xs text-zinc-500">
+            <span className="text-muted-foreground block text-xs">
               {collection.sourceCount} {collection.sourceCount === 1 ? "source" : "sources"}
             </span>
           </button>
@@ -80,6 +82,6 @@ export function SourceCollectionList({
           />
         </div>
       ))}
-    </Card>
+    </SettingsSection>
   );
 }

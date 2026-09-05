@@ -49,9 +49,9 @@ const APPROVAL_OPTIONS: { permission: ToolPermission; label: string }[] = [
 function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{label}</p>
+      <p className="text-sm font-medium text-foreground">{label}</p>
       {children}
-      {hint ? <p className="text-xs text-zinc-500">{hint}</p> : null}
+      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }
@@ -267,7 +267,7 @@ export function CreateTaskDialog({
 
           <button
             type="button"
-            className="flex items-center gap-1 text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
             onClick={() => setShowAdvanced((current) => !current)}
             aria-expanded={showAdvanced}
           >
@@ -279,13 +279,13 @@ export function CreateTaskDialog({
           </button>
 
           {showAdvanced ? (
-            <div className="space-y-4 rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+            <div className="space-y-4 rounded-xl border border-border bg-surface-elevated/70 p-4">
               <Field label="Additional approval gates">
                 <div className="flex flex-wrap gap-2">
                   {APPROVAL_OPTIONS.map(({ permission, label }) => (
                     <label
                       key={permission}
-                      className="flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-950"
+                      className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs"
                     >
                       <input
                         type="checkbox"
@@ -351,7 +351,7 @@ export function CreateTaskDialog({
           ) : null}
 
           {errorMessage ? (
-            <p role="alert" className="text-sm text-red-600">
+            <p role="alert" className="text-sm text-failure">
               {errorMessage}
             </p>
           ) : null}

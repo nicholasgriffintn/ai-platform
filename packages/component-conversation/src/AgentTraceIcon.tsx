@@ -3,24 +3,24 @@ import { Activity, AlertTriangle, Bot, Clock3, Terminal, User } from "lucide-rea
 
 export function AgentTraceIcon({ type }: { type: AgentTraceEntry["type"] }) {
   if (type === "provider_error") {
-    return <AlertTriangle className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />;
+    return <AlertTriangle className="h-3.5 w-3.5 text-failure" aria-hidden="true" />;
   }
 
   if (type === "approval" || type === "retry") {
-    return <Clock3 className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />;
+    return <Clock3 className="h-3.5 w-3.5 text-attention" aria-hidden="true" />;
   }
 
   if (type === "tool_call" || type === "tool_result") {
-    return <Terminal className="h-3.5 w-3.5 text-zinc-500" aria-hidden="true" />;
+    return <Terminal className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />;
   }
 
   if (type === "user_turn") {
-    return <User className="h-3.5 w-3.5 text-zinc-500" aria-hidden="true" />;
+    return <User className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />;
   }
 
   if (type === "assistant_response") {
-    return <Bot className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />;
+    return <Bot className="h-3.5 w-3.5 text-success" aria-hidden="true" />;
   }
 
-  return <Activity className="h-3.5 w-3.5 text-blue-500" aria-hidden="true" />;
+  return <Activity className="h-3.5 w-3.5 text-active-work" aria-hidden="true" />;
 }

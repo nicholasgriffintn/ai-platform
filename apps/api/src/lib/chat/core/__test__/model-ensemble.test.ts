@@ -1,3 +1,4 @@
+import { parseChatStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -72,7 +73,7 @@ function drain(stream: ReadableStream): Promise<string> {
 describe("createModelEnsembleStream", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.runAgentLoop.mockResolvedValue({ finalMessage: primaryMessage });
+    mocks.runAgentLoop.mockResolvedValue({ finalMessage: primaryMessage, response: {} });
     mocks.getAIResponse.mockResolvedValue({ response: "Secondary answer" });
   });
 
@@ -94,6 +95,14 @@ describe("createModelEnsembleStream", () => {
     expect(replaced?.content).toContain("Primary answer");
     expect(replaced?.content).toContain("Secondary answer");
     expect(streamed).toContain("Secondary answer");
+    expect(
+      parseChatStreamSseBuffer(streamed, { flush: true }).events.filter(
+        (event) => event.type === "turn_activity",
+      ),
+    ).toEqual([
+      { type: "turn_activity", kind: "turn_started" },
+      { type: "turn_activity", kind: "turn_finished", outcome: "completed" },
+    ]);
     expect(mocks.recordModelTurnUsage).toHaveBeenCalledWith(
       expect.objectContaining({
         model: "secondary-model",

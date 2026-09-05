@@ -15,7 +15,7 @@ export function meta() {
 
 export default function PetsPage() {
   return (
-    <PageShell title="Pets" sidebarContent={<StandardSidebarContent />}>
+    <PageShell title="Pets" sidebarContent={<StandardSidebarContent />} className="max-w-6xl">
       <PetShowcase />
     </PageShell>
   );

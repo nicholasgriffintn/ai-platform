@@ -40,7 +40,7 @@ export function MemorySynthesisPanel({
       <CardHeader className="border-b py-5">
         <div>
           <CardTitle className="flex items-center gap-2">
-            <Brain size={18} className="text-zinc-500" />
+            <Brain size={18} className="text-muted-foreground" />
             Memory synthesis
           </CardTitle>
           <CardDescription className="mt-1">
@@ -56,13 +56,13 @@ export function MemorySynthesisPanel({
 
       <CardContent className="py-5">
         {isLoadingSynthesis ? (
-          <p className="text-sm text-zinc-500">Loading memory synthesis…</p>
+          <p className="text-sm text-muted-foreground">Loading memory synthesis…</p>
         ) : synthesis ? (
           <div className="space-y-3">
-            <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+            <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
               {synthesis.synthesis_text}
             </p>
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-500">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
               {synthesis.synthesis_version ? (
                 <span>Version {synthesis.synthesis_version}</span>
               ) : null}
@@ -73,21 +73,21 @@ export function MemorySynthesisPanel({
             </div>
           </div>
         ) : (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             No synthesis yet. Generate one after Polychat has saved some memories.
           </p>
         )}
 
         {!isLoadingHistory && previousSyntheses.length > 0 ? (
-          <div className="mt-5 border-t border-zinc-200 pt-5 dark:border-zinc-800">
-            <h3 className="mb-3 text-sm font-medium">Previous syntheses</h3>
+          <div className="mt-5 border-t border-border pt-5">
+            <h3 className="text-muted-foreground text-sm font-medium mb-3">Previous syntheses</h3>
             <div className="space-y-3">
               {previousSyntheses.map((item) => (
-                <div key={item.id} className="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
-                  <p className="whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-400">
+                <div key={item.id} className="bg-surface-elevated rounded-lg p-3">
+                  <p className="whitespace-pre-wrap text-sm text-muted-foreground">
                     {item.synthesis_text}
                   </p>
-                  <p className="mt-2 text-xs text-zinc-500">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     {item.synthesis_version ? `Version ${item.synthesis_version} · ` : ""}
                     {formatDate(item.created_at)}
                   </p>

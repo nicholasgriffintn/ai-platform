@@ -148,7 +148,7 @@ export function ReplicateModels({ basePath, projectId }: { basePath: string; pro
         />
       ) : (
         <EmptyState
-          icon={<Sparkles className="h-8 w-8 text-zinc-400" />}
+          icon={<Sparkles className="h-8 w-8 text-muted-foreground" />}
           title="No models found"
           message={
             searchQuery || selectedSignature

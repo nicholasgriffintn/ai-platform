@@ -40,7 +40,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+        "bg-[var(--polychat-overlay)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50",
         className,
       )}
       {...props}
@@ -75,7 +75,7 @@ function DialogContent({
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="ring-offset-background focus:ring-ring absolute top-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-md bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-950 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-[18px]">
+        <DialogPrimitive.Close className="ring-offset-background focus:ring-ring bg-selection text-muted-foreground hover:bg-active-work/15 hover:text-foreground absolute top-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-[18px]">
           <XIcon />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>

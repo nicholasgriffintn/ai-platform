@@ -1,7 +1,8 @@
-import { Button, Card, Switch } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Switch } from "@ngriffin_uk/polychat-component-ui";
 import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { ExternalLink } from "lucide-react";
 
+import { SettingsSection } from "../SettingsSection";
 import type { Subscription } from "./types";
 
 export interface SubscriptionCardProps {
@@ -46,13 +47,12 @@ export function SubscriptionCard({
   const cancelPending = Boolean(subscription?.cancel_at_period_end);
 
   return (
-    <Card className="p-5">
+    <SettingsSection title="Subscription">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Subscription</h3>
-          <p className="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{planName}</p>
+          <p className="text-lg font-semibold text-foreground">{planName}</p>
           {item && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               {(item.price.unit_amount / 100).toFixed(2)} {subscription?.currency.toUpperCase()} /{" "}
               {item.price.recurring.interval}
               {cancelPending && subscription?.cancel_at
@@ -98,14 +98,14 @@ export function SubscriptionCard({
       </div>
 
       {cancelPending && subscription?.cancel_at && (
-        <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+        <p className="mt-3 rounded-md bg-attention/12 px-3 py-2 text-sm text-attention">
           Your subscription ends on {formatDate(unixToIso(subscription.cancel_at))}. Reactivate any
           time before then and nothing changes.
         </p>
       )}
 
       {showOverageToggle && isActive && (
-        <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+        <div className="mt-4 border-t border-border pt-4">
           <Switch
             id="overage-opt-in"
             label="Pay-as-you-go overage"
@@ -116,6 +116,6 @@ export function SubscriptionCard({
           />
         </div>
       )}
-    </Card>
+    </SettingsSection>
   );
 }
