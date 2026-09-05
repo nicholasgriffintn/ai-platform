@@ -48,7 +48,7 @@ export interface GlobalConversationSearchRow {
   snoozed_until: string | null;
   snoozed_next_response_at: string | null;
   next_response_arrived: number;
-  labels: string;
+  group: string | null;
 }
 
 export class ConversationRepository extends BaseRepository {
@@ -242,16 +242,16 @@ export class ConversationRepository extends BaseRepository {
               AND state.snoozed_next_response_at IS NOT NULL
               AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
           ) AS next_response_arrived,
-          COALESCE((
-            SELECT json_group_array(json_object(
-              'id', label.id,
-              'name', label.name,
+          (
+            SELECT json_object(
+              'id', grp.id,
+              'name', grp.name,
               'scope', json_object('kind', 'personal')
-            ))
-            FROM conversation_label_assignment assignment
-            JOIN conversation_label label ON label.id = assignment.label_id
-            WHERE assignment.conversation_id = c.id AND label.owner_user_id = c.user_id
-          ), '[]') AS labels
+            )
+            FROM conversation_group_membership membership
+            JOIN conversation_group grp ON grp.id = membership.group_id
+            WHERE membership.conversation_id = c.id AND grp.owner_user_id = c.user_id
+          ) AS "group"
         FROM conversation c
         LEFT JOIN conversation_user_state state
           ON state.conversation_id = c.id AND state.user_id = ?
@@ -270,16 +270,16 @@ export class ConversationRepository extends BaseRepository {
               AND state.snoozed_next_response_at IS NOT NULL
               AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
           ) AS next_response_arrived,
-          COALESCE((
-            SELECT json_group_array(json_object(
-              'id', label.id,
-              'name', label.name,
+          (
+            SELECT json_object(
+              'id', grp.id,
+              'name', grp.name,
               'scope', json_object('kind', 'personal')
-            ))
-            FROM conversation_label_assignment assignment
-            JOIN conversation_label label ON label.id = assignment.label_id
-            WHERE assignment.conversation_id = c.id AND label.owner_user_id = c.user_id
-          ), '[]') AS labels
+            )
+            FROM conversation_group_membership membership
+            JOIN conversation_group grp ON grp.id = membership.group_id
+            WHERE membership.conversation_id = c.id AND grp.owner_user_id = c.user_id
+          ) AS "group"
         FROM conversation c
         LEFT JOIN conversation_user_state state
           ON state.conversation_id = c.id AND state.user_id = ?
@@ -445,21 +445,21 @@ export class ConversationRepository extends BaseRepository {
                   AND state.snoozed_next_response_at IS NOT NULL
                   AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
               ) AS next_response_arrived,
-              COALESCE((
-                SELECT json_group_array(json_object(
-                  'id', label.id,
-                  'name', label.name,
+              (
+                SELECT json_object(
+                  'id', grp.id,
+                  'name', grp.name,
                   'scope', CASE
-                    WHEN label.project_id IS NOT NULL
-                    THEN json_object('kind', 'project', 'projectId', label.project_id)
+                    WHEN grp.project_id IS NOT NULL
+                    THEN json_object('kind', 'project', 'projectId', grp.project_id)
                     ELSE json_object('kind', 'personal')
                   END
-                ))
-                FROM conversation_label_assignment assignment
-                JOIN conversation_label label ON label.id = assignment.label_id
-                WHERE assignment.conversation_id = c.id
-                  AND (label.project_id = c.project_id OR label.owner_user_id = ?)
-              ), '[]') AS labels
+                )
+                FROM conversation_group_membership membership
+                JOIN conversation_group grp ON grp.id = membership.group_id
+                WHERE membership.conversation_id = c.id
+                  AND (grp.project_id = c.project_id OR grp.owner_user_id = ?)
+              ) AS "group"
 			 FROM conversation c
 			 LEFT JOIN project p ON p.id = c.project_id AND p.archived_at IS NULL
 			 LEFT JOIN workspace w ON w.id = p.workspace_id
@@ -482,11 +482,11 @@ export class ConversationRepository extends BaseRepository {
            OR c.title LIKE ? ESCAPE '\\'
            OR EXISTS (
              SELECT 1
-             FROM conversation_label_assignment assignment
-             JOIN conversation_label label ON label.id = assignment.label_id
-             WHERE assignment.conversation_id = c.id
-               AND (label.project_id = c.project_id OR label.owner_user_id = ?)
-               AND label.name LIKE ? ESCAPE '\\'
+             FROM conversation_group_membership membership
+             JOIN conversation_group grp ON grp.id = membership.group_id
+             WHERE membership.conversation_id = c.id
+               AND (grp.project_id = c.project_id OR grp.owner_user_id = ?)
+               AND grp.name LIKE ? ESCAPE '\\'
            )
          )
 			 ORDER BY COALESCE(state.is_pinned, 0) DESC,

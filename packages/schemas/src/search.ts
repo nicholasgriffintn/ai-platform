@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { conversationLabelSchema, conversationSnoozeSchema } from "./conversation-organisation";
+import { conversationGroupSchema, conversationSnoozeSchema } from "./conversation-organisation";
 
 export const searchWebSchema = z.object({
   query: z.string(),
@@ -49,7 +49,7 @@ export const globalSearchConversationSchema = z.object({
   isPinned: z.boolean(),
   isUnread: z.boolean(),
   snooze: conversationSnoozeSchema.nullable(),
-  labels: z.array(conversationLabelSchema),
+  group: conversationGroupSchema.nullable(),
   project: z
     .object({
       id: z.string(),

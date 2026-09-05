@@ -89,7 +89,7 @@ export function buildGlobalSearchResults({
           href: conversation.project
             ? `/work/${conversation.project.workspaceId}/projects/${conversation.project.id}/chat?completion_id=${encodeURIComponent(conversation.id)}`
             : getPersonalConversationPath(conversation.id),
-          searchText: `${conversation.title ?? ""} ${conversation.project?.name ?? ""} ${conversation.project?.workspaceName ?? ""} ${conversation.labels.map((label) => label.name).join(" ")}`,
+          searchText: `${conversation.title ?? ""} ${conversation.project?.name ?? ""} ${conversation.project?.workspaceName ?? ""} ${conversation.group?.name ?? ""}`,
           updatedAt: conversation.updatedAt,
         })),
         ...remote.projects.map((project) => ({

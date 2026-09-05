@@ -1,9 +1,7 @@
 import { ListItem } from "@ngriffin_uk/polychat-component-ui";
-import type { ConversationLabel } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationGroup } from "@ngriffin_uk/polychat-schemas";
 import { CircleQuestionMark, CloudOff, GitBranch, LoaderCircle, Mail, Pin } from "lucide-react";
-import type { Ref } from "react";
-
-import { ConversationListItemActions } from "./ConversationListItemActions";
+import type { ReactNode, Ref } from "react";
 
 export interface ConversationSummary {
   id?: string;
@@ -14,43 +12,39 @@ export interface ConversationSummary {
   isStreaming?: boolean;
   isPinned?: boolean;
   isUnread?: boolean;
-  labels?: ConversationLabel[];
+  group?: ConversationGroup | null;
 }
 
-export interface ConversationGroup {
+export interface ConversationSection {
   id: string;
   title?: string;
   conversations: ConversationSummary[];
 }
 
 export interface ConversationListProps {
-  groups: ConversationGroup[];
+  sections: ConversationSection[];
   activeConversationId?: string;
   isConversationRoute: boolean;
   localOnlyMode?: boolean;
   loadMoreRef?: Ref<HTMLDivElement>;
-  loadMoreSlot?: React.ReactNode;
+  loadMoreSlot?: ReactNode;
   onSelect: (conversationId: string | undefined) => void;
-  onEditTitle: (conversationId: string, currentTitle: string) => void;
-  onDelete: (conversationId: string) => void;
-  onOrganise?: (conversationId: string) => void;
+  renderItemActions?: (conversation: ConversationSummary & { id: string }) => ReactNode;
 }
 
 export function ConversationList({
-  groups,
+  sections,
   activeConversationId,
   isConversationRoute,
   localOnlyMode = false,
   loadMoreRef,
   loadMoreSlot,
   onSelect,
-  onEditTitle,
-  onDelete,
-  onOrganise,
+  renderItemActions,
 }: ConversationListProps) {
   return (
     <>
-      {groups.map(({ id, title, conversations }) =>
+      {sections.map(({ id, title, conversations }) =>
         conversations.length === 0 ? null : (
           <div key={id}>
             {title && (
@@ -86,11 +80,6 @@ export function ConversationList({
                       {conversation.isUnread && (
                         <Mail size={14} className="text-attention" aria-label="Unread" />
                       )}
-                      {conversation.labels?.[0] && (
-                        <span className="bg-muted text-muted-foreground max-w-20 truncate rounded px-1.5 py-0.5 text-[10px]">
-                          {conversation.labels[0].name}
-                        </span>
-                      )}
                       {(conversation.isLocalOnly || localOnlyMode) && (
                         <span className="text-active-work inline-flex items-center text-xs">
                           <CloudOff size={14} />
@@ -119,18 +108,9 @@ export function ConversationList({
                   onClick={() => onSelect(conversation.id)}
                   actionsWidth="compact"
                   actions={
-                    conversation.id ? (
-                      <ConversationListItemActions
-                        conversationId={conversation.id}
-                        title={conversation.title || ""}
-                        canOrganise={
-                          Boolean(onOrganise) && !conversation.isLocalOnly && !localOnlyMode
-                        }
-                        onEditTitle={onEditTitle}
-                        onDelete={onDelete}
-                        onOrganise={onOrganise}
-                      />
-                    ) : undefined
+                    conversation.id && renderItemActions
+                      ? renderItemActions({ ...conversation, id: conversation.id })
+                      : undefined
                   }
                 />
               ))}

@@ -1,6 +1,6 @@
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronRight } from "lucide-react";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 
 import { cn } from "./utils";
 
@@ -9,6 +9,40 @@ const surfaceClassName =
 
 const rowClassName =
   "text-popover-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground flex w-full cursor-pointer select-none items-center rounded px-2 py-1.5 outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50";
+
+const SHORTCUT_KEY_PATTERN = /^[a-z0-9]$/;
+
+function findShortcutItem(
+  menu: HTMLElement,
+  event: KeyboardEvent<HTMLElement>,
+): HTMLElement | null {
+  if (event.altKey || event.ctrlKey || event.metaKey) {
+    return null;
+  }
+
+  const key = event.key.toLowerCase();
+
+  if (!SHORTCUT_KEY_PATTERN.test(key)) {
+    return null;
+  }
+
+  if (!(event.target instanceof Node) || !menu.contains(event.target)) {
+    return null;
+  }
+
+  return menu.querySelector<HTMLElement>(`[data-shortcut="${key}"]:not([data-disabled])`);
+}
+
+function activateShortcut(event: KeyboardEvent<HTMLDivElement>) {
+  const item = findShortcutItem(event.currentTarget, event);
+
+  if (!item) {
+    return;
+  }
+
+  event.preventDefault();
+  item.click();
+}
 
 export interface OptionsMenuProps {
   trigger: ReactNode;
@@ -60,6 +94,7 @@ export function OptionsMenu({
           className={cn(surfaceClassName, className)}
           style={contentStyle}
           onCloseAutoFocus={preserveTriggerFocus ? (event) => event.preventDefault() : undefined}
+          onKeyDown={activateShortcut}
         >
           {children}
         </DropdownMenuPrimitive.Content>
@@ -193,6 +228,7 @@ export interface OptionsMenuActionProps {
   disabled?: boolean;
   keepOpen?: boolean;
   onSelect: () => void;
+  shortcut?: string;
 }
 
 export function OptionsMenuAction({
@@ -201,10 +237,12 @@ export function OptionsMenuAction({
   disabled,
   keepOpen = false,
   onSelect,
+  shortcut,
 }: OptionsMenuActionProps) {
   return (
     <DropdownMenuPrimitive.Item
       disabled={disabled}
+      data-shortcut={shortcut?.toLowerCase()}
       onSelect={(event) => {
         if (keepOpen) {
           event.preventDefault();
@@ -212,9 +250,17 @@ export function OptionsMenuAction({
 
         onSelect();
       }}
-      className={cn(rowClassName, "justify-start", className)}
+      className={cn(rowClassName, "justify-start gap-4", className)}
     >
       {children}
+      {shortcut && (
+        <kbd
+          className="text-muted-foreground ml-auto shrink-0 font-sans text-[11px] font-medium uppercase"
+          aria-hidden="true"
+        >
+          {shortcut}
+        </kbd>
+      )}
     </DropdownMenuPrimitive.Item>
   );
 }

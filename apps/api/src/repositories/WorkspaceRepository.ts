@@ -124,7 +124,7 @@ export interface ProjectConversationRow {
   snoozed_until: string | null;
   snoozed_next_response_at: string | null;
   next_response_arrived: number;
-  labels: string;
+  group: string | null;
 }
 
 export class WorkspaceRepository extends BaseRepository {
@@ -887,16 +887,16 @@ export class WorkspaceRepository extends BaseRepository {
             AND state.snoozed_next_response_at IS NOT NULL
             AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
         ) AS next_response_arrived,
-        COALESCE((
-          SELECT json_group_array(json_object(
-            'id', label.id,
-            'name', label.name,
-            'scope', json_object('kind', 'project', 'projectId', label.project_id)
-          ))
-          FROM conversation_label_assignment assignment
-          JOIN conversation_label label ON label.id = assignment.label_id
-          WHERE assignment.conversation_id = c.id AND label.project_id = c.project_id
-        ), '[]') AS labels
+        (
+          SELECT json_object(
+            'id', grp.id,
+            'name', grp.name,
+            'scope', json_object('kind', 'project', 'projectId', grp.project_id)
+          )
+          FROM conversation_group_membership membership
+          JOIN conversation_group grp ON grp.id = membership.group_id
+          WHERE membership.conversation_id = c.id AND grp.project_id = c.project_id
+        ) AS "group"
 			 FROM conversation c
 			 JOIN user u ON u.id = c.user_id
 			 LEFT JOIN conversation_user_state state

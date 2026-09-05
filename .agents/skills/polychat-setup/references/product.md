@@ -50,9 +50,9 @@ Items come from task interaction state and sandbox-run Activity, not assistant p
 
 ## Organise conversations
 
-Use a conversation's organise action to pin it, mark it unread, snooze it until tomorrow or the next agent response, and assign labels. Pin, unread and snooze are personal even in a shared project. Active snoozes leave ordinary conversation lists and Attention, but remain searchable so you can find and clear them.
+Open a conversation's actions menu to pin it, mark it unread, snooze it until tomorrow or the next agent response, or move it into a group. Each action is its own menu item with a single-key shortcut while the menu is open: P pins, U toggles unread, R renames and D deletes. Pin, unread and snooze are personal even in a shared project. Active snoozes leave ordinary conversation lists and Attention, but remain searchable so you can find and clear them.
 
-Personal labels belong to you. Project labels are shared only within that project: owners and administrators manage the available labels, while current project members can assign them to conversations they can access. Deleting a label removes its assignments, and none of these controls changes project membership or who can run, approve or connect external accounts. Read [ADR 0051](architecture/decisions/0051-separate-personal-conversation-state-from-project-labels.md) for the ownership boundary.
+A conversation belongs to at most one group, and the sidebar lists each group as its own section ahead of the date or type sections. Personal groups belong to you. Project groups are shared only within that project: owners and administrators manage the available groups, while current project members can move conversations they can access between them. Deleting a group leaves its conversations ungrouped, and none of these controls changes project membership or who can run, approve or connect external accounts. Read [ADR 0051](architecture/decisions/0051-separate-personal-conversation-state-from-project-groups.md) for the ownership boundary.
 
 ## Schedule repeatable work
 

@@ -24,7 +24,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0048: Supervise declared project services within a coding run](decisions/0048-supervise-declared-project-services.md).
 - [0049: Gate sandbox previews through current project authority](decisions/0049-gate-sandbox-previews-through-current-project-authority.md).
 - [0050: Derive global Attention from authoritative work state](decisions/0050-derive-global-attention-from-authoritative-work-state.md).
-- [0051: Separate personal conversation state from project labels](decisions/0051-separate-personal-conversation-state-from-project-labels.md).
+- [0051: Separate personal conversation state from project groups](decisions/0051-separate-personal-conversation-state-from-project-groups.md).
 - [0052: Keep repeatable scheduling in recipes](decisions/0052-keep-repeatable-scheduling-in-recipes.md).
 - [0053: Deliver mobile Work notifications without moving authority](decisions/0053-deliver-mobile-work-notifications-without-moving-authority.md).
 - [0054: Ship a house type pairing through font tokens](decisions/0054-house-type-pairing.md).

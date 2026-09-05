@@ -20,7 +20,7 @@ Use this map to locate current responsibilities. Read the relevant [ADR](decisio
 | Attention / inbox              | Current task state needing a person's awareness / its per-person read and dismissal projection. Neither grants task authority.                      |
 | Activity / audit               | User-visible execution history / immutable workspace governance history retained after deletion.                                                    |
 | Attention                      | Global, membership-filtered projection of actionable, active, failed and recent task or run state; not stored workflow state.                       |
-| Conversation organisation      | Per-user pin, unread and snooze state plus personal or project-scoped labels; never access or execution authority.                                  |
+| Conversation organisation      | Per-user pin, unread and snooze state plus a single personal or project-scoped group per conversation; never access or execution authority.         |
 | Recipe schedule                | Repeatable recipe installation trigger whose occurrences run as tasks and produce attributable conversations.                                       |
 | Credit / reserve / reservation | Metered allowance / plan grace beyond the allowance / held estimate for work not yet settled.                                                       |
 
@@ -163,11 +163,11 @@ ADR [0050](decisions/0050-derive-global-attention-from-authoritative-work-state.
 
 ## Conversation organisation boundary
 
-ADR [0051](decisions/0051-separate-personal-conversation-state-from-project-labels.md) keeps reading workflow personal while sharing only deliberate project taxonomy. `conversation_user_state` owns per-user pin, unread and snooze values with a compare-and-set revision. `conversation_label` owns either a personal-user or project scope, and assignments link those labels to conversations without changing conversation access.
+ADR [0051](decisions/0051-separate-personal-conversation-state-from-project-groups.md) keeps reading workflow personal while sharing only deliberate project taxonomy. `conversation_user_state` owns per-user pin, unread and snooze values with a compare-and-set revision. `conversation_group` owns either a personal-user or project scope, and `conversation_group_membership` places each conversation in at most one group without changing conversation access.
 
 `packages/schemas/src/conversation-organisation.ts` owns the wire contract. `ConversationOrganisationRepository` owns persistence and effective next-response detection; `services/conversation-organisation/` owns current conversation access, scope matching and project-role checks. Personal and project conversation repositories project organisation into their existing lists, global search includes it for discovery and reversal, and Attention excludes active snoozes while retaining authoritative task and run meanings.
 
-`apps/app/src/hooks/useConversationOrganisation.ts` owns remote state and invalidation. `components/ConversationOrganisationDialog.tsx` adapts it to the router-free shared dialog in `packages/component-navigation`; Chat and Work sidebars provide the applicable personal or project scope. Organisation never grants membership, runner actions, connector credentials or approvals.
+`apps/app/src/hooks/useConversationOrganisation.ts` owns remote state and invalidation. `components/ConversationItemActions.tsx` adapts it to the router-free shared conversation menu in `packages/component-navigation`, and `components/ConversationGroupsDialog.tsx` does the same for group management; Chat and Work sidebars provide the applicable personal or project scope. Organisation never grants membership, runner actions, connector credentials or approvals.
 
 ## Recipe schedule boundary
 

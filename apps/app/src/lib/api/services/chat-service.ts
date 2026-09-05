@@ -19,7 +19,7 @@ import {
   chatRunRecoveryResponseSchema,
   chatRunReplayResponseSchema,
   chatRunSnapshotResponseSchema,
-  conversationLabelSchema,
+  conversationGroupSchema,
   type ChatCompletionResponseBody,
   type ChatRun,
   type ChatRunCommandReceipt,
@@ -199,7 +199,7 @@ export class ChatService {
         is_pinned?: number;
         is_unread?: number;
         next_response_arrived?: number;
-        labels?: string | unknown[];
+        group?: string | object | null;
       }[];
       pageNumber?: number;
       pageSize?: number;
@@ -220,17 +220,17 @@ export class ChatService {
     }
 
     const results = data.conversations.map((conversation) => {
-      let labels: unknown = conversation.labels ?? [];
+      let group: unknown = conversation.group ?? null;
 
-      if (typeof labels === "string") {
+      if (typeof group === "string") {
         try {
-          labels = JSON.parse(labels);
+          group = JSON.parse(group);
         } catch {
-          labels = [];
+          group = null;
         }
       }
 
-      const parsedLabels = conversationLabelSchema.array().safeParse(labels);
+      const parsedGroup = conversationGroupSchema.nullable().safeParse(group);
 
       return {
         ...conversation,
@@ -239,7 +239,7 @@ export class ChatService {
         parent_message_id: conversation.parent_message_id,
         isPinned: conversation.is_pinned === 1,
         isUnread: conversation.is_unread === 1 || conversation.next_response_arrived === 1,
-        labels: parsedLabels.success ? parsedLabels.data : [],
+        group: parsedGroup.success ? parsedGroup.data : null,
       };
     });
 
