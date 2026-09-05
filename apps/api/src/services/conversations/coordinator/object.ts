@@ -10,6 +10,7 @@ import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 
 const STATUS_KEY = "status";
+
 interface StoredStatus {
   status: "idle" | "running";
   currentOperation: ThreadOperation | null;

@@ -127,6 +127,7 @@ function createThreadLease(
 
     if (!parsed?.success || !parsed.data.renewed) {
       markLost();
+
       return;
     }
 
