@@ -978,6 +978,7 @@ describe("ChatOrchestrator", () => {
           terminalReason: null,
           lastMessageId: null,
         } as const;
+
         mockFindAcceptedChatRunCommand.mockResolvedValueOnce({
           run,
           receipt: {
@@ -1033,6 +1034,7 @@ describe("ChatOrchestrator", () => {
             duplicate: true,
           },
         };
+
         mockFindAcceptedChatRunCommand.mockResolvedValueOnce(null).mockResolvedValueOnce(duplicate);
         mockAcquireThread.mockResolvedValueOnce({
           acquired: false,

@@ -197,6 +197,7 @@ describe("ConversationCoordinator", () => {
       await acquire(coordinator, "user_message");
       vi.advanceTimersByTime(4 * 60 * 1000);
       const renewal = await ownerCall(coordinator, "renew");
+
       vi.advanceTimersByTime(4 * 60 * 1000);
       const status = await coordinator.fetch(
         new Request("https://coordinator/status", { method: "POST" }),
@@ -220,6 +221,7 @@ describe("ConversationCoordinator", () => {
       await acquire(coordinator, "user_message");
       vi.advanceTimersByTime(4 * 60 * 1000);
       const ownership = await ownerCall(coordinator, "assert");
+
       vi.advanceTimersByTime(4 * 60 * 1000);
       const status = await coordinator.fetch(
         new Request("https://coordinator/status", { method: "POST" }),
