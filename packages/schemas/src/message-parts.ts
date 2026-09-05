@@ -12,8 +12,10 @@ export {
   normaliseMessageParts,
 } from "./message-part-utils";
 export type {
+  CompactionCoverage,
   CompactionMessagePart,
   CompactionPartStatus,
+  CompactionSummaryStrategy,
   FileMessagePart,
   MessagePart,
   MessagePartBase,
@@ -24,7 +26,7 @@ export type {
   ToolUseMessagePart,
 } from "./message-part-utils";
 import { goalMarkerEvents } from "./goals";
-import { compactionPartStatuses } from "./message-part-utils";
+import { compactionPartStatuses, compactionSummaryStrategies } from "./message-part-utils";
 
 const partBaseSchema = z.object({
   id: z.string().optional(),
@@ -62,16 +64,33 @@ export const reasoningPartSchema = partBaseSchema.extend({
   collapsed: z.boolean().optional(),
 });
 
+export const compactionCoverageSchema = z
+  .object({
+    coveredMessageIds: z.array(z.string().min(1)),
+    coveredMessageCount: z.number().int().nonnegative(),
+    candidateMessageCount: z.number().int().nonnegative(),
+    summaryInputCharacters: z.number().int().nonnegative(),
+    strategy: z.enum(compactionSummaryStrategies),
+  })
+  .refine(
+    (coverage) =>
+      coverage.coveredMessageCount <= coverage.candidateMessageCount &&
+      coverage.coveredMessageIds.length <= coverage.coveredMessageCount,
+    { error: "Compaction coverage cannot exceed the candidate message set" },
+  );
+
 export const snapshotPartSchema = partBaseSchema.extend({
   type: z.literal("snapshot"),
   summary: z.string(),
   title: z.string().optional(),
+  coverage: compactionCoverageSchema.optional(),
 });
 
 export const compactionPartSchema = partBaseSchema.extend({
   type: z.literal("compaction"),
   status: z.enum(compactionPartStatuses),
   label: z.string().optional(),
+  coverage: compactionCoverageSchema.optional(),
 });
 
 export const goalPartSchema = partBaseSchema.extend({

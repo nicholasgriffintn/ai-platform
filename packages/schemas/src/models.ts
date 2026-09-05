@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { readinessSchema } from "./readiness";
 import { reasoningEffortSchema } from "./reasoning";
 
 export const modelModalities = [
@@ -153,6 +154,7 @@ export const modelConfigItemSchema = z.object({
   isFeatured: z.boolean().optional(),
   isDefault: z.boolean().optional(),
   isExecutable: z.boolean().optional(),
+  readiness: readinessSchema.optional(),
   isPlatformEnabled: z.boolean().optional(),
   isByokEnabled: z.boolean().optional(),
   hiddenFromDefaultList: z.boolean().optional(),

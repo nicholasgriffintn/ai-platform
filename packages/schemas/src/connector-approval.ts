@@ -1,6 +1,32 @@
 import { isRecord, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
+import z from "zod/v4";
 
 import { connectorApprovalIdSchema } from "./chat-completions";
+
+export const connectorOperationApprovalStateSchema = z.enum([
+  "pending",
+  "approved",
+  "rejected",
+  "consumed",
+  "expired",
+]);
+
+export const connectorOperationApprovalSchema = z.object({
+  id: connectorApprovalIdSchema,
+  runId: z.string().min(1),
+  completionId: z.string().min(1),
+  provider: z.string().min(1),
+  operation: z.string().min(1),
+  state: connectorOperationApprovalStateSchema,
+  createdAt: z.string(),
+  expiresAt: z.string(),
+  resolvedAt: z.string().nullable(),
+  consumedAt: z.string().nullable(),
+});
+
+export const connectorOperationApprovalResponseSchema = z.object({
+  approval: connectorOperationApprovalSchema,
+});
 
 export interface ConnectorApprovalRequest {
   approvalId: string;

@@ -8,17 +8,21 @@ export const userQuestionOptionSchema = z.object({
   description: z.string().trim().max(240).nullable().default(null),
 });
 
-export const userQuestionSchema = z.object({
-  id: z
-    .string()
-    .trim()
-    .min(1)
-    .max(60)
-    .regex(/^[a-z0-9][a-z0-9_-]*$/, "Question ids are lowercase and use - or _ as separators"),
-  prompt: z.string().trim().min(1).max(500),
-  options: z.array(userQuestionOptionSchema).max(USER_QUESTION_MAX_OPTIONS).default([]),
-  allowOther: z.boolean().default(true),
-});
+export const userQuestionSchema = z
+  .object({
+    id: z
+      .string()
+      .trim()
+      .min(1)
+      .max(60)
+      .regex(/^[a-z0-9][a-z0-9_-]*$/, "Question ids are lowercase and use - or _ as separators"),
+    prompt: z.string().trim().min(1).max(500),
+    options: z.array(userQuestionOptionSchema).max(USER_QUESTION_MAX_OPTIONS).default([]),
+    allowOther: z.boolean().default(true),
+  })
+  .refine((question) => question.allowOther || question.options.length > 0, {
+    error: "A question must allow a written answer or provide at least one option",
+  });
 
 export const userQuestionsSchema = z
   .array(userQuestionSchema)

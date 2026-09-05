@@ -1,4 +1,4 @@
-import type { Goal, ProjectFlowStage } from "@ngriffin_uk/polychat-schemas";
+import type { ChatRun, Goal, ProjectFlowStage } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -54,6 +54,43 @@ describe("project task completions", () => {
       stageId: "review",
       output: "Release note ready for review.",
       approval: { mode: "human", status: "pending" },
+    });
+  });
+
+  it("retains the exact run attempt, dispatch and durable outputs", () => {
+    const run = {
+      protocolVersion: 1,
+      id: "run-1",
+      conversationId: "conversation-1",
+      projectId: "project-1",
+      projectTaskId: "task-1",
+      stageId: "review",
+      initiatorUserId: 1,
+      status: "succeeded",
+      attempt: 2,
+      createdAt: "2026-08-30T10:00:00.000Z",
+      updatedAt: "2026-08-30T10:01:00.000Z",
+      startedAt: "2026-08-30T10:00:00.000Z",
+      completedAt: "2026-08-30T10:01:00.000Z",
+      terminalReason: null,
+      lastMessageId: "message-1",
+    } satisfies ChatRun;
+
+    expect(
+      createProjectTaskCompletion({
+        stage: stage("on_human_accept"),
+        conversationId: "conversation-1",
+        goal,
+        run,
+        dispatchTaskId: "dispatch-1",
+        outputIds: ["output-1"],
+        output: "Ready.",
+      }),
+    ).toMatchObject({
+      runId: "run-1",
+      runAttempt: 2,
+      dispatchTaskId: "dispatch-1",
+      outputIds: ["output-1"],
     });
   });
 

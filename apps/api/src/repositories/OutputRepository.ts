@@ -1,7 +1,17 @@
-import type { OutputSensitivity, OutputStatus } from "@ngriffin_uk/polychat-schemas";
+import type {
+  OutputProvenance,
+  OutputRevisionOperation,
+  OutputSensitivity,
+  OutputStatus,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { KVCache } from "~/lib/cache";
 import { isOutputDeletionPending } from "~/lib/outputs/deletion";
+import {
+  addOutputProvenanceSources,
+  createOutputProvenance,
+  parseOutputProvenance,
+} from "~/lib/provenance/output";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -26,6 +36,11 @@ export interface OutputRecord {
   filename: string | null;
   byte_size: number | null;
   revision: number;
+  provenance_json?: unknown;
+  revision_created_by_user_id?: number | null;
+  revision_created_at?: string | null;
+  revision_operation?: OutputRevisionOperation | null;
+  restored_from_revision?: number | null;
   created_at: string;
   updated_at: string | null;
 }
@@ -47,6 +62,7 @@ export interface CreateOutputRecord {
   mimeType?: string | null;
   filename?: string | null;
   byteSize?: number | null;
+  provenance?: OutputProvenance;
 }
 
 export interface UpdateOutputRecord {
@@ -56,12 +72,14 @@ export interface UpdateOutputRecord {
   content?: unknown;
   expectedRevision: number;
   updatedByUserId: number;
+  operation?: Exclude<OutputRevisionOperation, "created">;
+  restoredFromRevision?: number | null;
 }
 
 export interface OutputAuditRecord {
   workspaceId: string;
   actorUserId: number;
-  action: "output.created" | "output.updated" | "output.deleted";
+  action: "output.created" | "output.updated" | "output.restored" | "output.deleted";
   outputId: string;
   metadata: Record<string, unknown>;
 }
@@ -84,6 +102,9 @@ export interface OutputRevisionRecord {
   status: OutputStatus;
   sensitivity: OutputSensitivity;
   content: string;
+  provenance_json?: unknown;
+  operation?: OutputRevisionOperation | null;
+  restored_from_revision?: number | null;
   created_by_user_id: number;
   created_at: string;
 }
@@ -108,6 +129,9 @@ export class OutputRepository extends BaseRepository {
 
   async createOutput(input: CreateOutputRecord, audit?: OutputAuditRecord): Promise<OutputRecord> {
     const id = input.id ?? generateId();
+    const provenance =
+      input.provenance ?? createOutputProvenance({ origin: "unknown", completeness: "partial" });
+    const revisionCreatedAt = new Date().toISOString();
     const insert = this.buildInsertQuery(
       "output",
       {
@@ -127,8 +151,13 @@ export class OutputRepository extends BaseRepository {
         mime_type: input.mimeType ?? null,
         filename: input.filename ?? null,
         byte_size: input.byteSize ?? null,
+        provenance_json: provenance,
+        revision_created_by_user_id: input.createdByUserId,
+        revision_created_at: revisionCreatedAt,
+        revision_operation: "created",
+        restored_from_revision: null,
       },
-      { jsonFields: ["content"], returning: "*" },
+      { jsonFields: ["content", "provenance_json"], returning: "*" },
     );
 
     if (!insert) {
@@ -296,6 +325,27 @@ export class OutputRepository extends BaseRepository {
     return this.listScopedOutputs("project_id", projectId, capabilityId, options, false);
   }
 
+  async listProjectOutputsForRuns(
+    projectId: string,
+    runIds: readonly string[],
+  ): Promise<OutputRecord[]> {
+    const uniqueRunIds = [...new Set(runIds)];
+
+    if (uniqueRunIds.length === 0) {
+      return [];
+    }
+
+    const placeholders = uniqueRunIds.map(() => "?").join(", ");
+
+    return this.runQuery<OutputRecord>(
+      `SELECT * FROM output
+       WHERE project_id = ?
+         AND json_extract(provenance_json, '$.run.id') IN (${placeholders})
+       ORDER BY created_at ASC`,
+      [projectId, ...uniqueRunIds],
+    );
+  }
+
   private async listScopedOutputs(
     scopeField: "created_by_user_id" | "project_id",
     scopeValue: number | string,
@@ -391,8 +441,22 @@ export class OutputRepository extends BaseRepository {
         sensitivity: input.sensitivity,
         content: input.content,
         revision: nextRevision,
+        revision_created_by_user_id: input.updatedByUserId,
+        revision_created_at: new Date().toISOString(),
+        revision_operation: input.operation ?? "updated",
+        restored_from_revision: input.restoredFromRevision ?? null,
       },
-      ["title", "status", "sensitivity", "content", "revision"],
+      [
+        "title",
+        "status",
+        "sensitivity",
+        "content",
+        "revision",
+        "revision_created_by_user_id",
+        "revision_created_at",
+        "revision_operation",
+        "restored_from_revision",
+      ],
       "id = ? AND revision = ?",
       [outputId, input.expectedRevision],
       { jsonFields: ["content"] },
@@ -403,9 +467,10 @@ export class OutputRepository extends BaseRepository {
     }
 
     const revisionInsert = this.env.DB.prepare(
-      `INSERT INTO output_revision
-			 (output_id, revision, title, status, sensitivity, content, created_by_user_id)
-			 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT OR IGNORE INTO output_revision
+			 (output_id, revision, title, status, sensitivity, content, provenance_json,
+			  created_by_user_id, created_at, operation, restored_from_revision)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(
       outputId,
       existing.revision,
@@ -413,7 +478,15 @@ export class OutputRepository extends BaseRepository {
       existing.status,
       existing.sensitivity,
       existing.content,
-      input.updatedByUserId,
+      existing.provenance_json == null
+        ? null
+        : typeof existing.provenance_json === "string"
+          ? existing.provenance_json
+          : JSON.stringify(existing.provenance_json),
+      existing.revision_created_by_user_id ?? existing.created_by_user_id,
+      existing.revision_created_at ?? existing.updated_at ?? existing.created_at,
+      existing.revision_operation ?? (existing.revision === 1 ? "created" : "updated"),
+      existing.restored_from_revision ?? null,
     );
     const updateStatement = this.env.DB.prepare(update.query).bind(...update.values);
     const statements = [revisionInsert, updateStatement];
@@ -444,6 +517,10 @@ export class OutputRepository extends BaseRepository {
 
     if (!results.every((result) => result.success)) {
       throw new AssistantError("Failed to update output", ErrorType.DATABASE_ERROR);
+    }
+
+    if (results[1]?.meta?.changes !== 1) {
+      throw new AssistantError("Output has changed", ErrorType.CONFLICT_ERROR, 409);
     }
 
     await this.cache?.delete(KVCache.createKey("output", outputId));
@@ -549,13 +626,34 @@ export class OutputRepository extends BaseRepository {
       return;
     }
 
-    await this.env.DB.batch(
-      sourceIds.map((sourceId) =>
+    const output = await this.getOutputIncludingDeleting(outputId);
+
+    if (!output) {
+      return;
+    }
+
+    const provenance = addOutputProvenanceSources(
+      parseOutputProvenance(output.provenance_json, output.created_at),
+      sourceIds,
+    );
+    const statements = [
+      ...sourceIds.map((sourceId) =>
         this.env.DB.prepare(
           "INSERT OR IGNORE INTO output_source (output_id, source_id) VALUES (?, ?)",
         ).bind(outputId, sourceId),
       ),
-    );
+      this.env.DB.prepare("UPDATE output SET provenance_json = ? WHERE id = ?").bind(
+        JSON.stringify(provenance),
+        outputId,
+      ),
+    ];
+    const results = await this.env.DB.batch(statements);
+
+    if (!results.every((result) => result.success)) {
+      throw new AssistantError("Failed to attach output sources", ErrorType.DATABASE_ERROR);
+    }
+
+    await this.cache?.delete(KVCache.createKey("output", outputId));
   }
 
   async createShare(input: {
@@ -622,6 +720,15 @@ export class OutputRepository extends BaseRepository {
     );
 
     return this.runQuery<OutputRevisionRecord>(query, values);
+  }
+
+  async getRevision(outputId: string, revision: number): Promise<OutputRevisionRecord | null> {
+    const { query, values } = this.buildSelectQuery("output_revision", {
+      output_id: outputId,
+      revision,
+    });
+
+    return this.runQuery<OutputRevisionRecord>(query, values, true);
   }
 
   private async selectOne(conditions: Record<string, unknown>): Promise<OutputRecord | null> {

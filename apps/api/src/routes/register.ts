@@ -11,6 +11,7 @@ import auth from "./auth";
 import capabilities from "./capabilities";
 import chat from "./chat";
 import models from "./models";
+import notifications from "./notifications";
 import outputs from "./outputs";
 import plans from "./plans";
 import projects from "./projects";
@@ -37,6 +38,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/chat", chat);
   app.route("/apps", apps);
   app.route("/models", models);
+  app.route("/notifications", notifications);
   app.route("/outputs", outputs);
   app.route("/tasks", tasks);
   app.route("/templates", templates);

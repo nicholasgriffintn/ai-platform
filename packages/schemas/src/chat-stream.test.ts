@@ -254,4 +254,22 @@ describe("parseChatStreamSseBuffer", () => {
       remainingBuffer: "",
     });
   });
+
+  it("rejects oversized complete and unterminated events without weakening later parsing", () => {
+    expect(() =>
+      parseChatStreamSseBuffer(`data: ${"x".repeat(33)}`, { maxEventBytes: 32 }),
+    ).toThrow("Chat stream event exceeded 32 bytes");
+    expect(() =>
+      parseChatStreamSseBuffer(`data: ${"x".repeat(33)}\n\n`, { maxEventBytes: 32 }),
+    ).toThrow("Chat stream event exceeded 32 bytes");
+    expect(
+      parseChatStreamSseBuffer('data: {"type":"done"}\n\n', { maxEventBytes: 32 }).events,
+    ).toEqual([{ type: "done" }]);
+  });
+
+  it("counts non-ASCII stream events against the byte ceiling", () => {
+    expect(() =>
+      parseChatStreamSseBuffer(`data: ${"🦎".repeat(8)}`, { maxEventBytes: 32 }),
+    ).toThrow("Chat stream event exceeded 32 bytes");
+  });
 });

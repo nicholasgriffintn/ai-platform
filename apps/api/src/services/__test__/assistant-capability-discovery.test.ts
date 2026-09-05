@@ -48,6 +48,28 @@ describe("discoverAssistantCapabilities", () => {
         }),
       }),
     ]);
+    expect(result.readiness).toMatchObject({ state: "ready", reasonCode: "ready" });
+  });
+
+  it("returns a fresh unknown result when discovery sources cannot be checked", async () => {
+    const { createUnknownCapabilityDiscoveryResult } =
+      await import("../assistant-capability-discovery");
+    const result = createUnknownCapabilityDiscoveryResult(
+      "send mail",
+      new Date("2026-09-05T10:00:00.000Z"),
+    );
+
+    expect(result).toMatchObject({
+      query: "send mail",
+      items: [],
+      readiness: {
+        state: "unknown",
+        reasonCode: "check_failed",
+        checkedAt: "2026-09-05T10:00:00.000Z",
+        expiresAt: "2026-09-05T10:01:00.000Z",
+        action: { kind: "retry" },
+      },
+    });
   });
 
   it("does not activate a native tool blocked by the current policy", () => {

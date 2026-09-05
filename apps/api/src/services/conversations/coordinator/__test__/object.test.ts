@@ -47,11 +47,29 @@ function createCoordinator() {
   return new ConversationCoordinator(ctx as never, {} as never);
 }
 
-function acquire(coordinator: any, kind: string) {
+function acquire(coordinator: any, kind: string, ownerToken = "owner-1") {
   return coordinator.fetch(
     new Request("https://coordinator/acquire", {
       method: "POST",
-      body: JSON.stringify({ kind }),
+      body: JSON.stringify({ kind, ownerToken }),
+    }),
+  );
+}
+
+function release(coordinator: any, ownerToken = "owner-1") {
+  return coordinator.fetch(
+    new Request("https://coordinator/release", {
+      method: "POST",
+      body: JSON.stringify({ ownerToken }),
+    }),
+  );
+}
+
+function ownerCall(coordinator: any, path: "assert" | "renew", ownerToken = "owner-1") {
+  return coordinator.fetch(
+    new Request(`https://coordinator/${path}`, {
+      method: "POST",
+      body: JSON.stringify({ ownerToken }),
     }),
   );
 }
@@ -70,7 +88,7 @@ describe("ConversationCoordinator", () => {
       status: "running",
       currentOperation: "user_message",
     });
-    await coordinator.fetch(new Request("https://coordinator/release", { method: "POST" }));
+    await release(coordinator);
     const finished = await coordinator.fetch(
       new Request("https://coordinator/status", { method: "POST" }),
     );
@@ -111,7 +129,7 @@ describe("ConversationCoordinator", () => {
     const coordinator = createCoordinator();
 
     await acquire(coordinator, "user_message");
-    await coordinator.fetch(new Request("https://coordinator/release", { method: "POST" }));
+    await release(coordinator);
 
     const second = await acquire(coordinator, "edit_messages").then((response: Response) =>
       response.json(),
@@ -126,5 +144,116 @@ describe("ConversationCoordinator", () => {
     const response = await acquire(coordinator, "not_a_thread_operation");
 
     expect(response.status).toBe(400);
+  });
+
+  it("refuses acquisition and release without an owner token", async () => {
+    const coordinator = createCoordinator();
+    const acquisition = await coordinator.fetch(
+      new Request("https://coordinator/acquire", {
+        method: "POST",
+        body: JSON.stringify({ kind: "compact" }),
+      }),
+    );
+    const releaseResponse = await coordinator.fetch(
+      new Request("https://coordinator/release", {
+        method: "POST",
+        body: JSON.stringify({}),
+      }),
+    );
+
+    expect(acquisition.status).toBe(400);
+    expect(releaseResponse.status).toBe(400);
+  });
+
+  it("does not let an expired owner release a successor lease", async () => {
+    vi.useFakeTimers();
+    try {
+      const coordinator = createCoordinator();
+
+      await acquire(coordinator, "user_message", "owner-old");
+      vi.advanceTimersByTime(5 * 60 * 1000);
+      await acquire(coordinator, "edit_messages", "owner-new");
+
+      const staleRelease = await release(coordinator, "owner-old");
+      const status = await coordinator.fetch(
+        new Request("https://coordinator/status", { method: "POST" }),
+      );
+
+      expect(await staleRelease.json()).toEqual({ released: false });
+      expect(await status.json()).toMatchObject({
+        status: "running",
+        currentOperation: "edit_messages",
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("renews a live lease so work can continue beyond five minutes", async () => {
+    vi.useFakeTimers();
+    try {
+      const coordinator = createCoordinator();
+
+      await acquire(coordinator, "user_message");
+      vi.advanceTimersByTime(4 * 60 * 1000);
+      const renewal = await ownerCall(coordinator, "renew");
+      vi.advanceTimersByTime(4 * 60 * 1000);
+      const status = await coordinator.fetch(
+        new Request("https://coordinator/status", { method: "POST" }),
+      );
+
+      expect(await renewal.json()).toMatchObject({ renewed: true });
+      expect(await status.json()).toMatchObject({
+        status: "running",
+        currentOperation: "user_message",
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("refreshes a current owner's lease at the commit fence", async () => {
+    vi.useFakeTimers();
+    try {
+      const coordinator = createCoordinator();
+
+      await acquire(coordinator, "user_message");
+      vi.advanceTimersByTime(4 * 60 * 1000);
+      const ownership = await ownerCall(coordinator, "assert");
+      vi.advanceTimersByTime(4 * 60 * 1000);
+      const status = await coordinator.fetch(
+        new Request("https://coordinator/status", { method: "POST" }),
+      );
+
+      expect(await ownership.json()).toMatchObject({ owned: true });
+      expect(await status.json()).toMatchObject({ status: "running" });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("rejects stale renewal and ownership checks without exposing the successor token", async () => {
+    vi.useFakeTimers();
+    try {
+      const coordinator = createCoordinator();
+
+      await acquire(coordinator, "user_message", "owner-old");
+      vi.advanceTimersByTime(5 * 60 * 1000);
+      await acquire(coordinator, "edit_messages", "owner-new");
+
+      const staleRenewal = await ownerCall(coordinator, "renew", "owner-old");
+      const staleOwnership = await ownerCall(coordinator, "assert", "owner-old");
+      const status = await coordinator.fetch(
+        new Request("https://coordinator/status", { method: "POST" }),
+      );
+      const statusBody = await status.json();
+
+      expect(await staleRenewal.json()).toEqual({ renewed: false });
+      expect(await staleOwnership.json()).toEqual({ owned: false });
+      expect(statusBody).toMatchObject({ status: "running", currentOperation: "edit_messages" });
+      expect(statusBody).not.toHaveProperty("ownerToken");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

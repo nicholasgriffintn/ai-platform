@@ -6,8 +6,7 @@ import {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { SessionManager } from "~/lib/session/SessionManager";
-import { acquireThread, releaseThread } from "~/services/conversations/coordinator/client";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { acquireThread, threadLockError } from "~/services/conversations/coordinator/client";
 
 export type CompactChatCompletionContext = Pick<
   ServiceContext,
@@ -28,11 +27,8 @@ export async function handleCompactChatCompletion(
     kind: "compact",
   });
 
-  if (!lock.acquired) {
-    throw new AssistantError(
-      "This conversation is busy. Try compacting again once the current response finishes.",
-      ErrorType.CONFLICT_ERROR,
-    );
+  if (lock.acquired === false) {
+    throw threadLockError(lock);
   }
 
   try {
@@ -40,6 +36,7 @@ export async function handleCompactChatCompletion(
       database: context.database,
       user,
       env: context.env,
+      writeFence: lock.lease,
     });
 
     const messages = await conversationManager.getAllMessages(completion_id, {
@@ -67,6 +64,6 @@ export async function handleCompactChatCompletion(
       conversation,
     });
   } finally {
-    await releaseThread({ env: context.env, conversationId: completion_id });
+    await lock.lease.release();
   }
 }

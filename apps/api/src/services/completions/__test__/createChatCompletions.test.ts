@@ -2,6 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleCreateChatCompletions } from "../createChatCompletions";
 
+const { mockConversationManagerGetInstance, mockThreadLease } = vi.hoisted(() => ({
+  mockConversationManagerGetInstance: vi.fn(() => ({ getAllMessages: vi.fn() })),
+  mockThreadLease: {
+    assertOwned: vi.fn(async () => undefined),
+    release: vi.fn(async () => undefined),
+  },
+}));
+
 vi.mock("~/lib/chat/core", () => ({
   processChatRequest: vi.fn(),
 }));
@@ -11,7 +19,11 @@ vi.mock("~/lib/chat/messages/assistant-format", () => ({
 }));
 
 vi.mock("~/lib/conversationManager", () => ({
-  ConversationManager: { getInstance: vi.fn(() => ({ getAllMessages: vi.fn() })) },
+  ConversationManager: { getInstance: mockConversationManagerGetInstance },
+}));
+
+vi.mock("~/services/conversations/coordinator/client", () => ({
+  withThreadLock: vi.fn(async (_params, run) => run(mockThreadLease)),
 }));
 
 vi.mock("~/services/apps/connectors/approved-operation-replay", () => ({
@@ -268,6 +280,9 @@ describe("handleCreateChatCompletions", () => {
           context,
           user: mockUser,
         }),
+      );
+      expect(mockConversationManagerGetInstance).toHaveBeenCalledWith(
+        expect.objectContaining({ writeFence: mockThreadLease }),
       );
       expect(mockProcessChatRequest).toHaveBeenCalledWith(
         expect.objectContaining({

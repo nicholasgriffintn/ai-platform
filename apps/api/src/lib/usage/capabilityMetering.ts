@@ -167,6 +167,8 @@ interface RecordCapabilityCallParams {
   env: IEnv;
   userId: number;
   serviceRepositories?: RepositoryManager;
+  runId?: string;
+  runAttempt?: number;
   args: readonly unknown[];
   result: unknown;
   extractor: QuantityExtractor;
@@ -208,6 +210,8 @@ async function recordCapabilityCall(params: RecordCapabilityCallParams): Promise
       projectId: attribution.projectId ?? requestStringField(params.args, "projectId"),
       workspaceId: attribution.workspaceId,
       rates,
+      runId: params.runId ?? null,
+      runAttempt: params.runAttempt ?? null,
     };
 
     await emitUsageEvents({ env: params.env, repositories, drafts: [draft] });
@@ -246,6 +250,8 @@ export function withCapabilityMetering<T>(
       ? (target as { name: string }).name
       : providerName;
   const serviceRepositories = context?.serviceContext?.repositories;
+  const runId = context?.serviceContext?.executionRunId;
+  const runAttempt = context?.serviceContext?.executionRunAttempt;
 
   return new Proxy(target, {
     get(currentTarget, prop) {
@@ -270,6 +276,8 @@ export function withCapabilityMetering<T>(
           env,
           userId,
           serviceRepositories,
+          runId,
+          runAttempt,
           args,
           result,
           extractor,

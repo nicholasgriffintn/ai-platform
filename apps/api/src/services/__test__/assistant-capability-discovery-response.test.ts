@@ -14,6 +14,14 @@ function resultWithItem(
     query: "set a reminder",
     items: [item],
     total: 1,
+    readiness: {
+      protocolVersion: 1,
+      state: item.state,
+      reasonCode: item.state === "ready" ? "ready" : "credential_required",
+      reason: item.reason,
+      checkedAt: "2026-09-05T10:00:00.000Z",
+      expiresAt: "2026-09-05T10:01:00.000Z",
+    },
   };
 }
 

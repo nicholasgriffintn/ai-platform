@@ -30,6 +30,8 @@ function baseParams() {
     env: {} as never,
     completionId: "conversation-1",
     usageScopeId: "tool-call-1",
+    runId: "run-1",
+    runAttempt: 2,
     question: "Should we migrate?",
     members: MEMBERS,
     turnBrief: "Turn brief.",
@@ -107,6 +109,9 @@ describe("runPanel", () => {
       "panel:tool-call-1:1",
       "panel:tool-call-1:2",
     ]);
+    expect(mocks.recordModelTurnUsage).toHaveBeenCalledWith(
+      expect.objectContaining({ runId: "run-1", runAttempt: 2 }),
+    );
   });
 
   it("stops at the turn budget when members keep routing onward", async () => {

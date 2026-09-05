@@ -281,10 +281,13 @@ addRoute(app, "post", "/logout", {
       const sessionId = extractSessionIdFromCookies(cookies);
 
       const serviceContext = getServiceContext(c);
+      const user = c.get("user");
 
       await handleLogout({
         context: serviceContext,
         sessionId,
+        userId: user?.id,
+        notificationInstallationId: c.req.header("X-Notification-Installation") ?? null,
       });
 
       c.header("Set-Cookie", createLogoutCookie());

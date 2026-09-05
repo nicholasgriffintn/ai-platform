@@ -1,0 +1,1 @@
+ALTER TABLE `conversation_run` ADD `retry_json` text;

@@ -1,8 +1,13 @@
 import z from "zod/v4";
 
+import {
+  chatRunCommandReceiptSchema,
+  chatRunSchema,
+  storedChatMessageResponseSchema,
+} from "./chat-runs";
 import { normaliseCompactionStatusMessage } from "./compaction-status";
 import { messagePartsSchema } from "./message-parts";
-import { messageRoleSchema, messageSchema } from "./shared";
+import { messageSchema } from "./shared";
 import { threadOperationSchema } from "./thread-operations";
 
 export {
@@ -11,6 +16,7 @@ export {
   chatHostedToolSettingsSchema,
   chatMessageContentPartSchema,
   chatRequestOptionsSchema,
+  chatRunCommandInputSchema,
   chatResponseFormatSchema,
   chatToolChoiceSchema,
   connectorApprovalIdSchema,
@@ -52,6 +58,7 @@ export const chatCompletionResponseSchema = z.object({
     })
     .optional(),
   log_id: z.string().optional(),
+  run: chatRunCommandReceiptSchema.optional(),
 });
 
 export const countTokensJsonSchema = z.object({
@@ -188,6 +195,7 @@ export const getSharedConversationParamsSchema = z.object({
 export const getChatCompletionResponseSchema = z.object({
   id: z.string(),
   active_operation: threadOperationSchema.nullable().optional(),
+  latest_run: chatRunSchema.nullable().optional(),
   has_branches: z.boolean().optional(),
   type: conversationTypeSchema,
   title: z.string().nullable(),
@@ -199,69 +207,17 @@ export const getChatCompletionResponseSchema = z.object({
   share_id: z.string().nullable(),
   project_id: z.string().nullable().optional(),
   settings: z.record(z.string(), z.any()).optional(),
+  messages: z.array(storedChatMessageResponseSchema).optional(),
+  message_count: z.number().int().nonnegative().optional(),
+  has_more_messages: z.boolean().optional(),
+  oldest_message_id: z.string().nullable().optional(),
 });
-
-const storedChatMessageResponseSchema = z
-  .object({
-    id: z.string().optional(),
-    role: messageRoleSchema,
-    name: z.string().nullable().optional(),
-    tool_calls: z.array(z.unknown()).nullable().optional(),
-    parts: messagePartsSchema.nullable().optional(),
-    content: z
-      .union([z.string(), z.array(z.unknown()), z.record(z.string(), z.unknown())])
-      .nullable()
-      .optional(),
-    status: z.string().nullable().optional(),
-    data: z.record(z.string(), z.any()).nullable().optional(),
-    completion_id: z.string().nullable().optional(),
-    created: z.number().optional(),
-    model: z.string().nullable().optional(),
-    provider: z.string().nullable().optional(),
-    log_id: z.string().nullable().optional(),
-    reasoning: z
-      .object({
-        collapsed: z.boolean().optional(),
-        content: z.string(),
-      })
-      .nullable()
-      .optional(),
-    citations: z.array(z.string()).nullable().optional(),
-    app: z.string().nullable().optional(),
-    mode: z.string().nullable().optional(),
-    parent_message_id: z.string().nullable().optional(),
-    tool_call_id: z.string().nullable().optional(),
-    tool_call_arguments: z.any().optional(),
-    timestamp: z.number().optional(),
-    platform: z.string().nullable().optional(),
-    usage: z.record(z.string(), z.any()).nullable().optional(),
-  })
-  .passthrough()
-  .superRefine((message, ctx) => {
-    const hasContent = message.content !== undefined && message.content !== null;
-    const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
-    const hasToolCalls = Array.isArray(message.tool_calls) && message.tool_calls.length > 0;
-
-    if (!hasContent && !hasParts && !hasToolCalls) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["content"],
-        message: "Stored message responses must include content, parts, or tool_calls",
-      });
-    }
-
-    if (message.role === "compaction" && !normaliseCompactionStatusMessage(message)) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["parts"],
-        message: "Compaction messages must include a valid compaction part",
-      });
-    }
-  });
 
 export const getChatCompletionMessagesResponseSchema = z.object({
   messages: z.array(storedChatMessageResponseSchema),
   conversation_id: z.string(),
+  has_more: z.boolean().optional(),
+  oldest_message_id: z.string().nullable().optional(),
 });
 
 export const compactChatCompletionResponseSchema = z

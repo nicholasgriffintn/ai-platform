@@ -148,6 +148,76 @@
       "when": 1788548365352,
       "tag": "0020_old_switch",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1788574959906,
+      "tag": "0021_late_grandmaster",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1788577022702,
+      "tag": "0022_eager_cargill",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1788579827838,
+      "tag": "0023_glossy_stephen_strange",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1788606981229,
+      "tag": "0024_purple_morgan_stark",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1788609471647,
+      "tag": "0025_high_kronos",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1788613105376,
+      "tag": "0026_melodic_black_panther",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "6",
+      "when": 1788614881253,
+      "tag": "0027_flippant_whistler",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "6",
+      "when": 1788616238347,
+      "tag": "0028_boring_gateway",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "6",
+      "when": 1788617719266,
+      "tag": "0029_dapper_alex_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "6",
+      "when": 1788619259248,
+      "tag": "0030_many_lizard",
+      "breakpoints": true
     }
   ]
 }

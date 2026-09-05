@@ -45,6 +45,8 @@ function createParams(conversation: Message[]) {
     params: {
       completionId: "completion-1",
       usageScopeId: "user-message-1",
+      runId: "run-1",
+      runAttempt: 2,
       conversationManager,
       toolRequestContext: { context: undefined },
       env: {},
@@ -97,6 +99,8 @@ describe("createModelEnsembleStream", () => {
         model: "secondary-model",
         provider: "test-provider",
         messageId: "ensemble:user-message-1:0:secondary-model",
+        runId: "run-1",
+        runAttempt: 2,
       }),
     );
   });

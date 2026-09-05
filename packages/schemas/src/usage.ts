@@ -14,17 +14,68 @@ export const creditStateSchema = z.enum(CREDIT_STATES);
 
 export type CreditState = z.infer<typeof creditStateSchema>;
 
-export const USAGE_RESERVATION_KINDS = ["realtime", "sandbox"] as const;
+export const USAGE_RESERVATION_KINDS = ["realtime", "sandbox", "chat_run"] as const;
 
 export const usageReservationKindSchema = z.enum(USAGE_RESERVATION_KINDS);
 
 export type UsageReservationKind = z.infer<typeof usageReservationKindSchema>;
 
-export const USAGE_RESERVATION_STATUSES = ["held", "settled", "released"] as const;
+export const USAGE_RESERVATION_STATUSES = ["held", "releasing", "settled", "released"] as const;
 
 export const usageReservationStatusSchema = z.enum(USAGE_RESERVATION_STATUSES);
 
 export type UsageReservationStatus = z.infer<typeof usageReservationStatusSchema>;
+
+export const chatRunUsageMeasurementSchema = z.enum(["reported", "estimated", "mixed", "unknown"]);
+
+export const chatRunUsageSourceSummarySchema = z.object({
+  source: usageSourceSchema,
+  eventCount: z.number().int().nonnegative(),
+  costMicros: z.number().int().nonnegative(),
+  creditMicros: z.number().int().nonnegative(),
+  estimatedPriceEventCount: z.number().int().nonnegative(),
+});
+
+export const chatRunUsageAttemptSchema = z.object({
+  attempt: z.number().int().positive(),
+  measurement: chatRunUsageMeasurementSchema,
+  inputTokens: z.number().int().nonnegative().nullable(),
+  eventCount: z.number().int().nonnegative(),
+  costMicros: z.number().int().nonnegative().nullable(),
+  creditMicros: z.number().int().nonnegative().nullable(),
+  estimatedPriceEventCount: z.number().int().nonnegative(),
+});
+
+export const chatRunUsageSchema = z.object({
+  protocolVersion: z.literal(1),
+  runId: z.string().min(1),
+  currentAttempt: z.number().int().positive(),
+  measurement: chatRunUsageMeasurementSchema,
+  reservation: z
+    .object({
+      creditMicros: z.number().int().nonnegative(),
+      status: usageReservationStatusSchema,
+      expiresAt: z.string().nullable(),
+      createdAt: z.string(),
+      updatedAt: z.string().nullable(),
+    })
+    .nullable(),
+  consumption: z.object({
+    status: z.enum(["recorded", "processing", "unknown"]),
+    eventCount: z.number().int().nonnegative(),
+    costMicros: z.number().int().nonnegative().nullable(),
+    creditMicros: z.number().int().nonnegative().nullable(),
+    estimatedPriceEventCount: z.number().int().nonnegative(),
+    bySource: z.array(chatRunUsageSourceSummarySchema),
+  }),
+  attempts: z.array(chatRunUsageAttemptSchema),
+  settlement: z.object({
+    status: z.enum(["pending", "settled", "released", "missing"]),
+    at: z.string().nullable(),
+  }),
+});
+
+export type ChatRunUsage = z.infer<typeof chatRunUsageSchema>;
 
 export const USAGE_PERIOD_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 

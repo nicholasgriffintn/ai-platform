@@ -1,17 +1,29 @@
 import {
   nextFlowStageId,
+  chatRunCommandReceiptResponseSchema,
   PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
   PROJECT_TASK_RUN_TASK_TYPE,
   isTerminalGoalStatus,
+  type ChatRun,
   type ProjectTask,
   type ProjectTaskBlockedReason,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
+import { finishUsageReservation } from "~/lib/usage/reservations";
 import { buildAgentPersona } from "~/services/agents/completion-tools";
+import { scheduleComposioConnectorRunCleanup } from "~/services/apps/connectors/composio-run";
+import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import { acquireThread } from "~/services/conversations/coordinator/client";
 import { GoalService } from "~/services/goals/GoalService";
+import {
+  isTaskExecutionOwnershipLostError,
+  TaskExecutionLeaseBusyError,
+  TaskExecutionOwnershipLostError,
+} from "~/services/tasks/task-execution-lease";
+import type { TaskExecutionLease } from "~/services/tasks/TaskHandler";
 import { TaskService } from "~/services/tasks/TaskService";
 import { parseProjectFlow } from "~/services/workspaces/format";
 import type { IEnv, Message } from "~/types";
@@ -21,8 +33,10 @@ import { getLogger } from "~/utils/logger";
 import { extractTextFromMessageContent } from "~/utils/messages";
 
 import { getPendingProjectTaskToolApproval } from "./approvals";
+import { reconcileTaskNotifications } from "./attention";
 import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from "./completions";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
+import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
 import { getPendingProjectTaskQuestions } from "./questions";
 import { projectTaskStatusForGoal } from "./transitions";
 
@@ -249,14 +263,150 @@ export function buildTaskRunMessages(history: Message[], prompt: string): Messag
 async function blockTask(
   context: ServiceContext,
   taskId: string,
+  dispatchTaskId: string,
+  executionLease: TaskExecutionLease,
   reason: ProjectTaskBlockedReason,
   detail: string,
 ): Promise<void> {
-  await context.repositories.projectTasks.updateTask(taskId, {
-    status: "blocked",
-    blockedReason: reason,
-    blockedDetail: detail.slice(0, 500),
+  await updateOwnedProjectTask({
+    context,
+    taskId,
+    dispatchTaskId,
+    executionLease,
+    updates: {
+      status: "blocked",
+      blockedReason: reason,
+      blockedDetail: detail.slice(0, 500),
+    },
   });
+}
+
+async function updateOwnedProjectTask(params: {
+  context: ServiceContext;
+  taskId: string;
+  dispatchTaskId: string;
+  executionLease: TaskExecutionLease;
+  updates: Parameters<ServiceContext["repositories"]["projectTasks"]["updateTask"]>[1];
+}): Promise<ProjectTask> {
+  await params.executionLease.assertOwned();
+  const updated = await params.context.repositories.projectTasks.updateTask(
+    params.taskId,
+    params.updates,
+    {
+      dispatchTaskId: params.dispatchTaskId,
+      ownerToken: params.executionLease.ownerToken,
+    },
+  );
+
+  if (!updated) {
+    throw new TaskExecutionOwnershipLostError();
+  }
+
+  await reconcileTaskNotifications(params.context, updated);
+
+  return updated;
+}
+
+async function releaseDurableRunResources(
+  context: ServiceContext,
+  run: ChatRun,
+  options: { keepInteractionResources?: boolean } = {},
+): Promise<void> {
+  await finishUsageReservation({
+    repositories: context.repositories,
+    kind: "chat_run",
+    refId: run.id,
+    outcome: "released",
+  });
+
+  if (!options.keepInteractionResources) {
+    await scheduleComposioConnectorRunCleanup(context, run.id);
+  }
+}
+
+export async function recoverRedeliveredProjectTaskRun(params: {
+  context: ServiceContext;
+  conversationId: string;
+  executionLease: TaskExecutionLease;
+  run: ChatRun;
+}): Promise<ChatRun> {
+  const lock = await acquireThread({
+    env: params.context.env,
+    conversationId: params.conversationId,
+    kind: "durable_recovery",
+  });
+
+  if (lock.acquired === false) {
+    throw new TaskExecutionLeaseBusyError(60);
+  }
+
+  try {
+    await params.executionLease.assertOwned();
+    const current =
+      (await params.context.repositories.conversationRuns.getById(params.run.id)) ?? params.run;
+    let recovered = current;
+
+    if (
+      current.status === "accepted" ||
+      current.status === "running" ||
+      current.status === "cancelling"
+    ) {
+      const interrupted = await params.context.repositories.conversationRuns.transition({
+        runId: current.id,
+        attempt: current.attempt,
+        status: "interrupted",
+        terminalReason:
+          "The durable queue owner ended before this run reached a persisted continuation point.",
+      });
+
+      if (!interrupted) {
+        throw new TaskExecutionOwnershipLostError();
+      }
+
+      recovered = interrupted;
+    }
+
+    if (recovered.status === "awaiting_input" || recovered.status === "awaiting_approval") {
+      const interaction = await recoverPendingProjectTaskInteraction({
+        context: params.context,
+        conversationId: params.conversationId,
+        kind: recovered.status === "awaiting_input" ? "input" : "approval",
+        writeFence: lock.lease,
+      });
+
+      if (interaction.recovered === false) {
+        const failed = await params.context.repositories.conversationRuns.transition({
+          runId: recovered.id,
+          attempt: recovered.attempt,
+          status: "failed",
+          terminalReason: interaction.reason,
+        });
+
+        if (!failed) {
+          throw new TaskExecutionOwnershipLostError();
+        }
+
+        recovered = failed;
+      }
+    }
+
+    await releaseDurableRunResources(params.context, recovered, {
+      keepInteractionResources:
+        recovered.status === "awaiting_input" || recovered.status === "awaiting_approval",
+    });
+
+    recordChatRunOperationalMetric(params.context.env, {
+      signal: "recovery",
+      runId: recovered.id,
+      attempt: recovered.attempt,
+      taskId: recovered.projectTaskId ?? undefined,
+      outcome: recovered.status === "interrupted" ? "interrupted" : "success",
+    });
+
+    return recovered;
+  } finally {
+    await lock.lease.release();
+  }
 }
 
 export async function runProjectTaskDispatch(params: {
@@ -268,6 +418,7 @@ export async function runProjectTaskDispatch(params: {
   conversationId: string | null;
   approvedTools?: string[];
   resumeInterrupted?: boolean;
+  executionLease: TaskExecutionLease;
 }): Promise<{ status: "completed" | "blocked" | "skipped"; detail?: string }> {
   const { env, taskId, projectId, runnerIdentityUserId } = params;
   const baseContext = createServiceContext({ env });
@@ -283,6 +434,7 @@ export async function runProjectTaskDispatch(params: {
     projectId,
     runnerIdentityUserId,
     dispatchTaskId: params.dispatchTaskId,
+    executionOwnerToken: params.executionLease.ownerToken,
     resumeInterrupted: params.resumeInterrupted,
   });
 
@@ -293,7 +445,14 @@ export async function runProjectTaskDispatch(params: {
   const project = await context.repositories.workspaces.getProject(projectId);
 
   if (!project) {
-    await blockTask(context, taskId, "run_failed", "The project is no longer available");
+    await blockTask(
+      context,
+      taskId,
+      params.dispatchTaskId,
+      params.executionLease,
+      "run_failed",
+      "The project is no longer available",
+    );
 
     return { status: "blocked", detail: "Project missing" };
   }
@@ -307,6 +466,8 @@ export async function runProjectTaskDispatch(params: {
     await blockTask(
       context,
       taskId,
+      params.dispatchTaskId,
+      params.executionLease,
       "run_failed",
       "The person who started this task is no longer a member of the workspace",
     );
@@ -318,6 +479,8 @@ export async function runProjectTaskDispatch(params: {
     await blockTask(
       context,
       taskId,
+      params.dispatchTaskId,
+      params.executionLease,
       "token_budget",
       "This task has spent its token budget. Raise it to continue.",
     );
@@ -333,43 +496,124 @@ export async function runProjectTaskDispatch(params: {
     runtime = await resolveTaskRuntime({
       context,
       task: claimed,
-      flow: parseProjectFlow(project.flow),
+      flow: claimed.flowSnapshot ?? parseProjectFlow(project.flow),
     });
   } catch (error) {
     const detail = getErrorMessage(error);
 
-    await blockTask(context, taskId, "missing_capability", detail);
+    await blockTask(
+      context,
+      taskId,
+      params.dispatchTaskId,
+      params.executionLease,
+      "missing_capability",
+      detail,
+    );
 
     return { status: "blocked", detail };
   }
 
   const goalService = new GoalService(context.repositories.goals);
   let goalId = claimed.goalId;
+  let previousRun: ChatRun | null = null;
 
   try {
+    await params.executionLease.assertOwned();
     await ensureProjectTaskConversation({
       context,
       task: claimed,
       conversationId,
       userId: runnerIdentityUserId,
     });
-    await context.repositories.projectTasks.updateTask(taskId, { conversationId });
-    const goal = await goalService.setGoal({
-      owner: { conversationId },
-      user,
-      objective: buildGoalObjective(claimed),
-      source: "user",
+    await updateOwnedProjectTask({
+      context,
+      taskId,
+      dispatchTaskId: params.dispatchTaskId,
+      executionLease: params.executionLease,
+      updates: { conversationId },
     });
+    previousRun = claimed.runId
+      ? await context.repositories.conversationRuns.getById(claimed.runId)
+      : null;
 
-    goalId = goal.id;
-    await context.repositories.projectTasks.updateTask(taskId, { goalId });
+    if (params.resumeInterrupted && previousRun) {
+      previousRun = await recoverRedeliveredProjectTaskRun({
+        context,
+        conversationId,
+        executionLease: params.executionLease,
+        run: previousRun,
+      });
+    }
+
+    if (!params.resumeInterrupted || !previousRun) {
+      const goal = await goalService.setGoal({
+        owner: { conversationId },
+        user,
+        objective: buildGoalObjective(claimed),
+        source: "user",
+      });
+
+      goalId = goal.id;
+      await updateOwnedProjectTask({
+        context,
+        taskId,
+        dispatchTaskId: params.dispatchTaskId,
+        executionLease: params.executionLease,
+        updates: { goalId },
+      });
+    }
   } catch (error) {
+    if (isTaskExecutionOwnershipLostError(error) || error instanceof TaskExecutionLeaseBusyError) {
+      throw error;
+    }
+
     const detail = getErrorMessage(error);
 
-    await blockTask(context, taskId, "run_failed", detail);
+    await blockTask(
+      context,
+      taskId,
+      params.dispatchTaskId,
+      params.executionLease,
+      "run_failed",
+      detail,
+    );
 
     return { status: "blocked", detail };
   }
+
+  if (params.resumeInterrupted) {
+    await params.executionLease.assertOwned();
+    await context.repositories.activities.failActiveActivitiesByGroup(
+      "project_task",
+      taskId,
+      "The previous durable execution owner ended before recording an outcome.",
+    );
+  }
+
+  if (
+    params.resumeInterrupted &&
+    previousRun &&
+    (previousRun.status === "interrupted" ||
+      previousRun.status === "failed" ||
+      previousRun.status === "cancelled")
+  ) {
+    const detail =
+      previousRun.terminalReason ??
+      "The durable execution owner ended before the task reached a safe continuation point.";
+
+    await blockTask(
+      context,
+      taskId,
+      params.dispatchTaskId,
+      params.executionLease,
+      "run_failed",
+      detail,
+    );
+
+    return { status: "blocked", detail };
+  }
+
+  await params.executionLease.assertOwned();
 
   const activity = await context.repositories.activities.createActivity({
     createdByUserId: runnerIdentityUserId,
@@ -380,12 +624,14 @@ export async function runProjectTaskDispatch(params: {
     kind: "project_task_run",
     status: "running",
     summary: claimed.objective.slice(0, 200),
-    data: { taskId, stageId: claimed.stageId },
+    data: { taskId, stageId: claimed.stageId, dispatchTaskId: params.dispatchTaskId },
   });
   let responseTokens = 0;
   let responseOutput = "";
+  let completedRun: ChatRun | null = null;
 
   try {
+    await params.executionLease.assertOwned();
     const conversationManager = ConversationManager.getInstance({
       database: context.database,
       repositories: context.repositories,
@@ -394,12 +640,27 @@ export async function runProjectTaskDispatch(params: {
       store: true,
     });
     const history = await conversationManager.get(conversationId);
+    const resumableRunId =
+      !params.resumeInterrupted &&
+      (previousRun?.status === "awaiting_input" || previousRun?.status === "awaiting_approval")
+        ? previousRun.id
+        : undefined;
     const response = await handleCreateChatCompletions({
       env,
       context,
       user,
       request: {
         completion_id: conversationId,
+        command_id: params.dispatchTaskId,
+        command_payload: {
+          approvedTools: params.approvedTools ?? [],
+          dispatchTaskId: params.dispatchTaskId,
+          objective: claimed.objective,
+          projectId: claimed.projectId,
+          stageId: claimed.stageId,
+          taskId: claimed.id,
+        },
+        ...(resumableRunId ? { run_id: resumableRunId } : {}),
         conversation_type: "task",
         messages: buildTaskRunMessages(
           history,
@@ -417,6 +678,11 @@ export async function runProjectTaskDispatch(params: {
         approved_tools: params.approvedTools,
         require_approval_for: runtime.requireApprovalFor,
         enforce_mode_tool_policy: runtime.enforceModeToolPolicy,
+        durable_execution: {
+          kind: "project_task",
+          dispatchTaskId: params.dispatchTaskId,
+          executionOwnerToken: params.executionLease.ownerToken,
+        },
         tool_choice: "auto",
         metadata: { project_id: claimed.projectId },
         ...(runtime.agent ? { persona: buildAgentPersona(runtime.agent) } : {}),
@@ -424,15 +690,42 @@ export async function runProjectTaskDispatch(params: {
     });
 
     if (response instanceof Response) {
-      throw new AssistantError(
-        "A project task run unexpectedly streamed its response",
-        ErrorType.INTERNAL_ERROR,
+      const receiptResponse = chatRunCommandReceiptResponseSchema.safeParse(
+        await response.clone().json(),
       );
+
+      if (receiptResponse.success) {
+        const acceptedRun = receiptResponse.data.run.run;
+
+        completedRun = acceptedRun;
+
+        if (
+          acceptedRun.status !== "succeeded" &&
+          acceptedRun.status !== "awaiting_input" &&
+          acceptedRun.status !== "awaiting_approval"
+        ) {
+          throw new AssistantError(
+            `The accepted run cannot be reconciled from ${acceptedRun.status}`,
+            ErrorType.CONFLICT_ERROR,
+          );
+        }
+
+        responseOutput = extractTextFromMessageContent(history.at(-1)?.content ?? "").trim();
+      } else {
+        throw new AssistantError(
+          "A project task run unexpectedly streamed its response",
+          ErrorType.INTERNAL_ERROR,
+        );
+      }
+    } else {
+      responseTokens = response.usage?.total_tokens ?? 0;
+      responseOutput = extractTextFromMessageContent(response.choices[0]?.message.content).trim();
+    }
+  } catch (error) {
+    if (isTaskExecutionOwnershipLostError(error)) {
+      throw error;
     }
 
-    responseTokens = response.usage?.total_tokens ?? 0;
-    responseOutput = extractTextFromMessageContent(response.choices[0]?.message.content).trim();
-  } catch (error) {
     const detail = getErrorMessage(error);
 
     logger.error("Project task run failed", { taskId, error: detail });
@@ -456,7 +749,15 @@ export async function runProjectTaskDispatch(params: {
       }
     }
 
-    await blockTask(context, taskId, "run_failed", detail);
+    await blockTask(
+      context,
+      taskId,
+      params.dispatchTaskId,
+      params.executionLease,
+      "run_failed",
+      detail,
+    );
+    await params.executionLease.assertOwned();
     await context.repositories.activities.updateActivity(activity.id, {
       status: "failed",
       summary: detail.slice(0, 200),
@@ -466,6 +767,14 @@ export async function runProjectTaskDispatch(params: {
   }
 
   let goal = goalId ? await goalService.getGoalById(goalId) : null;
+
+  if (!completedRun) {
+    const executedTask = await context.repositories.projectTasks.getTaskById(taskId);
+
+    completedRun = executedTask?.runId
+      ? await context.repositories.conversationRuns.getById(executedTask.runId)
+      : null;
+  }
 
   if (goal?.status === "active") {
     goal = await goalService.transition({
@@ -489,7 +798,7 @@ export async function runProjectTaskDispatch(params: {
   }
 
   const tokensSpent = claimed.tokensSpent + Math.max(goal?.tokens_spent ?? 0, responseTokens);
-  const flow = parseProjectFlow(project.flow);
+  const flow = claimed.flowSnapshot ?? parseProjectFlow(project.flow);
   const nextStageId =
     goal?.status === "completed" && runtime.stage?.advance === "on_goal_complete"
       ? nextFlowStageId(flow, claimed.stageId)
@@ -500,6 +809,15 @@ export async function runProjectTaskDispatch(params: {
           stage: runtime.stage,
           conversationId,
           goal,
+          run: completedRun,
+          dispatchTaskId: params.dispatchTaskId,
+          outputIds: completedRun
+            ? (
+                await context.repositories.outputs.listProjectOutputsForRuns(claimed.projectId, [
+                  completedRun.id,
+                ])
+              ).map((output) => output.id)
+            : [],
           output: responseOutput,
         })
       : null;
@@ -508,18 +826,25 @@ export async function runProjectTaskDispatch(params: {
       ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId)
       : projection.status;
 
-  await context.repositories.projectTasks.updateTask(taskId, {
-    status: nextStatus,
-    blockedReason: projection.blockedReason,
-    blockedDetail: goal?.stopped_reason ?? null,
-    tokensSpent,
-    ...(completion ? { completions: [...claimed.completions, completion] } : {}),
-    ...(nextStatus === "done"
-      ? { completedAt: new Date().toISOString() }
-      : nextStatus === "review"
-        ? { completedAt: null }
-        : {}),
+  await updateOwnedProjectTask({
+    context,
+    taskId,
+    dispatchTaskId: params.dispatchTaskId,
+    executionLease: params.executionLease,
+    updates: {
+      status: nextStatus,
+      blockedReason: projection.blockedReason,
+      blockedDetail: goal?.stopped_reason ?? null,
+      tokensSpent,
+      ...(completion ? { completions: [...claimed.completions, completion] } : {}),
+      ...(nextStatus === "done"
+        ? { completedAt: new Date().toISOString() }
+        : nextStatus === "review"
+          ? { completedAt: null }
+          : {}),
+    },
   });
+  await params.executionLease.assertOwned();
   await context.repositories.activities.updateActivity(activity.id, {
     status: nextStatus === "blocked" ? "waiting" : "succeeded",
     summary: goal?.objective.slice(0, 200) ?? claimed.objective.slice(0, 200),
@@ -550,4 +875,41 @@ export async function runProjectTaskDispatch(params: {
   return projection.status === "blocked"
     ? { status: "blocked", detail: goal?.stopped_reason ?? undefined }
     : { status: "completed" };
+}
+
+export async function settleFailedProjectTaskDispatch(params: {
+  env: IEnv;
+  dispatchTaskId: string;
+  taskId: string;
+  executionLease: TaskExecutionLease;
+  detail: string;
+}): Promise<void> {
+  const context = createServiceContext({ env: params.env });
+  const task = await context.repositories.projectTasks.getTaskById(params.taskId);
+
+  if (task?.runId) {
+    const run = await context.repositories.conversationRuns.getById(task.runId);
+
+    if (run) {
+      await releaseDurableRunResources(context, run);
+    }
+  }
+
+  await updateOwnedProjectTask({
+    context,
+    taskId: params.taskId,
+    dispatchTaskId: params.dispatchTaskId,
+    executionLease: params.executionLease,
+    updates: {
+      status: "blocked",
+      blockedReason: "run_failed",
+      blockedDetail: params.detail.slice(0, 500),
+    },
+  });
+  await params.executionLease.assertOwned();
+  await context.repositories.activities.failActiveActivitiesByGroup(
+    "project_task",
+    params.taskId,
+    params.detail,
+  );
 }

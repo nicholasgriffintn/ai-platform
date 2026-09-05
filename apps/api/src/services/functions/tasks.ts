@@ -1,4 +1,5 @@
 import type { ApiToolDefinition } from "../../types/functions";
+import { presentPublicTask } from "../tasks/task-presentation";
 import { get_task_status as get_task_statusDescriptor, MAX_TASK_LIMIT } from "./definitions/tasks";
 
 const DEFAULT_TASK_LIMIT = 3;
@@ -45,7 +46,7 @@ export const get_task_status: ApiToolDefinition = {
         status: "success",
         name: "get_task_status",
         content: formatTaskStatus(task),
-        data: { task },
+        data: { task: presentPublicTask(task) },
       };
     }
 
@@ -66,7 +67,7 @@ export const get_task_status: ApiToolDefinition = {
       status: "success",
       name: "get_task_status",
       content: `Recent tasks:\n${tasks.map(formatTaskStatus).join("\n")}`,
-      data: { tasks },
+      data: { tasks: tasks.map(presentPublicTask) },
     };
   },
 };

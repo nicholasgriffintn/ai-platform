@@ -9,6 +9,7 @@ import {
   estimateConversationTokens,
   estimateMessageTokens,
   formatMessagesForSummary,
+  selectMessagesForSummary,
 } from "../compaction";
 
 function createMessage(id: string, content: string, role: Message["role"] = "user") {
@@ -291,8 +292,8 @@ describe("session compaction planning", () => {
   });
 
   it("compacts a million-token context window at the absolute cap, not the ratio", () => {
-    const messages = Array.from({ length: 30 }, (_, index) =>
-      createMessage(`m-${index}`, `${"x".repeat(40000)}-${index}`),
+    const messages = Array.from({ length: 60 }, (_, index) =>
+      createMessage(`m-${index}`, `${"x".repeat(15000)}-${index}`),
     );
     const estimatedTokens = estimateConversationTokens(messages);
 
@@ -304,7 +305,8 @@ describe("session compaction planning", () => {
     });
 
     expect(plan.shouldCompact).toBe(true);
-    expect(plan.messagesToKeep).toHaveLength(8);
+    expect(plan.messagesToArchive).toHaveLength(1);
+    expect(plan.messagesToKeep).toHaveLength(59);
   });
 
   it("still applies the ratio for context windows below the absolute cap", () => {
@@ -333,7 +335,7 @@ describe("session compaction planning", () => {
     expect(plan.shouldCompact).toBe(true);
   });
 
-  it("leaves off and manual modes unaffected by the absolute cap", () => {
+  it("leaves off mode unaffected by the absolute trigger cap and retains oversized manual input", () => {
     const messages = Array.from({ length: 30 }, (_, index) =>
       createMessage(`m-${index}`, `${"x".repeat(40000)}-${index}`),
     );
@@ -344,9 +346,61 @@ describe("session compaction planning", () => {
 
     const manualPlan = buildCompactionPlan(messages, { mode: "manual", contextWindow: 1000000 });
 
-    expect(manualPlan.shouldCompact).toBe(true);
-    expect(manualPlan.messagesToArchive).toHaveLength(30);
-    expect(manualPlan.messagesToKeep).toEqual([]);
+    expect(manualPlan.shouldCompact).toBe(false);
+    expect(manualPlan.messagesToArchive).toEqual([]);
+    expect(manualPlan.messagesToKeep).toEqual(messages);
+  });
+
+  it("archives only the represented prefix and retains a later constraint beyond the input cap", () => {
+    const messages = [
+      createMessage("m-0", "a".repeat(180)),
+      createMessage("constraint", "Always keep the audit log for seven years."),
+      createMessage("m-2", "Recent answer", "assistant"),
+    ];
+
+    const plan = buildCompactionPlan(messages, {
+      mode: "manual",
+      maxSummaryCharacters: 190,
+    });
+
+    expect(plan.shouldCompact).toBe(true);
+    expect(plan.messagesToArchive.map((message) => message.id)).toEqual(["m-0"]);
+    expect(plan.messagesToKeep.map((message) => message.id)).toEqual(["constraint", "m-2"]);
+    expect(plan.summaryInput).not.toContain("Always keep the audit log");
+    expect(plan.candidateMessageCount).toBe(3);
+  });
+
+  it("retains an oversized individual message instead of partially representing and archiving it", () => {
+    const messages = [
+      createMessage("oversized", "x".repeat(500)),
+      createMessage("later", "Keep this later message"),
+    ];
+
+    const plan = buildCompactionPlan(messages, {
+      mode: "manual",
+      maxSummaryCharacters: 200,
+    });
+
+    expect(plan.shouldCompact).toBe(false);
+    expect(plan.messagesToArchive).toEqual([]);
+    expect(plan.messagesToKeep).toEqual(messages);
+    expect(plan.candidateMessageCount).toBe(2);
+  });
+
+  it("does not treat truncated tool output as complete summary coverage", () => {
+    const messages = [
+      createMessage("before", "Short context"),
+      createMessage("tool", "z".repeat(500), "tool"),
+      createMessage("after", "Later context"),
+    ];
+
+    const plan = buildCompactionPlan(messages, {
+      mode: "manual",
+      maxSummaryCharacters: 200,
+    });
+
+    expect(plan.messagesToArchive.map((message) => message.id)).toEqual(["before"]);
+    expect(plan.messagesToKeep.map((message) => message.id)).toEqual(["tool", "after"]);
   });
 });
 
@@ -404,7 +458,7 @@ describe("formatMessagesForSummary", () => {
     expect(output).toContain("[Tool result](web_search)");
   });
 
-  it("truncates tool output to TOOL_RESULT_SUMMARY_LIMIT", () => {
+  it("includes complete tool output when it fits the summary input", () => {
     const msg: Message = {
       id: "t",
       role: "tool",
@@ -413,15 +467,28 @@ describe("formatMessagesForSummary", () => {
     };
     const output = formatMessagesForSummary([msg]);
 
-    expect(output).toContain("…");
-    expect(output.length).toBeLessThan(600);
+    expect(output).toContain("z".repeat(2000));
+    expect(output).not.toContain("…");
   });
 
   it("respects maxCharacters limit", () => {
     const messages = Array.from({ length: 10 }, (_, i) => createMessage(`m-${i}`, "a".repeat(200)));
     const output = formatMessagesForSummary(messages, 500);
 
-    expect(output.length).toBeLessThanOrEqual(520); // small slack for label overhead
+    expect(output.length).toBeLessThanOrEqual(500);
+  });
+
+  it("returns exact represented-message coverage", () => {
+    const messages = [
+      createMessage("m-0", "a".repeat(100)),
+      createMessage("m-1", "b".repeat(100)),
+      createMessage("m-2", "c".repeat(100)),
+    ];
+    const selection = selectMessagesForSummary(messages, 220);
+
+    expect(selection.representedMessages.map((message) => message.id)).toEqual(["m-0", "m-1"]);
+    expect(selection.unrepresentedMessages.map((message) => message.id)).toEqual(["m-2"]);
+    expect(selection.input.length).toBeLessThanOrEqual(220);
   });
 
   it("includes archived visible message text stored in parts", () => {
@@ -522,5 +589,15 @@ describe("buildFallbackSummary", () => {
     ]);
 
     expect(summary).toBe("Conversation snapshot recorded.");
+  });
+
+  it("preserves every represented message when provider summarisation is unavailable", () => {
+    const messages = Array.from({ length: 8 }, (_, index) =>
+      createMessage(`m-${index}`, `fallback message ${index}`),
+    );
+    const summary = buildFallbackSummary(messages);
+
+    expect(summary).toContain("fallback message 0");
+    expect(summary).toContain("fallback message 7");
   });
 });

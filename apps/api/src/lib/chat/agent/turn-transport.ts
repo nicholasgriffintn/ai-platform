@@ -1,6 +1,10 @@
 import type { TurnOutput } from "~/lib/chat/agent/assistant-turn";
 import { createAgentProviderIO } from "~/lib/chat/agent/provider-io";
 import { consumeProviderStream } from "~/lib/chat/agent/provider-stream";
+import {
+  runProviderCallWithRetry,
+  type ProviderRetryExecutionOptions,
+} from "~/lib/chat/policy/provider-retry";
 import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/streaming/emitter";
 import { getAIResponse } from "~/lib/chat/streaming/responses";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -22,6 +26,16 @@ export interface TurnTransportContext {
   serviceContext?: ServiceContext;
   shouldStop?: () => boolean;
   deferOutputUntilValidated?: boolean;
+  retry?: ProviderRetryExecutionOptions;
+}
+
+async function requestProviderResponse(
+  request: ChatCompletionParameters,
+  context: TurnTransportContext,
+) {
+  const operation = () => getAIResponse(request);
+
+  return context.retry ? runProviderCallWithRetry(operation, context.retry) : operation();
 }
 
 export interface ChatTurnTransport {
@@ -63,8 +77,11 @@ function formatBufferedTurn(providerResponse: unknown): TurnOutput {
 export function createBufferedTurnTransport(): ChatTurnTransport {
   return {
     streams: false,
-    async runTurn({ request }) {
-      const providerResponse = await getAIResponse({ ...request, stream: false });
+    async runTurn({ request, context }) {
+      const providerResponse = await requestProviderResponse(
+        { ...request, stream: false },
+        context,
+      );
 
       if (providerResponse instanceof ReadableStream) {
         throw new AssistantError(
@@ -82,7 +99,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
   return {
     streams: true,
     async runTurn({ request, sink, context }) {
-      const providerResponse = await getAIResponse({ ...request, stream: true });
+      const providerResponse = await requestProviderResponse({ ...request, stream: true }, context);
 
       if (!(providerResponse instanceof ReadableStream)) {
         return formatBufferedTurn(providerResponse);

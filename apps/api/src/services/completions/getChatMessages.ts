@@ -20,7 +20,13 @@ export const handleGetChatMessages = async (
   completion_id: string,
   limit?: number,
   after?: string,
-): Promise<{ messages: Message[]; conversation_id: string }> => {
+  before?: string,
+): Promise<{
+  messages: Message[];
+  conversation_id: string;
+  has_more: boolean;
+  oldest_message_id: string | null;
+}> => {
   const user = context.user ?? null;
 
   if (!user?.id) {
@@ -35,11 +41,20 @@ export const handleGetChatMessages = async (
     anonymousUser,
   });
 
+  const pageLimit = limit || 50;
+  const page = before
+    ? await conversationManager.getVisibleMessagesBefore(completion_id, pageLimit + 1, before, {
+        includeArchived: true,
+        includeSnapshots: false,
+      })
+    : await conversationManager.getVisibleMessages(completion_id, pageLimit + 1, after, {
+        includeArchived: true,
+        includeSnapshots: false,
+      });
+  const hasMore = page.length > pageLimit;
+  const boundedPage = hasMore ? (before ? page.slice(-pageLimit) : page.slice(0, pageLimit)) : page;
   const messages = await hydrateConnectorApprovalMessageState({
-    messages: await conversationManager.getVisibleMessages(completion_id, limit || 50, after, {
-      includeArchived: true,
-      includeSnapshots: false,
-    }),
+    messages: boundedPage,
     userId: user.id,
     approvals: context.repositories.connectorOperationApprovals,
   });
@@ -47,6 +62,8 @@ export const handleGetChatMessages = async (
   return {
     messages,
     conversation_id: completion_id,
+    has_more: hasMore,
+    oldest_message_id: messages[0]?.id ?? null,
   };
 };
 

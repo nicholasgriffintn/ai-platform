@@ -2,6 +2,7 @@ import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { listComposioConnectedAccounts } from "~/lib/providers/capabilities/connectors/composio/client";
+import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";
 
@@ -10,6 +11,7 @@ import { discoverComposioRunTools, executeComposioRunTool } from "./composio-run
 import { getRecipeConnectorAdapter } from "./connector-adapters";
 import type { ConnectorRunScope } from "./connector-run-scope";
 import { getRecipeConnectorAccessToken } from "./index";
+import { normaliseConnectorOperationFailure } from "./operation-outcome";
 
 export interface RecipeConnectorOperationRequest {
   provider: RecipeConnectorProvider;
@@ -137,16 +139,37 @@ export async function executeRecipeConnectorOperation(params: {
           provider: adapter.provider,
         });
 
-    return executeComposioRunTool({
-      context: params.context,
-      userId: params.userId,
-      provider: adapter.provider,
-      connectedAccount: account,
-      operationId: operation.id,
-      arguments: operationParams,
-      sessionId: params.request.sessionId,
-      scope: params.scope ?? { completionId: params.context.connectorRunId },
-    });
+    try {
+      return await executeComposioRunTool({
+        context: params.context,
+        userId: params.userId,
+        provider: adapter.provider,
+        connectedAccount: account,
+        operationId: operation.id,
+        arguments: operationParams,
+        sessionId: params.request.sessionId,
+        scope: params.scope ?? { completionId: params.context.connectorRunId },
+      });
+    } catch (error) {
+      const normalised = normaliseConnectorOperationFailure({
+        provider: adapter.provider.name,
+        operation,
+        error,
+      });
+
+      if (normalised instanceof AssistantError && normalised.context?.outcome === "unknown") {
+        recordChatRunOperationalMetric(params.context.env, {
+          signal: "uncertain_tool_outcome",
+          runId: params.context.executionRunId,
+          attempt: params.context.executionRunAttempt,
+          provider: adapter.provider.name,
+          operation: operation.id,
+          outcome: "unknown",
+        });
+      }
+
+      throw normalised;
+    }
   }
 
   if (!adapter.executeOperation) {
@@ -163,5 +186,30 @@ export async function executeRecipeConnectorOperation(params: {
     provider: params.request.provider,
   });
 
-  return adapter.executeOperation(token.accessToken, params.request.operation, operationParams);
+  try {
+    return await adapter.executeOperation(
+      token.accessToken,
+      params.request.operation,
+      operationParams,
+    );
+  } catch (error) {
+    const normalised = normaliseConnectorOperationFailure({
+      provider: adapter.provider.name,
+      operation,
+      error,
+    });
+
+    if (normalised instanceof AssistantError && normalised.context?.outcome === "unknown") {
+      recordChatRunOperationalMetric(params.context.env, {
+        signal: "uncertain_tool_outcome",
+        runId: params.context.executionRunId,
+        attempt: params.context.executionRunAttempt,
+        provider: adapter.provider.name,
+        operation: operation.id,
+        outcome: "unknown",
+      });
+    }
+
+    throw normalised;
+  }
 }

@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { recipeConnectorProviderSchema } from "./apps";
+import { readinessSchema } from "./readiness";
 
 export const CAPABILITY_DISCOVERY_TOOL_NAME = "discover_capabilities";
 export const CAPABILITY_DISCOVERY_DATA_KEY = "capabilityDiscovery";
@@ -10,7 +11,12 @@ export const RESPONSE_TOOL_ACTIVATION_DATA_KEY = "activatedTools";
 export const responseToolActivationSchema = z.array(z.string().min(1));
 
 export const capabilityDiscoveryKindSchema = z.enum(["tool", "recipe", "connector"]);
-export const capabilityDiscoveryStateSchema = z.enum(["ready", "setup_required", "unavailable"]);
+export const capabilityDiscoveryStateSchema = z.enum([
+  "ready",
+  "setup_required",
+  "unavailable",
+  "unknown",
+]);
 
 export const capabilityDiscoveryInvocationSchema = z.object({
   toolName: z.string().min(1),
@@ -48,6 +54,7 @@ export const capabilityDiscoveryResultSchema = z.object({
   items: z.array(capabilityDiscoveryItemSchema),
   total: z.number().int().nonnegative(),
   projectId: z.string().min(1).optional(),
+  readiness: readinessSchema.optional(),
 });
 
 export type CapabilityDiscoveryKind = z.infer<typeof capabilityDiscoveryKindSchema>;

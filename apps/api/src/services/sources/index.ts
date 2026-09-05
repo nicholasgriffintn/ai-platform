@@ -80,7 +80,7 @@ function formatCollection(record: SourceCollectionRecord): SourceCollection {
   };
 }
 
-async function requireSourceAccess(
+export async function requireSourceAccess(
   context: ServiceContext,
   userId: number,
   sourceId: string,

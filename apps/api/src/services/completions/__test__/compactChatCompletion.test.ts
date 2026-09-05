@@ -9,6 +9,25 @@ import {
   type CompactChatCompletionContext,
 } from "../compactChatCompletion";
 
+const { mockAcquireThread, mockThreadLease, mockWithThreadLockIfFree } = vi.hoisted(() => ({
+  mockAcquireThread: vi.fn(),
+  mockThreadLease: {
+    conversationId: "conversation-1",
+    kind: "compact",
+    ownerToken: "owner-token",
+    expiresAt: "2026-09-05T01:05:00.000Z",
+    assertOwned: vi.fn(async () => undefined),
+    release: vi.fn(async () => undefined),
+  },
+  mockWithThreadLockIfFree: vi.fn(),
+}));
+
+vi.mock("~/services/conversations/coordinator/client", async (importOriginal) => ({
+  ...(await importOriginal()),
+  acquireThread: mockAcquireThread,
+  withThreadLockIfFree: mockWithThreadLockIfFree,
+}));
+
 vi.mock("~/lib/providers/models", () => ({
   getAuxiliaryModel: vi.fn().mockResolvedValue({
     model: "summary-model",
@@ -56,22 +75,24 @@ describe("handleCompactChatCompletion", () => {
   };
 
   let conversationManager: ConversationManager;
-  let addSpy: ReturnType<typeof vi.spyOn>;
-  let archiveMessagesSpy: ReturnType<typeof vi.spyOn>;
+  let persistCompactionSpy: ReturnType<typeof vi.spyOn>;
   let getAllMessagesSpy: ReturnType<typeof vi.spyOn>;
   let getConversationDetailsSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    mockAcquireThread.mockReset().mockResolvedValue({ acquired: true, lease: mockThreadLease });
+    mockThreadLease.assertOwned.mockClear();
+    mockThreadLease.release.mockClear();
+    mockWithThreadLockIfFree.mockReset().mockImplementation(async (_params, run) => run());
     conversationManager = ConversationManager.getInstance({
       database: context.database,
       user,
       env: context.env,
     });
     vi.spyOn(ConversationManager, "getInstance").mockReturnValue(conversationManager);
-    addSpy = vi.spyOn(conversationManager, "add").mockResolvedValue(undefined);
-    archiveMessagesSpy = vi
-      .spyOn(conversationManager, "archiveMessages")
+    persistCompactionSpy = vi
+      .spyOn(conversationManager, "persistCompaction")
       .mockResolvedValue(undefined);
     getAllMessagesSpy = vi.spyOn(conversationManager, "getAllMessages").mockResolvedValue(
       Array.from({ length: 30 }, (_, index) => ({
@@ -106,20 +127,18 @@ describe("handleCompactChatCompletion", () => {
   it("compacts stored history without adding a command message or model response", async () => {
     const result = await handleCompactChatCompletion(context, "conversation-1");
 
+    expect(ConversationManager.getInstance).toHaveBeenCalledWith(
+      expect.objectContaining({ writeFence: mockThreadLease }),
+    );
     expect(getAllMessagesSpy).toHaveBeenCalledWith("conversation-1", {
       includeArchived: false,
     });
-    expect(addSpy).toHaveBeenNthCalledWith(
-      1,
+    expect(persistCompactionSpy).toHaveBeenCalledWith(
       "conversation-1",
       expect.objectContaining({
         id: "snapshot-id",
         parts: expect.arrayContaining([expect.objectContaining({ type: "snapshot" })]),
       }),
-    );
-    expect(addSpy).toHaveBeenNthCalledWith(
-      2,
-      "conversation-1",
       expect.objectContaining({
         id: "snapshot-id-compaction",
         completion_id: "conversation-1",
@@ -132,20 +151,19 @@ describe("handleCompactChatCompletion", () => {
           }),
         ]),
       }),
-    );
-    expect(archiveMessagesSpy).toHaveBeenCalledWith(
-      "conversation-1",
       expect.arrayContaining(["msg-0", "snapshot-id-compaction"]),
     );
     expect(getConversationDetailsSpy).toHaveBeenCalledWith("conversation-1", {
       includeArchived: true,
       includeSnapshots: false,
     });
-    expect(addSpy).not.toHaveBeenCalledWith(
+    expect(persistCompactionSpy).not.toHaveBeenCalledWith(
       "conversation-1",
       expect.objectContaining({
         content: "/compact",
       }),
+      expect.anything(),
+      expect.anything(),
     );
     expect(result).toEqual({
       compacted: true,
@@ -170,8 +188,19 @@ describe("handleCompactChatCompletion", () => {
     });
   });
 
+  it("persists while the handler owns the non-reentrant conversation lock", async () => {
+    mockWithThreadLockIfFree.mockResolvedValueOnce(null);
+
+    await handleCompactChatCompletion(context, "conversation-1");
+
+    expect(mockAcquireThread).toHaveBeenCalledTimes(1);
+    expect(mockWithThreadLockIfFree).not.toHaveBeenCalled();
+    expect(persistCompactionSpy).toHaveBeenCalledTimes(1);
+    expect(mockThreadLease.release).toHaveBeenCalledTimes(1);
+  });
+
   it("rejects manual compaction when the compacted history cannot be persisted", async () => {
-    archiveMessagesSpy.mockRejectedValueOnce(new Error("archive failed"));
+    persistCompactionSpy.mockRejectedValueOnce(new Error("archive failed"));
 
     await expect(handleCompactChatCompletion(context, "conversation-1")).rejects.toThrow(
       "archive failed",
@@ -212,8 +241,7 @@ describe("handleCompactChatCompletion", () => {
 
     const result = await handleCompactChatCompletion(context, "conversation-1");
 
-    expect(addSpy).not.toHaveBeenCalled();
-    expect(archiveMessagesSpy).not.toHaveBeenCalled();
+    expect(persistCompactionSpy).not.toHaveBeenCalled();
     expect(getConversationDetailsSpy).toHaveBeenCalledWith("conversation-1", {
       includeArchived: true,
       includeSnapshots: false,

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
 
-import { watchDetachedTurnCancellation } from "../turn-cancellation";
+import { watchTurnCancellation } from "../turn-cancellation";
 
 function createCache(cancelledAtMs: number | null) {
   return {
@@ -11,7 +11,7 @@ function createCache(cancelledAtMs: number | null) {
   };
 }
 
-describe("watchDetachedTurnCancellation", () => {
+describe("watchTurnCancellation", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(1_700_000_000_000);
@@ -23,7 +23,7 @@ describe("watchDetachedTurnCancellation", () => {
 
   it("honours cancellation requested well past the previous 5-tick, 5-second window", async () => {
     const cache = createCache(null);
-    const signal = watchDetachedTurnCancellation({
+    const signal = watchTurnCancellation({
       env: { CACHE: cache } as unknown as IEnv,
       completionId: "completion-1",
       isDetached: () => true,
@@ -45,7 +45,7 @@ describe("watchDetachedTurnCancellation", () => {
 
   it("stops polling once the turn ends, leaving no dangling timer", async () => {
     const cache = createCache(null);
-    const signal = watchDetachedTurnCancellation({
+    const signal = watchTurnCancellation({
       env: { CACHE: cache } as unknown as IEnv,
       completionId: "completion-1",
       isDetached: () => true,
@@ -66,7 +66,7 @@ describe("watchDetachedTurnCancellation", () => {
   it("skips polling KV while the turn is attached", async () => {
     const cache = createCache(null);
     let detached = false;
-    const signal = watchDetachedTurnCancellation({
+    const signal = watchTurnCancellation({
       env: { CACHE: cache } as unknown as IEnv,
       completionId: "completion-1",
       isDetached: () => detached,
@@ -79,6 +79,28 @@ describe("watchDetachedTurnCancellation", () => {
     await vi.advanceTimersByTimeAsync(1_000);
     expect(cache.get).toHaveBeenCalled();
 
+    signal.stop();
+  });
+
+  it("polls the exact run while the initiating stream remains attached", async () => {
+    const cache = createCache(null);
+    const isRunCancellationRequested = vi.fn().mockResolvedValue(false);
+    const signal = watchTurnCancellation({
+      env: { CACHE: cache } as unknown as IEnv,
+      completionId: "completion-1",
+      isDetached: () => false,
+      isRunCancellationRequested,
+    });
+
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(isRunCancellationRequested).toHaveBeenCalled();
+    expect(cache.get).not.toHaveBeenCalled();
+
+    isRunCancellationRequested.mockResolvedValue(true);
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(signal.shouldStop()).toBe(true);
     signal.stop();
   });
 });

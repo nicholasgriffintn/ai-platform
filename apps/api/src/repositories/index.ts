@@ -13,6 +13,7 @@ import { CapabilityConfigurationRepository } from "./CapabilityConfigurationRepo
 import { ComposioConnectorSessionRepository } from "./ComposioConnectorSessionRepository";
 import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprovalRepository";
 import { ConversationRepository } from "./ConversationRepository";
+import { ConversationRunRepository } from "./ConversationRunRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { GoalRepository } from "./GoalRepository";
 import { InfraCostDailyRepository } from "./InfraCostDailyRepository";
@@ -27,6 +28,7 @@ import { RecipeComposioTriggerRepository } from "./RecipeComposioTriggerReposito
 import { SessionRepository } from "./SessionRepository";
 import { SharedAgentRepository } from "./SharedAgentRepository";
 import { SourceRepository } from "./SourceRepository";
+import { TaskNotificationRepository } from "./TaskNotificationRepository";
 import { TaskRepository } from "./TaskRepository";
 import { TemplateRepository } from "./TemplateRepository";
 import { TrainingExampleRepository } from "./TrainingExampleRepository";
@@ -50,6 +52,7 @@ export {
   AuditRepository,
   BaseRepository,
   ConversationRepository,
+  ConversationRunRepository,
   CapabilityConfigurationRepository,
   ComposioConnectorSessionRepository,
   ConnectorOperationApprovalRepository,
@@ -62,6 +65,7 @@ export {
   OutputRepository,
   SessionRepository,
   TaskRepository,
+  TaskNotificationRepository,
   TemplateRepository,
   TrainingExampleRepository,
   UserPetRepository,
@@ -96,6 +100,7 @@ export class RepositoryManager {
   private userPetRepo: UserPetRepository;
   private capabilityConfigurationRepo: CapabilityConfigurationRepository;
   private conversationRepo: ConversationRepository;
+  private conversationRunRepo: ConversationRunRepository;
   private composioConnectorSessionRepo: ComposioConnectorSessionRepository;
   private connectorOperationApprovalRepo: ConnectorOperationApprovalRepository;
   private messageRepo: MessageRepository;
@@ -114,6 +119,7 @@ export class RepositoryManager {
   private sharedAgentRepo: SharedAgentRepository;
   private sourceRepo: SourceRepository;
   private taskRepo: TaskRepository;
+  private taskNotificationRepo: TaskNotificationRepository;
   private templateRepo: TemplateRepository;
   private memorySynthesisRepo: MemorySynthesisRepository;
   private trainingExampleRepo: TrainingExampleRepository;
@@ -135,6 +141,7 @@ export class RepositoryManager {
     this.userPetRepo = new UserPetRepository(env);
     this.capabilityConfigurationRepo = new CapabilityConfigurationRepository(env);
     this.conversationRepo = new ConversationRepository(env);
+    this.conversationRunRepo = new ConversationRunRepository(env);
     this.composioConnectorSessionRepo = new ComposioConnectorSessionRepository(env);
     this.connectorOperationApprovalRepo = new ConnectorOperationApprovalRepository(env);
     this.messageRepo = new MessageRepository(env);
@@ -153,6 +160,7 @@ export class RepositoryManager {
     this.sharedAgentRepo = new SharedAgentRepository(env);
     this.sourceRepo = new SourceRepository(env);
     this.taskRepo = new TaskRepository(env);
+    this.taskNotificationRepo = new TaskNotificationRepository(env);
     this.templateRepo = new TemplateRepository(env);
     this.memorySynthesisRepo = new MemorySynthesisRepository(env);
     this.trainingExampleRepo = new TrainingExampleRepository(env);
@@ -173,6 +181,10 @@ export class RepositoryManager {
 
   public get projectTasks(): ProjectTaskRepository {
     return this.projectTaskRepo;
+  }
+
+  public get taskNotifications(): TaskNotificationRepository {
+    return this.taskNotificationRepo;
   }
 
   public get users(): UserRepository {
@@ -233,6 +245,10 @@ export class RepositoryManager {
 
   public get conversations(): ConversationRepository {
     return this.conversationRepo;
+  }
+
+  public get conversationRuns(): ConversationRunRepository {
+    return this.conversationRunRepo;
   }
 
   public get goals(): GoalRepository {

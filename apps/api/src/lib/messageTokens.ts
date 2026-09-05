@@ -8,6 +8,10 @@ export type MessageTokenInput = Omit<Message, "parts"> & {
   parts?: unknown;
 };
 
+interface MessageTextOptions {
+  truncateToolResults?: boolean;
+}
+
 export function estimateTextTokens(text: string): number {
   return Math.ceil(text.length / CHARS_PER_TOKEN);
 }
@@ -16,9 +20,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function messageContentToText(content: Message["content"], role?: Message["role"]): string {
+export function messageContentToText(
+  content: Message["content"],
+  role?: Message["role"],
+  options: MessageTextOptions = {},
+): string {
   const truncateForTool = (text: string) => {
-    if (role === "tool" && text.length > TOOL_RESULT_SUMMARY_LIMIT) {
+    if (
+      options.truncateToolResults !== false &&
+      role === "tool" &&
+      text.length > TOOL_RESULT_SUMMARY_LIMIT
+    ) {
       return text.slice(0, TOOL_RESULT_SUMMARY_LIMIT) + "…";
     }
 
@@ -46,7 +58,11 @@ export function messageContentToText(content: Message["content"], role?: Message
   }
 }
 
-function messagePartsToText(parts: unknown, role?: Message["role"]): string {
+function messagePartsToText(
+  parts: unknown,
+  role?: Message["role"],
+  options: MessageTextOptions = {},
+): string {
   if (!Array.isArray(parts)) {
     return "";
   }
@@ -63,7 +79,7 @@ function messagePartsToText(parts: unknown, role?: Message["role"]): string {
         case "snapshot":
           return typeof part.summary === "string" ? part.summary : "";
         case "tool_result":
-          return messageContentToText(part.content as Message["content"], role);
+          return messageContentToText(part.content as Message["content"], role, options);
         case "file":
           return (
             (typeof part.name === "string" && part.name) ||
@@ -78,10 +94,13 @@ function messagePartsToText(parts: unknown, role?: Message["role"]): string {
     .trim();
 }
 
-export function messageToText(message: MessageTokenInput): string {
-  const contentText = messageContentToText(message.content, message.role).trim();
+export function messageToText(
+  message: MessageTokenInput,
+  options: MessageTextOptions = {},
+): string {
+  const contentText = messageContentToText(message.content, message.role, options).trim();
 
-  return contentText || messagePartsToText(message.parts, message.role);
+  return contentText || messagePartsToText(message.parts, message.role, options);
 }
 
 export function estimateMessageTokens(message: MessageTokenInput): number {

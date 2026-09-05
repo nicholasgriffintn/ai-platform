@@ -7,6 +7,7 @@ import {
   type AgentMessage,
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-library-agent-core";
+import type { ChatContextSnapshot, ChatRetrySnapshot } from "@ngriffin_uk/polychat-schemas";
 
 import { finaliseAssistantTurn, type TurnOutput } from "~/lib/chat/agent/assistant-turn";
 import { startConversationTitle } from "~/lib/chat/agent/conversation-title";
@@ -15,7 +16,14 @@ import { createAgentProviderIO } from "~/lib/chat/agent/provider-io";
 import type { ChatTurnTransport } from "~/lib/chat/agent/turn-transport";
 import { buildMessageParts } from "~/lib/chat/messages/parts";
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
+import {
+  applyReportedContextUsage,
+  fitMessagesToContextBudget,
+  type ContextBudgetSkill,
+} from "~/lib/chat/policy/context-budget";
+import { createProviderRetryBudget } from "~/lib/chat/policy/provider-retry";
 import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/streaming/emitter";
+import { createStreamedToolResultEvent } from "~/lib/chat/streaming/tool-result-preview";
 import {
   ARTIFACT_MARKUP_FINAL_ANSWER_NOTICE,
   isArtifactMarkupToolName,
@@ -46,11 +54,13 @@ import {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { isRetryCancelledError } from "~/utils/retries";
 
 const logger = getLogger({ prefix: "lib/chat/agent/agent-loop" });
 
 const AGENT_MAX_RECOVERY_REPLANS = 2;
 const AGENT_MAX_TURN_FAILURES = 2;
+const MAX_PROVIDER_RETRIES_PER_RUN = 2;
 const DEFAULT_INITIAL_PLAN = "Use available tools as needed, then return a final answer.";
 const FINAL_ANSWER_NOTICE =
   "You have used every tool step available for this response. No further tool calls are possible. Answer the user now with what you already have, and say plainly what you could not finish.";
@@ -137,6 +147,12 @@ export interface AgentLoopExecutionParams {
   }) => Promise<AgentFinishAssessment> | AgentFinishAssessment;
   onToolResult?: (result: Message) => Promise<void> | void;
   shouldReserveGoalFinalisation?: () => boolean;
+  contextWindow?: number;
+  contextSkills?: readonly ContextBudgetSkill[];
+  runId?: string;
+  runAttempt?: number;
+  onContextSnapshot?: (snapshot: ChatContextSnapshot) => Promise<void> | void;
+  onRetryState?: (state: ChatRetrySnapshot | null) => Promise<void> | void;
 }
 
 export interface AgentLoopExecutionResult {
@@ -181,6 +197,7 @@ export async function runAgentLoop(
   let finalStatus: string | undefined;
   let guardrailsPassed = true;
   let guardrailViolations: unknown[] = [];
+  const providerRetryBudget = createProviderRetryBudget(MAX_PROVIDER_RETRIES_PER_RUN);
 
   const transportContext = {
     env: params.env,
@@ -211,6 +228,8 @@ export async function runAgentLoop(
       requestOptions: params.requestOptions,
       guardrailPrompt: params.guardrailPrompt,
       deferOutputUntilValidated: params.deferOutputUntilValidated,
+      runId: params.runId,
+      runAttempt: params.runAttempt,
     });
 
     guardrailsPassed = finalised.guardrailsPassed;
@@ -313,10 +332,7 @@ export async function runAgentLoop(
 
       for (const result of results) {
         await params.conversationManager.add(params.completionId, result);
-        await sink.writeEvent("tool_response", {
-          tool_id: result.id,
-          result,
-        });
+        await sink.writeEvent("tool_response", createStreamedToolResultEvent(result));
       }
 
       toolResponses.push(...results);
@@ -324,6 +340,10 @@ export async function runAgentLoop(
       return results;
     },
     resolveTurn: async ({ messages, step }) => {
+      if (params.shouldStop?.()) {
+        return closingTurn("", "stopped");
+      }
+
       if (step > 1 && (await shouldStopTurnForUsage(params.conversationManager))) {
         state.stoppedForUsageLimit = true;
 
@@ -347,7 +367,6 @@ export async function runAgentLoop(
       });
       await sink.writeEvent("state", { state: StreamState.THINKING });
 
-      const providerMessages = providerIO.providerMessages(messages);
       const goalFinalisationNotice = state.goalFinalisationNotice;
       const finalAnswerNotice = state.finalAnswerNotice;
 
@@ -357,34 +376,95 @@ export async function runAgentLoop(
         state.finalAnswerForced = true;
       }
 
-      const turn = await params.transport.runTurn({
-        request: goalFinalisationNotice
-          ? {
-              ...params.requestParams,
-              messages: [...providerMessages, { role: "user", content: goalFinalisationNotice }],
-              enabled_tools: [...state.enabledToolNames],
-            }
-          : finalAnswerNotice
+      const budgetMessages = goalFinalisationNotice
+        ? [
+            ...messages,
+            {
+              role: "user" as const,
+              content: goalFinalisationNotice,
+              data: { contextControl: true },
+            },
+          ]
+        : finalAnswerNotice
+          ? [
+              ...messages,
+              {
+                role: "user" as const,
+                content: finalAnswerNotice,
+                data: { contextControl: true },
+              },
+            ]
+          : messages;
+
+      const contextBudget = fitMessagesToContextBudget({
+        messages: budgetMessages,
+        contextWindow: params.contextWindow,
+        systemPrompt:
+          typeof params.requestParams.system_prompt === "string"
+            ? params.requestParams.system_prompt
+            : "",
+        maxOutputTokens: params.requestParams.max_tokens,
+        runId: params.runId ?? params.completionId,
+        conversationId: params.completionId,
+        attempt: params.runAttempt ?? 1,
+        step,
+        model: params.model,
+        provider: params.provider,
+        skills: params.contextSkills,
+      });
+
+      await params.onContextSnapshot?.(contextBudget.snapshot);
+
+      const providerMessages = providerIO.providerMessages(contextBudget.messages);
+
+      let turn: TurnOutput & { error?: unknown };
+
+      try {
+        turn = await params.transport.runTurn({
+          request: goalFinalisationNotice
             ? {
-                ...params.requestParams,
-                messages: [...providerMessages, { role: "user", content: finalAnswerNotice }],
-                disable_functions: true,
-                enabled_tools: [...state.enabledToolNames],
-              }
-            : {
                 ...params.requestParams,
                 messages: providerMessages,
                 enabled_tools: [...state.enabledToolNames],
-              },
-        sink,
-        context: transportContext,
-      });
+              }
+            : finalAnswerNotice
+              ? {
+                  ...params.requestParams,
+                  messages: providerMessages,
+                  disable_functions: true,
+                  enabled_tools: [...state.enabledToolNames],
+                }
+              : {
+                  ...params.requestParams,
+                  messages: providerMessages,
+                  enabled_tools: [...state.enabledToolNames],
+                },
+          sink,
+          context: {
+            ...transportContext,
+            retry: providerRetryBudget.forStep(step, {
+              shouldStop: params.shouldStop,
+              onStateChange: params.onRetryState,
+            }),
+          },
+        });
+      } catch (error) {
+        if (isRetryCancelledError(error) || params.shouldStop?.()) {
+          return closingTurn("", "stopped");
+        }
+
+        throw error;
+      }
 
       if (turn.error) {
         throw new AssistantError(resolveProviderErrorMessage(turn.error), ErrorType.PROVIDER_ERROR);
       }
 
       totalUsage = sumTokenUsage(totalUsage, turn.usage) ?? totalUsage;
+
+      await params.onContextSnapshot?.(
+        applyReportedContextUsage(contextBudget.snapshot, turn.usage?.input_tokens),
+      );
 
       if (turn.stopped) {
         finalStatus = "stopped";
@@ -459,10 +539,7 @@ export async function runAgentLoop(
           callLedger: context.state.toolCallLedger,
           recoverUnknownToolCalls: !context.state.unknownToolRecoveryUsed,
           onToolResult: async (toolResult) => {
-            await sink.writeEvent("tool_response", {
-              tool_id: toolResult.id,
-              result: toolResult,
-            });
+            await sink.writeEvent("tool_response", createStreamedToolResultEvent(toolResult));
             await params.onToolResult?.(toolResult);
           },
         },
@@ -555,10 +632,7 @@ export async function runAgentLoop(
   });
 
   for (const memoryMessage of memoryMessages) {
-    await sink.writeEvent("tool_response", {
-      tool_id: memoryMessage.id,
-      result: memoryMessage,
-    });
+    await sink.writeEvent("tool_response", createStreamedToolResultEvent(memoryMessage));
   }
 
   const title = await titleRun.complete(finalMessage);

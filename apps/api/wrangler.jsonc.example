@@ -58,7 +58,9 @@
 		"CLOUDFLARE_ANALYTICS_API_TOKEN": "REPLACE_ME",
 		"SANDBOX_INSTANCE_TYPE": "basic",
 		"REALTIME_MAX_SESSION_SECONDS": "1800",
-		"COMPOSIO_USER_NAMESPACE": "production"
+		"COMPOSIO_USER_NAMESPACE": "production",
+		"WEB_PUSH_PUBLIC_KEY": "REPLACE_ME",
+		"TASK_NOTIFICATION_PROVIDER_URL": "REPLACE_ME"
 	},
 	"ai": {
 		"binding": "AI",
@@ -95,6 +97,10 @@
 			{
 				"name": "REALTIME_PROXY_COORDINATOR",
 				"class_name": "RealtimeProxyCoordinator"
+			},
+			{
+				"name": "CONVERSATION_COORDINATOR",
+				"class_name": "ConversationCoordinator"
 			}
 		]
 	},
@@ -109,6 +115,12 @@
 			"tag": "v3",
 			"new_sqlite_classes": [
 				"RealtimeProxyCoordinator"
+			]
+		},
+		{
+			"tag": "v4",
+			"new_sqlite_classes": [
+				"ConversationCoordinator"
 			]
 		}
 	],

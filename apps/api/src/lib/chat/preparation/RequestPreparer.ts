@@ -9,8 +9,10 @@ import type {
 
 import { mergeEnabledGoalToolNames } from "~/lib/chat/policy/goal-tools";
 import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/lib/chat/policy/memory";
+import type { ConversationWriteFence } from "~/lib/conversation/write-fence";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
+import { chatRunReservationExpiresAt } from "~/lib/usage/reservations";
 import { RepositoryManager } from "~/repositories";
 import {
   getConnectedRecipeConnectorProviders,
@@ -83,6 +85,7 @@ export interface PreparedRequest {
   requestOptions: CoreChatOptions["options"];
   memoryScope: MemoryScope;
   connectedConnectorProviders?: RecipeConnectorProvider[];
+  contextSkills: Array<{ id: string; name: string }>;
 }
 
 interface SavedToolConfiguration {
@@ -240,6 +243,8 @@ export class RequestPreparer {
   async prepare(
     options: CoreChatOptions,
     validationContext: ValidationContext,
+    writeFence?: ConversationWriteFence,
+    runId?: string,
   ): Promise<PreparedRequest> {
     const {
       sanitisedMessages,
@@ -293,6 +298,17 @@ export class RequestPreparer {
       store: scope.options.store,
       env: this.env,
       requestCache: scope.options.context?.requestCache,
+      writeFence,
+      runId,
+      ...(scope.options.durable_execution?.kind === "project_task" && runId
+        ? {
+            durableTurnReservation: {
+              kind: "chat_run" as const,
+              refId: runId,
+              expiresAt: chatRunReservationExpiresAt(),
+            },
+          }
+        : {}),
     });
 
     const shouldStoreMessages =
@@ -352,7 +368,6 @@ export class RequestPreparer {
       shouldStoreMessages,
       fallbackMessages: sanitisedMessages,
       messageWithContext,
-      primaryModelConfig,
     });
 
     return {
@@ -388,6 +403,9 @@ export class RequestPreparer {
       requestOptions: scope.options.options,
       memoryScope,
       connectedConnectorProviders,
+      contextSkills: skills
+        .filter((skill) => skill.state === "ready")
+        .map((skill) => ({ id: skill.id, name: skill.name })),
     };
   }
 }

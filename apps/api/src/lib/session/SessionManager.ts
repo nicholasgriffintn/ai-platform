@@ -1,10 +1,13 @@
-import { compactionStatusLabels } from "@ngriffin_uk/polychat-schemas";
+import {
+  compactionStatusLabels,
+  type CompactionCoverage,
+  type CompactionSummaryStrategy,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getSummarisePrompt } from "~/lib/prompts/summarise";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel } from "~/lib/providers/models";
-import { withThreadLockIfFree } from "~/services/conversations/coordinator/client";
 import type { ChatMode, IEnv, Message, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -13,15 +16,18 @@ import {
   buildCompactionPlan,
   buildFallbackSummary,
   type CompactionMode,
-  formatMessagesForSummary,
+  selectMessagesForSummary,
 } from "./compaction";
 
 const logger = getLogger({ prefix: "lib/session/SessionManager" });
 
 export interface SessionConversationStore {
-  add(conversationId: string, message: Message): Promise<Message>;
-  archiveMessages(conversationId: string, messageIds: string[]): Promise<void>;
-  deleteMessages(conversationId: string, messageIds: string[]): Promise<void>;
+  persistCompaction(
+    conversationId: string,
+    snapshotMessage: Message,
+    compactionMessage: Message,
+    messageIdsToArchive: string[],
+  ): Promise<void>;
 }
 
 interface SessionManagerConfig {
@@ -45,6 +51,11 @@ export interface CompactSessionResult {
   compacted: boolean;
   snapshotMessage?: Message;
   compactionMessage?: Message;
+}
+
+interface SessionSummaryResult {
+  summary: string;
+  strategy: CompactionSummaryStrategy;
 }
 
 export class SessionManager {
@@ -71,25 +82,35 @@ export class SessionManager {
       };
     }
 
-    const summary = await this.summarise(plan.messagesToArchive, input.mode);
+    const summaryResult = await this.createSummary(
+      plan.summaryInput,
+      plan.messagesToArchive,
+      input.mode,
+    );
+    const coverage: CompactionCoverage = {
+      coveredMessageIds: plan.messagesToArchive.flatMap((message) =>
+        typeof message.id === "string" && message.id.length > 0 ? [message.id] : [],
+      ),
+      coveredMessageCount: plan.messagesToArchive.length,
+      candidateMessageCount: plan.candidateMessageCount,
+      summaryInputCharacters: plan.summaryInput.length,
+      strategy: summaryResult.strategy,
+    };
     const snapshotMessage = this.snapshot(
-      summary,
+      summaryResult.summary,
       input.mode || plan.messagesToArchive.at(-1)?.mode,
       this.getSnapshotTimestamp(plan.messagesToKeep[plan.snapshotInsertionIndex]),
+      coverage,
     );
     const compactionMessage = this.compactionMarker({
       completionId: input.completionId,
       snapshotMessage,
       compaction: input.compaction ?? "auto",
       mode: input.mode || plan.messagesToArchive.at(-1)?.mode,
+      coverage,
     });
 
-    await this.persistCompaction(
-      input.completionId,
-      plan.messagesToArchive,
-      snapshotMessage,
-      compactionMessage,
-    );
+    await this.persistCompaction(input.completionId, snapshotMessage, compactionMessage, coverage);
 
     const compactedMessages = [...plan.messagesToKeep];
 
@@ -108,12 +129,20 @@ export class SessionManager {
       return "Conversation snapshot recorded.";
     }
 
-    const summaryInput = formatMessagesForSummary(messages);
+    const selection = selectMessagesForSummary(messages);
 
-    if (!summaryInput) {
+    if (!selection.input) {
       return "Conversation snapshot recorded.";
     }
 
+    return (await this.createSummary(selection.input, selection.representedMessages, mode)).summary;
+  }
+
+  private async createSummary(
+    summaryInput: string,
+    representedMessages: Message[],
+    mode?: ChatMode,
+  ): Promise<SessionSummaryResult> {
     try {
       const { model, provider } = await getAuxiliaryModel(this.env, this.user);
       const chatProvider = getChatProvider(provider, {
@@ -140,19 +169,30 @@ export class SessionManager {
       });
 
       if (typeof response?.response === "string" && response.response.trim()) {
-        return response.response.trim();
+        return {
+          summary: response.response.trim(),
+          strategy: "model_summary",
+        };
       }
     } catch (error) {
       logger.warn("Failed to summarise archived messages", {
         error,
-        count: messages.length,
+        count: representedMessages.length,
       });
     }
 
-    return buildFallbackSummary(messages);
+    return {
+      summary: buildFallbackSummary(representedMessages),
+      strategy: "fallback_transcript",
+    };
   }
 
-  public snapshot(summary: string, mode?: ChatMode, timestamp = Date.now()): Message {
+  public snapshot(
+    summary: string,
+    mode?: ChatMode,
+    timestamp = Date.now(),
+    coverage?: CompactionCoverage,
+  ): Message {
     return {
       id: generateId(),
       role: "assistant",
@@ -163,6 +203,7 @@ export class SessionManager {
           title: "Conversation snapshot",
           summary,
           timestamp,
+          coverage,
         },
         {
           type: "text",
@@ -180,11 +221,13 @@ export class SessionManager {
     snapshotMessage,
     compaction,
     mode,
+    coverage,
   }: {
     completionId: string;
     snapshotMessage: Message;
     compaction: CompactionMode;
     mode?: ChatMode;
+    coverage?: CompactionCoverage;
   }): Message {
     const label =
       compaction === "manual"
@@ -204,6 +247,7 @@ export class SessionManager {
           status: "completed",
           label,
           timestamp,
+          coverage,
         },
       ],
       mode,
@@ -223,25 +267,18 @@ export class SessionManager {
 
   private async persistCompaction(
     completionId: string,
-    messagesToArchive: Message[],
     snapshotMessage: Message,
     compactionMessage: Message,
+    coverage: CompactionCoverage,
   ): Promise<void> {
-    const archiveIds = messagesToArchive
-      .map((message) => message.id)
-      .filter((id): id is string => typeof id === "string" && id.length > 0);
+    const archiveIds = coverage.coveredMessageIds;
 
     try {
-      await withThreadLockIfFree(
-        { env: this.env, conversationId: completionId, kind: "session_compaction" },
-        async () => {
-          await this.conversationManager.add(completionId, snapshotMessage);
-          await this.conversationManager.add(completionId, compactionMessage);
-          await this.conversationManager.archiveMessages(completionId, [
-            ...archiveIds,
-            compactionMessage.id,
-          ]);
-        },
+      await this.conversationManager.persistCompaction(
+        completionId,
+        snapshotMessage,
+        compactionMessage,
+        [...archiveIds, compactionMessage.id],
       );
     } catch (error) {
       logger.warn("Failed to persist session compaction", {
@@ -249,39 +286,7 @@ export class SessionManager {
         completionId,
         archivedCount: archiveIds.length,
       });
-      await this.cleanupInsertedCompactionMessages(
-        completionId,
-        snapshotMessage,
-        compactionMessage,
-        error,
-      );
       throw error;
-    }
-  }
-
-  private async cleanupInsertedCompactionMessages(
-    completionId: string,
-    snapshotMessage: Message,
-    compactionMessage: Message,
-    originalError: unknown,
-  ): Promise<void> {
-    const messageIds = [snapshotMessage.id, compactionMessage.id].filter(
-      (id): id is string => typeof id === "string" && id.length > 0,
-    );
-
-    if (messageIds.length === 0) {
-      return;
-    }
-
-    try {
-      await this.conversationManager.deleteMessages(completionId, messageIds);
-    } catch (cleanupError) {
-      logger.warn("Failed to clean up partial session compaction", {
-        error: cleanupError,
-        originalError,
-        completionId,
-        messageIds,
-      });
     }
   }
 }

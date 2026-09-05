@@ -1,0 +1,1 @@
+ALTER TABLE `conversation_run` ADD `context_json` text;

@@ -3,7 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import type { UsageReservationRow } from "~/repositories/UsageReservationRepository";
 
 import { containerSecondQuantities, estimateContainerRunCreditMicros } from "../containerUsage";
-import { finishUsageReservation, holdUsageReservation } from "../reservations";
+import {
+  chatRunReservationExpiresAt,
+  finishUsageReservation,
+  holdUsageReservation,
+} from "../reservations";
 
 function reservationRow(overrides: Partial<UsageReservationRow> = {}): UsageReservationRow {
   return {
@@ -44,6 +48,12 @@ function createRepositories(options: {
 }
 
 describe("holdUsageReservation", () => {
+  it("bounds chat run reservations to one day", () => {
+    expect(chatRunReservationExpiresAt(Date.parse("2026-09-05T10:00:00.000Z"))).toBe(
+      "2026-09-06T10:00:00.000Z",
+    );
+  });
+
   it("reserves credit against the balance when the hold is new", async () => {
     const mocks = createRepositories({ created: true });
 

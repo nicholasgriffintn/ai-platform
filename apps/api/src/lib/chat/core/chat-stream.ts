@@ -1,11 +1,14 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { AgentEvent } from "@ngriffin_uk/polychat-library-agent-core";
+import type { ChatRunCommandReceipt } from "@ngriffin_uk/polychat-schemas";
 
 import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/agent-loop";
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { createChatSseStreamWriter, startChatStreamHeartbeat } from "~/lib/chat/streaming/emitter";
-import { watchDetachedTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
+import { watchTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
+import type { ChatRunLifecycle } from "~/services/chat-runs/lifecycle";
+import { createChatRetryStatePublisher } from "~/services/chat-runs/retry-state";
 import { disposeMCPClients } from "~/services/functions/mcp";
 import { StreamState } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -16,21 +19,49 @@ const logger = getLogger({ prefix: "lib/chat/core/chat-stream" });
 export type CreateChatTurnStreamParams = Omit<AgentLoopExecutionParams, "sink" | "emit"> & {
   executionCtx?: ExecutionContext;
   onTurnEnd?: () => Promise<void>;
+  runLifecycle?: ChatRunLifecycle | null;
 };
+
+export function createChatRunReceiptStream(receipt: ChatRunCommandReceipt): ReadableStream {
+  const stream = createChatSseStreamWriter();
+
+  void (async () => {
+    try {
+      await stream.writeEvent("state", { state: "run", receipt });
+      await stream.writeDone();
+      await stream.close();
+    } catch (error) {
+      await stream.abort(error);
+    }
+  })();
+
+  return stream.readable;
+}
 
 export function createChatTurnStream(params: CreateChatTurnStreamParams): ReadableStream {
   const stream = createChatSseStreamWriter();
   const tracesAgentEvents = isAgentExecutionMode(params.mode);
   const closeRunResources = createRunResourceCloser(params);
   const stopHeartbeat = startChatStreamHeartbeat(stream);
-  const stopSignal = watchDetachedTurnCancellation({
+  const runLifecycle = params.runLifecycle;
+  const stopSignal = watchTurnCancellation({
     env: params.env,
     completionId: params.completionId,
     isDetached: stream.isDetached,
+    isRunCancellationRequested: runLifecycle
+      ? () => runLifecycle.isCancellationRequested()
+      : undefined,
   });
 
   const run = async () => {
     try {
+      if (params.runLifecycle) {
+        await stream.writeEvent("state", {
+          state: "run",
+          receipt: params.runLifecycle.receipt,
+        });
+      }
+
       await stream.writeEvent("state", { state: StreamState.INIT });
 
       const usageLimits = await params.conversationManager.getUsageLimits();
@@ -39,10 +70,11 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
         await stream.writeEvent("usage_limits", { usage_limits: usageLimits });
       }
 
-      await runAgentLoop({
+      const result = await runAgentLoop({
         ...params,
         sink: stream,
         shouldStop: stopSignal.shouldStop,
+        onRetryState: createChatRetryStatePublisher({ sink: stream, runLifecycle }),
         emit: tracesAgentEvents
           ? async (event: AgentEvent) => {
               await stream.writeEvent("state", { state: "agent_event", event: { ...event } });
@@ -50,9 +82,32 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
           : undefined,
       });
 
+      if (params.runLifecycle) {
+        await params.runLifecycle.complete(result);
+        await stream.writeEvent("state", {
+          state: "run",
+          receipt: params.runLifecycle.receipt,
+        });
+      }
+
       await stream.writeEvent("state", { state: StreamState.DONE });
     } catch (error) {
       logger.error("Chat turn stream failed", { error, completionId: params.completionId });
+
+      if (params.runLifecycle) {
+        try {
+          await params.runLifecycle.fail(error);
+          await stream.writeEvent("state", {
+            state: "run",
+            receipt: params.runLifecycle.receipt,
+          });
+        } catch (runError) {
+          logger.error("Failed to record streamed run failure", {
+            error: runError,
+            runId: params.runLifecycle.run.id,
+          });
+        }
+      }
 
       await stream.writeEvent("error", {
         error: {

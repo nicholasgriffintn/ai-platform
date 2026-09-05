@@ -23,8 +23,10 @@ import {
   isCompactionMarkerMessage,
   normaliseMessageParts,
 } from "./chat/messages/parts";
+import { formatStoredMessage } from "./conversation/stored-message";
 import { createInitialConversationTitle } from "./conversation/title-source";
 import { loadVisibleConversationMessagePage } from "./conversation/visibleMessagePagination";
+import type { ConversationWriteFence } from "./conversation/write-fence";
 import type { Database } from "./database";
 import { estimateMessagesTokens } from "./messageTokens";
 import { hasPlanEntitlement } from "./plans";
@@ -43,6 +45,12 @@ const logger = getLogger({ prefix: "lib/conversationManager" });
 export interface TurnAdmissionRequest {
   modelConfig?: ModelConfigItem | null;
   messages: Message[];
+}
+
+export interface DurableTurnReservation {
+  kind: "chat_run";
+  refId: string;
+  expiresAt?: string | null;
 }
 
 export interface ConversationListOptions {
@@ -78,6 +86,9 @@ export class ConversationManager {
   private taskService?: TaskService;
   private repositories?: RepositoryManager;
   private pendingTurnReservation?: TurnReservation;
+  private writeFence?: ConversationWriteFence;
+  private runId?: string;
+  private durableTurnReservation?: DurableTurnReservation;
 
   private constructor(
     database: Database,
@@ -90,6 +101,9 @@ export class ConversationManager {
     env?: IEnv,
     requestCache?: Map<string, unknown>,
     repositories?: RepositoryManager,
+    writeFence?: ConversationWriteFence,
+    runId?: string,
+    durableTurnReservation?: DurableTurnReservation,
   ) {
     this.database = database;
     this.user = user;
@@ -101,6 +115,9 @@ export class ConversationManager {
     this.env = env;
     this.requestCache = requestCache;
     this.repositories = repositories ?? database.repositories;
+    this.writeFence = writeFence;
+    this.runId = runId;
+    this.durableTurnReservation = durableTurnReservation;
     const resolvedRepositories = this.repositories;
 
     if (env?.DB) {
@@ -123,6 +140,9 @@ export class ConversationManager {
     env,
     requestCache,
     repositories,
+    writeFence,
+    runId,
+    durableTurnReservation,
   }: {
     database: Database;
     user?: User | null;
@@ -134,6 +154,9 @@ export class ConversationManager {
     env?: IEnv;
     requestCache?: Map<string, unknown>;
     repositories?: RepositoryManager;
+    writeFence?: ConversationWriteFence;
+    runId?: string;
+    durableTurnReservation?: DurableTurnReservation;
   }): ConversationManager {
     return new ConversationManager(
       database,
@@ -146,7 +169,14 @@ export class ConversationManager {
       env,
       requestCache,
       repositories,
+      writeFence,
+      runId,
+      durableTurnReservation,
     );
+  }
+
+  private async assertWriteOwnership(): Promise<void> {
+    await this.writeFence?.assertOwned();
   }
 
   private prepareMessagesForStorage(messages: Message[]): Message[] {
@@ -156,6 +186,7 @@ export class ConversationManager {
       id: message.id || generateId(),
       model: message.model || this.model,
       platform: message.platform || this.platform,
+      run_id: message.run_id || this.runId,
     }));
 
     return messagesWithDefaults.map((message) => {
@@ -278,6 +309,8 @@ export class ConversationManager {
         }
       }
 
+      await this.assertWriteOwnership();
+
       return await this.database.repositories.conversations.createConversation(
         conversation_id,
         this.user.id,
@@ -339,6 +372,7 @@ export class ConversationManager {
 
       if (asyncInvocation && isAsyncInvocationPending(asyncInvocation)) {
         try {
+          await this.assertWriteOwnership();
           await this.taskService.enqueueTask({
             task_type: "async_message_polling",
             user_id: this.user.id,
@@ -417,6 +451,14 @@ export class ConversationManager {
           promptTokens: estimateMessagesTokens(params.messages),
           modelConfig: params.modelConfig,
         }),
+        ...(this.durableTurnReservation && userId
+          ? {
+              durableReservation: {
+                ...this.durableTurnReservation,
+                userId,
+              },
+            }
+          : {}),
       });
     } catch (error) {
       logger.error("Failed to admit the turn against the credit balance", { error, actor });
@@ -445,7 +487,7 @@ export class ConversationManager {
     this.pendingTurnReservation = admission.reservation ?? undefined;
   }
 
-  async releaseTurnReservation(): Promise<void> {
+  async releaseTurnReservation(outcome: "settled" | "released" = "released"): Promise<void> {
     const reservation = this.pendingTurnReservation;
 
     if (!reservation) {
@@ -453,7 +495,7 @@ export class ConversationManager {
     }
 
     this.pendingTurnReservation = undefined;
-    await reservation.release();
+    await reservation.release(outcome);
   }
 
   /**
@@ -487,6 +529,7 @@ export class ConversationManager {
 
     const normalisedMessages = this.prepareMessagesForStorage(messages);
 
+    await this.assertWriteOwnership();
     await this.incrementUsageForAssistantResponse(normalisedMessages);
 
     if (!this.store) {
@@ -501,6 +544,7 @@ export class ConversationManager {
     );
 
     if (normalisedMessages.length > 0) {
+      await this.assertWriteOwnership();
       await this.database.repositories.messages.createMessagesAndUpdateConversation(
         conversation_id,
         normalisedMessages.map((message) => ({
@@ -515,6 +559,41 @@ export class ConversationManager {
     await this.enqueueAsyncInvocationTasks(conversation_id, normalisedMessages);
 
     return normalisedMessages;
+  }
+
+  async persistCompaction(
+    conversation_id: string,
+    snapshotMessage: Message,
+    compactionMessage: Message,
+    messageIdsToArchive: string[],
+  ): Promise<void> {
+    const normalisedMessages = this.prepareMessagesForStorage([snapshotMessage, compactionMessage]);
+
+    await this.assertWriteOwnership();
+    await this.incrementUsageForAssistantResponse(normalisedMessages);
+
+    if (!this.store) {
+      return;
+    }
+
+    await this.ensureWritableConversation(
+      conversation_id,
+      "User ID is required to compact conversations",
+      undefined,
+      normalisedMessages,
+    );
+
+    await this.assertWriteOwnership();
+    await this.database.repositories.messages.createCompactionAndArchiveMessages(
+      conversation_id,
+      normalisedMessages.map((message) => ({
+        id: message.id,
+        role: message.role,
+        content: this.serializeMessageContent(message.content),
+        data: message,
+      })),
+      messageIdsToArchive,
+    );
   }
 
   /**
@@ -558,6 +637,7 @@ export class ConversationManager {
 
     const lastMessage = normalisedMessages.at(-1);
 
+    await this.assertWriteOwnership();
     const replaced = await this.database.repositories.messages.replaceConversationMessages(
       conversation_id,
       normalisedMessages.map((message) => ({
@@ -638,6 +718,7 @@ export class ConversationManager {
       }
 
       if (Object.keys(updates).length > 0) {
+        await this.assertWriteOwnership();
         await this.database.repositories.messages.updateMessage(
           conversation_id,
           message.id,
@@ -698,7 +779,7 @@ export class ConversationManager {
       },
     );
 
-    return messages.map((dbMessage) => this.formatMessage(dbMessage));
+    return messages.map(formatStoredMessage);
   }
 
   async getVisibleMessages(
@@ -744,7 +825,56 @@ export class ConversationManager {
           cursor,
           pageOptions,
         ),
-      formatMessage: (message) => this.formatMessage(message),
+      formatMessage: formatStoredMessage,
+      isHiddenMessage: (message) => !options.includeSnapshots && hasSnapshotPart(message),
+    });
+  }
+
+  async getVisibleMessagesBefore(
+    conversation_id: string,
+    limit = 50,
+    before?: string,
+    options: { includeArchived?: boolean; includeSnapshots?: boolean } = {},
+  ): Promise<Message[]> {
+    if (!this.store) {
+      return [];
+    }
+
+    if (!this.user?.id) {
+      throw new AssistantError(
+        "User ID is required to retrieve messages",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const conversation =
+      await this.database.repositories.conversations.getConversation(conversation_id);
+
+    if (!conversation) {
+      throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
+    }
+
+    if (!(await this.canAccessConversation(conversation))) {
+      throw new AssistantError(
+        "You don't have permission to access this conversation",
+        ErrorType.FORBIDDEN,
+      );
+    }
+
+    return loadVisibleConversationMessagePage({
+      conversationId: conversation_id,
+      limit,
+      after: before,
+      direction: "before",
+      includeArchived: options.includeArchived ?? true,
+      loadMessages: (conversationId, pageLimit, cursor, pageOptions) =>
+        this.database.repositories.messages.getConversationMessagesBefore(
+          conversationId,
+          pageLimit,
+          cursor,
+          pageOptions,
+        ),
+      formatMessage: formatStoredMessage,
       isHiddenMessage: (message) => !options.includeSnapshots && hasSnapshotPart(message),
     });
   }
@@ -784,6 +914,7 @@ export class ConversationManager {
       );
     }
 
+    await this.assertWriteOwnership();
     await this.database.repositories.messages.archiveMessages(conversation_id, messageIds);
     await this.refreshConversationMessageMetadata(conversation_id);
   }
@@ -814,6 +945,7 @@ export class ConversationManager {
       );
     }
 
+    await this.assertWriteOwnership();
     await this.database.repositories.messages.deleteMessages(conversation_id, messageIds);
     await this.refreshConversationMessageMetadata(conversation_id);
   }
@@ -822,6 +954,7 @@ export class ConversationManager {
     const metadata =
       await this.database.repositories.messages.getConversationMessageMetadata(conversation_id);
 
+    await this.assertWriteOwnership();
     await this.database.repositories.conversations.updateConversation(conversation_id, {
       last_message_id: metadata.last_message_id,
       last_message_at: metadata.last_message_id ? new Date().toISOString() : null,
@@ -882,6 +1015,8 @@ export class ConversationManager {
       );
     }
 
+    await this.assertWriteOwnership();
+
     return await this.database.repositories.conversations.setPersonalConversationsArchived(
       this.user.id,
       options,
@@ -920,12 +1055,36 @@ export class ConversationManager {
    */
   async getConversationDetails(
     conversation_id: string,
-    options: { includeArchived?: boolean; includeSnapshots?: boolean } = {},
+    options: {
+      includeArchived?: boolean;
+      includeSnapshots?: boolean;
+      messageLimit?: number;
+    } = {},
   ): Promise<ConversationDetails> {
     const conversation = await this.getConversationMetadata(conversation_id);
 
     const storedConversationId =
       typeof conversation.id === "string" ? conversation.id : conversation_id;
+    const messageLimit = options.messageLimit;
+
+    if (messageLimit && messageLimit > 0) {
+      const page = await this.getVisibleMessagesBefore(
+        storedConversationId,
+        messageLimit + 1,
+        undefined,
+        options,
+      );
+      const hasMoreMessages = page.length > messageLimit;
+      const messages = hasMoreMessages ? page.slice(-messageLimit) : page;
+
+      return {
+        ...conversation,
+        messages,
+        has_more_messages: hasMoreMessages,
+        oldest_message_id: messages[0]?.id ?? null,
+      };
+    }
+
     const dbMessages = await this.database.repositories.messages.getConversationMessages(
       storedConversationId,
       0,
@@ -936,7 +1095,7 @@ export class ConversationManager {
     );
 
     const messages = dbMessages
-      .map((dbMessage) => this.formatMessage(dbMessage))
+      .map(formatStoredMessage)
       .filter((message) => options.includeSnapshots || !hasSnapshotPart(message));
 
     return {
@@ -993,6 +1152,7 @@ export class ConversationManager {
       updateObj.is_archived = updates.archived;
     }
 
+    await this.assertWriteOwnership();
     await this.database.repositories.conversations.updateConversation(conversation_id, updateObj);
 
     const updatedConversation =
@@ -1032,85 +1192,12 @@ export class ConversationManager {
       );
     }
 
-    const message = this.formatMessage(result.message);
+    const message = formatStoredMessage(result.message);
 
     return {
       message,
       conversation_id: result.conversation_id,
     };
-  }
-
-  /**
-   * Format a database message record into a Message object
-   * @param dbMessage - The database message record to format
-   * @returns The formatted Message object
-   */
-  private formatMessage(dbMessage: Record<string, unknown>): Message {
-    let content: Message["content"] = dbMessage.content as Message["content"];
-
-    try {
-      if (typeof content === "string" && (content.startsWith("[") || content.startsWith("{"))) {
-        const parsed = safeParseJson(content);
-
-        content = parsed;
-      }
-    } catch (e) {
-      logger.error("Error parsing message content", { error: e });
-    }
-
-    let toolCalls = dbMessage.tool_calls;
-
-    if (dbMessage.tool_calls) {
-      toolCalls = safeParseJson(dbMessage.tool_calls as string);
-    }
-
-    let citations = dbMessage.citations;
-
-    if (dbMessage.citations) {
-      citations = safeParseJson(dbMessage.citations as string);
-    }
-
-    let parsedData = dbMessage.data;
-
-    if (dbMessage.data) {
-      parsedData = safeParseJson(dbMessage.data as string);
-    }
-
-    let parsedParts = dbMessage.parts;
-
-    if (dbMessage.parts) {
-      parsedParts = safeParseJson(dbMessage.parts as string);
-    }
-
-    const normalisedParts = normaliseMessageParts(
-      parsedParts,
-      dbMessage.timestamp as number | undefined,
-    );
-
-    const formattedMessage = {
-      ...dbMessage,
-      id: dbMessage.id,
-      role: dbMessage.role as string,
-      content,
-      model: dbMessage.model as string,
-      name: dbMessage.name as string,
-      tool_calls: toolCalls,
-      citations,
-      status: dbMessage.status as string,
-      timestamp: dbMessage.timestamp as number,
-      platform: dbMessage.platform as string,
-      mode: dbMessage.mode as string,
-      data: parsedData,
-      parts: normalisedParts,
-      usage: dbMessage.usage ? safeParseJson(dbMessage.usage as string) : undefined,
-      log_id: dbMessage.log_id as string,
-    } as Message;
-
-    if (!formattedMessage.parts || formattedMessage.parts.length === 0) {
-      formattedMessage.parts = buildMessageParts(formattedMessage);
-    }
-
-    return formattedMessage;
   }
 
   private serializeMessageContent(messageContent: Message["content"]): string {
@@ -1166,6 +1253,7 @@ export class ConversationManager {
 
     const share_id = (conversation.share_id as string) || this.generateShareId();
 
+    await this.assertWriteOwnership();
     const updatedConversation = await this.database.repositories.conversations.updateConversation(
       conversation_id,
       {
@@ -1207,6 +1295,7 @@ export class ConversationManager {
       );
     }
 
+    await this.assertWriteOwnership();
     const updatedConversation = await this.database.repositories.conversations.updateConversation(
       conversation_id,
       {
@@ -1259,7 +1348,7 @@ export class ConversationManager {
           cursor,
           pageOptions,
         ),
-      formatMessage: (message) => this.formatMessage(message),
+      formatMessage: formatStoredMessage,
       isHiddenMessage: hasSnapshotPart,
     });
   }

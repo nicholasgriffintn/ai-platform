@@ -16,14 +16,21 @@ const {
   mockHandleToolCalls,
   mockSessionCompact,
   mockAcquireThread,
-  mockReleaseThread,
+  mockAcceptChatRun,
+  mockFindAcceptedChatRunCommand,
+  mockThreadLease,
 } = vi.hoisted(() => ({
-  mockAcquireThread: vi.fn(
-    async (): Promise<{ acquired: boolean; currentOperation?: string | null }> => ({
-      acquired: true,
-    }),
-  ),
-  mockReleaseThread: vi.fn(async () => undefined),
+  mockThreadLease: {
+    conversationId: "test-completion-id",
+    kind: "user_message",
+    ownerToken: "owner-token",
+    expiresAt: "2026-09-05T01:05:00.000Z",
+    assertOwned: vi.fn(async () => undefined),
+    release: vi.fn(async () => undefined),
+  },
+  mockAcquireThread: vi.fn(),
+  mockAcceptChatRun: vi.fn(),
+  mockFindAcceptedChatRunCommand: vi.fn(),
   mockValidator: {
     validate: vi.fn(),
   },
@@ -77,7 +84,12 @@ vi.mock("~/lib/chat/preparation/RequestPreparer", () => ({
 
 vi.mock("~/services/conversations/coordinator/client", () => ({
   acquireThread: mockAcquireThread,
-  releaseThread: mockReleaseThread,
+  threadLockError: () => new AssistantError("Conversation busy", ErrorType.CONFLICT_ERROR, 409),
+}));
+
+vi.mock("~/services/chat-runs/lifecycle", () => ({
+  acceptChatRun: mockAcceptChatRun,
+  findAcceptedChatRunCommand: mockFindAcceptedChatRunCommand,
 }));
 
 vi.mock("~/lib/chat/streaming/responses", () => ({
@@ -151,6 +163,9 @@ describe("ChatOrchestrator", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAcquireThread.mockResolvedValue({ acquired: true, lease: mockThreadLease });
+    mockAcceptChatRun.mockResolvedValue(null);
+    mockFindAcceptedChatRunCommand.mockResolvedValue(null);
 
     validationFactory = () => mockValidator;
     preparerFactory = () => mockPreparer;
@@ -881,7 +896,7 @@ describe("ChatOrchestrator", () => {
           stream: ReadableStream;
         };
 
-        expect(mockReleaseThread).not.toHaveBeenCalled();
+        expect(mockThreadLease.release).not.toHaveBeenCalled();
 
         const reader = result.stream.getReader();
 
@@ -889,9 +904,7 @@ describe("ChatOrchestrator", () => {
           // drain
         }
 
-        expect(mockReleaseThread).toHaveBeenCalledWith(
-          expect.objectContaining({ conversationId: "test-completion-id" }),
-        );
+        expect(mockThreadLease.release).toHaveBeenCalledTimes(1);
       });
 
       it("keeps holding the conversation when the client stops reading mid-turn", async () => {
@@ -909,20 +922,17 @@ describe("ChatOrchestrator", () => {
 
         await result.stream.cancel("client went away");
 
-        expect(mockReleaseThread).not.toHaveBeenCalled();
+        expect(mockThreadLease.release).not.toHaveBeenCalled();
 
         startTurn(new ReadableStream());
-        await vi.waitFor(() => expect(mockReleaseThread).toHaveBeenCalledTimes(1));
-
-        expect(mockReleaseThread).toHaveBeenCalledWith(
-          expect.objectContaining({ conversationId: "test-completion-id" }),
-        );
+        await vi.waitFor(() => expect(mockThreadLease.release).toHaveBeenCalledTimes(1));
       });
 
       it("refuses a turn while another operation holds the conversation", async () => {
         mockAcquireThread.mockResolvedValueOnce({
           acquired: false,
           currentOperation: "user_message",
+          reason: "busy",
         });
 
         await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
@@ -930,7 +940,7 @@ describe("ChatOrchestrator", () => {
         });
 
         expect(mockPreparer.prepare).not.toHaveBeenCalled();
-        expect(mockReleaseThread).not.toHaveBeenCalled();
+        expect(mockThreadLease.release).not.toHaveBeenCalled();
       });
 
       it("releases the conversation once the turn finishes", async () => {
@@ -942,9 +952,104 @@ describe("ChatOrchestrator", () => {
         expect(mockAcquireThread).toHaveBeenCalledWith(
           expect.objectContaining({ conversationId: "test-completion-id", kind: "user_message" }),
         );
-        expect(mockReleaseThread).toHaveBeenCalledWith(
-          expect.objectContaining({ conversationId: "test-completion-id" }),
+        expect(mockPreparer.prepare).toHaveBeenCalledWith(
+          mockOptions,
+          expect.any(Object),
+          mockThreadLease,
+          undefined,
         );
+        expect(mockThreadLease.release).toHaveBeenCalledTimes(1);
+      });
+
+      it("acknowledges a duplicate command without preparing or executing another turn", async () => {
+        const run = {
+          protocolVersion: 1,
+          id: "run-1",
+          conversationId: "test-completion-id",
+          projectId: null,
+          projectTaskId: null,
+          initiatorUserId: 7,
+          status: "running",
+          attempt: 1,
+          createdAt: "2026-09-05T12:00:00.000Z",
+          updatedAt: "2026-09-05T12:00:00.000Z",
+          startedAt: "2026-09-05T12:00:00.000Z",
+          completedAt: null,
+          terminalReason: null,
+          lastMessageId: null,
+        } as const;
+        mockFindAcceptedChatRunCommand.mockResolvedValueOnce({
+          run,
+          receipt: {
+            protocolVersion: 1,
+            commandId: "command-1",
+            run,
+            kind: "turn",
+            acceptedAt: "2026-09-05T12:00:00.000Z",
+            duplicate: true,
+          },
+        });
+
+        const result = await orchestrator.process({
+          ...mockOptions,
+          command_id: "command-1",
+        });
+
+        expect(result).toMatchObject({
+          duplicateRun: true,
+          runReceipt: { commandId: "command-1", run: { id: "run-1" } },
+        });
+        expect(mockPreparer.prepare).not.toHaveBeenCalled();
+        expect(mockGetAIResponse).not.toHaveBeenCalled();
+        expect(mockAcquireThread).not.toHaveBeenCalled();
+        expect(mockThreadLease.release).not.toHaveBeenCalled();
+      });
+
+      it("rechecks command acceptance when a concurrent original wins the lease", async () => {
+        const run = {
+          protocolVersion: 1,
+          id: "run-race",
+          conversationId: "test-completion-id",
+          projectId: null,
+          projectTaskId: null,
+          initiatorUserId: 7,
+          status: "running",
+          attempt: 1,
+          createdAt: "2026-09-05T12:00:00.000Z",
+          updatedAt: "2026-09-05T12:00:00.000Z",
+          startedAt: "2026-09-05T12:00:00.000Z",
+          completedAt: null,
+          terminalReason: null,
+          lastMessageId: null,
+        } as const;
+        const duplicate = {
+          run,
+          receipt: {
+            protocolVersion: 1,
+            commandId: "command-race",
+            run,
+            kind: "turn",
+            acceptedAt: "2026-09-05T12:00:00.000Z",
+            duplicate: true,
+          },
+        };
+        mockFindAcceptedChatRunCommand.mockResolvedValueOnce(null).mockResolvedValueOnce(duplicate);
+        mockAcquireThread.mockResolvedValueOnce({
+          acquired: false,
+          currentOperation: "user_message",
+          reason: "busy",
+        });
+
+        const result = await orchestrator.process({
+          ...mockOptions,
+          command_id: "command-race",
+        });
+
+        expect(result).toMatchObject({
+          duplicateRun: true,
+          runReceipt: { run: { id: "run-race" } },
+        });
+        expect(mockPreparer.prepare).not.toHaveBeenCalled();
       });
 
       it("should throw error when no response generated", async () => {

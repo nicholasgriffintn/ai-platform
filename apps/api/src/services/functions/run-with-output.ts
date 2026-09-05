@@ -1,5 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
+import { createExecutionOutputProvenance } from "~/lib/provenance/output";
 import type { OutputRecord } from "~/repositories/OutputRepository";
 import { handleFunctions } from "~/services/functions";
 import type { IRequest } from "~/types";
@@ -16,6 +17,7 @@ export const createFunctionOutput = async (
   payload: Record<string, unknown>,
   groupId?: string,
   projectId?: string,
+  provenance?: Awaited<ReturnType<typeof createExecutionOutputProvenance>>,
 ): Promise<OutputRecord> =>
   context.repositories.outputs.createOutput({
     createdByUserId: userId,
@@ -25,6 +27,7 @@ export const createFunctionOutput = async (
     kind: "dynamic_app_response",
     title: `App output: ${functionName}`,
     content: payload,
+    provenance,
   });
 
 /**
@@ -78,6 +81,11 @@ export const runFunctionWithOutput = async (
       const runId =
         (resultData?.run?.run_id as string | undefined) ??
         (resultData?.asyncInvocation?.id as string | undefined);
+      const provenance = await createExecutionOutputProvenance(context, {
+        runId: req.request?.run_id,
+        modelId: req.request?.model,
+        provider: req.request?.provider,
+      });
 
       const saved = await createFunctionOutput(
         context,
@@ -86,6 +94,7 @@ export const runFunctionWithOutput = async (
         { formData: args, result: functionResult },
         runId,
         projectId,
+        provenance,
       );
 
       output_id = saved.id;
