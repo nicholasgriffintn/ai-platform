@@ -184,6 +184,9 @@ struct UtilityTests {
         let waiting = try ChatStreamEventParser.events(
             from: #"{"type":"turn_activity","kind":"waiting_for_user","step":2,"toolCallId":"call-2","toolName":"ask_user","reason":"question"}"#
         )
+        let selection = try ChatStreamEventParser.events(
+            from: #"{"type":"turn_activity","kind":"waiting_for_user","step":2,"toolCallId":"call-3","toolName":"select_council_members","reason":"selection"}"#
+        )
         let unknown = try ChatStreamEventParser.events(
             from: #"{"type":"turn_activity","kind":"future_phase","step":2}"#
         )
@@ -201,6 +204,14 @@ struct UtilityTests {
                 toolCallId: "call-2",
                 toolName: "ask_user",
                 reason: .question
+            ))
+        ])
+        #expect(selection == [
+            .turnActivity(.waitingForUser(
+                step: 2,
+                toolCallId: "call-3",
+                toolName: "select_council_members",
+                reason: .selection
             ))
         ])
         #expect(unknown.isEmpty)
@@ -240,6 +251,14 @@ struct UtilityTests {
         #expect(projection.phase == .waiting)
         #expect(projection.requiresAction)
         #expect(projection.label == "Waiting for your answer.")
+
+        projection.apply(.waitingForUser(
+            step: 1,
+            toolCallId: "call-selection",
+            toolName: "select_council_members",
+            reason: .selection
+        ))
+        #expect(projection.label == "Waiting for your selection.")
 
         projection.markReconnecting()
         #expect(projection.phase == .reconnecting)

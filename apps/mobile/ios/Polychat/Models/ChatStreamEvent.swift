@@ -25,6 +25,7 @@ enum ChatTurnActivityEvent: Equatable {
     enum WaitReason: String, Equatable {
         case question
         case approval
+        case selection
     }
 
     enum StepOutcome: String, Equatable {

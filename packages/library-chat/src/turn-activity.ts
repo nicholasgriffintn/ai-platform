@@ -27,6 +27,12 @@ export interface TurnActivityProjection {
   requiresAction: boolean;
 }
 
+const WAITING_FOR_USER_LABELS = {
+  question: "Waiting for your answer.",
+  approval: "Waiting for your approval.",
+  selection: "Waiting for your selection.",
+} as const;
+
 export function createTurnActivityProjection(): TurnActivityProjection {
   return {
     phase: "preparing",
@@ -144,8 +150,7 @@ export function applyTurnActivityEvent(
       return {
         ...projection,
         phase: "waiting",
-        label:
-          event.reason === "question" ? "Waiting for your answer." : "Waiting for your approval.",
+        label: waitingForUserLabel(event.reason),
         step: event.step,
         tools: updateTool(projection, event, "preparing"),
         requiresAction: true,
@@ -172,6 +177,10 @@ export function applyTurnActivityEvent(
   }
 
   return projection;
+}
+
+function waitingForUserLabel(reason: keyof typeof WAITING_FOR_USER_LABELS): string {
+  return WAITING_FOR_USER_LABELS[reason];
 }
 
 export function markTurnActivityReconnecting(

@@ -259,6 +259,47 @@ describe("runAgentLoop", () => {
     );
   });
 
+  it("labels an existing council picker as a selection wait", async () => {
+    const { params, sink } = createParams([toolTurn("select_council_members", "call-selection")]);
+    const pendingResult: Message = {
+      id: "result-selection",
+      role: "tool",
+      name: "select_council_members",
+      content: "Choose the council members.",
+      status: "pending",
+      tool_call_id: "call-selection",
+      data: {
+        humanInTheLoop: {
+          type: "selection",
+          status: "pending",
+          requires_user_action: true,
+        },
+      },
+    };
+
+    mocks.handleToolCalls.mockImplementationOnce(
+      async (...args: Parameters<typeof handleToolCalls>) => {
+        await args[4].onToolResult(pendingResult);
+
+        return [pendingResult];
+      },
+    );
+
+    await runAgentLoop(params);
+
+    expect(
+      sink.writeEvent.mock.calls
+        .filter(([type]) => type === "turn_activity")
+        .map(([, activity]) => activity),
+    ).toContainEqual({
+      kind: "waiting_for_user",
+      step: 1,
+      toolCallId: "call-selection",
+      toolName: "select_council_members",
+      reason: "selection",
+    });
+  });
+
   it("activates a discovered native tool for the rest of the response", async () => {
     const { params, runTurn } = createParams([
       toolTurn("discover_capabilities", "discover-call"),

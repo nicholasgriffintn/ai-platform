@@ -31,7 +31,7 @@ import {
   mergeStreamedTokenUsage,
   type NormalisedTokenUsage,
 } from "~/lib/usage/tokenUsage";
-import type { IEnv, MessagePart, ToolCall } from "~/types";
+import { ToolCallType, type IEnv, type MessagePart, type ToolCall } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { deepMergeRecords, isRecord } from "~/utils/objects";
@@ -143,6 +143,7 @@ export async function consumeProviderStream(
   let openedThinkTag = false;
   let completed = false;
   let reasoningStarted = false;
+  let reasoningFinished = false;
   let responseStarted = false;
   const handledReasoningItems = new Set<string>();
   const completedHostedToolItems = new Set<string>();
@@ -182,9 +183,46 @@ export async function consumeProviderStream(
       return;
     }
 
-    turn.toolCalls = Object.values(partialToolCalls).filter(
-      (toolCall) => isRecord(toolCall) && isRecord(toolCall.function),
-    );
+    turn.toolCalls = Object.values(partialToolCalls).flatMap((toolCall) => {
+      if (
+        !isRecord(toolCall) ||
+        !isRecord(toolCall.function) ||
+        typeof toolCall.id !== "string" ||
+        typeof toolCall.function.name !== "string" ||
+        toolCall.isComplete === false
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          id: toolCall.id,
+          type: ToolCallType.FUNCTION,
+          function: {
+            name: toolCall.function.name,
+            arguments:
+              typeof toolCall.function.arguments === "string" ? toolCall.function.arguments : "",
+          },
+        } satisfies ToolCall,
+      ];
+    });
+  };
+
+  const finishReasoning = async () => {
+    if (!reasoningStarted || reasoningFinished) {
+      return;
+    }
+
+    reasoningFinished = true;
+    await writeTurnActivity(sink, { kind: "reasoning_finished", step });
+  };
+
+  const completeOpenAIToolCalls = () => {
+    for (const toolCall of Object.values(partialToolCalls)) {
+      if (isRecord(toolCall) && toolCall.streamFormat === "openai") {
+        toolCall.isComplete = true;
+      }
+    }
   };
 
   const appendCompletedResponseAssets = async (data: unknown) => {
@@ -246,6 +284,8 @@ export async function consumeProviderStream(
     const dataStr = line.substring(6).trim();
 
     if (dataStr === "[DONE]") {
+      completeOpenAIToolCalls();
+
       return true;
     }
 
@@ -288,6 +328,7 @@ export async function consumeProviderStream(
 
     if (contentDelta) {
       if (!responseStarted) {
+        await finishReasoning();
         responseStarted = true;
         await writeTurnActivity(sink, { kind: "response_started", step });
       }
@@ -440,8 +481,14 @@ export async function consumeProviderStream(
       }
     }
 
+    const toolCallDelta = StreamingFormatter.extractToolCall(data, currentEventType);
+
+    if (toolCallDelta) {
+      await finishReasoning();
+    }
+
     await collectToolCallDelta(
-      StreamingFormatter.extractToolCall(data, currentEventType),
+      toolCallDelta,
       partialToolCalls,
       turn.toolCalls,
       sink,
@@ -524,7 +571,13 @@ export async function consumeProviderStream(
       turn.annotations = annotationsDelta;
     }
 
-    return StreamingFormatter.isCompletionIndicated(data);
+    const completionIndicated = StreamingFormatter.isCompletionIndicated(data);
+
+    if (completionIndicated || hasOpenAIToolCallFinishReason(data)) {
+      completeOpenAIToolCalls();
+    }
+
+    return completionIndicated;
   };
 
   const reader = providerStream.getReader();
@@ -575,9 +628,7 @@ export async function consumeProviderStream(
   finaliseToolCalls();
   await finaliseToolInputEvents(sink, step, turn.toolCalls, toolInputEvents);
 
-  if (reasoningStarted) {
-    await writeTurnActivity(sink, { kind: "reasoning_finished", step });
-  }
+  await finishReasoning();
 
   if (responseStarted) {
     await writeTurnActivity(sink, { kind: "response_finished", step });
@@ -603,6 +654,22 @@ function createToolInputEventState(): ToolInputEventState {
   };
 }
 
+function hasOpenAIToolCallFinishReason(data: unknown): boolean {
+  if (!isRecord(data) || !Array.isArray(data.choices)) {
+    return false;
+  }
+
+  return data.choices.some((choice) => {
+    if (!isRecord(choice)) {
+      return false;
+    }
+
+    const finishReason = choice.finish_reason ?? choice.finishReason;
+
+    return typeof finishReason === "string" && finishReason.toLowerCase() === "tool_calls";
+  });
+}
+
 async function collectToolCallDelta(
   toolCallData: any,
   partialToolCalls: Record<string, any>,
@@ -623,6 +690,8 @@ async function collectToolCallDelta(
         id: toolCall.id,
         type: toolCall.type || "function",
         function: { name: toolCall.function?.name || "", arguments: "" },
+        streamFormat: "openai",
+        isComplete: false,
       };
 
       if (toolCall.id) {

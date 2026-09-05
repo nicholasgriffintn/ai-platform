@@ -46,6 +46,7 @@ import {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { readRecordObjectField, readStringField } from "~/utils/recordFields";
 
 const logger = getLogger({ prefix: "lib/chat/agent/agent-loop" });
 
@@ -60,6 +61,16 @@ const REPEATED_TOOL_CALL_NOTICE =
   "The same tool call has already failed with identical arguments. Do not call another tool. Answer the user now with what you have, and say plainly what you could not finish.";
 const UNKNOWN_TOOL_FINAL_ANSWER_NOTICE =
   "Another unavailable tool was called after a correction. Do not call another tool. Answer the user now using only the information already available.";
+
+function waitingForUserReason(result: Message): "approval" | "question" | "selection" {
+  const humanInTheLoop = readRecordObjectField(result.data, "humanInTheLoop");
+
+  if (readStringField(humanInTheLoop, "type") === "selection") {
+    return "selection";
+  }
+
+  return result.name === "ask_user" ? "question" : "approval";
+}
 
 function shouldAbortAgentTurnError(error: unknown): boolean {
   return error instanceof AssistantError && error.type !== ErrorType.PARAMS_ERROR;
@@ -525,7 +536,7 @@ export async function runAgentLoop(
                   step: context.step,
                   toolCallId,
                   toolName: toolResult.name || "unknown",
-                  reason: toolResult.name === "ask_user" ? "question" : "approval",
+                  reason: waitingForUserReason(toolResult),
                 });
               } else {
                 await writeTurnActivity(sink, {
@@ -585,7 +596,8 @@ export async function runAgentLoop(
       const pendingResult = toolResults.find((message) => message.status === "pending");
 
       if (pendingResult) {
-        const kind = pendingResult.name === "ask_user" ? "question" : "approval";
+        const reason = waitingForUserReason(pendingResult);
+        const kind = reason === "approval" ? "approval" : "question";
 
         context.state.waitingForUserAction = kind;
         context.state.pendingUserAction = {
@@ -593,9 +605,11 @@ export async function runAgentLoop(
           message:
             typeof pendingResult.content === "string" && pendingResult.content.trim()
               ? pendingResult.content
-              : kind === "question"
-                ? "This work is waiting for your answer."
-                : "This action is waiting for user approval.",
+              : reason === "selection"
+                ? "This work is waiting for your selection."
+                : kind === "question"
+                  ? "This work is waiting for your answer."
+                  : "This action is waiting for user approval.",
         };
       }
 

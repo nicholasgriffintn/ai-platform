@@ -154,6 +154,27 @@ describe("consumeProviderStream", () => {
     ]);
   });
 
+  it("finishes reasoning before response generation starts", async () => {
+    const { sink, events } = createSink();
+
+    await consumeProviderStream(
+      providerStream([
+        `data: ${JSON.stringify({ choices: [{ delta: { reasoning_content: "Checking." } }] })}\n\n`,
+        textDelta("Answer."),
+        "data: [DONE]\n\n",
+      ]),
+      sink,
+      context,
+    );
+
+    expect(events.filter((event) => event.type === "turn_activity")).toEqual([
+      { type: "turn_activity", payload: { kind: "reasoning_started", step: 1 } },
+      { type: "turn_activity", payload: { kind: "reasoning_finished", step: 1 } },
+      { type: "turn_activity", payload: { kind: "response_started", step: 1 } },
+      { type: "turn_activity", payload: { kind: "response_finished", step: 1 } },
+    ]);
+  });
+
   it("forwards deltas while the provider is still sending, not once it finishes", async () => {
     const { sink, events } = createSink();
     let releaseSecondChunk: () => void = () => {};
@@ -346,6 +367,42 @@ describe("consumeProviderStream", () => {
         },
       },
     ]);
+  });
+
+  it("does not finalise an OpenAI tool call when its input stream is truncated", async () => {
+    const { sink, events } = createSink();
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        `data: ${JSON.stringify({
+          choices: [
+            {
+              delta: {
+                tool_calls: [
+                  {
+                    index: 0,
+                    id: "call-1",
+                    function: { name: "get_weather", arguments: '{"location":' },
+                  },
+                ],
+              },
+            },
+          ],
+        })}\n\n`,
+      ]),
+      sink,
+      context,
+    );
+
+    expect(turn).toMatchObject({ interrupted: true, toolCalls: [] });
+    expect(events).not.toContainEqual({
+      type: "tool_use_stop",
+      payload: { tool_id: "call-1" },
+    });
+    expect(events).not.toContainEqual({
+      type: "turn_activity",
+      payload: expect.objectContaining({ kind: "tool_input_finished", toolCallId: "call-1" }),
+    });
   });
 
   it("keeps OpenAI hosted tool results and reasoning summaries in message parts", async () => {

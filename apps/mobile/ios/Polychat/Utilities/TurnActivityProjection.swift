@@ -73,7 +73,7 @@ struct TurnActivityProjection: Equatable {
             requiresAction = true
             setPhase(
                 .waiting,
-                label: reason == .question ? "Waiting for your answer." : "Waiting for your approval.",
+                label: waitingLabel(for: reason),
                 step: step
             )
         case .modelStepFinished(let step, let outcome):
@@ -126,5 +126,16 @@ struct TurnActivityProjection: Equatable {
         }
 
         return running.count > 1 ? "Running \(running.count) tools..." : "Preparing next step..."
+    }
+
+    private func waitingLabel(for reason: ChatTurnActivityEvent.WaitReason) -> String {
+        switch reason {
+        case .question:
+            return "Waiting for your answer."
+        case .approval:
+            return "Waiting for your approval."
+        case .selection:
+            return "Waiting for your selection."
+        }
     }
 }
