@@ -793,9 +793,9 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 		export const toJSONSchema = undefined;
 	`;
   const apiEntryModule = `
-		import api, { SandboxRunCoordinator } from "./api.js";
+		import api, { ConversationCoordinator, SandboxRunCoordinator } from "./api.js";
 
-		export { SandboxRunCoordinator };
+		export { ConversationCoordinator, SandboxRunCoordinator };
 
 	function withExternalBindingShape(env) {
 			const ai = env.AI;
@@ -917,6 +917,10 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
           },
         },
         durableObjects: {
+          CONVERSATION_COORDINATOR: {
+            className: "ConversationCoordinator",
+            useSQLite: true,
+          },
           SANDBOX_RUN_COORDINATOR: {
             className: "SandboxRunCoordinator",
             useSQLite: true,
