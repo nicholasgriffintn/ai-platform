@@ -1,14 +1,14 @@
 import type {
-  ConversationLabel,
+  ConversationGroup,
   ConversationOrganisation,
   ConversationSnooze,
-  CreateConversationLabel,
+  CreateConversationGroup,
   UpdateConversationOrganisation,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
-  ConversationLabelRow,
+  ConversationGroupRow,
   ConversationUserStateRow,
 } from "~/repositories/ConversationOrganisationRepository";
 import { requireConversationAccess } from "~/services/conversations/access";
@@ -44,14 +44,14 @@ async function readOrganisation(
   userId: number,
   projectId: string | null,
 ): Promise<ConversationOrganisation> {
-  const [state, labels, availableLabels] = await Promise.all([
+  const [state, group, availableGroups] = await Promise.all([
     context.repositories.conversationOrganisation.getState(conversationId, userId),
-    context.repositories.conversationOrganisation.listAssignedLabels(
+    context.repositories.conversationOrganisation.getConversationGroup(
       conversationId,
       userId,
       projectId,
     ),
-    context.repositories.conversationOrganisation.listLabels(userId, projectId),
+    context.repositories.conversationOrganisation.listGroups(userId, projectId),
   ]);
 
   return {
@@ -60,8 +60,8 @@ async function readOrganisation(
     isPinned: state?.is_pinned === 1,
     isUnread: isConversationUnread(state),
     snooze: effectiveSnooze(state),
-    labels,
-    availableLabels,
+    group,
+    availableGroups,
     updatedAt: state?.updated_at ?? null,
   };
 }
@@ -123,10 +123,10 @@ export async function updateConversationOrganisation(
   return readOrganisation(context, conversationId, user.id, conversationProjectId(conversation));
 }
 
-export async function createConversationLabel(
+export async function createConversationGroup(
   context: ServiceContext,
-  input: CreateConversationLabel,
-): Promise<{ label: ConversationLabel }> {
+  input: CreateConversationGroup,
+): Promise<{ group: ConversationGroup }> {
   const user = context.requireUser();
   const projectId = input.scope.kind === "project" ? input.scope.projectId : null;
 
@@ -134,7 +134,7 @@ export async function createConversationLabel(
     await requireProjectAccess(context, projectId, ["owner", "admin"]);
   }
 
-  const existing = await context.repositories.conversationOrganisation.findLabelByName({
+  const existing = await context.repositories.conversationOrganisation.findGroupByName({
     userId: user.id,
     projectId,
     normalisedName: input.name.toLowerCase(),
@@ -142,14 +142,14 @@ export async function createConversationLabel(
 
   if (existing) {
     throw new AssistantError(
-      "A label with this name already exists",
+      "A group with this name already exists",
       ErrorType.CONFLICT_ERROR,
       409,
     );
   }
 
   return {
-    label: await context.repositories.conversationOrganisation.createLabel({
+    group: await context.repositories.conversationOrganisation.createGroup({
       userId: user.id,
       projectId,
       name: input.name,
@@ -157,62 +157,63 @@ export async function createConversationLabel(
   };
 }
 
-async function authoriseLabelManagement(
+async function authoriseGroupManagement(
   context: ServiceContext,
-  label: ConversationLabelRow,
+  group: ConversationGroupRow,
 ): Promise<void> {
   const user = context.requireUser();
 
-  if (label.project_id) {
-    await requireProjectAccess(context, label.project_id, ["owner", "admin"]);
+  if (group.project_id) {
+    await requireProjectAccess(context, group.project_id, ["owner", "admin"]);
 
     return;
   }
 
-  if (label.owner_user_id !== user.id) {
-    throw new AssistantError("Conversation label not found", ErrorType.NOT_FOUND, 404);
+  if (group.owner_user_id !== user.id) {
+    throw new AssistantError("Conversation group not found", ErrorType.NOT_FOUND, 404);
   }
 }
 
-export async function deleteConversationLabel(
+export async function deleteConversationGroup(
   context: ServiceContext,
-  labelId: string,
+  groupId: string,
 ): Promise<void> {
-  const label = await context.repositories.conversationOrganisation.getLabel(labelId);
+  const group = await context.repositories.conversationOrganisation.getGroup(groupId);
 
-  if (!label) {
-    throw new AssistantError("Conversation label not found", ErrorType.NOT_FOUND, 404);
+  if (!group) {
+    throw new AssistantError("Conversation group not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await authoriseLabelManagement(context, label);
-  await context.repositories.conversationOrganisation.deleteLabel(labelId);
+  await authoriseGroupManagement(context, group);
+  await context.repositories.conversationOrganisation.deleteGroup(groupId);
 }
 
-export async function setConversationLabel(
+export async function moveConversationToGroup(
   context: ServiceContext,
   conversationId: string,
-  labelId: string,
-  assigned: boolean,
+  groupId: string | null,
 ): Promise<ConversationOrganisation> {
   const user = context.requireUser();
   const conversation = await requireConversationAccess(context, conversationId);
   const projectId = conversationProjectId(conversation);
-  const label = await context.repositories.conversationOrganisation.getLabel(labelId);
-  const labelMatchesScope = label
-    ? projectId
-      ? label.project_id === projectId
-      : label.owner_user_id === user.id && label.project_id === null
-    : false;
 
-  if (!label || !labelMatchesScope) {
-    throw new AssistantError("Conversation label not found", ErrorType.NOT_FOUND, 404);
+  if (groupId) {
+    const group = await context.repositories.conversationOrganisation.getGroup(groupId);
+    const groupMatchesScope = group
+      ? projectId
+        ? group.project_id === projectId
+        : group.owner_user_id === user.id && group.project_id === null
+      : false;
+
+    if (!group || !groupMatchesScope) {
+      throw new AssistantError("Conversation group not found", ErrorType.NOT_FOUND, 404);
+    }
   }
 
-  await context.repositories.conversationOrganisation.setLabelAssignment({
+  await context.repositories.conversationOrganisation.setConversationGroup({
     conversationId,
-    labelId,
+    groupId,
     userId: user.id,
-    assigned,
   });
 
   return readOrganisation(context, conversationId, user.id, projectId);

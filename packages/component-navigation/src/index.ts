@@ -1,5 +1,6 @@
 export * from "./Conversations/ConversationList";
-export * from "./Conversations/ConversationOrganisationDialog";
+export * from "./Conversations/ConversationGroupsDialog";
+export * from "./Conversations/ConversationListItemActions";
 export * from "./Conversations/ConversationListActions";
 export * from "./Conversations/ConversationListControls";
 export * from "./Conversations/ConversationStorageNotice";

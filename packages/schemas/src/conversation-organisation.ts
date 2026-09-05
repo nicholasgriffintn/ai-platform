@@ -1,14 +1,14 @@
 import z from "zod/v4";
 
-export const conversationLabelScopeSchema = z.discriminatedUnion("kind", [
+export const conversationGroupScopeSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("personal") }),
   z.object({ kind: z.literal("project"), projectId: z.string().min(1) }),
 ]);
 
-export const conversationLabelSchema = z.object({
+export const conversationGroupSchema = z.object({
   id: z.string().min(1),
   name: z.string().trim().min(1).max(40),
-  scope: conversationLabelScopeSchema,
+  scope: conversationGroupScopeSchema,
 });
 
 export const conversationSnoozeSchema = z.discriminatedUnion("kind", [
@@ -22,8 +22,8 @@ export const conversationOrganisationSchema = z.object({
   isPinned: z.boolean(),
   isUnread: z.boolean(),
   snooze: conversationSnoozeSchema.nullable(),
-  labels: z.array(conversationLabelSchema),
-  availableLabels: z.array(conversationLabelSchema),
+  group: conversationGroupSchema.nullable(),
+  availableGroups: z.array(conversationGroupSchema),
   updatedAt: z.string().nullable(),
 });
 
@@ -40,23 +40,23 @@ export const updateConversationOrganisationSchema = z
     "At least one organisation field must be provided",
   );
 
-export const createConversationLabelSchema = z.object({
+export const createConversationGroupSchema = z.object({
   name: z.string().trim().min(1).max(40),
-  scope: conversationLabelScopeSchema,
+  scope: conversationGroupScopeSchema,
 });
 
-export const conversationLabelParamsSchema = z.object({ labelId: z.string().min(1) });
+export const conversationGroupParamsSchema = z.object({ groupId: z.string().min(1) });
 export const conversationOrganisationParamsSchema = z.object({
   completionId: z.string().min(1),
 });
-export const assignConversationLabelSchema = z.object({
-  labelId: z.string().min(1),
-  assigned: z.boolean(),
+export const moveConversationToGroupSchema = z.object({
+  groupId: z.string().min(1).nullable(),
 });
 
-export type ConversationLabelScope = z.infer<typeof conversationLabelScopeSchema>;
-export type ConversationLabel = z.infer<typeof conversationLabelSchema>;
+export type ConversationGroupScope = z.infer<typeof conversationGroupScopeSchema>;
+export type ConversationGroup = z.infer<typeof conversationGroupSchema>;
 export type ConversationSnooze = z.infer<typeof conversationSnoozeSchema>;
 export type ConversationOrganisation = z.infer<typeof conversationOrganisationSchema>;
 export type UpdateConversationOrganisation = z.infer<typeof updateConversationOrganisationSchema>;
-export type CreateConversationLabel = z.infer<typeof createConversationLabelSchema>;
+export type CreateConversationGroup = z.infer<typeof createConversationGroupSchema>;
+export type MoveConversationToGroup = z.infer<typeof moveConversationToGroupSchema>;

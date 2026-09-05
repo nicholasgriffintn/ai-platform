@@ -1,7 +1,7 @@
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import type {
-  ConversationLabel,
-  ConversationLabelScope,
+  ConversationGroup,
+  ConversationGroupScope,
   ConversationOrganisation,
   UpdateConversationOrganisation,
 } from "@ngriffin_uk/polychat-schemas";
@@ -32,24 +32,20 @@ export function updateConversationOrganisation(
   return authenticatedRequest(`/chat/completions/${conversationId}/organisation`, "PATCH", input);
 }
 
-export function setConversationLabel(
+export function moveConversationToGroup(
   conversationId: string,
-  labelId: string,
-  assigned: boolean,
+  groupId: string | null,
 ): Promise<ConversationOrganisation> {
-  return authenticatedRequest(`/chat/completions/${conversationId}/labels`, "PUT", {
-    labelId,
-    assigned,
-  });
+  return authenticatedRequest(`/chat/completions/${conversationId}/group`, "PUT", { groupId });
 }
 
-export function createConversationLabel(
+export function createConversationGroup(
   name: string,
-  scope: ConversationLabelScope,
-): Promise<ConversationLabel> {
-  return authenticatedRequest("/chat/labels", "POST", { name, scope });
+  scope: ConversationGroupScope,
+): Promise<ConversationGroup> {
+  return authenticatedRequest("/chat/groups", "POST", { name, scope });
 }
 
-export function deleteConversationLabel(labelId: string): Promise<{ deleted: boolean }> {
-  return authenticatedRequest(`/chat/labels/${labelId}`, "DELETE");
+export function deleteConversationGroup(groupId: string): Promise<{ deleted: boolean }> {
+  return authenticatedRequest(`/chat/groups/${groupId}`, "DELETE");
 }

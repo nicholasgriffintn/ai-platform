@@ -766,8 +766,8 @@ export const conversationUserState = sqliteTable(
   }),
 );
 
-export const conversationLabel = sqliteTable(
-  "conversation_label",
+export const conversationGroup = sqliteTable(
+  "conversation_group",
   {
     id: text().primaryKey(),
     owner_user_id: integer().references(() => user.id, { onDelete: "cascade" }),
@@ -783,27 +783,27 @@ export const conversationLabel = sqliteTable(
   },
   (table) => ({
     ownerCheck: check(
-      "conversation_label_owner_check",
+      "conversation_group_owner_check",
       sql`(${table.owner_user_id} IS NULL) <> (${table.project_id} IS NULL)`,
     ),
-    personalNameIdx: uniqueIndex("conversation_label_personal_name_idx")
+    personalNameIdx: uniqueIndex("conversation_group_personal_name_idx")
       .on(table.owner_user_id, table.normalised_name)
       .where(sql`${table.owner_user_id} IS NOT NULL`),
-    projectNameIdx: uniqueIndex("conversation_label_project_name_idx")
+    projectNameIdx: uniqueIndex("conversation_group_project_name_idx")
       .on(table.project_id, table.normalised_name)
       .where(sql`${table.project_id} IS NOT NULL`),
   }),
 );
 
-export const conversationLabelAssignment = sqliteTable(
-  "conversation_label_assignment",
+export const conversationGroupMembership = sqliteTable(
+  "conversation_group_membership",
   {
     conversation_id: text()
-      .notNull()
+      .primaryKey()
       .references(() => conversation.id, { onDelete: "cascade" }),
-    label_id: text()
+    group_id: text()
       .notNull()
-      .references(() => conversationLabel.id, { onDelete: "cascade" }),
+      .references(() => conversationGroup.id, { onDelete: "cascade" }),
     assigned_by_user_id: integer()
       .notNull()
       .references(() => user.id),
@@ -812,14 +812,13 @@ export const conversationLabelAssignment = sqliteTable(
       .notNull(),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.conversation_id, table.label_id] }),
-    labelIdx: index("conversation_label_assignment_label_idx").on(table.label_id),
+    groupIdx: index("conversation_group_membership_group_idx").on(table.group_id),
   }),
 );
 
 export type ConversationUserState = typeof conversationUserState.$inferSelect;
-export type ConversationLabel = typeof conversationLabel.$inferSelect;
-export type ConversationLabelAssignment = typeof conversationLabelAssignment.$inferSelect;
+export type ConversationGroup = typeof conversationGroup.$inferSelect;
+export type ConversationGroupMembership = typeof conversationGroupMembership.$inferSelect;
 
 export const goal = sqliteTable(
   "goal",

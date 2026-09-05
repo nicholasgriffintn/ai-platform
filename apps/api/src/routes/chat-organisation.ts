@@ -1,20 +1,20 @@
 import {
-  assignConversationLabelSchema,
-  conversationLabelParamsSchema,
-  conversationLabelSchema,
+  conversationGroupParamsSchema,
+  conversationGroupSchema,
   conversationOrganisationParamsSchema,
   conversationOrganisationSchema,
-  createConversationLabelSchema,
+  createConversationGroupSchema,
+  moveConversationToGroupSchema,
   updateConversationOrganisationSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import type { Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
 import {
-  createConversationLabel,
-  deleteConversationLabel,
+  createConversationGroup,
+  deleteConversationGroup,
   getConversationOrganisation,
-  setConversationLabel,
+  moveConversationToGroup,
   updateConversationOrganisation,
 } from "~/services/conversation-organisation";
 
@@ -49,40 +49,41 @@ export function registerConversationOrganisationRoutes(app: Hono): void {
       updateConversationOrganisation(serviceContext, params.completionId, body),
   });
 
-  addRoute(app, "put", "/completions/:completionId/labels", {
+  addRoute(app, "put", "/completions/:completionId/group", {
     tags: ["chat"],
     auth: true,
     paramSchema: conversationOrganisationParamsSchema,
-    bodySchema: assignConversationLabelSchema,
+    bodySchema: moveConversationToGroupSchema,
     responses: {
-      200: { description: "Updated conversation labels", schema: conversationOrganisationSchema },
+      200: { description: "Updated conversation group", schema: conversationOrganisationSchema },
+      404: { description: "The group does not exist in the conversation's scope" },
     },
     handler: ({ body, params, serviceContext }) =>
-      setConversationLabel(serviceContext, params.completionId, body.labelId, body.assigned),
+      moveConversationToGroup(serviceContext, params.completionId, body.groupId),
   });
 
-  addRoute(app, "post", "/labels", {
+  addRoute(app, "post", "/groups", {
     tags: ["chat"],
     auth: true,
-    bodySchema: createConversationLabelSchema,
+    bodySchema: createConversationGroupSchema,
     responses: {
       200: {
-        description: "Created conversation label",
-        schema: conversationLabelSchema,
+        description: "Created conversation group",
+        schema: conversationGroupSchema,
       },
-      409: { description: "A label with the same name already exists" },
+      409: { description: "A group with the same name already exists" },
     },
     handler: async ({ body, serviceContext }) =>
-      (await createConversationLabel(serviceContext, body)).label,
+      (await createConversationGroup(serviceContext, body)).group,
   });
 
-  addRoute(app, "delete", "/labels/:labelId", {
+  addRoute(app, "delete", "/groups/:groupId", {
     tags: ["chat"],
     auth: true,
-    paramSchema: conversationLabelParamsSchema,
-    responses: { 200: { description: "Conversation label deleted" } },
+    paramSchema: conversationGroupParamsSchema,
+    responses: { 200: { description: "Conversation group deleted" } },
     handler: async ({ params, serviceContext }) => {
-      await deleteConversationLabel(serviceContext, params.labelId);
+      await deleteConversationGroup(serviceContext, params.groupId);
 
       return { deleted: true };
     },

@@ -9,11 +9,12 @@ import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
 import { useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router";
 
-import { ConversationOrganisationDialog } from "~/components/ConversationOrganisationDialog";
+import { ConversationGroupsDialog } from "~/components/ConversationGroupsDialog";
+import { ConversationItemActions } from "~/components/ConversationItemActions";
 import { SidebarFooter } from "~/components/Sidebar/SidebarFooter";
 import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
 import { useTaskAttention } from "~/hooks/useProjectTasks";
-import { buildConversationGroups } from "~/lib/conversation-groups";
+import { buildConversationSections } from "~/lib/conversation-sections";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -39,7 +40,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const { data } = workspacesQuery;
   const { data: workspace } = workspaceQuery;
   const { data: project } = projectQuery;
-  const [conversationToOrganise, setConversationToOrganise] = useState<string | null>(null);
+  const [conversationForGroups, setConversationForGroups] = useState<string | null>(null);
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -58,6 +59,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const projectAttentionCount = projectId
     ? attentionItems.filter((item) => item.projectId === projectId).length
     : 0;
+  const canManageGroups = workspace?.role === "owner" || workspace?.role === "admin";
   const projectBasePath = `/work/${workspaceId ?? ""}/projects/${projectId ?? ""}`;
   const projectChatPath = `${projectBasePath}/chat`;
   const {
@@ -72,7 +74,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     projectChatPath,
     refreshProject: projectQuery.refetch,
   });
-  const conversationGroups = buildConversationGroups(
+  const conversationSections = buildConversationSections(
     (project?.conversations ?? []).map((conversation) => ({
       id: conversation.id,
       type: conversation.type,
@@ -87,7 +89,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         ) || conversationStreams[conversation.id]?.status === "action-required",
       isPinned: conversation.isPinned,
       isUnread: conversation.isUnread,
-      labels: conversation.labels,
+      group: conversation.group,
     })),
     {
       groupBy: workConversationListFilters.groupBy,
@@ -168,15 +170,23 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                       }
                     >
                       <ConversationList
-                        groups={conversationGroups}
+                        sections={conversationSections}
                         activeConversationId={activeConversationId}
                         isConversationRoute={pathname === projectChatPath}
                         onSelect={selectConversation}
-                        onEditTitle={(conversationId, currentTitle) => {
-                          void editConversationTitle(conversationId, currentTitle);
-                        }}
-                        onDelete={requestDeleteConversation}
-                        onOrganise={setConversationToOrganise}
+                        renderItemActions={(conversation) => (
+                          <ConversationItemActions
+                            conversation={conversation}
+                            projectId={projectId}
+                            canOrganise
+                            canManageGroups={canManageGroups}
+                            onEditTitle={(conversationId, currentTitle) => {
+                              void editConversationTitle(conversationId, currentTitle);
+                            }}
+                            onDelete={requestDeleteConversation}
+                            onManageGroups={setConversationForGroups}
+                          />
+                        )}
                       />
                     </ConversationListSection>
                   </div>
@@ -210,11 +220,11 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         onConfirm={confirmDeleteConversation}
         isLoading={deletePending}
       />
-      <ConversationOrganisationDialog
-        conversationId={conversationToOrganise}
+      <ConversationGroupsDialog
+        conversationId={conversationForGroups}
         projectId={projectId}
-        canManageLabels={workspace?.role === "owner" || workspace?.role === "admin"}
-        onOpenChange={(open) => !open && setConversationToOrganise(null)}
+        canManageGroups={canManageGroups}
+        onOpenChange={(open) => !open && setConversationForGroups(null)}
       />
     </SidebarShell>
   );

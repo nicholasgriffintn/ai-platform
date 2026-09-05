@@ -10,7 +10,7 @@ import type {
   ChatRun,
   ChatHostedToolSettings as SchemaHostedToolSettings,
   ConversationModeMetadata,
-  ConversationLabel,
+  ConversationGroup,
   ConversationSnooze,
   MessageRole as SchemaMessageRole,
   ModelServiceTier,
@@ -271,7 +271,7 @@ export interface Conversation {
   isPinned?: boolean;
   isUnread?: boolean;
   snooze?: ConversationSnooze | null;
-  labels?: ConversationLabel[];
+  group?: ConversationGroup | null;
 }
 
 export type ConversationArchiveFilter = SchemaConversationArchiveFilter;
