@@ -59,6 +59,21 @@ describe("createStreamProgressCoalescer", () => {
     expect(onUpdate).toHaveBeenCalledWith("Hello wo", undefined);
   });
 
+  it("reduces a representative ten-thousand-delta burst to one render", () => {
+    const onUpdate = vi.fn();
+    const scheduler = createManualScheduler();
+    const coalescer = createStreamProgressCoalescer(onUpdate, scheduler.scheduleFlush);
+
+    for (let index = 1; index <= 10_000; index += 1) {
+      coalescer.handleUpdate(`token-${index}`);
+    }
+
+    scheduler.runFrame();
+
+    expect(onUpdate).toHaveBeenCalledTimes(1);
+    expect(onUpdate).toHaveBeenCalledWith("token-10000", undefined);
+  });
+
   it("flushes the pending delta before the final message so no content is stranded", () => {
     const onUpdate = vi.fn();
     const scheduler = createManualScheduler();

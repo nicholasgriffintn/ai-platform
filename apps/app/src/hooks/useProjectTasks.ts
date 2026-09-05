@@ -15,12 +15,12 @@ import {
   deleteProjectTask,
   getProjectTask,
   listProjectTasks,
-  listTaskAttention,
   resolveProjectTaskToolApproval,
   startProjectTask,
   setProjectFlow,
   updateProjectTask,
 } from "~/lib/api/project-tasks";
+import { listTaskInbox, updateTaskInboxReceipts } from "~/lib/api/task-notifications";
 import { useChatStore } from "~/state/stores/chatStore";
 
 export const projectTasksQueryKey = (projectId: string) => ["project-tasks", projectId] as const;
@@ -31,12 +31,22 @@ export const projectTaskDetailQueryKey = (projectId: string, taskId: string) =>
 const IDLE_REFETCH_MS = 30_000;
 const ACTIVE_REFETCH_MS = 2_000;
 
-function hasWorkInFlight(tasks: readonly Pick<ProjectTask, "status">[] | undefined): boolean {
-  return Boolean(tasks?.some((task) => task.status === "running" || task.status === "queued"));
+function hasWorkInFlight(
+  tasks: readonly Pick<ProjectTask, "status" | "blockedReason">[] | undefined,
+): boolean {
+  return Boolean(
+    tasks?.some(
+      (task) =>
+        task.status === "running" ||
+        task.status === "queued" ||
+        (task.status === "blocked" &&
+          (task.blockedReason === "awaiting_input" || task.blockedReason === "awaiting_approval")),
+    ),
+  );
 }
 
 export function projectTasksRefetchInterval(
-  tasks: readonly Pick<ProjectTask, "status">[] | undefined,
+  tasks: readonly Pick<ProjectTask, "status" | "blockedReason">[] | undefined,
 ): number {
   return hasWorkInFlight(tasks) ? ACTIVE_REFETCH_MS : IDLE_REFETCH_MS;
 }
@@ -203,14 +213,26 @@ export function useTaskAttention() {
 
   const query = useQuery({
     queryKey: TASK_ATTENTION_QUERY_KEY,
-    queryFn: listTaskAttention,
+    queryFn: listTaskInbox,
     enabled: isAuthenticated && isPro,
     staleTime: 30_000,
+    refetchInterval: 15_000,
+  });
+
+  const queryClient = useQueryClient();
+  const updateReceipt = useMutation({
+    mutationFn: ({ itemIds, action }: { itemIds: string[]; action: "read" | "dismiss" }) =>
+      updateTaskInboxReceipts(itemIds, action),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: TASK_ATTENTION_QUERY_KEY }),
   });
 
   return {
     items: query.data?.items ?? [],
     total: query.data?.total ?? 0,
+    unread: query.data?.unread ?? 0,
     isLoading: query.isLoading,
+    markRead: (itemIds: string[]) => updateReceipt.mutateAsync({ itemIds, action: "read" }),
+    dismiss: (itemIds: string[]) => updateReceipt.mutateAsync({ itemIds, action: "dismiss" }),
+    refresh: query.refetch,
   };
 }

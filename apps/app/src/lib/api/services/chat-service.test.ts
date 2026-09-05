@@ -111,6 +111,35 @@ describe("ChatService streaming", () => {
         share_id: "share-1",
       }),
     );
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "http://localhost:8787/chat/completions/conversation-1?refresh_pending=true&message_limit=100",
+    );
+  });
+
+  it("loads an authorised earlier message page without discarding pagination state", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      Response.json({
+        data: {
+          messages: [{ id: "message-1", role: "user", content: "Earlier" }],
+          has_more: true,
+          oldest_message_id: "message-1",
+        },
+      }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+    const page = await service.getEarlierChatMessages("conversation-1", "message-101");
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "http://localhost:8787/chat/completions/conversation-1/messages?before=message-101&limit=100",
+    );
+    expect(page).toMatchObject({
+      hasMore: true,
+      oldestMessageId: "message-1",
+      messages: [{ id: "message-1", content: "Earlier" }],
+    });
   });
 
   it("preserves structured API errors when a conversation cannot be accessed", async () => {
@@ -324,6 +353,29 @@ describe("ChatService streaming", () => {
                   message: compactionMessage,
                 },
               },
+              run: {
+                protocolVersion: 1,
+                commandId: "command-1",
+                kind: "turn",
+                acceptedAt: "2026-09-05T12:00:00.000Z",
+                duplicate: false,
+                run: {
+                  protocolVersion: 1,
+                  id: "run-1",
+                  conversationId: "conversation-1",
+                  projectId: null,
+                  projectTaskId: null,
+                  initiatorUserId: 7,
+                  status: "succeeded",
+                  attempt: 1,
+                  createdAt: "2026-09-05T12:00:00.000Z",
+                  updatedAt: "2026-09-05T12:00:01.000Z",
+                  startedAt: "2026-09-05T12:00:00.000Z",
+                  completedAt: "2026-09-05T12:00:01.000Z",
+                  terminalReason: null,
+                  lastMessageId: "completion-response-1",
+                },
+              },
             },
           }),
           {
@@ -363,6 +415,13 @@ describe("ChatService streaming", () => {
       state: "compaction",
       message: compactionMessage,
     });
+    expect(onStateChange).toHaveBeenCalledWith(
+      "run",
+      expect.objectContaining({
+        state: "run",
+        receipt: expect.objectContaining({ commandId: "command-1" }),
+      }),
+    );
   });
 
   it("emits separate assistant messages for recursive streamed turns", async () => {
@@ -719,8 +778,8 @@ describe("ChatService streaming", () => {
       mode: "remote",
       model: "test-model",
       onProgress: () => {},
-      onStateChange: (state, data) => {
-        stateUpdates.push({ state, data });
+      onStateChange: (state, payload) => {
+        stateUpdates.push({ state, data: payload });
       },
       signal: new AbortController().signal,
     });
@@ -729,6 +788,70 @@ describe("ChatService streaming", () => {
       state: "usage_limits",
       data: { credits: creditSummary({ used: 200, state: "exhausted" }) },
     });
+  });
+
+  it("surfaces streamed run receipts without treating them as assistant text", async () => {
+    const receipt = {
+      protocolVersion: 1,
+      commandId: "command-1",
+      kind: "turn",
+      acceptedAt: "2026-09-05T12:00:00.000Z",
+      duplicate: false,
+      run: {
+        protocolVersion: 1,
+        id: "run-1",
+        conversationId: "conversation-1",
+        projectId: null,
+        projectTaskId: null,
+        initiatorUserId: 7,
+        status: "running",
+        attempt: 1,
+        createdAt: "2026-09-05T12:00:00.000Z",
+        updatedAt: "2026-09-05T12:00:00.000Z",
+        startedAt: "2026-09-05T12:00:00.000Z",
+        completedAt: null,
+        terminalReason: null,
+        lastMessageId: null,
+      },
+    };
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        createSseResponse([
+          data({ type: "state", state: "run", receipt }),
+          data({ type: "state", state: "done" }),
+          data("[DONE]"),
+        ]),
+      ),
+    );
+    const onProgress = vi.fn();
+    const onStateChange = vi.fn();
+    const service = new ChatService(async () => ({}));
+
+    await service.streamChatCompletions({
+      chatSettings: {},
+      completionId: "conversation-1",
+      messages: [{ role: "user", content: "hello" } as Message],
+      mode: "remote",
+      model: "test-model",
+      onProgress,
+      onStateChange,
+      signal: new AbortController().signal,
+    });
+
+    expect(onStateChange).toHaveBeenCalledWith("run", {
+      type: "state",
+      state: "run",
+      receipt,
+    });
+    expect(onProgress).not.toHaveBeenCalledWith(
+      expect.stringContaining("run-1"),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    );
   });
 
   it("sends hosted tool settings in top-level tool_options", async () => {
@@ -776,6 +899,34 @@ describe("ChatService streaming", () => {
     expect(body.tool_selection_mode).toBe("managed");
     expect(body.models).toEqual(["gpt-5", "claude-opus"]);
     expect(body.provider).toBe("openai");
+    expect(body.command_id).toEqual(expect.any(String));
+  });
+
+  it("preserves a caller-provided command identity for retried submissions", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      createSseResponse([data("[DONE]")]),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new ChatService(async () => ({}));
+
+    await service.streamChatCompletions({
+      chatSettings: {},
+      completionId: "conversation-1",
+      messages: [{ role: "user", content: "hello" } as Message],
+      mode: "remote",
+      model: "gpt-5",
+      onProgress: () => {},
+      onStateChange: () => {},
+      requestOptions: { command_id: "command-1" },
+      signal: new AbortController().signal,
+    });
+
+    const [, request] = fetchMock.mock.calls[0];
+    const body = JSON.parse(String(request?.body));
+
+    expect(body.command_id).toBe("command-1");
   });
 
   it("omits tool request fields when tools are not allowed", async () => {
@@ -1308,5 +1459,180 @@ describe("ChatService conversation updates", () => {
         role: "user",
       }),
     ]);
+  });
+});
+
+describe("ChatService run recovery", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("loads an authoritative run snapshot", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      Response.json({
+        data: {
+          run: {
+            protocolVersion: 1,
+            id: "run-1",
+            conversationId: "conversation-1",
+            projectId: null,
+            projectTaskId: null,
+            initiatorUserId: 7,
+            status: "running",
+            attempt: 1,
+            createdAt: "2026-09-05T12:00:00.000Z",
+            updatedAt: "2026-09-05T12:00:01.000Z",
+            startedAt: "2026-09-05T12:00:01.000Z",
+            completedAt: null,
+            terminalReason: null,
+            lastMessageId: "assistant-1",
+          },
+          messages: [{ id: "assistant-1", role: "assistant", content: "Partial" }],
+        },
+      }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+    const snapshot = await service.getChatRun("run-1");
+
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/chat/runs/run-1");
+    expect(snapshot).toMatchObject({
+      run: { id: "run-1", status: "running" },
+      messages: [{ id: "assistant-1", content: "Partial" }],
+    });
+  });
+
+  it("loads a cursor-anchored snapshot for ordered replay", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      Response.json({
+        data: {
+          protocolVersion: 1,
+          cursor: 7,
+          run: {
+            protocolVersion: 1,
+            id: "run-1",
+            conversationId: "conversation-1",
+            projectId: null,
+            projectTaskId: null,
+            initiatorUserId: 7,
+            status: "running",
+            attempt: 1,
+            createdAt: "2026-09-05T12:00:00.000Z",
+            updatedAt: "2026-09-05T12:00:01.000Z",
+            startedAt: "2026-09-05T12:00:01.000Z",
+            completedAt: null,
+            terminalReason: null,
+            lastMessageId: "assistant-1",
+          },
+          messages: [{ id: "assistant-1", role: "assistant", content: "Partial" }],
+        },
+      }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+    const snapshot = await service.getChatRunSnapshot("run-1");
+
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/chat/runs/run-1/snapshot");
+    expect(snapshot).toMatchObject({ cursor: 7, messages: [{ id: "assistant-1" }] });
+  });
+
+  it("requests events after the last applied cursor and parses an explicit reset", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      Response.json({
+        data: {
+          protocolVersion: 1,
+          runId: "run-1",
+          fromCursor: 2,
+          nextCursor: 503,
+          resetRequired: true,
+          events: [],
+          snapshot: {
+            protocolVersion: 1,
+            cursor: 503,
+            run: {
+              protocolVersion: 1,
+              id: "run-1",
+              conversationId: "conversation-1",
+              projectId: null,
+              projectTaskId: null,
+              initiatorUserId: 7,
+              status: "succeeded",
+              attempt: 1,
+              createdAt: "2026-09-05T12:00:00.000Z",
+              updatedAt: "2026-09-05T12:00:03.000Z",
+              startedAt: "2026-09-05T12:00:01.000Z",
+              completedAt: "2026-09-05T12:00:03.000Z",
+              terminalReason: null,
+              lastMessageId: "assistant-1",
+            },
+            messages: [{ id: "assistant-1", role: "assistant", content: "Done" }],
+          },
+        },
+      }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+    const replay = await service.getChatRunEvents("run-1", 2, 25);
+
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain(
+      "/chat/runs/run-1/events?after=2&limit=25",
+    );
+    expect(replay).toMatchObject({
+      resetRequired: true,
+      nextCursor: 503,
+      snapshot: { cursor: 503, messages: [{ id: "assistant-1", content: "Done" }] },
+    });
+  });
+
+  it("cancels the exact observed attempt with an idempotency command", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      Response.json({
+        data: {
+          run: {
+            protocolVersion: 1,
+            commandId: "cancel-1",
+            kind: "cancel",
+            acceptedAt: "2026-09-05T12:00:02.000Z",
+            duplicate: false,
+            run: {
+              protocolVersion: 1,
+              id: "run-1",
+              conversationId: "conversation-1",
+              projectId: null,
+              projectTaskId: null,
+              initiatorUserId: 7,
+              status: "cancelling",
+              attempt: 2,
+              createdAt: "2026-09-05T12:00:00.000Z",
+              updatedAt: "2026-09-05T12:00:02.000Z",
+              startedAt: "2026-09-05T12:00:01.000Z",
+              completedAt: null,
+              terminalReason: null,
+              lastMessageId: null,
+            },
+          },
+        },
+      }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+    await service.cancelChatRun("run-1", 2, "cancel-1");
+
+    const [url, request] = fetchMock.mock.calls[0];
+
+    expect(String(url)).toContain("/chat/runs/run-1/cancel");
+    expect(JSON.parse(String(request?.body))).toEqual({
+      command_id: "cancel-1",
+      expected_attempt: 2,
+    });
   });
 });

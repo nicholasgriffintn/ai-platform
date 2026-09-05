@@ -32,6 +32,30 @@ export function getCompactionMessageLabel(message: unknown): string | null {
     : compactionStatusLabels.manualCompleted;
 }
 
+function formatMessageCount(count: number): string {
+  return `${count} ${count === 1 ? "message" : "messages"}`;
+}
+
+export function getCompactionCoverageDetail(message: unknown): string | null {
+  const compactionMessage = normaliseCompactionStatusMessage(message);
+  const coverage = compactionMessage?.parts.find(
+    (part) => part.type === "compaction" && part.status === "completed",
+  )?.coverage;
+
+  if (!coverage) {
+    return null;
+  }
+
+  const covered = `${formatMessageCount(coverage.coveredMessageCount)} ${
+    coverage.strategy === "fallback_transcript" ? "preserved verbatim" : "summarised"
+  }`;
+  const retainedMessageCount = coverage.candidateMessageCount - coverage.coveredMessageCount;
+
+  return retainedMessageCount > 0
+    ? `${covered}; ${formatMessageCount(retainedMessageCount)} retained`
+    : covered;
+}
+
 export function isCompactionMarkerMessage(message: unknown): boolean {
   if (!isRecord(message)) {
     return false;

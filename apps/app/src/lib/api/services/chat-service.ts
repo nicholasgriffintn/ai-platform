@@ -16,13 +16,24 @@ import {
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   ChatCompletionResponseBody,
+  ChatRun,
+  ChatRunCommandReceipt,
+  ChatRunSnapshotResponse,
   Goal,
   ModelConfigItem,
   ModelRouterMode,
   ToolSelectionMode,
 } from "@ngriffin_uk/polychat-schemas";
 import {
+  chatRunCommandReceiptResponseSchema,
+  chatRunRecoveryResponseSchema,
+  chatRunReplayResponseSchema,
+  chatRunSnapshotResponseSchema,
+} from "@ngriffin_uk/polychat-schemas";
+import {
+  CHAT_STREAM_PROGRESS_BATCH_EVENTS,
   createChatStreamAssembler,
+  isChatStreamProgressEvent,
   parseChatStreamSseBuffer,
   type ChatStreamUpdate,
   type ParsedChatStreamSseEvent,
@@ -31,6 +42,8 @@ import { goalSchema } from "@ngriffin_uk/polychat-schemas/goals";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
+import { yieldToMainThread } from "~/lib/async/yield-to-main-thread";
+import type { AppChatRunReplayResponse, AuthoritativeChatRunSnapshot } from "~/lib/chat/run-replay";
 import { getSandboxTaskToolNames } from "~/lib/sandbox/task-tools";
 import type {
   ChatMode,
@@ -64,6 +77,27 @@ export interface ConversationUpdateRequest {
 export interface ConversationCompactionResult {
   compacted: boolean;
   conversation: Conversation;
+}
+
+export interface ChatRunSnapshot {
+  run: ChatRun;
+  messages: Message[];
+}
+
+export interface ConversationMessagePage {
+  messages: Message[];
+  hasMore: boolean;
+  oldestMessageId: string | null;
+}
+
+function normaliseRunSnapshot(snapshot: ChatRunSnapshotResponse): AuthoritativeChatRunSnapshot {
+  return {
+    ...snapshot,
+    messages: normaliseConversationResponse(
+      { id: snapshot.run.conversationId, messages: snapshot.messages },
+      snapshot.run.conversationId,
+    ).messages,
+  };
 }
 
 type StreamProgressHandler = (
@@ -226,7 +260,7 @@ export class ChatService {
 
   async getChat(
     completion_id: string,
-    options?: { refreshPending?: boolean },
+    options?: { refreshPending?: boolean; messageLimit?: number },
   ): Promise<Conversation> {
     if (!completion_id) {
       throw new Error("No completion ID provided");
@@ -241,9 +275,15 @@ export class ChatService {
     }
 
     const refreshPending = options?.refreshPending ?? true;
-    const url = refreshPending
-      ? `/chat/completions/${completion_id}?refresh_pending=true`
-      : `/chat/completions/${completion_id}`;
+    const query = new URLSearchParams();
+
+    if (refreshPending) {
+      query.set("refresh_pending", "true");
+    }
+
+    query.set("message_limit", String(options?.messageLimit ?? 100));
+
+    const url = `/chat/completions/${completion_id}?${query.toString()}`;
 
     const response = await fetchApi(url, {
       method: "GET",
@@ -260,6 +300,36 @@ export class ChatService {
     const conversation = await returnFetchedData<any>(response);
 
     return normaliseConversationResponse(conversation, completion_id);
+  }
+
+  async getEarlierChatMessages(
+    completionId: string,
+    beforeMessageId: string,
+    limit = 100,
+  ): Promise<ConversationMessagePage> {
+    const query = new URLSearchParams({
+      before: beforeMessageId,
+      limit: String(limit),
+    });
+    const response = await fetchApiOrThrow(
+      `/chat/completions/${completionId}/messages?${query.toString()}`,
+      { method: "GET", headers: await this.getHeaders() },
+    );
+    const data = await returnFetchedData<{
+      messages?: unknown[];
+      has_more?: boolean;
+      oldest_message_id?: string | null;
+    }>(response);
+    const messages = normaliseConversationResponse(
+      { id: completionId, messages: data.messages },
+      completionId,
+    ).messages;
+
+    return {
+      messages,
+      hasMore: data.has_more === true,
+      oldestMessageId: typeof data.oldest_message_id === "string" ? data.oldest_message_id : null,
+    };
   }
 
   async compactConversation(completion_id: string): Promise<ConversationCompactionResult> {
@@ -504,6 +574,79 @@ export class ChatService {
     });
   }
 
+  async getChatRun(runId: string): Promise<ChatRunSnapshot> {
+    const response = await fetchApiOrThrow(`/chat/runs/${runId}`, {
+      method: "GET",
+      headers: await this.getHeaders(),
+    });
+    const parsed = chatRunRecoveryResponseSchema.parse(await returnFetchedData<unknown>(response));
+
+    return {
+      run: parsed.run,
+      messages: normaliseConversationResponse(
+        { id: parsed.run.conversationId, messages: parsed.messages },
+        parsed.run.conversationId,
+      ).messages,
+    };
+  }
+
+  async getChatRunSnapshot(runId: string): Promise<AuthoritativeChatRunSnapshot> {
+    const response = await fetchApiOrThrow(`/chat/runs/${runId}/snapshot`, {
+      method: "GET",
+      headers: await this.getHeaders(),
+    });
+    const parsed = chatRunSnapshotResponseSchema.parse(await returnFetchedData<unknown>(response));
+
+    return normaliseRunSnapshot(parsed);
+  }
+
+  async getChatRunEvents(
+    runId: string,
+    after: number,
+    limit = 100,
+  ): Promise<AppChatRunReplayResponse> {
+    const query = new URLSearchParams({ after: String(after), limit: String(limit) });
+    const response = await fetchApiOrThrow(`/chat/runs/${runId}/events?${query.toString()}`, {
+      method: "GET",
+      headers: await this.getHeaders(),
+    });
+    const parsed = chatRunReplayResponseSchema.parse(await returnFetchedData<unknown>(response));
+
+    return {
+      ...parsed,
+      snapshot: parsed.snapshot ? normaliseRunSnapshot(parsed.snapshot) : null,
+    };
+  }
+
+  async getChatRunCommand(commandId: string): Promise<ChatRunCommandReceipt> {
+    const response = await fetchApiOrThrow(`/chat/run-commands/${commandId}`, {
+      method: "GET",
+      headers: await this.getHeaders(),
+    });
+    const parsed = chatRunCommandReceiptResponseSchema.parse(
+      await returnFetchedData<unknown>(response),
+    );
+
+    return parsed.run;
+  }
+
+  async cancelChatRun(
+    runId: string,
+    expectedAttempt: number,
+    commandId: string = crypto.randomUUID(),
+  ): Promise<ChatRunCommandReceipt> {
+    const response = await fetchApiOrThrow(`/chat/runs/${runId}/cancel`, {
+      method: "POST",
+      headers: await this.getHeaders(),
+      body: { command_id: commandId, expected_attempt: expectedAttempt },
+    });
+    const parsed = chatRunCommandReceiptResponseSchema.parse(
+      await returnFetchedData<unknown>(response),
+    );
+
+    return parsed.run;
+  }
+
   async unshareConversation(completion_id: string): Promise<void> {
     if (!completion_id) {
       throw new Error("No completion ID provided");
@@ -612,6 +755,7 @@ export class ChatService {
     const { options: featureOptions, ...requestOptionFields } = requestOptions ?? {};
     const requestBody: Record<string, any> = {
       ...requestOptionFields,
+      command_id: requestOptionFields.command_id ?? crypto.randomUUID(),
       completion_id: completionId,
       messages: formattedMessages,
       platform: "web",
@@ -683,6 +827,14 @@ export class ChatService {
           type: "state",
           state: "compaction",
           message: compactionMessage,
+        });
+      }
+
+      if (data.run) {
+        onStateChange("run", {
+          type: "state",
+          state: "run",
+          receipt: data.run satisfies ChatRunCommandReceipt,
         });
       }
 
@@ -775,10 +927,11 @@ export class ChatService {
       }
     };
 
-    const processBufferedEvents = (flush = false) => {
+    const processBufferedEvents = async (flush = false) => {
       const parsed = parseChatStreamSseBuffer(buffer, { flush });
 
       buffer = parsed.remainingBuffer;
+      let progressEventsSinceYield = 0;
 
       for (const parsedData of parsed.events) {
         try {
@@ -789,6 +942,18 @@ export class ChatService {
           }
 
           console.error("Error handling SSE data:", error, parsedData);
+        }
+
+        if (!isChatStreamProgressEvent(parsedData)) {
+          progressEventsSinceYield = 0;
+          continue;
+        }
+
+        progressEventsSinceYield += 1;
+
+        if (progressEventsSinceYield >= CHAT_STREAM_PROGRESS_BATCH_EVENTS) {
+          progressEventsSinceYield = 0;
+          await yieldToMainThread();
         }
       }
     };
@@ -802,11 +967,11 @@ export class ChatService {
         }
 
         buffer += decoder.decode(value, { stream: true });
-        processBufferedEvents();
+        await processBufferedEvents();
       }
 
       if (buffer.trim()) {
-        processBufferedEvents(true);
+        await processBufferedEvents(true);
       }
 
       if (!assembler.getFinalMessage()) {

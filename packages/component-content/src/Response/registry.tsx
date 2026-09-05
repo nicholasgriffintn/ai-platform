@@ -10,7 +10,7 @@ export type ToolInteractionHandler = (
   toolName: string,
   action: ToolInteractionAction,
   data: Record<string, any>,
-) => void;
+) => void | Promise<void>;
 
 export interface CustomResponseViewProps {
   data: unknown;

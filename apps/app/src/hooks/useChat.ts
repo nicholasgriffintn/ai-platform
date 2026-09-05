@@ -22,6 +22,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, Conversation, ConversationListOptions, Message } from "~/types";
 
+import { useChatRunReplay } from "./useChatRunReplay";
 import { useConversationStorage } from "./useConversationStorage";
 import { useRemoteConversationActivity } from "./useRemoteConversationActivity";
 
@@ -46,8 +47,7 @@ export function useChats(options: ConversationListOptions = {}) {
 
   const remoteChatsQuery = useInfiniteQuery({
     queryKey: [CHATS_QUERY_KEY, "remote", queryOptions],
-    queryFn: ({ pageParam }) =>
-      apiService.listChats({ ...queryOptions, page: Number(pageParam) || 1 }),
+    queryFn: ({ pageParam }) => apiService.listChats({ ...queryOptions, page: pageParam || 1 }),
     initialPageParam: 1,
     staleTime: CHAT_LIST_STALE_TIME,
     gcTime: CHAT_QUERY_GC_TIME,
@@ -110,6 +110,9 @@ export function useChat(completion_id: string | undefined) {
     markConversationRemoteAvailable,
   } = useChatStore();
   const queryClient = useQueryClient();
+  const streamSource = useStreamActivityStore((state) =>
+    completion_id ? state.streams[completion_id]?.source : undefined,
+  );
 
   const query = useQuery({
     queryKey: [CHATS_QUERY_KEY, completion_id],
@@ -187,9 +190,62 @@ export function useChat(completion_id: string | undefined) {
     refetchIntervalInBackground: true,
   });
 
-  useRemoteConversationActivity(completion_id, query.data?.active_operation);
+  useChatRunReplay(
+    completion_id,
+    query.data?.latest_run,
+    isAuthenticated && isPro && !localOnlyMode && streamSource !== "local",
+  );
+
+  useRemoteConversationActivity(
+    completion_id,
+    query.data?.active_operation,
+    query.data?.latest_run,
+  );
 
   return query;
+}
+
+export function useLoadEarlierChatMessages(completionId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const conversation = completionId
+        ? queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, completionId])
+        : undefined;
+      const beforeMessageId = conversation?.oldest_message_id;
+
+      if (!completionId || !beforeMessageId) {
+        throw new Error("No earlier conversation page is available");
+      }
+
+      return apiService.getEarlierChatMessages(completionId, beforeMessageId);
+    },
+    onSuccess: (page) => {
+      if (!completionId) {
+        return;
+      }
+
+      queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, completionId], (conversation) => {
+        if (!conversation) {
+          return conversation;
+        }
+
+        const existingIds = new Set(conversation.messages.map((message) => message.id));
+        const earlierMessages = page.messages.filter(
+          (message) => !message.id || !existingIds.has(message.id),
+        );
+
+        return {
+          ...conversation,
+          messages: [...earlierMessages, ...conversation.messages],
+          has_more_messages: page.hasMore,
+          oldest_message_id:
+            page.oldestMessageId ?? earlierMessages[0]?.id ?? conversation.oldest_message_id,
+        };
+      });
+    },
+  });
 }
 
 export function useDeleteChat() {

@@ -62,6 +62,7 @@ interface ModelSelectorProps {
   modelProviderFilter?: string;
   modelScope?: ModelSelectorScope;
   onModelChange?: ModelSelectionChangeHandler;
+  onBeforeModelChange?: (modelId: string, model: ModelConfigItem) => boolean;
 }
 
 export const ModelSelector = ({
@@ -72,6 +73,7 @@ export const ModelSelector = ({
   modelProviderFilter,
   modelScope = "default",
   onModelChange,
+  onBeforeModelChange,
 }: ModelSelectorProps) => {
   const { trackEvent, trackFeatureUsage } = useTrackEvent();
   const { isMobile } = useUIStore();
@@ -248,6 +250,10 @@ export const ModelSelector = ({
 
     const currentModel = model ? getModelByReference(filteredModelReferences, model) : undefined;
 
+    if (model !== null) {
+      return;
+    }
+
     if (
       currentModel &&
       isActiveModel(currentModel) &&
@@ -289,32 +295,6 @@ export const ModelSelector = ({
     selectedTab,
     setChatMode,
     setSelectedAgentId,
-  ]);
-
-  useEffect(() => {
-    if (isModelListOnlyScope || chatMode !== "remote" || model === null) {
-      return;
-    }
-
-    const currentModel = getModelByReference(filteredModelReferences, model);
-
-    if (
-      currentModel &&
-      isActiveModel(currentModel) &&
-      (currentModel.isExecutable ?? isModelSelectableForAccount(currentModel, isPro))
-    ) {
-      return;
-    }
-
-    selectModelWithDefaults(defaultModelId ?? null);
-  }, [
-    chatMode,
-    defaultModelId,
-    filteredModelReferences,
-    isModelListOnlyScope,
-    isPro,
-    model,
-    selectModelWithDefaults,
   ]);
 
   const clearHoverPreview = useCallback(() => setHoverPreview(null), []);
@@ -461,8 +441,14 @@ export const ModelSelector = ({
   }
 
   const handleModelChange = (newModel: string) => {
+    const nextModel = availableModels[newModel];
+
+    if (!nextModel || onBeforeModelChange?.(newModel, nextModel) === false) {
+      return false;
+    }
+
     selectModelWithDefaults(newModel);
-    onModelChange?.(newModel, availableModels[newModel]);
+    onModelChange?.(newModel, nextModel);
 
     trackEvent({
       name: "set_model",
@@ -470,6 +456,8 @@ export const ModelSelector = ({
       label: "select_model",
       value: newModel,
     });
+
+    return true;
   };
 
   const handleInfoHoverStart = (modelInfo: ModelConfigItem, anchorRect: DOMRect) => {
@@ -646,8 +634,9 @@ export const ModelSelector = ({
               model_provider: modelInfo.provider,
               is_free_model: String(modelInfo.isFree),
             });
-            handleModelChange(id);
-            closeSelector();
+            if (handleModelChange(id)) {
+              closeSelector();
+            }
           }}
           onInfoHoverStart={handleInfoHoverStart}
           onInfoHoverEnd={handleInfoHoverEnd}

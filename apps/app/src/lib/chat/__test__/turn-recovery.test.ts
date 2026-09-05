@@ -1,18 +1,41 @@
+import type { ChatRun } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { Message } from "~/types";
 
-import { recoverDetachedTurn } from "../turn-recovery";
+import { recoverDetachedTurn, resolveAcceptedRunCommand } from "../turn-recovery";
 
 const userMessage = { id: "user-1", role: "user", content: "hello" } as Message;
 const assistantMessage = { id: "assistant-1", role: "assistant", content: "hi" } as Message;
 const toolMessage = { id: "tool-1", role: "tool", content: "" } as Message;
 
-function recover(fetchMessages: (completionId: string) => Promise<Message[]>) {
+function run(status: ChatRun["status"] = "running", attempt = 1): ChatRun {
+  return {
+    protocolVersion: 1,
+    id: "run-1",
+    conversationId: "conversation-1",
+    projectId: null,
+    projectTaskId: null,
+    initiatorUserId: 7,
+    status,
+    attempt,
+    createdAt: "2026-09-05T12:00:00.000Z",
+    updatedAt: "2026-09-05T12:00:01.000Z",
+    startedAt: "2026-09-05T12:00:01.000Z",
+    completedAt: null,
+    terminalReason: null,
+    lastMessageId: null,
+  };
+}
+
+function recover(
+  fetchRun: (runId: string) => Promise<{ run: ChatRun; messages: Message[] }>,
+  options: { runId?: string; resolveCommand?: () => Promise<string | null> } = {},
+) {
   return recoverDetachedTurn({
-    completionId: "completion-1",
-    knownMessageIds: new Set(["user-1"]),
-    fetchMessages,
+    runId: options.runId,
+    resolveCommand: options.resolveCommand,
+    fetchRun,
     pollIntervalMs: 0,
     maxWaitMs: 50,
     wait: async () => {},
@@ -25,28 +48,75 @@ function recover(fetchMessages: (completionId: string) => Promise<Message[]>) {
 }
 
 describe("recoverDetachedTurn", () => {
-  it("returns the messages that landed once the detached turn persists an answer", async () => {
-    const fetchMessages = vi
+  it("keeps observing the exact run through intermediate assistant and tool steps", async () => {
+    const fetchRun = vi
       .fn()
-      .mockResolvedValueOnce([userMessage])
-      .mockResolvedValueOnce([userMessage, toolMessage, assistantMessage]);
+      .mockResolvedValueOnce({ run: run("running"), messages: [userMessage, toolMessage] })
+      .mockResolvedValueOnce({
+        run: run("running"),
+        messages: [userMessage, toolMessage, assistantMessage],
+      })
+      .mockResolvedValueOnce({
+        run: run("succeeded"),
+        messages: [userMessage, toolMessage, assistantMessage],
+      });
 
-    await expect(recover(fetchMessages)).resolves.toEqual([toolMessage, assistantMessage]);
+    await expect(recover(fetchRun, { runId: "run-1" })).resolves.toMatchObject({
+      run: { status: "succeeded" },
+      messages: [userMessage, toolMessage, assistantMessage],
+    });
+    expect(fetchRun).toHaveBeenCalledTimes(3);
   });
 
-  it("keeps waiting while only tool messages have landed", async () => {
-    const fetchMessages = vi.fn().mockResolvedValue([userMessage, toolMessage]);
+  it("returns a waiting snapshot without requiring an assistant message", async () => {
+    const fetchRun = vi.fn().mockResolvedValue({
+      run: run("awaiting_approval"),
+      messages: [userMessage, toolMessage],
+    });
 
-    await expect(recover(fetchMessages)).resolves.toEqual([]);
-    expect(fetchMessages.mock.calls.length).toBeGreaterThan(1);
+    await expect(recover(fetchRun, { runId: "run-1" })).resolves.toMatchObject({
+      run: { status: "awaiting_approval" },
+      messages: [userMessage, toolMessage],
+    });
   });
 
-  it("keeps polling when a poll fails", async () => {
-    const fetchMessages = vi
+  it("resolves the command when the connection was lost before the run receipt arrived", async () => {
+    const resolveCommand = vi.fn().mockRejectedValueOnce(new Error("not accepted yet"));
+
+    resolveCommand.mockResolvedValue("run-1");
+    const fetchRun = vi.fn().mockResolvedValue({
+      run: run("interrupted"),
+      messages: [userMessage],
+    });
+
+    await expect(recover(fetchRun, { resolveCommand })).resolves.toMatchObject({
+      run: { id: "run-1", status: "interrupted" },
+    });
+    expect(resolveCommand).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps polling when a run snapshot request fails", async () => {
+    const fetchRun = vi
       .fn()
       .mockRejectedValueOnce(new Error("offline"))
-      .mockResolvedValueOnce([userMessage, assistantMessage]);
+      .mockResolvedValueOnce({ run: run("failed"), messages: [userMessage] });
 
-    await expect(recover(fetchMessages)).resolves.toEqual([assistantMessage]);
+    await expect(recover(fetchRun, { runId: "run-1" })).resolves.toMatchObject({
+      run: { status: "failed" },
+    });
+  });
+});
+
+describe("resolveAcceptedRunCommand", () => {
+  it("waits for acceptance instead of falling back to conversation-scoped cancellation", async () => {
+    const fetchCommand = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("not found"))
+      .mockResolvedValueOnce({ run: run("running") });
+
+    await expect(
+      resolveAcceptedRunCommand({ fetchCommand, intervalMs: 0, wait: async () => {} }),
+    ).resolves.toMatchObject({ id: "run-1", attempt: 1 });
+    expect(fetchCommand).toHaveBeenCalledTimes(2);
   });
 });
