@@ -23,7 +23,7 @@ import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
-import { PageShell } from "~/components/Core/PageShell";
+import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
   RECIPE_CONNECTORS_QUERY_KEY,
@@ -272,25 +272,23 @@ export function ProfileProvidersTab() {
   });
 
   return (
-    <div>
-      <PageShell.Header
-        title="Available Providers"
-        actions={
-          !isLoadingProviderSettings
-            ? [
-                {
-                  label: isSyncingProviders ? "Syncing..." : "Sync Providers",
-                  onClick: () => syncProviders(),
-                  icon: <RefreshCcw className="h-4 w-4 mr-2" />,
-                  disabled: isSyncingProviders,
-                  variant: "secondary",
-                },
-              ]
-            : []
-        }
-      />
-
-      <div className="space-y-5">
+    <ProfileTab
+      title="Available Providers"
+      actions={
+        !isLoadingProviderSettings
+          ? [
+              {
+                label: isSyncingProviders ? "Syncing..." : "Sync Providers",
+                onClick: () => syncProviders(),
+                icon: <RefreshCcw className="h-4 w-4 mr-2" />,
+                disabled: isSyncingProviders,
+                variant: "secondary",
+              },
+            ]
+          : []
+      }
+    >
+      <div className="space-y-6">
         {!isLoadingProviderSyncStatus && providerSyncRequired && (
           <Alert variant="warning" aria-label="Provider catalogue needs syncing">
             <AlertTitle>Provider catalogue needs syncing</AlertTitle>
@@ -415,6 +413,6 @@ export function ProfileProvidersTab() {
         onConfirm={handleDisconnectConnector}
         isLoading={disconnectConnector.isPending}
       />
-    </div>
+    </ProfileTab>
   );
 }

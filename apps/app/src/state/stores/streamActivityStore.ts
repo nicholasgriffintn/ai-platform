@@ -5,6 +5,13 @@ import {
   createStreamActivity,
   type StreamActivity,
 } from "@ngriffin_uk/polychat-library-chat/response-stats";
+import {
+  applyTurnActivityEvent,
+  createTurnActivityProjection,
+  markTurnActivityReconnecting,
+  type TurnActivityProjection,
+} from "@ngriffin_uk/polychat-library-chat/turn-activity";
+import type { ChatTurnActivityEvent } from "@ngriffin_uk/polychat-schemas/chat-stream";
 import { create } from "zustand";
 
 import { keepLatestRecordEntries } from "~/lib/collections";
@@ -19,6 +26,7 @@ export interface ConversationStreamState {
   requiresAction: boolean;
   status: "streaming" | "action-required";
   source?: "local" | "remote";
+  turnActivity: TurnActivityProjection | null;
 }
 
 interface StreamActivityStore {
@@ -31,6 +39,8 @@ interface StreamActivityStore {
     source?: "local" | "remote",
   ) => void;
   recordStreamActivityState: (conversationId: string, state: string, data?: unknown) => void;
+  recordTurnActivity: (conversationId: string, event: ChatTurnActivityEvent) => void;
+  markStreamActivityReconnecting: (conversationId: string) => void;
   recordStreamActivityText: (
     conversationId: string,
     text: { content?: unknown; reasoning?: unknown },
@@ -67,6 +77,7 @@ export const useStreamActivityStore = create<StreamActivityStore>()((set) => ({
           requiresAction: false,
           status: "streaming",
           source,
+          turnActivity: null,
         },
       },
     }));
@@ -85,6 +96,52 @@ export const useStreamActivityStore = create<StreamActivityStore>()((set) => ({
           [conversationId]: {
             ...stream,
             activity: applyStreamActivityState(stream.activity, state, data, Date.now()),
+          },
+        },
+      };
+    }),
+  recordTurnActivity: (conversationId, event) =>
+    set((current) => {
+      const stream = current.streams[conversationId];
+
+      if (!stream) {
+        return current;
+      }
+
+      const turnActivity = applyTurnActivityEvent(
+        stream.turnActivity ?? createTurnActivityProjection(),
+        event,
+      );
+
+      return {
+        streams: {
+          ...current.streams,
+          [conversationId]: {
+            ...stream,
+            loadingMessage: turnActivity.label,
+            requiresAction: stream.requiresAction || turnActivity.requiresAction,
+            turnActivity,
+          },
+        },
+      };
+    }),
+  markStreamActivityReconnecting: (conversationId) =>
+    set((current) => {
+      const stream = current.streams[conversationId];
+
+      if (!stream) {
+        return current;
+      }
+
+      const turnActivity = markTurnActivityReconnecting(stream.turnActivity);
+
+      return {
+        streams: {
+          ...current.streams,
+          [conversationId]: {
+            ...stream,
+            loadingMessage: turnActivity.label,
+            turnActivity,
           },
         },
       };
@@ -188,6 +245,7 @@ export const useStreamActivityStore = create<StreamActivityStore>()((set) => ({
               controller: undefined,
               messageStartedAt: null,
               status: "action-required",
+              turnActivity: stream.turnActivity,
             },
           },
         };

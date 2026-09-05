@@ -52,13 +52,13 @@ export function AccountSidebarShell({
         aria-modal={isDrawer ? true : undefined}
         aria-label={isDrawer ? "Account navigation" : undefined}
         tabIndex={isDrawer ? -1 : undefined}
-        className={`fixed md:relative z-50 h-full w-64 bg-off-white dark:bg-zinc-900 transition-transform duration-300 ease-in-out border-r border-zinc-200 dark:border-zinc-800 ${
+        className={`bg-surface border-border fixed z-50 h-full w-64 border-r transition-transform duration-300 ease-in-out md:relative ${
           sidebarVisible ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:border-0"
         }`}
       >
         {sidebarVisible && (
           <div className="flex flex-col h-full w-64">
-            <div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-r border-zinc-200 dark:border-zinc-800 z-10 w-full">
+            <div className="bg-surface border-border sticky top-0 z-10 w-full border-r border-b">
               {header}
             </div>
             <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 pb-[50px]">
@@ -68,8 +68,7 @@ export function AccountSidebarShell({
                     href={homeHref}
                     className={cn(
                       "block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out",
-                      "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900",
-                      "dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
+                      "text-muted-foreground hover:text-foreground",
                       "no-underline",
                       "flex items-center",
                     )}
@@ -86,7 +85,7 @@ export function AccountSidebarShell({
                   />
                 </li>
                 {isAuthenticated && (
-                  <li>
+                  <li className="mt-4">
                     <Button
                       type="button"
                       variant="destructive"
@@ -107,7 +106,7 @@ export function AccountSidebarShell({
                 )}
               </ul>
             </nav>
-            <div className="sticky bottom-0 border-t border-r border-zinc-200 dark:border-zinc-800 bg-off-white dark:bg-zinc-900 overflow-visible">
+            <div className="border-border bg-surface sticky bottom-0 overflow-visible border-t border-r">
               {footer}
             </div>
           </div>

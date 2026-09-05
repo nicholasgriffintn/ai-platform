@@ -29,9 +29,8 @@ export function PetBubble({
   return (
     <div
       className={cn(
-        "absolute z-20 w-max max-w-56 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-left text-xs leading-snug text-zinc-700 shadow-md",
+        "border-border bg-surface-elevated text-foreground absolute z-20 w-max max-w-56 rounded-lg border px-2.5 py-1.5 text-left text-xs leading-snug shadow-[var(--polychat-elevated-shadow)]",
         "animate-in fade-in-0 zoom-in-95 duration-150 motion-reduce:animate-none",
-        "dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
         PLACEMENT_CLASSES[placement],
         className,
       )}

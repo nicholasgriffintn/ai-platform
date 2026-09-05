@@ -23,12 +23,9 @@ export interface GoalStatusCardProps {
 }
 
 const toneClasses: Record<string, string> = {
-  active:
-    "border-zinc-200 bg-off-white text-zinc-700 dark:border-zinc-700 dark:bg-[#121212] dark:text-zinc-300",
-  paused:
-    "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-[#121212] dark:text-zinc-400",
-  stopped:
-    "border-amber-300 bg-amber-100 text-amber-800 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-200",
+  active: "border-active-work/35 bg-active-work/10 text-foreground",
+  paused: "border-border bg-surface-elevated text-muted-foreground",
+  stopped: "border-attention/40 bg-attention/12 text-foreground",
 };
 
 function resolveTone(status: GoalCardStatus): string {
@@ -55,7 +52,7 @@ export function GoalStatusCard({
   onClear,
 }: GoalStatusCardProps) {
   const buttonClasses =
-    "rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700";
+    "border-border bg-surface text-foreground hover:bg-selection rounded-md border px-2 py-1 text-xs font-medium disabled:opacity-50";
 
   return (
     <div

@@ -38,16 +38,16 @@ export function WeatherView({ data, embedded }: WeatherViewProps) {
     <section
       aria-label={`Weather forecast for ${locationName}`}
       className={cn(
-        "w-full overflow-hidden rounded-lg border border-zinc-200 bg-off-white text-zinc-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50",
+        "w-full overflow-hidden rounded-lg border border-border bg-surface-elevated text-foreground shadow-sm",
         embedded ? "max-w-full" : "max-w-2xl",
       )}
     >
       <div className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">{locationName}</p>
+            <p className="text-sm font-semibold text-foreground">{locationName}</p>
             <div className="mt-4 flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-border bg-surface-elevated text-foreground">
                 <Icon className="h-8 w-8" aria-hidden />
               </div>
               <div>
@@ -56,19 +56,19 @@ export function WeatherView({ data, embedded }: WeatherViewProps) {
                     {formatWeatherTemperature(data.main.temp)}
                   </span>
                 </div>
-                <p className="mt-1 text-sm capitalize text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-sm capitalize text-muted-foreground">
                   {condition?.description ?? condition?.main ?? "Current conditions"}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="grid min-w-32 gap-2 text-right text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="grid min-w-32 gap-2 text-right text-sm text-muted-foreground">
             <p>now</p>
             {hasWeatherMinMax(data) && (
-              <p className="text-base font-semibold text-zinc-800 dark:text-zinc-100">
+              <p className="text-base font-semibold text-foreground">
                 {formatWeatherTemperature(data.main.temp_max)}{" "}
-                <span className="font-normal text-zinc-500 dark:text-zinc-400">
+                <span className="font-normal text-muted-foreground">
                   {formatWeatherTemperature(data.main.temp_min)}
                 </span>
               </p>
@@ -94,7 +94,7 @@ export function WeatherView({ data, embedded }: WeatherViewProps) {
         </div>
 
         {hourlyForecast.length > 0 && (
-          <div className="mt-5 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+          <div className="mt-5 border-t border-border pt-4">
             <div className="grid auto-cols-fr grid-flow-col gap-2 overflow-x-auto pb-1">
               {hourlyForecast.map((item, index) => {
                 const HourlyIcon = getWeatherIcon(item);
@@ -104,10 +104,10 @@ export function WeatherView({ data, embedded }: WeatherViewProps) {
                     className="grid min-w-16 justify-items-center gap-2 rounded-md px-2 py-2 text-center"
                     key={`${item.time}-${index}`}
                   >
-                    <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    <span className="text-xs font-medium text-muted-foreground">
                       {index === 0 ? "Now" : formatWeatherHour(item.time)}
                     </span>
-                    <HourlyIcon className="h-5 w-5 text-zinc-600 dark:text-zinc-300" aria-hidden />
+                    <HourlyIcon className="h-5 w-5 text-muted-foreground" aria-hidden />
                     <span className="text-sm font-semibold">
                       {formatWeatherTemperature(item.temp)}
                     </span>
@@ -119,7 +119,7 @@ export function WeatherView({ data, embedded }: WeatherViewProps) {
         )}
 
         {dailyForecast.length > 0 && (
-          <div className="mt-5 space-y-2 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+          <div className="mt-5 space-y-2 border-t border-border pt-4">
             {dailyForecast.map((item, index) => (
               <DailyForecastRow
                 key={`${item.date}-${index}`}
@@ -151,25 +151,25 @@ function DailyForecastRow({
 
   return (
     <div className="grid grid-cols-[4rem_2rem_3rem_1fr] items-center gap-2 text-sm">
-      <div className="font-semibold text-zinc-700 dark:text-zinc-200">{label}</div>
-      <Icon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" aria-hidden />
-      <div className="text-xs font-medium text-sky-600 dark:text-sky-400">
+      <div className="font-semibold text-foreground">{label}</div>
+      <Icon className="h-4 w-4 text-muted-foreground" aria-hidden />
+      <div className="text-xs font-medium text-active-work">
         {precipitation > 0 ? `${precipitation}%` : ""}
       </div>
       <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2">
-        <span className="text-right text-zinc-500 dark:text-zinc-400">
+        <span className="text-right text-muted-foreground">
           {formatWeatherTemperature(item.tempMin)}
         </span>
         <span
           aria-label={`${label} temperature range`}
-          className="h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800"
+          className="h-1.5 overflow-hidden rounded-full bg-surface-elevated"
         >
           <span
-            className="block h-full rounded-full bg-gradient-to-r from-sky-400 via-emerald-300 to-amber-400"
+            className="block h-full rounded-full bg-gradient-to-r from-accent-sky via-accent-emerald to-accent-amber"
             style={{ marginLeft: `${offsetPercent}%`, width: `${widthPercent}%` }}
           />
         </span>
-        <span className="font-semibold text-zinc-700 dark:text-zinc-200">
+        <span className="font-semibold text-foreground">
           {formatWeatherTemperature(item.tempMax)}
         </span>
       </div>

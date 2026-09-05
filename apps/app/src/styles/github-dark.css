@@ -18,8 +18,8 @@
     padding: 3px 5px;
   }
   .hljs {
-    color: #c9d1d9;
-    background: #0d1117;
+    color: var(--polychat-text);
+    background: var(--polychat-canvas);
   }
   .hljs-doctag,
   .hljs-keyword,
@@ -29,14 +29,14 @@
   .hljs-type,
   .hljs-variable.language_ {
     /* prettylights-syntax-keyword */
-    color: #ff7b72;
+    color: var(--polychat-human-action);
   }
   .hljs-title,
   .hljs-title.class_,
   .hljs-title.class_.inherited__,
   .hljs-title.function_ {
     /* prettylights-syntax-entity */
-    color: #d2a8ff;
+    color: var(--polychat-creative);
   }
   .hljs-attr,
   .hljs-attribute,
@@ -49,64 +49,64 @@
   .hljs-selector-class,
   .hljs-selector-id {
     /* prettylights-syntax-constant */
-    color: #79c0ff;
+    color: var(--polychat-active-work);
   }
   .hljs-regexp,
   .hljs-string,
   .hljs-meta .hljs-string {
     /* prettylights-syntax-string */
-    color: #a5d6ff;
+    color: var(--polychat-active-work);
   }
   .hljs-built_in,
   .hljs-symbol {
     /* prettylights-syntax-variable */
-    color: #ffa657;
+    color: var(--polychat-attention);
   }
   .hljs-comment,
   .hljs-code,
   .hljs-formula {
     /* prettylights-syntax-comment */
-    color: #8b949e;
+    color: var(--polychat-text-muted);
   }
   .hljs-name,
   .hljs-quote,
   .hljs-selector-tag,
   .hljs-selector-pseudo {
     /* prettylights-syntax-entity-tag */
-    color: #7ee787;
+    color: var(--polychat-success);
   }
   .hljs-subst {
     /* prettylights-syntax-storage-modifier-import */
-    color: #c9d1d9;
+    color: var(--polychat-text);
   }
   .hljs-section {
     /* prettylights-syntax-markup-heading */
-    color: #1f6feb;
+    color: var(--polychat-active-work);
     font-weight: bold;
   }
   .hljs-bullet {
     /* prettylights-syntax-markup-list */
-    color: #f2cc60;
+    color: var(--polychat-attention);
   }
   .hljs-emphasis {
     /* prettylights-syntax-markup-italic */
-    color: #c9d1d9;
+    color: var(--polychat-text);
     font-style: italic;
   }
   .hljs-strong {
     /* prettylights-syntax-markup-bold */
-    color: #c9d1d9;
+    color: var(--polychat-text);
     font-weight: bold;
   }
   .hljs-addition {
     /* prettylights-syntax-markup-inserted */
-    color: #aff5b4;
-    background-color: #033a16;
+    color: var(--polychat-success);
+    background-color: color-mix(in oklch, var(--polychat-success) 14%, transparent);
   }
   .hljs-deletion {
     /* prettylights-syntax-markup-deleted */
-    color: #ffdcd7;
-    background-color: #67060c;
+    color: var(--polychat-failure);
+    background-color: color-mix(in oklch, var(--polychat-failure) 14%, transparent);
   }
   .hljs-char.escape_,
   .hljs-link,

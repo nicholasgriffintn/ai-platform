@@ -15,6 +15,8 @@ interface ListItemProps {
   sublabel?: string;
   /** Actions to show on hover (use HoverActions component) */
   actions?: ReactNode;
+  /** Space reserved for the action controls */
+  actionsWidth?: "compact" | "standard";
   /** Click handler */
   onClick?: () => void;
   /** Custom className */
@@ -30,6 +32,7 @@ export function ListItem({
   label,
   sublabel,
   actions,
+  actionsWidth = "standard",
   onClick,
   className,
   "data-id": dataId,
@@ -37,8 +40,8 @@ export function ListItem({
   const containerClassName = cn(
     "group flex items-center relative p-2 rounded-lg transition-colors",
     isActive
-      ? "bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
-      : "hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-300",
+      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+      : "text-muted-foreground hover:text-foreground",
     onClick ? "cursor-pointer" : "cursor-default",
     className,
   );
@@ -54,7 +57,9 @@ export function ListItem({
         className={cn(
           "overflow-hidden pr-1 transition-all duration-200 flex items-center",
           actions
-            ? "md:w-full md:group-hover:w-[calc(100%-60px)] md:group-focus-within:w-[calc(100%-60px)] w-[calc(100%-60px)]"
+            ? actionsWidth === "compact"
+              ? "md:w-full md:group-hover:w-[calc(100%-40px)] md:group-has-[[data-hover-actions]:focus-within]:w-[calc(100%-40px)] w-[calc(100%-40px)]"
+              : "md:w-full md:group-hover:w-[calc(100%-60px)] md:group-has-[[data-hover-actions]:focus-within]:w-[calc(100%-60px)] w-[calc(100%-60px)]"
             : "w-full",
         )}
       >
@@ -69,7 +74,7 @@ export function ListItem({
                 labelClassName,
                 "w-full text-left cursor-pointer",
                 "after:absolute after:inset-0 after:content-['']",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 focus:outline-none",
+                "focus-visible:outline-ring focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none",
               )}
               onClick={onClick}
             >
@@ -79,7 +84,7 @@ export function ListItem({
             <span className={labelClassName}>{label}</span>
           )}
           {sublabel && (
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap overflow-hidden text-ellipsis block">
+            <span className="text-muted-foreground block overflow-hidden text-xs text-ellipsis whitespace-nowrap">
               {sublabel}
             </span>
           )}

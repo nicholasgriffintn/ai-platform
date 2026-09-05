@@ -2,6 +2,7 @@ import type {
   SandboxRunControl,
   SandboxRunEvent,
   SandboxRunInstruction,
+  SandboxPreviewSessionRecord,
 } from "@ngriffin_uk/polychat-schemas";
 
 export type CoordinatorState = SandboxRunControl;
@@ -19,3 +20,5 @@ export interface CoordinatorInstructionEnvelope {
   instruction: SandboxRunInstructionRecord;
   recordedAt: string;
 }
+
+export type CoordinatorPreviewSession = SandboxPreviewSessionRecord;

@@ -49,22 +49,22 @@ export function ConnectorDetailsModal({
               ? "Connected securely by Composio"
               : "Managed by Polychat"}
           </DialogDescription>
-          <p className="mt-5 max-w-md text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+          <p className="mt-5 max-w-md text-sm leading-6 text-muted-foreground">
             {connector.description}
           </p>
-          <div className="mt-5 flex flex-wrap justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1.5 dark:border-zinc-700">
+          <div className="mt-5 flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
               <Wrench className="size-3.5" /> {connector.toolCount} tools
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1.5 dark:border-zinc-700">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
               <KeyRound className="size-3.5" /> {authLabel.replaceAll("_", " ")}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1.5 dark:border-zinc-700">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
               <span
                 className={
                   isConnected
-                    ? "size-2 rounded-full bg-emerald-500"
-                    : "size-2 rounded-full bg-zinc-400"
+                    ? "size-2 rounded-full bg-success"
+                    : "size-2 rounded-full bg-selection"
                 }
               />
               {isConnected ? "Connected" : "Not connected"}
@@ -72,9 +72,7 @@ export function ConnectorDetailsModal({
           </div>
 
           {isConnected && connector.authType === "composio" && accountsSlot && (
-            <div className="mt-7 w-full border-t border-zinc-200 pt-5 dark:border-zinc-800">
-              {accountsSlot}
-            </div>
+            <div className="mt-7 w-full border-t border-border pt-5">{accountsSlot}</div>
           )}
 
           <div className="mt-6 flex w-full flex-col gap-2">
@@ -93,7 +91,7 @@ export function ConnectorDetailsModal({
             {isConnected && (
               <Button
                 variant="ghost"
-                className="w-full text-red-600 hover:text-red-700 dark:text-red-400"
+                className="w-full text-failure hover:text-failure"
                 disabled={isDisconnecting}
                 onClick={() => onDisconnect(connector)}
               >
@@ -111,7 +109,7 @@ export function ConnectorDetailsModal({
               href={connector.appUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-4 inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="mt-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
               Visit {connector.name} <ExternalLink className="size-3" />
             </a>

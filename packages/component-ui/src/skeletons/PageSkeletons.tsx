@@ -65,7 +65,7 @@ export function SkeletonCardGrid({ className, count = 4 }: { className?: string;
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-4/5" />
           </div>
-          <div className="flex gap-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+          <div className="flex gap-4 border-t border-border pt-4">
             <Skeleton className="h-3 w-24" />
             <Skeleton className="h-3 w-20" />
           </div>
@@ -81,7 +81,7 @@ export function SkeletonList({ count = 4 }: { count?: number }) {
       {Array.from({ length: count }, (_, index) => (
         <div
           key={index}
-          className="flex items-center gap-4 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
+          className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-0"
         >
           <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
           <div className="min-w-0 flex-1 space-y-2">

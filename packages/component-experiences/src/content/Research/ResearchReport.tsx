@@ -10,22 +10,14 @@ import { ExternalLink, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 const statusColors: Record<string, string> = {
-  completed:
-    "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300 border border-emerald-500/40",
-  running:
-    "bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300 border border-blue-500/40",
-  queued:
-    "bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300 border border-blue-500/40",
-  processing:
-    "bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300 border border-blue-500/40",
-  failed:
-    "bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300 border border-rose-500/40",
-  cancelled:
-    "bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300 border border-rose-500/40",
-  errored:
-    "bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300 border border-rose-500/40",
-  stopped:
-    "bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300 border border-rose-500/40",
+  completed: "bg-success/10 text-success border border-success/40",
+  running: "bg-active-work/10 text-active-work border border-active-work/40",
+  queued: "bg-active-work/10 text-active-work border border-active-work/40",
+  processing: "bg-active-work/10 text-active-work border border-active-work/40",
+  failed: "bg-failure/10 text-failure border border-failure/40",
+  cancelled: "bg-failure/10 text-failure border border-failure/40",
+  errored: "bg-failure/10 text-failure border border-failure/40",
+  stopped: "bg-failure/10 text-failure border border-failure/40",
 };
 
 function extractHostname(url?: string | null) {
@@ -83,11 +75,11 @@ export function ResearchReport({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide">
-        <span className="rounded-full bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1">
+        <span className="rounded-full bg-active-work/10 text-active-work px-3 py-1">
           Provider: {providerLabel}
         </span>
         {run?.processor && (
-          <span className="rounded-full bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 px-3 py-1">
+          <span className="rounded-full bg-creative/10 text-creative px-3 py-1">
             Processor: {run.processor}
           </span>
         )}
@@ -95,21 +87,21 @@ export function ResearchReport({
           <span
             className={`rounded-full px-3 py-1 ${
               statusColors[normalizedStatus] ??
-              "bg-zinc-500/10 text-zinc-600 dark:bg-zinc-500/20 dark:text-zinc-300 border border-zinc-500/30"
+              "bg-selection text-muted-foreground border border-border"
             }`}
           >
             Status: {normalizedStatus}
           </span>
         )}
         {lastUpdatedAt && (
-          <span className="rounded-full bg-zinc-500/10 text-zinc-600 dark:bg-zinc-500/20 dark:text-zinc-300 px-3 py-1">
+          <span className="bg-selection text-muted-foreground rounded-full px-3 py-1">
             Updated {lastUpdatedAt.toLocaleTimeString()}
           </span>
         )}
       </div>
 
       {shouldShowPollingNotice && !combinedError && (
-        <div className="flex items-center gap-2 rounded-md border border-blue-500/20 bg-blue-500/5 px-4 py-3 text-sm text-blue-600 dark:text-blue-300">
+        <div className="flex items-center gap-2 rounded-md border border-active-work/20 bg-active-work/5 px-4 py-3 text-sm text-active-work">
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
           <span>Research in progress. We&apos;ll keep this view updated.</span>
         </div>
@@ -118,26 +110,26 @@ export function ResearchReport({
       {combinedError && (
         <div
           role="alert"
-          className="rounded-md border border-red-600/40 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-300"
+          className="rounded-md border border-failure/40 bg-failure/10 px-4 py-3 text-sm text-failure"
         >
           {combinedError}
         </div>
       )}
 
       {Array.isArray(warnings) && warnings.length > 0 && (
-        <div className="rounded-md border border-yellow-400/60 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 px-4 py-3 text-sm">
+        <div className="rounded-md border border-attention/60 bg-attention/12 text-attention px-4 py-3 text-sm">
           {warnings.join(" ")}
         </div>
       )}
 
       {typeof warnings === "string" && warnings && (
-        <div className="rounded-md border border-yellow-400/60 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 px-4 py-3 text-sm">
+        <div className="rounded-md border border-attention/60 bg-attention/12 text-attention px-4 py-3 text-sm">
           {warnings}
         </div>
       )}
 
       {providerWarning && (
-        <div className="rounded-md border border-yellow-400/60 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 px-4 py-3 text-sm">
+        <div className="rounded-md border border-attention/60 bg-attention/12 text-attention px-4 py-3 text-sm">
           {providerWarning}
         </div>
       )}
@@ -145,7 +137,7 @@ export function ResearchReport({
       {output && (
         <>
           {isTextContent ? (
-            <div className="prose dark:prose-invert max-w-none text-zinc-700 dark:text-zinc-200">
+            <div className="prose dark:prose-invert max-w-none text-foreground">
               <MemoizedMarkdown>{content}</MemoizedMarkdown>
             </div>
           ) : (
@@ -157,13 +149,11 @@ export function ResearchReport({
       {output && evidenceCount > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-200">
-              Evidence & Citations
-            </h2>
+            <h2 className="text-lg font-semibold text-foreground">Evidence & Citations</h2>
             {evidenceCount > 4 && (
               <button
                 type="button"
-                className="text-xs font-medium text-blue-500 hover:text-blue-400 transition-colors"
+                className="text-xs font-medium text-active-work hover:text-active-work transition-colors"
                 onClick={() => setShowAllEvidence((prev) => !prev)}
               >
                 {showAllEvidence ? "Show fewer citations" : `Show all ${evidenceCount} citations`}
@@ -175,23 +165,21 @@ export function ResearchReport({
             {displayedEvidence.map((item: ResearchFieldBasis, index: number) => (
               <div
                 key={`${item.field}-${index}`}
-                className="rounded-lg border border-zinc-700/30 dark:border-zinc-700/60 bg-zinc-900/5 dark:bg-zinc-900/30 p-4"
+                className="border-border bg-surface-elevated rounded-lg border p-4"
               >
                 <div className="flex flex-wrap gap-2 items-center justify-between">
-                  <p className="text-sm font-semibold text-blue-500 dark:text-blue-300 uppercase tracking-wide">
+                  <p className="text-sm font-semibold text-active-work uppercase tracking-wide">
                     {item.field}
                   </p>
                   {item.confidence && (
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="text-xs text-muted-foreground">
                       Confidence: {item.confidence}
                     </span>
                   )}
                 </div>
 
                 {item.reasoning && (
-                  <p className="mt-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-200">
-                    {item.reasoning}
-                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-foreground">{item.reasoning}</p>
                 )}
 
                 {item.citations && item.citations.length > 0 && (
@@ -199,25 +187,25 @@ export function ResearchReport({
                     {item.citations.map((citation: ResearchCitation, citationIndex: number) => (
                       <li
                         key={`${item.field}-citation-${citationIndex}`}
-                        className="rounded-md border border-zinc-700/20 dark:border-zinc-700/40 bg-zinc-900/5 dark:bg-zinc-900/40 p-3"
+                        className="border-border bg-surface rounded-md border p-3"
                       >
                         {citation.url ? (
                           <a
                             href={citation.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-sm font-medium text-blue-500 hover:text-blue-400 transition-colors"
+                            className="inline-flex items-center gap-1 text-sm font-medium text-active-work hover:text-active-work transition-colors"
                           >
                             {citation.title || extractHostname(citation.url)}
                             <ExternalLink className="h-3.5 w-3.5" />
                           </a>
                         ) : (
-                          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                          <span className="text-sm font-medium text-muted-foreground">
                             {citation.title || "Citation"}
                           </span>
                         )}
                         {citation.excerpts && citation.excerpts.length > 0 && (
-                          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          <p className="mt-2 text-xs text-muted-foreground">
                             {citation.excerpts[0]}
                           </p>
                         )}
@@ -232,7 +220,7 @@ export function ResearchReport({
       )}
 
       {runId && !embedded && (
-        <div className="space-y-3 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="space-y-3 text-xs text-muted-foreground">
           <div>Task ID: {runId}</div>
           {normalizedStatus && <div>Status: {normalizedStatus}</div>}
         </div>

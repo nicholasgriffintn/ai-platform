@@ -60,7 +60,7 @@ export function AddSkillDialog({ open, onOpenChange, projectId }: AddSkillDialog
         />
       </div>
       {addSkill.error && (
-        <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+        <p role="alert" className="text-sm text-failure">
           {addSkill.error.message}
         </p>
       )}

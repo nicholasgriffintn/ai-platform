@@ -20,21 +20,17 @@ export function ModelCatalog({ models }: ModelCatalogProps) {
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
                 <CardTitle>{model.name}</CardTitle>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">{model.baseModel}</p>
+                <p className="text-sm text-muted-foreground">{model.baseModel}</p>
               </div>
               <Badge variant="outline">{model.provider}</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {model.description && (
-              <p className="text-sm text-zinc-700 dark:text-zinc-300">{model.description}</p>
-            )}
+            {model.description && <p className="text-sm text-foreground">{model.description}</p>}
             {model.defaultEntryPoint && (
-              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+              <div className="text-xs text-muted-foreground">
                 Entry point:{" "}
-                <span className="font-mono text-zinc-700 dark:text-zinc-300">
-                  {model.defaultEntryPoint}
-                </span>
+                <span className="font-mono text-foreground">{model.defaultEntryPoint}</span>
               </div>
             )}
             <div className="flex flex-wrap gap-2">

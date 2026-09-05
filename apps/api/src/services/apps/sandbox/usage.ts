@@ -16,6 +16,7 @@ import type { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
+import { persistSandboxRunArtifact } from "./run-artifacts";
 import { getSandboxRunRecordForUser } from "./runs";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/usage" });
@@ -106,6 +107,23 @@ export async function recordSandboxRunUsage(params: {
     refId: runId,
     outcome: "settled",
   });
+
+  const runWithUsage = {
+    ...record.run,
+    infrastructureUsage: { instanceType, durationSeconds },
+  };
+  const isTerminal = ["completed", "failed", "cancelled"].includes(runWithUsage.status);
+  const persistedRun = isTerminal
+    ? await persistSandboxRunArtifact({
+        serviceContext: context,
+        ownerUserId: record.createdByUserId,
+        projectId: record.projectId,
+        conversationId: record.conversationId,
+        run: runWithUsage,
+      })
+    : runWithUsage;
+
+  await context.repositories.activities.updateActivity(record.id, { data: persistedRun });
 
   return { settled: reservation !== null };
 }

@@ -1259,7 +1259,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     ...openaiResponsesHostedTools,
     ...openaiHostedShellTools,
     supportsAttachments: true,
-    supportsTemperature: false,
+    supportsTemperature: true,
     supportsToolCalls: true,
     supportsTopP: false,
     supportsResponseFormat: true,

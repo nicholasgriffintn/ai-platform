@@ -35,19 +35,40 @@ export const DISCARDING_EVENT_SINK: ChatEventSink = {
 export interface ChatSseStreamWriter extends ChatEventSink {
   readable: ReadableStream<Uint8Array>;
   isDetached: () => boolean;
+  getContinuitySnapshot: () => ChatStreamContinuitySnapshot;
   writeComment: (text: string) => Promise<void>;
   writeDone: () => Promise<void>;
   close: () => Promise<void>;
   abort: (error: unknown) => Promise<void>;
 }
 
+export type ChatStreamDetachmentReason = "reader_closed" | "write_failed" | "settle_failed";
+
+export interface ChatStreamContinuitySnapshot {
+  detached: boolean;
+  detachedAtMs?: number;
+  detachmentReason?: ChatStreamDetachmentReason;
+}
+
 export function createChatSseStreamWriter(): ChatSseStreamWriter {
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const writer = writable.getWriter();
   let detached = false;
+  let detachedAtMs: number | undefined;
+  let detachmentReason: ChatStreamDetachmentReason | undefined;
+
+  const markDetached = (reason: ChatStreamDetachmentReason) => {
+    if (detached) {
+      return;
+    }
+
+    detached = true;
+    detachedAtMs = Date.now();
+    detachmentReason = reason;
+  };
 
   writer.closed.catch(() => {
-    detached = true;
+    markDetached("reader_closed");
   });
 
   const write = async (chunk: Uint8Array) => {
@@ -58,7 +79,7 @@ export function createChatSseStreamWriter(): ChatSseStreamWriter {
     try {
       await writer.write(chunk);
     } catch {
-      detached = true;
+      markDetached("write_failed");
     }
   };
 
@@ -70,13 +91,14 @@ export function createChatSseStreamWriter(): ChatSseStreamWriter {
     try {
       await settleWriter();
     } catch {
-      detached = true;
+      markDetached("settle_failed");
     }
   };
 
   return {
     readable,
     isDetached: () => detached,
+    getContinuitySnapshot: () => ({ detached, detachedAtMs, detachmentReason }),
     writeEvent: (type: string, payload: SSEEventPayload = {}) =>
       write(encodeEventData(createEventData(type, payload))),
     writeComment: (text: string) => write(encoder.encode(`: ${text}\n\n`)),

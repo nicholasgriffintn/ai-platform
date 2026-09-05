@@ -18,16 +18,14 @@ export const LoadingSpinner = ({ message, progress, className = "" }: LoadingSpi
       aria-live="polite"
     >
       <div className="relative" aria-hidden="true">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-active-work" />
         {typeof boundedProgress === "number" && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              {boundedProgress}%
-            </span>
+            <span className="text-xs font-medium text-muted-foreground">{boundedProgress}%</span>
           </div>
         )}
       </div>
-      {message && <p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p>}
+      {message && <p className="text-sm text-muted-foreground">{message}</p>}
       {typeof boundedProgress === "number" && (
         <span className="sr-only">{`${message ? ", " : ""}${boundedProgress}% complete`}</span>
       )}

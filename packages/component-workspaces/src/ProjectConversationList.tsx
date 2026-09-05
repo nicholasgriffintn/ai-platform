@@ -23,16 +23,12 @@ export function ProjectConversationList({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-          Recent conversations
-        </h2>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-          {conversationCount} conversations
-        </span>
+        <h2 className="text-sm font-semibold text-foreground">Recent conversations</h2>
+        <span className="text-xs text-muted-foreground">{conversationCount} conversations</span>
       </div>
       {conversations.length === 0 ? (
         <EmptyState
-          icon={<MessageSquareText className="text-zinc-400" size={24} />}
+          icon={<MessageSquareText className="text-muted-foreground" size={24} />}
           title="No conversations yet"
           message="Start a project conversation to use its instructions and capabilities."
           action={
@@ -50,19 +46,19 @@ export function ProjectConversationList({
               href={conversation.href}
               className="group block no-underline hover:!no-underline"
             >
-              <Card className="flex-row items-center gap-4 p-4 py-4 shadow-none group-hover:border-zinc-400 dark:group-hover:border-zinc-600">
-                <MessageSquareText size={18} className="text-zinc-400" />
+              <Card className="flex-row items-center gap-4 p-4 py-4 shadow-none group-hover:border-border-strong">
+                <MessageSquareText size={18} className="text-muted-foreground" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-zinc-950 group-hover:underline dark:text-white">
+                  <p className="truncate text-sm font-medium text-foreground group-hover:underline">
                     {conversation.title || "New project conversation"}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted-foreground">
                     {conversation.createdByName || "Workspace member"} · {conversation.messageCount}{" "}
                     message
                     {conversation.messageCount !== 1 ? "s" : ""}
                   </p>
                 </div>
-                <ArrowRight size={16} className="text-zinc-400" />
+                <ArrowRight size={16} className="text-muted-foreground" />
               </Card>
             </Link>
           ))}

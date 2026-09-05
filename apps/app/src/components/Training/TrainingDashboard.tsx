@@ -307,7 +307,7 @@ export function TrainingDashboard() {
             <ModelCatalog models={models} />
           ) : (
             <EmptyState
-              icon={<Activity className="h-8 w-8 text-zinc-400" />}
+              icon={<Activity className="h-8 w-8 text-muted-foreground" />}
               title="No models configured"
               message="Add training models at the API level and they will appear here."
             />

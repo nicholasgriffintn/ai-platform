@@ -95,15 +95,13 @@ export const ModelOption = ({
       onClick={selectModel}
       onKeyDown={handleKeyDown}
       className={cn(
-        "w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40",
-        !disabled
-          ? "cursor-pointer"
-          : "cursor-not-allowed border-zinc-200/60 opacity-50 dark:border-zinc-700/60",
+        "w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-active-work/40",
+        !disabled ? "cursor-pointer" : "cursor-not-allowed border-border/60 opacity-50",
         isSelected
-          ? "border-fuchsia-300/70 bg-fuchsia-50/70 dark:border-fuchsia-500/40 dark:bg-fuchsia-950/30"
+          ? "border-creative/45 bg-creative/12"
           : isActive
-            ? "border-zinc-300 bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800/70"
-            : "border-transparent hover:border-zinc-300 hover:bg-zinc-50 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/60",
+            ? "border-active-work/40 bg-selection"
+            : "border-transparent hover:border-border-strong hover:bg-surface-elevated",
       )}
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -119,30 +117,27 @@ export const ModelOption = ({
           </div>
           <div className="min-w-0">
             <div className="flex min-h-[1.4rem] flex-wrap items-center gap-1.5">
-              <span className="block min-w-0 font-medium text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
+              <span className="block min-w-0 font-medium text-foreground whitespace-normal break-words">
                 {getModelDisplayName(model)}
               </span>
               {!model.isFree && !model.isByokEnabled && (
-                <div
-                  className="rounded-full bg-fuchsia-100 p-0.5 dark:bg-fuchsia-900/30"
-                  title="Pro"
-                >
-                  <Crown size={12} className="text-fuchsia-800 dark:text-fuchsia-300" />
+                <div className="rounded-full bg-creative/12 p-0.5" title="Pro">
+                  <Crown size={12} className="text-creative" />
                 </div>
               )}
               {model.isByokEnabled ? (
-                <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium leading-none text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                <span className="rounded-full bg-success/12 px-1.5 py-0.5 text-[10px] font-medium leading-none text-success">
                   BYOK
                 </span>
               ) : null}
               {isStealthModel(model) ? (
-                <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium leading-none text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                <span className="rounded-full bg-attention/12 px-1.5 py-0.5 text-[10px] font-medium leading-none text-attention">
                   Stealth
                 </span>
               ) : null}
             </div>
             {model.description ? (
-              <p className="mt-0.5 text-xs leading-5 text-zinc-500 dark:text-zinc-400 whitespace-normal break-words">
+              <p className="mt-0.5 text-xs leading-5 text-muted-foreground whitespace-normal break-words">
                 {model.description}
               </p>
             ) : null}
@@ -164,7 +159,7 @@ export const ModelOption = ({
             >
               <Globe2
                 size={12}
-                className="pointer-events-none absolute left-1.5 text-zinc-500 dark:text-zinc-400"
+                className="pointer-events-none absolute left-1.5 text-muted-foreground"
               />
               <select
                 aria-label={`Select region for ${getModelDisplayName(model)}`}
@@ -176,7 +171,7 @@ export const ModelOption = ({
                   event.stopPropagation();
                   onRegionSelect?.(event.target.value);
                 }}
-                className="h-6 w-full cursor-pointer appearance-none rounded-full border border-zinc-200 bg-white py-0 pl-5 pr-5 text-[11px] font-medium text-zinc-700 focus:border-zinc-300 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                className="border-border bg-surface text-foreground focus:border-active-work h-6 w-full cursor-pointer appearance-none rounded-full border py-0 pr-5 pl-5 text-[11px] font-medium focus:outline-none"
               >
                 {regionOptions.map((option) => (
                   <option key={option.id} value={option.id}>
@@ -186,46 +181,43 @@ export const ModelOption = ({
               </select>
               <ChevronDown
                 size={10}
-                className="pointer-events-none absolute right-1.5 text-zinc-500 dark:text-zinc-400"
+                className="pointer-events-none absolute right-1.5 text-muted-foreground"
               />
             </label>
           )}
           {hasProviderReasoningOptions(model) && (
-            <div className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30" title="Reasoning">
-              <BrainCircuit size={12} className="text-blue-600 dark:text-blue-400" />
+            <div className="rounded-full bg-active-work/12 p-1" title="Reasoning">
+              <BrainCircuit size={12} className="text-active-work" />
             </div>
           )}
           {model.supportsToolCalls && (
-            <div
-              className="rounded-full bg-amber-100 p-1 dark:bg-amber-900/30"
-              title="Tool Calling"
-            >
-              <Hammer size={12} className="text-amber-600 dark:text-amber-400" />
+            <div className="rounded-full bg-attention/12 p-1" title="Tool Calling">
+              <Hammer size={12} className="text-attention" />
             </div>
           )}
           {modelSupportsVisualModality(model) && (
-            <div className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30">
-              <Eye size={12} className="text-blue-600 dark:text-blue-400" />
+            <div className="rounded-full bg-active-work/12 p-1">
+              <Eye size={12} className="text-active-work" />
             </div>
           )}
           {model.supportsSearchGrounding && (
-            <div className="rounded-full bg-amber-100 p-1 dark:bg-amber-900/30">
-              <Search size={12} className="text-amber-600 dark:text-amber-400" />
+            <div className="rounded-full bg-attention/12 p-1">
+              <Search size={12} className="text-attention" />
             </div>
           )}
           {model.supportsCodeExecution && (
-            <div className="rounded-full bg-emerald-100 p-1 dark:bg-emerald-900/30">
-              <Code2 size={12} className="text-emerald-600 dark:text-emerald-400" />
+            <div className="rounded-full bg-success/12 p-1">
+              <Code2 size={12} className="text-success" />
             </div>
           )}
           {model.supportsAudio && (
-            <div className="rounded-full bg-green-100 p-1 dark:bg-green-900/30">
-              <AudioWaveform size={12} className="text-green-600 dark:text-green-400" />
+            <div className="rounded-full bg-success/12 p-1">
+              <AudioWaveform size={12} className="text-success" />
             </div>
           )}
           {model.isFeatured && (
-            <div className="rounded-full bg-rose-100 p-1 dark:bg-rose-900/30">
-              <Sparkles size={12} className="text-rose-600 dark:text-rose-400" />
+            <div className="rounded-full bg-failure/12 p-1">
+              <Sparkles size={12} className="text-failure" />
             </div>
           )}
           {canShowHoverPreview && (
@@ -239,7 +231,7 @@ export const ModelOption = ({
               onBlur={() => onInfoHoverEnd?.()}
               aria-label="View model details"
             >
-              <Info size={13} className="text-zinc-500" />
+              <Info size={13} className="text-muted-foreground" />
             </Button>
           )}
         </div>

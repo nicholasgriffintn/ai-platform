@@ -213,17 +213,15 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                     />
                     {opt.label}
                     {opt.videoOnly && (
-                      <span className="text-xs text-blue-500 font-medium">VIDEO</span>
+                      <span className="text-xs text-active-work font-medium">VIDEO</span>
                     )}
                   </label>
                 ))}
               </div>
             </div>
             <div>
-              <div className="border border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/30 rounded-lg p-4">
-                <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-3">
-                  🎥 Video Intelligence
-                </h3>
+              <div className="border border-active-work/45 bg-active-work/12 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-active-work mb-3">🎥 Video Intelligence</h3>
                 <div className="space-y-3">
                   <label htmlFor="video-analysis" className="flex items-center gap-2 text-sm">
                     <input
@@ -248,7 +246,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                     />
                     <div>
                       <span className="font-medium">Advanced video analysis</span>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-muted-foreground">
                         Analyze visual content, scenes, gestures, and on-screen text
                       </p>
                     </div>
@@ -263,7 +261,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                     <input id="video-search" type="checkbox" checked={false} disabled readOnly />
                     <div>
                       <span className="font-medium">Video search unavailable</span>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-muted-foreground">
                         Multimodal retrieval is being upgraded before this can be enabled safely
                       </p>
                     </div>

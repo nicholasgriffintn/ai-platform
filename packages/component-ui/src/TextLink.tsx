@@ -15,10 +15,8 @@ export interface TextLinkProps extends LinkRenderProps {
 }
 
 const toneStyles: Record<TextLinkTone, string> = {
-  muted:
-    "text-zinc-500 hover:text-zinc-900 hover:border-zinc-400 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:border-zinc-500",
-  accent:
-    "text-blue-600 hover:text-blue-700 hover:border-blue-500 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:border-blue-400",
+  muted: "text-muted-foreground hover:text-foreground hover:border-border-strong",
+  accent: "text-active-work hover:text-active-work/80 hover:border-active-work",
 };
 
 const sizeStyles: Record<TextLinkSize, string> = {
@@ -34,7 +32,7 @@ export function textLinkClassName({
 }: Pick<TextLinkProps, "tone" | "size" | "className"> = {}): string {
   return cn(
     "group inline-flex max-w-full items-center gap-1 border-b border-transparent font-medium no-underline transition-colors hover:!no-underline",
-    "focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 focus:outline-none",
+    "focus-visible:outline-ring focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none",
     sizeStyles[size],
     toneStyles[tone],
     className,

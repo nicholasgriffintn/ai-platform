@@ -56,46 +56,42 @@ export function ConnectorApprovalCard({ data, onResolve }: ConnectorApprovalCard
 
   return (
     <section
-      className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900/60 dark:bg-amber-950/25"
+      className="space-y-3 rounded-lg border border-attention/45 bg-attention/12 p-3 text-sm"
       aria-label="Connector action approval"
     >
       <div className="flex items-start gap-2">
         {displayState === "approved" || displayState === "consumed" ? (
-          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
         ) : displayState === "rejected" ? (
-          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-failure" />
         ) : (
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-attention" />
         )}
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
-              Approve external action
-            </span>
+            <span className="font-medium text-foreground">Approve external action</span>
             <Badge variant="outline">{formatConnectorLabel(approval.provider)}</Badge>
           </div>
-          <p className="text-zinc-700 dark:text-zinc-300">
+          <p className="text-foreground">
             This will run <code className="font-mono text-xs">{approval.operation}</code> using the
             account selected for this connector.
           </p>
           {expiresAt && !Number.isNaN(expiresAt.getTime()) && !isExpired ? (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Expires {expiresAt.toLocaleString()}.
-            </p>
+            <p className="text-xs text-muted-foreground">Expires {expiresAt.toLocaleString()}.</p>
           ) : null}
         </div>
       </div>
       {argumentSummary ? (
         <div className="space-y-1">
-          <div className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Action details</div>
-          <pre className="max-h-48 overflow-auto rounded border border-amber-200/70 bg-white/80 p-2 text-xs text-zinc-800 dark:border-amber-900/60 dark:bg-zinc-950/60 dark:text-zinc-200">
+          <div className="text-xs font-medium text-muted-foreground">Action details</div>
+          <pre className="border-attention/35 bg-surface text-foreground max-h-48 overflow-auto rounded border p-2 text-xs">
             <code>{argumentSummary}</code>
           </pre>
         </div>
       ) : null}
 
       {isResolved ? (
-        <p role="status" className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+        <p role="status" className="text-xs font-medium text-muted-foreground">
           {displayState === "consumed"
             ? "Action completed."
             : displayState === "expired"
@@ -116,7 +112,7 @@ export function ConnectorApprovalCard({ data, onResolve }: ConnectorApprovalCard
             size="xs"
             variant="ghost"
             disabled={isResolving}
-            className="text-red-600 hover:text-red-700 dark:text-red-400"
+            className="text-failure hover:text-failure"
             onClick={() => void resolve("rejected")}
           >
             Reject

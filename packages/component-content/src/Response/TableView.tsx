@@ -70,7 +70,7 @@ export const TableView = ({ data }: TableViewProps) => {
     return (
       <div
         data-responsetype="table"
-        className="rounded-md border border-amber-200 bg-amber-100 p-4 text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
+        className="rounded-md border border-attention/45 bg-attention/12 p-4 text-attention"
       >
         There's no data available.
       </div>
@@ -78,18 +78,15 @@ export const TableView = ({ data }: TableViewProps) => {
   }
 
   return (
-    <div
-      data-responsetype="table"
-      className="overflow-x-auto rounded-md border border-zinc-200 dark:border-zinc-700"
-    >
-      <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
-        <thead className="bg-zinc-50 dark:bg-zinc-800">
+    <div data-responsetype="table" className="overflow-x-auto rounded-md border border-border">
+      <table className="min-w-full divide-y divide-border">
+        <thead className="bg-surface-elevated">
           <tr>
             {headers.map((header) => (
               <th
                 key={header.key}
                 scope="col"
-                className={`px-3 py-2 text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400 ${
+                className={`px-3 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground ${
                   isNumericColumn(visibleRows, header.key) ? "text-right" : "text-left"
                 }`}
               >
@@ -98,16 +95,16 @@ export const TableView = ({ data }: TableViewProps) => {
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+        <tbody className="divide-y divide-border">
           {visibleRows.map((row, rowIndex) => (
             <tr
               key={`${headers.map((header) => String(row[header.key])).join("|")}-${rowIndex}`}
-              className={rowIndex % 2 === 0 ? undefined : "bg-zinc-50/60 dark:bg-zinc-800/40"}
+              className={rowIndex % 2 === 0 ? undefined : "bg-surface-elevated/60"}
             >
               {headers.map((header) => (
                 <td
                   key={`${rowIndex}-${header.key}`}
-                  className={`max-w-[24rem] break-words px-3 py-2 align-top text-sm text-zinc-600 dark:text-zinc-300 ${
+                  className={`max-w-[24rem] break-words px-3 py-2 align-top text-sm text-muted-foreground ${
                     isNumericColumn(visibleRows, header.key)
                       ? "text-right tabular-nums"
                       : "text-left"
@@ -123,7 +120,7 @@ export const TableView = ({ data }: TableViewProps) => {
       {rows.length > MAX_VISIBLE_ROWS ? (
         <button
           type="button"
-          className="w-full border-t border-zinc-200 px-3 py-2 text-xs font-medium text-blue-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-blue-400 dark:hover:bg-zinc-800"
+          className="w-full border-t border-border px-3 py-2 text-xs font-medium text-active-work hover:bg-surface-elevated"
           onClick={() => setShowAllRows((current) => !current)}
           aria-expanded={showAllRows}
         >

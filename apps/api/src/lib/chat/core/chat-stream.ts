@@ -4,7 +4,12 @@ import type { ChatRunCommandReceipt } from "@ngriffin_uk/polychat-schemas";
 
 import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/agent-loop";
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
+import {
+  recordTurnContinuityFinished,
+  type TurnContinuityOutcome,
+} from "~/lib/chat/streaming/continuity-telemetry";
 import { createChatSseStreamWriter, startChatStreamHeartbeat } from "~/lib/chat/streaming/emitter";
+import { writeTurnActivity } from "~/lib/chat/streaming/turn-activity";
 import { watchTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import type { ChatRunLifecycle } from "~/services/chat-runs/lifecycle";
@@ -39,6 +44,7 @@ export function createChatRunReceiptStream(receipt: ChatRunCommandReceipt): Read
 }
 
 export function createChatTurnStream(params: CreateChatTurnStreamParams): ReadableStream {
+  const startedAtMs = Date.now();
   const stream = createChatSseStreamWriter();
   const tracesAgentEvents = isAgentExecutionMode(params.mode);
   const closeRunResources = createRunResourceCloser(params);
@@ -54,6 +60,8 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
   });
 
   const run = async () => {
+    let outcome: TurnContinuityOutcome = "failed";
+
     try {
       if (params.runLifecycle) {
         await stream.writeEvent("state", {
@@ -62,6 +70,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
         });
       }
 
+      await writeTurnActivity(stream, { kind: "turn_started" });
       await stream.writeEvent("state", { state: StreamState.INIT });
 
       const usageLimits = await params.conversationManager.getUsageLimits();
@@ -90,6 +99,16 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
         });
       }
 
+      outcome =
+        result.response.status === "pending"
+          ? "waiting"
+          : result.response.status === "stopped"
+            ? "cancelled"
+            : result.response.status === "incomplete"
+              ? "failed"
+              : "completed";
+
+      await writeTurnActivity(stream, { kind: "turn_finished", outcome });
       await stream.writeEvent("state", { state: StreamState.DONE });
     } catch (error) {
       logger.error("Chat turn stream failed", { error, completionId: params.completionId });
@@ -109,6 +128,11 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
         }
       }
 
+      await writeTurnActivity(stream, {
+        kind: "turn_finished",
+        outcome: "failed",
+        errorType: error instanceof AssistantError ? error.type : ErrorType.PROVIDER_ERROR,
+      });
       await stream.writeEvent("error", {
         error: {
           message: error instanceof Error ? error.message : "Failed to complete the response",
@@ -136,6 +160,22 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
       } catch (error) {
         logger.error("Failed to close the chat turn stream", { error });
       }
+
+      recordTurnContinuityFinished(
+        {
+          env: params.env,
+          executionCtx: params.executionCtx,
+          traceId: params.completionId,
+        },
+        {
+          platform: params.platform,
+          outcome,
+          startedAtMs,
+          finishedAtMs: Date.now(),
+          stream: stream.getContinuitySnapshot(),
+          cancellationObserved: stopSignal.wasCancellationObserved(),
+        },
+      );
     }
   };
 

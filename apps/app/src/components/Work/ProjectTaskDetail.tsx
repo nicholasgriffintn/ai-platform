@@ -38,7 +38,7 @@ export function ProjectTaskDetail({
   if (isLoading || detailQuery.isLoading) {
     return (
       <PageShell.Content className="max-w-6xl">
-        <p className="text-sm text-zinc-500">Loading the task…</p>
+        <p className="text-sm text-muted-foreground">Loading the task…</p>
       </PageShell.Content>
     );
   }
@@ -48,7 +48,7 @@ export function ProjectTaskDetail({
       <PageShell.Content className="max-w-6xl">
         <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
         <PageShell.Header title="Task" />
-        <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+        <p role="alert" className="text-sm text-failure">
           {error?.message ?? detailQuery.error?.message ?? "This task is no longer available."}
         </p>
       </PageShell.Content>

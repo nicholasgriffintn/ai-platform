@@ -109,7 +109,7 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
       <div
         className={cn(
           "flex min-h-[calc(100vh-9rem)] flex-col overflow-hidden",
-          activeThemeMode === "sepia" ? "bg-[#f8f2e3] text-[#333]" : "bg-white dark:bg-zinc-900",
+          activeThemeMode === "sepia" ? "bg-[#f8f2e3] text-[#333]" : "bg-surface text-foreground",
           isFullBleed && "fixed inset-0 z-50 h-screen w-screen",
         )}
       >
@@ -161,7 +161,7 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
   if (!notes?.length) {
     return (
       <EmptyState
-        icon={<NotebookPen size={24} className="text-zinc-400" />}
+        icon={<NotebookPen size={24} className="text-muted-foreground" />}
         title="No notes yet"
         message="Create a note for decisions, research, and working context."
         action={

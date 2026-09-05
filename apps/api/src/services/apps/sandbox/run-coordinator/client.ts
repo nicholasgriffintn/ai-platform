@@ -1,4 +1,5 @@
 import {
+  sandboxPreviewSessionRecordSchema,
   sandboxRunControlSchema,
   type SandboxRunDispatchMessage,
   sandboxRunInstructionEnvelopeSchema,
@@ -6,6 +7,9 @@ import {
   type SandboxRunControl,
   type SandboxRunEvent,
   type SandboxRunInstruction,
+  type SandboxRunInstructionKind,
+  type SandboxServiceAction,
+  type SandboxPreviewSessionRecord,
 } from "@ngriffin_uk/polychat-schemas";
 import type { StartFiberResult } from "agents";
 
@@ -77,6 +81,7 @@ export async function updateRunCoordinatorControl(params: {
   pauseReason?: string;
   timeoutSeconds?: number;
   timeoutAt?: string;
+  expectedUpdatedAt?: string;
 }): Promise<SandboxRunControl | null> {
   if (!params.env?.SANDBOX_RUN_COORDINATOR) {
     return null;
@@ -93,6 +98,7 @@ export async function updateRunCoordinatorControl(params: {
       pauseReason: params.pauseReason,
       timeoutSeconds: params.timeoutSeconds,
       timeoutAt: params.timeoutAt,
+      expectedUpdatedAt: params.expectedUpdatedAt,
     },
   );
 
@@ -202,14 +208,22 @@ export async function openRunCoordinatorEventsSocket(params: {
 export async function submitRunCoordinatorInstruction(params: {
   env: IEnv | undefined;
   runId: string;
-  kind: "message" | "continue" | "approval_request" | "approval_response";
+  kind: SandboxRunInstructionKind;
+  idempotencyKey?: string;
   content?: string;
   command?: string;
   requestId?: string;
   approvalStatus?: "approved" | "rejected";
+  serviceName?: string;
+  serviceAction?: SandboxServiceAction;
   timeoutSeconds?: number;
   escalateAfterSeconds?: number;
-}): Promise<SandboxRunInstruction | null> {
+  createdByUserId?: number;
+}): Promise<
+  | { ok: true; instruction: SandboxRunInstruction; replayed: boolean }
+  | { ok: false; status: number; error: string }
+  | null
+> {
   if (!params.env?.SANDBOX_RUN_COORDINATOR) {
     return null;
   }
@@ -220,25 +234,38 @@ export async function submitRunCoordinatorInstruction(params: {
     "https://sandbox-run-coordinator/instructions",
     {
       kind: params.kind,
+      idempotencyKey: params.idempotencyKey,
       content: params.content,
       command: params.command,
       requestId: params.requestId,
       approvalStatus: params.approvalStatus,
+      serviceName: params.serviceName,
+      serviceAction: params.serviceAction,
       timeoutSeconds: params.timeoutSeconds,
       escalateAfterSeconds: params.escalateAfterSeconds,
+      createdByUserId: params.createdByUserId,
     },
   );
 
-  if (!response.ok) {
-    return null;
-  }
-
   const payload = (await response.json()) as {
     instruction?: unknown;
+    replayed?: unknown;
+    error?: unknown;
   };
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      error: typeof payload.error === "string" ? payload.error : "Run instruction was not accepted",
+    };
+  }
+
   const parsed = sandboxRunInstructionSchema.safeParse(payload.instruction);
 
-  return parsed.success ? parsed.data : null;
+  return parsed.success
+    ? { ok: true, instruction: parsed.data, replayed: payload.replayed === true }
+    : { ok: false, status: 502, error: "Run instruction response was invalid" };
 }
 
 export async function listRunCoordinatorInstructions(params: {
@@ -282,4 +309,83 @@ export async function listRunCoordinatorInstructions(params: {
   }
 
   return instructions;
+}
+
+function parsePreviewSessionPayload(payload: unknown): SandboxPreviewSessionRecord | null {
+  if (!payload || typeof payload !== "object" || !("session" in payload)) {
+    return null;
+  }
+
+  const parsed = sandboxPreviewSessionRecordSchema.safeParse(payload.session);
+
+  return parsed.success ? parsed.data : null;
+}
+
+export async function createRunCoordinatorPreviewSession(params: {
+  env: IEnv | undefined;
+  runId: string;
+  session: SandboxPreviewSessionRecord;
+}): Promise<boolean> {
+  const stub = getCoordinatorStub(params.env, params.runId);
+  const response = await postDurableObjectJson(
+    stub,
+    "https://sandbox-run-coordinator/previews",
+    params.session,
+  );
+
+  return response.ok;
+}
+
+export async function getRunCoordinatorPreviewSession(params: {
+  env: IEnv | undefined;
+  previewId: string;
+  runId: string;
+}): Promise<SandboxPreviewSessionRecord | null> {
+  const stub = getCoordinatorStub(params.env, params.runId);
+  const response = await readDurableObjectJson(
+    stub,
+    `https://sandbox-run-coordinator/previews/${encodeURIComponent(params.previewId)}`,
+  );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return parsePreviewSessionPayload(await response.json());
+}
+
+export async function consumeRunCoordinatorPreviewSession(params: {
+  bootstrapJti: string;
+  env: IEnv | undefined;
+  previewId: string;
+  runId: string;
+}): Promise<{ ok: true; session: SandboxPreviewSessionRecord } | { ok: false; status: number }> {
+  const stub = getCoordinatorStub(params.env, params.runId);
+  const response = await postDurableObjectJson(
+    stub,
+    `https://sandbox-run-coordinator/previews/${encodeURIComponent(params.previewId)}/consume`,
+    { bootstrapJti: params.bootstrapJti },
+  );
+
+  if (!response.ok) {
+    return { ok: false, status: response.status };
+  }
+
+  const session = parsePreviewSessionPayload(await response.json());
+
+  return session ? { ok: true, session } : { ok: false, status: 502 };
+}
+
+export async function revokeRunCoordinatorPreviewSession(params: {
+  env: IEnv | undefined;
+  previewId: string;
+  runId: string;
+}): Promise<void> {
+  const stub = getCoordinatorStub(params.env, params.runId);
+
+  await postDurableObjectJson(
+    stub,
+    `https://sandbox-run-coordinator/previews/${encodeURIComponent(params.previewId)}/revoke`,
+    {},
+  );
 }

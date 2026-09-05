@@ -35,7 +35,7 @@ export function AgentTraceButton({ entries, compactOnMobile = false }: AgentTrac
           variant="ghost"
           size="sm"
           collapseLabel={compactOnMobile ? "container" : false}
-          className="flex-shrink-0 text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+          className="flex-shrink-0 text-muted-foreground hover:text-foreground"
           title="View conversation trace"
           aria-label="View conversation trace"
           icon={<Activity className="h-3.5 w-3.5" />}
@@ -63,10 +63,10 @@ export function AgentTracePanel({ entries }: AgentTracePanelProps) {
 
   return (
     <div className="text-xs">
-      <div className="flex items-center gap-2 border-b border-zinc-200 px-3 py-2 font-medium text-zinc-700 dark:border-zinc-800 dark:text-zinc-200">
+      <div className="flex items-center gap-2 border-b border-border px-3 py-2 font-medium text-foreground">
         <Activity className="h-3.5 w-3.5" aria-hidden="true" />
         <span>Trace</span>
-        <span className="ml-auto text-zinc-500 dark:text-zinc-400">{entries.length}</span>
+        <span className="ml-auto text-muted-foreground">{entries.length}</span>
       </div>
       <ol className="py-1">
         {entries.map((entry) => {
@@ -76,31 +76,31 @@ export function AgentTracePanel({ entries }: AgentTracePanelProps) {
           return (
             <li
               key={entry.id}
-              className="grid grid-cols-[auto_minmax(0,1fr)_auto] gap-2 px-3 py-1.5 text-zinc-600 dark:text-zinc-300"
+              className="grid grid-cols-[auto_minmax(0,1fr)_auto] gap-2 px-3 py-1.5 text-muted-foreground"
             >
               <AgentTraceIcon type={entry.type} />
               <div className="min-w-0">
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="shrink-0 font-medium text-zinc-700 dark:text-zinc-200">
+                  <span className="shrink-0 font-medium text-foreground">
                     {getAgentTraceTypeLabel(entry.type)}
                   </span>
                   <span className="truncate">{entry.label}</span>
                 </div>
                 {entry.provenance ? (
-                  <div className="truncate text-zinc-500 dark:text-zinc-400">
+                  <div className="truncate text-muted-foreground">
                     {entry.provenance.skill} · r{entry.provenance.revision}
                   </div>
                 ) : null}
                 {entry.provider || entry.status ? (
-                  <div className="truncate text-zinc-500 dark:text-zinc-400">
+                  <div className="truncate text-muted-foreground">
                     {[entry.provider, entry.status].filter(Boolean).join(" · ")}
                   </div>
                 ) : null}
               </div>
               <div
                 className={cn(
-                  "flex shrink-0 items-center gap-2 text-zinc-500 dark:text-zinc-400",
-                  entry.type === "provider_error" && "text-red-500 dark:text-red-400",
+                  "flex shrink-0 items-center gap-2 text-muted-foreground",
+                  entry.type === "provider_error" && "text-failure",
                 )}
               >
                 {usage ? <span>{usage}</span> : null}

@@ -36,7 +36,7 @@ export function TaskBoardFilters({
   const isFiltered = hasTaskQueueFilters(filters);
 
   return (
-    <div className="border-b border-zinc-200 bg-zinc-50/70 px-4 py-3 dark:border-zinc-800/80 dark:bg-zinc-950/20">
+    <div className="border-b border-border bg-surface-elevated/70 px-4 py-3">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
         <SearchInput
           aria-label="Search work queue"
@@ -48,7 +48,7 @@ export function TaskBoardFilters({
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <FormSelect
             aria-label="Filter work by status"
-            className="h-10 min-w-40 bg-white dark:bg-zinc-900"
+            className="h-10 min-w-40 bg-surface"
             fullWidth={false}
             value={filters.status}
             onChange={(event) => {
@@ -65,7 +65,7 @@ export function TaskBoardFilters({
           {flow ? (
             <FormSelect
               aria-label="Filter work by stage"
-              className="h-10 min-w-36 bg-white dark:bg-zinc-900"
+              className="h-10 min-w-36 bg-surface"
               fullWidth={false}
               value={filters.stageId ?? ""}
               onChange={(event) => onChange({ ...filters, stageId: event.target.value || null })}
@@ -75,7 +75,7 @@ export function TaskBoardFilters({
               ]}
             />
           ) : null}
-          <span className="ml-auto text-xs text-zinc-500" aria-live="polite">
+          <span className="ml-auto text-xs text-muted-foreground" aria-live="polite">
             {matchCount === totalCount ? `${totalCount} items` : `${matchCount} of ${totalCount}`}
           </span>
           {isFiltered ? (

@@ -118,15 +118,15 @@ export function ProjectTaskBoard({
             </Button>
           }
         />
-        <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-muted-foreground mb-6 max-w-3xl text-sm">
           Route outcomes through specialist agents, watch live work, and step in only when a stage
           needs review or approval.
         </p>
 
         {isLoading ? (
-          <p className="text-sm text-zinc-500">Loading project tasks…</p>
+          <p className="text-muted-foreground text-sm">Loading project tasks…</p>
         ) : error ? (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="text-failure text-sm">
             {error.message}
           </p>
         ) : (

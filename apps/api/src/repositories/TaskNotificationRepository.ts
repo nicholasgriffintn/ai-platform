@@ -42,7 +42,7 @@ interface RegistrationRow {
   id: string;
   user_id: number;
   installation_id: string;
-  platform: "web" | "ios";
+  platform: "web";
   endpoint_hash: string;
   destination_json: unknown;
   state: "registered" | "failed" | "disabled";
@@ -168,10 +168,9 @@ export class TaskNotificationRepository extends BaseRepository {
     userId: number,
     input: RegisterTaskNotification,
   ): Promise<TaskNotificationRegistration> {
-    const endpoint =
-      input.platform === "ios" ? input.token.toLowerCase() : input.subscription.endpoint;
-    const p256dh = input.platform === "web" ? input.subscription.keys.p256dh : null;
-    const authSecret = input.platform === "web" ? input.subscription.keys.auth : null;
+    const endpoint = input.subscription.endpoint;
+    const p256dh = input.subscription.keys.p256dh;
+    const authSecret = input.subscription.keys.auth;
     const keyMaterial = this.env.PRIVATE_KEY;
 
     if (!keyMaterial) {

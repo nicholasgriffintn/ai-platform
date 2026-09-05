@@ -158,7 +158,7 @@ describe("TaskBoard", () => {
     const progress = screen.getByLabelText("Pipeline progress");
 
     expect(progress.querySelector('[title="Research"]')?.className).not.toContain(
-      "border-blue-500",
+      "border-active-work",
     );
     expect(
       Array.from(progress.children).map((part) => part.getAttribute("title") ?? "connector"),
@@ -336,7 +336,7 @@ describe("TaskBoard", () => {
     expect(screen.getByRole("link", { name: "View result" })).toBeTruthy();
     expect(
       Array.from(screen.getByLabelText("Pipeline progress").querySelectorAll("[title]")).every(
-        (marker) => marker.className.includes("bg-emerald-500"),
+        (marker) => marker.className.includes("bg-success"),
       ),
     ).toBe(true);
   });

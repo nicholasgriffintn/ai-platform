@@ -1,3 +1,8 @@
+import {
+  resolveSandboxDeliveryPolicy,
+  sandboxDeliveryPolicyCreatesCommit,
+} from "@ngriffin_uk/polychat-schemas";
+
 import type { Env, TaskEventEmitter, TaskParams, TaskResult, TaskSecrets } from "../types";
 import { SandboxTaskRunnerRegistry } from "./runner";
 import { AgentTaskRunner } from "./runners/feature-implementation-runner";
@@ -25,11 +30,13 @@ export async function executeSandboxTask(
   abortSignal?: AbortSignal,
 ): Promise<TaskResult> {
   const profile = resolveSandboxTaskProfile(params);
+  const deliveryPolicy = resolveSandboxDeliveryPolicy(profile.deliveryPolicy, profile.shouldCommit);
   const taskParams: TaskParams = {
     ...params,
     taskType: profile.taskType,
     task: profile.task,
-    shouldCommit: profile.shouldCommit,
+    deliveryPolicy,
+    shouldCommit: sandboxDeliveryPolicyCreatesCommit(deliveryPolicy),
   };
 
   const runner = runnerRegistry.resolve(profile.taskType);

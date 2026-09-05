@@ -25,7 +25,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 import { getProjectTaskActivity } from "./activity";
-import { resolveProjectTaskToolApproval } from "./approvals";
+import { getPendingProjectTaskToolApproval, resolveProjectTaskToolApproval } from "./approvals";
 import { reconcileTaskNotifications } from "./attention";
 import { approveLatestProjectTaskCompletion } from "./completions";
 import { getProjectTaskInteraction } from "./interactions";
@@ -207,15 +207,16 @@ export async function listProjectTasks(
 export async function getProjectTask(context: ServiceContext, projectId: string, taskId: string) {
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
-  const [goal, pendingQuestions, interaction] = await Promise.all([
+  const [goal, pendingQuestions, pendingApproval, interaction] = await Promise.all([
     task.goalId ? context.repositories.goals.getGoalById(task.goalId) : null,
     getPendingProjectTaskQuestions(context, task),
+    getPendingProjectTaskToolApproval(context, task),
     getProjectTaskInteraction(context, task),
   ]);
   const activity = await getProjectTaskActivity(context, task, goal, interaction);
   const plan = await getProjectTaskPlanEvidence(context, task, parseProjectFlow(project.flow));
 
-  return { task, goal, pendingQuestions, interaction, activity, plan };
+  return { task, goal, pendingQuestions, pendingApproval, interaction, activity, plan };
 }
 
 export async function respondToProjectTaskQuestions(

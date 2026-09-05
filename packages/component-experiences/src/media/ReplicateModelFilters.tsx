@@ -18,8 +18,8 @@ function filterPillClass(isActive: boolean) {
   return cn(
     "px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
     isActive
-      ? "bg-zinc-900 text-white dark:bg-zinc-200 dark:text-zinc-900 border-zinc-900 dark:border-zinc-200"
-      : "bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 border-zinc-200 dark:border-zinc-700",
+      ? "bg-selection text-active-work border-active-work/40"
+      : "bg-surface text-foreground hover:bg-selection/60 border-border",
   );
 }
 

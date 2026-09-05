@@ -13,6 +13,7 @@ import { useUIStore } from "~/state/stores/uiStore";
 interface ProductModeHeaderProps {
   actions?: ReactNode;
   context?: ReactNode;
+  projectColour?: string;
   showCloudToggle?: boolean;
   showSidebarToggle?: boolean;
 }
@@ -20,6 +21,7 @@ interface ProductModeHeaderProps {
 export function ProductModeHeader({
   actions,
   context,
+  projectColour,
   showCloudToggle = false,
   showSidebarToggle = true,
 }: ProductModeHeaderProps) {
@@ -62,6 +64,13 @@ export function ProductModeHeader({
               onClick={() => setSidebarVisible(true)}
             />
           )}
+          {projectColour ? (
+            <span
+              aria-hidden="true"
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: projectColour }}
+            />
+          ) : null}
           {context ? <div className="min-w-0 flex-1">{context}</div> : null}
         </>
       }

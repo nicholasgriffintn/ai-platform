@@ -36,12 +36,8 @@ export function ArticleAnalysisForm({ session, onReportGenerated }: ArticleAnaly
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-zinc-950 dark:text-white">
-            New Article Analysis Session
-          </h2>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Session ID: {session.itemId}
-          </p>
+          <h2 className="text-xl font-semibold text-foreground">New Article Analysis Session</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Session ID: {session.itemId}</p>
         </div>
         <Button
           variant="primary"
@@ -71,12 +67,9 @@ export function ArticleAnalysisForm({ session, onReportGenerated }: ArticleAnaly
 
       <div className="mx-auto max-w-3xl">
         {session.processingError && (
-          <div
-            role="alert"
-            className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/30"
-          >
-            <p className="font-semibold text-red-800 dark:text-red-200">Error</p>
-            <p className="mt-1 text-sm text-red-700 dark:text-red-300">{session.processingError}</p>
+          <div role="alert" className="mb-6 rounded-md border border-failure/45 bg-failure/12 p-4">
+            <p className="font-semibold text-failure">Error</p>
+            <p className="mt-1 text-sm text-failure">{session.processingError}</p>
           </div>
         )}
 
@@ -86,21 +79,16 @@ export function ArticleAnalysisForm({ session, onReportGenerated }: ArticleAnaly
             const isBusy = session.processingArticles || session.reportGenerating || isExtracting;
 
             return (
-              <div
-                key={article.id}
-                className="rounded-lg border border-zinc-200 bg-off-white p-4 dark:border-zinc-700 dark:bg-zinc-800"
-              >
+              <div key={article.id} className="border-border bg-surface rounded-lg border p-4">
                 <div className="mb-3 flex items-start justify-between">
-                  <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
-                    Article {index + 1}
-                  </h3>
+                  <h3 className="text-lg font-semibold text-foreground">Article {index + 1}</h3>
                   {session.articles.length > 1 && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => session.actions.removeArticle(article.id)}
                       aria-label="Remove Article"
-                      className="text-zinc-500 hover:text-red-600 dark:hover:text-red-500"
+                      className="text-muted-foreground hover:text-failure"
                     >
                       <Trash2 size={16} />
                     </Button>
@@ -137,7 +125,7 @@ export function ArticleAnalysisForm({ session, onReportGenerated }: ArticleAnaly
                     {isExtracting ? "Fetching..." : "Fetch Content"}
                   </Button>
                 </form>
-                <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mb-3 text-xs text-muted-foreground">
                   Enter a URL to automatically extract article content or paste it manually below
                 </p>
                 <Textarea

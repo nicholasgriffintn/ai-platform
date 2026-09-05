@@ -24,6 +24,7 @@ import {
 import { createProviderRetryBudget } from "~/lib/chat/policy/provider-retry";
 import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/streaming/emitter";
 import { createStreamedToolResultEvent } from "~/lib/chat/streaming/tool-result-preview";
+import { writeTurnActivity } from "~/lib/chat/streaming/turn-activity";
 import {
   ARTIFACT_MARKUP_FINAL_ANSWER_NOTICE,
   isArtifactMarkupToolName,
@@ -31,7 +32,7 @@ import {
 import { createToolCallLedger, type ToolCallLedger } from "~/lib/chat/tools/call-ledger";
 import { getResponseScopedCapabilityToolNames } from "~/lib/chat/tools/capability-activation";
 import { isSuccessfulToolStatus } from "~/lib/chat/tools/continuation";
-import { getToolEventPayload } from "~/lib/chat/tools/events";
+import { emitCompleteToolInput } from "~/lib/chat/tools/events";
 import { handleToolCalls } from "~/lib/chat/tools/execution";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
@@ -39,7 +40,6 @@ import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/lib/usage/limitSta
 import { sumTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import {
   StreamState,
-  ToolStage,
   type ChatCompletionParameters,
   type ChatMode,
   type ChatRequestOptions,
@@ -54,6 +54,7 @@ import {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { readRecordObjectField, readStringField } from "~/utils/recordFields";
 import { isRetryCancelledError } from "~/utils/retries";
 
 const logger = getLogger({ prefix: "lib/chat/agent/agent-loop" });
@@ -71,6 +72,16 @@ const REPEATED_TOOL_CALL_NOTICE =
 const UNKNOWN_TOOL_FINAL_ANSWER_NOTICE =
   "Another unavailable tool was called after a correction. Do not call another tool. Answer the user now using only the information already available.";
 
+function waitingForUserReason(result: Message): "approval" | "question" | "selection" {
+  const humanInTheLoop = readRecordObjectField(result.data, "humanInTheLoop");
+
+  if (readStringField(humanInTheLoop, "type") === "selection") {
+    return "selection";
+  }
+
+  return result.name === "ask_user" ? "question" : "approval";
+}
+
 function shouldAbortAgentTurnError(error: unknown): boolean {
   return error instanceof AssistantError && error.type !== ErrorType.PARAMS_ERROR;
 }
@@ -82,6 +93,7 @@ interface ChatAgentLoopState extends AgentLoopState {
   toolCallLedger: ToolCallLedger;
   pendingUserAction?: { message: string; kind: "approval" | "question" };
   waitingForUserAction?: "approval" | "question";
+  streamedToolInputStep?: number;
   stoppedForUsageLimit?: boolean;
   finalAnswerForced?: boolean;
   finalAnswerNotice?: string;
@@ -417,6 +429,8 @@ export async function runAgentLoop(
 
       const providerMessages = providerIO.providerMessages(contextBudget.messages);
 
+      await writeTurnActivity(sink, { kind: "model_step_started", step });
+
       let turn: TurnOutput & { error?: unknown };
 
       try {
@@ -442,6 +456,7 @@ export async function runAgentLoop(
           sink,
           context: {
             ...transportContext,
+            step,
             retry: providerRetryBudget.forStep(step, {
               shouldStop: params.shouldStop,
               onStateChange: params.onRetryState,
@@ -450,15 +465,38 @@ export async function runAgentLoop(
         });
       } catch (error) {
         if (isRetryCancelledError(error) || params.shouldStop?.()) {
+          await writeTurnActivity(sink, {
+            kind: "model_step_finished",
+            step,
+            outcome: "cancelled",
+          });
+
           return closingTurn("", "stopped");
         }
 
+        await writeTurnActivity(sink, { kind: "model_step_finished", step, outcome: "failed" });
         throw error;
       }
 
       if (turn.error) {
+        await writeTurnActivity(sink, { kind: "model_step_finished", step, outcome: "failed" });
         throw new AssistantError(resolveProviderErrorMessage(turn.error), ErrorType.PROVIDER_ERROR);
       }
+
+      if (!turn.activityStreamed) {
+        if (turn.thinking) {
+          await writeTurnActivity(sink, { kind: "reasoning_started", step });
+          await writeTurnActivity(sink, { kind: "reasoning_finished", step });
+        }
+
+        if (turn.content) {
+          await writeTurnActivity(sink, { kind: "response_started", step });
+          await writeTurnActivity(sink, { kind: "response_finished", step });
+        }
+      }
+
+      finalStatus = turn.status ?? finalStatus;
+      state.streamedToolInputStep = turn.activityStreamed ? step : undefined;
 
       totalUsage = sumTokenUsage(totalUsage, turn.usage) ?? totalUsage;
 
@@ -467,6 +505,7 @@ export async function runAgentLoop(
       );
 
       if (turn.stopped) {
+        await writeTurnActivity(sink, { kind: "model_step_finished", step, outcome: "cancelled" });
         finalStatus = "stopped";
 
         if (!turn.content) {
@@ -485,6 +524,17 @@ export async function runAgentLoop(
           assistantMessage: { role: "assistant", content: stoppedMessage.content },
         };
       }
+
+      await writeTurnActivity(sink, {
+        kind: "model_step_finished",
+        step,
+        outcome:
+          turn.status === "incomplete"
+            ? "failed"
+            : turn.toolCalls.length > 0
+              ? "tool_calls"
+              : "completed",
+      });
 
       const message = await finalise(turn);
 
@@ -526,8 +576,12 @@ export async function runAgentLoop(
     executeToolCalls: async (toolCalls: AgentToolCall[], context) => {
       const providerToolCalls = providerIO.providerToolCalls(toolCalls);
 
-      await emitToolCallEvents(sink, providerToolCalls as unknown as ToolCall[]);
+      if (context.state.streamedToolInputStep !== context.step) {
+        await emitToolCallEvents(sink, providerToolCalls as unknown as ToolCall[], context.step);
+      }
+
       await sink.writeEvent("tool_response_start", { tool_calls: providerToolCalls });
+      const settledToolCallIds = new Set<string>();
 
       const toolResults = await handleToolCalls(
         context.shared.completionId,
@@ -538,8 +592,41 @@ export async function runAgentLoop(
           persistResults: "immediate",
           callLedger: context.state.toolCallLedger,
           recoverUnknownToolCalls: !context.state.unknownToolRecoveryUsed,
+          onToolExecutionStart: async (tool) => {
+            await writeTurnActivity(sink, {
+              kind: "tool_execution_started",
+              step: context.step,
+              toolCallId: tool.id,
+              toolName: tool.name,
+            });
+          },
           onToolResult: async (toolResult) => {
             await sink.writeEvent("tool_response", createStreamedToolResultEvent(toolResult));
+
+            const toolCallId = toolResult.tool_call_id;
+
+            if (typeof toolCallId === "string" && !settledToolCallIds.has(toolCallId)) {
+              settledToolCallIds.add(toolCallId);
+
+              if (toolResult.status === "pending") {
+                await writeTurnActivity(sink, {
+                  kind: "waiting_for_user",
+                  step: context.step,
+                  toolCallId,
+                  toolName: toolResult.name || "unknown",
+                  reason: waitingForUserReason(toolResult),
+                });
+              } else {
+                await writeTurnActivity(sink, {
+                  kind: "tool_finished",
+                  step: context.step,
+                  toolCallId,
+                  toolName: toolResult.name || "unknown",
+                  outcome: isSuccessfulToolStatus(toolResult.status) ? "success" : "failure",
+                });
+              }
+            }
+
             await params.onToolResult?.(toolResult);
           },
         },
@@ -587,7 +674,8 @@ export async function runAgentLoop(
       const pendingResult = toolResults.find((message) => message.status === "pending");
 
       if (pendingResult) {
-        const kind = pendingResult.name === "ask_user" ? "question" : "approval";
+        const reason = waitingForUserReason(pendingResult);
+        const kind = reason === "approval" ? "approval" : "question";
 
         context.state.waitingForUserAction = kind;
         context.state.pendingUserAction = {
@@ -595,9 +683,11 @@ export async function runAgentLoop(
           message:
             typeof pendingResult.content === "string" && pendingResult.content.trim()
               ? pendingResult.content
-              : kind === "question"
-                ? "This work is waiting for your answer."
-                : "This action is waiting for user approval.",
+              : reason === "selection"
+                ? "This work is waiting for your selection."
+                : kind === "question"
+                  ? "This work is waiting for your answer."
+                  : "This action is waiting for user approval.",
         };
       }
 
@@ -659,15 +749,14 @@ export async function runAgentLoop(
   };
 }
 
-async function emitToolCallEvents(sink: ChatEventSink, toolCalls: readonly ToolCall[]) {
+async function emitToolCallEvents(
+  sink: ChatEventSink,
+  toolCalls: readonly ToolCall[],
+  step: number,
+) {
   for (const toolCall of toolCalls) {
     try {
-      await sink.writeEvent("tool_use_start", getToolEventPayload(toolCall, ToolStage.START));
-      await sink.writeEvent(
-        "tool_use_delta",
-        getToolEventPayload(toolCall, ToolStage.DELTA, toolCall.function?.arguments || "{}"),
-      );
-      await sink.writeEvent("tool_use_stop", getToolEventPayload(toolCall, ToolStage.STOP));
+      await emitCompleteToolInput(sink, step, toolCall);
     } catch (error) {
       logger.error("Failed to emit tool events", { error, toolCall });
     }

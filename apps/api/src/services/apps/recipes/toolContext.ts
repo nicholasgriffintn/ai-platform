@@ -72,3 +72,12 @@ export function getRecipeExecutionChannelContext(
     ...(channel.to ? { to: channel.to } : {}),
   };
 }
+
+export function isRecipeExecutionRequest(options: {
+  conversation_type?: string;
+  options?: unknown;
+}): boolean {
+  return (
+    options.conversation_type === "task" && Boolean(readRecipeChatRequestOptions(options.options))
+  );
+}

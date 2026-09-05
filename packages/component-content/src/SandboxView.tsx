@@ -20,9 +20,9 @@ export interface SandboxApprovalRequest {
 export function SandboxView({ type, data, onResolveApproval }: SandboxViewProps) {
   if (type === "sandbox_plan") {
     return (
-      <div className="space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
-        <div className="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-          <Clock className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+      <div className="border-border bg-surface-elevated space-y-3 rounded-md border p-3">
+        <div className="text-foreground flex items-center gap-2 text-sm font-medium">
+          <Clock className="text-active-work h-4 w-4" />
           <span>Plan</span>
         </div>
         <div className="prose prose-sm max-w-none dark:prose-invert">
@@ -58,17 +58,17 @@ function SandboxResultView({ data }: { data: Record<string, unknown> }) {
   const summary = typeof data.summary === "string" ? data.summary : undefined;
 
   return (
-    <div className="space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
+    <div className="border-border bg-surface-elevated space-y-3 rounded-md border p-3">
       <div className="flex flex-wrap items-center gap-2">
         {isFailed ? (
-          <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+          <AlertTriangle className="text-failure h-4 w-4" />
         ) : (
-          <CheckCircle2 className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+          <CheckCircle2 className="text-success h-4 w-4" />
         )}
-        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Result</span>
+        <span className="text-foreground text-sm font-medium">Result</span>
         {typeof data.status === "string" && <Badge variant="outline">{data.status}</Badge>}
         {branchName && (
-          <span className="inline-flex min-w-0 items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="text-muted-foreground inline-flex min-w-0 items-center gap-1 text-xs">
             <GitBranch className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{branchName}</span>
           </span>
@@ -80,7 +80,7 @@ function SandboxResultView({ data }: { data: Record<string, unknown> }) {
         </div>
       )}
       {error && (
-        <div className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+        <div className="border-failure/30 bg-failure/10 text-failure rounded border p-2 text-sm">
           {String(error)}
         </div>
       )}
@@ -132,28 +132,28 @@ function SandboxEventView({
   };
 
   return (
-    <div className="space-y-2 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-700 dark:bg-zinc-900/50">
+    <div className="border-border bg-surface-elevated space-y-2 rounded-md border p-3 text-sm">
       <div className="flex min-w-0 items-center gap-2">
         {approvalRequired ? (
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-300" />
+          <AlertTriangle className="text-attention h-4 w-4" />
         ) : (
-          <Terminal className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+          <Terminal className="text-active-work h-4 w-4" />
         )}
-        <span className="min-w-0 truncate font-medium text-zinc-900 dark:text-zinc-100">
+        <span className="text-foreground min-w-0 truncate font-medium">
           {String(data.description ?? data.type ?? "Sandbox event")}
         </span>
       </div>
       {typeof event.command === "string" && event.command.trim() && (
-        <code className="block overflow-x-auto rounded border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-800 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
+        <code className="border-border bg-canvas text-foreground block overflow-x-auto rounded border px-2 py-1 text-xs">
           {event.command}
         </code>
       )}
       {typeof event.path === "string" && event.path.trim() && (
-        <div className="text-xs text-zinc-500 dark:text-zinc-400">{event.path}</div>
+        <div className="text-muted-foreground text-xs">{event.path}</div>
       )}
       {output.trim() && <CodeBlock label={String(event.stream ?? "Output")} value={output} />}
       {typeof event.error === "string" && event.error.trim() && (
-        <div className="rounded border border-red-200 bg-red-50 p-2 text-xs text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+        <div className="border-failure/30 bg-failure/10 text-failure rounded border p-2 text-xs">
           {event.error}
         </div>
       )}
@@ -174,14 +174,14 @@ function SandboxEventView({
             variant="ghost"
             onClick={() => void resolveApproval("rejected")}
             disabled={isResolving}
-            className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+            className="text-failure hover:text-failure/80"
           >
             Reject
           </Button>
         </div>
       )}
       {resolutionStatus && (
-        <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+        <div className="text-muted-foreground text-xs font-medium">
           Approval {resolutionStatus}.
         </div>
       )}
@@ -200,8 +200,8 @@ function CodeBlock({
 }) {
   return (
     <div className="space-y-1">
-      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{label}</div>
-      <pre className="max-h-96 overflow-auto rounded border border-zinc-200 bg-white p-2 text-xs text-zinc-800 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
+      <div className="text-muted-foreground text-xs font-medium">{label}</div>
+      <pre className="border-border bg-canvas text-foreground max-h-96 overflow-auto rounded border p-2 text-xs">
         <code className={language ? `language-${language}` : undefined}>{value}</code>
       </pre>
     </div>

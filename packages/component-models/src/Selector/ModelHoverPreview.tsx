@@ -102,9 +102,9 @@ export function ModelHoverPreview({
       role="tooltip"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onDismiss}
-      className="fixed z-[70] overflow-y-auto rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95"
+      className="border-border bg-surface-elevated fixed z-[70] overflow-y-auto rounded-xl border p-3 shadow-[var(--polychat-elevated-shadow)] backdrop-blur-sm"
     >
-      <div className="mb-3 rounded-lg border border-zinc-200/70 p-3 dark:border-zinc-700/70">
+      <div className="mb-3 rounded-lg border border-border/70 p-3">
         <div className="flex items-center gap-2">
           <ModelIcon
             url={model.avatarUrl}
@@ -113,30 +113,30 @@ export function ModelHoverPreview({
             size={28}
           />
           <div className="min-w-0">
-            <p className="font-semibold text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
+            <p className="font-semibold text-foreground whitespace-normal break-words">
               {model.name || model.matchingModel}
             </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-normal break-words">
+            <p className="text-xs text-muted-foreground whitespace-normal break-words">
               {model.provider}
             </p>
           </div>
         </div>
         {model.description && (
-          <p className="mt-2 text-xs text-zinc-600 whitespace-normal break-words dark:text-zinc-300">
+          <p className="mt-2 text-xs text-muted-foreground whitespace-normal break-words">
             {model.description}
           </p>
         )}
 
         {featureTags.length > 0 && (
           <div className="mt-3">
-            <p className="mb-1 text-[11px] font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+            <p className="mb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
               Features
             </p>
             <div className="flex flex-wrap gap-1">
               {featureTags.map((feature) => (
                 <span
                   key={`${model.id}-${feature}`}
-                  className="rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  className="border-border bg-selection text-foreground rounded-full border px-2 py-0.5 text-[11px]"
                 >
                   {feature}
                 </span>
@@ -147,24 +147,24 @@ export function ModelHoverPreview({
       </div>
 
       <div className="space-y-2 text-xs">
-        <div className="rounded-lg border border-zinc-200/70 p-2.5 dark:border-zinc-700/70">
-          <div className="mb-1 flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
+        <div className="rounded-lg border border-border/70 p-2.5">
+          <div className="mb-1 flex items-center gap-1 text-muted-foreground">
             <Gauge className="h-3.5 w-3.5" />
             <span className="font-semibold">Capacity</span>
           </div>
           <div className="space-y-1">
             {model.contextWindow && (
               <div className="flex items-center justify-between gap-2">
-                <span className="text-zinc-500 dark:text-zinc-400">Context Window</span>
-                <span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
+                <span className="text-muted-foreground">Context Window</span>
+                <span className="text-right font-medium text-foreground">
                   {formatTokenCount(model.contextWindow)} tokens
                 </span>
               </div>
             )}
             {model.maxTokens && (
               <div className="flex items-center justify-between gap-2">
-                <span className="text-zinc-500 dark:text-zinc-400">Max Output</span>
-                <span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
+                <span className="text-muted-foreground">Max Output</span>
+                <span className="text-right font-medium text-foreground">
                   {formatTokenCount(model.maxTokens)} tokens
                 </span>
               </div>
@@ -174,24 +174,24 @@ export function ModelHoverPreview({
 
         {(typeof model.costPer1kInputTokens === "number" ||
           typeof model.costPer1kOutputTokens === "number") && (
-          <div className="rounded-lg border border-zinc-200/70 p-2.5 dark:border-zinc-700/70">
-            <div className="mb-1 flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
+          <div className="rounded-lg border border-border/70 p-2.5">
+            <div className="mb-1 flex items-center gap-1 text-muted-foreground">
               <WalletCards className="h-3.5 w-3.5" />
               <span className="font-semibold">Pricing</span>
             </div>
             <div className="space-y-1">
               {typeof model.costPer1kInputTokens === "number" && (
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-zinc-500 dark:text-zinc-400">Input</span>
-                  <span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
+                  <span className="text-muted-foreground">Input</span>
+                  <span className="text-right font-medium text-foreground">
                     {formatTokenPrice(model.costPer1kInputTokens)}
                   </span>
                 </div>
               )}
               {typeof model.costPer1kOutputTokens === "number" && (
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-zinc-500 dark:text-zinc-400">Output</span>
-                  <span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
+                  <span className="text-muted-foreground">Output</span>
+                  <span className="text-right font-medium text-foreground">
                     {formatTokenPrice(model.costPer1kOutputTokens)}
                   </span>
                 </div>

@@ -168,6 +168,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
 
     func logout() {
         Task {
+            await PushNotificationManager.shared.unregisterForSignedOutUser()
             do {
                 _ = try await apiClient?.logout()
             } catch {

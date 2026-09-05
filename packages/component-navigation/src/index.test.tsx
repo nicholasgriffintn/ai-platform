@@ -31,7 +31,6 @@ const sidebarSettingsProps = {
   usage: [],
   onShowKeyboardShortcuts: vi.fn(),
   onSignIn: vi.fn(),
-  onThemeChange: vi.fn(),
 };
 
 describe("SidebarSettingsPopover", () => {
@@ -65,6 +64,42 @@ describe("SidebarSettingsPopover", () => {
 
     expect(await screen.findByText("0.1706 credits used this month")).toBeTruthy();
     expect(screen.queryByText(/unlimited usage/i)).toBeNull();
+  });
+
+  it("opens without landing focus on the theme control", async () => {
+    render(
+      <SidebarSettingsPopover
+        {...sidebarSettingsProps}
+        theme={{ value: "dark", onChange: vi.fn() }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Open settings and configuration" }));
+
+    const dialog = await screen.findByRole("dialog");
+
+    expect(document.activeElement).toBe(dialog);
+    expect(screen.getByRole("button", { name: /^Theme/ })).not.toBe(document.activeElement);
+  });
+
+  it("changes the theme from a submenu while the popover stays open", async () => {
+    const onChange = vi.fn();
+
+    render(
+      <SidebarSettingsPopover {...sidebarSettingsProps} theme={{ value: "dark", onChange }} />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Open settings and configuration" }));
+    fireEvent.pointerDown(await screen.findByRole("button", { name: /^Theme/ }));
+
+    const current = await screen.findByRole("menuitemradio", { name: "Dark" });
+
+    expect(current.getAttribute("aria-checked")).toBe("true");
+
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Fern" }));
+
+    expect(onChange).toHaveBeenCalledWith("fern");
+    expect(screen.getByRole("dialog")).toBeTruthy();
   });
 });
 
@@ -108,7 +143,7 @@ describe("ConversationList", () => {
     { id: "older", title: "Older", conversations: [] },
   ];
 
-  it("emits selection, edit, and delete intents without owning the data", () => {
+  it("emits selection, edit, and delete intents without owning the data", async () => {
     const onSelect = vi.fn();
     const onEditTitle = vi.fn();
     const onDelete = vi.fn();
@@ -129,10 +164,12 @@ describe("ConversationList", () => {
     fireEvent.click(screen.getByText("Ideas"));
     expect(onSelect).toHaveBeenCalledWith("two");
 
-    fireEvent.click(screen.getAllByLabelText("Edit conversation title")[0]);
+    fireEvent.pointerDown(screen.getAllByRole("button", { name: "Conversation actions" })[0]);
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Rename" }));
     expect(onEditTitle).toHaveBeenCalledWith("one", "Roadmap");
 
-    fireEvent.click(screen.getAllByLabelText("Delete")[0]);
+    fireEvent.pointerDown(screen.getAllByRole("button", { name: "Conversation actions" })[0]);
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
     expect(onDelete).toHaveBeenCalledWith("one");
   });
 

@@ -19,7 +19,10 @@ struct MessageListView: View {
                     } else {
                         ForEach(messages) { message in
                             if message.isVisibleCompactionStatus {
-                                CompactionStatusRow(label: message.compactionStatusLabel)
+                                CompactionStatusRow(
+                                    label: message.compactionStatusLabel,
+                                    detail: message.compactionCoverageDetail
+                                )
                                     .id(message.id)
                             } else {
                                 MessageBubble(message: message, conversationModelId: conversationModelId)
@@ -60,21 +63,29 @@ struct MessageListView: View {
 
 private struct CompactionStatusRow: View {
     let label: String
+    let detail: String?
 
     var body: some View {
         HStack(spacing: 12) {
             Rectangle()
                 .fill(Color.polychat.border)
                 .frame(height: 1)
-            Label(label, systemImage: "doc.text")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+            VStack(spacing: 2) {
+                Label(label, systemImage: "doc.text")
+                    .font(.subheadline.weight(.semibold))
+                if let detail {
+                    Text(detail)
+                        .font(.caption)
+                }
+            }
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
             Rectangle()
                 .fill(Color.polychat.border)
                 .frame(height: 1)
         }
         .padding(.vertical, 8)
+        .accessibilityElement(children: .combine)
     }
 }
 

@@ -17,19 +17,19 @@
   }
   .polychat-experience-content > header p {
     margin-top: 0.35rem;
-    color: #71717a;
+    color: var(--polychat-text-muted);
   }
   .polychat-experience-content > section {
     display: grid;
     gap: 0.75rem;
-    border: 1px solid #e4e4e7;
+    border: 1px solid var(--polychat-border);
     border-radius: 0.75rem;
     padding: 1rem;
   }
   .polychat-experience-media-preview {
     overflow: hidden;
     width: 100%;
-    border: 1px solid #e4e4e7;
+    border: 1px solid var(--polychat-border);
     border-radius: 0.75rem;
   }
   .polychat-experience-media-preview img,
@@ -52,8 +52,8 @@
     border: 0;
     border-radius: 0.5rem;
     padding: 0.55rem 0.9rem;
-    background: #18181b;
-    color: white;
+    background: var(--polychat-human-action);
+    color: var(--polychat-human-action-foreground);
     cursor: pointer;
   }
   .polychat-experience-music-transport button:disabled {
@@ -62,38 +62,32 @@
   }
   .polychat-experience-training-status {
     display: inline-flex;
-    border: 1px solid #d4d4d8;
+    border: 1px solid var(--polychat-border-strong);
     border-radius: 999px;
     padding: 0.2rem 0.55rem;
-    color: #52525b;
+    color: var(--polychat-text-muted);
     font-size: 0.75rem;
     line-height: 1;
     text-transform: capitalize;
   }
   .polychat-experience-training-status[data-tone="info"] {
-    border-color: #93c5fd;
-    background: #eff6ff;
-    color: #1d4ed8;
+    border-color: color-mix(in oklch, var(--polychat-active-work) 45%, transparent);
+    background: color-mix(in oklch, var(--polychat-active-work) 12%, transparent);
+    color: var(--polychat-active-work);
   }
   .polychat-experience-training-status[data-tone="success"] {
-    border-color: #86efac;
-    background: #f0fdf4;
-    color: #15803d;
+    border-color: color-mix(in oklch, var(--polychat-success) 45%, transparent);
+    background: color-mix(in oklch, var(--polychat-success) 12%, transparent);
+    color: var(--polychat-success);
   }
   .polychat-experience-training-status[data-tone="warning"] {
-    border-color: #fcd34d;
-    background: #fffbeb;
-    color: #a16207;
+    border-color: color-mix(in oklch, var(--polychat-attention) 45%, transparent);
+    background: color-mix(in oklch, var(--polychat-attention) 12%, transparent);
+    color: var(--polychat-attention);
   }
   .polychat-experience-training-status[data-tone="danger"] {
-    border-color: #fca5a5;
-    background: #fef2f2;
-    color: #b91c1c;
-  }
-  .dark .polychat-experience-content > section,
-  .dark .polychat-experience-media-preview,
-  [data-polychat-theme="dark"] .polychat-experience-content > section,
-  [data-polychat-theme="dark"] .polychat-experience-media-preview {
-    border-color: #3f3f46;
+    border-color: color-mix(in oklch, var(--polychat-failure) 45%, transparent);
+    background: color-mix(in oklch, var(--polychat-failure) 12%, transparent);
+    color: var(--polychat-failure);
   }
 }

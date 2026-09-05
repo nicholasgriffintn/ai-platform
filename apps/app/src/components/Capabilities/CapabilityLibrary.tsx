@@ -63,7 +63,7 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
           title={title}
           actionContent={<CapabilityAddMenu choices={authoring.addChoices} />}
         />
-        <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</p>
+        <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
         <CapabilityFilters
           categories={controller.filters.categories}
           category={controller.filters.category}
@@ -74,7 +74,7 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
           query={controller.filters.query}
         />
         {mutationError && !isAuthenticationError(mutationError) && (
-          <p role="alert" className="mb-4 text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="mb-4 text-sm text-failure">
             {mutationError.message}
           </p>
         )}
@@ -94,7 +94,7 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
           />
         ) : controller.catalog.groups.length === 0 ? (
           <EmptyState
-            icon={<SearchX size={24} className="text-zinc-400" />}
+            icon={<SearchX size={24} className="text-muted-foreground" />}
             title="No matching capabilities"
             message="Try another search, type, or category."
             className="min-h-[240px]"
@@ -200,7 +200,7 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
         onConfirm={authoring.deletion.confirm}
       >
         {authoring.deletion.error && (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="text-sm text-failure">
             {authoring.deletion.error.message}
           </p>
         )}

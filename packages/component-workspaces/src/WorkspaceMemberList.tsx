@@ -58,14 +58,16 @@ export function WorkspaceMemberList({
         return (
           <div
             key={member.userId}
-            className="flex items-center gap-4 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
+            className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-0"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold dark:bg-zinc-800">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-elevated text-sm font-semibold">
               {(member.name || member.email).slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{member.name || member.email}</p>
-              {member.name && <p className="truncate text-xs text-zinc-500">{member.email}</p>}
+              {member.name && (
+                <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+              )}
             </div>
             {isManageable ? (
               <FormSelect
@@ -81,7 +83,7 @@ export function WorkspaceMemberList({
                 {viewerRole === "owner" ? <option value="admin">Admin</option> : null}
               </FormSelect>
             ) : (
-              <span className="flex items-center gap-1 rounded-full border border-zinc-200 px-2.5 py-1 text-xs capitalize text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+              <span className="flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs capitalize text-muted-foreground">
                 {member.role === "owner" && <ShieldCheck size={13} />}
                 {member.role}
               </span>
@@ -135,16 +137,16 @@ export function WorkspaceInvitationList({
         {invitations.map((invite) => (
           <div
             key={invite.id}
-            className="flex items-center gap-4 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
+            className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-0"
           >
-            <Link2 size={17} className="text-zinc-400" />
+            <Link2 size={17} className="text-muted-foreground" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{invite.email}</p>
-              <p className="flex items-center gap-1 text-xs text-zinc-500">
+              <p className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock3 size={12} /> Expires {new Date(invite.expiresAt).toLocaleDateString()}
               </p>
             </div>
-            <span className="text-xs capitalize text-zinc-500">{invite.role}</span>
+            <span className="text-xs capitalize text-muted-foreground">{invite.role}</span>
             <Button
               type="button"
               size="sm"

@@ -18,11 +18,13 @@ import type {
   Message,
 } from "~/types";
 
+import type { RecoveryRequestContext } from "./recovery-telemetry";
 import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
 import {
   ChatService,
   type ConversationUpdateRequest,
+  type GetChatOptions,
   type StreamChatCompletionsParams,
 } from "./services/chat-service";
 import { ResearchService } from "./services/research-service";
@@ -82,10 +84,7 @@ class ApiService {
     return this.chatService.setAllConversationsArchived(options);
   };
 
-  getChat = (
-    completion_id: string,
-    options?: { refreshPending?: boolean; messageLimit?: number },
-  ): Promise<Conversation> => {
+  getChat = (completion_id: string, options?: GetChatOptions): Promise<Conversation> => {
     return this.chatService.getChat(completion_id, options);
   };
 
@@ -104,7 +103,8 @@ class ApiService {
     return this.chatService.cancelChatCompletion(completion_id);
   }
 
-  getChatRun = (runId: string) => this.chatService.getChatRun(runId);
+  getChatRun = (runId: string, recovery?: RecoveryRequestContext) =>
+    this.chatService.getChatRun(runId, recovery);
 
   getChatRunSnapshot = (runId: string) => this.chatService.getChatRunSnapshot(runId);
 
@@ -293,6 +293,10 @@ class ApiService {
 
   fetchModels = (): Promise<ModelConfig> => {
     return this.userService.fetchModels();
+  };
+
+  fetchModelCatalogue = (): Promise<ModelConfig> => {
+    return this.userService.fetchModelCatalogue();
   };
 
   fetchTools = (): Promise<Tool[]> => {

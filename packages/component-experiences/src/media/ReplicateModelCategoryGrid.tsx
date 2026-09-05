@@ -21,9 +21,7 @@ export function ReplicateModelCategoryGrid<TModel extends { id: string }>({
         <div key={category} className="space-y-6 mb-8">
           <h2
             data-category={category}
-            className={cn(
-              "text-xl font-semibold text-zinc-800 dark:text-zinc-200 border-b border-zinc-200 dark:border-zinc-700 pb-2",
-            )}
+            className={cn("text-xl font-semibold text-foreground border-b border-border pb-2")}
           >
             {category}
           </h2>

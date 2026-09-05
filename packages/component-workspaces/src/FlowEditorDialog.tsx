@@ -136,13 +136,13 @@ export function FlowEditorDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800 dark:bg-zinc-900/50">
+          <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface-elevated p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-sm font-medium text-foreground">
                 {agents.length} attached agent{agents.length === 1 ? "" : "s"} · {skills.length}{" "}
                 attached skill{skills.length === 1 ? "" : "s"}
               </p>
-              <p className="mt-0.5 text-xs text-zinc-500">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 Add agents and skills through project Capabilities, where you can also build a new
                 agent for this project.
               </p>
@@ -171,13 +171,10 @@ export function FlowEditorDialog({
 
           <div className="space-y-3">
             {stages.map((stage, index) => (
-              <section
-                key={stage.id}
-                className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800"
-              >
-                <div className="flex items-center justify-between gap-3 border-b border-zinc-200 bg-zinc-50/70 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/40">
+              <section key={stage.id} className="overflow-hidden rounded-xl border border-border">
+                <div className="flex items-center justify-between gap-3 border-b border-border bg-surface-elevated/70 px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950 text-xs font-semibold text-white dark:bg-white dark:text-zinc-950">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background text-xs font-semibold">
                       {index + 1}
                     </span>
                     <p className="text-sm font-semibold">{stage.name || "New stage"}</p>
@@ -247,7 +244,7 @@ export function FlowEditorDialog({
                     </div>
 
                     <div className="space-y-1.5">
-                      <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      <span className="text-sm font-medium text-foreground">
                         Stage instructions
                       </span>
                       <Textarea
@@ -262,10 +259,8 @@ export function FlowEditorDialog({
                     </div>
 
                     <fieldset>
-                      <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                        Skills
-                      </legend>
-                      <p className="mt-0.5 text-xs text-zinc-500">
+                      <legend className="text-sm font-medium text-foreground">Skills</legend>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         Load any combination of attached skills for this stage.
                       </p>
                       {skills.length > 0 ? (
@@ -276,7 +271,7 @@ export function FlowEditorDialog({
                             return (
                               <label
                                 key={skill.id}
-                                className="flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-200 px-3 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60"
+                                className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:bg-surface-elevated"
                               >
                                 <input
                                   type="checkbox"
@@ -295,14 +290,14 @@ export function FlowEditorDialog({
                           })}
                         </div>
                       ) : (
-                        <p className="mt-2 rounded-lg border border-dashed border-zinc-300 px-3 py-2 text-xs text-zinc-500 dark:border-zinc-700">
+                        <p className="mt-2 rounded-lg border border-dashed border-border-strong px-3 py-2 text-xs text-muted-foreground">
                           No skills are attached to this project yet.
                         </p>
                       )}
                     </fieldset>
                   </div>
 
-                  <div className="space-y-4 rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900/60">
+                  <div className="space-y-4 rounded-lg bg-surface-elevated p-3">
                     <FormSelect
                       label="Operating mode"
                       value={stage.mode ?? ""}
@@ -335,14 +330,14 @@ export function FlowEditorDialog({
                     </FormSelect>
 
                     <fieldset>
-                      <legend className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      <legend className="text-xs font-medium text-muted-foreground">
                         Require approval before
                       </legend>
                       <div className="mt-2 space-y-1.5">
                         {approvalOptionsForStage(stage).map(({ permission, label }) => (
                           <label
                             key={permission}
-                            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-white dark:hover:bg-zinc-800"
+                            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-surface"
                           >
                             <input
                               type="checkbox"
@@ -379,7 +374,7 @@ export function FlowEditorDialog({
           </Button>
 
           {errorMessage ? (
-            <p role="alert" className="text-sm text-red-600">
+            <p role="alert" className="text-sm text-failure">
               {errorMessage}
             </p>
           ) : null}

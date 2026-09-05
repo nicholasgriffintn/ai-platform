@@ -12,7 +12,7 @@ describe("TaskNotificationRepository registrations", () => {
       id: "registration-existing",
       user_id: 7,
       installation_id: "installation-1",
-      platform: "ios",
+      platform: "web",
       endpoint_hash: "stored-hash",
       destination_json: "{}",
       state: "registered",
@@ -44,14 +44,22 @@ describe("TaskNotificationRepository registrations", () => {
     const repository = new TaskNotificationRepository(env);
 
     await repository.upsertRegistration(7, {
-      platform: "ios",
+      platform: "web",
       installationId: "installation-1",
-      token: "a".repeat(64),
+      subscription: {
+        endpoint: "https://push.example.test/a",
+        expirationTime: null,
+        keys: { p256dh: "public-key-a", auth: "auth-a" },
+      },
     });
     await repository.upsertRegistration(7, {
-      platform: "ios",
+      platform: "web",
       installationId: "installation-1",
-      token: "b".repeat(64),
+      subscription: {
+        endpoint: "https://push.example.test/b",
+        expirationTime: null,
+        keys: { p256dh: "public-key-b", auth: "auth-b" },
+      },
     });
 
     const inserts = statements.filter(({ query }) =>
@@ -69,18 +77,18 @@ describe("TaskNotificationRepository registrations", () => {
     const latestDestination = await decryptJsonPayload({
       keyMaterial: env.PRIVATE_KEY ?? "",
       encrypted: latestEncrypted,
-      additionalData: "7:ios:installation-1",
+      additionalData: "7:web:installation-1",
     });
 
     expect(database.batch).toHaveBeenCalledTimes(2);
     expect(endpointHashes).toHaveLength(2);
     expect(endpointHashes[0]).not.toBe(endpointHashes[1]);
-    expect(String(inserts[0].values[5])).not.toContain("a".repeat(64));
-    expect(String(inserts[1].values[5])).not.toContain("b".repeat(64));
+    expect(String(inserts[0].values[5])).not.toContain("https://push.example.test/a");
+    expect(String(inserts[1].values[5])).not.toContain("https://push.example.test/b");
     expect(latestDestination).toEqual({
-      endpoint: "b".repeat(64),
-      p256dh: null,
-      authSecret: null,
+      endpoint: "https://push.example.test/b",
+      p256dh: "public-key-b",
+      authSecret: "auth-b",
     });
     expect(statements.filter(({ query }) => query.startsWith("DELETE FROM"))).toHaveLength(2);
   });

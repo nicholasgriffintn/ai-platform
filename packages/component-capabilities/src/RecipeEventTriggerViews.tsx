@@ -84,7 +84,7 @@ export function TriggerList({
 }) {
   if (triggers.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+      <p className="rounded-lg border border-dashed border-border-strong px-4 py-6 text-center text-sm text-muted-foreground">
         No event triggers yet.
       </p>
     );
@@ -103,14 +103,12 @@ export function TriggerList({
         return (
           <li
             key={trigger.id}
-            className="rounded-lg border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-800 dark:bg-zinc-900"
+            className="rounded-lg border border-border bg-surface-elevated/70 p-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                  {eventName}
-                </p>
-                <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="truncate text-sm font-medium text-foreground">{eventName}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   {provider?.name ?? "Connected integration"}
                 </p>
               </div>

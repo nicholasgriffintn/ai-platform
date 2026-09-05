@@ -5,12 +5,21 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
   "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "*.preview.polychat.app/*",
+      "zone_name": "polychat.app"
+    }
+  ],
   "dev": {
     "port": 8788
   },
   "vars": {
+    "APP_BASE_URL": "https://polychat.app",
+    "ENV": "production",
     "SANDBOX_TRANSPORT": "rpc",
-    "SANDBOX_INSTANCE_TYPE": "basic"
+    "SANDBOX_INSTANCE_TYPE": "basic",
+    "SANDBOX_PREVIEW_HOST": "preview.polychat.app"
   },
   "placement": {
     "mode": "smart"
@@ -31,6 +40,14 @@
     {
       "binding": "POLYCHAT_API",
       "service": "assistant"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BACKUP_BUCKET",
+      "bucket_name": "assistant-private-assets",
+      "preview_bucket_name": "assistant-private-assets",
+      "remote": true
     }
   ],
   "containers": [

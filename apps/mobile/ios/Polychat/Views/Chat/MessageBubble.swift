@@ -27,7 +27,10 @@ struct MessageBubble: View {
                     HStack(spacing: 8) {
                         ProgressView()
                             .scaleEffect(0.8)
-                        Text("Generating response...")
+                        Text(
+                            conversationManager.turnActivityLabel(for: message.completionId)
+                                ?? "Generating response..."
+                        )
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }

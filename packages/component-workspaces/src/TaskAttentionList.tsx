@@ -25,26 +25,26 @@ const KIND_LABELS: Record<ProjectTaskAttentionKind, string> = {
 
 function kindIcon(kind: ProjectTaskAttentionKind) {
   if (kind === "input") {
-    return <CircleQuestionMark className="text-amber-500" size={16} />;
+    return <CircleQuestionMark className="text-attention" size={16} />;
   }
 
   if (kind === "approval") {
-    return <ShieldQuestion className="text-amber-500" size={16} />;
+    return <ShieldQuestion className="text-attention" size={16} />;
   }
 
   if (kind === "review") {
-    return <CheckCircle2 className="text-emerald-500" size={16} />;
+    return <CheckCircle2 className="text-success" size={16} />;
   }
 
   if (kind === "blocked") {
-    return <AlertTriangle className="text-amber-500" size={16} />;
+    return <AlertTriangle className="text-attention" size={16} />;
   }
 
   if (kind === "completion") {
-    return <CheckCircle2 className="text-emerald-500" size={16} />;
+    return <CheckCircle2 className="text-success" size={16} />;
   }
 
-  return <UserCheck className="text-blue-500" size={16} />;
+  return <UserCheck className="text-active-work" size={16} />;
 }
 
 export interface TaskAttentionListProps {
@@ -65,7 +65,7 @@ export function TaskAttentionList({
   if (items.length === 0) {
     return (
       <EmptyState
-        icon={<Inbox className="text-zinc-400" size={24} />}
+        icon={<Inbox className="text-muted-foreground" size={24} />}
         title="Nothing waiting on you"
         message={emptyMessage ?? "When a task needs an approval or a decision, it lands here."}
         className="min-h-[200px]"
@@ -78,7 +78,7 @@ export function TaskAttentionList({
       {items.map((item) => (
         <li
           key={item.id}
-          className="flex items-start gap-2 rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900"
+          className="flex items-start gap-2 rounded-lg border border-border bg-surface p-3"
         >
           <Link
             href={itemHref(item)}
@@ -93,14 +93,14 @@ export function TaskAttentionList({
                   <Badge variant="secondary" className="text-[11px]">
                     {KIND_LABELS[item.kind]}
                   </Badge>
-                  <span className="truncate text-xs text-zinc-500">{item.projectName}</span>
-                  {!item.isRead && <span className="size-2 rounded-full bg-blue-500" />}
+                  <span className="text-muted-foreground truncate text-xs">{item.projectName}</span>
+                  {!item.isRead && <span className="size-2 rounded-full bg-active-work" />}
                 </div>
-                <p className="mt-1 line-clamp-2 text-sm font-medium text-zinc-950 group-hover:underline dark:text-white">
+                <p className="text-foreground mt-1 line-clamp-2 text-sm font-medium group-hover:underline">
                   {item.objective}
                 </p>
                 {item.detail && (
-                  <p className="mt-1 line-clamp-2 text-xs text-zinc-500">{item.detail}</p>
+                  <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{item.detail}</p>
                 )}
               </div>
             </div>

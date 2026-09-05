@@ -1,6 +1,8 @@
 import { Button, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import { useState } from "react";
 
+import { SettingsSection } from "../SettingsSection";
+
 export interface ChatHistoryControlsProps {
   isExporting?: boolean;
   isDeletingLocal?: boolean;
@@ -21,50 +23,53 @@ export function ChatHistoryControls({
   const [confirming, setConfirming] = useState<"local" | "remote" | null>(null);
 
   return (
-    <div>
-      <div className="text-zinc-500 dark:text-zinc-400">
-        <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-4">
-          Message History
-        </h3>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-          Export your history as JSON.
-        </p>
-        <div className="flex gap-2 mb-4">
+    <div className="space-y-6">
+      <SettingsSection title="Message History" description="Export your history as JSON.">
+        <div className="space-y-2">
           <Button variant="primary" onClick={onExport} disabled={isExporting}>
             {isExporting ? "Exporting..." : "Export JSON"}
           </Button>
+          {isExporting && (
+            <p className="text-muted-foreground text-sm">
+              Exporting please do not close the page...
+            </p>
+          )}
         </div>
-        {isExporting && (
-          <div className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-            Exporting please do not close the page...
+      </SettingsSection>
+
+      <SettingsSection title="Danger Zone" description="Deleting your history cannot be undone.">
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <p className="text-muted-foreground text-sm">
+              Permanently delete your history from your local device:
+            </p>
+            <Button
+              variant="destructive"
+              onClick={() => setConfirming("local")}
+              disabled={isDeletingLocal || isExporting}
+            >
+              Delete all local chats
+            </Button>
           </div>
-        )}
-        <div className="border-b border-zinc-200 dark:border-zinc-800 mb-4" />
-        <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-4">Danger Zone</h3>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-          Permanently delete your history from your local device:
-        </p>
-        <Button
-          variant="destructive"
-          onClick={() => setConfirming("local")}
-          disabled={isDeletingLocal || isExporting}
-        >
-          Delete all local chats
-        </Button>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-          Permanently delete your history from our servers*:
-        </p>
-        <Button
-          variant="destructive"
-          onClick={() => setConfirming("remote")}
-          disabled={isDeletingRemote || isExporting}
-        >
-          Delete all remote chats
-        </Button>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-4">
-          *Please note: The retention policies of our hosting partners may vary.
-        </p>
-      </div>
+
+          <div className="space-y-2">
+            <p className="text-muted-foreground text-sm">
+              Permanently delete your history from our servers*:
+            </p>
+            <Button
+              variant="destructive"
+              onClick={() => setConfirming("remote")}
+              disabled={isDeletingRemote || isExporting}
+            >
+              Delete all remote chats
+            </Button>
+          </div>
+
+          <p className="text-muted-foreground text-sm">
+            *Please note: The retention policies of our hosting partners may vary.
+          </p>
+        </div>
+      </SettingsSection>
 
       <ConfirmationDialog
         open={confirming === "local"}

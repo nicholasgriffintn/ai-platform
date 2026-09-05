@@ -43,17 +43,15 @@ export function ScheduledRecipeList({
   onStopSchedule,
 }: ScheduledRecipeListProps) {
   const content = (
-    <section
-      className={`space-y-4 p-5 ${embedded ? "border-t border-zinc-100 dark:border-zinc-800" : ""}`}
-    >
+    <section className={`space-y-4 p-5 ${embedded ? "border-t border-border" : ""}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="rounded-lg bg-amber-50 p-2 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+          <div className="rounded-lg bg-attention/12 p-2 text-attention">
             <CalendarClock size={17} />
           </div>
           <div>
             <h2 className="text-sm font-semibold">Scheduled recipes</h2>
-            <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               Runs appear as conversations in this project.
             </p>
           </div>
@@ -73,11 +71,11 @@ export function ScheduledRecipeList({
           {entries.map((entry) => (
             <li
               key={entry.id}
-              className="flex items-center gap-3 rounded-lg border border-zinc-100 px-3 py-2.5 dark:border-zinc-800"
+              className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{entry.title}</p>
-                <p className="truncate text-xs text-zinc-500">
+                <p className="truncate text-xs text-muted-foreground">
                   {entry.cronExpression} · {entry.isPaused ? "paused" : "active"} ·{" "}
                   {entry.memberName}
                 </p>
@@ -116,7 +114,7 @@ export function ScheduledRecipeList({
                       {entry.isPaused ? "Resume schedule" : "Pause schedule"}
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      className="text-red-700 dark:text-red-300"
+                      className="text-failure"
                       icon={<CalendarX2 size={15} />}
                       onClick={() => onStopSchedule(entry.id)}
                     >
@@ -129,7 +127,7 @@ export function ScheduledRecipeList({
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-zinc-500">No recipes are scheduled for this project.</p>
+        <p className="text-sm text-muted-foreground">No recipes are scheduled for this project.</p>
       )}
     </section>
   );

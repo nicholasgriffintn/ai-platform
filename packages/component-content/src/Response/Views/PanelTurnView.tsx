@@ -29,15 +29,13 @@ export function PanelTurnView({
 
   return (
     <div className={cn("space-y-1", embedded ? "" : "my-2")}>
-      <div className="flex flex-wrap items-baseline gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-        <span className="font-medium text-zinc-700 dark:text-zinc-200">
-          {data.memberName ?? fallbackName}
-        </span>
+      <div className="flex flex-wrap items-baseline gap-2 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">{data.memberName ?? fallbackName}</span>
         {data.memberRole && <span>{data.memberRole}</span>}
         {data.model && <span className="font-mono">{data.model}</span>}
         {typeof data.turn === "number" && <span>Turn {data.turn}</span>}
       </div>
-      <MemoizedMarkdown className="max-w-none text-sm text-zinc-800 dark:text-zinc-100">
+      <MemoizedMarkdown className="max-w-none text-sm text-foreground">
         {data.content}
       </MemoizedMarkdown>
     </div>

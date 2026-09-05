@@ -12,6 +12,8 @@ import {
   workspaceDetailSchema,
   workspaceInvitationDeliverySchema,
   workspaceListResponseSchema,
+  workAttentionQuerySchema,
+  workAttentionResponseSchema,
   workspaceAuditListQuerySchema,
   workspaceAuditListResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -19,6 +21,7 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/lib/http/routeBuilder";
+import { listWorkAttention } from "~/services/attention";
 import { listWorkspaceAudit } from "~/services/audit";
 import { listProjectTaskAttention } from "~/services/project-tasks";
 import {
@@ -62,16 +65,27 @@ addRoute(app, "post", "/", {
 
 addRoute(app, "get", "/attention", {
   auth: true,
-  tags: ["workspaces", "tasks"],
-  summary: "List task work waiting on you",
+  tags: ["workspaces", "attention"],
+  summary: "List operational work across the signed-in user's workspaces",
   description:
-    "Aggregates blocked, in-review, and assigned tasks across every workspace you belong to.",
-  querySchema: z.object({ limit: z.coerce.number().int().min(1).max(100).optional() }),
+    "Derives filtered task interactions and sandbox run states through current membership.",
+  querySchema: workAttentionQuerySchema,
   responses: {
     200: {
-      description: "Work waiting on you",
-      schema: projectTaskAttentionResponseSchema,
+      description: "Filtered operational work",
+      schema: workAttentionResponseSchema,
     },
+  },
+  handler: ({ serviceContext, query }) => listWorkAttention(serviceContext, query),
+});
+
+addRoute(app, "get", "/attention/tasks", {
+  auth: true,
+  tags: ["workspaces", "tasks"],
+  summary: "List tasks waiting on the signed-in user",
+  querySchema: z.object({ limit: z.coerce.number().int().min(1).max(100).optional() }),
+  responses: {
+    200: { description: "Tasks waiting on you", schema: projectTaskAttentionResponseSchema },
   },
   handler: ({ serviceContext, query }) =>
     listProjectTaskAttention(serviceContext, { limit: query.limit }),

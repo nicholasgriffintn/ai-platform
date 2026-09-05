@@ -13,7 +13,7 @@ export function ProjectOutputs({
   return (
     <PageShell.Content className="max-w-6xl">
       <PageShell.Header title="Outputs" />
-      <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
         Saved results created by this project’s capabilities.
       </p>
       <ResponsesExperience

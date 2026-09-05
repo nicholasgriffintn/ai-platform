@@ -31,26 +31,26 @@ export function StrudelPatternGrid({ patterns, newPatternHref }: StrudelPatternG
             href={pattern.href}
             className="group no-underline hover:!no-underline"
           >
-            <Card className="h-full gap-4 p-5 shadow-none transition hover:border-blue-500/60 dark:hover:border-blue-400/60">
+            <Card className="h-full gap-4 p-5 shadow-none transition hover:border-active-work/60">
               <div className="flex items-center gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-300">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-active-work/10 text-active-work">
                   <Music4 className="h-5 w-5" />
                 </span>
                 <div>
-                  <h2 className="font-semibold text-zinc-950 group-hover:underline dark:text-white">
+                  <h2 className="font-semibold text-foreground group-hover:underline">
                     {pattern.name}
                   </h2>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-muted-foreground">
                     Updated {new Date(pattern.updatedAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
               {pattern.description && (
-                <p className="line-clamp-2 text-sm leading-6 text-zinc-500">
+                <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
                   {pattern.description}
                 </p>
               )}
-              <pre className="max-h-40 overflow-hidden rounded-lg bg-zinc-100 p-3 text-xs leading-relaxed text-zinc-500 dark:bg-zinc-800">
+              <pre className="bg-surface-elevated text-muted-foreground max-h-40 overflow-hidden rounded-lg p-3 text-xs leading-relaxed">
                 {pattern.code}
               </pre>
               {pattern.tags?.length ? (

@@ -27,6 +27,7 @@ export interface TurnTransportContext {
   shouldStop?: () => boolean;
   deferOutputUntilValidated?: boolean;
   retry?: ProviderRetryExecutionOptions;
+  step?: number;
 }
 
 async function requestProviderResponse(
@@ -116,6 +117,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
           userId: context.userId,
           serviceContext: context.serviceContext,
           shouldStop: context.shouldStop,
+          step: context.step,
         },
       );
 
@@ -146,6 +148,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         error: streamed.error,
         status: streamed.interrupted ? "incomplete" : undefined,
         stopped: streamed.stopped,
+        activityStreamed: !context.deferOutputUntilValidated,
       };
     },
   };

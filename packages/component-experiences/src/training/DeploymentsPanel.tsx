@@ -126,22 +126,19 @@ export function DeploymentsPanel({
                     const key = trainingRecordKey(deployment);
 
                     return (
-                      <div
-                        key={key}
-                        className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800"
-                      >
+                      <div key={key} className="rounded-md border border-border p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <div className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                            <div className="font-medium text-foreground truncate">
                               {deployment.deploymentName}
                             </div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                            <div className="text-xs text-muted-foreground">
                               {deployment.provider} · {deployment.modelId}
                               {deployment.deploymentVersion
                                 ? ` · ${deployment.deploymentVersion}`
                                 : ""}
                             </div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                            <div className="text-xs text-muted-foreground">
                               {formatDeploymentTarget(deployment.deploymentTarget)}
                             </div>
                           </div>
@@ -152,59 +149,55 @@ export function DeploymentsPanel({
 
                         <div className="mt-4 space-y-2 text-sm">
                           <div>
-                            <span className="text-zinc-500 dark:text-zinc-400">
+                            <span className="text-muted-foreground">
                               {deployment.deploymentTarget === "bedrock-import"
                                 ? "Import job"
                                 : "Endpoint"}
                             </span>
-                            <div className="truncate text-zinc-800 dark:text-zinc-200">
+                            <div className="truncate text-foreground">
                               {deployment.endpointName}
                             </div>
                           </div>
                           {deployment.chatModelId && (
                             <div>
-                              <span className="text-zinc-500 dark:text-zinc-400">Chat model</span>
-                              <div className="truncate text-zinc-800 dark:text-zinc-200">
+                              <span className="text-muted-foreground">Chat model</span>
+                              <div className="truncate text-foreground">
                                 {deployment.chatModelId}
                               </div>
                             </div>
                           )}
                           <div>
-                            <span className="text-zinc-500 dark:text-zinc-400">Model</span>
-                            <div className="truncate text-zinc-800 dark:text-zinc-200">
-                              {deployment.modelName}
-                            </div>
+                            <span className="text-muted-foreground">Model</span>
+                            <div className="truncate text-foreground">{deployment.modelName}</div>
                           </div>
                           <div>
-                            <span className="text-zinc-500 dark:text-zinc-400">
-                              Endpoint config
-                            </span>
-                            <div className="truncate text-zinc-800 dark:text-zinc-200">
+                            <span className="text-muted-foreground">Endpoint config</span>
+                            <div className="truncate text-foreground">
                               {deployment.endpointConfigName}
                             </div>
                           </div>
                           <div>
-                            <span className="text-zinc-500 dark:text-zinc-400">Created</span>
-                            <div className="text-zinc-800 dark:text-zinc-200">
+                            <span className="text-muted-foreground">Created</span>
+                            <div className="text-foreground">
                               {formatTrainingDate(deployment.createdAt)}
                             </div>
                           </div>
                           {deployment.modelArtifactsS3Uri && (
                             <div>
-                              <span className="text-zinc-500 dark:text-zinc-400">Artifacts</span>
-                              <div className="truncate text-zinc-800 dark:text-zinc-200">
+                              <span className="text-muted-foreground">Artifacts</span>
+                              <div className="truncate text-foreground">
                                 {deployment.modelArtifactsS3Uri}
                               </div>
                             </div>
                           )}
                           {deployment.failureReason && (
-                            <p className="rounded-md bg-red-50 p-2 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">
+                            <p className="rounded-md bg-failure/12 p-2 text-sm text-failure">
                               {deployment.failureReason}
                             </p>
                           )}
                         </div>
 
-                        <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+                        <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-border pt-3">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -228,7 +221,7 @@ export function DeploymentsPanel({
                 </div>
               ) : (
                 <EmptyState
-                  icon={<Server className="h-8 w-8 text-zinc-400" />}
+                  icon={<Server className="h-8 w-8 text-muted-foreground" />}
                   title="No deployments yet"
                   message="Deploy a completed SageMaker training job when model artifacts are ready."
                 />

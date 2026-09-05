@@ -8,7 +8,7 @@ import type { CanvasStudioState } from "./controller";
 export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState }) {
   return (
     <div className="flex h-full min-h-0 flex-col p-2">
-      <div className="shrink-0 grid grid-cols-[repeat(3,minmax(0,1fr))] rounded-xl border border-zinc-200 p-1 dark:border-zinc-700">
+      <div className="border-border bg-surface shrink-0 grid grid-cols-[repeat(3,minmax(0,1fr))] rounded-xl border p-1">
         <button
           type="button"
           aria-label="Image generation"
@@ -17,8 +17,8 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
           className={cn(
             "box-border flex h-10 w-full min-w-0 items-center justify-center rounded-lg border border-transparent p-2 transition",
             canvas.mode === "image"
-              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-              : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+              ? "bg-creative/15 text-creative"
+              : "text-muted-foreground hover:bg-selection/60 hover:text-foreground",
           )}
         >
           <Image className="h-5 w-5" />
@@ -31,8 +31,8 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
           className={cn(
             "box-border flex h-10 w-full min-w-0 items-center justify-center rounded-lg border border-transparent p-2 transition",
             canvas.mode === "video"
-              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-              : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+              ? "bg-creative/15 text-creative"
+              : "text-muted-foreground hover:bg-selection/60 hover:text-foreground",
           )}
         >
           <Film className="h-5 w-5" />
@@ -45,8 +45,8 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
           className={cn(
             "box-border flex h-10 w-full min-w-0 items-center justify-center rounded-lg border border-transparent p-2 transition",
             canvas.mode === "drawing"
-              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-              : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+              ? "bg-creative/15 text-creative"
+              : "text-muted-foreground hover:bg-selection/60 hover:text-foreground",
           )}
         >
           <Brush className="h-5 w-5" />
@@ -63,27 +63,27 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
         <>
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pt-4 pb-4">
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
                 Prompt
               </label>
               <textarea
                 value={canvas.prompt}
                 onChange={(event) => canvas.setPrompt(event.target.value)}
                 rows={4}
-                className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                className="border-border bg-surface text-foreground focus:border-active-work w-full rounded-xl border px-3 py-2 text-sm outline-none"
                 placeholder="Describe what to generate..."
               />
             </div>
 
             {canvas.mediaMode === "image" && (
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
                   Negative Prompt
                 </label>
                 <input
                   value={canvas.negativePrompt}
                   onChange={(event) => canvas.setNegativePrompt(event.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                  className="border-border bg-surface text-foreground focus:border-active-work w-full rounded-xl border px-3 py-2 text-sm outline-none"
                   placeholder="Optional"
                 />
               </div>
@@ -91,14 +91,14 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 
             {canvas.mediaMode === "image" && (
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
                   Reference Images
                 </label>
                 <textarea
                   value={canvas.referenceInput}
                   onChange={(event) => canvas.setReferenceInput(event.target.value)}
                   rows={3}
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                  className="border-border bg-surface text-foreground focus:border-active-work w-full rounded-xl border px-3 py-2 text-sm outline-none"
                   placeholder="One URL per line"
                 />
               </div>
@@ -106,21 +106,21 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
                   Models
                 </label>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="text-muted-foreground text-xs">
                   {canvas.selectedModelIds.length} selected
                 </span>
               </div>
               <input
                 value={canvas.modelSearch}
                 onChange={(event) => canvas.setModelSearch(event.target.value)}
-                className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                className="border-border bg-surface text-foreground focus:border-active-work w-full rounded-xl border px-3 py-2 text-sm outline-none"
                 placeholder="Search models"
               />
 
-              <div className="max-h-60 space-y-2 overflow-auto rounded-xl border border-zinc-200 p-2 dark:border-zinc-700">
+              <div className="border-border bg-surface max-h-60 space-y-2 overflow-auto rounded-xl border p-2">
                 {canvas.visibleModels.map((model) => {
                   const selected = canvas.selectedModelIds.includes(model.id);
 
@@ -132,8 +132,8 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
                       className={cn(
                         "w-full rounded-lg border px-3 py-2 text-left transition",
                         selected
-                          ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
-                          : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800",
+                          ? "border-active-work/50 bg-selection text-foreground"
+                          : "border-border bg-surface text-foreground hover:bg-selection/60",
                       )}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -152,7 +152,7 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
                   );
                 })}
                 {!canvas.isModelsLoading && canvas.visibleModels.length === 0 && (
-                  <p className="px-2 py-3 text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-muted-foreground px-2 py-3 text-xs">
                     No models match this filter.
                   </p>
                 )}
@@ -166,12 +166,9 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
             />
           </div>
 
-          <div className="shrink-0 space-y-2 border-t border-zinc-200/80 bg-white/95 pt-2 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
+          <div className="border-border bg-surface/95 shrink-0 space-y-2 border-t pt-2 backdrop-blur">
             {canvas.error && (
-              <p
-                role="alert"
-                className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300"
-              >
+              <p role="alert" className="bg-failure/12 text-failure rounded-lg px-3 py-2 text-xs">
                 {canvas.error instanceof Error
                   ? canvas.error.message
                   : "Could not load Canvas resources."}

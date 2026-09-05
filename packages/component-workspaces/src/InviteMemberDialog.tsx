@@ -84,22 +84,20 @@ export function InviteMemberDialog({
             ]}
           />
           {inviteUrl && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
-              <p className="mb-3 text-sm font-medium text-emerald-950 dark:text-emerald-100">
-                Invitation ready
-              </p>
+            <div className="rounded-xl border border-success/45 bg-success/12 p-4">
+              <p className="mb-3 text-sm font-medium text-success">Invitation ready</p>
               <div className="flex items-center gap-2">
                 <input
                   readOnly
                   value={inviteUrl}
-                  className="min-w-0 flex-1 rounded-md border border-emerald-200 bg-white px-2 py-1.5 text-xs dark:bg-zinc-950"
+                  className="min-w-0 flex-1 rounded-md border border-success/45 bg-surface px-2 py-1.5 text-xs"
                 />
                 {renderCopyControl(inviteUrl)}
               </div>
             </div>
           )}
           {errorMessage && (
-            <p role="alert" className="text-sm text-red-700">
+            <p role="alert" className="text-sm text-failure">
               {errorMessage}
             </p>
           )}

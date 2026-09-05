@@ -12,6 +12,7 @@ export default [
   ]),
   route("/work", "pages/work/layout.tsx", [
     index("pages/work/index.tsx"),
+    route("attention", "pages/work/attention.tsx"),
     route("invitations", "pages/work/invitations.tsx"),
     route(":workspaceId", "pages/work/workspace.tsx"),
     route(":workspaceId/members", "pages/work/members.tsx"),
@@ -33,6 +34,9 @@ export default [
     route(":workspaceId/projects/:projectId/agents/:agentId", "pages/work/project-agent.tsx"),
   ]),
   route("/pets", "pages/pets.tsx"),
+  route("/discover", "pages/discover.tsx"),
+  route("/models", "pages/models.tsx"),
+  route("/capabilities", "pages/capabilities.tsx"),
   route("/pricing", "pages/pricing.tsx"),
   route("/terms", "pages/terms.tsx"),
   route("/privacy", "pages/privacy.tsx"),

@@ -19,7 +19,10 @@ export function SidebarBackdrop({
   return (
     <button
       type="button"
-      className={cn("fixed inset-0 z-20 cursor-default bg-black/30 md:hidden", className)}
+      className={cn(
+        "bg-[var(--polychat-overlay)] fixed inset-0 z-20 cursor-default md:hidden",
+        className,
+      )}
       onClick={onClose}
       aria-label={label}
     />

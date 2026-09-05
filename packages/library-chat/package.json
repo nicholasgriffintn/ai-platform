@@ -30,6 +30,12 @@
       "import": "./dist/agent-trace-display.js",
       "require": "./dist/agent-trace-display.cjs"
     },
+    "./run-activity": {
+      "polychat-source": "./src/run-activity.ts",
+      "types": "./dist/run-activity.d.ts",
+      "import": "./dist/run-activity.js",
+      "require": "./dist/run-activity.cjs"
+    },
     "./attachments": {
       "polychat-source": "./src/attachments.ts",
       "types": "./dist/attachments.d.ts",
@@ -148,6 +154,12 @@
       "types": "./dist/response-stats.d.ts",
       "import": "./dist/response-stats.js",
       "require": "./dist/response-stats.cjs"
+    },
+    "./turn-activity": {
+      "polychat-source": "./src/turn-activity.ts",
+      "types": "./dist/turn-activity.d.ts",
+      "import": "./dist/turn-activity.js",
+      "require": "./dist/turn-activity.cjs"
     },
     "./request-options": {
       "polychat-source": "./src/request-options.ts",

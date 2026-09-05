@@ -43,20 +43,20 @@ export function RecipeConfigurationSummaryDialog({
         </DialogHeader>
 
         {orderedKeys.length ? (
-          <dl className="divide-y divide-zinc-100 overflow-hidden rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          <dl className="divide-y divide-border overflow-hidden rounded-lg border border-border">
             {orderedKeys.map((key) => (
               <div key={key} className="grid gap-1 px-4 py-3 sm:grid-cols-[130px_minmax(0,1fr)]">
-                <dt className="text-xs font-medium text-zinc-500">
+                <dt className="text-xs font-medium text-muted-foreground">
                   {fieldByKey.get(key)?.label ?? key}
                 </dt>
-                <dd className="break-words text-sm text-zinc-900 dark:text-zinc-100">
+                <dd className="break-words text-sm text-foreground">
                   {formatRecipeConfigurationSummaryValue(configuration[key])}
                 </dd>
               </div>
             ))}
           </dl>
         ) : (
-          <p className="rounded-lg border border-dashed border-zinc-200 px-4 py-5 text-sm text-zinc-500 dark:border-zinc-800">
+          <p className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
             This recipe has no saved configuration.
           </p>
         )}

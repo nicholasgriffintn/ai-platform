@@ -93,11 +93,11 @@ export function ModelSelectorPanel({
       tabIndex={-1}
       aria-modal="false"
       style={layout ? { left: `${layout.left}px`, width: `${layout.width}px` } : undefined}
-      className="absolute bottom-full left-0 z-50 mb-1 flex max-h-[70vh] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[75vh] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
+      className="border-border bg-surface-elevated absolute bottom-full left-0 z-50 mb-1 flex max-h-[70vh] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border shadow-[var(--polychat-elevated-shadow)] sm:max-h-[75vh] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
       aria-label="Model selection dialog"
     >
       {selectedTab === "models" && (
-        <div className="border-b border-zinc-200 p-2 dark:border-zinc-700">
+        <div className="border-b border-border p-2">
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="relative flex-1">
               <input
@@ -105,11 +105,11 @@ export function ModelSelectorPanel({
                 placeholder="Search models..."
                 value={searchQuery}
                 onChange={(event) => onSearchQueryChange(event.target.value)}
-                className="w-full rounded-md border border-zinc-200 bg-off-white py-2 pl-8 pr-3 text-sm text-zinc-900 placeholder:text-zinc-500 focus:border-zinc-300 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-400"
+                className="border-border bg-surface text-foreground placeholder:text-muted-foreground focus:border-active-work w-full rounded-md border py-2 pr-3 pl-8 text-sm focus:outline-none"
                 aria-label="Search models"
               />
               <Search
-                className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden="true"
               />
             </div>
@@ -122,7 +122,7 @@ export function ModelSelectorPanel({
 
                   onCapabilityChange(nextCapability);
                 }}
-                className="w-full appearance-none rounded-md border border-zinc-200 bg-off-white py-2 pl-8 pr-3 text-sm text-zinc-900 focus:border-zinc-300 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                className="border-border bg-surface text-foreground focus:border-active-work w-full appearance-none rounded-md border py-2 pr-3 pl-8 text-sm focus:outline-none"
                 aria-label="Filter by model type"
               >
                 <option value="">All model types</option>
@@ -133,7 +133,7 @@ export function ModelSelectorPanel({
                 ))}
               </select>
               <Filter
-                className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden="true"
               />
             </div>
@@ -166,7 +166,7 @@ export function ModelSelectorPanel({
                 Models
               </TabsTrigger>
             </TabsList>
-            <div className="w-full border-b border-zinc-200 dark:border-zinc-700" />
+            <div className="w-full border-b border-border" />
 
             <TabsContent value="auto" className="min-h-0 overflow-y-auto">
               <AutoModePicker
@@ -184,14 +184,14 @@ export function ModelSelectorPanel({
             {showModelSource && (
               <div>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">Model Source:</div>
-                  <div className="inline-flex items-center rounded-md bg-zinc-100 p-0.5 dark:bg-zinc-800">
+                  <div className="text-xs text-muted-foreground">Model Source:</div>
+                  <div className="bg-surface inline-flex items-center rounded-md p-0.5">
                     <button
                       type="button"
                       className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
                         chatMode === "remote"
-                          ? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
-                          : "text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100"
+                          ? "bg-selection text-foreground"
+                          : "text-muted-foreground hover:bg-selection/60 hover:text-foreground"
                       }`}
                       onClick={() => chatMode !== "remote" && onChatModeChange?.("remote")}
                       aria-pressed={chatMode === "remote"}
@@ -203,8 +203,8 @@ export function ModelSelectorPanel({
                       type="button"
                       className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
                         chatMode === "local"
-                          ? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
-                          : "text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100"
+                          ? "bg-selection text-foreground"
+                          : "text-muted-foreground hover:bg-selection/60 hover:text-foreground"
                       }`}
                       onClick={() => chatMode !== "local" && onChatModeChange?.("local")}
                       aria-pressed={chatMode === "local"}

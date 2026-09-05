@@ -170,6 +170,7 @@ export async function runQualityGate(params: {
       name: toCheckName(command, index),
       command,
       passed: result.success,
+      exitCode: result.exitCode,
       output: toCheckOutput(result.stdout, result.stderr),
     };
 

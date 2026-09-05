@@ -97,7 +97,7 @@ export function ShareAgentModal({
         </DialogHeader>
 
         {error && (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="text-sm text-failure">
             {error.message}
           </p>
         )}
@@ -108,10 +108,10 @@ export function ShareAgentModal({
           </LoadingRegion>
         ) : listing ? (
           <>
-            <div className="space-y-2 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+            <div className="space-y-2 rounded-lg border border-border p-4">
               <p className="text-sm font-medium">{listing.name}</p>
               {listing.description && (
-                <p className="text-sm text-zinc-500">{listing.description}</p>
+                <p className="text-sm text-muted-foreground">{listing.description}</p>
               )}
               {(listing.category || listedTags.length > 0) && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
@@ -127,7 +127,7 @@ export function ShareAgentModal({
                   ))}
                 </div>
               )}
-              <p className="pt-1 text-xs text-zinc-500">
+              <p className="pt-1 text-xs text-muted-foreground">
                 Installed {listing.usage_count ?? 0} times. Copies people already installed stay
                 with them.
               </p>

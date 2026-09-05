@@ -43,6 +43,12 @@ export interface GlobalConversationSearchRow {
   project_name: string | null;
   workspace_id: string | null;
   workspace_name: string | null;
+  is_pinned: number;
+  is_unread: number;
+  snoozed_until: string | null;
+  snoozed_next_response_at: string | null;
+  next_response_arrived: number;
+  labels: string;
 }
 
 export class ConversationRepository extends BaseRepository {
@@ -165,7 +171,22 @@ export class ConversationRepository extends BaseRepository {
       updatedAfter,
     } = options;
     const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
-    const whereClauses = ["c.user_id = ?", "c.project_id IS NULL"];
+    const whereClauses = [
+      "c.user_id = ?",
+      "c.project_id IS NULL",
+      `NOT (
+        COALESCE(datetime(state.snoozed_until) > datetime('now'), 0)
+        OR (
+          state.snoozed_next_response_at IS NOT NULL
+          AND NOT EXISTS (
+            SELECT 1 FROM message response
+            WHERE response.conversation_id = c.id
+              AND response.role = 'assistant'
+              AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
+          )
+        )
+      )`,
+    ];
     const values: unknown[] = [userId];
 
     if (archiveFilter === "active") {
@@ -191,9 +212,17 @@ export class ConversationRepository extends BaseRepository {
     const whereClause = whereClauses.join(" AND ");
     const orderByClause = `${sortBy === "created" ? "c.created_at" : "c.updated_at"} DESC, c.id DESC`;
 
-    const countQuery = `SELECT COUNT(*) as total FROM conversation c WHERE ${whereClause}`;
+    const countQuery = `SELECT COUNT(*) as total
+      FROM conversation c
+      LEFT JOIN conversation_user_state state
+        ON state.conversation_id = c.id AND state.user_id = ?
+      WHERE ${whereClause}`;
 
-    const countResult = await this.runQuery<{ total: number }>(countQuery, values, true);
+    const countResult = await this.runQuery<{ total: number }>(
+      countQuery,
+      [userId, ...values],
+      true,
+    );
 
     const total = countResult?.total || 0;
     const totalPages = Math.ceil(total / safeLimit);
@@ -201,30 +230,82 @@ export class ConversationRepository extends BaseRepository {
     const listQuery =
       sortBy === "title"
         ? `
-        SELECT c.*
+        SELECT c.*,
+          COALESCE(state.is_pinned, 0) AS is_pinned,
+          COALESCE(state.is_unread, 0) AS is_unread,
+          state.snoozed_until,
+          state.snoozed_next_response_at,
+          EXISTS (
+            SELECT 1 FROM message response
+            WHERE response.conversation_id = c.id
+              AND response.role = 'assistant'
+              AND state.snoozed_next_response_at IS NOT NULL
+              AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
+          ) AS next_response_arrived,
+          COALESCE((
+            SELECT json_group_array(json_object(
+              'id', label.id,
+              'name', label.name,
+              'scope', json_object('kind', 'personal')
+            ))
+            FROM conversation_label_assignment assignment
+            JOIN conversation_label label ON label.id = assignment.label_id
+            WHERE assignment.conversation_id = c.id AND label.owner_user_id = c.user_id
+          ), '[]') AS labels
         FROM conversation c
+        LEFT JOIN conversation_user_state state
+          ON state.conversation_id = c.id AND state.user_id = ?
         WHERE ${whereClause}
       `
         : `
-        SELECT c.*
+        SELECT c.*,
+          COALESCE(state.is_pinned, 0) AS is_pinned,
+          COALESCE(state.is_unread, 0) AS is_unread,
+          state.snoozed_until,
+          state.snoozed_next_response_at,
+          EXISTS (
+            SELECT 1 FROM message response
+            WHERE response.conversation_id = c.id
+              AND response.role = 'assistant'
+              AND state.snoozed_next_response_at IS NOT NULL
+              AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
+          ) AS next_response_arrived,
+          COALESCE((
+            SELECT json_group_array(json_object(
+              'id', label.id,
+              'name', label.name,
+              'scope', json_object('kind', 'personal')
+            ))
+            FROM conversation_label_assignment assignment
+            JOIN conversation_label label ON label.id = assignment.label_id
+            WHERE assignment.conversation_id = c.id AND label.owner_user_id = c.user_id
+          ), '[]') AS labels
         FROM conversation c
+        LEFT JOIN conversation_user_state state
+          ON state.conversation_id = c.id AND state.user_id = ?
         WHERE ${whereClause}
-        ORDER BY ${orderByClause}
+        ORDER BY COALESCE(state.is_pinned, 0) DESC, ${orderByClause}
         LIMIT ? OFFSET ?
       `;
 
-    const queryValues = sortBy === "title" ? values : [...values, safeLimit, offset];
+    const queryValues =
+      sortBy === "title" ? [userId, ...values] : [userId, ...values, safeLimit, offset];
     const results = await this.runQuery<Record<string, unknown>>(listQuery, queryValues);
     const conversations =
       sortBy === "title"
-        ? sortCopy(results, (left, right) => {
-            const leftTitle = typeof left.title === "string" ? left.title : "New conversation";
-            const rightTitle = typeof right.title === "string" ? right.title : "New conversation";
-            const leftId = typeof left.id === "string" ? left.id : "";
-            const rightId = typeof right.id === "string" ? right.id : "";
+        ? sortCopy(
+            sortCopy(results, (left, right) => {
+              const leftTitle = typeof left.title === "string" ? left.title : "New conversation";
+              const rightTitle = typeof right.title === "string" ? right.title : "New conversation";
+              const leftId = typeof left.id === "string" ? left.id : "";
+              const rightId = typeof right.id === "string" ? right.id : "";
 
-            return compareNaturalText(leftTitle, rightTitle) || compareNaturalText(rightId, leftId);
-          }).slice(offset, offset + safeLimit)
+              return (
+                compareNaturalText(leftTitle, rightTitle) || compareNaturalText(rightId, leftId)
+              );
+            }),
+            (left, right) => Number(Boolean(right.is_pinned)) - Number(Boolean(left.is_pinned)),
+          ).slice(offset, offset + safeLimit)
         : results;
 
     return {
@@ -352,10 +433,38 @@ export class ConversationRepository extends BaseRepository {
 
     return this.runQuery<GlobalConversationSearchRow>(
       `SELECT c.id, c.title, c.updated_at, c.project_id,
-			        p.name AS project_name, w.id AS workspace_id, w.name AS workspace_name
+			        p.name AS project_name, w.id AS workspace_id, w.name AS workspace_name,
+              COALESCE(state.is_pinned, 0) AS is_pinned,
+              COALESCE(state.is_unread, 0) AS is_unread,
+              state.snoozed_until,
+              state.snoozed_next_response_at,
+              EXISTS (
+                SELECT 1 FROM message response
+                WHERE response.conversation_id = c.id
+                  AND response.role = 'assistant'
+                  AND state.snoozed_next_response_at IS NOT NULL
+                  AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
+              ) AS next_response_arrived,
+              COALESCE((
+                SELECT json_group_array(json_object(
+                  'id', label.id,
+                  'name', label.name,
+                  'scope', CASE
+                    WHEN label.project_id IS NOT NULL
+                    THEN json_object('kind', 'project', 'projectId', label.project_id)
+                    ELSE json_object('kind', 'personal')
+                  END
+                ))
+                FROM conversation_label_assignment assignment
+                JOIN conversation_label label ON label.id = assignment.label_id
+                WHERE assignment.conversation_id = c.id
+                  AND (label.project_id = c.project_id OR label.owner_user_id = ?)
+              ), '[]') AS labels
 			 FROM conversation c
 			 LEFT JOIN project p ON p.id = c.project_id AND p.archived_at IS NULL
 			 LEFT JOIN workspace w ON w.id = p.workspace_id
+			 LEFT JOIN conversation_user_state state
+         ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.is_archived = 0
 			   AND (
 			     (c.project_id IS NULL AND c.user_id = ?)
@@ -368,10 +477,22 @@ export class ConversationRepository extends BaseRepository {
 			       )
 			     )
 			   )
-			   AND (? = '' OR c.title LIKE ? ESCAPE '\\')
-			 ORDER BY COALESCE(c.updated_at, c.created_at) DESC, c.id DESC
+			   AND (
+           ? = ''
+           OR c.title LIKE ? ESCAPE '\\'
+           OR EXISTS (
+             SELECT 1
+             FROM conversation_label_assignment assignment
+             JOIN conversation_label label ON label.id = assignment.label_id
+             WHERE assignment.conversation_id = c.id
+               AND (label.project_id = c.project_id OR label.owner_user_id = ?)
+               AND label.name LIKE ? ESCAPE '\\'
+           )
+         )
+			 ORDER BY COALESCE(state.is_pinned, 0) DESC,
+         COALESCE(c.updated_at, c.created_at) DESC, c.id DESC
 			 LIMIT ?`,
-      [userId, userId, trimmedQuery, searchTerm, limit],
+      [userId, userId, userId, userId, trimmedQuery, searchTerm, userId, searchTerm, limit],
     );
   }
 }

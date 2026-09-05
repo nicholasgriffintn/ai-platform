@@ -42,10 +42,8 @@ export function ProcessingStep({
   const hasErrors = Object.values(processingErrors).some((error) => error !== null);
 
   return (
-    <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-6">
-      <h2 className="text-xl font-semibold mb-6 text-zinc-800 dark:text-zinc-200">
-        Processing Your Podcast
-      </h2>
+    <div className="border-border bg-surface rounded-lg border p-6">
+      <h2 className="text-xl font-semibold mb-6 text-foreground">Processing Your Podcast</h2>
 
       <div className="space-y-6">
         {formData.transcribe && (
@@ -55,20 +53,20 @@ export function ProcessingStep({
                 size={24}
                 className={
                   processingErrors.transcribing
-                    ? "text-red-500"
+                    ? "text-failure"
                     : processingComplete.transcribing
-                      ? "text-green-500"
+                      ? "text-success"
                       : processingStatus.transcribing
-                        ? "text-blue-500"
-                        : "text-zinc-400"
+                        ? "text-active-work"
+                        : "text-muted-foreground"
                 }
               />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-zinc-800 dark:text-zinc-200">Transcribing Audio</p>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="font-medium text-foreground">Transcribing Audio</p>
+              <p className="text-sm text-muted-foreground">
                 {processingErrors.transcribing ? (
-                  <span role="alert" className="text-red-500">
+                  <span role="alert" className="text-failure">
                     {processingErrors.transcribing}
                   </span>
                 ) : processingStatus.transcribing ? (
@@ -101,22 +99,22 @@ export function ProcessingStep({
                 size={24}
                 className={
                   processingErrors.summarizing
-                    ? "text-red-500"
+                    ? "text-failure"
                     : processingComplete.summarizing
-                      ? "text-green-500"
+                      ? "text-success"
                       : processingStatus.summarizing
-                        ? "text-blue-500"
+                        ? "text-active-work"
                         : !processingComplete.transcribing && formData.transcribe
-                          ? "text-zinc-400"
-                          : "text-zinc-500"
+                          ? "text-muted-foreground"
+                          : "text-muted-foreground"
                 }
               />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-zinc-800 dark:text-zinc-200">Generating Summary</p>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="font-medium text-foreground">Generating Summary</p>
+              <p className="text-sm text-muted-foreground">
                 {processingErrors.summarizing ? (
-                  <span role="alert" className="text-red-500">
+                  <span role="alert" className="text-failure">
                     {processingErrors.summarizing}
                   </span>
                 ) : processingStatus.summarizing ? (
@@ -151,23 +149,23 @@ export function ProcessingStep({
                 size={24}
                 className={
                   processingErrors.generatingImage
-                    ? "text-red-500"
+                    ? "text-failure"
                     : processingComplete.generatingImage
-                      ? "text-green-500"
+                      ? "text-success"
                       : processingStatus.generatingImage
-                        ? "text-blue-500"
+                        ? "text-active-work"
                         : (!processingComplete.summarizing && formData.summarise) ||
                             (!processingComplete.transcribing && formData.transcribe)
-                          ? "text-zinc-400"
-                          : "text-zinc-500"
+                          ? "text-muted-foreground"
+                          : "text-muted-foreground"
                 }
               />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-zinc-800 dark:text-zinc-200">Generating Cover Image</p>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="font-medium text-foreground">Generating Cover Image</p>
+              <p className="text-sm text-muted-foreground">
                 {processingErrors.generatingImage ? (
-                  <span role="alert" className="text-red-500">
+                  <span role="alert" className="text-failure">
                     {processingErrors.generatingImage}
                   </span>
                 ) : processingStatus.generatingImage ? (
@@ -200,7 +198,7 @@ export function ProcessingStep({
       <div className="mt-8 text-center">
         {hasErrors ? (
           <div className="space-y-4">
-            <p role="alert" className="text-red-500">
+            <p role="alert" className="text-failure">
               One or more processes failed. You can retry individual steps or return to the form.
             </p>
             <div className="flex justify-center space-x-4">
@@ -222,7 +220,7 @@ export function ProcessingStep({
             </div>
           </div>
         ) : (
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="text-sm text-muted-foreground">
             <p>Please don't close this page while processing</p>
             <p>You'll be redirected when all processing is complete</p>
           </div>

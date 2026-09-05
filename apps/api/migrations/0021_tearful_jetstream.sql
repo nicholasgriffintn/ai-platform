@@ -1,0 +1,1 @@
+ALTER TABLE `project` ADD `coding_delivery_policy` text;

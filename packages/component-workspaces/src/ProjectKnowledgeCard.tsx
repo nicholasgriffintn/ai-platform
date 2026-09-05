@@ -41,24 +41,22 @@ export function ProjectKnowledgeCard({
 
   const content = (
     <>
-      <section
-        className={`space-y-3 p-5 ${embedded ? "border-t border-zinc-100 dark:border-zinc-800" : ""}`}
-      >
+      <section className={`space-y-3 p-5 ${embedded ? "border-t border-border" : ""}`}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+            <div className="rounded-lg bg-active-work/12 p-2 text-active-work">
               <Brain size={17} />
             </div>
             <div>
               <h2 className="text-sm font-semibold">Project memory</h2>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 Shared facts are recalled when relevant in project conversations.
               </p>
             </div>
           </div>
         </div>
         {memories.length ? (
-          <ul className="space-y-1.5 pl-11 text-sm text-zinc-700 dark:text-zinc-300">
+          <ul className="space-y-1.5 pl-11 text-sm text-foreground">
             {memories.slice(0, 3).map((memory) => (
               <li key={memory.id} className="truncate">
                 {memory.title}
@@ -66,19 +64,19 @@ export function ProjectKnowledgeCard({
             ))}
           </ul>
         ) : (
-          <p className="pl-11 text-sm text-zinc-500">No project memories yet.</p>
+          <p className="pl-11 text-sm text-muted-foreground">No project memories yet.</p>
         )}
       </section>
 
-      <section className="space-y-3 border-t border-zinc-100 p-5 dark:border-zinc-800">
+      <section className="space-y-3 border-t border-border p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="rounded-lg bg-cyan-50 p-2 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300">
+            <div className="rounded-lg bg-active-work/12 p-2 text-active-work">
               <Database size={17} />
             </div>
             <div>
               <h2 className="text-sm font-semibold">Conversation context</h2>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 Selected sources stay attached across project conversations.
               </p>
             </div>
@@ -90,7 +88,7 @@ export function ProjectKnowledgeCard({
           ) : null}
         </div>
         {contextSources.length ? (
-          <ul className="space-y-1.5 pl-11 text-sm text-zinc-700 dark:text-zinc-300">
+          <ul className="space-y-1.5 pl-11 text-sm text-foreground">
             {contextSources.slice(0, 3).map((source) => (
               <li key={source.id} className="truncate">
                 {source.title}
@@ -98,7 +96,7 @@ export function ProjectKnowledgeCard({
             ))}
           </ul>
         ) : (
-          <p className="pl-11 text-sm text-zinc-500">No persistent context selected.</p>
+          <p className="pl-11 text-sm text-muted-foreground">No persistent context selected.</p>
         )}
         <TextLink
           href={sourcesHref}
@@ -138,7 +136,7 @@ export function ProjectKnowledgeCard({
               <label
                 key={source.id}
                 htmlFor={`context-source-${source.id}`}
-                className="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                className="flex items-center gap-3 rounded-lg border border-border p-3"
               >
                 <Checkbox
                   id={`context-source-${source.id}`}
@@ -153,13 +151,15 @@ export function ProjectKnowledgeCard({
                 />
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{source.title}</span>
-                  <span className="block text-xs capitalize text-zinc-500">{source.kind}</span>
+                  <span className="block text-xs capitalize text-muted-foreground">
+                    {source.kind}
+                  </span>
                 </span>
               </label>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             Upload a source in project chat before selecting persistent context.
           </p>
         )}

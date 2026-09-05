@@ -88,18 +88,16 @@ export function PetModelRuleDialog({
               placeholder="Search makers, providers, families"
               aria-label="Search model targets"
             />
-            <div className="max-h-72 space-y-4 overflow-y-auto rounded-lg border border-zinc-200 p-2 dark:border-zinc-700">
+            <div className="max-h-72 space-y-4 overflow-y-auto rounded-lg border border-border p-2">
               {groups.length === 0 ? (
-                <p className="p-2 text-sm text-zinc-500 dark:text-zinc-400">
-                  Nothing matches that search.
-                </p>
+                <p className="p-2 text-sm text-muted-foreground">Nothing matches that search.</p>
               ) : (
                 groups.map((group) => (
                   <div key={group.kind} className="space-y-1">
-                    <p className="px-2 text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+                    <p className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                       {group.title}
                     </p>
-                    <p className="px-2 text-xs text-zinc-500 dark:text-zinc-400">{group.hint}</p>
+                    <p className="px-2 text-xs text-muted-foreground">{group.hint}</p>
                     <ul>
                       {group.options.map((option) => {
                         const key = petModelTargetKey(option);
@@ -112,9 +110,7 @@ export function PetModelRuleDialog({
                               aria-pressed={isSelected}
                               onClick={() => setTargetKey(key)}
                               className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors ${
-                                isSelected
-                                  ? "bg-zinc-100 dark:bg-zinc-800"
-                                  : "hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
+                                isSelected ? "bg-selection" : "hover:bg-surface-elevated"
                               }`}
                             >
                               <ModelIcon
@@ -122,11 +118,11 @@ export function PetModelRuleDialog({
                                 provider={option.iconProvider}
                                 size={18}
                               />
-                              <span className="min-w-0 flex-1 truncate text-sm text-zinc-800 dark:text-zinc-100">
+                              <span className="min-w-0 flex-1 truncate text-sm text-foreground">
                                 {option.label}
                               </span>
                               {option.modelCount ? (
-                                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                <span className="text-xs text-muted-foreground">
                                   {option.modelCount}
                                 </span>
                               ) : null}
@@ -144,13 +140,13 @@ export function PetModelRuleDialog({
           <div className="space-y-2">
             <p
               id="pet_rule_pet_label"
-              className="text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
+              className="text-xs font-medium tracking-wide text-muted-foreground uppercase"
             >
               Pet
             </p>
             <ul
               aria-labelledby="pet_rule_pet_label"
-              className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto rounded-lg border border-zinc-200 p-2 sm:grid-cols-3 dark:border-zinc-700"
+              className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto rounded-lg border border-border p-2 sm:grid-cols-3"
             >
               {pets.map((option) => {
                 const key = petKey(option);
@@ -164,8 +160,8 @@ export function PetModelRuleDialog({
                       onClick={() => setSelectedPetKey(key)}
                       className={`flex h-full w-full flex-col items-center gap-1 rounded-md border p-2 text-center transition-colors ${
                         isSelected
-                          ? "border-zinc-800 bg-zinc-50 dark:border-zinc-200 dark:bg-zinc-800"
-                          : "border-transparent hover:border-zinc-300 dark:hover:border-zinc-600"
+                          ? "border-active-work/50 bg-selection"
+                          : "border-transparent hover:border-border-strong"
                       }`}
                     >
                       {renderPreview ? (
@@ -173,9 +169,7 @@ export function PetModelRuleDialog({
                           {renderPreview(option, 48)}
                         </span>
                       ) : null}
-                      <span className="truncate text-xs text-zinc-800 dark:text-zinc-100">
-                        {option.name}
-                      </span>
+                      <span className="truncate text-xs text-foreground">{option.name}</span>
                     </button>
                   </li>
                 );

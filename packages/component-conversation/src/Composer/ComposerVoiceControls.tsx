@@ -68,7 +68,7 @@ export function ComposerVoiceControls({ className, dictate, live }: ComposerVoic
           disabled={dictate.disabled || dictate.isTranscribing}
           icon={
             dictate.isRecording ? (
-              <Square className="h-3.5 w-3.5 fill-current text-red-500" aria-hidden="true" />
+              <Square className="h-3.5 w-3.5 fill-current text-failure" aria-hidden="true" />
             ) : dictate.isTranscribing ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (

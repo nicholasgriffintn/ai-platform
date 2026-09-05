@@ -11,7 +11,7 @@ const FORBIDDEN_COMMAND_PATTERNS: RegExp[] = [
   /\brm\s+-rf\s+\/(?:\s|$)/i,
   /\b(sudo|shutdown|reboot|mkfs|dd)\b/i,
   /\b(curl|wget)\b[^\n]*\|/i,
-  /\bgit\s+push\b/i,
+  /\bgit\s+(add|branch|checkout|commit|push|switch)\b/i,
 ];
 
 const READ_ONLY_MUTATING_PATTERNS: RegExp[] = [
@@ -60,7 +60,10 @@ export type SandboxCommandResult = {
 };
 
 export type SandboxExecInstance = Pick<ReturnType<typeof getSandbox>, "exec"> &
-  Partial<Pick<ReturnType<typeof getSandbox>, "execStream">>;
+  Partial<Pick<ReturnType<typeof getSandbox>, "execStream" | "createBackup" | "restoreBackup">>;
+
+export type SandboxProcessInstance = SandboxExecInstance &
+  Pick<ReturnType<typeof getSandbox>, "startProcess" | "unexposePort">;
 
 interface RepoInfo {
   displayName: string;
@@ -247,12 +250,6 @@ export function assertSafeCommand(
     throw new Error(`Command contains blocked shell evaluation: ${command}`);
   }
 
-  for (const pattern of FORBIDDEN_COMMAND_PATTERNS) {
-    if (pattern.test(command)) {
-      throw new Error(`Command is blocked by sandbox policy: ${command}`);
-    }
-  }
-
   if (options?.readOnly) {
     for (const pattern of READ_ONLY_BLOCKED_OPERATOR_PATTERNS) {
       if (pattern.test(command)) {
@@ -268,6 +265,12 @@ export function assertSafeCommand(
 
     if (!READ_ONLY_ALLOWED_COMMAND_PATTERNS.some((pattern) => pattern.test(command))) {
       throw new Error(`Command is not allowed in read-only mode: ${command}`);
+    }
+  }
+
+  for (const pattern of FORBIDDEN_COMMAND_PATTERNS) {
+    if (pattern.test(command)) {
+      throw new Error(`Command is blocked by sandbox policy: ${command}`);
     }
   }
 

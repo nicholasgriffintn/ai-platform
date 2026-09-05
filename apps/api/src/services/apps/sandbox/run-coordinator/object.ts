@@ -2,9 +2,15 @@ import {
   sandboxRunDispatchMessageSchema,
   sandboxRunControlSchema,
   sandboxRunInstructionKindSchema,
+  sandboxPreviewIdSchema,
+  sandboxPreviewConsumeRequestSchema,
+  sandboxPreviewSessionRecordSchema,
+  sandboxServiceActionSchema,
+  sandboxServiceNameSchema,
   type SandboxRunDispatchMessage,
   type SandboxRunEvent,
   type SandboxRunInstruction,
+  type SandboxPreviewSessionRecord,
   NO_STORE,
 } from "@ngriffin_uk/polychat-schemas";
 import { Agent, type FiberContext, type FiberRecoveryContext } from "agents";
@@ -29,6 +35,8 @@ const EVENTS_KEY = "events";
 const EVENT_INDEX_KEY = "event-index";
 const INSTRUCTIONS_KEY = "instructions";
 const INSTRUCTION_INDEX_KEY = "instruction-index";
+const PREVIEW_SESSION_PREFIX = "preview-session:";
+const MAX_ACTIVE_PREVIEW_SESSIONS = 16;
 const DEFAULT_APPROVAL_TIMEOUT_SECONDS = 120;
 const DEFAULT_APPROVAL_ESCALATE_AFTER_SECONDS = 30;
 const MIN_APPROVAL_TIMEOUT_SECONDS = 5;
@@ -51,6 +59,31 @@ function parsePositiveInt(value: unknown, min: number, max: number): number | un
 
 function addSecondsIso(isoTimestamp: string, seconds: number): string {
   return new Date(Date.parse(isoTimestamp) + seconds * 1000).toISOString();
+}
+
+function isInstructionReplay(
+  instruction: SandboxRunInstruction,
+  body: Record<string, unknown>,
+): boolean {
+  const content = typeof body.content === "string" ? body.content.trim() || undefined : undefined;
+  const command = typeof body.command === "string" ? body.command.trim() || undefined : undefined;
+  const requestId =
+    typeof body.requestId === "string" ? body.requestId.trim() || undefined : undefined;
+  const serviceName =
+    typeof body.serviceName === "string" ? body.serviceName.trim() || undefined : undefined;
+  const serviceAction =
+    typeof body.serviceAction === "string" ? body.serviceAction.trim() || undefined : undefined;
+
+  return (
+    instruction.kind === body.kind &&
+    instruction.content === content &&
+    instruction.command === command &&
+    instruction.requestId === requestId &&
+    instruction.serviceName === serviceName &&
+    instruction.serviceAction === serviceAction &&
+    instruction.createdByUserId === body.createdByUserId &&
+    (instruction.kind !== "approval_response" || instruction.approvalStatus === body.approvalStatus)
+  );
 }
 
 export class SandboxRunCoordinator extends Agent<IEnv> {
@@ -106,6 +139,17 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
     await this.storage.put(EVENT_INDEX_KEY, nextIndex);
     await this.storage.put(EVENTS_KEY, JSON.stringify(nextEvents));
+
+    if (
+      event.type === "run_completed" ||
+      event.type === "run_failed" ||
+      event.type === "run_cancelled"
+    ) {
+      await this.revokePreviewSessions();
+    } else if (event.serviceName && event.serviceStatus && event.serviceStatus !== "healthy") {
+      await this.revokePreviewSessions(event.serviceName);
+    }
+
     this.broadcastEnvelope(envelope);
 
     return envelope;
@@ -140,6 +184,46 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
   private async putInstructions(instructions: CoordinatorInstructionEnvelope[]): Promise<void> {
     await this.storage.put(INSTRUCTIONS_KEY, JSON.stringify(instructions.slice(-500)));
+  }
+
+  private async getPreviewSession(previewId: string): Promise<SandboxPreviewSessionRecord | null> {
+    const raw = await this.storage.get<string>(`${PREVIEW_SESSION_PREFIX}${previewId}`);
+
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = sandboxPreviewSessionRecordSchema.safeParse(safeParseJson(raw));
+
+    return parsed.success ? parsed.data : null;
+  }
+
+  private async putPreviewSession(session: SandboxPreviewSessionRecord): Promise<void> {
+    await this.storage.put(
+      `${PREVIEW_SESSION_PREFIX}${session.previewId}`,
+      JSON.stringify(session),
+    );
+  }
+
+  private async revokePreviewSessions(serviceName?: string): Promise<void> {
+    const stored = await this.storage.list<string>({ prefix: PREVIEW_SESSION_PREFIX });
+    const revokedAt = new Date().toISOString();
+
+    await Promise.all(
+      [...stored].map(async ([key, raw]) => {
+        const parsed = sandboxPreviewSessionRecordSchema.safeParse(safeParseJson(raw));
+
+        if (
+          !parsed.success ||
+          parsed.data.revokedAt ||
+          (serviceName && parsed.data.serviceName !== serviceName)
+        ) {
+          return;
+        }
+
+        await this.storage.put(key, JSON.stringify({ ...parsed.data, revokedAt }));
+      }),
+    );
   }
 
   private applyInstructionLifecycleTransitions(
@@ -366,6 +450,13 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           return Response.json({ error: "Control state not initialised" }, { status: 404 });
         }
 
+        if (
+          typeof payload.expectedUpdatedAt === "string" &&
+          payload.expectedUpdatedAt !== existing.updatedAt
+        ) {
+          return Response.json({ error: "Control state has changed" }, { status: 409 });
+        }
+
         const nextState =
           payload.state === "queued" ||
           payload.state === "running" ||
@@ -417,13 +508,170 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
       });
     }
 
+    if (pathname === "/previews" && request.method === "POST") {
+      const parsed = sandboxPreviewSessionRecordSchema.safeParse(
+        await request.json().catch(() => undefined),
+      );
+
+      if (!parsed.success) {
+        return Response.json({ error: "Invalid preview session" }, { status: 400 });
+      }
+
+      return this.ctx.blockConcurrencyWhile(async () => {
+        const existing = await this.getPreviewSession(parsed.data.previewId);
+
+        if (existing) {
+          return Response.json({ error: "Preview session already exists" }, { status: 409 });
+        }
+
+        const stored = await this.storage.list<string>({ prefix: PREVIEW_SESSION_PREFIX });
+        const expiredKeys: string[] = [];
+        let activeSessions = 0;
+
+        for (const [key, raw] of stored) {
+          const candidate = sandboxPreviewSessionRecordSchema.safeParse(safeParseJson(raw));
+
+          if (
+            !candidate.success ||
+            candidate.data.revokedAt ||
+            Date.parse(candidate.data.expiresAt) <= Date.now()
+          ) {
+            expiredKeys.push(key);
+          } else {
+            activeSessions += 1;
+          }
+        }
+
+        if (expiredKeys.length > 0) {
+          await this.storage.delete(expiredKeys);
+        }
+
+        if (activeSessions >= MAX_ACTIVE_PREVIEW_SESSIONS) {
+          return Response.json({ error: "Preview session limit reached" }, { status: 429 });
+        }
+
+        await this.putPreviewSession(parsed.data);
+
+        return Response.json({ session: parsed.data });
+      });
+    }
+
+    const previewPath = /^\/previews\/([^/]+)(?:\/(consume|revoke))?$/.exec(pathname);
+
+    if (previewPath) {
+      const parsedPreviewId = sandboxPreviewIdSchema.safeParse(previewPath[1]);
+
+      if (!parsedPreviewId.success) {
+        return Response.json({ error: "Invalid preview session" }, { status: 400 });
+      }
+
+      const previewId = parsedPreviewId.data;
+      const operation = previewPath[2];
+
+      if (!operation && request.method === "GET") {
+        const session = await this.getPreviewSession(previewId);
+
+        return session
+          ? Response.json({ session })
+          : Response.json({ error: "Preview session not found" }, { status: 404 });
+      }
+
+      if (operation === "consume" && request.method === "POST") {
+        const parsedPayload = sandboxPreviewConsumeRequestSchema.safeParse(
+          await request.json().catch(() => undefined),
+        );
+
+        if (!parsedPayload.success) {
+          return Response.json({ error: "Preview bootstrap is invalid" }, { status: 400 });
+        }
+
+        return this.ctx.blockConcurrencyWhile(async () => {
+          const session = await this.getPreviewSession(previewId);
+
+          if (!session) {
+            return Response.json({ error: "Preview session not found" }, { status: 404 });
+          }
+
+          if (parsedPayload.data.bootstrapJti !== session.bootstrapJti) {
+            return Response.json({ error: "Preview bootstrap is invalid" }, { status: 401 });
+          }
+
+          if (session.bootstrapConsumedAt) {
+            return Response.json({ error: "Preview bootstrap was already used" }, { status: 409 });
+          }
+
+          if (session.revokedAt || Date.parse(session.expiresAt) <= Date.now()) {
+            return Response.json({ error: "Preview session expired" }, { status: 410 });
+          }
+
+          const consumed = {
+            ...session,
+            bootstrapConsumedAt: new Date().toISOString(),
+          };
+
+          await this.putPreviewSession(consumed);
+
+          return Response.json({ session: consumed });
+        });
+      }
+
+      if (operation === "revoke" && request.method === "POST") {
+        return this.ctx.blockConcurrencyWhile(async () => {
+          const session = await this.getPreviewSession(previewId);
+
+          if (!session) {
+            return Response.json({ revoked: true });
+          }
+
+          if (!session.revokedAt) {
+            await this.putPreviewSession({
+              ...session,
+              revokedAt: new Date().toISOString(),
+            });
+          }
+
+          return Response.json({ revoked: true });
+        });
+      }
+    }
+
     if (pathname === "/instructions" && request.method === "POST") {
       const body = (await request.json()) as Record<string, unknown>;
 
       return this.ctx.blockConcurrencyWhile(async () => {
         const parsedKind = sandboxRunInstructionKindSchema.safeParse(body.kind);
-        const kind = parsedKind.success ? parsedKind.data : "message";
+
+        if (!parsedKind.success) {
+          return Response.json({ error: "Instruction kind is invalid" }, { status: 400 });
+        }
+
+        const kind = parsedKind.data;
         const contentRaw = typeof body.content === "string" ? body.content.trim() : "";
+        const idempotencyKey =
+          typeof body.idempotencyKey === "string" ? body.idempotencyKey.trim() : "";
+        const createdByUserId = parsePositiveInt(body.createdByUserId, 1, Number.MAX_SAFE_INTEGER);
+
+        if (idempotencyKey) {
+          const instructions = await this.getInstructionsWithLifecycle();
+          const existing = instructions.find(
+            (entry) => entry.instruction.idempotencyKey === idempotencyKey,
+          );
+
+          if (existing) {
+            if (!isInstructionReplay(existing.instruction, { ...body, kind })) {
+              return Response.json(
+                { error: "Idempotency key was already used for another instruction" },
+                { status: 409 },
+              );
+            }
+
+            return Response.json({
+              instruction: existing.instruction,
+              envelope: existing,
+              replayed: true,
+            });
+          }
+        }
 
         if (kind === "message" && !contentRaw) {
           return Response.json(
@@ -432,8 +680,25 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           );
         }
 
+        const parsedServiceName = sandboxServiceNameSchema.safeParse(body.serviceName);
+        const parsedServiceAction = sandboxServiceActionSchema.safeParse(body.serviceAction);
+
+        if (
+          kind === "service_action" &&
+          (!parsedServiceName.success || !parsedServiceAction.success)
+        ) {
+          return Response.json(
+            { error: "serviceName and serviceAction are required for service controls" },
+            { status: 400 },
+          );
+        }
+
         const control = await this.getControl();
         const nowIso = new Date().toISOString();
+
+        if (control?.state === "cancelled") {
+          return Response.json({ error: "Run no longer accepts instructions" }, { status: 409 });
+        }
 
         if (kind === "approval_request") {
           const command = typeof body.command === "string" ? body.command.trim() : "";
@@ -459,6 +724,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           );
           const instruction: SandboxRunInstruction = {
             id: crypto.randomUUID(),
+            idempotencyKey: idempotencyKey || undefined,
             runId: control?.runId ?? "unknown",
             kind,
             content: contentRaw || undefined,
@@ -468,6 +734,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
             escalateAfterSeconds,
             expiresAt: addSecondsIso(nowIso, timeoutSeconds),
             escalationAt: addSecondsIso(nowIso, escalateAfterSeconds),
+            createdByUserId,
             createdAt: nowIso,
           };
           const envelope = await this.appendInstruction(instruction);
@@ -522,11 +789,13 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
           const instruction: SandboxRunInstruction = {
             id: crypto.randomUUID(),
+            idempotencyKey: idempotencyKey || undefined,
             runId: control?.runId ?? "unknown",
             kind,
             requestId,
             approvalStatus,
             content: contentRaw || undefined,
+            createdByUserId,
             createdAt: nowIso,
           };
           const envelope = await this.appendInstruction(instruction);
@@ -536,9 +805,19 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
         const instruction: SandboxRunInstruction = {
           id: crypto.randomUUID(),
+          idempotencyKey: idempotencyKey || undefined,
           runId: control?.runId ?? "unknown",
           kind,
           content: contentRaw || undefined,
+          serviceName:
+            kind === "service_action" && parsedServiceName.success
+              ? parsedServiceName.data
+              : undefined,
+          serviceAction:
+            kind === "service_action" && parsedServiceAction.success
+              ? parsedServiceAction.data
+              : undefined,
+          createdByUserId,
           createdAt: nowIso,
         };
         const envelope = await this.appendInstruction(instruction);

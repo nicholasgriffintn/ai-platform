@@ -24,29 +24,23 @@ export const WelcomeScreen = ({
   return (
     <div className="w-full px-4 pt-4 pb-2 text-center" aria-busy={isLoading} aria-live="polite">
       <div className="mx-auto flex h-32 w-32 items-end justify-center">{pet}</div>
-      <h2 className="flex min-h-16 items-end justify-center text-2xl font-semibold text-zinc-800 md:min-h-12 md:text-4xl dark:text-zinc-200">
+      <h2 className="text-foreground font-display flex min-h-16 items-end justify-center text-3xl font-medium tracking-tight text-balance md:min-h-12 md:text-5xl">
         <span
           key={resolvedTitle}
           aria-hidden={isLoading}
           data-dynamic-copy=""
-          className={cn(
-            isLoading
-              ? "opacity-0"
-              : "animate-in fade-in-0 slide-in-from-bottom-2 duration-500 motion-reduce:animate-none motion-reduce:transform-none",
-          )}
+          className={cn(isLoading ? "opacity-0" : "polychat-motion-enter")}
         >
           {resolvedTitle}
         </span>
       </h2>
-      <p className="mt-2 mb-4 flex min-h-12 items-start justify-center text-zinc-600 md:min-h-6 dark:text-zinc-400">
+      <p className="text-muted-foreground mt-2 mb-4 flex min-h-12 items-start justify-center md:min-h-6">
         <span
           key={resolvedDescription}
           aria-hidden={isLoading}
           data-dynamic-copy=""
           className={cn(
-            isLoading
-              ? "opacity-0"
-              : "animate-in fade-in-0 slide-in-from-bottom-1 delay-100 duration-500 motion-reduce:animate-none motion-reduce:transform-none",
+            isLoading ? "opacity-0" : "polychat-motion-enter polychat-motion-stagger-1",
           )}
         >
           {resolvedDescription}

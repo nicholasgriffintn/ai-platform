@@ -9,12 +9,12 @@ import {
   type ProjectTaskAttentionKind,
   type RegisterTaskNotification,
   type TaskNotificationCategory,
-  type TaskNotificationPreferences,
   type UpdateTaskNotificationPreferences,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { TaskInboxRow } from "~/repositories/TaskNotificationRepository";
+import { notifyMobileProjectTask } from "~/services/mobile-push";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireProjectAccess, requireWorkAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
@@ -276,6 +276,7 @@ function notificationRecipients(
 export async function reconcileTaskNotifications(
   context: ServiceContext,
   task: ProjectTask,
+  options: { notifyMobile?: boolean } = {},
 ): Promise<void> {
   const state = attentionState(task);
 
@@ -284,6 +285,21 @@ export async function reconcileTaskNotifications(
   }
 
   try {
+    const mobileKind =
+      state.kind === "completion" ? "completed" : state.kind === "blocked" ? "failed" : state.kind;
+
+    if (
+      options.notifyMobile !== false &&
+      (mobileKind !== "assigned" || task.assigneeUserId !== null)
+    ) {
+      await notifyMobileProjectTask({
+        context,
+        task,
+        notificationId: `project-task:${task.id}:${mobileKind}:v${task.attentionVersion}`,
+        kind: mobileKind,
+      });
+    }
+
     const members = await context.repositories.workspaces.listMembers(task.workspaceId);
     const recipients = notificationRecipients(
       task,
@@ -316,13 +332,6 @@ export async function reconcileTaskNotifications(
         error: getErrorMessage(error),
       });
   }
-}
-
-export function isTaskNotificationPreferenceEnabled(
-  preferences: TaskNotificationPreferences,
-  category: TaskNotificationCategory,
-): boolean {
-  return preferences.enabled && preferences[category];
 }
 
 export { attentionState };

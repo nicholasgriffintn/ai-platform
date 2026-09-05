@@ -1,4 +1,4 @@
-import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
+import { SKILL_LOAD_TOOL_NAME, type SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
 export function getSkillSuggestedToolNames(
   skills: readonly SkillAvailability[] | undefined,
@@ -24,4 +24,19 @@ export function mergeSkillSuggestedToolNames(params: {
   return Array.from(
     new Set([...(params.enabledTools ?? []), ...getSkillSuggestedToolNames(params.skills)]),
   );
+}
+
+export function mergeSkillLoadToolName(params: {
+  enabledTools?: readonly string[];
+  skills?: readonly SkillAvailability[];
+}): string[] | undefined {
+  if (params.enabledTools === undefined) {
+    return undefined;
+  }
+
+  if (!params.skills?.some((skill) => skill.state === "ready")) {
+    return [...params.enabledTools];
+  }
+
+  return Array.from(new Set([...params.enabledTools, SKILL_LOAD_TOOL_NAME]));
 }

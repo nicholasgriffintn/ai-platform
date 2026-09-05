@@ -31,7 +31,7 @@ describe("task notification contracts", () => {
         {
           id: "registration-1",
           installationId: "installation-1",
-          platform: "ios",
+          platform: "web",
           state: "failed",
           failureCode: "endpoint_expired",
           updatedAt: "2026-09-05T12:00:00.000Z",
@@ -44,7 +44,7 @@ describe("task notification contracts", () => {
     expect("permission" in settings.registrations[0]).toBe(false);
   });
 
-  it("validates platform-specific registration material", () => {
+  it("keeps native registration on the dedicated mobile-push contract", () => {
     expect(
       registerTaskNotificationSchema.safeParse({
         platform: "ios",

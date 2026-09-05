@@ -76,13 +76,16 @@ enum ChatStreamEventParser {
             return [.toolUseDelta(
                 ChatToolCallEvent(
                     toolCallId: toolCallId,
-                    parameters: toolCallParameters(from: object["parameters"])
+                    parameters: toolCallParameters(from: object["parameters"]),
+                    parameterFragment: object["parameters"] as? String
                 )
             )]
         case "tool_use_stop":
             return (object["tool_id"] as? String).map { [.toolUseStop($0)] } ?? []
         case "tool_response":
             return extractToolResult(from: object).map { [.toolResult($0)] } ?? []
+        case "turn_activity":
+            return extractTurnActivity(from: object).map { [.turnActivity($0)] } ?? []
         case "usage_limits":
             return extractUsageLimits(from: object).map { [.usageLimits($0)] } ?? []
         case "tool_response_start", "tool_response_end":
@@ -112,8 +115,8 @@ enum ChatStreamEventParser {
             return nil
         }
 
-        if let encoded = value as? String {
-            return JSONObjectDecoding.decode(JSONValue.self, fromJSONString: encoded)
+        if value is String {
+            return nil
         }
 
         return JSONObjectDecoding.decode(JSONValue.self, from: value)
@@ -129,6 +132,83 @@ enum ChatStreamEventParser {
         }
 
         return JSONObjectDecoding.decode(ChatToolResultEvent.self, from: result)
+    }
+
+    private static func extractTurnActivity(from object: [String: Any]) -> ChatTurnActivityEvent? {
+        guard let kind = object["kind"] as? String else {
+            return nil
+        }
+
+        if kind == "turn_started" {
+            return .turnStarted
+        }
+
+        if kind == "turn_finished",
+           let rawOutcome = object["outcome"] as? String,
+           let outcome = ChatTurnActivityEvent.TurnOutcome(rawValue: rawOutcome) {
+            return .turnFinished(outcome: outcome, errorType: object["errorType"] as? String)
+        }
+
+        guard let step = object["step"] as? Int, step > 0 else {
+            return nil
+        }
+
+        switch kind {
+        case "model_step_started":
+            return .modelStepStarted(step: step)
+        case "reasoning_started":
+            return .reasoningStarted(step: step)
+        case "reasoning_finished":
+            return .reasoningFinished(step: step)
+        case "response_started":
+            return .responseStarted(step: step)
+        case "response_finished":
+            return .responseFinished(step: step)
+        case "model_step_finished":
+            guard let rawOutcome = object["outcome"] as? String,
+                  let outcome = ChatTurnActivityEvent.StepOutcome(rawValue: rawOutcome) else {
+                return nil
+            }
+            return .modelStepFinished(step: step, outcome: outcome)
+        default:
+            guard let toolCallId = object["toolCallId"] as? String,
+                  let toolName = object["toolName"] as? String else {
+                return nil
+            }
+
+            switch kind {
+            case "tool_input_started":
+                return .toolInputStarted(step: step, toolCallId: toolCallId, toolName: toolName)
+            case "tool_input_finished":
+                return .toolInputFinished(step: step, toolCallId: toolCallId, toolName: toolName)
+            case "tool_execution_started":
+                return .toolExecutionStarted(step: step, toolCallId: toolCallId, toolName: toolName)
+            case "tool_finished":
+                guard let rawOutcome = object["outcome"] as? String,
+                      let outcome = ChatTurnActivityEvent.ToolOutcome(rawValue: rawOutcome) else {
+                    return nil
+                }
+                return .toolFinished(
+                    step: step,
+                    toolCallId: toolCallId,
+                    toolName: toolName,
+                    outcome: outcome
+                )
+            case "waiting_for_user":
+                guard let rawReason = object["reason"] as? String,
+                      let reason = ChatTurnActivityEvent.WaitReason(rawValue: rawReason) else {
+                    return nil
+                }
+                return .waitingForUser(
+                    step: step,
+                    toolCallId: toolCallId,
+                    toolName: toolName,
+                    reason: reason
+                )
+            default:
+                return nil
+            }
+        }
     }
 
     private static func extractUsageLimits(from object: [String: Any]) -> ChatUsageLimits? {

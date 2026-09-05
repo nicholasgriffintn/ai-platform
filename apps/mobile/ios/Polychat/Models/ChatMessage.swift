@@ -27,6 +27,14 @@ public struct ChatCitation: Codable, Equatable {
     }
 }
 
+public struct CompactionCoverage: Codable, Equatable {
+    public let coveredMessageIds: [String]
+    public let coveredMessageCount: Int
+    public let candidateMessageCount: Int
+    public let summaryInputCharacters: Int
+    public let strategy: String
+}
+
 public struct ChatMessagePart: Codable, Equatable, Identifiable {
     public var id: String { explicitId ?? "\(type)-\(timestamp ?? 0)-\(text ?? name ?? url ?? summary ?? label ?? "")" }
     public let explicitId: String?
@@ -46,10 +54,11 @@ public struct ChatMessagePart: Codable, Equatable, Identifiable {
     public let mimeType: String?
     public let collapsed: Bool?
     public let timestamp: Double?
+    public let coverage: CompactionCoverage?
 
     enum CodingKeys: String, CodingKey {
         case explicitId = "id"
-        case type, text, name, label, input, status, content, data, metadata, title, summary, url, mimeType, collapsed, timestamp
+        case type, text, name, label, input, status, content, data, metadata, title, summary, url, mimeType, collapsed, timestamp, coverage
         case toolCallId
         case toolCallIdSnake = "tool_call_id"
     }
@@ -71,7 +80,8 @@ public struct ChatMessagePart: Codable, Equatable, Identifiable {
         url: String? = nil,
         mimeType: String? = nil,
         collapsed: Bool? = nil,
-        timestamp: Double? = nil
+        timestamp: Double? = nil,
+        coverage: CompactionCoverage? = nil
     ) {
         self.explicitId = id
         self.type = type
@@ -90,6 +100,7 @@ public struct ChatMessagePart: Codable, Equatable, Identifiable {
         self.mimeType = mimeType
         self.collapsed = collapsed
         self.timestamp = timestamp
+        self.coverage = coverage
     }
 
     public init(from decoder: Decoder) throws {
@@ -112,6 +123,7 @@ public struct ChatMessagePart: Codable, Equatable, Identifiable {
         mimeType = try container.decodeIfPresent(String.self, forKey: .mimeType)
         collapsed = try container.decodeIfPresent(Bool.self, forKey: .collapsed)
         timestamp = try container.decodeIfPresent(Double.self, forKey: .timestamp)
+        coverage = try container.decodeIfPresent(CompactionCoverage.self, forKey: .coverage)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -133,6 +145,7 @@ public struct ChatMessagePart: Codable, Equatable, Identifiable {
         try container.encodeIfPresent(mimeType, forKey: .mimeType)
         try container.encodeIfPresent(collapsed, forKey: .collapsed)
         try container.encodeIfPresent(timestamp, forKey: .timestamp)
+        try container.encodeIfPresent(coverage, forKey: .coverage)
     }
 }
 
@@ -331,6 +344,23 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
 
         let contentLabel = textContent.trimmingCharacters(in: .whitespacesAndNewlines)
         return contentLabel.isEmpty ? CompactionStatusLabels.manualCompleted : contentLabel
+    }
+
+    public var compactionCoverageDetail: String? {
+        guard let coverage = parts?.first(where: { $0.type == "compaction" })?.coverage else {
+            return nil
+        }
+
+        let covered = "\(messageCountLabel(coverage.coveredMessageCount)) \(coverage.strategy == "fallback_transcript" ? "preserved verbatim" : "summarised")"
+        let retainedMessageCount = coverage.candidateMessageCount - coverage.coveredMessageCount
+
+        return retainedMessageCount > 0
+            ? "\(covered); \(messageCountLabel(retainedMessageCount)) retained"
+            : covered
+    }
+
+    private func messageCountLabel(_ count: Int) -> String {
+        "\(count) \(count == 1 ? "message" : "messages")"
     }
 
     public init(

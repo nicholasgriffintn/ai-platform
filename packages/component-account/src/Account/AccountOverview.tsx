@@ -4,11 +4,13 @@ import { formatDate, getBoundedPercentage } from "@ngriffin_uk/polychat-utility-
 import { ExternalLink } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { SettingsSection } from "../SettingsSection";
+
 type UsageTone = "blue" | "purple";
 
 const usageToneClasses: Record<UsageTone, string> = {
-  blue: "bg-blue-500",
-  purple: "bg-purple-500",
+  blue: "bg-active-work",
+  purple: "bg-creative",
 };
 
 export interface AccountUser {
@@ -37,12 +39,12 @@ export interface AccountOverviewProps {
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <Card className="gap-1 p-4 sm:p-5">
-      <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{label}</div>
-      <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 break-words">
+    <Card className="gap-1 p-5">
+      <div className="text-sm font-medium text-muted-foreground">{label}</div>
+      <div className="text-2xl font-semibold tracking-tight text-foreground break-words">
         {value}
       </div>
-      <div className="text-xs text-zinc-500 dark:text-zinc-400">{hint}</div>
+      <div className="text-xs text-muted-foreground">{hint}</div>
     </Card>
   );
 }
@@ -67,17 +69,18 @@ function UsageCard({
   const percentage = limit !== undefined && limit > 0 ? getBoundedPercentage(used, limit) : null;
 
   return (
-    <Card className="gap-3 p-4 sm:p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <div className="font-medium text-zinc-900 dark:text-zinc-100">{title}</div>
-        <div className="text-sm tabular-nums text-zinc-600 dark:text-zinc-300">
+    <SettingsSection
+      title={title}
+      actions={
+        <div className="text-sm tabular-nums text-muted-foreground">
           {limit !== undefined ? `${used} / ${limit}` : `${used} used`}
         </div>
-      </div>
-
+      }
+      contentClassName="space-y-3"
+    >
       {percentage !== null && (
         <div
-          className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
+          className="bg-selection h-2 w-full overflow-hidden rounded-full"
           role="meter"
           aria-label={`${used} of ${limit} ${title.toLowerCase()} used today`}
           aria-valuemin={0}
@@ -95,18 +98,18 @@ function UsageCard({
       )}
 
       <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <span
             className={cn("h-2 w-2 shrink-0 rounded-full", usageToneClasses[tone])}
             aria-hidden="true"
           />
           <span>{description}</span>
         </div>
-        <div className="text-zinc-500 dark:text-zinc-400">Resets {resets}</div>
+        <div className="text-muted-foreground">Resets {resets}</div>
       </div>
 
       {children}
-    </Card>
+    </SettingsSection>
   );
 }
 
@@ -116,7 +119,7 @@ function ProfileLink({ href, children }: { href: string; children: ReactNode }) 
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex max-w-full items-center gap-1.5 text-sm text-zinc-700 dark:text-zinc-300"
+      className="inline-flex max-w-full items-center gap-1.5 text-sm text-foreground"
     >
       <span className="truncate">{children}</span>
       <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden="true" />
@@ -178,19 +181,17 @@ export function AccountOverview({
             <img
               src={user.avatar_url}
               alt={user?.name || "Your Account"}
-              className="h-20 w-20 shrink-0 rounded-full border border-zinc-200 object-cover dark:border-zinc-700"
+              className="h-20 w-20 shrink-0 rounded-full border border-border object-cover"
             />
           ) : (
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-3xl font-semibold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-200">
+            <div className="bg-selection text-muted-foreground flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-3xl font-semibold">
               {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
             </div>
           )}
 
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:justify-start">
-              <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-                {user?.name || "Your Account"}
-              </h2>
+              <h3 className="text-foreground text-lg font-bold">{user?.name || "Your Account"}</h3>
               <Badge variant="secondary">
                 {user?.plan_id === "enterprise"
                   ? "Enterprise plan"
@@ -200,9 +201,7 @@ export function AccountOverview({
               </Badge>
             </div>
 
-            {user?.email && (
-              <p className="break-all text-sm text-zinc-500 dark:text-zinc-400">{user.email}</p>
-            )}
+            {user?.email && <p className="break-all text-sm text-muted-foreground">{user.email}</p>}
 
             {user?.github_username && (
               <ProfileLink href={`https://github.com/${user.github_username}`}>
@@ -211,7 +210,7 @@ export function AccountOverview({
             )}
 
             {user?.bio && (
-              <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+              <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                 {user.bio}
               </p>
             )}
@@ -219,14 +218,14 @@ export function AccountOverview({
         </div>
 
         {details.length > 0 && (
-          <dl className="grid grid-cols-1 gap-px border-t border-zinc-200 bg-zinc-200 sm:grid-cols-2 dark:border-zinc-800 dark:bg-zinc-800">
+          <dl className="border-border bg-border grid grid-cols-1 gap-px border-t sm:grid-cols-2">
             {details.map((detail) => (
               <div
                 key={detail.label}
                 className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-card px-5 py-3 sm:px-6"
               >
-                <dt className="text-sm text-zinc-500 dark:text-zinc-400">{detail.label}</dt>
-                <dd className="min-w-0 break-words text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                <dt className="text-sm text-muted-foreground">{detail.label}</dt>
+                <dd className="min-w-0 break-words text-sm font-medium text-foreground">
                   {detail.value}
                 </dd>
               </div>
@@ -235,7 +234,7 @@ export function AccountOverview({
         )}
 
         {(site || user?.twitter_username) && (
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-zinc-200 px-5 py-3 sm:px-6 dark:border-zinc-800">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border px-5 py-3 sm:px-6">
             {site && <ProfileLink href={site}>{user?.site}</ProfileLink>}
             {user?.twitter_username && (
               <ProfileLink href={`https://twitter.com/${user.twitter_username}`}>
@@ -248,8 +247,8 @@ export function AccountOverview({
 
       <section className="space-y-4">
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Usage</h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <h3 className="text-foreground text-lg font-bold">Usage</h3>
+          <p className="text-sm text-muted-foreground">
             Model, capability and infrastructure work in one account.
           </p>
         </div>

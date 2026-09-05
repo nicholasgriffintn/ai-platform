@@ -15,10 +15,12 @@ import { ConversationBranchNavigation } from "./ConversationBranchNavigation";
 import { ShareButton } from "./ShareButton";
 
 interface ConversationProductHeaderProps {
+  projectColour?: string;
   showCloudToggle?: boolean;
 }
 
 export function ConversationProductHeader({
+  projectColour,
   showCloudToggle = false,
 }: ConversationProductHeaderProps) {
   const { currentConversationId, isAuthenticated, setCurrentConversationId } = useChatStore();
@@ -34,6 +36,7 @@ export function ConversationProductHeader({
 
   return (
     <ProductModeHeader
+      projectColour={projectColour}
       showCloudToggle={showCloudToggle}
       context={
         <ConversationTitleContext

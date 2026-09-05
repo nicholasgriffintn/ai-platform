@@ -26,21 +26,21 @@ export function WorkspaceUsage({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold">Workspace usage</h2>
-          <p className="max-w-2xl text-sm text-zinc-500">
+          <p className="max-w-2xl text-sm text-muted-foreground">
             Recorded spend for this workspace. Each person pays from their own account. Usage may be
             delayed or estimated; provider costs include BYOK usage.
           </p>
         </div>
         <div className="flex items-end gap-2">
           <div>
-            <label htmlFor={inputId} className="block text-xs text-zinc-500">
+            <label htmlFor={inputId} className="block text-xs text-muted-foreground">
               Month (UTC)
             </label>
             <input
               id={inputId}
               type="month"
               value={period}
-              className="rounded border border-zinc-300 bg-transparent p-2 text-sm dark:border-zinc-700"
+              className="rounded border border-border-strong bg-transparent p-2 text-sm"
               onChange={(event) => {
                 const result = usagePeriodSchema.safeParse(event.target.value);
 
@@ -62,7 +62,7 @@ export function WorkspaceUsage({
         </div>
       </div>
       {query.error ? (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-failure">
           {query.error.message}
         </p>
       ) : query.isLoading ? (

@@ -8,7 +8,13 @@ import type {
   WorkspaceMember,
   WorkspaceSummary,
 } from "@ngriffin_uk/polychat-schemas";
-import { projectCodingEnvironmentSchema, projectFlowSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  projectCodingEnvironmentSchema,
+  projectFlowSchema,
+  resolveSandboxDeliveryPolicy,
+  sandboxEnvironmentCacheRecordSchema,
+  toSandboxEnvironmentCacheSummary,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type {
   ProjectCapabilityRow,
@@ -18,6 +24,7 @@ import type {
   WorkspaceMemberRow,
   WorkspaceSummaryRow,
 } from "~/repositories/WorkspaceRepository";
+import { isConversationUnread } from "~/utils/conversation-organisation";
 import { safeParseJson } from "~/utils/json";
 
 export function formatWorkspaceSummary(row: WorkspaceSummaryRow): WorkspaceSummary {
@@ -65,9 +72,18 @@ export function formatProjectSummary(row: ProjectRow): ProjectSummary {
     installationId: row.coding_installation_id,
     repository: row.coding_repository,
     promptStrategy: row.coding_prompt_strategy,
-    shouldCommit: Boolean(row.coding_should_commit),
+    deliveryPolicy: resolveSandboxDeliveryPolicy(
+      row.coding_delivery_policy ? safeParseJson(row.coding_delivery_policy) : null,
+      Boolean(row.coding_should_commit),
+    ),
+    environmentSetup: row.coding_environment_setup
+      ? safeParseJson(row.coding_environment_setup)
+      : undefined,
     timeoutSeconds: row.coding_timeout_seconds,
   });
+  const environmentCache = sandboxEnvironmentCacheRecordSchema.safeParse(
+    row.coding_environment_cache ? safeParseJson(row.coding_environment_cache) : null,
+  );
 
   return {
     id: row.id,
@@ -84,6 +100,9 @@ export function formatProjectSummary(row: ProjectRow): ProjectSummary {
     defaultRouterMode: row.default_router_mode ?? "auto",
     codingEnvironment:
       row.coding_enabled === 1 && codingEnvironment.success ? codingEnvironment.data : null,
+    environmentCache: environmentCache.success
+      ? toSandboxEnvironmentCacheSummary(environmentCache.data)
+      : null,
   };
 }
 
@@ -105,6 +124,14 @@ export function formatProjectCapability(row: ProjectCapabilityRow): ProjectCapab
 }
 
 export function formatProjectConversation(row: ProjectConversationRow): ProjectConversation {
+  const labels = safeParseJson<ProjectConversation["labels"]>(row.labels) ?? [];
+  const snooze =
+    row.snoozed_until && Date.parse(row.snoozed_until) > Date.now()
+      ? ({ kind: "until", until: row.snoozed_until } as const)
+      : row.snoozed_next_response_at && row.next_response_arrived !== 1
+        ? ({ kind: "next_response" } as const)
+        : null;
+
   return {
     id: row.id,
     type: row.type,
@@ -113,6 +140,10 @@ export function formatProjectConversation(row: ProjectConversationRow): ProjectC
     updatedAt: row.updated_at,
     lastMessageAt: row.last_message_at,
     messageCount: Number(row.message_count ?? 0),
+    isPinned: row.is_pinned === 1,
+    isUnread: isConversationUnread(row),
+    snooze,
+    labels,
     createdBy: {
       id: row.created_by,
       name: row.created_by_name,

@@ -102,29 +102,26 @@ export function ComposerCommandChips(
       {props.attachments?.map((attachment) => (
         <ContextChip
           key={attachment.id}
-          className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-100"
+          className="border-attention/45 bg-attention/12 text-attention"
           kind="attachment"
         >
-          <span className="flex h-4 w-4 shrink-0 items-center justify-center text-amber-700 dark:text-amber-200">
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center text-attention">
             {attachment.preview}
           </span>
           <span className="truncate">{attachment.label}</span>
           {attachment.onClear ? (
             <ChipRemoveButton
               onClick={attachment.onClear}
-              className="rounded-sm text-amber-700 hover:text-amber-950 dark:text-amber-200 dark:hover:text-amber-50"
+              className="rounded-sm text-attention hover:text-attention"
               label="Remove attachment"
             />
           ) : null}
         </ContextChip>
       ))}
       {activeMode && (
-        <ContextChip
-          kind="mode"
-          className="border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/35 dark:text-emerald-100"
-        >
+        <ContextChip kind="mode" className="border-success/45 bg-success/12 text-success">
           <span
-            className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-emerald-700 dark:text-emerald-200"
+            className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-success"
             aria-hidden="true"
           >
             {activeMode.icon}
@@ -133,26 +130,20 @@ export function ComposerCommandChips(
           {props.onClearMode && (
             <ChipRemoveButton
               onClick={props.onClearMode}
-              className="rounded-sm text-emerald-700 hover:text-emerald-950 dark:text-emerald-200 dark:hover:text-emerald-50"
+              className="rounded-sm text-success hover:text-success"
               label={`Clear ${activeMode.label} mode`}
             />
           )}
         </ContextChip>
       )}
       {props.goal && (
-        <ContextChip
-          kind="mode"
-          className="border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/35 dark:text-violet-100"
-        >
-          <Target
-            className="h-3.5 w-3.5 shrink-0 text-violet-700 dark:text-violet-200"
-            aria-hidden="true"
-          />
+        <ContextChip kind="mode" className="border-creative/45 bg-creative/12 text-creative">
+          <Target className="h-3.5 w-3.5 shrink-0 text-creative" aria-hidden="true" />
           <span className="truncate">{props.goal.label}</span>
           {props.goal.onClear && (
             <ChipRemoveButton
               onClick={props.goal.onClear}
-              className="rounded-sm text-violet-700 hover:text-violet-950 dark:text-violet-200 dark:hover:text-violet-50"
+              className="rounded-sm text-creative hover:text-creative"
               label="Cancel goal"
             />
           )}
@@ -161,16 +152,13 @@ export function ComposerCommandChips(
       {shouldShowAgent && (
         <ContextChip
           kind="agent"
-          className="border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-100"
+          className="border-active-work/45 bg-active-work/12 text-active-work"
         >
-          <AtSign
-            className="h-3.5 w-3.5 shrink-0 text-blue-700 dark:text-blue-200"
-            aria-hidden="true"
-          />
+          <AtSign className="h-3.5 w-3.5 shrink-0 text-active-work" aria-hidden="true" />
           <span className="truncate">{selectedAgent.name}</span>
           <ChipRemoveButton
             onClick={clearAgent}
-            className="rounded-sm text-blue-700 hover:text-blue-950 dark:text-blue-200 dark:hover:text-blue-50"
+            className="rounded-sm text-active-work hover:text-active-work"
             label={`Clear ${selectedAgent.name} agent`}
           />
         </ContextChip>

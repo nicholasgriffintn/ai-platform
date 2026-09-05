@@ -7,6 +7,7 @@ import { fetchApiOrThrow } from "./fetch-wrapper";
 export async function listActivity(
   filters: {
     projectId?: string;
+    conversationId?: string;
     capabilityId?: string;
     status?: ActivityStatus;
     limit?: number;
@@ -17,6 +18,10 @@ export async function listActivity(
 
   if (filters.projectId) {
     query.set("projectId", filters.projectId);
+  }
+
+  if (filters.conversationId) {
+    query.set("conversationId", filters.conversationId);
   }
 
   if (filters.capabilityId) {

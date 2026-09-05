@@ -93,9 +93,10 @@ export class AppPage extends BasePage {
     await this.page.keyboard.press("Escape");
   }
 
-  async selectTheme(theme: "System" | "Light" | "Dark") {
-    await this.clickElement(this.page.getByRole("button", { name: /^Theme\. Current:/ }));
-    await this.clickElement(this.page.getByRole("button", { name: theme, exact: true }));
+  async selectTheme(
+    theme: "System" | "Light" | "Paper" | "Dawn" | "Dark" | "Blue" | "Fern" | "Plum",
+  ) {
+    await this.page.getByRole("combobox", { name: "Theme" }).selectOption({ label: theme });
   }
 
   async openKeyboardShortcuts() {
