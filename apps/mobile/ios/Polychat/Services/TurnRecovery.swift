@@ -21,6 +21,13 @@ enum TurnRecoveryStatus {
     static let reconnectingNotice = "\n\n_Reconnecting to the response…_"
 }
 
+struct TurnRecoveryAttemptContext: Equatable {
+    let attempt: Int
+    let elapsedMs: Int
+    let finalAttempt: Bool
+    let knownAssistantCount: Int
+}
+
 @MainActor
 enum TurnRecovery {
     static func selectRecoveredMessages(
@@ -37,11 +44,14 @@ enum TurnRecovery {
     static func recoverDetachedTurn(
         completionId: String,
         knownMessageIds: Set<String>,
+        knownAssistantCount: Int,
         policy: TurnRecoveryPolicy = TurnRecoveryPolicy(),
-        fetchMessages: (String) async throws -> [ChatMessage]
+        fetchMessages: (String, TurnRecoveryAttemptContext) async throws -> [ChatMessage]
     ) async -> [ChatMessage] {
         let clock = ContinuousClock()
-        let deadline = clock.now.advanced(by: policy.maxWait)
+        let startedAt = clock.now
+        let deadline = startedAt.advanced(by: policy.maxWait)
+        var attempt = 0
 
         while !Task.isCancelled, clock.now < deadline {
             do {
@@ -54,7 +64,18 @@ enum TurnRecovery {
                 break
             }
 
-            guard let messages = try? await fetchMessages(completionId) else {
+            attempt += 1
+            let now = clock.now
+            let elapsed = startedAt.duration(to: now).components
+            let elapsedMs = Int(elapsed.seconds * 1_000 + elapsed.attoseconds / 1_000_000_000_000_000)
+            let context = TurnRecoveryAttemptContext(
+                attempt: attempt,
+                elapsedMs: max(0, elapsedMs),
+                finalAttempt: now.advanced(by: policy.pollInterval) >= deadline,
+                knownAssistantCount: knownAssistantCount
+            )
+
+            guard let messages = try? await fetchMessages(completionId, context) else {
                 continue
             }
 
@@ -62,6 +83,10 @@ enum TurnRecovery {
 
             if !recovered.isEmpty {
                 return recovered
+            }
+
+            if context.finalAttempt {
+                break
             }
         }
 

@@ -113,13 +113,21 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var generatedTitle = "Generated title"
     var conversationDetail: ConversationDetailResponse?
     var fetchConversationCallCount = 0
+    var recoveryAttempts: [TurnRecoveryAttemptContext] = []
 
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse {
         throw TestFailure.unexpectedCall
     }
 
-    func fetchConversation(id: String, refreshPending: Bool) async throws -> ConversationDetailResponse {
+    func fetchConversation(
+        id: String,
+        refreshPending: Bool,
+        recovery: TurnRecoveryAttemptContext?
+    ) async throws -> ConversationDetailResponse {
         fetchConversationCallCount += 1
+        if let recovery {
+            recoveryAttempts.append(recovery)
+        }
 
         guard let conversationDetail else {
             throw TestFailure.unexpectedCall

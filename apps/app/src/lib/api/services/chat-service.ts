@@ -66,6 +66,18 @@ export interface ConversationCompactionResult {
   conversation: Conversation;
 }
 
+export interface RecoveryRequestContext {
+  attempt: number;
+  elapsedMs: number;
+  finalAttempt: boolean;
+  knownAssistantCount: number;
+}
+
+export interface GetChatOptions {
+  recovery?: RecoveryRequestContext;
+  refreshPending?: boolean;
+}
+
 type StreamProgressHandler = (
   text: string,
   reasoning?: string,
@@ -183,7 +195,7 @@ export class ChatService {
     }));
 
     const sortBy = options.sortBy ?? "updated";
-    const conversations = results.sort((a, b) => compareConversationsBySort(a, b, sortBy));
+    const conversations = [...results].sort((a, b) => compareConversationsBySort(a, b, sortBy));
 
     return {
       conversations,
@@ -224,10 +236,7 @@ export class ChatService {
     return data.archived ?? 0;
   }
 
-  async getChat(
-    completion_id: string,
-    options?: { refreshPending?: boolean },
-  ): Promise<Conversation> {
+  async getChat(completion_id: string, options?: GetChatOptions): Promise<Conversation> {
     if (!completion_id) {
       throw new Error("No completion ID provided");
     }
@@ -240,10 +249,22 @@ export class ChatService {
       console.error("Error getting chat:", error);
     }
 
-    const refreshPending = options?.refreshPending ?? true;
-    const url = refreshPending
-      ? `/chat/completions/${completion_id}?refresh_pending=true`
-      : `/chat/completions/${completion_id}`;
+    const params = new URLSearchParams();
+
+    if (options?.refreshPending ?? true) {
+      params.set("refresh_pending", "true");
+    }
+
+    if (options?.recovery) {
+      params.set("recovery_platform", "web");
+      params.set("recovery_attempt", String(options.recovery.attempt));
+      params.set("recovery_elapsed_ms", String(options.recovery.elapsedMs));
+      params.set("recovery_known_assistant_count", String(options.recovery.knownAssistantCount));
+      params.set("recovery_final_attempt", String(options.recovery.finalAttempt));
+    }
+
+    const query = params.toString();
+    const url = `/chat/completions/${completion_id}${query ? `?${query}` : ""}`;
 
     const response = await fetchApi(url, {
       method: "GET",
@@ -500,7 +521,7 @@ export class ChatService {
 
     await fetchApi(`/chat/completions/${completion_id}/cancel`, {
       method: "POST",
-      headers,
+      headers: { ...headers, "X-Platform": "web" },
     });
   }
 
@@ -740,6 +761,12 @@ export class ChatService {
 
       if (update.type === "state") {
         onStateChange(update.state, update.event);
+
+        return;
+      }
+
+      if (update.type === "activity") {
+        onStateChange("turn_activity", update.activity);
 
         return;
       }

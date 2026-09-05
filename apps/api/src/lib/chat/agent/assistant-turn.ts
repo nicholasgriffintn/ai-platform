@@ -38,6 +38,7 @@ export interface TurnOutput {
   status?: string;
   logId?: string;
   stopped?: boolean;
+  activityStreamed?: boolean;
 }
 
 export interface FinaliseAssistantTurnParams {
@@ -190,6 +191,7 @@ export async function finaliseAssistantTurn(
     citations: message.citations,
     tool_calls: assistantMessage.tool_calls,
     finish_reason: assistantMessage.finish_reason,
+    status: message.status,
     data: message.data,
     parts,
   });

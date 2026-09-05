@@ -48,6 +48,95 @@ describe("ChatService streaming", () => {
     vi.unstubAllGlobals();
   });
 
+  it("preserves a terminal assistant status from the stream", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        createSseResponse([
+          data({
+            type: "message_start",
+            message_id: "assistant-pending",
+            model: "test-model",
+          }),
+          data({ type: "content_block_delta", content: "Waiting for approval." }),
+          data({
+            type: "message_delta",
+            message_id: "assistant-pending",
+            content: "Waiting for approval.",
+            status: "pending",
+          }),
+          data({ type: "message_stop" }),
+          data("[DONE]"),
+        ]),
+      ),
+    );
+
+    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+    const result = await service.streamChatCompletions({
+      chatSettings: {},
+      completionId: "conversation-1",
+      messages: [{ role: "user", content: "Continue" } as Message],
+      mode: "remote",
+      model: "test-model",
+      onProgress: () => {},
+      onStateChange: () => {},
+      signal: new AbortController().signal,
+    });
+
+    expect(result).toMatchObject({
+      id: "assistant-pending",
+      content: "Waiting for approval.",
+      status: "pending",
+    });
+  });
+
+  it("forwards semantic turn activity without provider-specific branching", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        createSseResponse([
+          data({ type: "turn_activity", kind: "turn_started" }),
+          data({ type: "turn_activity", kind: "model_step_started", step: 1 }),
+          data({ type: "message_start", message_id: "assistant-1", model: "test-model" }),
+          data({ type: "content_block_delta", content: "Done." }),
+          data({
+            type: "message_delta",
+            message_id: "assistant-1",
+            content: "Done.",
+            status: "completed",
+          }),
+          data({ type: "message_stop" }),
+          data({ type: "turn_activity", kind: "turn_finished", outcome: "completed" }),
+          data("[DONE]"),
+        ]),
+      ),
+    );
+
+    const activityUpdates: unknown[] = [];
+    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+    await service.streamChatCompletions({
+      chatSettings: {},
+      completionId: "conversation-1",
+      messages: [{ role: "user", content: "Continue" } as Message],
+      mode: "remote",
+      model: "test-model",
+      onProgress: () => {},
+      onStateChange: (state, payload) => {
+        if (state === "turn_activity") {
+          activityUpdates.push(payload);
+        }
+      },
+      signal: new AbortController().signal,
+    });
+
+    expect(activityUpdates).toEqual([
+      { type: "turn_activity", kind: "turn_started" },
+      { type: "turn_activity", kind: "model_step_started", step: 1 },
+      { type: "turn_activity", kind: "turn_finished", outcome: "completed" },
+    ]);
+  });
+
   it("does not send chat completion requests when compaction filtering leaves no provider messages", async () => {
     const fetchMock = vi.fn();
 
@@ -110,6 +199,28 @@ describe("ChatService streaming", () => {
         is_public: true,
         share_id: "share-1",
       }),
+    );
+  });
+
+  it("adds bounded recovery context to an authorised conversation refresh", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      Response.json({ data: { id: "conversation-1", messages: [] } }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+    await service.getChat("conversation-1", {
+      recovery: {
+        attempt: 2,
+        elapsedMs: 4_000,
+        finalAttempt: false,
+        knownAssistantCount: 3,
+      },
+    });
+
+    expect(fetchMock.mock.calls[0]?.[0]).toContain(
+      "/chat/completions/conversation-1?refresh_pending=true&recovery_platform=web&recovery_attempt=2&recovery_elapsed_ms=4000&recovery_known_assistant_count=3&recovery_final_attempt=false",
     );
   });
 

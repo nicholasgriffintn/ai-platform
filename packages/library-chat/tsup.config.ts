@@ -30,6 +30,7 @@ export default defineConfig({
     "src/model-selection.ts",
     "src/request-options.ts",
     "src/response-stats.ts",
+    "src/turn-activity.ts",
   ],
   format: ["cjs", "esm"],
   dts: true,

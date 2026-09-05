@@ -39,6 +39,7 @@ describe("watchDetachedTurnCancellation", () => {
     await vi.advanceTimersByTimeAsync(5_000);
 
     expect(signal.shouldStop()).toBe(true);
+    expect(signal.wasCancellationObserved()).toBe(true);
 
     signal.stop();
   });
@@ -74,6 +75,7 @@ describe("watchDetachedTurnCancellation", () => {
 
     await vi.advanceTimersByTimeAsync(5_000);
     expect(cache.get).not.toHaveBeenCalled();
+    expect(signal.wasCancellationObserved()).toBe(false);
 
     detached = true;
     await vi.advanceTimersByTimeAsync(1_000);

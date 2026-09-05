@@ -1,0 +1,341 @@
+{
+  "version": 2,
+  "description": "Provider-neutral server-sent event fixtures shared by Polychat stream consumers.",
+  "cases": [
+    {
+      "name": "text_reasoning_metadata_and_unknown_event",
+      "chunks": [
+        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-text\",\"model\":\"model-a\",\"provider\":\"provider-a\",\"platform\":\"cloud\"}\n\ndata: {\"type\":\"thinking_delta\",\"thinking\":\"Checking context. \"}\n\ndata: {\"type\":\"content_block_delta\",\"content\":\"Hello \"}\n\n",
+        "data: {\"type\":\"future_additive_event\",\"detail\":\"ignored by older clients\"}\n\ndata: {\"type\":\"content_block_delta\",\"content\":\"world\"}\n\ndata: {\"type\":\"message_delta\",\"message_id\":\"assistant-text\",\"content\":\"Hello world\",\"usage\":{\"input_tokens\":12,\"output_tokens\":2},\"model\":\"model-a\",\"provider\":\"provider-a\",\"platform\":\"cloud\"}\n\ndata: {\"type\":\"message_stop\"}\n\ndata: [DONE]\n\n"
+      ],
+      "flush": true,
+      "expected": {
+        "eventTypes": [
+          "message_start",
+          "thinking_delta",
+          "content_block_delta",
+          "future_additive_event",
+          "content_block_delta",
+          "message_delta",
+          "message_stop",
+          "done"
+        ],
+        "updateTypes": [
+          "assistant_metadata",
+          "assistant_delta",
+          "assistant_delta",
+          "assistant_delta",
+          "assistant_final",
+          "done"
+        ],
+        "assistantFinalContents": ["Hello world"],
+        "toolResultStatuses": [],
+        "activityKinds": [],
+        "doneCount": 1,
+        "finalContent": "Hello world",
+        "remainingBuffer": ""
+      }
+    },
+    {
+      "name": "parallel_tools_with_fragmented_arguments_and_mixed_results",
+      "chunks": [
+        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-tools\",\"model\":\"model-a\"}\n\ndata: {\"type\":\"tool_use_start\",\"tool_id\":\"call-weather\",\"tool_name\":\"weather\"}\n\ndata: {\"type\":\"tool_use_start\",\"tool_id\":\"call-clock\",\"tool_name\":\"clock\"}\n\ndata: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-weather\",\"parameters\":\"{\\\"city\\\":\\\"Lon\"}\n\n",
+        "data: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-clock\",\"parameters\":{\"zone\":\"UTC\"}}\n\ndata: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-weather\",\"parameters\":\"don\\\"}\"}\n\ndata: {\"type\":\"tool_use_stop\",\"tool_id\":\"call-clock\"}\n\ndata: {\"type\":\"tool_use_stop\",\"tool_id\":\"call-weather\"}\n\ndata: {\"type\":\"message_delta\",\"message_id\":\"assistant-tools\",\"finish_reason\":\"tool_calls\"}\n\ndata: {\"type\":\"message_stop\"}\n\n",
+        "data: {\"type\":\"tool_response_start\"}\n\ndata: {\"type\":\"tool_response\",\"tool_id\":\"result-clock\",\"result\":{\"role\":\"tool\",\"id\":\"result-clock\",\"name\":\"clock\",\"status\":\"success\",\"content\":\"12:00\",\"tool_call_id\":\"call-clock\"}}\n\ndata: {\"type\":\"tool_response\",\"tool_id\":\"result-weather\",\"result\":{\"role\":\"tool\",\"id\":\"result-weather\",\"name\":\"weather\",\"status\":\"error\",\"content\":\"Unavailable\",\"tool_call_id\":\"call-weather\"}}\n\ndata: {\"type\":\"tool_response_end\"}\n\ndata: {\"type\":\"message_start\",\"message_id\":\"assistant-tools-final\",\"model\":\"model-a\"}\n\ndata: {\"type\":\"content_block_delta\",\"content\":\"The clock succeeded; weather failed.\"}\n\ndata: {\"type\":\"message_delta\",\"message_id\":\"assistant-tools-final\",\"content\":\"The clock succeeded; weather failed.\",\"finish_reason\":\"stop\"}\n\ndata: {\"type\":\"message_stop\"}\n\ndata: [DONE]\n\n"
+      ],
+      "flush": true,
+      "expected": {
+        "eventTypes": [
+          "message_start",
+          "tool_use_start",
+          "tool_use_start",
+          "tool_use_delta",
+          "tool_use_delta",
+          "tool_use_delta",
+          "tool_use_stop",
+          "tool_use_stop",
+          "message_delta",
+          "message_stop",
+          "tool_response_start",
+          "tool_response",
+          "tool_response",
+          "tool_response_end",
+          "message_start",
+          "content_block_delta",
+          "message_delta",
+          "message_stop",
+          "done"
+        ],
+        "updateTypes": [
+          "assistant_metadata",
+          "assistant_final",
+          "tool_result",
+          "tool_result",
+          "assistant_metadata",
+          "assistant_delta",
+          "assistant_final",
+          "done"
+        ],
+        "assistantFinalContents": ["", "The clock succeeded; weather failed."],
+        "toolResultStatuses": ["success", "error"],
+        "activityKinds": [],
+        "doneCount": 1,
+        "finalContent": "The clock succeeded; weather failed.",
+        "remainingBuffer": ""
+      }
+    },
+    {
+      "name": "sequential_tool_with_malformed_arguments",
+      "chunks": [
+        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-sequential-1\"}\n\ndata: {\"type\":\"tool_use_start\",\"tool_id\":\"call-read\",\"tool_name\":\"read_file\"}\n\ndata: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-read\",\"parameters\":{\"path\":\"notes.txt\"}}\n\ndata: {\"type\":\"tool_use_stop\",\"tool_id\":\"call-read\"}\n\ndata: {\"type\":\"message_stop\"}\n\ndata: {\"type\":\"tool_response\",\"result\":{\"id\":\"result-read\",\"name\":\"read_file\",\"status\":\"success\",\"content\":\"notes\",\"tool_call_id\":\"call-read\"}}\n\ndata: {\"type\":\"tool_response_end\"}\n\n",
+        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-sequential-2\"}\n\ndata: {\"type\":\"tool_use_start\",\"tool_id\":\"call-write\",\"tool_name\":\"write_file\"}\n\ndata: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-write\",\"parameters\":\"{\\\"path\\\":\"}\n\ndata: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-write\",\"parameters\":\"not-json}\"}\n\ndata: {\"type\":\"tool_use_stop\",\"tool_id\":\"call-write\"}\n\ndata: {\"type\":\"message_stop\"}\n\ndata: {\"type\":\"tool_response\",\"result\":{\"id\":\"result-write\",\"name\":\"write_file\",\"status\":\"error\",\"content\":\"Invalid arguments\",\"tool_call_id\":\"call-write\"}}\n\ndata: [DONE]\n\n"
+      ],
+      "flush": true,
+      "expected": {
+        "eventTypes": [
+          "message_start",
+          "tool_use_start",
+          "tool_use_delta",
+          "tool_use_stop",
+          "message_stop",
+          "tool_response",
+          "tool_response_end",
+          "message_start",
+          "tool_use_start",
+          "tool_use_delta",
+          "tool_use_delta",
+          "tool_use_stop",
+          "message_stop",
+          "tool_response",
+          "done"
+        ],
+        "updateTypes": [
+          "assistant_metadata",
+          "assistant_final",
+          "tool_result",
+          "assistant_metadata",
+          "assistant_final",
+          "tool_result",
+          "done"
+        ],
+        "assistantFinalContents": ["", ""],
+        "toolResultStatuses": ["success", "error"],
+        "activityKinds": [],
+        "doneCount": 1,
+        "finalContent": "",
+        "remainingBuffer": ""
+      }
+    },
+    {
+      "name": "human_question_wait",
+      "chunks": [
+        "data: {\"type\":\"turn_activity\",\"kind\":\"turn_started\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_started\",\"step\":1}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"tool_input_started\",\"step\":1,\"toolCallId\":\"call-question\",\"toolName\":\"ask_user\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"tool_input_finished\",\"step\":1,\"toolCallId\":\"call-question\",\"toolName\":\"ask_user\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"waiting_for_user\",\"step\":1,\"toolCallId\":\"call-question\",\"toolName\":\"ask_user\",\"reason\":\"question\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"waiting\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"waiting\"}\n\ndata: [DONE]\n\n"
+      ],
+      "flush": true,
+      "expected": {
+        "eventTypes": [
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "done"
+        ],
+        "updateTypes": [
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "done"
+        ],
+        "assistantFinalContents": [],
+        "toolResultStatuses": [],
+        "activityKinds": [
+          "turn_started",
+          "model_step_started",
+          "tool_input_started",
+          "tool_input_finished",
+          "waiting_for_user",
+          "model_step_finished",
+          "turn_finished"
+        ],
+        "doneCount": 1,
+        "remainingBuffer": ""
+      }
+    },
+    {
+      "name": "approval_wait_after_tool_result",
+      "chunks": [
+        "data: {\"type\":\"tool_response\",\"result\":{\"id\":\"result-preview\",\"name\":\"connector_preview\",\"status\":\"success\",\"content\":\"Ready for approval\",\"tool_call_id\":\"call-preview\"}}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"waiting_for_user\",\"step\":2,\"toolCallId\":\"call-approval\",\"toolName\":\"request_approval\",\"reason\":\"approval\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":2,\"outcome\":\"waiting\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"waiting\"}\n\ndata: [DONE]\n\n"
+      ],
+      "flush": true,
+      "expected": {
+        "eventTypes": ["tool_response", "turn_activity", "turn_activity", "turn_activity", "done"],
+        "updateTypes": ["tool_result", "activity", "activity", "activity", "done"],
+        "assistantFinalContents": [],
+        "toolResultStatuses": ["success"],
+        "activityKinds": ["waiting_for_user", "model_step_finished", "turn_finished"],
+        "doneCount": 1,
+        "remainingBuffer": ""
+      }
+    },
+    {
+      "name": "selection_wait",
+      "chunks": [
+        "data: {\"type\":\"turn_activity\",\"kind\":\"waiting_for_user\",\"step\":1,\"toolCallId\":\"call-selection\",\"toolName\":\"select_council_members\",\"reason\":\"selection\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"waiting\"}\n\ndata: [DONE]\n\n"
+      ],
+      "flush": true,
+      "expected": {
+        "eventTypes": ["turn_activity", "turn_activity", "done"],
+        "updateTypes": ["activity", "activity", "done"],
+        "assistantFinalContents": [],
+        "toolResultStatuses": [],
+        "activityKinds": ["waiting_for_user", "turn_finished"],
+        "doneCount": 1,
+        "remainingBuffer": ""
+      }
+    },
+    {
+      "name": "provider_failure_after_malformed_sse",
+      "chunks": [
+        "data: {not valid json}\n\ndata: {\"type\":\"state\",\"state\":\"error\",\"errorType\":\"provider_unavailable\"}\n\ndata: {\"type\":\"error\",\"error\":{\"message\":\"Provider unavailable\"}}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"failed\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"failed\",\"errorType\":\"provider_unavailable\"}\n\n"
+      ],
+      "flush": true,
+      "expected": {
+        "eventTypes": ["state", "error", "turn_activity", "turn_activity"],
+        "updateTypes": ["state", "activity", "activity"],
+        "assistantFinalContents": [],
+        "toolResultStatuses": [],
+        "activityKinds": ["model_step_finished", "turn_finished"],
+        "doneCount": 0,
+        "remainingBuffer": ""
+      }
+    },
+    {
+      "name": "explicit_cancellation_preserves_partial_answer",
+      "chunks": [
+        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-cancelled\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_started\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_started\",\"step\":1}\n\ndata: {\"type\":\"content_block_delta\",\"content\":\"Partial answer\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"cancelled\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"cancelled\"}\n\ndata: [DONE]\n\n"
+      ],
+      "flush": true,
+      "expected": {
+        "eventTypes": [
+          "message_start",
+          "turn_activity",
+          "turn_activity",
+          "content_block_delta",
+          "turn_activity",
+          "turn_activity",
+          "done"
+        ],
+        "updateTypes": [
+          "assistant_metadata",
+          "activity",
+          "activity",
+          "assistant_delta",
+          "activity",
+          "activity",
+          "assistant_final",
+          "done"
+        ],
+        "assistantFinalContents": ["Partial answer"],
+        "toolResultStatuses": [],
+        "activityKinds": [
+          "turn_started",
+          "model_step_started",
+          "model_step_finished",
+          "turn_finished"
+        ],
+        "doneCount": 1,
+        "finalContent": "Partial answer",
+        "remainingBuffer": ""
+      }
+    },
+    {
+      "name": "transport_detachment_keeps_incomplete_block_buffered",
+      "chunks": [
+        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-detached\"}\n\n",
+        "data: {\"type\":\"content_block_delta\",\"content\":\"Still running\"}"
+      ],
+      "flush": false,
+      "expected": {
+        "eventTypes": ["message_start"],
+        "updateTypes": ["assistant_metadata"],
+        "assistantFinalContents": [],
+        "toolResultStatuses": [],
+        "activityKinds": [],
+        "doneCount": 0,
+        "remainingBuffer": "data: {\"type\":\"content_block_delta\",\"content\":\"Still running\"}"
+      }
+    },
+    {
+      "name": "semantic_turn_activity_lifecycle",
+      "chunks": [
+        "data: {\"type\":\"turn_activity\",\"kind\":\"turn_started\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_started\",\"step\":1}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"reasoning_started\",\"step\":1}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"reasoning_finished\",\"step\":1}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"response_started\",\"step\":1}\n\n",
+        "data: {\"type\":\"turn_activity\",\"kind\":\"tool_input_started\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"tool_input_finished\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"tool_execution_started\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"tool_finished\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\",\"outcome\":\"success\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"response_finished\",\"step\":1}\n\n",
+        "data: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"tool_calls\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_started\",\"step\":2}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":2,\"outcome\":\"completed\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"completed\"}\n\ndata: [DONE]\n\n"
+      ],
+      "flush": true,
+      "expected": {
+        "eventTypes": [
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "turn_activity",
+          "done"
+        ],
+        "updateTypes": [
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "activity",
+          "done"
+        ],
+        "assistantFinalContents": [],
+        "toolResultStatuses": [],
+        "activityKinds": [
+          "turn_started",
+          "model_step_started",
+          "reasoning_started",
+          "reasoning_finished",
+          "response_started",
+          "tool_input_started",
+          "tool_input_finished",
+          "tool_execution_started",
+          "tool_finished",
+          "response_finished",
+          "model_step_finished",
+          "model_step_started",
+          "model_step_finished",
+          "turn_finished"
+        ],
+        "doneCount": 1,
+        "remainingBuffer": ""
+      }
+    }
+  ]
+}

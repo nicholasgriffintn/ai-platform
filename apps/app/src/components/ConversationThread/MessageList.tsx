@@ -272,7 +272,7 @@ export const MessageList = ({
                         onConnectorApproval={onConnectorApproval}
                         onArtifactOpen={onArtifactOpen}
                         isSharedView={isSharedView}
-                        onRetry={retryMessage}
+                        onRetry={(messageId) => void retryMessage(messageId)}
                         isRetrying={streamStarted}
                         onEdit={message.id ? () => startEditingMessage(message.id) : undefined}
                         isEditing={editingMessageId === message.id}
@@ -305,7 +305,11 @@ export const MessageList = ({
                 <CompactionStatusRow label={streamLoadingMessage} pending />
               ) : null
             ) : (
-              <StreamActivityIndicator label={streamLoadingMessage} activity={streamActivity} />
+              <StreamActivityIndicator
+                label={streamLoadingMessage}
+                activity={streamActivity}
+                turnActivity={currentStream?.turnActivity}
+              />
             )
           ) : null}
           {!isSharedView && isModelInitializing && (

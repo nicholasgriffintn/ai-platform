@@ -1,6 +1,7 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { StreamActivity } from "@ngriffin_uk/polychat-library-chat/response-stats";
 import { getStreamActivityMetrics } from "@ngriffin_uk/polychat-library-chat/response-stats";
+import type { TurnActivityProjection } from "@ngriffin_uk/polychat-library-chat/turn-activity";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -8,12 +9,14 @@ interface StreamActivityIndicatorProps {
   label: string;
   activity?: StreamActivity | null;
   className?: string;
+  turnActivity?: TurnActivityProjection | null;
 }
 
 export function StreamActivityIndicator({
   label,
   activity,
   className,
+  turnActivity,
 }: StreamActivityIndicatorProps) {
   const startedAt = activity?.startedAt;
   const [now, setNow] = useState(() => Date.now());
@@ -42,7 +45,7 @@ export function StreamActivityIndicator({
     >
       <Loader2 className="mt-0.5 h-4 w-4 flex-shrink-0 animate-spin text-blue-500" />
       <div className="flex min-w-0 flex-col gap-0.5">
-        <span>{label}</span>
+        <span>{turnActivity?.label ?? label}</span>
         {metrics.length > 0 && (
           <span
             aria-hidden="true"

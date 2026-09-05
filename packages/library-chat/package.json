@@ -149,6 +149,12 @@
       "import": "./dist/response-stats.js",
       "require": "./dist/response-stats.cjs"
     },
+    "./turn-activity": {
+      "polychat-source": "./src/turn-activity.ts",
+      "types": "./dist/turn-activity.d.ts",
+      "import": "./dist/turn-activity.js",
+      "require": "./dist/turn-activity.cjs"
+    },
     "./request-options": {
       "polychat-source": "./src/request-options.ts",
       "types": "./dist/request-options.d.ts",

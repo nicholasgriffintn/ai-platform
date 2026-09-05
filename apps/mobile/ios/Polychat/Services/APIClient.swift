@@ -177,11 +177,30 @@ final class APIClient: ObservableObject {
         )
     }
 
-    func fetchConversation(id: String, refreshPending: Bool = true) async throws -> ConversationDetailResponse {
-        try await send(
+    func fetchConversation(
+        id: String,
+        refreshPending: Bool = true,
+        recovery: TurnRecoveryAttemptContext? = nil
+    ) async throws -> ConversationDetailResponse {
+        var queryItems = refreshPending ? [URLQueryItem(name: "refresh_pending", value: "true")] : []
+
+        if let recovery {
+            queryItems.append(contentsOf: [
+                URLQueryItem(name: "recovery_platform", value: "ios"),
+                URLQueryItem(name: "recovery_attempt", value: String(recovery.attempt)),
+                URLQueryItem(name: "recovery_elapsed_ms", value: String(recovery.elapsedMs)),
+                URLQueryItem(
+                    name: "recovery_known_assistant_count",
+                    value: String(recovery.knownAssistantCount)
+                ),
+                URLQueryItem(name: "recovery_final_attempt", value: String(recovery.finalAttempt))
+            ])
+        }
+
+        return try await send(
             path: "/chat/completions/\(id)",
             method: "GET",
-            queryItems: refreshPending ? [URLQueryItem(name: "refresh_pending", value: "true")] : []
+            queryItems: queryItems
         )
     }
 

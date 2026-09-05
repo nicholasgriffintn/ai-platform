@@ -146,6 +146,33 @@ describe("consumeProviderStream", () => {
 
     expect(turn.content).toBe("Hello world");
     expect(events.filter((event) => event.type === "content_block_delta")).toHaveLength(2);
+    expect(events).toEqual([
+      { type: "turn_activity", payload: { kind: "response_started", step: 1 } },
+      { type: "content_block_delta", payload: { content: "Hello " } },
+      { type: "content_block_delta", payload: { content: "world" } },
+      { type: "turn_activity", payload: { kind: "response_finished", step: 1 } },
+    ]);
+  });
+
+  it("finishes reasoning before response generation starts", async () => {
+    const { sink, events } = createSink();
+
+    await consumeProviderStream(
+      providerStream([
+        `data: ${JSON.stringify({ choices: [{ delta: { reasoning_content: "Checking." } }] })}\n\n`,
+        textDelta("Answer."),
+        "data: [DONE]\n\n",
+      ]),
+      sink,
+      context,
+    );
+
+    expect(events.filter((event) => event.type === "turn_activity")).toEqual([
+      { type: "turn_activity", payload: { kind: "reasoning_started", step: 1 } },
+      { type: "turn_activity", payload: { kind: "reasoning_finished", step: 1 } },
+      { type: "turn_activity", payload: { kind: "response_started", step: 1 } },
+      { type: "turn_activity", payload: { kind: "response_finished", step: 1 } },
+    ]);
   });
 
   it("forwards deltas while the provider is still sending, not once it finishes", async () => {
@@ -273,7 +300,7 @@ describe("consumeProviderStream", () => {
   });
 
   it("collects streamed openai tool call arguments into one call", async () => {
-    const { sink } = createSink();
+    const { sink, events } = createSink();
 
     const turn = await consumeProviderStream(
       providerStream([
@@ -306,6 +333,76 @@ describe("consumeProviderStream", () => {
         function: { name: "get_weather", arguments: '{"location":"SF"}' },
       },
     ]);
+    expect(
+      events.filter(
+        (event) => event.type === "turn_activity" || event.type.startsWith("tool_use_"),
+      ),
+    ).toEqual([
+      {
+        type: "turn_activity",
+        payload: {
+          kind: "tool_input_started",
+          step: 1,
+          toolCallId: "call-1",
+          toolName: "get_weather",
+        },
+      },
+      {
+        type: "tool_use_start",
+        payload: { tool_id: "call-1", tool_name: "get_weather" },
+      },
+      { type: "tool_use_delta", payload: { tool_id: "call-1", parameters: '{"loc' } },
+      {
+        type: "tool_use_delta",
+        payload: { tool_id: "call-1", parameters: 'ation":"SF"}' },
+      },
+      { type: "tool_use_stop", payload: { tool_id: "call-1" } },
+      {
+        type: "turn_activity",
+        payload: {
+          kind: "tool_input_finished",
+          step: 1,
+          toolCallId: "call-1",
+          toolName: "get_weather",
+        },
+      },
+    ]);
+  });
+
+  it("does not finalise an OpenAI tool call when its input stream is truncated", async () => {
+    const { sink, events } = createSink();
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        `data: ${JSON.stringify({
+          choices: [
+            {
+              delta: {
+                tool_calls: [
+                  {
+                    index: 0,
+                    id: "call-1",
+                    function: { name: "get_weather", arguments: '{"location":' },
+                  },
+                ],
+              },
+            },
+          ],
+        })}\n\n`,
+      ]),
+      sink,
+      context,
+    );
+
+    expect(turn).toMatchObject({ interrupted: true, toolCalls: [] });
+    expect(events).not.toContainEqual({
+      type: "tool_use_stop",
+      payload: { tool_id: "call-1" },
+    });
+    expect(events).not.toContainEqual({
+      type: "turn_activity",
+      payload: expect.objectContaining({ kind: "tool_input_finished", toolCallId: "call-1" }),
+    });
   });
 
   it("keeps OpenAI hosted tool results and reasoning summaries in message parts", async () => {
@@ -513,7 +610,7 @@ describe("consumeProviderStream", () => {
   });
 
   it("waits for Anthropic tool input deltas before completing the call", async () => {
-    const { sink } = createSink();
+    const { sink, events } = createSink();
 
     const turn = await consumeProviderStream(
       providerStream([
@@ -533,6 +630,21 @@ describe("consumeProviderStream", () => {
         type: "function",
         function: { name: "load_skill", arguments: '{"skill":"artifacts"}' },
       },
+    ]);
+    expect(events.filter((event) => event.type.startsWith("tool_use_"))).toEqual([
+      {
+        type: "tool_use_start",
+        payload: { tool_id: "toolu-1", tool_name: "load_skill" },
+      },
+      {
+        type: "tool_use_delta",
+        payload: { tool_id: "toolu-1", parameters: '{"skill":"arti' },
+      },
+      {
+        type: "tool_use_delta",
+        payload: { tool_id: "toolu-1", parameters: 'facts"}' },
+      },
+      { type: "tool_use_stop", payload: { tool_id: "toolu-1" } },
     ]);
   });
 

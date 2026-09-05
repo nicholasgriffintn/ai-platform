@@ -4,11 +4,16 @@ import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/agent-loop";
 import { createRunResourceCloser } from "~/lib/chat/core/chat-stream";
 import {
+  recordTurnContinuityFinished,
+  type TurnContinuityOutcome,
+} from "~/lib/chat/streaming/continuity-telemetry";
+import {
   createChatSseStreamWriter,
   startChatStreamHeartbeat,
   type ChatEventSink,
 } from "~/lib/chat/streaming/emitter";
 import { getAIResponse } from "~/lib/chat/streaming/responses";
+import { writeTurnActivity } from "~/lib/chat/streaming/turn-activity";
 import { watchDetachedTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import { userCreditActor } from "~/lib/usage/creditActor";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
@@ -30,6 +35,7 @@ export type CreateModelEnsembleStreamParams = Omit<AgentLoopExecutionParams, "si
 };
 
 export function createModelEnsembleStream(params: CreateModelEnsembleStreamParams): ReadableStream {
+  const startedAtMs = Date.now();
   const stream = createChatSseStreamWriter();
   const closeRunResources = createRunResourceCloser(params);
   const stopHeartbeat = startChatStreamHeartbeat(stream);
@@ -54,7 +60,10 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
   };
 
   const run = async () => {
+    let outcome: TurnContinuityOutcome = "failed";
+
     try {
+      await writeTurnActivity(stream, { kind: "turn_started" });
       await stream.writeEvent("state", { state: StreamState.INIT });
 
       const usageLimits = await params.conversationManager.getUsageLimits();
@@ -74,6 +83,15 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
         sink: primarySink,
         shouldStop: stopSignal.shouldStop,
       });
+
+      outcome =
+        primary.response.status === "pending"
+          ? "waiting"
+          : primary.response.status === "stopped"
+            ? "cancelled"
+            : primary.response.status === "incomplete"
+              ? "failed"
+              : "completed";
       const secondaryText = await streamSecondaryAnswers(
         stream,
         secondaryModels,
@@ -102,10 +120,12 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
         finish_reason: "stop",
       });
       await stream.writeEvent("message_stop", {});
+      await writeTurnActivity(stream, { kind: "turn_finished", outcome });
       await stream.writeEvent("state", { state: StreamState.DONE });
     } catch (error) {
       logger.error("Model ensemble stream failed", { error, completionId: params.completionId });
 
+      await writeTurnActivity(stream, { kind: "turn_finished", outcome: "failed" });
       await stream.writeEvent("error", {
         error: {
           message: error instanceof Error ? error.message : "Failed to complete the response",
@@ -133,6 +153,22 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
       } catch (error) {
         logger.error("Failed to close the model ensemble stream", { error });
       }
+
+      recordTurnContinuityFinished(
+        {
+          env: params.env,
+          executionCtx: params.executionCtx,
+          traceId: params.completionId,
+        },
+        {
+          platform: params.platform,
+          outcome,
+          startedAtMs,
+          finishedAtMs: Date.now(),
+          stream: stream.getContinuitySnapshot(),
+          cancellationObserved: stopSignal.wasCancellationObserved(),
+        },
+      );
     }
   };
 

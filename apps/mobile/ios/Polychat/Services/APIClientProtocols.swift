@@ -21,7 +21,11 @@ extension RecipesAPIClient {
 
 protocol ConversationAPIClient {
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse
-    func fetchConversation(id: String, refreshPending: Bool) async throws -> ConversationDetailResponse
+    func fetchConversation(
+        id: String,
+        refreshPending: Bool,
+        recovery: TurnRecoveryAttemptContext?
+    ) async throws -> ConversationDetailResponse
     func streamChatCompletion(
         messages: [ChatMessage],
         modelId: String?,
@@ -50,7 +54,7 @@ extension ConversationAPIClient {
     }
 
     func fetchConversation(id: String) async throws -> ConversationDetailResponse {
-        try await fetchConversation(id: id, refreshPending: true)
+        try await fetchConversation(id: id, refreshPending: true, recovery: nil)
     }
 }
 

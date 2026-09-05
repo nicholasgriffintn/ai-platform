@@ -10,6 +10,7 @@ class ConversationManager: ObservableObject {
     @Published var loadingConversationID: String?
     @Published var error: String?
     @Published var usageLimits: ChatUsageLimits?
+    @Published private(set) var turnActivities: [String: TurnActivityProjection] = [:]
 
     private var apiClient: (any ConversationAPIClient)?
     private var modelsStore: ModelsStore?
@@ -33,6 +34,7 @@ class ConversationManager: ObservableObject {
         loadingConversationID = nil
         error = nil
         usageLimits = nil
+        turnActivities = [:]
     }
 
     func loadConversations() async {
@@ -353,10 +355,19 @@ class ConversationManager: ObservableObject {
         }
 
         let knownMessageIds = Set(conversation.messages.map(\.id))
+        let knownAssistantCount = conversation.messages.filter { $0.role == "assistant" }.count
         var toolActivity = StreamingToolActivity()
+        turnActivities[conversationId] = TurnActivityProjection()
+        defer { turnActivities.removeValue(forKey: conversationId) }
 
         let assistantMessageId = UUID().uuidString
-        let loadingMessage = ChatMessage(id: assistantMessageId, role: "assistant", content: "")
+        let loadingMessage = ChatMessage(
+            id: assistantMessageId,
+            role: "assistant",
+            content: "",
+            completionId: conversationId,
+            status: "in_progress"
+        )
         conversation.messages.append(loadingMessage)
         conversation.lastMessageAt = Date()
         conversation.messageCount = conversation.messages.count
@@ -447,6 +458,10 @@ class ConversationManager: ObservableObject {
                             beforeMessageId: assistantMessageId
                         )
                     }
+                case .turnActivity(let event):
+                    var projection = turnActivities[conversationId] ?? TurnActivityProjection()
+                    projection.apply(event)
+                    turnActivities[conversationId] = projection
                 case .usageLimits(let limits):
                     usageLimits = limits
                 case .conversationTitle(let title):
@@ -508,6 +523,7 @@ class ConversationManager: ObservableObject {
                 error: error,
                 conversationId: conversationId,
                 knownMessageIds: knownMessageIds.union(toolActivity.knownMessageIds),
+                knownAssistantCount: knownAssistantCount,
                 assistantMessageId: finalMessageId,
                 fallbackMessageId: assistantMessageId,
                 modelId: conversation.modelId,
@@ -538,6 +554,7 @@ class ConversationManager: ObservableObject {
         error: Error,
         conversationId: String,
         knownMessageIds: Set<String>,
+        knownAssistantCount: Int,
         assistantMessageId: String,
         fallbackMessageId: String,
         modelId: String?,
@@ -546,6 +563,10 @@ class ConversationManager: ObservableObject {
         guard StreamFailureClassifier.classify(error) == .transport, let apiClient else {
             return false
         }
+
+        var projection = turnActivities[conversationId] ?? TurnActivityProjection()
+        projection.markReconnecting()
+        turnActivities[conversationId] = projection
 
         updateAssistantMessage(
             conversationId: conversationId,
@@ -561,9 +582,14 @@ class ConversationManager: ObservableObject {
         let recoveredMessages = await TurnRecovery.recoverDetachedTurn(
             completionId: conversationId,
             knownMessageIds: knownMessageIds,
+            knownAssistantCount: knownAssistantCount,
             policy: turnRecoveryPolicy
-        ) { completionId in
-            try await apiClient.fetchConversation(id: completionId).messages
+        ) { completionId, recovery in
+            try await apiClient.fetchConversation(
+                id: completionId,
+                refreshPending: true,
+                recovery: recovery
+            ).messages
         }
 
         return applyRecoveredTurn(
@@ -572,6 +598,14 @@ class ConversationManager: ObservableObject {
             assistantMessageId: assistantMessageId,
             fallbackMessageId: fallbackMessageId
         )
+    }
+
+    func turnActivityLabel(for conversationId: String?) -> String? {
+        guard let conversationId else {
+            return nil
+        }
+
+        return turnActivities[conversationId]?.label
     }
 
     private func applyRecoveredTurn(

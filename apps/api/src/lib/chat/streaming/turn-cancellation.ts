@@ -45,6 +45,7 @@ async function isTurnCancellationRequested(
 
 export interface TurnStopSignal {
   shouldStop: () => boolean;
+  wasCancellationObserved: () => boolean;
   stop: () => void;
 }
 
@@ -86,6 +87,8 @@ export function watchDetachedTurnCancellation(params: {
     void isTurnCancellationRequested(env, completionId, startedAt)
       .then((cancelled) => {
         stopRequested ||= cancelled;
+
+        return cancelled;
       })
       .finally(() => {
         if (!stopRequested) {
@@ -98,6 +101,7 @@ export function watchDetachedTurnCancellation(params: {
 
   return {
     shouldStop: () => stopRequested,
+    wasCancellationObserved: () => stopRequested,
     stop: () => {
       stopped = true;
       clearTimeout(timer);
