@@ -1259,7 +1259,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     ...openaiResponsesHostedTools,
     ...openaiHostedShellTools,
     supportsAttachments: true,
-    supportsTemperature: false,
+    supportsTemperature: true,
     supportsToolCalls: true,
     supportsTopP: false,
     supportsResponseFormat: true,
@@ -1270,8 +1270,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.014,
 
     reasoningConfig: {
-      supportedEffortLevels: ["low", "medium", "high", "xhigh"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "medium",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],

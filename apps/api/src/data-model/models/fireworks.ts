@@ -1293,7 +1293,7 @@ export const fireworksModelConfig: ModelConfig = {
   	family: "glm",
   	openWeights: true,
   	releaseDate: "August 14, 2026",
-  	lastUpdated: "August 28, 2026",
+  	lastUpdated: "September 4, 2026",
   	modalities: {
   		input: ["text"],
   		output: ["text"],
@@ -1307,7 +1307,7 @@ export const fireworksModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.0014,
   	costPer1kOutputTokens: 0.0044,
   	reasoningConfig: {
-  		supportedEffortLevels: ["high", "max"],
+  		supportedEffortLevels: ["low", "high", "max"],
   		defaultEffort: "high",
   	},
   },
@@ -1318,7 +1318,7 @@ export const fireworksModelConfig: ModelConfig = {
   	family: "glm",
   	openWeights: false,
   	releaseDate: "August 26, 2026",
-  	lastUpdated: "August 26, 2026",
+  	lastUpdated: "September 4, 2026",
   	modalities: {
   		input: ["text", "image", "video", "pdf"],
   		output: ["text"],
@@ -1332,7 +1332,7 @@ export const fireworksModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.00015,
   	costPer1kOutputTokens: 0.0005,
   	reasoningConfig: {
-  		supportedEffortLevels: ["high", "max"],
+  		supportedEffortLevels: ["low", "high", "max"],
   		defaultEffort: "high",
   	},
   },
@@ -1358,6 +1358,31 @@ export const fireworksModelConfig: ModelConfig = {
   	costPer1kOutputTokens: 0.00066,
   	reasoningConfig: {
   		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
+  	},
+  },
+  "accounts/fireworks/models/qwen3p8-2p4t-a95b": {
+  	name: "Qwen3.8 2.4T A95B",
+  	matchingModel: "accounts/fireworks/models/qwen3p8-2p4t-a95b",
+  	provider: "fireworks",
+  	family: "qwen",
+  	openWeights: true,
+  	releaseDate: "August 12, 2026",
+  	lastUpdated: "August 12, 2026",
+  	modalities: {
+  		input: ["text"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: false,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 262144,
+  	maxTokens: 131072,
+  	costPer1kInputTokens: 0.002,
+  	costPer1kOutputTokens: 0.006,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["low", "medium", "xhigh"],
   		defaultEffort: "low",
   	},
   },
