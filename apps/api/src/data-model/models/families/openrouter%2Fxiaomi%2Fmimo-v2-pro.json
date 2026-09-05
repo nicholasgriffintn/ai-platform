@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 5,
+    "reliability": 2,
+    "knowledgeCutoffDate": "December 2024",
+    "releaseDate": "March 18, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 40.3,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The openrouter/xiaomi/mimo v2 pro family includes models that produce text.",
+  "models": {
+    "mimo-v2-pro": {
+      "defaults": {
+        "name": "MiMo-V2-Pro",
+        "description": "MiMo-V2-Pro accepts text and produces text."
+      }
+    }
+  }
+}

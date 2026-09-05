@@ -1,0 +1,66 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "supportsResponseFormat": true,
+    "supportsTemperature": true
+  },
+  "description": "The reka family includes models that produce text.",
+  "models": {
+    "reka-edge": {
+      "defaults": {
+        "name": "Reka Edge",
+        "description": "Multimodal model for analyzing text, images, documents, and rich media",
+        "contextWindow": 16384,
+        "maxTokens": 14745,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 20, 2026",
+        "supportsToolCalls": true,
+        "supportsAttachments": true
+      }
+    },
+    "reka-flash-3": {
+      "defaults": {
+        "name": "Reka Flash 3",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 65536,
+        "maxTokens": 58982,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "January 31, 2025",
+        "releaseDate": "March 12, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    }
+  }
+}

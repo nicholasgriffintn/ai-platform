@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "transcription"
+      ]
+    },
+    "strengths": [
+      "audio",
+      "transcription"
+    ],
+    "releaseDate": "February 4, 2026",
+    "supportsToolCalls": false,
+    "supportsTemperature": false
+  },
+  "description": "The mistral/voxtral mini transcribe realtime 2602 family includes models that produce transcription.",
+  "models": {
+    "voxtral-mini-transcribe-realtime": {
+      "defaults": {
+        "name": "Voxtral Mini Transcribe Realtime",
+        "description": "Efficient audio input model fine-tuned and optimized for live transcription purposes only.",
+        "card": "https://docs.mistral.ai/models/model-cards/voxtral-mini-transcribe-realtime-26-02"
+      }
+    }
+  }
+}

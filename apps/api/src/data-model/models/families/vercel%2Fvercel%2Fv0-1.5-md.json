@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 32000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "June 9, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The vercel/vercel/v0 1.5 md family includes models that produce text.",
+  "models": {
+    "v0-1-5-md": {
+      "defaults": {
+        "name": "v0-1.5-md",
+        "description": "v0-1.5-md accepts text, image and produces text."
+      }
+    }
+  }
+}

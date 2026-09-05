@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 256000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "August 3, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The vercel/sakana/namazu family includes models that produce text.",
+  "models": {
+    "sakana-namazu": {
+      "defaults": {
+        "name": "Sakana Namazu",
+        "description": "Multi-agent model for routing expert agents across complex analytical tasks"
+      }
+    }
+  }
+}

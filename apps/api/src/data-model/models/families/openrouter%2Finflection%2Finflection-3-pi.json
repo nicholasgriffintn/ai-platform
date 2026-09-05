@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 8000,
+    "maxTokens": 1024,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "October 31, 2024",
+    "releaseDate": "October 11, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/inflection/inflection 3 pi family includes models that produce text.",
+  "models": {
+    "inflection-3-pi": {
+      "defaults": {
+        "name": "Inflection 3 Pi",
+        "description": "Inflection 3 Pi accepts text and produces text."
+      }
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "deepseek-chat": {
+      "model": "deepseek/deepseek-chat",
+      "matchingModel": "deepseek-chat",
+      "overrides": {
+        "name": "DeepSeek Chat",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "isFree": true,
+        "card": "https://www.prompthub.us/models/deepseek-v3",
+        "strengths": [
+          "multilingual",
+          "coding",
+          "analysis"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5,
+        "speed": 3,
+        "deprecated": true,
+        "lastUpdated": "February 28, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "deepseek-reasoner": {
+      "model": "deepseek-thinking/deepseek-reasoner",
+      "matchingModel": "deepseek-reasoner",
+      "overrides": {
+        "isFree": true,
+        "speed": 3,
+        "deprecated": true,
+        "lastUpdated": "February 28, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028,
+        "costPer1kReasoningTokens": 0.00028
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "deepseek-v4-flash": {
+      "model": "deepseek-flash/deepseek-v4-flash",
+      "matchingModel": "deepseek-v4-flash",
+      "overrides": {
+        "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
+        "contextWindow": 1000000,
+        "isFree": true,
+        "strengths": [
+          "reasoning",
+          "coding",
+          "analysis",
+          "multilingual",
+          "tool_use"
+        ],
+        "speed": 4,
+        "isFeatured": true,
+        "releaseDate": "July 31, 2026",
+        "lastUpdated": "July 31, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028,
+        "costPer1kReasoningTokens": 0.00028,
+        "supportsToolChoice": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "deepseek-v4-pro": {
+      "model": "deepseek-thinking/deepseek-v4-pro",
+      "matchingModel": "deepseek-v4-pro",
+      "overrides": {
+        "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "isFree": true,
+        "strengths": [
+          "reasoning",
+          "coding",
+          "analysis",
+          "math",
+          "multilingual",
+          "tool_use"
+        ],
+        "speed": 3,
+        "isFeatured": true,
+        "releaseDate": "August 12, 2026",
+        "lastUpdated": "August 22, 2026",
+        "costPer1kInputTokens": 0.000435,
+        "costPer1kOutputTokens": 0.00087,
+        "costPer1kReasoningTokens": 0.00087,
+        "supportsToolChoice": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "deepseek-v4-flash-vision-exp": {
+      "model": "deepseek-flash/deepseek-v4-flash-vision-exp",
+      "matchingModel": "deepseek-v4-flash-vision-exp",
+      "overrides": {
+        "status": "beta",
+        "contextWindow": 1000000,
+        "lastUpdated": "August 21, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028,
+        "costPer1kReasoningTokens": 0.00028
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    }
+  }
+}

@@ -1,0 +1,369 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The gpt mini family includes models that produce text.",
+  "models": {
+    "gpt-4-1-mini": {
+      "defaults": {
+        "description": "Affordable GPT-4.1 lane for fast coding help and structured extraction",
+        "contextWindow": 1047576,
+        "maxTokens": 32768,
+        "multimodal": true,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "April 14, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 16.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-4-1-mini-eu": {
+      "defaults": {
+        "name": "GPT-4.1 mini (EU)",
+        "description": "Affordable GPT-4.1 lane for fast coding help and structured extraction",
+        "contextWindow": 1047576,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "April 14, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 16.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-4-1-mini-fast": {
+      "defaults": {
+        "name": "GPT-4.1 mini (Fast)",
+        "description": "Affordable GPT-4.1 lane for fast coding help and structured extraction",
+        "contextWindow": 1047576,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "April 14, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 16.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-4o-mini": {
+      "defaults": {
+        "description": "Small omni GPT for cheap multimodal assistance and production-scale traffic",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "contextComplexity": 3,
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "July 18, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-4o-mini-eu": {
+      "defaults": {
+        "name": "GPT-4o mini (EU)",
+        "description": "Small omni GPT for cheap multimodal assistance and production-scale traffic",
+        "contextWindow": 128000,
+        "maxTokens": 16000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 3,
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "July 18, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-4o-mini-fast": {
+      "defaults": {
+        "name": "GPT-4o mini (Fast)",
+        "description": "Small omni GPT for cheap multimodal assistance and production-scale traffic",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 3,
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "July 18, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-4o-mini-search-preview": {
+      "defaults": {
+        "name": "GPT 4o Mini Search Preview",
+        "description": "GPT 4o Mini Search Preview accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "March 12, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
+    "gpt-5-4-mini": {
+      "defaults": {
+        "name": "GPT-5.4 Mini",
+        "description": "Strong small GPT for coding subagents, quick tool use, and high-volume work",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "knowledgeCutoffDate": "August 31, 2025",
+        "releaseDate": "March 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 16.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-5-4-mini-fast": {
+      "defaults": {
+        "name": "GPT 5.4 Mini (Fast)",
+        "description": "Strong small GPT for coding subagents, quick tool use, and high-volume work",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 31, 2025",
+        "releaseDate": "March 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 16.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-5-mini": {
+      "defaults": {
+        "name": "GPT-5 Mini",
+        "description": "Small GPT-5 for responsive agents, coding help, and everyday automation",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 30, 2024",
+        "releaseDate": "August 7, 2025",
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 33,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-5-mini-eu": {
+      "defaults": {
+        "name": "GPT-5 Mini (EU)",
+        "description": "Small GPT-5 for responsive agents, coding help, and everyday automation",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 30, 2024",
+        "releaseDate": "August 7, 2025",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 33,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-5-mini-fast": {
+      "defaults": {
+        "name": "GPT-5 mini (Fast)",
+        "description": "Small GPT-5 for responsive agents, coding help, and everyday automation",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 30, 2024",
+        "releaseDate": "August 7, 2025",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 33,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "openai-gpt-mini-latest": {
+      "defaults": {
+        "name": "OpenAI GPT Mini Latest",
+        "description": "Compact GPT model for low-latency assistance and high-volume workloads",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 31, 2025",
+        "releaseDate": "April 27, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "video"
+    ],
+    "reliability": 2,
+    "supportsAttachments": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 1001,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 8
+        }
+      ]
+    }
+  },
+  "description": "The replicate/847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405 family includes models that produce text.",
+  "models": {
+    "hunyuan-video": {
+      "defaults": {
+        "name": "Hunyuan Video",
+        "description": "A state-of-the-art text-to-video generation model capable of creating high-quality videos with realistic motion from text descriptions ."
+      }
+    }
+  }
+}

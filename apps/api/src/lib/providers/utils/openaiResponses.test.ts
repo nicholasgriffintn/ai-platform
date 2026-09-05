@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { openaiModelConfig } from "~/data-model/models/openai";
+import { getProviderModels } from "~/lib/providers/models/catalogue";
 import type { ChatCompletionParameters } from "~/types";
 
 import { buildOpenAIResponsesBody, shouldUseOpenAIResponsesApi } from "./openaiResponses";
@@ -19,7 +19,7 @@ describe("shouldUseOpenAIResponsesApi", () => {
       "codex-mini-latest",
       "gpt-5-pro",
     ]) {
-      const modelConfig = openaiModelConfig[modelId];
+      const modelConfig = getProviderModels("openai")[modelId];
 
       expect(modelConfig, `${modelId} is missing from the catalogue`).toBeDefined();
       expect(shouldUseOpenAIResponsesApi(baseParams, modelConfig), modelId).toBe(true);
@@ -27,7 +27,7 @@ describe("shouldUseOpenAIResponsesApi", () => {
   });
 
   it("keeps chat completions for models that do not require the responses API", () => {
-    const modelConfig = openaiModelConfig["gpt-5.2"];
+    const modelConfig = getProviderModels("openai")["gpt-5.2"];
 
     expect(shouldUseOpenAIResponsesApi(baseParams, modelConfig)).toBe(false);
     expect(shouldUseOpenAIResponsesApi({ ...baseParams, use_responses: true }, modelConfig)).toBe(
@@ -36,7 +36,7 @@ describe("shouldUseOpenAIResponsesApi", () => {
   });
 
   it("uses the responses API when a message contains a document", () => {
-    const modelConfig = openaiModelConfig["gpt-5.6"];
+    const modelConfig = getProviderModels("openai")["gpt-5.6"];
     const params: ChatCompletionParameters = {
       ...baseParams,
       messages: [
@@ -60,7 +60,7 @@ describe("shouldUseOpenAIResponsesApi", () => {
   });
 
   it("uses the responses API for hosted tools", () => {
-    const modelConfig = openaiModelConfig["gpt-5.4"];
+    const modelConfig = getProviderModels("openai")["gpt-5.4"];
 
     expect(
       shouldUseOpenAIResponsesApi(
@@ -71,7 +71,7 @@ describe("shouldUseOpenAIResponsesApi", () => {
   });
 
   it("uses the responses API for function tools with reasoning", () => {
-    const modelConfig = openaiModelConfig["gpt-5.4"];
+    const modelConfig = getProviderModels("openai")["gpt-5.4"];
 
     expect(
       shouldUseOpenAIResponsesApi(
@@ -100,7 +100,7 @@ describe("shouldUseOpenAIResponsesApi", () => {
       expect(
         shouldUseOpenAIResponsesApi(
           { ...baseParams, reasoning_effort: "medium" },
-          openaiModelConfig[modelId],
+          getProviderModels("openai")[modelId],
         ),
         modelId,
       ).toBe(true);
@@ -108,7 +108,7 @@ describe("shouldUseOpenAIResponsesApi", () => {
   });
 
   it("does not force the responses API for non-text output models", () => {
-    const imageModel = openaiModelConfig["gpt-image-2"];
+    const imageModel = getProviderModels("openai")["gpt-image-2"];
 
     expect(shouldUseOpenAIResponsesApi({ ...baseParams, use_responses: true }, imageModel)).toBe(
       false,
@@ -118,23 +118,20 @@ describe("shouldUseOpenAIResponsesApi", () => {
 
 describe("current OpenAI model capabilities", () => {
   it("matches the reasoning defaults in the current model guidance", () => {
-    expect(openaiModelConfig["gpt-4.1"].reasoningConfig).toBeUndefined();
-    expect(openaiModelConfig["gpt-5"].reasoningConfig).toMatchObject({
+    expect(getProviderModels("openai")["gpt-4.1"].reasoningConfig).toBeUndefined();
+    expect(getProviderModels("openai")["gpt-5"].reasoningConfig).toMatchObject({
       supportedEffortLevels: ["minimal", "low", "medium", "high"],
       defaultEffort: "medium",
     });
-    expect(openaiModelConfig["gpt-5.1"].reasoningConfig?.defaultEffort).toBe("none");
-    expect(openaiModelConfig["gpt-5.2"].reasoningConfig?.defaultEffort).toBe("none");
-    expect(openaiModelConfig["gpt-5.3-codex"].reasoningConfig?.supportedEffortLevels).toEqual([
-      "low",
-      "medium",
-      "high",
-      "xhigh",
-    ]);
-    expect(openaiModelConfig["gpt-5.4"].reasoningConfig?.defaultEffort).toBe("none");
-    expect(openaiModelConfig["gpt-5.5"].reasoningConfig?.defaultEffort).toBe("medium");
-    expect(openaiModelConfig["gpt-5.6"].reasoningConfig?.defaultEffort).toBe("medium");
-    expect(openaiModelConfig["gpt-6-astra"].reasoningConfig).toMatchObject({
+    expect(getProviderModels("openai")["gpt-5.1"].reasoningConfig?.defaultEffort).toBe("none");
+    expect(getProviderModels("openai")["gpt-5.2"].reasoningConfig?.defaultEffort).toBe("none");
+    expect(
+      getProviderModels("openai")["gpt-5.3-codex"].reasoningConfig?.supportedEffortLevels,
+    ).toEqual(["low", "medium", "high", "xhigh"]);
+    expect(getProviderModels("openai")["gpt-5.4"].reasoningConfig?.defaultEffort).toBe("none");
+    expect(getProviderModels("openai")["gpt-5.5"].reasoningConfig?.defaultEffort).toBe("medium");
+    expect(getProviderModels("openai")["gpt-5.6"].reasoningConfig?.defaultEffort).toBe("medium");
+    expect(getProviderModels("openai")["gpt-6-astra"].reasoningConfig).toMatchObject({
       supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
       defaultEffort: "medium",
     });
@@ -142,7 +139,7 @@ describe("current OpenAI model capabilities", () => {
 
   it("exposes Responses hosted tools on every GPT-5.6 model", () => {
     for (const modelId of ["gpt-5.6", "gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]) {
-      const modelConfig = openaiModelConfig[modelId];
+      const modelConfig = getProviderModels("openai")[modelId];
       const body = buildOpenAIResponsesBody(
         {
           ...baseParams,
@@ -171,38 +168,38 @@ describe("current OpenAI model capabilities", () => {
       "gpt-5.6-terra",
       "gpt-6-astra",
     ]) {
-      expect(openaiModelConfig[modelId].supportedServiceTiers, modelId).toEqual([
+      expect(getProviderModels("openai")[modelId].supportedServiceTiers, modelId).toEqual([
         "default",
         "fast",
       ]);
     }
 
-    expect(openaiModelConfig["gpt-5.5"].supportedServiceTiers).toBeUndefined();
+    expect(getProviderModels("openai")["gpt-5.5"].supportedServiceTiers).toBeUndefined();
   });
 
   it("forwards the selected service tier to the Responses API", () => {
     const body = buildOpenAIResponsesBody(
       { ...baseParams, service_tier: "fast" },
-      openaiModelConfig["gpt-6-astra"],
+      getProviderModels("openai")["gpt-6-astra"],
     );
 
     expect(body.service_tier).toBe("fast");
   });
 
   it("keeps pro-model hosted tool restrictions accurate", () => {
-    expect(openaiModelConfig["gpt-5.4-pro"]).toMatchObject({
+    expect(getProviderModels("openai")["gpt-5.4-pro"]).toMatchObject({
       supportsCodeExecution: false,
       supportsComputerUse: true,
       supportsToolSearch: true,
     });
-    expect(openaiModelConfig["gpt-5.4-pro"].supportsHostedShell).toBeUndefined();
-    expect(openaiModelConfig["gpt-5.5-pro"]).toMatchObject({
+    expect(getProviderModels("openai")["gpt-5.4-pro"].supportsHostedShell).toBeUndefined();
+    expect(getProviderModels("openai")["gpt-5.5-pro"]).toMatchObject({
       supportsCodeExecution: true,
       supportsHostedShell: true,
       supportsStreaming: false,
     });
-    expect(openaiModelConfig["gpt-5.5-pro"].supportsComputerUse).toBeUndefined();
-    expect(openaiModelConfig["gpt-5.5-pro"].supportsToolSearch).toBeUndefined();
+    expect(getProviderModels("openai")["gpt-5.5-pro"].supportsComputerUse).toBeUndefined();
+    expect(getProviderModels("openai")["gpt-5.5-pro"].supportsToolSearch).toBeUndefined();
   });
 
   it("requests Luna reasoning summaries and code interpreter outputs by default", () => {
@@ -212,7 +209,7 @@ describe("current OpenAI model capabilities", () => {
         enabled_tools: ["code_execution"],
         reasoning_effort: "medium",
       },
-      openaiModelConfig["gpt-5.6-luna"],
+      getProviderModels("openai")["gpt-5.6-luna"],
     );
 
     expect(body.reasoning).toEqual({ effort: "medium", summary: "auto" });
@@ -228,7 +225,7 @@ describe("current OpenAI model capabilities", () => {
         reasoning_effort: "medium",
         tool_options: { reasoning: { summary: "detailed" } },
       },
-      openaiModelConfig["gpt-5.6-luna"],
+      getProviderModels("openai")["gpt-5.6-luna"],
     );
 
     expect(body.reasoning).toEqual({ effort: "medium", summary: "detailed" });
@@ -238,7 +235,7 @@ describe("current OpenAI model capabilities", () => {
   it("sends the provider-native none effort for supported OpenAI models", () => {
     const body = buildOpenAIResponsesBody(
       { ...baseParams, reasoning_effort: "none" },
-      openaiModelConfig["gpt-5.6"],
+      getProviderModels("openai")["gpt-5.6"],
     );
 
     expect(body.reasoning).toEqual({ effort: "none" });
@@ -262,7 +259,7 @@ describe("current OpenAI model capabilities", () => {
         include: ["message.output_text.logprobs"],
         prompt_cache_options: { mode: "explicit", ttl: "30m" },
       },
-      openaiModelConfig["gpt-6-astra"],
+      getProviderModels("openai")["gpt-6-astra"],
       [
         {
           type: "function",
@@ -298,14 +295,14 @@ describe("current OpenAI model capabilities", () => {
     expect(() =>
       buildOpenAIResponsesBody(
         { ...baseParams, input, compaction: "off", truncation: "disabled" },
-        openaiModelConfig["gpt-5.6"],
+        getProviderModels("openai")["gpt-5.6"],
       ),
     ).toThrow("does not support configuration_update");
 
     expect(() =>
       buildOpenAIResponsesBody(
         { ...baseParams, input, compaction: "auto", truncation: "disabled" },
-        openaiModelConfig["gpt-6-astra"],
+        getProviderModels("openai")["gpt-6-astra"],
       ),
     ).toThrow("require compaction=off");
   });
@@ -314,7 +311,7 @@ describe("current OpenAI model capabilities", () => {
     expect(() =>
       buildOpenAIResponsesBody(
         { ...baseParams, prompt_cache_options: { ttl: "30m" } },
-        openaiModelConfig["gpt-5.5"],
+        getProviderModels("openai")["gpt-5.5"],
       ),
     ).toThrow("does not support prompt_cache_options");
   });

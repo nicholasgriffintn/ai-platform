@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "April 3, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/meta/m2m100 1.2b family includes models that produce text.",
+  "models": {
+    "m2m100-1-2b": {
+      "defaults": {
+        "name": "M2M100 1.2B",
+        "description": "M2M100 1.2B accepts text and produces text."
+      }
+    }
+  }
+}

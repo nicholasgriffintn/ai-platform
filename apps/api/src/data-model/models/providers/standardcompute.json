@@ -1,0 +1,19 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "standardcompute": {
+      "model": "auto/standard-compute",
+      "matchingModel": "standardcompute",
+      "overrides": {
+        "lastUpdated": "August 24, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    }
+  }
+}

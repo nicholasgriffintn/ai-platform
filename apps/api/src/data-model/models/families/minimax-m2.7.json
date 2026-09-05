@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 204800,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 2,
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "March 18, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 38.1,
+      "codingIndex": 52.6,
+      "agenticIndex": 25.6,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The minimax m2.7 family includes models that produce text.",
+  "models": {
+    "minimax-m2-7": {
+      "defaults": {
+        "name": "MiniMax M2.7",
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks"
+      }
+    }
+  }
+}

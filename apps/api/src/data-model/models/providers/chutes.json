@@ -1,0 +1,1066 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "chutesai/Devstral-Small-2505": {
+      "model": "chutes/chutesai/Devstral-Small-2505/devstral-small-2505",
+      "matchingModel": "chutesai/Devstral-Small-2505",
+      "overrides": {
+        "lastUpdated": "May 21, 2025",
+        "costPer1kInputTokens": 0.00002,
+        "costPer1kOutputTokens": 0.00008
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "chutesai/Mistral-Small-3.2-24B-Instruct-2506": {
+      "model": "mistral/mistral-small-3-2-24b-instruct-2506",
+      "matchingModel": "chutesai/Mistral-Small-3.2-24B-Instruct-2506",
+      "overrides": {
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00018
+      }
+    },
+    "deepseek-ai/DeepSeek-V3-0324": {
+      "model": "deepseek/deepseek-v3-0324",
+      "matchingModel": "deepseek-ai/DeepSeek-V3-0324",
+      "overrides": {
+        "name": "DeepSeek V3 (0324)",
+        "description": "Advanced DeepSeek V3 model hosted on Chutes.",
+        "contextWindow": 75000,
+        "maxTokens": 163840,
+        "releaseDate": "August 1, 2025",
+        "lastUpdated": "August 1, 2025",
+        "costPer1kInputTokens": 0.00018,
+        "costPer1kOutputTokens": 0.00072
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
+    },
+    "deepseek-ai/DeepSeek-R1-0528": {
+      "model": "deepseek/deepseek-r1-0528",
+      "matchingModel": "deepseek-ai/DeepSeek-R1-0528",
+      "overrides": {
+        "name": "DeepSeek R1 (0528)",
+        "description": "Reasoning-optimized DeepSeek R1 model.",
+        "contextWindow": 75000,
+        "maxTokens": 163840,
+        "releaseDate": "August 1, 2025",
+        "lastUpdated": "August 1, 2025",
+        "costPer1kInputTokens": 0.00018,
+        "costPer1kOutputTokens": 0.00072
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "deepseek-ai/DeepSeek-R1-Distill-Llama-70B": {
+      "model": "deepseek-thinking/deepseek-r1-distill-llama-70b",
+      "matchingModel": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0000272,
+        "costPer1kOutputTokens": 0.0001087
+      }
+    },
+    "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B": {
+      "model": "deepseek/deepseek-r1-0528-qwen3-8b",
+      "matchingModel": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+      "overrides": {
+        "lastUpdated": "May 29, 2025",
+        "costPer1kInputTokens": 0.00002,
+        "costPer1kOutputTokens": 0.00007
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "moonshotai/Kimi-K2-Instruct-75k": {
+      "model": "kimi/kimi-k2-instruct",
+      "matchingModel": "moonshotai/Kimi-K2-Instruct-75k",
+      "overrides": {
+        "description": "Kimi K2 instruction-tuned model with large context.",
+        "contextWindow": 75000,
+        "maxTokens": 75000,
+        "releaseDate": "August 1, 2025",
+        "lastUpdated": "August 1, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00059
+      },
+      "unset": [
+        "knowledgeCutoffDate",
+        "supportsResponseFormat"
+      ]
+    },
+    "Qwen/Qwen3-30B-A3B": {
+      "model": "qwen/qwen3-30b-a3b",
+      "matchingModel": "Qwen/Qwen3-30B-A3B",
+      "overrides": {
+        "description": "Qwen3 30B A3B model with reasoning support.",
+        "maxTokens": 40960,
+        "speed": 4,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00022
+      }
+    },
+    "Qwen/Qwen3-235B-A22B-Instruct-2507": {
+      "model": "qwen/qwen3-235b-a22b-instruct-2507",
+      "matchingModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "overrides": {
+        "description": "High-capacity instruction-tuned Qwen3 model.",
+        "maxTokens": 131072,
+        "contextComplexity": 4,
+        "speed": 3,
+        "releaseDate": "April 28, 2025",
+        "lastUpdated": "July 21, 2025",
+        "costPer1kInputTokens": 0.000078,
+        "costPer1kOutputTokens": 0.000312
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
+    },
+    "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8": {
+      "model": "qwen/qwen3-coder-480b-a35b-instruct-fp8",
+      "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "August 1, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0008
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "Qwen/Qwen3-235B-A22B-Thinking-2507": {
+      "model": "qwen/qwen3-235b-a22b-thinking-2507",
+      "matchingModel": "Qwen/Qwen3-235B-A22B-Thinking-2507",
+      "overrides": {
+        "description": "Thinking-optimized Qwen3 model for complex reasoning tasks.",
+        "maxTokens": 262144,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00011,
+        "costPer1kOutputTokens": 0.0006
+      }
+    },
+    "tngtech/DeepSeek-TNG-R1T2-Chimera": {
+      "model": "deepseek/deepseek-tng-r1t2-chimera",
+      "matchingModel": "tngtech/DeepSeek-TNG-R1T2-Chimera",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00085
+      }
+    },
+    "tngtech/DeepSeek-R1T-Chimera": {
+      "model": "deepseek/deepseek-r1t-chimera",
+      "matchingModel": "tngtech/DeepSeek-R1T-Chimera",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsToolCalls": false
+      }
+    },
+    "zai-org/GLM-4.5-Air": {
+      "model": "glm/glm-4-5-air",
+      "matchingModel": "zai-org/GLM-4.5-Air",
+      "overrides": {
+        "speed": 3,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00022
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "zai-org/GLM-4.5-FP8": {
+      "model": "glm/glm-4-5-fp8",
+      "matchingModel": "zai-org/GLM-4.5-FP8",
+      "overrides": {
+        "lastUpdated": "January 27, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "chutesai/Mistral-Small-3.1-24B-Instruct-2503": {
+      "model": "mistral/mistral-small-3-1-24b-instruct-2503",
+      "matchingModel": "chutesai/Mistral-Small-3.1-24B-Instruct-2503",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00003,
+        "costPer1kOutputTokens": 0.00011
+      }
+    },
+    "deepseek-ai/DeepSeek-R1-0528-TEE": {
+      "model": "deepseek-thinking/deepseek-r1-0528-tee",
+      "matchingModel": "deepseek-ai/DeepSeek-R1-0528-TEE",
+      "overrides": {
+        "lastUpdated": "May 29, 2025",
+        "costPer1kInputTokens": 0.00045,
+        "costPer1kOutputTokens": 0.00215
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
+    },
+    "deepseek-ai/DeepSeek-R1-TEE": {
+      "model": "deepseek/deepseek-r1-tee",
+      "matchingModel": "deepseek-ai/DeepSeek-R1-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsToolCalls": false
+      }
+    },
+    "deepseek-ai/DeepSeek-V3": {
+      "model": "deepseek/deepseek-v3",
+      "matchingModel": "deepseek-ai/DeepSeek-V3",
+      "overrides": {
+        "name": "DeepSeek V3",
+        "maxTokens": 163840,
+        "contextComplexity": 4,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsToolCalls": false
+      },
+      "unset": [
+        "openWeights",
+        "strengths"
+      ]
+    },
+    "deepseek-ai/DeepSeek-V3-0324-TEE": {
+      "model": "deepseek/deepseek-v3-0324-tee",
+      "matchingModel": "deepseek-ai/DeepSeek-V3-0324-TEE",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.001
+      }
+    },
+    "deepseek-ai/DeepSeek-V3.1-TEE": {
+      "model": "deepseek/deepseek-v3-1-tee",
+      "matchingModel": "deepseek-ai/DeepSeek-V3.1-TEE",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00027,
+        "costPer1kOutputTokens": 0.001
+      }
+    },
+    "deepseek-ai/DeepSeek-V3.1-Terminus-TEE": {
+      "model": "deepseek/deepseek-v3-1-terminus-tee",
+      "matchingModel": "deepseek-ai/DeepSeek-V3.1-Terminus-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00023,
+        "costPer1kOutputTokens": 0.0009
+      }
+    },
+    "deepseek-ai/DeepSeek-V3.2-Speciale-TEE": {
+      "model": "deepseek/deepseek-v3-2-speciale-tee",
+      "matchingModel": "deepseek-ai/DeepSeek-V3.2-Speciale-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00027,
+        "costPer1kOutputTokens": 0.00041,
+        "supportsToolCalls": false
+      }
+    },
+    "deepseek-ai/DeepSeek-V3.2-TEE": {
+      "model": "deepseek/deepseek-v3-2-tee",
+      "matchingModel": "deepseek-ai/DeepSeek-V3.2-TEE",
+      "overrides": {
+        "lastUpdated": "June 21, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.001
+      }
+    },
+    "MiniMaxAI/MiniMax-M2.1-TEE": {
+      "model": "minimax/minimax-m2-1-tee",
+      "matchingModel": "MiniMaxAI/MiniMax-M2.1-TEE",
+      "overrides": {
+        "lastUpdated": "January 27, 2026",
+        "costPer1kInputTokens": 0.00027,
+        "costPer1kOutputTokens": 0.00112
+      },
+      "unset": [
+        "openWeights",
+        "reasoningConfig"
+      ]
+    },
+    "miromind-ai/MiroThinker-v1.5-235B": {
+      "model": "chutes/miromind-ai/MiroThinker-v1.5-235B/mirothinker-v1-5-235b",
+      "matchingModel": "miromind-ai/MiroThinker-v1.5-235B",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "mistralai/Devstral-2-123B-Instruct-2512-TEE": {
+      "model": "mistral/devstral-2-123b-instruct-2512-tee",
+      "matchingModel": "mistralai/Devstral-2-123B-Instruct-2512-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00022
+      }
+    },
+    "moonshotai/Kimi-K2-Instruct-0905": {
+      "model": "kimi/kimi-k2-instruct-0905",
+      "matchingModel": "moonshotai/Kimi-K2-Instruct-0905",
+      "overrides": {
+        "name": "Kimi K2 Instruct 0905",
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00039,
+        "costPer1kOutputTokens": 0.0019
+      }
+    },
+    "moonshotai/Kimi-K2-Thinking-TEE": {
+      "model": "kimi/kimi-k2-thinking-tee",
+      "matchingModel": "moonshotai/Kimi-K2-Thinking-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.0004,
+        "costPer1kOutputTokens": 0.00175
+      }
+    },
+    "moonshotai/Kimi-K2.5-TEE": {
+      "model": "kimi-k2/kimi-k2-5-tee",
+      "matchingModel": "moonshotai/Kimi-K2.5-TEE",
+      "overrides": {
+        "lastUpdated": "January 2026",
+        "costPer1kInputTokens": 0.00044,
+        "costPer1kOutputTokens": 0.002,
+        "supportsAttachments": true
+      }
+    },
+    "NousResearch/DeepHermes-3-Mistral-24B-Preview": {
+      "model": "nousresearch/deephermes-3-mistral-24b-preview",
+      "matchingModel": "NousResearch/DeepHermes-3-Mistral-24B-Preview",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0000245,
+        "costPer1kOutputTokens": 0.0000978
+      }
+    },
+    "NousResearch/Hermes-4-14B": {
+      "model": "nousresearch/hermes-4-14b",
+      "matchingModel": "NousResearch/Hermes-4-14B",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0000136,
+        "costPer1kOutputTokens": 0.0000543
+      }
+    },
+    "NousResearch/Hermes-4-405B-FP8-TEE": {
+      "model": "chutes/NousResearch/Hermes-4-405B-FP8-TEE/hermes-4-405b-fp8-tee",
+      "matchingModel": "NousResearch/Hermes-4-405B-FP8-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
+      }
+    },
+    "NousResearch/Hermes-4-70B": {
+      "model": "chutes/NousResearch/Hermes-4-70B/hermes-4-70b",
+      "matchingModel": "NousResearch/Hermes-4-70B",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00011,
+        "costPer1kOutputTokens": 0.00038
+      }
+    },
+    "NousResearch/Hermes-4.3-36B": {
+      "model": "chutes/NousResearch/Hermes-4.3-36B/hermes-4-3-36b",
+      "matchingModel": "NousResearch/Hermes-4.3-36B",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00039,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16": {
+      "model": "nemotron/nvidia-nemotron-3-nano-30b-a3b-bf16",
+      "matchingModel": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024
+      },
+      "unset": [
+        "reasoningConfig",
+        "openWeights"
+      ]
+    },
+    "openai/gpt-oss-120b-TEE": {
+      "model": "gpt-oss/gpt-oss-120b-tee",
+      "matchingModel": "openai/gpt-oss-120b-TEE",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0.00036
+      }
+    },
+    "openai/gpt-oss-20b": {
+      "model": "gpt/gpt-oss-20b",
+      "matchingModel": "openai/gpt-oss-20b",
+      "overrides": {
+        "name": "gpt oss 20b",
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "speed": 5,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00002,
+        "costPer1kOutputTokens": 0.0001
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "OpenGVLab/InternVL3-78B-TEE": {
+      "model": "chutes/OpenGVLab/InternVL3-78B-TEE/internvl3-78b-tee",
+      "matchingModel": "OpenGVLab/InternVL3-78B-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00039,
+        "supportsToolCalls": false
+      }
+    },
+    "Qwen/Qwen2.5-72B-Instruct": {
+      "model": "qwen/qwen2-5-72b-instruct",
+      "matchingModel": "Qwen/Qwen2.5-72B-Instruct",
+      "overrides": {
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0002989,
+        "costPer1kOutputTokens": 0.0011957
+      }
+    },
+    "Qwen/Qwen2.5-Coder-32B-Instruct": {
+      "model": "qwen/qwen2-5-coder-32b-instruct",
+      "matchingModel": "Qwen/Qwen2.5-Coder-32B-Instruct",
+      "overrides": {
+        "name": "Qwen2.5 Coder 32B Instruct",
+        "maxTokens": 32768,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0000272,
+        "costPer1kOutputTokens": 0.0001087,
+        "supportsToolCalls": false
+      }
+    },
+    "Qwen/Qwen2.5-VL-32B-Instruct": {
+      "model": "qwen/qwen2-5-vl-32b-instruct",
+      "matchingModel": "Qwen/Qwen2.5-VL-32B-Instruct",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0000543,
+        "costPer1kOutputTokens": 0.0002174,
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "Qwen/Qwen2.5-VL-72B-Instruct-TEE": {
+      "model": "qwen/qwen2-5-vl-72b-instruct-tee",
+      "matchingModel": "Qwen/Qwen2.5-VL-72B-Instruct-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsToolCalls": false
+      }
+    },
+    "Qwen/Qwen3-14B": {
+      "model": "qwen/qwen3-14b",
+      "matchingModel": "Qwen/Qwen3-14B",
+      "overrides": {
+        "contextWindow": 40960,
+        "maxTokens": 40960,
+        "speed": 3,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00022
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
+    },
+    "Qwen/Qwen3-235B-A22B": {
+      "model": "qwen/qwen3-235b-a22b",
+      "matchingModel": "Qwen/Qwen3-235B-A22B",
+      "overrides": {
+        "name": "Qwen3 235B A22B",
+        "contextWindow": 40960,
+        "maxTokens": 40960,
+        "speed": 3,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
+      },
+      "unset": [
+        "knowledgeCutoffDate",
+        "reasoningConfig",
+        "openWeights"
+      ]
+    },
+    "Qwen/Qwen3-235B-A22B-Instruct-2507-TEE": {
+      "model": "qwen/qwen3-235b-a22b-instruct-2507-tee",
+      "matchingModel": "Qwen/Qwen3-235B-A22B-Instruct-2507-TEE",
+      "overrides": {
+        "lastUpdated": "April 2025",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0006
+      }
+    },
+    "Qwen/Qwen3-30B-A3B-Instruct-2507": {
+      "model": "qwen/qwen3-30b-a3b-instruct-2507",
+      "matchingModel": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+      "overrides": {
+        "maxTokens": 262144,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00008,
+        "costPer1kOutputTokens": 0.00033
+      }
+    },
+    "Qwen/Qwen3-32B": {
+      "model": "qwen/qwen3-32b",
+      "matchingModel": "Qwen/Qwen3-32B",
+      "overrides": {
+        "contextWindow": 40960,
+        "maxTokens": 40960,
+        "speed": 3,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00008,
+        "costPer1kOutputTokens": 0.00024
+      },
+      "unset": [
+        "openWeights",
+        "knowledgeCutoffDate",
+        "reasoningConfig"
+      ]
+    },
+    "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8-TEE": {
+      "model": "qwen/qwen3-coder-480b-a35b-instruct-fp8-tee",
+      "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00095
+      }
+    },
+    "Qwen/Qwen3-Coder-Next": {
+      "model": "qwen/qwen3-coder-next",
+      "matchingModel": "Qwen/Qwen3-Coder-Next",
+      "overrides": {
+        "maxTokens": 65536,
+        "speed": 4,
+        "releaseDate": "February 5, 2026",
+        "lastUpdated": "February 5, 2026",
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.0003
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "Qwen/Qwen3-Next-80B-A3B-Instruct": {
+      "model": "qwen/qwen3-next-80b-a3b-instruct",
+      "matchingModel": "Qwen/Qwen3-Next-80B-A3B-Instruct",
+      "overrides": {
+        "name": "Qwen3 Next 80B A3B Instruct",
+        "maxTokens": 262144,
+        "speed": 4,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0008
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    },
+    "Qwen/Qwen3-VL-235B-A22B-Instruct": {
+      "model": "qwen/qwen3-vl-235b-a22b-instruct",
+      "matchingModel": "Qwen/Qwen3-VL-235B-A22B-Instruct",
+      "overrides": {
+        "maxTokens": 262144,
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
+        "speed": 3,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
+      },
+      "unset": [
+        "openWeights",
+        "knowledgeCutoffDate"
+      ]
+    },
+    "Qwen/Qwen3Guard-Gen-0.6B": {
+      "model": "qwen/qwen3guard-gen-0-6b",
+      "matchingModel": "Qwen/Qwen3Guard-Gen-0.6B",
+      "overrides": {
+        "name": "Qwen3Guard Gen 0.6B",
+        "maxTokens": 8192,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00001,
+        "costPer1kOutputTokens": 0.0000109,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "rednote-hilab/dots.ocr": {
+      "model": "rednote/dots-ocr",
+      "matchingModel": "rednote-hilab/dots.ocr",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00001,
+        "costPer1kOutputTokens": 0.0000109,
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "tngtech/TNG-R1T-Chimera-TEE": {
+      "model": "chutes/tngtech/TNG-R1T-Chimera-TEE/tng-r1t-chimera-tee",
+      "matchingModel": "tngtech/TNG-R1T-Chimera-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00085
+      }
+    },
+    "tngtech/TNG-R1T-Chimera-Turbo": {
+      "model": "chutes/tngtech/TNG-R1T-Chimera-Turbo/tng-r1t-chimera-turbo",
+      "matchingModel": "tngtech/TNG-R1T-Chimera-Turbo",
+      "overrides": {
+        "lastUpdated": "January 27, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.0006
+      }
+    },
+    "unsloth/gemma-3-12b-it": {
+      "model": "unsloth/gemma-3-12b-it",
+      "matchingModel": "unsloth/gemma-3-12b-it",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00003,
+        "costPer1kOutputTokens": 0.0001,
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "unsloth/gemma-3-27b-it": {
+      "model": "unsloth/gemma-3-27b-it",
+      "matchingModel": "unsloth/gemma-3-27b-it",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0000272,
+        "costPer1kOutputTokens": 0.0001087,
+        "supportsAttachments": true
+      }
+    },
+    "unsloth/gemma-3-4b-it": {
+      "model": "unsloth/gemma-3-4b-it",
+      "matchingModel": "unsloth/gemma-3-4b-it",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00001,
+        "costPer1kOutputTokens": 0.0000272,
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "unsloth/Llama-3.2-1B-Instruct": {
+      "model": "unsloth/llama-3-2-1b-instruct",
+      "matchingModel": "unsloth/Llama-3.2-1B-Instruct",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00001,
+        "costPer1kOutputTokens": 0.0000109,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "unsloth/Mistral-Nemo-Instruct-2407": {
+      "model": "unsloth/mistral-nemo-instruct-2407",
+      "matchingModel": "unsloth/Mistral-Nemo-Instruct-2407",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00002,
+        "costPer1kOutputTokens": 0.00004,
+        "supportsToolCalls": false
+      }
+    },
+    "unsloth/Mistral-Small-24B-Instruct-2501": {
+      "model": "mistral/mistral-small-24b-instruct-2501",
+      "matchingModel": "unsloth/Mistral-Small-24B-Instruct-2501",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00003,
+        "costPer1kOutputTokens": 0.00011
+      }
+    },
+    "XiaomiMiMo/MiMo-V2-Flash": {
+      "model": "chutes/XiaomiMiMo/MiMo-V2-Flash/mimo-v2-flash",
+      "matchingModel": "XiaomiMiMo/MiMo-V2-Flash",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "January 27, 2026",
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0.00029,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "zai-org/GLM-4.5-TEE": {
+      "model": "glm/glm-4-5-tee",
+      "matchingModel": "zai-org/GLM-4.5-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00035,
+        "costPer1kOutputTokens": 0.00155
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "zai-org/GLM-4.6-FP8": {
+      "model": "glm/glm-4-6-fp8",
+      "matchingModel": "zai-org/GLM-4.6-FP8",
+      "overrides": {
+        "lastUpdated": "January 27, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "zai-org/GLM-4.6-TEE": {
+      "model": "glm/glm-4-6-tee",
+      "matchingModel": "zai-org/GLM-4.6-TEE",
+      "overrides": {
+        "lastUpdated": "January 10, 2026",
+        "costPer1kInputTokens": 0.00035,
+        "costPer1kOutputTokens": 0.0015
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "zai-org/GLM-4.6V": {
+      "model": "glm/glm-4-6v",
+      "matchingModel": "zai-org/GLM-4.6V",
+      "overrides": {
+        "name": "GLM 4.6V",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 3,
+        "releaseDate": "December 29, 2025",
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0009,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    },
+    "zai-org/GLM-4.7-Flash": {
+      "model": "glm/glm-4-7-flash",
+      "matchingModel": "zai-org/GLM-4.7-Flash",
+      "overrides": {
+        "name": "GLM 4.7 Flash",
+        "contextWindow": 202752,
+        "maxTokens": 65535,
+        "speed": 4,
+        "releaseDate": "January 27, 2026",
+        "lastUpdated": "January 27, 2026",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00035
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "zai-org/GLM-4.7-FP8": {
+      "model": "glm/glm-4-7-fp8",
+      "matchingModel": "zai-org/GLM-4.7-FP8",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0002989,
+        "costPer1kOutputTokens": 0.0011957
+      }
+    },
+    "zai-org/GLM-4.7-TEE": {
+      "model": "glm/glm-4-7-tee",
+      "matchingModel": "zai-org/GLM-4.7-TEE",
+      "overrides": {
+        "lastUpdated": "December 22, 2025",
+        "costPer1kInputTokens": 0.00039,
+        "costPer1kOutputTokens": 0.00175
+      }
+    },
+    "google/gemma-4-31B-turbo-TEE": {
+      "model": "gemma/gemma-4-31b-turbo-tee",
+      "matchingModel": "google/gemma-4-31B-turbo-TEE",
+      "overrides": {
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0.00012,
+        "costPer1kOutputTokens": 0.00037,
+        "supportsAttachments": true
+      }
+    },
+    "MiniMaxAI/MiniMax-M2.5-TEE": {
+      "model": "minimax/minimax-m2-5-tee",
+      "matchingModel": "MiniMaxAI/MiniMax-M2.5-TEE",
+      "overrides": {
+        "lastUpdated": "February 12, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0012
+      }
+    },
+    "moonshotai/Kimi-K2.6-TEE": {
+      "model": "kimi-k2/kimi-k2-6-tee",
+      "matchingModel": "moonshotai/Kimi-K2.6-TEE",
+      "overrides": {
+        "lastUpdated": "April 21, 2026",
+        "costPer1kInputTokens": 0.00058,
+        "costPer1kOutputTokens": 0.0034,
+        "supportsAttachments": true
+      }
+    },
+    "Qwen/Qwen3-32B-TEE": {
+      "model": "qwen/qwen3-32b-tee",
+      "matchingModel": "Qwen/Qwen3-32B-TEE",
+      "overrides": {
+        "lastUpdated": "April 2025",
+        "costPer1kInputTokens": 0.000104,
+        "costPer1kOutputTokens": 0.000416
+      }
+    },
+    "Qwen/Qwen3-Coder-Next-TEE": {
+      "model": "qwen/qwen3-coder-next-tee",
+      "matchingModel": "Qwen/Qwen3-Coder-Next-TEE",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00012,
+        "costPer1kOutputTokens": 0.00075
+      }
+    },
+    "Qwen/Qwen3.5-397B-A17B-TEE": {
+      "model": "qwen/qwen3-5-397b-a17b-tee",
+      "matchingModel": "Qwen/Qwen3.5-397B-A17B-TEE",
+      "overrides": {
+        "lastUpdated": "February 15, 2026",
+        "costPer1kInputTokens": 0.00045,
+        "costPer1kOutputTokens": 0.003,
+        "supportsAttachments": true
+      }
+    },
+    "Qwen/Qwen3.6-27B-TEE": {
+      "model": "qwen/qwen3-6-27b-tee",
+      "matchingModel": "Qwen/Qwen3.6-27B-TEE",
+      "overrides": {
+        "lastUpdated": "April 22, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.002,
+        "supportsAttachments": true
+      }
+    },
+    "tngtech/DeepSeek-TNG-R1T2-Chimera-TEE": {
+      "model": "deepseek/deepseek-tng-r1t2-chimera-tee",
+      "matchingModel": "tngtech/DeepSeek-TNG-R1T2-Chimera-TEE",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0011
+      }
+    },
+    "unsloth/Llama-3.2-3B-Instruct": {
+      "model": "unsloth/llama-3-2-3b-instruct",
+      "matchingModel": "unsloth/Llama-3.2-3B-Instruct",
+      "overrides": {
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.00001,
+        "costPer1kOutputTokens": 0.0000136,
+        "supportsToolCalls": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "XiaomiMiMo/MiMo-V2-Flash-TEE": {
+      "model": "mimo/mimo-v2-flash-tee",
+      "matchingModel": "XiaomiMiMo/MiMo-V2-Flash-TEE",
+      "overrides": {
+        "lastUpdated": "February 4, 2026",
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0.00029
+      },
+      "unset": [
+        "reasoningConfig",
+        "reliability"
+      ]
+    },
+    "zai-org/GLM-5-TEE": {
+      "model": "glm/glm-5-tee",
+      "matchingModel": "zai-org/GLM-5-TEE",
+      "overrides": {
+        "lastUpdated": "February 12, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.00255
+      }
+    },
+    "zai-org/GLM-5-Turbo": {
+      "model": "glm/glm-5-turbo",
+      "matchingModel": "zai-org/GLM-5-Turbo",
+      "overrides": {
+        "openWeights": true,
+        "maxTokens": 65535,
+        "releaseDate": "March 11, 2026",
+        "lastUpdated": "April 25, 2026",
+        "costPer1kInputTokens": 0.0004891,
+        "costPer1kOutputTokens": 0.0019565
+      }
+    },
+    "zai-org/GLM-5.1-TEE": {
+      "model": "glm/glm-5-1-tee",
+      "matchingModel": "zai-org/GLM-5.1-TEE",
+      "overrides": {
+        "lastUpdated": "April 7, 2026",
+        "costPer1kInputTokens": 0.00098,
+        "costPer1kOutputTokens": 0.00308
+      }
+    },
+    "Qwen/Qwen3-235B-A22B-Thinking-2507-TEE": {
+      "model": "qwen/qwen3-235b-a22b-thinking-2507-tee",
+      "matchingModel": "Qwen/Qwen3-235B-A22B-Thinking-2507-TEE",
+      "overrides": {
+        "lastUpdated": "June 21, 2026",
+        "costPer1kInputTokens": 0.0002989,
+        "costPer1kOutputTokens": 0.0011957
+      }
+    },
+    "unsloth/Mistral-Nemo-Instruct-2407-TEE": {
+      "model": "mistral-nemo/mistral-nemo-instruct-2407-tee",
+      "matchingModel": "unsloth/Mistral-Nemo-Instruct-2407-TEE",
+      "overrides": {
+        "lastUpdated": "July 1, 2024",
+        "costPer1kInputTokens": 0.0000245,
+        "costPer1kOutputTokens": 0.0000978,
+        "supportsToolCalls": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "zai-org/GLM-5.2-TEE": {
+      "model": "glm/glm-5-2-tee",
+      "matchingModel": "zai-org/GLM-5.2-TEE",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.00395
+      }
+    },
+    "Nemotron-3-Nano-Omni-30B-TEE": {
+      "model": "nemotron/nemotron-3-nano-omni-30b-tee",
+      "matchingModel": "Nemotron-3-Nano-Omni-30B-TEE",
+      "overrides": {
+        "lastUpdated": "July 23, 2026",
+        "costPer1kInputTokens": 0.0000245,
+        "costPer1kOutputTokens": 0.0000978,
+        "supportsToolCalls": false
+      },
+      "unset": [
+        "reasoningConfig",
+        "supportsResponseFormat"
+      ]
+    },
+    "moonshotai/Kimi-K3-TEE": {
+      "model": "kimi-k3/kimi-k3-tee",
+      "matchingModel": "moonshotai/Kimi-K3-TEE",
+      "overrides": {
+        "lastUpdated": "July 29, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsAttachments": true
+      }
+    },
+    "deepseek-ai/DeepSeek-V4-Flash-0731-TEE": {
+      "model": "deepseek-flash/deepseek-v4-flash-0731-tee",
+      "matchingModel": "deepseek-ai/DeepSeek-V4-Flash-0731-TEE",
+      "overrides": {
+        "lastUpdated": "August 2, 2026",
+        "costPer1kInputTokens": 0.00044,
+        "costPer1kOutputTokens": 0.00132
+      }
+    },
+    "Qwen/Qwen3.8-27B-TEE": {
+      "model": "qwen/qwen3-8-27b-tee",
+      "matchingModel": "Qwen/Qwen3.8-27B-TEE",
+      "overrides": {
+        "lastUpdated": "August 16, 2026",
+        "costPer1kInputTokens": 0.00032,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsAttachments": true
+      }
+    }
+  }
+}

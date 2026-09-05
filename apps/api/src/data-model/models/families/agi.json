@@ -1,0 +1,78 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+  "models": {
+    "agi-01-frontier": {
+      "defaults": {
+        "name": "LucidQuery AGI 01 Frontier",
+        "openWeights": false,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 300000,
+        "maxTokens": 120000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "June 5, 2026",
+        "releaseDate": "June 16, 2026"
+      }
+    },
+    "agi-01-swift": {
+      "defaults": {
+        "name": "AGI-01 Swift",
+        "openWeights": false,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 300000,
+        "maxTokens": 120000,
+        "knowledgeCutoffDate": "June 5, 2026",
+        "releaseDate": "June 16, 2026"
+      }
+    },
+    "nex-n2-mini": {
+      "defaults": {
+        "name": "Nex-N2-Mini",
+        "openWeights": true,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "releaseDate": "June 24, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "nex-n2-pro": {
+      "defaults": {
+        "name": "Nex-N2-Pro",
+        "openWeights": true,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "releaseDate": "June 8, 2026",
+        "supportsResponseFormat": false
+      }
+    }
+  }
+}

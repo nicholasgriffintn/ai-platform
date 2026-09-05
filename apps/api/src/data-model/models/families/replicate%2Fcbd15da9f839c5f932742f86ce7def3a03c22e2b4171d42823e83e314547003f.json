@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "ocr",
+      "audio",
+      "analysis"
+    ],
+    "supportsAttachments": true
+  },
+  "description": "The replicate/cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f family includes models that produce text.",
+  "models": {
+    "whisper-diarization": {
+      "defaults": {
+        "name": "Whisper Diarization",
+        "description": "Blazing fast audio transcription with speaker diarization | Whisper Large V3 Turbo | word & sentence level timestamps | prompt"
+      }
+    }
+  }
+}

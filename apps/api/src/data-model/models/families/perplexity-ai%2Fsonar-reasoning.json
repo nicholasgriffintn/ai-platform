@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "reasoning",
+      "multilingual",
+      "coding",
+      "analysis",
+      "general_knowledge",
+      "search"
+    ],
+    "contextComplexity": 1,
+    "reliability": 1,
+    "artificialAnalysis": {
+      "intelligenceIndex": 11.7,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The perplexity ai/sonar reasoning family includes models that produce text.",
+  "models": {
+    "perplexity-sonar-reasoning": {
+      "defaults": {
+        "name": "Perplexity Sonar Reasoning",
+        "description": "Standard reasoning offering with Chain of Thought (CoT) capabilities."
+      }
+    }
+  }
+}

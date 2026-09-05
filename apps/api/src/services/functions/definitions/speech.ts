@@ -1,5 +1,4 @@
-import { replicateModelConfig } from "~/data-model/models/replicate";
-import { workersAiModelConfig } from "~/data-model/models/workersai";
+import { getProviderModels } from "~/lib/providers/models/catalogue";
 import { getModelIdsByOutput } from "~/utils/models";
 
 import { jsonSchemaToZod } from "../../../utils/jsonSchema";
@@ -7,8 +6,8 @@ import type { FunctionToolDescriptor } from "./types";
 
 export const SPEECH_PROVIDERS = ["workers-ai", "replicate"] as const;
 export const SPEECH_MODELS = [
-  ...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "speech"),
-  ...getModelIdsByOutput(replicateModelConfig, "replicate", "audio"),
+  ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "speech"),
+  ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "audio"),
 ].sort();
 
 export const create_speech: FunctionToolDescriptor = {

@@ -1,0 +1,45 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "openai/gpt-oss-20b": {
+      "model": "gpt-oss/gpt-oss-20b",
+      "matchingModel": "openai/gpt-oss-20b",
+      "overrides": {
+        "maxTokens": 32768,
+        "isFree": true,
+        "speed": 5,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "qwen/qwen3-coder-30b": {
+      "model": "qwen/qwen3-coder-30b",
+      "matchingModel": "qwen/qwen3-coder-30b",
+      "overrides": {
+        "isFree": true,
+        "lastUpdated": "July 23, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "qwen/qwen3-30b-a3b-2507": {
+      "model": "qwen/qwen3-30b-a3b-2507",
+      "matchingModel": "qwen/qwen3-30b-a3b-2507",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "July 30, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    }
+  }
+}

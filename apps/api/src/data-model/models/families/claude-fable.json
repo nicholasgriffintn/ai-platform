@@ -1,0 +1,209 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "June 9, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "supportsTopP": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "Claude model for creative writing, analysis, and controlled agent workflows",
+  "models": {
+    "claude-fable-5": {
+      "defaults": {
+        "name": "Claude Fable 5",
+        "description": "Claude model for creative writing, analysis, and controlled agent workflows",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 59.9,
+          "codingIndex": 76.5,
+          "agenticIndex": 52.8,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-fable-5-1": {
+      "defaults": {
+        "name": "Claude Fable 5.1",
+        "description": "Claude model for demanding reasoning and long-horizon agentic work",
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 1, 2026"
+      }
+    },
+    "claude-fable-5-1-eu": {
+      "defaults": {
+        "name": "Claude Fable 5.1 (EU)",
+        "description": "Claude model for demanding reasoning and long-horizon agentic work",
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 1, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-fable-5-1-global": {
+      "defaults": {
+        "name": "Claude Fable 5.1 (Global)",
+        "description": "Claude model for demanding reasoning and long-horizon agentic work",
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 1, 2026"
+      }
+    },
+    "claude-fable-5-1-us": {
+      "defaults": {
+        "name": "Claude Fable 5.1 (US)",
+        "description": "Claude model for demanding reasoning and long-horizon agentic work",
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 1, 2026"
+      }
+    },
+    "claude-fable-5-eu": {
+      "defaults": {
+        "name": "Claude Fable 5 (EU)",
+        "description": "Claude model for creative writing, analysis, and controlled agent workflows",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 59.9,
+          "codingIndex": 76.5,
+          "agenticIndex": 52.8,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-fable-5-global": {
+      "defaults": {
+        "name": "Claude Fable 5 (Global)",
+        "description": "Claude model for creative writing, analysis, and controlled agent workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 59.9,
+          "codingIndex": 76.5,
+          "agenticIndex": 52.8,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-fable-5-us": {
+      "defaults": {
+        "name": "Claude Fable 5 (US)",
+        "description": "Claude model for creative writing, analysis, and controlled agent workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 59.9,
+          "codingIndex": 76.5,
+          "agenticIndex": 52.8,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "claude-fable-latest": {
+      "defaults": {
+        "name": "Claude Fable Latest",
+        "description": "Claude model for creative writing, analysis, and controlled agent workflows",
+        "supportsResponseFormat": true
+      }
+    }
+  }
+}

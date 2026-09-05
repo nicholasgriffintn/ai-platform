@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 4,
+    "reliability": 1,
+    "knowledgeCutoffDate": "October 2024",
+    "releaseDate": "December 20, 2024",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": 19,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The github copilot/o3 mini family includes models that produce text.",
+  "models": {
+    "o3-mini": {
+      "defaults": {
+        "name": "o3-mini",
+        "description": "o3-mini accepts text and produces text."
+      }
+    }
+  }
+}
