@@ -35,6 +35,7 @@ export default [
   ]),
   route("/pets", "pages/pets.tsx"),
   route("/discover", "pages/discover.tsx"),
+  route("/models", "pages/models.tsx"),
   route("/pricing", "pages/pricing.tsx"),
   route("/terms", "pages/terms.tsx"),
   route("/privacy", "pages/privacy.tsx"),
