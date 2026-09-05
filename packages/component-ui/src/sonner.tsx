@@ -1,5 +1,6 @@
-import { useTheme } from "next-themes";
-import { Toaster as Sonner, type ToasterProps } from "sonner";
+import { Toaster as Sonner, type ToasterProps as SonnerProps } from "sonner";
+
+import type { ThemeAppearance } from "./theme";
 
 const toasterStyle: React.CSSProperties & Record<string, string> = {
   "--normal-bg": "var(--popover)",
@@ -7,17 +8,12 @@ const toasterStyle: React.CSSProperties & Record<string, string> = {
   "--normal-border": "var(--border)",
 };
 
-const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
+export interface ToasterProps extends Omit<SonnerProps, "theme"> {
+  appearance: ThemeAppearance;
+}
 
-  return (
-    <Sonner
-      theme={theme as ToasterProps["theme"]}
-      className="toaster group"
-      style={toasterStyle}
-      {...props}
-    />
-  );
+const Toaster = ({ appearance, ...props }: ToasterProps) => {
+  return <Sonner theme={appearance} className="toaster group" style={toasterStyle} {...props} />;
 };
 
 export { Toaster };

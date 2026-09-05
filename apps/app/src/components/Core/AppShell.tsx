@@ -16,7 +16,12 @@ const structuredData = {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <html lang="en" className="dark bg-background" data-polychat-theme="dark">
+    <html
+      lang="en"
+      className="dark bg-background"
+      data-polychat-theme="dark"
+      suppressHydrationWarning
+    >
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />

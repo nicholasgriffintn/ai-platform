@@ -48,7 +48,7 @@ export function NoteEditorSurface({
             <button
               type="button"
               onClick={() => setShowMetadata(!showMetadata)}
-              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-black-800"
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               <Hash size={14} />
               Metadata

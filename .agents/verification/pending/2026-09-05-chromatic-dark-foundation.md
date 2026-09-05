@@ -22,7 +22,7 @@
 - [ ] Confirm a streaming indicator and a selected sidebar item stay tellable apart at a glance, and that neither is mistaken for the primary action.
 - [ ] Open Customisation and confirm the theme picker sits directly under Personalised responses, that each option previews in its own palette, and that System, Light, Dark and Blue each apply immediately and survive a reload without a flash of the previous theme.
 - [ ] With System selected, change the operating system between light and dark and confirm the app follows without a reload.
-- [ ] Confirm the theme control no longer appears in the sidebar account menu.
+- [ ] Open the sidebar settings popover as a guest and as a member. Confirm it carries a compact Theme select, that choosing a theme there applies immediately, and that Customisation shows the same choice.
 - [ ] In each theme, check a capability grid, the model picker and a provider badge: identity accents should stay distinguishable from each other and legible against the surface.
 - [ ] Check switches, range inputs, the sign-in buttons and the profile logout button in each theme; each should have a visible track, fill or background.
 - [ ] In Dark, confirm the sidebar, composer and home suggestion buttons read as barely lifted from the canvas rather than as distinctly lighter panels, and that Blue still shows a clear elevation ladder.
