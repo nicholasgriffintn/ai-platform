@@ -19,16 +19,18 @@ export function ConversationListSection({
   children,
 }: ConversationListSectionProps) {
   return (
-    <div className="px-2">
-      <div className="flex items-center justify-between px-2 pb-2">
-        <p className="text-xs font-semibold text-muted-foreground">Recent conversations</p>
+    <div className="border-border mt-2 border-t px-2 pt-4">
+      <div className="flex items-center justify-between px-2 pb-1.5">
+        <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
+          Recent
+        </p>
         {controls}
       </div>
       {isLoading ? (
         <div className="p-4 text-center text-muted-foreground">Loading conversations...</div>
       ) : hasError ? (
         <div className="p-4 text-center text-muted-foreground">
-          <p>Could not load conversations.</p>
+          <p>Could not load items.</p>
           <Button type="button" variant="secondary" className="mt-2" onClick={onRetry}>
             Retry
           </Button>

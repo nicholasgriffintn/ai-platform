@@ -59,8 +59,8 @@ export const EmptyState = ({
       {title && (
         <h3
           className={cn(
-            "text-foreground mb-2 font-semibold",
-            isWelcome ? "md:text-4xl text-2xl" : "text-xl",
+            "text-foreground font-display mb-2 font-medium tracking-tight text-balance",
+            isWelcome ? "text-3xl md:text-5xl" : "text-2xl",
           )}
         >
           {title}
