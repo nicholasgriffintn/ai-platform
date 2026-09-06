@@ -70,6 +70,7 @@ export * from "./chat";
 export * from "./chat-context";
 export * from "./chat-retries";
 export * from "./chat-runs";
+export * from "./automations";
 export * from "./channels";
 export * from "./chat-mode";
 export * from "./chat-stream";

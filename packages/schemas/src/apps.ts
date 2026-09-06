@@ -1290,7 +1290,7 @@ export const recipeInstallationTriggerSchema = z
       .regex(/^[\d*/, -]+ [\d*/, -]+ [\d*/, -]+ [\d*/, -]+ [\d*/, -]+$/)
       .optional(),
     prompt: z.string().optional(),
-    notificationChannel: z.enum(["sms"]).optional(),
+    notificationChannel: z.enum(["sms", "slack", "telegram"]).optional(),
     notificationTarget: z.string().optional(),
   })
   .superRefine((trigger, ctx) => {

@@ -9,6 +9,7 @@ import { analyse_article } from "./analyse_article";
 import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
 import { run_council, select_council_members } from "./council";
+import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
 import {
   applyConnectorScope,
@@ -75,6 +76,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   search_memories,
   store_memory,
   analyse_article,
+  create_automation,
   create_note,
   get_note,
   extract_text_from_document,
