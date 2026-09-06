@@ -1,3 +1,7 @@
+import {
+  DEFAULT_DICTATION_MODE,
+  type DictationMode,
+} from "@ngriffin_uk/polychat-library-chat/dictation";
 import type {
   AssistantActionSelection,
   HomeChatModeId,
@@ -53,6 +57,8 @@ export interface ChatStore {
   setChatMode: (mode: ChatMode) => void;
   homeChatMode: HomeChatModeId;
   setHomeChatMode: (mode: HomeChatModeId) => void;
+  dictationMode: DictationMode;
+  setDictationMode: (mode: DictationMode) => void;
   model: string | null;
   setModel: (model: string | null) => void;
   modelTier: ModelTier | null;
@@ -140,6 +146,8 @@ export const useChatStore = create<ChatStore>()(
       setChatMode: (mode) => set({ chatMode: mode }),
       homeChatMode: "chat",
       setHomeChatMode: (mode) => set({ homeChatMode: mode }),
+      dictationMode: DEFAULT_DICTATION_MODE,
+      setDictationMode: (mode) => set({ dictationMode: mode }),
       model: null,
       setModel: (model) => set({ model }),
       modelTier: null,
@@ -212,6 +220,7 @@ export const useChatStore = create<ChatStore>()(
         localOnlyMode: state.localOnlyMode,
         chatMode: state.chatMode,
         homeChatMode: state.homeChatMode,
+        dictationMode: state.dictationMode,
         model: state.model,
         modelTier: state.modelTier,
         useMultiModel: state.useMultiModel,
