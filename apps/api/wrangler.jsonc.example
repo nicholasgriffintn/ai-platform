@@ -58,7 +58,8 @@
     "ENV": "production",
     "MEMORY_SYNTHESIS_ENABLED": "true",
     "SANDBOX_PREVIEW_HOST": "<REPLACE_ME>",
-    "COMPOSIO_USER_NAMESPACE": "production"
+    "COMPOSIO_USER_NAMESPACE": "production",
+    "DESKTOP_RELEASES_REPOSITORY": "<github-owner>/<github-repository>"
   },
   "ai": {
     "binding": "AI",

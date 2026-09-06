@@ -935,7 +935,13 @@ mod tests {
         let agent = user_agent();
 
         assert!(agent.starts_with("Polychat-Desktop/"));
-        assert!(agent.contains('('), "the agent needs a platform comment: {agent}");
-        assert!(agent.ends_with(')'), "the agent needs a platform comment: {agent}");
+        assert!(
+            agent.contains('('),
+            "the agent needs a platform comment: {agent}"
+        );
+        assert!(
+            agent.ends_with(')'),
+            "the agent needs a platform comment: {agent}"
+        );
     }
 }

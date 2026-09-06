@@ -160,4 +160,5 @@ export * from "./recipe-trigger-configuration";
 export * from "./strudel";
 
 export * from "./conversation-threads";
+export * from "./desktop-releases";
 export * from "./model-selection-ui";

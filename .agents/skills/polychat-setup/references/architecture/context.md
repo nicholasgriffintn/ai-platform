@@ -66,6 +66,7 @@ Paths below are relative to `apps/api/src`.
 | Connector sessions and approvals         | `services/apps/connectors/`                                                                                            |
 | Realtime catalogue and sessions          | `services/realtime/`, registered realtime adapters                                                                     |
 | Usage and credits                        | `lib/usage/`, `UsageEventRepository`, plan records in D1                                                               |
+| Desktop downloads and updates            | `services/desktop-releases/`, `routes/desktop.ts`                                                                      |
 
 ## Conversation execution
 
