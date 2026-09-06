@@ -25,9 +25,12 @@ vi.mock("~/services/conversations/coordinator/client", () => ({
   withThreadLock: vi.fn(async (_params, run) => run(mocks.lease)),
 }));
 
+const RECENT_TIMESTAMP = Date.now() - 60_000;
+const RECENTLY_REQUESTED_AT = new Date(RECENT_TIMESTAMP).toISOString();
+
 const questionData = {
   interactionId: "interaction-1",
-  requestedAt: "2026-08-30T12:00:00.000Z",
+  requestedAt: RECENTLY_REQUESTED_AT,
   questions: [
     {
       id: "tone",
@@ -52,7 +55,7 @@ function createContext() {
     status: "pending",
     data: JSON.stringify(questionData),
     tool_call_id: "tool-call-1",
-    timestamp: 1_777_000_000_000,
+    timestamp: RECENT_TIMESTAMP,
   });
 
   return {
@@ -149,7 +152,7 @@ describe("project task questions", () => {
       status: "pending",
       data: JSON.stringify(questionData),
       tool_call_id: "tool-call-1",
-      timestamp: 1_777_000_000_000,
+      timestamp: RECENT_TIMESTAMP,
     });
     getLatestPendingToolMessage.mockResolvedValueOnce(null);
 
@@ -192,7 +195,7 @@ describe("project task tool approvals", () => {
         },
       }),
       tool_call_id: "approval-1",
-      timestamp: 1_777_000_000_000,
+      timestamp: RECENT_TIMESTAMP,
     });
     const context = {
       env: {},
