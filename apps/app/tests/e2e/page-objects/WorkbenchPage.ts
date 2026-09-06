@@ -13,12 +13,56 @@ export class WorkbenchPage extends BasePage {
     return this.page.getByRole("tabpanel");
   }
 
+  get resizeHandle() {
+    return this.page.getByRole("separator", { name: "Resize workbench panels", exact: true });
+  }
+
+  get mobileTrigger() {
+    return this.page.getByRole("button", { name: "Workbench", exact: true });
+  }
+
+  get mobileDialog() {
+    return this.page.getByRole("dialog", { name: "Project workbench", exact: true });
+  }
+
+  paneTab(name: "Activity" | "Changes" | "Files" | "Proof" | "Preview") {
+    return this.page.getByRole("tab", { name, exact: true });
+  }
+
+  async collapse() {
+    await this.page.getByRole("button", { name: "Collapse workbench panels", exact: true }).click();
+  }
+
+  async expand() {
+    await this.page.getByRole("button", { name: "Open workbench panels", exact: true }).click();
+  }
+
   async control(action: "Pause" | "Resume" | "Cancel") {
     await this.page.getByRole("button", { name: action, exact: true }).click();
   }
 
+  service(name: string) {
+    return this.page
+      .getByRole("region", { name: "Project services", exact: true })
+      .getByRole("listitem")
+      .filter({ has: this.page.getByText(name, { exact: true }) });
+  }
+
+  async controlService(name: string, action: "Start" | "Stop" | "Restart") {
+    await this.service(name)
+      .getByRole("button", { name: `${action} ${name}`, exact: true })
+      .click();
+  }
+
   async openSteering() {
     await this.page.getByRole("button", { name: "Steer", exact: true }).click();
+  }
+
+  async resolveApproval(action: "Approve" | "Reject") {
+    await this.page
+      .getByRole("region", { name: "Pending command approvals", exact: true })
+      .getByRole("button", { name: action, exact: true })
+      .click();
   }
 
   async addInstruction(content: string) {
@@ -58,7 +102,9 @@ export class WorkbenchPage extends BasePage {
     await overlay.scrollIntoViewIfNeeded();
     const box = await overlay.boundingBox();
 
-    if (!box) throw new Error("The preview region overlay is not visible");
+    if (!box) {
+      throw new Error("The preview region overlay is not visible");
+    }
 
     await this.page.mouse.move(box.x + 20, box.y + 20);
     await this.page.mouse.down();

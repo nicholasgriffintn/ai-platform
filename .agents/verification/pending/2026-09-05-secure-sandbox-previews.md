@@ -8,12 +8,18 @@
 
 ## Verify
 
-- [ ] As a current project member, create access with `POST /apps/sandbox/runs/:runId/previews`; confirm the response reports `healthy` and gives a one-time URL on an opaque preview subdomain, not a Sandbox SDK URL, container address or storage identifier.
-- [ ] Open that URL once; confirm it redirects to `/`, sets a `Secure`, `HttpOnly`, host-only, partitioned preview cookie, and renders the declared service through the opaque origin.
+- [x] As a current project member, create access with `POST /apps/sandbox/runs/:runId/previews`; confirm the response reports `healthy` and gives a one-time URL on an opaque preview subdomain, not a Sandbox SDK URL, container address or storage identifier.
+- [x] Open that URL once; confirm it redirects to `/`, sets a `Secure`, `HttpOnly`, host-only, partitioned preview cookie, and renders the declared service through the opaque origin.
 - [ ] Confirm proxied responses are `no-store`, restrict framing to the configured Polychat origin, omit upstream `Set-Cookie` and identifying server headers, and reject a redirect to any external host or undeclared port.
 - [ ] Replay the bootstrap URL, alter its signature or subdomain, substitute another project or run identifier, and request an undeclared or unhealthy service; confirm every request fails without preview content.
-- [ ] Call `POST /apps/sandbox/previews/authorise` without a valid `sandbox-preview:authorise` service principal and confirm it returns no forwarding token or preview content.
+- [x] Call `POST /apps/sandbox/previews/authorise` without a valid `sandbox-preview:authorise` service principal and confirm it returns no forwarding token or preview content.
 - [ ] Revoke the preview through `DELETE /apps/sandbox/runs/:runId/previews/:previewId`; confirm subsequent HTTP and WebSocket data transfer is denied. Repeat after stopping or restarting the service, completing or cancelling the run, removing project membership and waiting beyond the five-minute expiry.
 - [ ] Review API, sandbox Worker and Sandbox SDK logs for these attempts; confirm they contain no grant, cookie, forwarding token, SDK URL, connector credential or container address.
 
 **Stop and report if:** any unauthorised request returns service content, an active WebSocket transfers data after authority is removed, an external redirect succeeds, or a browser/log response reveals private forwarding or container details.
+
+**Local automated evidence:** `features/sandbox-preview.spec.ts` confirms real gateway access on an opaque localhost origin, redirect to the declared service, secure HTTP-only host cookie, no-store and framing headers, bootstrap replay rejection and revoked HTTP access. Extend the journey for the remaining checks; deployed wildcard DNS and TLS remain an operator check.
+
+Set the web build's `VITE_SANDBOX_PREVIEW_HOST` to match the API and sandbox Worker before validating embedded preview access. The local E2E uses its existing localhost API port.
+
+The extended journey also confirms partitioned cookies, rejected signature and origin changes, and denial of internal authorisation to an ordinary signed-in account. The real embedded frame, trusted route, Mobile preset, marked region and persisted feedback pass after allowing the configured preview host in the app's content security policy.

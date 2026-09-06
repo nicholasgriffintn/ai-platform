@@ -33,3 +33,5 @@ pnpm test:e2e:release
 Use `pnpm test:e2e:smoke` for the compact logged-out, Free and Pro app/API journeys, or `pnpm test:e2e <spec-path>` for a focused change. `playwright.config.ts` owns runtime startup; do not start alternate servers or reuse a live development database. Root `release:check` is broad release validation, not the default feedback loop.
 
 Use `pnpm build:e2e:sandbox` to rebuild only the container fixture. Keep sandbox commands, orchestration, coordinator state, policy checks and Workbench reads real; mock GitHub and model providers at their outbound boundaries. Do not connect a live repository or grant external delivery authority for these tests.
+
+Route opaque `*.localhost` preview origins on the existing API port to the real sandbox gateway. Bind sandbox backups to the API's private assets bucket, matching deployment. Give each runtime a unique sandbox Worker name and remove its container and proxy resources during teardown.

@@ -10,6 +10,8 @@ Keep the SDK and Docker image versions aligned and use the Python-enabled image 
 
 For service previews, set the same `SANDBOX_PREVIEW_HOST` on the API and Worker, route `*.<host>/*` to the sandbox Worker and set `APP_BASE_URL` to the exact trusted embedding origin. The host must be a custom domain with wildcard DNS and TLS; `.workers.dev` cannot provide the Sandbox SDK's required wildcard routing. Keep preview routes, signing secrets and service bindings separate between local, preview and production deployments.
 
+Build the web app with `VITE_SANDBOX_PREVIEW_HOST` set to that same host so its content security policy permits the isolated preview frame. Omit the value to deny preview framing; malformed hosts must not widen the policy. Local development may use HTTP only for the configured localhost preview host.
+
 Bind `BACKUP_BUCKET` to the same private R2 bucket used by the API. Apply an R2 lifecycle rule to remove objects under `backups/` after the environment-cache retention period; the Sandbox SDK records expiry but does not delete expired R2 objects itself.
 
 The internal `/execute` request carries a run JWT and GitHub installation token. Use the shared sandbox schema rather than copied request examples. The API checks explicit model access or resolves its central sandbox preference.
@@ -33,6 +35,10 @@ The API persists snapshot handles only when current membership, repository, inst
 Each declared service has a unique name, repository-relative working directory, command, dependencies, optional expected port with a paired HTTP or TCP health check, startup timeout and restart policy. The Worker validates the complete manifest after clone, resolves the real working directory inside the checkout and applies the existing command and approval policy. Duplicate or occupied ports, dependency cycles and paths outside the repository fail before agent work.
 
 Start services after environment preparation in dependency order and keep checking declared network health while the run is active. Background watchers without a port are healthy only while their process is running. Automatic restart is capped by the declaration and the shared schema permits no more than three attempts; an exhausted required service fails the run. Stop active dependants before their dependency and stop everything in reverse order when the run ends.
+
+Read listening sockets from Linux procfs so port checks work in the production image without an optional networking utility. Capture terminal service evidence after shutdown so Proof records stopped processes.
+
+Send the same authenticated request headers for model, control and usage calls over the API binding. Fail the run when control polling is rejected or unavailable; a temporary control outage must not allow execution to continue without supervision.
 
 Service lifecycle and health use the existing coordinator events. Limit and redact log chunks before emission; do not persist process IDs, container addresses or raw terminal access. Runner-only start, restart and stop actions use the existing idempotent instruction endpoint.
 

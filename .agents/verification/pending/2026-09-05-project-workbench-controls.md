@@ -18,3 +18,5 @@
 **Stop and report if:** a duplicate instruction appears, a non-runner can control the run, an expired approval resolves, execution pauses mid-command, or reload changes the final outcome.
 
 **Automated evidence:** `features/sandbox-controls.spec.ts` confirms pause at a checkpoint, resume of the same run, persisted steering, instruction idempotency and conflicts for terminal mutations. Repeated cancellation is an acknowledged no-op that preserves its original state. Leave combined checks open until every listed presentation or race outcome is covered.
+
+`features/sandbox-approvals.spec.ts` confirms approval and rejection of the exact setup command before execution and rejects a conflicting second resolution. `features/sandbox-membership.spec.ts` confirms member review with disabled steering, resume and service controls, plus rejected direct control and instruction requests. Approval expiry and member approval controls still need coverage.

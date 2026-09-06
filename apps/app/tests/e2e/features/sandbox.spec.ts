@@ -1,4 +1,5 @@
-import { expect, provisionPersonaSession, test } from "../fixtures/polychat-test";
+import { provisionPersonaBrowserContext } from "../fixtures/persona-provisioning";
+import { expect, test } from "../fixtures/polychat-test";
 import { SandboxApi } from "../fixtures/sandbox-api";
 import { WorkbenchPage } from "../page-objects/WorkbenchPage";
 
@@ -83,21 +84,13 @@ test.describe("Sandbox Workbench", () => {
       await expect(workbench.panel).toContainText(`Quality gate ${scenario.qualityGate}`);
       await workbench.selectPane("Changes");
       await expect(workbench.panel).toContainText("README.md");
-      const outsider = await provisionPersonaSession("pro", `${test.info().testId}:outsider`);
-      const outsiderContext = await browser.newContext();
+      const { context: outsiderContext } = await provisionPersonaBrowserContext(
+        browser,
+        "pro",
+        `${test.info().testId}:outsider`,
+      );
 
       try {
-        await outsiderContext.addCookies([
-          {
-            name: "session",
-            value: outsider.sessionToken,
-            domain: "localhost",
-            path: "/",
-            httpOnly: true,
-            sameSite: "Lax",
-            secure: false,
-          },
-        ]);
         const response = await outsiderContext.request.get(diff.url);
 
         expect(response.status()).toBe(404);

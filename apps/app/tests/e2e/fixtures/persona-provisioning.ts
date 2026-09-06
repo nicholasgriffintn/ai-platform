@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 
-import { E2E_API_BASE_URL } from "../support/environment";
+import type { Browser } from "@playwright/test";
+
+import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
 
 export type Persona = "logged-out" | "free" | "pro";
 export type AuthenticatedPersona = Exclude<Persona, "logged-out">;
@@ -75,6 +77,34 @@ export async function provisionPersonaSession(
     email: `${persona}-${identity}@e2e.polychat.invalid`,
     sessionToken,
   };
+}
+
+export async function provisionPersonaBrowserContext(
+  browser: Browser,
+  persona: AuthenticatedPersona,
+  seed: string,
+) {
+  const session = await provisionPersonaSession(persona, seed);
+  const context = await browser.newContext();
+
+  try {
+    await context.addCookies([
+      {
+        name: "session",
+        value: session.sessionToken,
+        domain: new URL(E2E_APP_BASE_URL).hostname,
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax",
+        secure: false,
+      },
+    ]);
+
+    return { context, email: session.email };
+  } catch (error) {
+    await context.close();
+    throw error;
+  }
 }
 
 export async function reseedPersonaBilling(

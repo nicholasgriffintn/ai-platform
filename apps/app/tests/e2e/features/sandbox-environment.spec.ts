@@ -91,6 +91,91 @@ test.describe("Project sandbox environment", () => {
     await expect(page.getByLabel("GitHub repository", { exact: true })).not.toHaveValue("");
   });
 
+  test("rejects inline credentials and redacts secret-shaped setup output", async ({
+    page,
+    workPage,
+    homePage,
+  }) => {
+    test.setTimeout(120_000);
+    await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+    const sandbox = new SandboxApi(page.request, workPage.currentProjectId());
+    const environment = new ProjectEnvironmentPage(page);
+    const workbench = new WorkbenchPage(page);
+    const credential = "sk_e2e_validation_fixture_only";
+
+    await sandbox.configureProject();
+    await environment.reload();
+    await environment.edit();
+    await environment.configureSetup();
+    await page
+      .getByRole("group", { name: "Full setup", exact: true })
+      .getByLabel("Command 1", { exact: true })
+      .fill(`node -e "console.log('${credential}')"`);
+    await expect(page.getByRole("button", { name: "Save repository", exact: true })).toBeDisabled();
+    const rejected = await sandbox.saveEnvironment({
+      source: "polychat",
+      definition: {
+        version: 1,
+        setupCommands: [`node -e "console.log('${credential}')"`],
+        resumeCommands: [],
+        runtimes: [],
+        setupTimeoutSeconds: 30,
+      },
+    });
+
+    expect(rejected.status()).toBe(400);
+    expect((await sandbox.project()).codingEnvironment?.environmentSetup).toBeUndefined();
+    await environment.cancelEdit();
+    await sandbox.configureProject({
+      source: "polychat",
+      definition: {
+        version: 1,
+        setupCommands: ["node -e \"console.log('sk_' + 'e2e_validation_fixture_only')\""],
+        resumeCommands: [],
+        runtimes: [],
+        setupTimeoutSeconds: 30,
+      },
+    });
+    await workPage.reload();
+    await workPage.openNewProjectConversation();
+    await expect(workbench.dock).toBeVisible();
+    await homePage.selectModel("GPT OSS 120B");
+    await homePage.sendMessageAndRequireCompletion(
+      "Polychat sandbox E2E: update README after redacted setup.",
+    );
+    await expect
+      .poll(async () => (await sandbox.latestRun())?.status, { timeout: 90_000 })
+      .toBe("completed");
+    const run = await sandbox.latestRun();
+
+    if (!run) {
+      throw new Error("The redaction run was not recorded");
+    }
+
+    const events = await sandbox.events(run.runId);
+
+    expect(JSON.stringify(events)).not.toContain(credential);
+    expect(
+      events.some(
+        ({ event }) =>
+          event.type === "environment_setup_command_output" &&
+          event.output?.includes("[redacted credential]"),
+      ),
+    ).toBe(true);
+    const logs = run.manifest?.artifacts.find(({ kind }) => kind === "logs");
+
+    if (!logs) {
+      throw new Error("The redaction run did not retain its logs");
+    }
+
+    const output = await sandbox.artifact(logs.url);
+
+    expect(output).not.toContain(credential);
+    expect(output).toContain("[redacted credential]");
+    await workbench.selectPane("Activity");
+    await expect(workbench.panel).not.toContainText(credential);
+  });
+
   for (const scenario of [
     { name: "mismatched runtime", version: "999", command: "node --version", error: /version 999/ },
     {

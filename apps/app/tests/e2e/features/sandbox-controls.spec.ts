@@ -103,6 +103,7 @@ test.describe("Sandbox run supervision", () => {
         ).toBe(true);
         expect(await sandbox.control(run.runId)).toEqual(terminalControl);
       }
+
       expect(
         (await sandbox.submitInstruction(run.runId, "after-terminal", "Too late.")).status(),
       ).toBe(409);
@@ -113,6 +114,7 @@ test.describe("Sandbox run supervision", () => {
           true,
         );
       }
+
       expect(completedEvents.some(({ event }) => event.type === "service_stopped")).toBe(true);
       expect(
         completedEvents

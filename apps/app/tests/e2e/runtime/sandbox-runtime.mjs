@@ -1,8 +1,23 @@
 import { execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 
 export const SANDBOX_IMAGE = "polychat-e2e-sandbox:0.12.9";
 export const SANDBOX_REPOSITORY = "nicholasgriffintn/polychat-e2e-fixture";
 export const SANDBOX_INSTALLATION_ID = 987654;
+export const SANDBOX_WORKER_NAME = `polychat-e2e-sandbox-${randomUUID().slice(0, 8)}`;
+
+export function stopSandboxContainers() {
+  const names = execFileSync("docker", ["ps", "-a", "--format", "{{.Names}}"], { encoding: "utf8" })
+    .split("\n")
+    .filter((name) => name.startsWith(`workerd-${SANDBOX_WORKER_NAME}-Sandbox-`));
+
+  if (names.length === 0) {
+    return;
+  }
+
+  execFileSync("docker", ["stop", "--timeout", "2", ...names], { stdio: "ignore" });
+  execFileSync("docker", ["rm", ...names], { stdio: "ignore" });
+}
 
 export function resolveSandboxContainerEngine() {
   execFileSync("docker", ["image", "inspect", SANDBOX_IMAGE], { stdio: "ignore" });
@@ -20,7 +35,7 @@ export function createSandboxWorkerOptions(
   outboundService,
 ) {
   return {
-    name: "sandbox",
+    name: SANDBOX_WORKER_NAME,
     modules: [{ type: "ESModule", path: "sandbox.js", contents: bundle.script }],
     compatibilityDate: "2026-08-08",
     compatibilityFlags: ["nodejs_compat"],

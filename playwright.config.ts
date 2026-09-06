@@ -31,6 +31,7 @@ export default defineConfig({
       url: `${E2E_API_BASE_URL}/__e2e-ready`,
       timeout: 120 * 1000,
       reuseExistingServer: false,
+      gracefulShutdown: { signal: "SIGTERM", timeout: 10_000 },
     },
     {
       command: "pnpm --filter @assistant/app serve:e2e",

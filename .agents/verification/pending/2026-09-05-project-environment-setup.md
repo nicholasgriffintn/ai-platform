@@ -14,9 +14,13 @@
 - [ ] Select repository configuration and confirm the run reads only `.polychat/environment.json` from the cloned revision. Change that file in a later commit and confirm Proof reports a different blob revision.
 - [ ] Request resume with configured resume commands and confirm only the lightweight commands run. Remove the resume commands, request resume again and confirm it falls back to full setup and records **setup** as the effective mode.
 - [ ] Use an unavailable runtime, a mismatched version, malformed JSON, an oversized repository definition, a failing command and an expired timeout. Confirm each fails before agent work with a useful terminal error and retained configuration evidence where a valid revision was resolved.
-- [ ] Add a network setup command under a policy that requires approval and confirm it waits for the existing exact command approval. Reject it and confirm the command does not execute.
-- [ ] Try to save a recognisable inline token or secret assignment and confirm validation refuses it. Produce secret-shaped command output and confirm persisted Activity and logs contain redaction rather than the value.
+- [x] Add a network setup command under a policy that requires approval and confirm it waits for the existing exact command approval. Reject it and confirm the command does not execute.
+- [x] Try to save a recognisable inline token or secret assignment and confirm validation refuses it. Produce secret-shaped command output and confirm persisted Activity and logs contain redaction rather than the value.
 
 **Stop and report if:** repository configuration bypasses command policy, a changed project definition rewrites an existing run, an inline credential persists, setup continues after timeout or failure, or Proof cannot identify the valid configuration revision used.
 
 **Automated evidence:** `features/sandbox-environment.spec.ts` confirms editable project setup and removal through the real local app, API and container. Extend the journey for the remaining execution and policy outcomes.
+
+The extended suite confirms rejection of a recognisable fixture credential at both form and API boundaries, redaction of generated command output in persisted events and logs, and failure before planning for a mismatched runtime, failed command and expired setup timeout.
+
+`features/sandbox-approvals.spec.ts` confirms approval and rejection of the exact setup command through Workbench. Reject before execution and retain failed Proof; approve before execution and planning, then retain completed Proof. A second resolution conflicts.

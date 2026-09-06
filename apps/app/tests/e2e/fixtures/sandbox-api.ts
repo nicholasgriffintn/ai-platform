@@ -23,7 +23,7 @@ export class SandboxApi {
     private readonly projectId: string,
   ) {}
 
-  async configureProject(environmentSetup?: SandboxEnvironmentSetup) {
+  async configureProject(environmentSetup?: SandboxEnvironmentSetup, timeoutSeconds = 120) {
     const connection = await this.request.post(
       `${E2E_API_BASE_URL}/apps/sandbox/connections/auto`,
       {
@@ -33,20 +33,24 @@ export class SandboxApi {
     );
 
     await requireSuccessfulResponse(connection, "Connect the fixture GitHub installation");
-    const project = await this.request.put(`${E2E_API_BASE_URL}/projects/${this.projectId}`, {
+    const project = await this.saveEnvironment(environmentSetup, timeoutSeconds);
+
+    await requireSuccessfulResponse(project, "Configure the fixture coding environment");
+  }
+
+  async saveEnvironment(environmentSetup?: SandboxEnvironmentSetup, timeoutSeconds = 120) {
+    return this.request.put(`${E2E_API_BASE_URL}/projects/${this.projectId}`, {
       headers: { origin: E2E_APP_BASE_URL },
       data: {
         codingEnvironment: {
           installationId: INSTALLATION_ID,
           repository: REPOSITORY,
           deliveryPolicy: { mode: "leave_uncommitted" },
-          timeoutSeconds: 120,
+          timeoutSeconds,
           environmentSetup,
         },
       },
     });
-
-    await requireSuccessfulResponse(project, "Configure the fixture coding environment");
   }
 
   async latestRun() {
@@ -121,6 +125,13 @@ export class SandboxApi {
     await requireSuccessfulResponse(response, "Revoke service preview");
   }
 
+  async authorisePreviewWithoutServicePrincipal(credential: string, originId: string) {
+    return this.request.post(`${E2E_API_BASE_URL}/apps/sandbox/previews/authorise`, {
+      headers: { origin: E2E_APP_BASE_URL },
+      data: { credential, originId, mode: "bootstrap" },
+    });
+  }
+
   async instructions(runId: string) {
     const response = await this.request.get(
       `${E2E_API_BASE_URL}/apps/sandbox/runs/${runId}/instructions`,
@@ -135,6 +146,30 @@ export class SandboxApi {
     return this.request.post(`${E2E_API_BASE_URL}/apps/sandbox/runs/${runId}/instructions`, {
       headers: { origin: E2E_APP_BASE_URL },
       data: { kind: "message", idempotencyKey, content },
+    });
+  }
+
+  async respondToApproval(
+    runId: string,
+    requestId: string,
+    approvalStatus: "approved" | "rejected",
+    idempotencyKey: string,
+  ) {
+    return this.request.post(`${E2E_API_BASE_URL}/apps/sandbox/runs/${runId}/instructions`, {
+      headers: { origin: E2E_APP_BASE_URL },
+      data: { kind: "approval_response", requestId, approvalStatus, idempotencyKey },
+    });
+  }
+
+  async submitServiceAction(
+    runId: string,
+    serviceName: string,
+    serviceAction: "start" | "stop" | "restart",
+    idempotencyKey: string,
+  ) {
+    return this.request.post(`${E2E_API_BASE_URL}/apps/sandbox/runs/${runId}/instructions`, {
+      headers: { origin: E2E_APP_BASE_URL },
+      data: { kind: "service_action", serviceName, serviceAction, idempotencyKey },
     });
   }
 
