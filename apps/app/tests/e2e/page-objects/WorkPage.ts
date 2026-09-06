@@ -209,7 +209,17 @@ export class WorkPage extends BasePage {
     await member.waitFor({ state: "detached" });
   }
 
+  async openProjectSettings() {
+    if (await this.page.getByRole("link", { name: "Back to project" }).isVisible()) {
+      return;
+    }
+
+    await this.clickElement(this.page.getByRole("link", { name: "Project settings" }));
+    await this.page.getByRole("link", { name: "Back to project" }).waitFor();
+  }
+
   async updateProjectBrief(instructions: string) {
+    await this.openProjectSettings();
     await this.page.getByRole("button", { name: "Edit project brief" }).click();
     await this.page.getByLabel("Project brief", { exact: true }).fill(instructions);
     await this.page.getByRole("button", { name: "Save brief" }).click();
@@ -217,6 +227,7 @@ export class WorkPage extends BasePage {
   }
 
   async setProjectRoutingPreference(tier: "" | "low" | "medium" | "high" | "ultra") {
+    await this.openProjectSettings();
     await this.page.getByLabel("Project default", { exact: true }).selectOption(tier);
     await this.page.getByRole("button", { name: "Save preference" }).click();
     await this.page.getByRole("button", { name: "Save preference" }).waitFor({ state: "hidden" });

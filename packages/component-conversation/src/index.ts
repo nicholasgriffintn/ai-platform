@@ -34,6 +34,7 @@ export * from "./PetPerch";
 export * from "./ScrollButton";
 export * from "./ToolToggleMenu";
 export * from "./InlineSettingSelect";
+export * from "./InlineSettingToggle";
 export * from "./CompactionStatusRow";
 export * from "./GoalStatusCard";
 export * from "./GoalStatusRow";
