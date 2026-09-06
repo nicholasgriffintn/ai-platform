@@ -2,8 +2,6 @@ export type ProductMode = "chat" | "work";
 
 export type ProductPlace = "conversations" | "attention" | "files" | "teammates" | "you";
 
-export const PRODUCT_MODES: readonly ProductMode[] = ["chat", "work"];
-
 export const MODE_BASE_PATHS: Record<ProductMode, string> = {
   chat: "/chat",
   work: "/work",
@@ -33,10 +31,6 @@ export function getProductMode(pathname: string): ProductMode {
   return pathname === MODE_BASE_PATHS.work || pathname.startsWith(`${MODE_BASE_PATHS.work}/`)
     ? "work"
     : "chat";
-}
-
-export function getPlacePathsForPathname(pathname: string): PlacePaths {
-  return getPlacePaths(getProductMode(pathname));
 }
 
 const PLACE_SEGMENTS: Array<[Exclude<ProductPlace, "conversations" | "you">, string[]]> = [

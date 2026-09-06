@@ -9,7 +9,7 @@
 ## Verify
 
 - [ ] The Chat and Work toggle appears in the header on Chat, Work, Attention, Files and Teammates pages; each sidebar lists Attention, Files and Teammates under Search, and Ask Poly sits above the settings control in every sidebar footer, including the phone drawer.
-- [ ] `/teammates` shows the personal library with the standard sidebar and `/chat/capabilities` redirects to it.
+- [ ] `/chat/teammates` shows the personal library inside the Chat shell, and there is no top-level `/teammates`.
 - [ ] New chat from the Work sidebar outside a project opens the workspace and project picker and lands on that project's new conversation; inside a project it starts a conversation there; from Chat or a places page it opens a fresh personal conversation.
 - [ ] The profile sidebar rows match the chat sidebar: same padding, radius and hover, grouped sections, a Back to Home row at the top and a quiet Logout row at the bottom; Ask Poly and the settings control share the same full-width hover and active highlight.
 - [ ] In Poly, the composer shows a send button, no empty row beneath it, and the pet is Pip whichever pet the user has chosen; "New conversation" sits in the overlay header beside the close control.
