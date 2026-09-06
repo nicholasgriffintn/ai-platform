@@ -1,20 +1,22 @@
 import { useParams } from "react-router";
 
-import { AppsPage } from "~/components/Apps/AppsPage";
+import { AppRoute } from "~/components/Apps/AppRoute";
 import { useWorkData } from "~/components/Work/WorkDataContext";
 import { getProjectSurface } from "~/lib/capability-surfaces";
 
 export function meta() {
-  return [{ title: "Project apps - Polychat" }];
+  return [{ title: "Project app - Polychat" }];
 }
 
-export default function ProjectAppsPage() {
-  const { workspaceId = "", projectId = "" } = useParams();
+export default function ProjectAppPage() {
+  const { workspaceId = "", projectId = "", appId = "", "*": subpath = "" } = useParams();
   const { projectQuery } = useWorkData();
 
   return (
-    <AppsPage
+    <AppRoute
       surface={getProjectSurface(workspaceId, projectId)}
+      appId={appId}
+      subpath={subpath}
       project={{
         name: projectQuery.data?.name,
         capabilities: projectQuery.data?.capabilities,

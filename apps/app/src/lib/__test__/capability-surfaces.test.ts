@@ -5,10 +5,10 @@ import type {
 import { describe, expect, it } from "vitest";
 
 import {
+  getAppBackLink,
+  getAppPath,
   getCapabilityOpenPath,
-  getExperienceBackLink,
   getEnabledExperiences,
-  getExperiencePath,
   getProjectSurface,
   PERSONAL_SURFACE,
   type EnabledCapability,
@@ -63,9 +63,9 @@ function teammateItem(availability: "available" | "unavailable"): AssistantActio
 
 describe("capability surfaces", () => {
   it("builds the same paths for either scope from its base", () => {
-    expect(getExperiencePath(PERSONAL_SURFACE, "notes")).toBe("/chat/experiences/notes");
-    expect(getExperiencePath(getProjectSurface("w1", "p1"), "notes")).toBe(
-      "/work/w1/projects/p1/experiences/notes",
+    expect(getAppPath(PERSONAL_SURFACE, "notes")).toBe("/chat/apps/notes");
+    expect(getAppPath(getProjectSurface("w1", "p1"), "notes")).toBe(
+      "/work/w1/projects/p1/apps/notes",
     );
   });
 
@@ -78,25 +78,32 @@ describe("capability surfaces", () => {
     expect(getEnabledExperiences([], [savedOutputs])).toEqual([]);
   });
 
-  it("steps back one level rather than jumping to the hub", () => {
-    expect(getExperienceBackLink(PERSONAL_SURFACE, "strudel", "", "Strudel")).toEqual({
-      to: "/chat/experiences",
-      label: "Back to apps",
+  it("returns to the teammates library from the top of an app, not to a separate list", () => {
+    expect(getAppBackLink(PERSONAL_SURFACE, "strudel", "", "Strudel")).toEqual({
+      to: "/chat/teammates",
+      label: "Back to teammates",
     });
-    expect(getExperienceBackLink(PERSONAL_SURFACE, "strudel", "pattern-1", "Strudel")).toEqual({
-      to: "/chat/experiences/strudel",
+    expect(getAppBackLink(getProjectSurface("w1", "p1"), "strudel", "", "Strudel")).toEqual({
+      to: "/work/w1/projects/p1/teammates",
+      label: "Back to teammates",
+    });
+  });
+
+  it("steps back one level rather than jumping to the library", () => {
+    expect(getAppBackLink(PERSONAL_SURFACE, "strudel", "pattern-1", "Strudel")).toEqual({
+      to: "/chat/apps/strudel",
       label: "Back to Strudel",
     });
-    expect(
-      getExperienceBackLink(PERSONAL_SURFACE, "replicate", "predictions/run-1", "Replicate"),
-    ).toEqual({ to: "/chat/experiences/replicate/predictions", label: "Back" });
+    expect(getAppBackLink(PERSONAL_SURFACE, "replicate", "predictions/run-1", "Replicate")).toEqual(
+      { to: "/chat/apps/replicate/predictions", label: "Back" },
+    );
   });
 
   it("steps back within a project the same way", () => {
     expect(
-      getExperienceBackLink(getProjectSurface("w1", "p1"), "strudel", "pattern-1", "Strudel"),
+      getAppBackLink(getProjectSurface("w1", "p1"), "strudel", "pattern-1", "Strudel"),
     ).toEqual({
-      to: "/work/w1/projects/p1/experiences/strudel",
+      to: "/work/w1/projects/p1/apps/strudel",
       label: "Back to Strudel",
     });
   });

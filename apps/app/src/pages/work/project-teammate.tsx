@@ -14,7 +14,7 @@ export default function ProjectTeammatePage() {
     <TeammateEditorPage
       teammateId={teammateId}
       teammatesPath={`${projectPath}/teammates`}
-      backPath={`${projectPath}/library`}
+      backPath={`${projectPath}/teammates`}
       backLabel="Back to capabilities"
       projectId={projectId}
     />

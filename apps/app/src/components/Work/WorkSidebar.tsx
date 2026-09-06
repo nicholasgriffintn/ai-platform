@@ -23,8 +23,7 @@ import {
   resolveProjectConversationId,
 } from "~/lib/conversation-route";
 import { buildConversationSections } from "~/lib/conversation-sections";
-import { getProjectFilesPath } from "~/lib/files-route";
-import { PLACE_PATHS } from "~/lib/navigation/places";
+import { getPlacePaths } from "~/lib/navigation/places";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -71,6 +70,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     ? attentionItems.filter((item) => item.projectId === projectId).length
     : 0;
   const canManageGroups = workspace?.role === "owner" || workspace?.role === "admin";
+  const workPlaces = getPlacePaths("work");
   const projectBasePath = getProjectBasePath(workspaceId ?? "", projectId ?? "");
   const projectChatPath = getProjectChatPath(workspaceId ?? "", projectId ?? "");
   const isConversationRoute = isProjectConversationPath(pathname);
@@ -135,10 +135,10 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
       footer={<SidebarFooter />}
     >
       <WorkSidebarNav
-        workspacesHref={PLACE_PATHS.work}
-        attentionHref={PLACE_PATHS.attention}
-        filesHref={PLACE_PATHS.files}
-        teammatesHref={PLACE_PATHS.library}
+        workspacesHref={workPlaces.conversations}
+        attentionHref={
+          projectId ? `${workPlaces.attention}?projectId=${projectId}` : workPlaces.attention
+        }
         workspace={
           workspace
             ? {
@@ -162,11 +162,11 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
           projectId && workspaceId
             ? {
                 newConversationHref: projectChatPath,
-                filesHref: getProjectFilesPath(workspaceId, projectId),
+                filesHref: `${projectBasePath}/files`,
                 tasksHref: `${projectBasePath}/tasks`,
                 attentionCount: projectAttentionCount,
                 activityHref: `${projectBasePath}/activity`,
-                capabilitiesHref: `${projectBasePath}/library`,
+                teammatesHref: `${projectBasePath}/teammates`,
                 conversationList: (
                   <div className="-mx-2 pt-3">
                     <ConversationListSection

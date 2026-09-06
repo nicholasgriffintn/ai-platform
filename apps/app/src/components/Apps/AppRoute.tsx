@@ -11,24 +11,23 @@ import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { ExperienceRenderer } from "~/components/Experiences/ExperienceRenderer";
 import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
 import {
+  type AppProjectScope,
   type CapabilitySurface,
+  getAppBackLink,
+  getAppPath,
   getCapabilityLibraryPath,
-  getExperienceBackLink,
-  getExperiencePath,
   isExperienceEnabled,
 } from "~/lib/capability-surfaces";
 import { isAuthenticationError } from "~/lib/errors";
 
-import type { AppsPageProjectScope } from "./AppsPage";
-
 export function AppRoute({
-  experienceId,
+  appId,
   project,
   subpath = "",
   surface,
 }: {
-  experienceId: string;
-  project?: AppsPageProjectScope;
+  appId: string;
+  project?: AppProjectScope;
   subpath?: string;
   surface: CapabilitySurface;
 }) {
@@ -37,10 +36,10 @@ export function AppRoute({
     isLoading: isCatalogLoading,
     error: catalogError,
   } = useCapabilityCatalog();
-  const definition = catalog?.experiences.find((item) => item.id === experienceId);
+  const definition = catalog?.experiences.find((item) => item.id === appId);
   const title = definition?.name;
-  const backLink = getExperienceBackLink(surface, experienceId, subpath, title);
-  const basePath = getExperiencePath(surface, experienceId);
+  const backLink = getAppBackLink(surface, appId, subpath, title);
+  const basePath = getAppPath(surface, appId);
   const isLoading = isCatalogLoading || Boolean(project?.isLoading);
   const pageError = project?.error ?? catalogError;
   const isEnabled =
@@ -73,7 +72,7 @@ export function AppRoute({
           message={`Add ${title} to the project before opening it.`}
           action={
             <ButtonLink variant="primary" href={getCapabilityLibraryPath(surface)}>
-              Manage teammates and tools
+              Open teammates
             </ButtonLink>
           }
         />

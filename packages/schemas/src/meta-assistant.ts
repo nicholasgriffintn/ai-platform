@@ -4,17 +4,19 @@ export const META_ASSISTANT_CONVERSATION_TYPE = "meta";
 
 export const META_NAVIGATION_DATA_KEY = "metaNavigation";
 
+export const metaAssistantModeSchema = z.enum(["chat", "work"]);
+
 export const metaAssistantPlaceSchema = z.enum([
-  "chat",
-  "work",
+  "conversations",
   "attention",
   "files",
-  "library",
+  "teammates",
   "you",
 ]);
 
 export const metaAssistantUiContextSchema = z.object({
   route: z.string().max(512).optional(),
+  mode: metaAssistantModeSchema.optional(),
   place: metaAssistantPlaceSchema.optional(),
   conversationId: z.string().max(128).optional(),
   workspaceId: z.string().max(128).optional(),
@@ -64,6 +66,7 @@ export const metaNavigationTargetSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("place"),
     place: metaAssistantPlaceSchema,
+    mode: metaAssistantModeSchema.default("chat"),
   }),
 ]);
 
@@ -88,5 +91,6 @@ export type MetaAssistantPlace = z.infer<typeof metaAssistantPlaceSchema>;
 export type MetaAssistantUiContext = z.infer<typeof metaAssistantUiContextSchema>;
 export type MetaAssistantRequest = z.infer<typeof metaAssistantRequestSchema>;
 export type MetaToolName = (typeof META_TOOL_NAMES)[number];
+export type MetaAssistantMode = z.infer<typeof metaAssistantModeSchema>;
 export type MetaNavigationTarget = z.infer<typeof metaNavigationTargetSchema>;
 export type MetaFoundConversation = z.infer<typeof metaFoundConversationSchema>;

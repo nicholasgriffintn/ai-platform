@@ -509,7 +509,7 @@ describe("FlowEditorDialog", () => {
           { id: "source-research", name: "Source research" },
           { id: "fact-checking", name: "Fact checking" },
         ]}
-        capabilitiesHref="/projects/project-1/library"
+        capabilitiesHref="/projects/project-1/teammates"
         createTeammateHref="/work/workspace-1/projects/project-1/teammates/new"
         onOpenChange={vi.fn()}
         onSave={onSave}
@@ -536,7 +536,7 @@ describe("FlowEditorDialog", () => {
       open: true,
       teammates: [],
       skills: [],
-      capabilitiesHref: "/projects/project-1/library",
+      capabilitiesHref: "/projects/project-1/teammates",
       createTeammateHref: "/work/workspace-1/projects/project-1/teammates/new",
       onOpenChange: vi.fn(),
       onSave,
@@ -577,7 +577,7 @@ describe("FlowEditorDialog", () => {
         flow={{ stages: [{ ...flow.stages[0], requiresApprovalFor: ["delegate"] }] }}
         teammates={[]}
         skills={[]}
-        capabilitiesHref="/projects/project-1/library"
+        capabilitiesHref="/projects/project-1/teammates"
         createTeammateHref="/work/workspace-1/projects/project-1/teammates/new"
         onOpenChange={vi.fn()}
         onSave={onSave}

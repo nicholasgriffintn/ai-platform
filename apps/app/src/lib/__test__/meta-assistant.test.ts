@@ -7,13 +7,14 @@ import {
   getMetaNavigationHref,
   readMetaNavigationTarget,
 } from "../meta-assistant";
-import { getActivePlace } from "../navigation/places";
+import { getActivePlace, getPlacePaths, getProductMode } from "../navigation/places";
 
 describe("buildMetaAssistantUiContext", () => {
   it("describes an open project conversation", () => {
     expect(buildMetaAssistantUiContext("/work/w1/projects/p1/chat/c1")).toEqual({
       route: "/work/w1/projects/p1/chat/c1",
-      place: "work",
+      mode: "work",
+      place: "conversations",
       workspaceId: "w1",
       projectId: "p1",
       conversationId: "c1",
@@ -28,19 +29,21 @@ describe("buildMetaAssistantUiContext", () => {
     });
     expect(buildMetaAssistantUiContext("/work/w1/members")).toEqual({
       route: "/work/w1/members",
-      place: "work",
+      mode: "work",
+      place: "conversations",
       workspaceId: "w1",
     });
   });
 
   it("uses the store conversation for the personal chat root and ignores reserved chat segments", () => {
     expect(buildMetaAssistantUiContext("/chat", "c9")).toMatchObject({
-      place: "chat",
+      mode: "chat",
+      place: "conversations",
       conversationId: "c9",
     });
     expect(buildMetaAssistantUiContext("/chat/c2")).toMatchObject({ conversationId: "c2" });
-    expect(buildMetaAssistantUiContext("/chat/capabilities").conversationId).toBeUndefined();
-    expect(buildMetaAssistantUiContext("/chat/capabilities").place).toBe("library");
+    expect(buildMetaAssistantUiContext("/chat/teammates").conversationId).toBeUndefined();
+    expect(buildMetaAssistantUiContext("/chat/teammates").place).toBe("teammates");
   });
 });
 
@@ -58,34 +61,52 @@ describe("meta navigation", () => {
     expect(getMetaNavigationHref({ kind: "project", workspaceId: "w1", projectId: "p1" })).toBe(
       "/work/w1/projects/p1",
     );
-    expect(getMetaNavigationHref({ kind: "place", place: "attention" })).toBe("/attention");
+    expect(getMetaNavigationHref({ kind: "place", place: "attention", mode: "chat" })).toBe(
+      "/chat/attention",
+    );
+    expect(getMetaNavigationHref({ kind: "place", place: "attention", mode: "work" })).toBe(
+      "/work/attention",
+    );
+    expect(getMetaNavigationHref({ kind: "place", place: "you", mode: "chat" })).toBe("/profile");
   });
 
   it("only reads well-formed navigation data", () => {
     expect(
       readMetaNavigationTarget({ [META_NAVIGATION_DATA_KEY]: { kind: "place", place: "files" } }),
-    ).toEqual({ kind: "place", place: "files" });
+    ).toEqual({ kind: "place", place: "files", mode: "chat" });
     expect(readMetaNavigationTarget({ [META_NAVIGATION_DATA_KEY]: { kind: "nope" } })).toBeNull();
     expect(readMetaNavigationTarget(undefined)).toBeNull();
   });
 });
 
 describe("places and files routes", () => {
-  it("maps paths to places", () => {
-    expect(getActivePlace("/")).toBe("chat");
-    expect(getActivePlace("/chat/abc")).toBe("chat");
-    expect(getActivePlace("/chat/teammates/a1")).toBe("library");
-    expect(getActivePlace("/teammates")).toBe("library");
-    expect(getActivePlace("/work/w1/projects/p1/files/made/o1")).toBe("work");
-    expect(getActivePlace("/files/given")).toBe("files");
+  it("reads the place from the path, whichever mode it is in", () => {
+    expect(getActivePlace("/")).toBe("conversations");
+    expect(getActivePlace("/chat/abc")).toBe("conversations");
+    expect(getActivePlace("/chat/teammates/a1")).toBe("teammates");
+    expect(getActivePlace("/chat/apps/strudel")).toBe("teammates");
+    expect(getActivePlace("/chat/files/given")).toBe("files");
+    expect(getActivePlace("/chat/attention")).toBe("attention");
+    expect(getActivePlace("/work")).toBe("conversations");
+    expect(getActivePlace("/work/attention")).toBe("attention");
+    expect(getActivePlace("/work/w1/projects/p1/files/made/o1")).toBe("files");
+    expect(getActivePlace("/work/w1/projects/p1/teammates")).toBe("teammates");
     expect(getActivePlace("/profile")).toBe("you");
+    expect(getActivePlace("/pricing")).toBeUndefined();
+  });
+
+  it("reads the mode from the path so a place keeps its context", () => {
+    expect(getProductMode("/chat/files/made")).toBe("chat");
+    expect(getProductMode("/work/w1/projects/p1/files/made")).toBe("work");
+    expect(getPlacePaths("chat").files).toBe("/chat/files");
+    expect(getPlacePaths("work").attention).toBe("/work/attention");
   });
 
   it("parses files subpaths and builds tab paths", () => {
     expect(parseFilesSubpath("")).toEqual({ tab: "made", itemPath: "" });
     expect(parseFilesSubpath("made/output-1")).toEqual({ tab: "made", itemPath: "output-1" });
     expect(parseFilesSubpath("given")).toEqual({ tab: "given", itemPath: "" });
-    expect(getFilesTabPath("/files", "made", "/output-1")).toBe("/files/made/output-1");
+    expect(getFilesTabPath("/chat/files", "made", "/output-1")).toBe("/chat/files/made/output-1");
     expect(getProjectFilesPath("w1", "p1", "given")).toBe("/work/w1/projects/p1/files/given");
   });
 });

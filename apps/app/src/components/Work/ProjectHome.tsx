@@ -14,7 +14,7 @@ import { getProjectBasePath, getProjectConversationPath } from "~/lib/conversati
 import { isAuthenticationError } from "~/lib/errors";
 
 import { ProjectConversationStarter } from "./ProjectConversationStarter";
-import { ProjectHomeTabs } from "./ProjectHomeTabs";
+import { ProjectHomeHeader } from "./ProjectHomeHeader";
 import { useProjectTemplateSave } from "./useProjectTemplateSave";
 import { useWorkData } from "./WorkDataContext";
 
@@ -64,9 +64,10 @@ export function ProjectHome({
   return (
     <>
       <PageShell.Content className="max-w-6xl">
-        <PageShell.Header
-          title={project.name}
-          actionContent={
+        <ProjectHomeHeader
+          workspaceId={workspaceId}
+          projectId={projectId}
+          actions={
             <ProjectHomeActions
               canManage={canManage}
               settingsPath={`${basePath}/settings`}
@@ -77,11 +78,6 @@ export function ProjectHome({
             />
           }
         />
-        <p className="text-muted-foreground mb-6 max-w-2xl text-sm">
-          {project.description || "No project description"}
-        </p>
-
-        <ProjectHomeTabs workspaceId={workspaceId} projectId={projectId} />
 
         <div className="space-y-6">
           <ProjectConversationStarter workspaceId={workspaceId} projectId={projectId} />

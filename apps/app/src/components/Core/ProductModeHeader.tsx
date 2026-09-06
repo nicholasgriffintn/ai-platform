@@ -6,7 +6,7 @@ import { type ReactNode, useRef } from "react";
 import { useLocation } from "react-router";
 
 import { useTrackEvent } from "~/hooks/use-track-event";
-import { getProductMode, isProductModeRoute, PLACE_PATHS } from "~/lib/navigation/places";
+import { getProductMode, isProductModeRoute, MODE_BASE_PATHS } from "~/lib/navigation/places";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
@@ -79,7 +79,7 @@ export function ProductModeHeader({
           <ProductModeSwitch
             activeMode={getProductMode(pathname)}
             className="w-auto shrink-0 @min-[40rem]:w-44"
-            destinations={{ chat: PLACE_PATHS.chat, work: PLACE_PATHS.work }}
+            destinations={{ chat: MODE_BASE_PATHS.chat, work: MODE_BASE_PATHS.work }}
           />
         ) : null
       }

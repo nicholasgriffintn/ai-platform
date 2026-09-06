@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 import { getProjectChatPath } from "~/lib/conversation-route";
-import { getProductMode, PLACE_PATHS } from "~/lib/navigation/places";
+import { getProductMode, MODE_BASE_PATHS } from "~/lib/navigation/places";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
@@ -40,7 +40,7 @@ export function useStartNewChat() {
     }
 
     clearCurrentConversation();
-    void navigate(PLACE_PATHS.chat);
+    void navigate(MODE_BASE_PATHS.chat);
   }, [
     clearCurrentConversation,
     navigate,

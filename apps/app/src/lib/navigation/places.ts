@@ -1,52 +1,77 @@
-export type ProductPlace = "chat" | "work" | "attention" | "files" | "library" | "you";
-
 export type ProductMode = "chat" | "work";
 
-export const PLACE_PATHS: Record<ProductPlace, string> = {
+export type ProductPlace = "conversations" | "attention" | "files" | "teammates" | "you";
+
+export const PRODUCT_MODES: readonly ProductMode[] = ["chat", "work"];
+
+export const MODE_BASE_PATHS: Record<ProductMode, string> = {
   chat: "/chat",
   work: "/work",
-  attention: "/attention",
-  files: "/files",
-  library: "/teammates",
-  you: "/profile",
 };
 
-const PLACE_PREFIXES: Array<[ProductPlace, string[]]> = [
-  ["attention", ["/attention"]],
-  ["files", ["/files"]],
-  [
-    "library",
-    ["/teammates", "/chat/capabilities", "/chat/tools", "/chat/teammates", "/chat/experiences"],
-  ],
-  ["you", ["/profile"]],
-  ["work", ["/work"]],
-  ["chat", ["/", "/chat"]],
-];
+export const PROFILE_PATH = "/profile";
 
-function matchesPrefix(pathname: string, prefix: string): boolean {
-  if (prefix === "/") {
-    return pathname === "/";
-  }
-
-  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+export interface PlacePaths {
+  conversations: string;
+  attention: string;
+  files: string;
+  teammates: string;
 }
 
+export function getPlacePaths(mode: ProductMode): PlacePaths {
+  const base = MODE_BASE_PATHS[mode];
+
+  return {
+    conversations: base,
+    attention: `${base}/attention`,
+    files: `${base}/files`,
+    teammates: `${base}/teammates`,
+  };
+}
+
+export function getProductMode(pathname: string): ProductMode {
+  return pathname === MODE_BASE_PATHS.work || pathname.startsWith(`${MODE_BASE_PATHS.work}/`)
+    ? "work"
+    : "chat";
+}
+
+export function getPlacePathsForPathname(pathname: string): PlacePaths {
+  return getPlacePaths(getProductMode(pathname));
+}
+
+const PLACE_SEGMENTS: Array<[Exclude<ProductPlace, "conversations" | "you">, string[]]> = [
+  ["attention", ["attention"]],
+  ["files", ["files"]],
+  ["teammates", ["teammates", "apps", "tools"]],
+];
+
 export function getActivePlace(pathname: string): ProductPlace | undefined {
-  for (const [place, prefixes] of PLACE_PREFIXES) {
-    if (prefixes.some((prefix) => matchesPrefix(pathname, prefix))) {
+  if (pathname === PROFILE_PATH || pathname.startsWith(`${PROFILE_PATH}/`)) {
+    return "you";
+  }
+
+  const mode = getProductMode(pathname);
+  const base = MODE_BASE_PATHS[mode];
+  const isModeRoute = pathname === "/" || pathname === base || pathname.startsWith(`${base}/`);
+
+  if (!isModeRoute) {
+    return undefined;
+  }
+
+  const rest = pathname.slice(base.length).replace(/^\/+/, "");
+  const segments = new Set(rest.split("/").filter(Boolean));
+
+  for (const [place, placeSegments] of PLACE_SEGMENTS) {
+    if (placeSegments.some((segment) => segments.has(segment))) {
       return place;
     }
   }
 
-  return undefined;
+  return "conversations";
 }
 
 export function isProductModeRoute(pathname: string): boolean {
   const place = getActivePlace(pathname);
 
   return place !== undefined && place !== "you";
-}
-
-export function getProductMode(pathname: string): ProductMode {
-  return getActivePlace(pathname) === "work" ? "work" : "chat";
 }

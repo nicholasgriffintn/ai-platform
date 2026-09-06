@@ -129,12 +129,12 @@ describe("assistant action launch URL contract", () => {
   it("creates recipe management links without discarding existing route state", () => {
     expect(
       createRecipeManagementActionPath(
-        "/work/workspace-1/projects/project-1/library?view=installed",
+        "/work/workspace-1/projects/project-1/teammates?view=installed",
         "configure",
         "daily briefing",
       ),
     ).toBe(
-      "/work/workspace-1/projects/project-1/library?view=installed&action=configure&recipe=daily+briefing",
+      "/work/workspace-1/projects/project-1/teammates?view=installed&action=configure&recipe=daily+briefing",
     );
   });
 

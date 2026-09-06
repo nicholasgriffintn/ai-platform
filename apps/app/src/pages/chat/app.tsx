@@ -7,14 +7,8 @@ export function meta() {
   return [{ title: "App - Polychat" }];
 }
 
-export default function PersonalAppPage() {
-  const params = useParams();
+export default function ChatAppPage() {
+  const { appId = "", "*": subpath = "" } = useParams();
 
-  return (
-    <AppRoute
-      surface={PERSONAL_SURFACE}
-      experienceId={params.experienceId ?? ""}
-      subpath={params["*"] ?? ""}
-    />
-  );
+  return <AppRoute surface={PERSONAL_SURFACE} appId={appId} subpath={subpath} />;
 }

@@ -10,7 +10,6 @@ import {
   LayoutDashboard,
   ListChecks,
   Search,
-  Settings2,
   SquarePen,
   Users,
   UsersRound,
@@ -41,7 +40,7 @@ export interface WorkSidebarProject {
   filesHref: string;
   tasksHref: string;
   activityHref: string;
-  capabilitiesHref: string;
+  teammatesHref: string;
   conversationList?: ReactNode;
   attentionCount?: number;
   /** True while the project chat route is open, which decides conversation highlighting. */
@@ -52,8 +51,6 @@ export interface WorkSidebarProject {
 export interface WorkSidebarNavProps {
   workspacesHref: string;
   attentionHref: string;
-  filesHref: string;
-  teammatesHref: string;
   workspace?: WorkSidebarWorkspace;
   activeProjectId?: string;
   project?: WorkSidebarProject;
@@ -68,8 +65,6 @@ export interface WorkSidebarNavProps {
 export function WorkSidebarNav({
   workspacesHref,
   attentionHref,
-  filesHref,
-  teammatesHref,
   workspace,
   activeProjectId,
   project,
@@ -92,12 +87,6 @@ export function WorkSidebarNav({
         </SidebarNavButton>
         <NavLink href={attentionHref} className={linkClass} onClick={onNavigate}>
           <BellRing size={17} /> Attention
-        </NavLink>
-        <NavLink href={filesHref} className={linkClass} onClick={onNavigate}>
-          <FolderOpen size={17} /> Files
-        </NavLink>
-        <NavLink href={teammatesHref} className={linkClass} onClick={onNavigate}>
-          <UsersRound size={17} /> Teammates
         </NavLink>
       </div>
 
@@ -191,8 +180,8 @@ export function WorkSidebarNav({
           <NavLink href={project.activityHref} className={linkClass} onClick={onNavigate}>
             <Activity size={16} /> Activity
           </NavLink>
-          <NavLink href={project.capabilitiesHref} className={linkClass} onClick={onNavigate}>
-            <Settings2 size={16} /> Teammates &amp; tools
+          <NavLink href={project.teammatesHref} className={linkClass} onClick={onNavigate}>
+            <UsersRound size={16} /> Teammates
           </NavLink>
           {project.conversationList}
         </div>

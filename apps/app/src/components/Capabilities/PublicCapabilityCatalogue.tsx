@@ -16,7 +16,7 @@ import { Bot, Sparkles, Terminal, Workflow, Wrench } from "lucide-react";
 
 import { useAuthStatus } from "~/hooks/useAuth";
 import { usePublicCapabilityCatalogue } from "~/hooks/useCapabilityCatalog";
-import { PLACE_PATHS } from "~/lib/navigation/places";
+import { getPlacePaths } from "~/lib/navigation/places";
 import { useUIStore } from "~/state/stores/uiStore";
 
 const CATALOGUE_SECTIONS = [
@@ -174,7 +174,7 @@ function CuratedByYou() {
       </ul>
       <div className="flex flex-wrap gap-3">
         {isAuthenticated ? (
-          <ButtonLink href={PLACE_PATHS.library}>Open your teammates and tools</ButtonLink>
+          <ButtonLink href={getPlacePaths("chat").teammates}>Open your teammates</ButtonLink>
         ) : (
           <Button type="button" variant="primary" onClick={() => setShowLoginModal(true)}>
             Sign in to start curating

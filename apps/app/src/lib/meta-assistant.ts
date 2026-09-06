@@ -8,7 +8,13 @@ import { matchPath } from "react-router";
 
 import { createConversationLaunchPath } from "./assistant-action-launch";
 import { getPersonalConversationPath, getProjectConversationPath } from "./conversation-route";
-import { getActivePlace, PLACE_PATHS } from "./navigation/places";
+import {
+  getActivePlace,
+  getPlacePaths,
+  getProductMode,
+  MODE_BASE_PATHS,
+  PROFILE_PATH,
+} from "./navigation/places";
 
 const PROJECT_CONVERSATION_PATTERN = "/work/:workspaceId/projects/:projectId/chat/:conversationId?";
 const PROJECT_PATTERN = "/work/:workspaceId/projects/:projectId/*";
@@ -16,13 +22,18 @@ const PROJECT_TASK_PATTERN = "/work/:workspaceId/projects/:projectId/tasks/:task
 const WORKSPACE_PATTERN = "/work/:workspaceId/*";
 const PERSONAL_CONVERSATION_PATTERN = "/chat/:conversationId";
 
-const RESERVED_CHAT_SEGMENTS = new Set(["capabilities", "experiences", "tools", "teammates"]);
+const RESERVED_CHAT_SEGMENTS = new Set(["attention", "files", "teammates", "apps", "tools"]);
 
 export function buildMetaAssistantUiContext(
   pathname: string,
   fallbackConversationId?: string,
 ): MetaAssistantUiContext {
-  const context: MetaAssistantUiContext = { route: pathname, place: getActivePlace(pathname) };
+  const place = getActivePlace(pathname);
+  const context: MetaAssistantUiContext = {
+    route: pathname,
+    mode: getProductMode(pathname),
+    ...(place ? { place } : {}),
+  };
   const projectConversation = matchPath(PROJECT_CONVERSATION_PATTERN, pathname);
 
   if (projectConversation?.params.workspaceId && projectConversation.params.projectId) {
@@ -68,7 +79,7 @@ export function buildMetaAssistantUiContext(
     return { ...context, conversationId: personalConversationId };
   }
 
-  if (pathname === "/" || pathname === PLACE_PATHS.chat) {
+  if (pathname === "/" || pathname === MODE_BASE_PATHS.chat) {
     return { ...context, conversationId: fallbackConversationId };
   }
 
@@ -94,7 +105,7 @@ export function getMetaNavigationHref(target: MetaNavigationTarget): string {
     case "workspace":
       return `/work/${encodeURIComponent(target.workspaceId)}`;
     case "place":
-      return PLACE_PATHS[target.place];
+      return target.place === "you" ? PROFILE_PATH : getPlacePaths(target.mode)[target.place];
   }
 }
 

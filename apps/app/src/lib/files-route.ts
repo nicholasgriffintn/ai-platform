@@ -1,5 +1,5 @@
 import { getProjectBasePath } from "./conversation-route";
-import { PLACE_PATHS } from "./navigation/places";
+import { getPlacePaths } from "./navigation/places";
 
 export type FilesTab = "given" | "made" | "memory";
 
@@ -28,7 +28,7 @@ export function getFilesTabPath(basePath: string, tab: FilesTab, itemPath?: stri
 }
 
 export function getPersonalFilesPath(tab: FilesTab = DEFAULT_FILES_TAB, itemPath?: string): string {
-  return getFilesTabPath(PLACE_PATHS.files, tab, itemPath);
+  return getFilesTabPath(getPlacePaths("chat").files, tab, itemPath);
 }
 
 export function getProjectFilesPath(

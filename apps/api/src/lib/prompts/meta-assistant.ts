@@ -7,12 +7,16 @@ import { PromptBuilder } from "./builder";
 import { buildSafetyStandardsSection } from "./sections/safety";
 
 const PLACE_LABELS: Record<NonNullable<MetaAssistantUiContext["place"]>, string> = {
-  chat: "Chat",
-  work: "Work",
+  conversations: "Conversations",
   attention: "Attention",
   files: "Files",
-  library: "Teammates and tools",
+  teammates: "Teammates",
   you: "Account settings",
+};
+
+const MODE_LABELS: Record<NonNullable<MetaAssistantUiContext["mode"]>, string> = {
+  chat: "Chat",
+  work: "Work",
 };
 
 function buildUiContextSection(uiContext: MetaAssistantUiContext | undefined): string {
@@ -22,6 +26,7 @@ function buildUiContextSection(uiContext: MetaAssistantUiContext | undefined): s
 
   const lines = [
     "<ui_context>",
+    uiContext.mode ? `<mode>${MODE_LABELS[uiContext.mode]}</mode>` : null,
     uiContext.place ? `<place>${PLACE_LABELS[uiContext.place]}</place>` : null,
     uiContext.route ? `<route>${escapeHtml(uiContext.route)}</route>` : null,
     uiContext.conversationId
