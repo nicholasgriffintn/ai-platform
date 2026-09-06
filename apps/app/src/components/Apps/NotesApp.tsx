@@ -7,9 +7,11 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
 import { NotebookPen, Plus } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
+import { useOwnAppChrome } from "~/components/Apps/AppChrome";
+import { createNoteSaver } from "~/components/Apps/Notes/note-saver";
 import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import {
@@ -39,7 +41,7 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
     error: noteError,
   } = useFetchNote(noteId, projectId);
   const createNote = useCreateNote(projectId);
-  const updateNote = useUpdateNote(noteId ?? "", projectId);
+  const updateNote = useUpdateNote(projectId);
   const deleteNote = useDeleteNote(projectId);
   const [isFullBleed, setIsFullBleed] = useState(false);
   const [themeMode, setThemeMode] = useState<string | null>(null);
@@ -47,8 +49,26 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const [fontSize, setFontSize] = useState(25);
   const [searchQuery, setSearchQuery] = useState("");
   const [createdNoteId, setCreatedNoteId] = useState<string | null>(null);
+  const [saver] = useState(() =>
+    createNoteSaver({
+      create: (input) => createNote.mutateAsync(input),
+      update: (input) => updateNote.mutateAsync(input),
+      onCreated: (id) => {
+        setCreatedNoteId(id);
+        void navigate(`${basePath}/${id}`, { replace: true });
+      },
+    }),
+  );
+
+  useEffect(() => {
+    if (isNew) {
+      saver.reset();
+    }
+  }, [isNew, saver]);
+
   const isLocallyCreatedNote = Boolean(noteId) && noteId === createdNoteId;
   const activeThemeMode = themeMode ?? note?.metadata?.themeMode ?? "sepia";
+  const chrome = useOwnAppChrome(isNew || Boolean(noteId));
   const filteredNotes = useMemo(() => {
     const availableNotes = notes ?? [];
     const query = searchQuery.trim().toLowerCase();
@@ -72,20 +92,9 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
     ) => {
       const metadata = { themeMode: activeThemeMode, fontFamily, fontSize, ...additionalMetadata };
 
-      if (noteId) {
-        await updateNote.mutateAsync({ title, content, metadata, options });
-
-        return noteId;
-      }
-
-      const created = await createNote.mutateAsync({ title, content, metadata });
-
-      setCreatedNoteId(created.id);
-      void navigate(`${basePath}/${created.id}`, { replace: true });
-
-      return created.id;
+      return saver.save(noteId, { title, content, metadata, options });
     },
-    [activeThemeMode, basePath, createNote, fontFamily, fontSize, navigate, noteId, updateNote],
+    [activeThemeMode, fontFamily, fontSize, noteId, saver],
   );
 
   if (isNew || noteId) {
@@ -108,7 +117,7 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
     return (
       <div
         className={cn(
-          "flex min-h-[calc(100vh-9rem)] flex-col overflow-hidden",
+          "flex h-full min-h-0 flex-1 flex-col overflow-hidden",
           activeThemeMode === "sepia" ? "bg-[#f8f2e3] text-[#333]" : "bg-surface text-foreground",
           isFullBleed && "fixed inset-0 z-50 h-screen w-screen",
         )}
@@ -120,6 +129,8 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
           initialText={note ? `${note.title}\n${note.content}` : ""}
           initialMetadata={note?.metadata}
           onSave={saveNote}
+          backHref={chrome?.backHref}
+          backLabel={chrome?.backLabel}
           onDelete={
             noteId
               ? async () => {

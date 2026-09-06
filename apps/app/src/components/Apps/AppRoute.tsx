@@ -5,7 +5,9 @@ import {
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import { Puzzle } from "lucide-react";
+import { useMemo, useState } from "react";
 
+import { AppChromeProvider } from "~/components/Apps/AppChrome";
 import { AppRuntime } from "~/components/Apps/AppRuntime";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
@@ -44,6 +46,25 @@ export function AppRoute({
   const pageError = project?.error ?? catalogError;
   const isEnabled =
     !project || (definition ? isExperienceEnabled(definition, project.capabilities ?? []) : false);
+  const [ownsChrome, setOwnsChrome] = useState(false);
+  const chrome = useMemo(
+    () => ({ backHref: backLink.to, backLabel: backLink.label, setOwnsChrome }),
+    [backLink.to, backLink.label],
+  );
+  const runtime = (
+    <AppChromeProvider value={chrome}>
+      <AppRuntime
+        basePath={basePath}
+        projectId={surface.projectId}
+        runtime={definition?.runtime ?? "notes"}
+        subpath={subpath}
+      />
+    </AppChromeProvider>
+  );
+
+  if (isEnabled && definition && !isLoading && !pageError && ownsChrome) {
+    return <div className="flex h-full min-h-0 flex-col overflow-hidden">{runtime}</div>;
+  }
 
   return (
     <PageShell.Content className="max-w-7xl">
@@ -77,12 +98,7 @@ export function AppRoute({
           }
         />
       ) : (
-        <AppRuntime
-          basePath={basePath}
-          projectId={surface.projectId}
-          runtime={definition.runtime}
-          subpath={subpath}
-        />
+        runtime
       )}
     </PageShell.Content>
   );
