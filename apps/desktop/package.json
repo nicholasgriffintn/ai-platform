@@ -10,6 +10,7 @@
     "dev": "tauri dev",
     "dev:renderer": "vite",
     "tauri": "tauri",
+    "test:e2e": "node --test tests/e2e/*.spec.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "6.1.1",
     "typescript": "catalog:",
-    "vite": "8.2.2"
+    "vite": "8.2.2",
+    "webdriverio": "9.12.7"
   }
 }

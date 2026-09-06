@@ -2,6 +2,7 @@
 
 mod agents;
 mod chat;
+mod diagnostics;
 mod discovery;
 mod egress;
 mod link;
@@ -13,6 +14,7 @@ use std::time::Duration;
 
 use agents::{AgentApprovalRequest, AgentChunk, AgentSession};
 use chat::{ModelRunRequest, StreamChunk};
+use diagnostics::Diagnostics;
 use discovery::DiscoveredModel;
 use egress::{DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport};
 use futures_util::StreamExt;
@@ -645,6 +647,28 @@ fn approval_event(run_id: &str, request: AgentApprovalRequest) -> StreamEvent {
 }
 
 #[tauri::command]
+fn collect_diagnostics(
+    app: tauri::AppHandle,
+    store: State<'_, Store>,
+) -> Result<Diagnostics, String> {
+    let directory = app
+        .path()
+        .app_data_dir()
+        .map_err(|cause| cause.to_string())?;
+
+    Ok(Diagnostics {
+        app_version: app.package_info().version.to_string(),
+        target: format!("{} {}", std::env::consts::OS, std::env::consts::ARCH),
+        api_base_url: API_BASE_URL.to_string(),
+        database_path: directory.join("polychat.sqlite").display().to_string(),
+        endpoint_count: store.list_endpoints()?.len(),
+        keychain_available: secrets::read(SESSION_SECRET).is_ok(),
+        signed_in: secrets::read(SESSION_SECRET)?.is_some(),
+        collected_at: timestamp(),
+    })
+}
+
+#[tauri::command]
 fn cancel_model_run(run_id: String, registry: State<'_, RunRegistry>) {
     registry.cancel(&run_id);
 }
@@ -771,6 +795,7 @@ fn main() {
             list_agent_sessions,
             start_agent_run,
             decide_approval,
+            collect_diagnostics,
             cancel_model_run
         ])
         .run(tauri::generate_context!())

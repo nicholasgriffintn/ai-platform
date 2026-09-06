@@ -15,6 +15,19 @@ import { createAsyncEventQueue } from "@ngriffin_uk/polychat-utility-core";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import z from "zod/v4";
 
+export const desktopDiagnosticsSchema = z.object({
+  appVersion: z.string(),
+  target: z.string(),
+  apiBaseUrl: z.string(),
+  databasePath: z.string(),
+  endpointCount: z.number().int().nonnegative(),
+  keychainAvailable: z.boolean(),
+  signedIn: z.boolean(),
+  collectedAt: z.string(),
+});
+
+export type DesktopDiagnostics = z.infer<typeof desktopDiagnosticsSchema>;
+
 export type ConnectedDesktopBackend = Pick<
   DesktopBackend,
   | "listEndpoints"
@@ -32,6 +45,7 @@ export type ConnectedDesktopBackend = Pick<
   | "listMessages"
   | "appendMessage"
 > & {
+  collectDiagnostics: () => Promise<DesktopDiagnostics>;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   isSignedIn: () => Promise<boolean>;
@@ -55,6 +69,8 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
   appendMessage: async (message) => {
     await invoke("append_message", { message });
   },
+  collectDiagnostics: async () =>
+    desktopDiagnosticsSchema.parse(await invoke("collect_diagnostics")),
   signIn: async () => {
     await invoke("sign_in");
   },

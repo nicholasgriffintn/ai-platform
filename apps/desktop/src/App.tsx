@@ -11,6 +11,7 @@ import { AddEndpoint } from "./AddEndpoint";
 import { AgentSessions } from "./AgentSessions";
 import { Composer } from "./Composer";
 import type { ConnectedDesktopBackend } from "./desktop-backend";
+import { Diagnostics } from "./Diagnostics";
 
 const READINESS_LABELS: Record<DesktopRuntimeReadiness["status"], string> = {
   ready: "Ready",
@@ -160,6 +161,7 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
         ))}
       </ul>
       <AddEndpoint backend={backend} onAdded={refresh} />
+      <Diagnostics backend={backend} />
     </main>
   );
 }
