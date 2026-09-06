@@ -10,6 +10,7 @@ import { AuthChallengeRepository } from "./AuthChallengeRepository";
 import { AuthoredSkillRepository } from "./AuthoredSkillRepository";
 import { BaseRepository } from "./BaseRepository";
 import { CapabilityConfigurationRepository } from "./CapabilityConfigurationRepository";
+import { ChannelBindingRepository } from "./ChannelBindingRepository";
 import { ComposioConnectorSessionRepository } from "./ComposioConnectorSessionRepository";
 import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprovalRepository";
 import { ConversationOrganisationRepository } from "./ConversationOrganisationRepository";
@@ -122,6 +123,7 @@ export class RepositoryManager {
   private artificialAnalysisRepo: ArtificialAnalysisRepository;
   private authChallengeRepo: AuthChallengeRepository;
   private authoredSkillRepo: AuthoredSkillRepository;
+  private channelBindingRepo: ChannelBindingRepository;
   private memoryDocumentRepo: MemoryDocumentRepository;
   private savedMessageRepo: SavedMessageRepository;
   private auditRepo: AuditRepository;
@@ -168,6 +170,7 @@ export class RepositoryManager {
     this.artificialAnalysisRepo = new ArtificialAnalysisRepository(env);
     this.authChallengeRepo = new AuthChallengeRepository(env);
     this.authoredSkillRepo = new AuthoredSkillRepository(env);
+    this.channelBindingRepo = new ChannelBindingRepository(env);
     this.memoryDocumentRepo = new MemoryDocumentRepository(env);
     this.savedMessageRepo = new SavedMessageRepository(env);
     this.auditRepo = new AuditRepository(env);
@@ -227,6 +230,10 @@ export class RepositoryManager {
 
   public get authoredSkills(): AuthoredSkillRepository {
     return this.authoredSkillRepo;
+  }
+
+  public get channelBindings(): ChannelBindingRepository {
+    return this.channelBindingRepo;
   }
 
   public get memoryDocuments(): MemoryDocumentRepository {

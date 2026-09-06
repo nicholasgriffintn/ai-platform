@@ -594,6 +594,35 @@ export const messageUserState = sqliteTable(
 
 export type MessageUserStateRow = typeof messageUserState.$inferSelect;
 
+export const channelBinding = sqliteTable(
+  "channel_binding",
+  {
+    id: text().primaryKey(),
+    channel: text({ enum: ["sms", "slack", "telegram"] }).notNull(),
+    scope_type: text({ enum: ["personal", "project"] }).notNull(),
+    scope_id: text().notNull(),
+    external_id: text().notNull(),
+    label: text(),
+    teammate_id: text().references(() => teammates.id, { onDelete: "set null" }),
+    created_by: integer()
+      .notNull()
+      .references(() => user.id),
+    enabled: integer({ mode: "boolean" }).default(true).notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    channelExternalIdx: uniqueIndex("channel_binding_channel_external_idx").on(
+      table.channel,
+      table.external_id,
+    ),
+    scopeIdx: index("channel_binding_scope_idx").on(table.scope_type, table.scope_id),
+  }),
+);
+
+export type ChannelBindingRow = typeof channelBinding.$inferSelect;
+
 export const authoredSkillRevision = sqliteTable(
   "authored_skill_revision",
   {

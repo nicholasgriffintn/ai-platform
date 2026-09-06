@@ -9,6 +9,7 @@ import { registerSandboxPreviewAuthorisationRoute } from "./apps/sandbox/preview
 import audio from "./audio";
 import auth from "./auth";
 import capabilities from "./capabilities";
+import channels from "./channels";
 import chat from "./chat";
 import memoryDocuments from "./memory-documents";
 import models from "./models";
@@ -59,6 +60,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/search", search);
   app.route("/memory/documents", memoryDocuments);
   app.route("/chat/saved-messages", savedMessages);
+  app.route("/channels", channels);
   app.route("/teammates", teammates);
   app.route("/admin", admin);
   app.route("/webhooks", webhook);
