@@ -3,6 +3,7 @@ import type { RecipeConnectorProvider, ToolPermission } from "@ngriffin_uk/polyc
 import { resolveToolPermissions } from "~/lib/permissions/PermissionChecker";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { analyse_article } from "./analyse_article";
 import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
 import { run_council, select_council_members } from "./council";
@@ -22,6 +23,7 @@ import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
 import { run_pashi_tools, search_pashi_tools } from "./pashi";
+import { process_recording } from "./process_recording";
 import { create_task, get_task, list_tasks, update_task } from "./projectTasks";
 import { create_qr_code } from "./qr";
 import { configure_recipe } from "./recipes/configure_recipe";
@@ -70,6 +72,7 @@ const descriptors: FunctionToolDescriptor[] = [
   extract_content,
   search_memories,
   store_memory,
+  analyse_article,
   create_note,
   get_note,
   extract_text_from_document,
@@ -89,6 +92,7 @@ const descriptors: FunctionToolDescriptor[] = [
   set_goal,
   complete_goal,
   load_skill,
+  process_recording,
   save_skill,
   run_council,
   select_council_members,
