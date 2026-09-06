@@ -2,6 +2,7 @@ import type { ChannelBinding, CreateChannelBindingInput } from "@ngriffin_uk/pol
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ChannelBindingRow } from "~/lib/database/schema";
+import { requireTeammateAccess } from "~/services/teammates/access";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -57,6 +58,10 @@ export async function createChannelBinding(
         403,
       );
     }
+  }
+
+  if (input.teammateId) {
+    await requireTeammateAccess(context, input.teammateId, "read", user.id);
   }
 
   const existing = await context.repositories.channelBindings.getByExternalId(
