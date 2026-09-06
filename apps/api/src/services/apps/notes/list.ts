@@ -21,6 +21,16 @@ import { isRecord } from "~/utils/objects";
 
 import { safeParseJson } from "../../../utils/json";
 
+function readNoteMetadata(value: unknown): Record<string, unknown> | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const { tabSource, ...rest } = value;
+
+  return isRecord(tabSource) ? { ...rest, capturedFrom: tabSource } : value;
+}
+
 function mapOutputToNote(entry: OutputRecord): Note {
   const data = safeParseJson<Record<string, unknown>>(entry.content) ?? {};
 
@@ -30,7 +40,7 @@ function mapOutputToNote(entry: OutputRecord): Note {
     content: typeof data.content === "string" ? data.content : "",
     createdAt: entry.created_at,
     updatedAt: entry.updated_at ?? entry.created_at,
-    metadata: isRecord(data.metadata) ? data.metadata : undefined,
+    metadata: readNoteMetadata(data.metadata),
   };
 }
 

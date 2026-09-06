@@ -15,7 +15,7 @@ interface UseAutoSaveOptions {
     metadata?: NoteMetadata,
     options?: SaveOptions,
   ) => Promise<string>;
-  tabInfo?: NoteMetadata["tabSource"];
+  tabInfo?: NoteMetadata["capturedFrom"];
   metadata: NoteMetadata;
   delay?: number;
   saveOptionsRef?: MutableRefObject<SaveOptions | null>;
@@ -56,7 +56,7 @@ export function useAutoSave({
       setIsSaving(true);
       try {
         const [title, content] = splitTitleAndContent(textToSave);
-        const tabMetadata = tabInfo ? { tabSource: tabInfo } : {};
+        const tabMetadata = tabInfo ? { capturedFrom: tabInfo } : {};
         const finalMetadata = { ...metadata, ...tabMetadata };
         const pendingOptions = saveOptionsRef?.current || undefined;
 
