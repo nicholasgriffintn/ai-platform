@@ -1,6 +1,7 @@
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { formattedMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
+import { slugify } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ArtifactProps } from "./artifact";
 import { ARTIFACT_LANGUAGE_EXTENSIONS, ARTIFACT_TYPE_EXTENSIONS } from "./artifact-kinds";
@@ -116,11 +117,5 @@ function getArtifactExtension(artifact: Pick<ArtifactProps, "type" | "language">
 }
 
 function safeFilename(value: string): string {
-  const filename = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return filename || "artifact";
+  return slugify(value) || "artifact";
 }

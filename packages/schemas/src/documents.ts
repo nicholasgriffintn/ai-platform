@@ -1,3 +1,4 @@
+import { slugify } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 export const DOCUMENT_OUTPUT_KIND = "document";
@@ -44,17 +45,6 @@ export function readDocumentBody(content: Record<string, unknown> | undefined): 
   return parsed.success ? parsed.data.body : null;
 }
 
-/**
- * Markdown is already the export format, so exporting is a filename and a mime type rather
- * than a conversion.
- */
 export function documentExportFilename(title: string): string {
-  const slug =
-    title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/gu, "-")
-      .replace(/^-+|-+$/gu, "")
-      .slice(0, 80) || "document";
-
-  return `${slug}.md`;
+  return `${slugify(title, 80) || "document"}.md`;
 }

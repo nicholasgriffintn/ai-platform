@@ -77,3 +77,13 @@ export function escapeHtml(value: string): string {
       })[character] ?? character,
   );
 }
+
+export function slugify(value: string, maxLength?: number): string {
+  const collapsed = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gu, "-");
+  const bounded = maxLength === undefined ? collapsed : collapsed.slice(0, maxLength);
+
+  return bounded.replace(/^-|-$/gu, "");
+}

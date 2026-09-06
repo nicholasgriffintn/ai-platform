@@ -1,4 +1,5 @@
 import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
+import { slugify } from "@ngriffin_uk/polychat-utility-core";
 
 const GENERIC_TRIGGER_WORDS = new Set([
   "automation",
@@ -32,13 +33,6 @@ export interface InstalledRecipeMatchInput {
   query: string;
   recipes: AssistantRecipe[];
   installations: RecipeInstallation[];
-}
-
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 function tokenise(value: string): string[] {

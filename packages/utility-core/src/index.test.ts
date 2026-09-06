@@ -12,6 +12,7 @@ import {
   parseNumberInputValue,
   parseRecordValue,
   reverseCopy,
+  slugify,
   sortCopy,
 } from "./index";
 
@@ -73,5 +74,28 @@ describe("utility-core", () => {
       "&lt;img src=&quot;x&quot; onerror=&#39;alert(1)&#39;&gt;&amp;",
     );
     expect(escapeHtml("&lt;")).toBe("&amp;lt;");
+  });
+});
+
+describe("slugify", () => {
+  it("collapses runs of punctuation and spaces into single separators", () => {
+    expect(slugify("Q4: what shipped?")).toBe("q4-what-shipped");
+    expect(slugify("  Launch   week  ")).toBe("launch-week");
+  });
+
+  it("returns nothing when there is nothing usable to slug", () => {
+    expect(slugify("!!!")).toBe("");
+    expect(slugify("")).toBe("");
+  });
+
+  it("trims the separator a truncation would otherwise leave behind", () => {
+    expect(slugify("abcd efgh", 5)).toBe("abcd");
+  });
+
+  it("stays linear on a long run of separators", () => {
+    const started = Date.now();
+
+    expect(slugify(`${"-".repeat(50_000)}x`)).toBe("x");
+    expect(Date.now() - started).toBeLessThan(1_000);
   });
 });
