@@ -82,6 +82,7 @@ export * from "./conversation-replacement";
 export * from "./conversation-organisation";
 export * from "./conversation-title";
 export * from "./council";
+export * from "./credit-bands";
 export * from "./cron";
 export * from "./goals";
 export * from "./internal-service-auth";
