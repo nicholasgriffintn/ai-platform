@@ -1,6 +1,11 @@
 import { ContentLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { lazy, Suspense } from "react";
 
+const CanvasStudio = lazy(async () => {
+  const module = await import("~/components/Canvas/CanvasStudio");
+
+  return { default: module.CanvasStudio };
+});
 const ReplicateModelDetail = lazy(async () => {
   const module = await import("~/components/Replicate/ReplicateModelDetail");
 
@@ -92,6 +97,10 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: Experience
 
   if (runtime === "notes") {
     return <NotesExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
+  }
+
+  if (runtime === "image-studio") {
+    return <CanvasStudio />;
   }
 
   if (runtime === "strudel") {

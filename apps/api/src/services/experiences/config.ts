@@ -48,6 +48,23 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     type: "normal",
   },
   {
+    id: "image-studio",
+    runtime: "image-studio",
+    capabilityId: "featured-image-studio",
+    name: "Image Studio",
+    category: "Creative",
+    when: "You want to make or refine an image and compare a few attempts.",
+    uses: "A description, and any reference image or sketch you give it.",
+    produces: "Images kept as results you can attach back into a conversation.",
+    ios: "results-only",
+    description:
+      "Generate images across models, sketch a starting point, and keep the versions worth keeping",
+    icon: "image",
+    theme: "rose",
+    tags: ["image", "generation", "sketch"],
+    type: "premium",
+  },
+  {
     id: "replicate",
     runtime: "replicate",
     capabilityId: "featured-replicate",

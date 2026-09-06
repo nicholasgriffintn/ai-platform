@@ -12,6 +12,7 @@ import { create_note } from "./create_note";
 import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
+import { generate_pattern } from "./generate_pattern";
 import { get_note } from "./get_note";
 import { complete_goal, set_goal } from "./goal";
 import { get_hacker_news_stories } from "./hacker_news";
@@ -78,6 +79,7 @@ const descriptors: FunctionToolDescriptor[] = [
   analyse_article,
   create_automation,
   create_note,
+  generate_pattern,
   get_note,
   extract_text_from_document,
   use_recipe_connector,

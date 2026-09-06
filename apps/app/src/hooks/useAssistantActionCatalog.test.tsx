@@ -36,6 +36,7 @@ function teammateSummary(overrides: Partial<TeammateSummary> & { id: string }): 
   return {
     name: `Teammate ${overrides.id}`,
     kind: "colleague",
+    scorecard: { good: 0, bad: 0 },
     description: "",
     avatarUrl: null,
     model: null,
