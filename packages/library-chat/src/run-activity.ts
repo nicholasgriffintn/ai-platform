@@ -61,6 +61,7 @@ interface OrderedActivityEntry {
 const MAX_DETAIL_LENGTH = 6000;
 const MAX_EVIDENCE_LINES = 24;
 const MAX_EVIDENCE_LENGTH = 12000;
+const RUN_PROJECTION_TOOL_NAMES = new Set(["sandbox_event", "sandbox_plan"]);
 
 function readEventStrings(event: SandboxRunEvent, key: string): string[] {
   const value = event[key];
@@ -242,6 +243,13 @@ function fromTrace(entry: AgentTraceEntry): RunActivityEntry {
     occurredAt: entry.occurredAt ? new Date(entry.occurredAt).toISOString() : undefined,
     metrics: traceMetrics(entry),
   };
+}
+
+function isRunProjectionTrace(entry: AgentTraceEntry): boolean {
+  return (
+    (entry.type === "tool_call" || entry.type === "tool_result") &&
+    RUN_PROJECTION_TOOL_NAMES.has(entry.label)
+  );
 }
 
 function runKind(event: SandboxRunEvent): RunActivityKind {
@@ -677,7 +685,7 @@ function fromRun(run: SandboxRunData): RunActivityEntry[] {
       startedAtByKey.set(lifecycleIdentity, occurredAtMs);
     }
 
-    if (commandIdentity && event.type === "command_started") {
+    if (commandIdentity && event.type.endsWith("_started")) {
       commandEntries.set(commandIdentity, entry);
     }
 
@@ -698,6 +706,10 @@ export function buildRunActivityEntries(params: {
   const runStartedAt = timeValue(run?.startedAt) ?? Number.MAX_SAFE_INTEGER - 1000;
 
   for (const [index, traceEntry] of traceEntries.entries()) {
+    if (run && isRunProjectionTrace(traceEntry)) {
+      continue;
+    }
+
     const entry = fromTrace(traceEntry);
 
     insertOrdered(ordered, {

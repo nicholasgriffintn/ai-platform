@@ -227,7 +227,7 @@ export const UNHEALTHY_SANDBOX_ENVIRONMENT = {
         dependencies: [],
         expectedPort: 4000,
         healthCheck: { type: "http", path: "/", expectedStatus: { min: 204, max: 204 } },
-        startupTimeoutSeconds: 5,
+        startupTimeoutSeconds: 15,
         restartPolicy: { mode: "never", maxRestarts: 0, backoffSeconds: 1 },
       },
     ],

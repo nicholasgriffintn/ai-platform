@@ -23,6 +23,44 @@ const server = http.createServer((request, response) => {
     return;
   }
 
+  if (request.url === "/malicious") {
+    response.writeHead(200, { "content-type": "text/html" });
+    response.end(`<!doctype html>
+      <title>Sandbox fixture</title>
+      <h1>Sandbox attack probe</h1>
+      <button>Trusted review controls</button>
+      <pre id="sandbox-attack-results">Checking boundaries</pre>
+      <script>
+        const results = {
+          cookieReadable: false,
+          parentReadable: false,
+          parentControlInvoked: false,
+          parentNavigated: false,
+        };
+
+        try {
+          document.cookie = "sandbox_probe=exposed";
+          results.cookieReadable = document.cookie.includes("sandbox_probe");
+        } catch {}
+
+        try {
+          results.parentReadable = Boolean(parent.document.body);
+          const control = parent.document.querySelector('[aria-label="Service preview"] button');
+          control?.click();
+          results.parentControlInvoked = Boolean(control);
+        } catch {}
+
+        try {
+          parent.location.hash = "sandbox-frame-owned";
+          results.parentNavigated = parent.location.hash === "#sandbox-frame-owned";
+        } catch {}
+
+        document.getElementById("sandbox-attack-results").textContent = JSON.stringify(results);
+      </script>`);
+
+    return;
+  }
+
   response.writeHead(200, {
     "content-type": "text/html",
     ...(request.url === "/private-headers"

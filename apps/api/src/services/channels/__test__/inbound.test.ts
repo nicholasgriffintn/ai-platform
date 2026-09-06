@@ -7,7 +7,15 @@ const mocks = vi.hoisted(() => ({
   conversationGet: vi.fn(),
   conversationArchiveMessages: vi.fn(),
   providerSend: vi.fn(),
+  adapterSendReply: vi.fn(),
+  getChannelAdapter: vi.fn(),
 }));
+
+vi.mock("../adapters", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../adapters")>();
+
+  return { ...original, getChannelAdapter: mocks.getChannelAdapter };
+});
 
 vi.mock("~/lib/conversationManager", () => ({
   ConversationManager: {
@@ -36,7 +44,10 @@ import { handleInboundChannelMessage, type InboundChannelTaskData } from "../inb
 const env = { DB: {}, API_BASE_URL: "https://api.polychat.test" } as any;
 const user = { id: 42, email: "user@example.com", plan_id: "pro" } as any;
 
-function createContext(providerSettings: Record<string, unknown>[] = []) {
+function createContext(
+  providerSettings: Record<string, unknown>[] = [],
+  binding: Record<string, unknown> | null = null,
+) {
   return {
     env,
     database: {},
@@ -45,9 +56,35 @@ function createContext(providerSettings: Record<string, unknown>[] = []) {
         getProviderApiKeyForSettings: vi.fn(async () => "encrypted-config"),
         getUserProviderSettings: vi.fn(async () => providerSettings),
       },
+      channelBindings: {
+        getById: vi.fn(async () => binding),
+      },
     },
     requestCache: new Map(),
   } as any;
+}
+
+const slackBinding = {
+  id: "binding-1",
+  channel: "slack",
+  external_id: "C123",
+  enabled: true,
+  created_by: 42,
+};
+
+function createBindingTaskData(
+  message: Partial<InboundChannelTaskData["message"]> = {},
+): InboundChannelTaskData {
+  return {
+    channel: "slack",
+    bindingId: "binding-1",
+    message: {
+      messageId: "171.1",
+      from: "U9",
+      body: "what is the weather",
+      ...message,
+    },
+  };
 }
 
 function createTaskData(overrides: Partial<InboundChannelTaskData> = {}): InboundChannelTaskData {
@@ -80,6 +117,11 @@ describe("inbound channel messages", () => {
     mocks.conversationGetInstance.mockReturnValue({
       get: mocks.conversationGet,
       archiveMessages: mocks.conversationArchiveMessages,
+    });
+    mocks.getChannelAdapter.mockReturnValue({
+      id: "slack",
+      label: "Slack",
+      sendReply: mocks.adapterSendReply,
     });
   });
 
@@ -326,5 +368,84 @@ describe("inbound channel messages", () => {
       body: "Nutrition summary attached.",
       mediaUrls: ["s3://polychat-mms/generated/nutrition-image.png"],
     });
+  });
+  it("answers a bound channel through its adapter rather than a messaging provider", async () => {
+    const result = await handleInboundChannelMessage({
+      env: { ...env, SLACK_BOT_TOKEN: "xoxb-slack-bot-token" },
+      context: createContext([], slackBinding),
+      user,
+      data: createBindingTaskData(),
+    });
+
+    expect(result).toEqual({
+      status: "delivered",
+      conversationId: expect.stringMatching(/^slack_[0-9a-f]{40}$/),
+      body: "chat reply",
+    });
+    expect(mocks.adapterSendReply).toHaveBeenCalledWith(
+      { externalId: "C123", body: "chat reply" },
+      "xoxb-slack-bot-token",
+    );
+    expect(mocks.providerSend).not.toHaveBeenCalled();
+  });
+
+  it("keeps everyone in a bound channel in the same conversation", async () => {
+    const bindingEnv = { ...env, SLACK_BOT_TOKEN: "xoxb-slack-bot-token" };
+
+    await handleInboundChannelMessage({
+      env: bindingEnv,
+      context: createContext([], slackBinding),
+      user,
+      data: createBindingTaskData(),
+    });
+    await handleInboundChannelMessage({
+      env: bindingEnv,
+      context: createContext([], slackBinding),
+      user,
+      data: createBindingTaskData({ messageId: "171.2", from: "U42" }),
+    });
+
+    const [first] = mocks.handleCreateChatCompletions.mock.calls[0];
+    const [second] = mocks.handleCreateChatCompletions.mock.calls[1];
+
+    expect(second.request.completion_id).toBe(first.request.completion_id);
+  });
+
+  it("does not run a turn for a binding that has since been disconnected", async () => {
+    const result = await handleInboundChannelMessage({
+      env: { ...env, SLACK_BOT_TOKEN: "xoxb-slack-bot-token" },
+      context: createContext([], { ...slackBinding, enabled: false }),
+      user,
+      data: createBindingTaskData(),
+    });
+
+    expect(result).toEqual({ status: "channel_unavailable" });
+    expect(mocks.handleCreateChatCompletions).not.toHaveBeenCalled();
+    expect(mocks.adapterSendReply).not.toHaveBeenCalled();
+  });
+
+  it("does not run a turn for a binding owned by someone else", async () => {
+    const result = await handleInboundChannelMessage({
+      env: { ...env, SLACK_BOT_TOKEN: "xoxb-slack-bot-token" },
+      context: createContext([], { ...slackBinding, created_by: 99 }),
+      user,
+      data: createBindingTaskData(),
+    });
+
+    expect(result).toEqual({ status: "channel_unavailable" });
+    expect(mocks.handleCreateChatCompletions).not.toHaveBeenCalled();
+    expect(mocks.adapterSendReply).not.toHaveBeenCalled();
+  });
+
+  it("refuses to run a turn it could never reply to", async () => {
+    await expect(
+      handleInboundChannelMessage({
+        env,
+        context: createContext([], slackBinding),
+        user,
+        data: createBindingTaskData(),
+      }),
+    ).rejects.toMatchObject({ type: ErrorType.CONFIGURATION_ERROR });
+    expect(mocks.handleCreateChatCompletions).not.toHaveBeenCalled();
   });
 });

@@ -14,7 +14,19 @@ import type { APIRequestContext } from "@playwright/test";
 import { requireSuccessfulResponse } from "../support/api-response";
 import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
 
-const REPOSITORY = "nicholasgriffintn/polychat-e2e-fixture";
+export const SANDBOX_E2E_REPOSITORIES = {
+  base: "nicholasgriffintn/polychat-e2e-fixture",
+  revised: "nicholasgriffintn/polychat-e2e-fixture-v2",
+  malformed: "nicholasgriffintn/polychat-e2e-fixture-malformed",
+  oversized: "nicholasgriffintn/polychat-e2e-fixture-oversized",
+};
+const REPOSITORY = SANDBOX_E2E_REPOSITORIES.base;
+const REPOSITORIES = [
+  SANDBOX_E2E_REPOSITORIES.base,
+  SANDBOX_E2E_REPOSITORIES.revised,
+  SANDBOX_E2E_REPOSITORIES.malformed,
+  SANDBOX_E2E_REPOSITORIES.oversized,
+];
 const INSTALLATION_ID = 987654;
 
 export class SandboxApi {
@@ -23,28 +35,36 @@ export class SandboxApi {
     private readonly projectId: string,
   ) {}
 
-  async configureProject(environmentSetup?: SandboxEnvironmentSetup, timeoutSeconds = 120) {
+  async configureProject(
+    environmentSetup?: SandboxEnvironmentSetup,
+    timeoutSeconds = 120,
+    repository = REPOSITORY,
+  ) {
     const connection = await this.request.post(
       `${E2E_API_BASE_URL}/apps/sandbox/connections/auto`,
       {
         headers: { origin: E2E_APP_BASE_URL },
-        data: { installationId: INSTALLATION_ID, repositories: [REPOSITORY] },
+        data: { installationId: INSTALLATION_ID, repositories: REPOSITORIES },
       },
     );
 
     await requireSuccessfulResponse(connection, "Connect the fixture GitHub installation");
-    const project = await this.saveEnvironment(environmentSetup, timeoutSeconds);
+    const project = await this.saveEnvironment(environmentSetup, timeoutSeconds, repository);
 
     await requireSuccessfulResponse(project, "Configure the fixture coding environment");
   }
 
-  async saveEnvironment(environmentSetup?: SandboxEnvironmentSetup, timeoutSeconds = 120) {
+  async saveEnvironment(
+    environmentSetup?: SandboxEnvironmentSetup,
+    timeoutSeconds = 120,
+    repository = REPOSITORY,
+  ) {
     return this.request.put(`${E2E_API_BASE_URL}/projects/${this.projectId}`, {
       headers: { origin: E2E_APP_BASE_URL },
       data: {
         codingEnvironment: {
           installationId: INSTALLATION_ID,
-          repository: REPOSITORY,
+          repository,
           deliveryPolicy: { mode: "leave_uncommitted" },
           timeoutSeconds,
           environmentSetup,

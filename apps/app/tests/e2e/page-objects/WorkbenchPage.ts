@@ -6,11 +6,61 @@ export class WorkbenchPage extends BasePage {
   }
 
   async selectPane(name: "Activity" | "Changes" | "Files" | "Proof" | "Preview") {
-    await this.page.getByRole("tab", { name, exact: true }).click();
+    await this.paneTab(name).click();
   }
 
   get panel() {
-    return this.page.getByRole("tabpanel");
+    return this.page.locator('[role="tabpanel"]:visible');
+  }
+
+  get conversation() {
+    return this.page.getByRole("main", { name: "Conversation", exact: true });
+  }
+
+  get activityEntries() {
+    return this.page
+      .getByRole("list", { name: "Conversation and run activity", exact: true })
+      .locator(":scope > li");
+  }
+
+  get activityTitles() {
+    return this.activityEntries.locator(":scope > div > div:first-child > p:first-child");
+  }
+
+  activityEntry(title: string) {
+    return this.activityEntries.filter({ has: this.page.getByText(title, { exact: true }) });
+  }
+
+  get changedFilesNavigation() {
+    return this.panel.getByRole("navigation", { name: "Changed files", exact: true });
+  }
+
+  get changedFileSearch() {
+    return this.panel.getByRole("searchbox", { name: "Find changed file", exact: true });
+  }
+
+  get previousChangedFile() {
+    return this.panel.getByRole("button", { name: "Previous changed file", exact: true });
+  }
+
+  get nextChangedFile() {
+    return this.panel.getByRole("button", { name: "Next changed file", exact: true });
+  }
+
+  changesIn(path: string) {
+    return this.panel.getByRole("region", { name: `Changes in ${path}`, exact: true });
+  }
+
+  artifact(name: string) {
+    return this.panel.getByRole("button", { name, exact: true });
+  }
+
+  changedFileEvidence(path: string) {
+    return this.panel.getByRole("button", { name: `Open ${path}`, exact: true });
+  }
+
+  artifactPreview(name: string) {
+    return this.panel.getByRole("region", { name: `Preview of ${name}`, exact: true });
   }
 
   get resizeHandle() {
@@ -26,7 +76,7 @@ export class WorkbenchPage extends BasePage {
   }
 
   paneTab(name: "Activity" | "Changes" | "Files" | "Proof" | "Preview") {
-    return this.page.getByRole("tab", { name, exact: true });
+    return this.page.locator('[role="tab"]:visible').filter({ hasText: name });
   }
 
   async collapse() {
@@ -38,7 +88,11 @@ export class WorkbenchPage extends BasePage {
   }
 
   async control(action: "Pause" | "Resume" | "Cancel") {
-    await this.page.getByRole("button", { name: action, exact: true }).click();
+    await this.controlButton(action).click();
+  }
+
+  controlButton(action: "Pause" | "Resume" | "Cancel") {
+    return this.page.getByRole("button", { name: action, exact: true });
   }
 
   service(name: string) {
@@ -90,11 +144,43 @@ export class WorkbenchPage extends BasePage {
   }
 
   get previewFrame() {
-    return this.page.frameLocator('iframe[title="fixture preview content"]');
+    return this.page.frameLocator('iframe[title="fixture preview content"]:visible');
+  }
+
+  get previewFrameElement() {
+    return this.page.locator('iframe[title="fixture preview content"]:visible');
+  }
+
+  get previewShell() {
+    return this.page.locator('section[aria-label="Service preview"]:visible');
+  }
+
+  get previewAttackResults() {
+    return this.previewFrame.locator("#sandbox-attack-results");
   }
 
   async startPreview() {
-    await this.page.getByRole("button", { name: "Start preview", exact: true }).click();
+    const preview = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname.endsWith("/previews"),
+    );
+
+    await this.previewShell.getByRole("button", { name: "Start preview", exact: true }).click();
+
+    return preview;
+  }
+
+  async refreshPreview() {
+    const preview = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname.endsWith("/previews"),
+    );
+
+    await this.previewShell.getByRole("button", { name: "Refresh", exact: true }).click();
+
+    return preview;
   }
 
   async reloadPreviewDocument() {
@@ -120,25 +206,42 @@ export class WorkbenchPage extends BasePage {
   }
 
   async previewViewport(name: "Fit" | "Mobile" | "Tablet" | "Desktop") {
-    await this.page.getByRole("button", { name: `${name} viewport`, exact: true }).click();
+    await this.previewViewportButton(name).click();
+  }
+
+  previewViewportButton(name: "Fit" | "Mobile" | "Tablet" | "Desktop") {
+    return this.previewShell.getByRole("button", { name: `${name} viewport`, exact: true });
+  }
+
+  async openPreviewExternally() {
+    const popup = this.page.context().waitForEvent("page");
+
+    await this.previewShell.getByRole("button", { name: "Open externally", exact: true }).click();
+
+    return popup;
   }
 
   async navigatePreview(route: string) {
-    await this.page.getByLabel("Recorded route", { exact: true }).fill(route);
-    await this.page.getByRole("button", { name: "Go", exact: true }).click();
+    await this.previewShell.getByLabel("Recorded route", { exact: true }).fill(route);
+    await this.previewShell.getByRole("button", { name: "Go", exact: true }).click();
   }
 
   async sendPreviewFeedback(annotation: string, elementReference: string) {
-    await this.page.getByLabel("Element reference", { exact: false }).fill(elementReference);
-    await this.page.getByLabel("Feedback", { exact: true }).fill(annotation);
-    await this.page.getByRole("button", { name: "Send instruction", exact: true }).click();
+    const preview = this.previewShell;
+
+    await preview.getByLabel("Element reference", { exact: false }).fill(elementReference);
+    await preview.getByLabel("Feedback", { exact: true }).fill(annotation);
+    await preview.getByRole("button", { name: "Send instruction", exact: true }).click();
   }
 
   async markPreviewRegion() {
-    await this.page.getByRole("button", { name: "Mark region", exact: true }).click();
-    const overlay = this.page.getByLabel("Drag over the preview to mark a feedback region", {
-      exact: true,
-    });
+    await this.previewShell.getByRole("button", { name: "Mark region", exact: true }).click();
+    const overlay = this.previewShell.getByLabel(
+      "Drag over the preview to mark a feedback region",
+      {
+        exact: true,
+      },
+    );
 
     await overlay.scrollIntoViewIfNeeded();
     const box = await overlay.boundingBox();

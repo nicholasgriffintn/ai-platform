@@ -2,21 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { SlackChannelAdapter } from "../adapters/SlackChannelAdapter";
 import { TelegramChannelAdapter } from "../adapters/TelegramChannelAdapter";
-
-const encoder = new TextEncoder();
-
-async function slackSignature(secret: string, timestamp: string, body: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const digest = await crypto.subtle.sign("HMAC", key, encoder.encode(`v0:${timestamp}:${body}`));
-
-  return `v0=${[...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("")}`;
-}
+import { signSlackRequest } from "./slackSignature";
 
 function slackRequest(headers: Record<string, string>): Request {
   return new Request("https://example.test/webhook", { method: "POST", headers });
@@ -29,7 +15,7 @@ describe("SlackChannelAdapter", () => {
 
   it("accepts a request Slack actually signed", async () => {
     const timestamp = String(Math.floor(Date.now() / 1000));
-    const signature = await slackSignature(secret, timestamp, body);
+    const signature = await signSlackRequest(secret, timestamp, body);
 
     await expect(
       adapter.verify(
@@ -42,7 +28,7 @@ describe("SlackChannelAdapter", () => {
 
   it("refuses a signature computed with a different secret", async () => {
     const timestamp = String(Math.floor(Date.now() / 1000));
-    const signature = await slackSignature("someone-elses-secret", timestamp, body);
+    const signature = await signSlackRequest("someone-elses-secret", timestamp, body);
 
     await expect(
       adapter.verify(
@@ -55,7 +41,7 @@ describe("SlackChannelAdapter", () => {
 
   it("refuses a replayed request on its timestamp", async () => {
     const timestamp = String(Math.floor(Date.now() / 1000) - 60 * 60);
-    const signature = await slackSignature(secret, timestamp, body);
+    const signature = await signSlackRequest(secret, timestamp, body);
 
     await expect(
       adapter.verify(
