@@ -50,6 +50,7 @@ import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
+import { write_document } from "./write_document";
 
 export type { FunctionToolDescriptor } from "./types";
 
@@ -67,6 +68,7 @@ const descriptors: FunctionToolDescriptor[] = [
   next_edit_completion,
   apply_edit_completion,
   web_search,
+  write_document,
   create_qr_code,
   search_pashi_tools,
   run_pashi_tools,

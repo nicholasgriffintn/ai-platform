@@ -1,5 +1,8 @@
 import {
   createOutputSchema,
+  documentExportFilename,
+  DOCUMENT_OUTPUT_KIND,
+  readDocumentBody,
   createOutputShareSchema,
   errorResponseSchema,
   outputListQuerySchema,
@@ -79,6 +82,29 @@ addRoute(app, "get", "/:outputId/content", {
     });
 
     return await getPrivateFileResponse(file.record, file.object);
+  },
+});
+
+addRoute(app, "get", "/:outputId/export", {
+  tags: ["outputs"],
+  summary: "Download a document output as Markdown",
+  auth: true,
+  paramSchema: outputParams,
+  responses: { 200: { description: "Markdown document" } },
+  handler: async ({ params, serviceContext, user }) => {
+    const output = await getOutput(serviceContext, user.id, params.outputId);
+    const body = readDocumentBody(output.content);
+
+    if (output.kind !== DOCUMENT_OUTPUT_KIND || body === null) {
+      throw new AssistantError("That result is not a document", ErrorType.PARAMS_ERROR, 400);
+    }
+
+    return new Response(body, {
+      headers: {
+        "content-type": "text/markdown; charset=utf-8",
+        "content-disposition": `attachment; filename="${documentExportFilename(output.title)}"`,
+      },
+    });
   },
 });
 

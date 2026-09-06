@@ -72,6 +72,7 @@ export * from "./chat-retries";
 export * from "./chat-runs";
 export * from "./automations";
 export * from "./channels";
+export * from "./documents";
 export * from "./chat-mode";
 export * from "./chat-stream";
 export * from "./capability-discovery";
