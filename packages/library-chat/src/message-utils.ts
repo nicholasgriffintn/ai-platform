@@ -32,24 +32,47 @@ export function processCustomXmlTags(text: string): string {
   );
 }
 
-/**
- * Splits content by artifact markers and returns the parts
- */
+const ARTIFACT_MARKER_START = "[[ARTIFACT:";
+const ARTIFACT_MARKER_END = "]]";
+
 export function splitContentByArtifacts(content: string): {
   textParts: string[];
   identifiers: string[];
 } {
-  const parts = content.split(/\[\[ARTIFACT:([^\]]+)\]\]/);
   const textParts: string[] = [];
   const identifiers: string[] = [];
+  let textStart = 0;
+  let searchFrom = 0;
 
-  for (let i = 0; i < parts.length; i++) {
-    if (i % 2 === 0) {
-      textParts.push(parts[i]);
-    } else {
-      identifiers.push(parts[i]);
+  while (searchFrom < content.length) {
+    const markerStart = content.indexOf(ARTIFACT_MARKER_START, searchFrom);
+
+    if (markerStart === -1) {
+      break;
     }
+
+    const identifierStart = markerStart + ARTIFACT_MARKER_START.length;
+    const identifierEnd = content.indexOf("]", identifierStart);
+
+    if (identifierEnd === -1) {
+      break;
+    }
+
+    if (
+      identifierEnd === identifierStart ||
+      content.startsWith(ARTIFACT_MARKER_END, identifierEnd) === false
+    ) {
+      searchFrom = markerStart + 1;
+      continue;
+    }
+
+    textParts.push(content.slice(textStart, markerStart));
+    identifiers.push(content.slice(identifierStart, identifierEnd));
+    textStart = identifierEnd + ARTIFACT_MARKER_END.length;
+    searchFrom = textStart;
   }
+
+  textParts.push(content.slice(textStart));
 
   return { textParts, identifiers };
 }

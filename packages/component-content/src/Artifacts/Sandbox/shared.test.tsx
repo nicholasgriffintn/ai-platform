@@ -3,6 +3,33 @@ import { describe, expect, it, vi } from "vitest";
 
 import { hardenSandboxDocument, SandboxIframe } from "./shared";
 
+describe("hardenSandboxDocument", () => {
+  it("injects the policy after a bare head tag and after one with attributes", () => {
+    expect(hardenSandboxDocument("<html><head><title>x</title></head></html>")).toContain(
+      '<head><meta http-equiv="Content-Security-Policy"',
+    );
+    expect(hardenSandboxDocument('<html><HEAD lang="en"><title>x</title></HEAD></html>')).toContain(
+      '<HEAD lang="en"><meta http-equiv="Content-Security-Policy"',
+    );
+  });
+
+  it("leaves a document with no head tag alone", () => {
+    expect(hardenSandboxDocument("<p>no head here</p>")).toBe("<p>no head here</p>");
+  });
+
+  it("does not treat a longer tag name as head", () => {
+    expect(hardenSandboxDocument("<header>x</header>")).toBe("<header>x</header>");
+  });
+
+  it("stays linear on an unterminated head tag", () => {
+    const started = Date.now();
+
+    hardenSandboxDocument(`<head ${"a".repeat(200_000)}`);
+
+    expect(Date.now() - started).toBeLessThan(1_000);
+  });
+});
+
 describe("artifact sandbox isolation", () => {
   it("blocks preview documents from connecting or navigating away", () => {
     const document = hardenSandboxDocument(

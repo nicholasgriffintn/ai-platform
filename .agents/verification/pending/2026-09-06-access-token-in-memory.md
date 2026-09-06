@@ -1,0 +1,22 @@
+# The access token stops outliving the page
+
+- **Change:** The client access token was written to `localStorage`, notionally encrypted. The key was derived from the page's own origin with a salt hard-coded in the bundle, so any script that could read the storage could also derive the key. It bought nothing against the only threat that matters here, cost a hundred thousand PBKDF2 iterations on every read and write, and fell back to writing the token in clear text whenever Web Crypto was missing or the encryption threw. The token now lives in memory for the life of the page, and any value an earlier release left in storage is deleted the first time the service is touched.
+- **Surfaces:** Web app only. No API, schema or database change.
+- **Prerequisites:** None.
+- **Risk if wrong:** Sign-in breaking, or a session not surviving a page load.
+
+## Why this is safe
+
+The token is short-lived and re-mintable. `getToken` reads `/auth/token`, which authenticates on the HTTP-only session cookie, and the expiry it checks against was already held in memory. A page load therefore always re-minted the token regardless of what storage held, so the stored copy was never the thing keeping anyone signed in. Removing it narrows the window in which a script injected into the page can walk away with a bearer token, and takes nothing away from the session, which the cookie still owns.
+
+## Verify
+
+- [ ] Sign in. Confirm you land signed in and can send a message.
+- [ ] Reload the page. Confirm you are still signed in and the network tab shows a fresh `/auth/token` call.
+- [ ] Open developer tools and confirm `localStorage` holds neither `api_key` nor `encrypted_api_key`, before and after signing in.
+- [ ] Sign in on a browser that already had one of those keys stored from an earlier release. Confirm both are gone after the first page load.
+- [ ] Leave the tab idle past the token expiry and then send a message. Confirm the refresh happens and the message sends.
+- [ ] Sign out and confirm a reload leaves you signed out.
+- [ ] Open a second tab while signed in. Confirm it signs itself in from the cookie without the first tab doing anything.
+
+**Stop and report if:** a reload signs you out, or either storage key reappears.
