@@ -1,5 +1,8 @@
 import {
   createOutputSchema,
+  describeDocumentResponseSchema,
+  formatDocumentInputSchema,
+  formatDocumentResponseSchema,
   documentExportFilename,
   DOCUMENT_OUTPUT_KIND,
   readDocumentBody,
@@ -21,6 +24,7 @@ import z from "zod/v4";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { StorageService } from "~/lib/storage";
 import { getPrivateFileResponse, readPrivateFile } from "~/lib/storage/read-resource";
+import { formatDocument, redescribeDocument } from "~/services/documents";
 import {
   createOutput,
   createOutputShare,
@@ -83,6 +87,29 @@ addRoute(app, "get", "/:outputId/content", {
 
     return await getPrivateFileResponse(file.record, file.object);
   },
+});
+
+addRoute(app, "post", "/:outputId/format", {
+  tags: ["outputs"],
+  summary: "Rewrite a document without changing what it says",
+  auth: true,
+  paramSchema: outputParams,
+  bodySchema: formatDocumentInputSchema,
+  responses: { 200: { description: "Rewritten document", schema: formatDocumentResponseSchema } },
+  handler: ({ body, params, serviceContext, user }) =>
+    formatDocument(serviceContext, user, params.outputId, body.prompt),
+});
+
+addRoute(app, "post", "/:outputId/describe", {
+  tags: ["outputs"],
+  summary: "Describe a document and keep the description on it",
+  auth: true,
+  paramSchema: outputParams,
+  responses: {
+    200: { description: "Document description", schema: describeDocumentResponseSchema },
+  },
+  handler: ({ params, serviceContext, user }) =>
+    redescribeDocument(serviceContext, user, params.outputId),
 });
 
 addRoute(app, "get", "/:outputId/export", {

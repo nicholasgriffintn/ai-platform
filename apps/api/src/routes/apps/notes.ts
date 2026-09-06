@@ -16,7 +16,6 @@ import z from "zod/v4";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
-import { generateNotesFromMedia } from "~/services/apps/notes/generate-from-media";
 import {
   createNote,
   deleteNote,
@@ -25,6 +24,7 @@ import {
   listNotes,
   updateNote,
 } from "~/services/apps/notes/list";
+import { generateDocumentFromMedia } from "~/services/documents";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,
@@ -342,12 +342,12 @@ addRoute(app, "post", "/generate-from-media", {
         "featured-note-taker",
       );
 
-      const result = await generateNotesFromMedia({
+      const result = await generateDocumentFromMedia({
         context: serviceContext,
         user,
         url: body.url,
         outputs: body.outputs,
-        noteType: body.noteType,
+        documentType: body.noteType,
         extraPrompt: body.extraPrompt,
         timestamps: body.timestamps,
         useVideoAnalysis: body.useVideoAnalysis,

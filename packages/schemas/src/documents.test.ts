@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { documentExportFilename, readDocumentBody, writeDocumentInputSchema } from "./documents";
+import {
+  buildDocumentContent,
+  countDocumentWords,
+  deriveDocumentStatistics,
+  documentExportFilename,
+  documentOutputContentSchema,
+  readDocumentBody,
+  readDocumentMetadata,
+  writeDocumentInputSchema,
+} from "./documents";
 
 describe("readDocumentBody", () => {
   it("reads a markdown document body", () => {
@@ -49,5 +58,54 @@ describe("writeDocumentInputSchema", () => {
     });
 
     expect(parsed.success && parsed.data.outputId).toBe("output-1");
+  });
+});
+
+describe("document statistics", () => {
+  it("counts words across any run of whitespace", () => {
+    expect(countDocumentWords("one  two\n\nthree\tfour ")).toBe(4);
+    expect(countDocumentWords("   ")).toBe(0);
+  });
+
+  it("rounds reading time up to a whole minute, never to zero", () => {
+    expect(deriveDocumentStatistics("").readingTime).toBe(1);
+    expect(deriveDocumentStatistics("word ".repeat(201)).readingTime).toBe(2);
+  });
+
+  it("stays linear on a long run of whitespace", () => {
+    const started = Date.now();
+
+    expect(countDocumentWords(" ".repeat(500_000))).toBe(0);
+    expect(Date.now() - started).toBeLessThan(1_000);
+  });
+});
+
+describe("buildDocumentContent", () => {
+  it("recomputes the statistics rather than trusting what it was handed", () => {
+    const content = buildDocumentContent("one two three", {
+      wordCount: 99,
+      readingTime: 99,
+      tags: ["brief"],
+    });
+
+    expect(content.metadata).toMatchObject({ wordCount: 3, readingTime: 1, tags: ["brief"] });
+  });
+
+  it("produces content the schema accepts", () => {
+    expect(documentOutputContentSchema.safeParse(buildDocumentContent("body")).success).toBe(true);
+  });
+});
+
+describe("readDocumentMetadata", () => {
+  it("reads metadata back, and reports none when there is none", () => {
+    expect(readDocumentMetadata(buildDocumentContent("a", { summary: "s" }))).toMatchObject({
+      summary: "s",
+    });
+    expect(readDocumentMetadata({ format: "markdown", body: "a" })).toBeNull();
+    expect(readDocumentMetadata({ url: "https://example.test" })).toBeNull();
+  });
+
+  it("keeps a body readable whether or not metadata is present", () => {
+    expect(readDocumentBody(buildDocumentContent("a body"))).toBe("a body");
   });
 });

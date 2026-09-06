@@ -7,12 +7,12 @@ import { resolveAuthorisedTranscriptionSource } from "~/services/audio/transcrip
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-export async function generateNotesFromMedia({
+export async function generateDocumentFromMedia({
   context,
   user,
   url,
   outputs,
-  noteType,
+  documentType,
   extraPrompt,
   timestamps,
   useVideoAnalysis = false,
@@ -32,7 +32,7 @@ export async function generateNotesFromMedia({
     | "visual_insights"
     | "smart_timestamps"
   )[];
-  noteType: string;
+  documentType: string;
   extraPrompt?: string;
   timestamps?: boolean;
   useVideoAnalysis?: boolean;
@@ -94,7 +94,7 @@ export async function generateNotesFromMedia({
 - For Meeting Minutes, include attendees (if identifiable), agenda, decisions, and next steps
 - For Q&A Extraction, list Q paired with A succinctly${useVideoAnalysis ? "\n- For Scene Analysis, break down the content by visual scenes and topics\n- For Visual Insights, highlight important visual elements, diagrams, or on-screen content\n- For Smart Timestamps, provide key moment timestamps with visual and audio descriptions\n- Integrate visual insights with audio content for comprehensive notes" : "\n- For Smart Timestamps, provide key moment timestamps with descriptions"}${timestamps ? "\n- Include relevant timestamps where helpful" : ""}`;
 
-    const notePrompt = `You are an expert note taker. ${useVideoAnalysis ? "Analyze this video content" : "Given a transcript"} from ${typeDescriptorMap[noteType] || "content"} and produce the following sections in Markdown. Use clear headings and bullet points where appropriate.
+    const notePrompt = `You are an expert note taker. ${useVideoAnalysis ? "Analyze this video content" : "Given a transcript"} from ${typeDescriptorMap[documentType] || "content"} and produce the following sections in Markdown. Use clear headings and bullet points where appropriate.
 
 Sections to include:
 ${selectedSections}
