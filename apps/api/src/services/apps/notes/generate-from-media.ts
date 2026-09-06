@@ -72,7 +72,7 @@ export async function generateNotesFromMedia({
       training: "a training session",
       lecture: "an academic lecture",
       interview: "an interview",
-      podcast: "a podcast episode",
+      recording: "a recording episode",
       webinar: "a webinar",
       tutorial: "an instructional tutorial",
       video_content: "video content",

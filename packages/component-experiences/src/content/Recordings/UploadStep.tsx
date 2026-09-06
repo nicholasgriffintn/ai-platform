@@ -7,15 +7,15 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import { Link as LinkIcon } from "lucide-react";
 
-import type { PodcastFormData } from "./types";
+import type { RecordingFormData } from "./types";
 
 export interface UploadStepProps {
-  formData: PodcastFormData;
+  formData: RecordingFormData;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleFileChange: (file: File) => void;
   handleUpload: () => void;
   isUploading: boolean;
-  setFormData: React.Dispatch<React.SetStateAction<PodcastFormData>>;
+  setFormData: React.Dispatch<React.SetStateAction<RecordingFormData>>;
   uploaderAnalytics?: {
     onFilesAdded?: (files: any[]) => void;
     onFilesChange?: (files: any[]) => void;
@@ -34,16 +34,16 @@ export function UploadStep({
 }: UploadStepProps) {
   return (
     <div className="border-border bg-surface rounded-lg border p-6">
-      <h2 className="text-xl font-semibold mb-4 text-foreground">Upload Your Podcast</h2>
+      <h2 className="text-xl font-semibold mb-4 text-foreground">Upload Your Recording</h2>
 
       <div className="space-y-4">
         <FormInput
           id="title"
           name="title"
-          label="Podcast Title *"
+          label="Recording Title *"
           value={formData.title}
           onChange={handleChange}
-          placeholder="My Amazing Podcast"
+          placeholder="My Amazing Recording"
           required
         />
 
@@ -53,7 +53,7 @@ export function UploadStep({
           name="description"
           value={formData.description}
           onChange={handleChange}
-          placeholder="What's your podcast about?"
+          placeholder="What's your recording about?"
           rows={3}
         />
 
@@ -108,7 +108,7 @@ export function UploadStep({
                 label="Audio URL * (MP3, WAV, M4A)"
                 value={formData.audioUrl}
                 onChange={handleChange}
-                placeholder="https://example.com/podcast.mp3"
+                placeholder="https://example.com/recording.mp3"
                 description="Enter a direct URL to your audio file (must be publicly accessible)"
                 required
                 className="pl-10"

@@ -1,8 +1,8 @@
-import type { PodcastTranscriptData } from "@ngriffin_uk/polychat-schemas";
+import type { RecordingTranscriptData } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useState } from "react";
 
 interface TranscriptViewerProps {
-  transcript: PodcastTranscriptData;
+  transcript: RecordingTranscriptData;
   speakerNames?: Record<string, string>;
 }
 
@@ -92,6 +92,6 @@ function getSegmentSpeaker(speaker: string | undefined, index: number): string {
   return speaker ?? `Segment ${index + 1}`;
 }
 
-function uniqueSpeakerCount(segments: PodcastTranscriptData["segments"]): number {
+function uniqueSpeakerCount(segments: RecordingTranscriptData["segments"]): number {
   return new Set(segments.map((segment, index) => getSegmentSpeaker(segment.speaker, index))).size;
 }

@@ -1,6 +1,6 @@
 import type z from "zod/v4";
 
-import { handlePodcastTranscribe } from "~/services/apps/podcast/transcribe";
+import { handleRecordingTranscribe } from "~/services/apps/recordings/transcribe";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -26,11 +26,11 @@ export const process_recording: ApiToolDefinition = {
     }
 
     const projectId = resolveRequestProjectId(request);
-    const result = await handlePodcastTranscribe({
+    const result = await handleRecordingTranscribe({
       ...(request.context ? { context: request.context } : {}),
       ...(request.env ? { env: request.env } : {}),
       request: {
-        podcastId: args.recordingId,
+        recordingId: args.recordingId,
         numberOfSpeakers: args.speakers,
         prompt: args.prompt,
       },

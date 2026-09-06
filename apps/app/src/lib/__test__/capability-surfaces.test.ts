@@ -19,6 +19,10 @@ const notes: ProjectExperienceDefinition = {
   runtime: "notes",
   name: "Note Taker",
   description: "Take notes",
+  when: "Something is worth keeping.",
+  uses: "What you write.",
+  produces: "A note you can search.",
+  ios: "native",
   requirement: { kind: "capability", capabilityKind: "app", capabilityId: "featured-note-taker" },
 };
 
@@ -27,6 +31,10 @@ const savedOutputs: ProjectExperienceDefinition = {
   runtime: "strudel",
   name: "Strudel",
   description: "Music patterns",
+  when: "You want a playable pattern.",
+  uses: "A description of the sound.",
+  produces: "A pattern you can play.",
+  ios: "results-only",
   requirement: { kind: "capability_kind", capabilityKind: "app" },
 };
 

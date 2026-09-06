@@ -1,16 +1,16 @@
 import { Markdown } from "@ngriffin_uk/polychat-component-content";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
-import type { Podcast } from "@ngriffin_uk/polychat-schemas";
+import type { Recording } from "@ngriffin_uk/polychat-schemas";
 import { FileText } from "lucide-react";
 
 import { TranscriptViewer } from "./TranscriptViewer";
 
-export interface PodcastDetailViewProps {
-  podcast: Podcast;
+export interface RecordingDetailViewProps {
+  recording: Recording;
   onDownloadTranscript?: () => void;
 }
 
-export function PodcastDetailView({ podcast, onDownloadTranscript }: PodcastDetailViewProps) {
+export function RecordingDetailView({ recording, onDownloadTranscript }: RecordingDetailViewProps) {
   const formatDuration = (seconds?: number) => {
     if (!seconds) {
       return "Unknown duration";
@@ -27,10 +27,10 @@ export function PodcastDetailView({ podcast, onDownloadTranscript }: PodcastDeta
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="w-full lg:w-1/3 lg:sticky lg:top-4 lg:self-start lg:max-h-screen lg:overflow-y-auto">
           <div className="bg-selection aspect-square overflow-hidden rounded-lg">
-            {podcast.imageUrl ? (
+            {recording.imageUrl ? (
               <img
-                src={podcast.imageUrl}
-                alt={podcast.title}
+                src={recording.imageUrl}
+                alt={recording.title}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -41,7 +41,7 @@ export function PodcastDetailView({ podcast, onDownloadTranscript }: PodcastDeta
           </div>
           <div className="mt-6">
             <h3 className="text-lg font-semibold mb-3 text-foreground">Listen</h3>
-            <audio controls className="w-full" src={podcast.audioUrl}>
+            <audio controls className="w-full" src={recording.audioUrl}>
               Your browser does not support the audio element.
             </audio>
           </div>
@@ -49,28 +49,28 @@ export function PodcastDetailView({ podcast, onDownloadTranscript }: PodcastDeta
 
         <div className="w-full lg:w-2/3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <span>{new Date(podcast.createdAt).toLocaleDateString()}</span>
+            <span>{new Date(recording.createdAt).toLocaleDateString()}</span>
             <span>•</span>
-            <span>{formatDuration(podcast.duration)}</span>
+            <span>{formatDuration(recording.duration)}</span>
           </div>
 
-          {podcast.summary && (
+          {recording.summary && (
             <div className="border-t border-border pt-6 pb-2">
               <h2 className="text-xl font-semibold mb-4 text-foreground">Summary</h2>
               <div className="border-border bg-surface rounded-lg border p-5">
-                <p className="text-foreground whitespace-pre-line">{podcast.summary}</p>
+                <p className="text-foreground whitespace-pre-line">{recording.summary}</p>
               </div>
             </div>
           )}
 
-          {podcast.description && podcast.description !== podcast.summary && (
+          {recording.description && recording.description !== recording.summary && (
             <div className="pt-6 pb-2">
               <h2 className="text-xl font-semibold mb-4 text-foreground">Description</h2>
-              <Markdown className="text-foreground mb-6">{podcast.description}</Markdown>
+              <Markdown className="text-foreground mb-6">{recording.description}</Markdown>
             </div>
           )}
 
-          {podcast.transcript && (
+          {recording.transcript && (
             <div className="pt-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-foreground">Transcript</h2>
@@ -85,12 +85,12 @@ export function PodcastDetailView({ podcast, onDownloadTranscript }: PodcastDeta
                 </Button>
               </div>
               <div className="border-border bg-surface max-h-[500px] overflow-y-auto rounded-lg border p-5">
-                {typeof podcast.transcript === "string" ? (
-                  <p className="text-foreground whitespace-pre-line">{podcast.transcript}</p>
+                {typeof recording.transcript === "string" ? (
+                  <p className="text-foreground whitespace-pre-line">{recording.transcript}</p>
                 ) : (
                   <TranscriptViewer
-                    transcript={podcast.transcript}
-                    speakerNames={podcast.transcript.segments.reduce<Record<string, string>>(
+                    transcript={recording.transcript}
+                    speakerNames={recording.transcript.segments.reduce<Record<string, string>>(
                       (acc, segment, index) => {
                         const speakerId = segment.speaker ?? `Segment ${index + 1}`;
 

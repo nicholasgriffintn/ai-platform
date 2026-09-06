@@ -14,7 +14,7 @@ export const TASK_TYPES = [
   "research_polling",
   "replicate_polling",
   "async_message_polling",
-  "podcast_transcription_polling",
+  "recording_transcription_polling",
   "training_quality_scoring",
   "recipe_execution",
   "inbound_message",
