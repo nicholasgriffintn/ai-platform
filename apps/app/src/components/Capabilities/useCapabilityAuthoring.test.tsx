@@ -57,6 +57,7 @@ function teammate(overrides: Partial<TeammateResponse>): TeammateResponse {
     owner_scope_id: "7",
     derived_from_teammate_id: null,
     kind: "colleague",
+    workspace_default: false,
     name: "Researcher",
     description: "Digs through sources.",
     avatar_url: null,

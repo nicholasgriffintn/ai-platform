@@ -37,6 +37,7 @@ function buildStoredTeammate(
     owner_scope_type: "user",
     owner_scope_id: String(OWNER_ID),
     derived_from_teammate_id: null,
+    workspace_default: false,
     name: "Researcher",
     description: "",
     avatar_url: null,
@@ -78,6 +79,7 @@ function createContext(
       getTeammateById: vi.fn(async () => teammate),
       getTeammatesByIds: vi.fn(async () => overrides.projectTeammates ?? []),
       getTeammatesForScopes: vi.fn(async () => overrides.scopedTeammates ?? []),
+      listWorkspaceDefaults: vi.fn(async () => []),
       createTeammate: vi.fn(async (record: Record<string, unknown>) => ({
         ...buildStoredTeammate(),
         id: "teammate-copy",

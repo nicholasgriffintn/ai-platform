@@ -32,6 +32,10 @@ export const createTeammateSchema = z.object({
   kind: teammateKindSchema.optional().meta({
     description: "Whether this teammate works as a colleague or as a bot",
   }),
+  workspace_default: z.boolean().optional().meta({
+    description:
+      "Whether every project in the owning workspace gets this teammate without being asked",
+  }),
   description: z.string().optional().meta({ description: "Optional teammate description" }),
   avatar_url: z.url().nullable().optional().meta({ description: "Optional avatar image URL" }),
   servers: z
@@ -111,6 +115,9 @@ export const updateTeammateSchema = z
     kind: teammateKindSchema.optional().meta({
       description: "Updated teammate kind",
     }),
+    workspace_default: z.boolean().optional().meta({
+      description: "Whether every project in the owning workspace gets this teammate",
+    }),
   })
   .refine((data) => Object.keys(data).length > 0, {
     error: "At least one field must be provided",
@@ -132,6 +139,7 @@ export const teammateResponseSchema = z.object({
   owner_scope_id: z.string(),
   derived_from_teammate_id: z.string().nullable(),
   kind: teammateKindSchema,
+  workspace_default: z.boolean(),
   name: z.string(),
   description: z.string(),
   avatar_url: z.string().nullable(),

@@ -13,6 +13,7 @@ const teammate: TeammateResponse = {
   owner_scope_id: "7",
   derived_from_teammate_id: null,
   kind: "colleague",
+  workspace_default: false,
   name: "Researcher",
   description: "",
   avatar_url: null,

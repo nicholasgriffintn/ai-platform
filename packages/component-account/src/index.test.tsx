@@ -156,6 +156,7 @@ describe("teammate editor", () => {
     owner_scope_id: "7",
     derived_from_teammate_id: null,
     kind: "colleague",
+    workspace_default: false,
     name: "Researcher",
     description: "Finds things",
     avatar_url: null,

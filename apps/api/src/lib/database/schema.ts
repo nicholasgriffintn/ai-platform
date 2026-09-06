@@ -642,6 +642,7 @@ export const projectCapability = sqliteTable(
       .references(() => project.id, { onDelete: "cascade" }),
     kind: text({ enum: ["app", "recipe", "skill", "tool", "teammate"] }).notNull(),
     capability_id: text().notNull(),
+    excluded: integer({ mode: "boolean" }).default(false).notNull(),
     configuration: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
     created_by: integer()
       .notNull()
@@ -1759,6 +1760,7 @@ export const teammates = sqliteTable(
     kind: text({ enum: ["colleague", "bot"] })
       .default("colleague")
       .notNull(),
+    workspace_default: integer({ mode: "boolean" }).default(false).notNull(),
     name: text().notNull(),
     description: text().default("").notNull(),
     avatar_url: text(),

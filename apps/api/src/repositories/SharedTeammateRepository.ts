@@ -365,6 +365,7 @@ export class SharedTeammateRepository extends BaseRepository {
       owner_scope_id: String(userId),
       derived_from_teammate_id: null,
       kind: "colleague",
+      workspace_default: false,
       name: templateData.name,
       description: templateData.description,
       avatar_url: templateData.avatar_url,

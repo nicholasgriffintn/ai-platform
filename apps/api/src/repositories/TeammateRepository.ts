@@ -18,6 +18,7 @@ export interface CreateTeammateRecord {
   ownerScopeId: string;
   derivedFromTeammateId?: string | null;
   kind?: TeammateKind;
+  workspaceDefault?: boolean;
   name: string;
   description: string;
   avatarUrl: string | null;
@@ -44,6 +45,7 @@ export class TeammateRepository extends BaseRepository {
         owner_scope_id: record.ownerScopeId,
         derived_from_teammate_id: record.derivedFromTeammateId ?? null,
         kind: record.kind ?? "colleague",
+        workspace_default: record.workspaceDefault ?? false,
         name: record.name,
         description: record.description,
         avatar_url: record.avatarUrl ?? null,
@@ -95,6 +97,15 @@ export class TeammateRepository extends BaseRepository {
     );
   }
 
+  public async listWorkspaceDefaults(workspaceId: string): Promise<Teammate[]> {
+    return this.runQuery<Teammate>(
+      `SELECT * FROM teammates
+       WHERE owner_scope_type = 'workspace' AND owner_scope_id = ? AND workspace_default = 1
+       ORDER BY created_at DESC`,
+      [workspaceId],
+    );
+  }
+
   public async getTeammatesByIds(teammateIds: string[]): Promise<Teammate[]> {
     const uniqueIds = [...new Set(teammateIds)];
 
@@ -132,6 +143,7 @@ export class TeammateRepository extends BaseRepository {
       skill_ids: string[];
       mode: AgentMode | null;
       kind: TeammateKind;
+      workspace_default: boolean;
     }>,
   ): Promise<void> {
     const allowedFields = [
@@ -148,6 +160,7 @@ export class TeammateRepository extends BaseRepository {
       "skill_ids",
       "mode",
       "kind",
+      "workspace_default",
     ];
 
     const result = this.buildUpdateQuery("teammates", data, allowedFields, "id = ?", [teammateId], {

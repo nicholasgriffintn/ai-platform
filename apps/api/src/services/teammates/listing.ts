@@ -15,7 +15,7 @@ import { getAvailableTools } from "~/services/tools/toolsOperations";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 
-import { isTeammateAvailableToWorkspace, resolveProjectTeammateGrants } from "./access";
+import { isTeammateAvailableToWorkspace, resolveProjectTeammateIds } from "./access";
 import { getUserTeammates } from "./teammateCrud";
 import { normaliseTeammateResponse } from "./teammateResponse";
 
@@ -134,7 +134,13 @@ export async function listScopedTeammateSummaries(
   if (projectId) {
     const { project } = await requireProjectAccess(context, projectId);
     const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
-    const grantedTeammateIds = resolveProjectTeammateGrants(capabilities);
+    const workspaceDefaults = await context.repositories.teammates.listWorkspaceDefaults(
+      project.workspace_id,
+    );
+    const grantedTeammateIds = resolveProjectTeammateIds({
+      capabilities,
+      workspaceDefaultTeammateIds: workspaceDefaults.map((teammate) => teammate.id),
+    });
 
     if (grantedTeammateIds.length === 0) {
       return [];

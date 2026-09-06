@@ -59,6 +59,7 @@ export async function createTeammate(
     userId: currentUser.id,
     ...(await resolveNewTeammateOwnerScope(context, currentUser.id, params.workspace_id)),
     kind: params.kind ?? "colleague",
+    workspaceDefault: params.workspace_default ?? false,
     name: params.name,
     description: params.description ?? "",
     avatarUrl: params.avatar_url || null,

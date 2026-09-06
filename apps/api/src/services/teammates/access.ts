@@ -12,14 +12,40 @@ export const TEAMMATE_CAPABILITY_KIND = "teammate";
 interface ProjectCapabilityGrant {
   kind: string;
   capability_id: string;
+  excluded?: boolean;
 }
 
 export function resolveProjectTeammateGrants(
   capabilities: readonly ProjectCapabilityGrant[],
 ): string[] {
   return capabilities
-    .filter((capability) => capability.kind === TEAMMATE_CAPABILITY_KIND)
+    .filter((capability) => capability.kind === TEAMMATE_CAPABILITY_KIND && !capability.excluded)
     .map((capability) => capability.capability_id);
+}
+
+export function resolveRemovedProjectTeammates(
+  capabilities: readonly ProjectCapabilityGrant[],
+): Set<string> {
+  return new Set(
+    capabilities
+      .filter((capability) => capability.kind === TEAMMATE_CAPABILITY_KIND && capability.excluded)
+      .map((capability) => capability.capability_id),
+  );
+}
+
+/**
+ * A workspace default reaches every project in that workspace unless the project removed it,
+ * so adding a teammate once does not mean adding it to each project by hand.
+ */
+export function resolveProjectTeammateIds(params: {
+  capabilities: readonly ProjectCapabilityGrant[];
+  workspaceDefaultTeammateIds: readonly string[];
+}): string[] {
+  const removed = resolveRemovedProjectTeammates(params.capabilities);
+  const granted = resolveProjectTeammateGrants(params.capabilities);
+  const inherited = params.workspaceDefaultTeammateIds.filter((id) => !removed.has(id));
+
+  return [...new Set([...granted, ...inherited])];
 }
 
 const TEAMMATE_READ_ROLES: readonly WorkspaceRole[] = ["owner", "admin", "member"];

@@ -21,6 +21,8 @@ import {
   getTeammateById,
   createTeammate,
   hireTeammate,
+  removeInheritedTeammateFromProject,
+  restoreInheritedTeammateToProject,
   updateTeammate,
   deleteTeammate,
   getTeammateServers,
@@ -75,6 +77,34 @@ addRoute(app, "post", "/hire", {
   responses: { 200: { description: "Hired teammate", schema: teammateResponseSchema } },
   handler: async ({ serviceContext, body }) => {
     return hireTeammate(serviceContext, body);
+  },
+});
+
+addRoute(app, "post", "/:teammateId/projects/:projectId/remove", {
+  tags: ["teammates"],
+  summary: "Remove a workspace teammate from one project",
+  description:
+    "Workspace defaults reach every project. This records that one project does not want this teammate, without removing it from the workspace.",
+  auth: true,
+  paramSchema: z.object({ teammateId: z.string().min(1), projectId: z.string().min(1) }),
+  responses: { 200: { description: "Success", schema: apiResponseSchema } },
+  handler: async ({ serviceContext, params }) => {
+    await removeInheritedTeammateFromProject(serviceContext, params.projectId, params.teammateId);
+
+    return { success: true };
+  },
+});
+
+addRoute(app, "post", "/:teammateId/projects/:projectId/restore", {
+  tags: ["teammates"],
+  summary: "Give a project back a workspace teammate it had removed",
+  auth: true,
+  paramSchema: z.object({ teammateId: z.string().min(1), projectId: z.string().min(1) }),
+  responses: { 200: { description: "Success", schema: apiResponseSchema } },
+  handler: async ({ serviceContext, params }) => {
+    await restoreInheritedTeammateToProject(serviceContext, params.projectId, params.teammateId);
+
+    return { success: true };
   },
 });
 
