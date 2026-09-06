@@ -25,8 +25,8 @@ describe("resolveDefaultChatModel", () => {
         provider: "google-ai-studio",
         isFree: true,
       }),
-      "gpt-5.6-sol": model({
-        matchingModel: "gpt-5.6-sol",
+      "gpt-5.6-luna": model({
+        matchingModel: "gpt-5.6-luna",
         provider: "openai",
       }),
     };
@@ -34,7 +34,7 @@ describe("resolveDefaultChatModel", () => {
     expect(resolveDefaultChatModel(models, { plan_id: "free" }).id).toBe(
       "google-ai-studio/gemini-3.5-flash",
     );
-    expect(resolveDefaultChatModel(models, { plan_id: "pro" }).id).toBe("gpt-5.6-sol");
+    expect(resolveDefaultChatModel(models, { plan_id: "pro" }).id).toBe("gpt-5.6-luna");
   });
 
   it("falls back to an enabled BYOK provider when nothing in the lineup is executable", () => {
@@ -88,13 +88,15 @@ describe("resolveDefaultChatModel", () => {
 describe("resolveTierModel", () => {
   it("resolves the coding role separately from the agent role", () => {
     const models: ModelConfig = {
-      "claude-sonnet-5": model({ matchingModel: "claude-sonnet-5", provider: "anthropic" }),
+      "gpt-5.6-luna": model({ matchingModel: "gpt-5.6-luna", provider: "openai" }),
       "gpt-5.6-sol": model({ matchingModel: "gpt-5.6-sol", provider: "openai" }),
     };
 
-    expect(resolveTierModel(models, { plan_id: "pro" }, "medium", "agent")?.id).toBe("gpt-5.6-sol");
+    expect(resolveTierModel(models, { plan_id: "pro" }, "medium", "agent")?.id).toBe(
+      "gpt-5.6-luna",
+    );
     expect(resolveTierModel(models, { plan_id: "pro" }, "medium", "coding")?.id).toBe(
-      "claude-sonnet-5",
+      "gpt-5.6-sol",
     );
     expect(resolveTierModel(models, { plan_id: "free" }, "medium", "coding")).toBeNull();
   });

@@ -10,11 +10,11 @@ const state = vi.hoisted(() => ({
 }));
 
 const catalogue: ModelConfig = {
-  "claude-fable-5-1": {
-    id: "claude-fable-5-1",
-    matchingModel: "claude-fable-5-1",
-    name: "Claude Fable 5.1",
-    provider: "anthropic",
+  "gpt-6-astra": {
+    id: "gpt-6-astra",
+    matchingModel: "gpt-6-astra",
+    name: "GPT-6 Astra",
+    provider: "openai",
     modalities: { input: ["text"], output: ["text"] },
     reasoningConfig: { supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"] },
   },
@@ -48,7 +48,7 @@ describe("ModelLineup", () => {
     const ultra = within(tiers).getByRole("heading", { name: "Ultra" }).closest("li");
 
     expect(ultra).not.toBeNull();
-    expect(within(ultra!).getAllByText("Claude Fable 5.1").length).toBeGreaterThan(0);
+    expect(within(ultra!).getAllByText("GPT-6 Astra").length).toBeGreaterThan(0);
     expect(within(ultra!).queryByText(/On your plan/)).toBeNull();
   });
 

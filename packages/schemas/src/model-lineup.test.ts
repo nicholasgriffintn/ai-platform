@@ -56,7 +56,8 @@ describe("model lineup", () => {
 
   it("prefers the first candidate once the account can execute it", () => {
     const executable: ModelConfig = {
-      "claude-fable-5-1": model("claude-fable-5-1", {
+      "gpt-6-astra": model("gpt-6-astra", {
+        provider: "openai",
         reasoningConfig: { supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"] },
       }),
       "google-ai-studio/gemini-3.5-flash": model("google-ai-studio/gemini-3.5-flash", {
@@ -66,7 +67,7 @@ describe("model lineup", () => {
     };
 
     expect(resolveModelTierSelection(executable, "hosted", "ultra", "agent")?.id).toBe(
-      "claude-fable-5-1",
+      "gpt-6-astra",
     );
   });
 
@@ -107,18 +108,18 @@ describe("model lineup", () => {
 
   it("chooses a comparison alternate from a different provider and family", () => {
     const executable: ModelConfig = {
-      "claude-fable-5-1": model("claude-fable-5-1", { family: "claude-fable" }),
-      "anthropic/claude-fable-5.1": model("anthropic/claude-fable-5.1", {
-        provider: "openrouter",
-        family: "claude-fable",
-      }),
       "gpt-6-astra": model("gpt-6-astra", { provider: "openai", family: "gpt-astra" }),
+      "openai/gpt-6-astra": model("openai/gpt-6-astra", {
+        provider: "openrouter",
+        family: "gpt-astra",
+      }),
+      "claude-fable-5-1": model("claude-fable-5-1", { family: "claude-fable" }),
     };
     const primary = resolveModelTierSelection(executable, "hosted", "ultra", "agent");
 
-    expect(primary?.id).toBe("claude-fable-5-1");
+    expect(primary?.id).toBe("gpt-6-astra");
     expect(resolveModelTierAlternate(executable, "hosted", "ultra", "agent", primary!)?.id).toBe(
-      "gpt-6-astra",
+      "claude-fable-5-1",
     );
   });
 
