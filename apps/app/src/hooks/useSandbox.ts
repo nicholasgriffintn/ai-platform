@@ -1,12 +1,3 @@
-import type {
-  ConnectSandboxInstallationInput,
-  CreateSandboxConnectionInput,
-  SandboxConnection,
-  SandboxConnectionRepositoriesPayload,
-  SandboxInstallConfig,
-} from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   connectSandboxInstallation,
   fetchSandboxInstallConfig,
@@ -15,7 +6,15 @@ import {
   fetchSandboxConnections,
   updateSandboxConnectionRepositories,
   upsertSandboxConnection,
-} from "~/lib/api/sandbox";
+} from "@ngriffin_uk/polychat-library-client";
+import type {
+  ConnectSandboxInstallationInput,
+  CreateSandboxConnectionInput,
+  SandboxConnection,
+  SandboxConnectionRepositoriesPayload,
+  SandboxInstallConfig,
+} from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 

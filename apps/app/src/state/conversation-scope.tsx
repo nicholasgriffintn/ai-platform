@@ -1,4 +1,4 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { createContext, type ReactNode, useContext, useMemo, useRef, useState } from "react";
 

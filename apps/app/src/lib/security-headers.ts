@@ -1,4 +1,4 @@
-import { generateCSP } from "~/constants";
+import { generateCSP } from "@ngriffin_uk/polychat-library-client";
 
 const PERMISSIONS_POLICY = [
   "geolocation=()",

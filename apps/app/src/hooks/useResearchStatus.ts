@@ -1,7 +1,6 @@
+import { apiService } from "@ngriffin_uk/polychat-library-client";
 import type { ResearchStatus } from "@ngriffin_uk/polychat-schemas";
 import { useQuery } from "@tanstack/react-query";
-
-import { apiService } from "~/lib/api/api-service";
 
 const FAILURE_STATUSES = new Set(["failed", "cancelled", "errored", "stopped"]);
 

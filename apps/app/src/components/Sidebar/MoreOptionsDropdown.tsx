@@ -1,7 +1,6 @@
 import { ProviderGlyph } from "@ngriffin_uk/polychat-component-models";
 import { MoreOptionsDropdown as ControlledMoreOptionsDropdown } from "@ngriffin_uk/polychat-component-navigation";
-
-import { SOURCE_CODE_URL } from "~/constants";
+import { SOURCE_CODE_URL } from "@ngriffin_uk/polychat-library-client";
 
 interface MoreOptionsDropdownProps {
   position?: "top" | "bottom";

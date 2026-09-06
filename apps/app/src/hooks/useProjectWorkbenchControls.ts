@@ -1,4 +1,8 @@
 import type { ProjectWorkbenchApprovalItem } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  submitSandboxRunInstruction,
+  updateSandboxRunControl,
+} from "@ngriffin_uk/polychat-library-client";
 import type {
   SandboxRunControl,
   SandboxRunControlAction,
@@ -9,7 +13,6 @@ import type {
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { submitSandboxRunInstruction, updateSandboxRunControl } from "~/lib/api/sandbox";
 import { getErrorMessage } from "~/lib/errors";
 
 interface InstructionInput {

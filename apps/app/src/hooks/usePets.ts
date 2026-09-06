@@ -1,4 +1,12 @@
 import {
+  createUserPet,
+  type CreateUserPetInput,
+  deleteUserPet,
+  fetchUserPet,
+  fetchUserPets,
+  generatePetImage,
+} from "@ngriffin_uk/polychat-library-client";
+import {
   DEFAULT_PET_PRESET_SLUG,
   EMPTY_PET_MODEL_OVERRIDES,
   parsePetModelOverrides,
@@ -11,14 +19,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAuthStatus } from "~/hooks/useAuth";
-import {
-  createUserPet,
-  type CreateUserPetInput,
-  deleteUserPet,
-  fetchUserPet,
-  fetchUserPets,
-  generatePetImage,
-} from "~/lib/api/pets";
 
 export const PET_QUERY_KEYS = {
   all: ["user-pets"],

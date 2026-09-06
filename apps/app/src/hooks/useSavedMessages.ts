@@ -1,9 +1,13 @@
+import {
+  listSavedMessages,
+  saveMessage,
+  unsaveMessage,
+} from "@ngriffin_uk/polychat-library-client";
 import type { SavedMessage } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
-import { listSavedMessages, saveMessage, unsaveMessage } from "~/lib/api/saved-messages";
 import { getErrorMessage } from "~/lib/errors";
 
 export const SAVED_MESSAGES_QUERY_KEY = "saved-messages";

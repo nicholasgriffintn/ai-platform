@@ -2,13 +2,13 @@ import {
   ChatSuggestionList,
   type ComposerCommandAction,
 } from "@ngriffin_uk/polychat-component-conversation";
+import { useToolsStore } from "@ngriffin_uk/polychat-library-client";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChatSuggestionContext } from "~/hooks/useChatSuggestionContext";
 import { createChatSuggestions, type ChatSuggestion } from "~/lib/chat-suggestions";
-import { useToolsStore } from "~/state/stores/toolsStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 interface ChatSuggestionsProps {

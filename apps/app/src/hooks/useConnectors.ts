@@ -1,9 +1,3 @@
-import type {
-  RecipeConnectorAccount,
-  RecipeConnectorProvider,
-} from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   disconnectRecipeConnector,
   listRecipeConnectorAccounts,
@@ -11,7 +5,12 @@ import {
   startRecipeConnector,
   storeRecipeConnectorApiKey,
   updateRecipeConnectorAccount,
-} from "~/lib/api/connectors";
+} from "@ngriffin_uk/polychat-library-client";
+import type {
+  RecipeConnectorAccount,
+  RecipeConnectorProvider,
+} from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 

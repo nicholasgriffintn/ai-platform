@@ -1,8 +1,7 @@
+import { apiService } from "@ngriffin_uk/polychat-library-client";
 import type { SharedTeammateSummary } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-import { apiService } from "~/lib/api/api-service";
 
 import { capabilityCatalogQueryKey } from "./useCapabilityCatalog";
 import { TEAMMATES_QUERY_KEYS } from "./useTeammates";

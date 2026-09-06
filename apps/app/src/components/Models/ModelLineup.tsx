@@ -1,6 +1,6 @@
 import { getModelTierIcon, ModelIcon } from "@ngriffin_uk/polychat-component-models";
 import { Badge, cn, Skeleton } from "@ngriffin_uk/polychat-component-ui";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   formatReasoningLabel,
   MODEL_LINEUP_RUNTIME_DEFINITIONS,

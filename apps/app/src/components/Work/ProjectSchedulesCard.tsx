@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-component-capabilities";
 import { ConfirmationDialog, FormDialog, FormSelect } from "@ngriffin_uk/polychat-component-ui";
 import { ScheduledRecipeList } from "@ngriffin_uk/polychat-component-workspaces";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { getRecipeScheduleTrigger } from "@ngriffin_uk/polychat-schemas";
 import type {
   AssistantRecipe,

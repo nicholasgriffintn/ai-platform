@@ -23,7 +23,7 @@ import {
   applyToolInteractionResolutions,
   isHiddenToolResponse,
 } from "@ngriffin_uk/polychat-library-chat/tool-results";
-import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,

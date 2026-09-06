@@ -22,7 +22,7 @@ import {
   getDefaultVerbosity,
   getVerbosityOptions,
 } from "@ngriffin_uk/polychat-library-chat/verbosity";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useToolsStore, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   EMPTY_MODEL_CONFIG,
   getDefaultModelId,
@@ -63,7 +63,6 @@ import { useModels } from "~/hooks/useModels";
 import { useModelToolOptions } from "~/hooks/useModelTools";
 import { useTeammates } from "~/hooks/useTeammates";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatSettings, ReasoningEffort } from "~/types";
 
 const PROJECT_CAPABILITY_KIND_BY_ACTION_KIND: Partial<

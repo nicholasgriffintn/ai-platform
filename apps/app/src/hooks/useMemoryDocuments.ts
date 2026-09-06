@@ -1,3 +1,10 @@
+import {
+  createMemoryDocument,
+  deleteMemoryDocument,
+  fetchMemoryDocument,
+  listMemoryDocuments,
+  updateMemoryDocument,
+} from "@ngriffin_uk/polychat-library-client";
 import type {
   CreateMemoryDocumentInput,
   MemoryDocument,
@@ -5,14 +12,6 @@ import type {
   UpdateMemoryDocumentInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import {
-  createMemoryDocument,
-  deleteMemoryDocument,
-  fetchMemoryDocument,
-  listMemoryDocuments,
-  updateMemoryDocument,
-} from "~/lib/api/memory-documents";
 
 export const MEMORY_DOCUMENT_QUERY_KEY = "memory-documents";
 

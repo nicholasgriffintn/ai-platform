@@ -1,7 +1,12 @@
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { createGoalMarkerMessage } from "@ngriffin_uk/polychat-library-chat/message-goal-status";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
-import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
+import {
+  CHATS_QUERY_KEY,
+  apiService,
+  useChatStore,
+  useStreamActivityStore,
+} from "@ngriffin_uk/polychat-library-client";
 import { upsertConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { EMPTY_MODEL_CONFIG } from "@ngriffin_uk/polychat-schemas";
 import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
@@ -10,8 +15,6 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
-import { CHATS_QUERY_KEY } from "~/constants";
-import { apiService } from "~/lib/api/api-service";
 import { prepareUserMessage } from "~/lib/chat/prepare-user-message";
 import {
   createTemporaryConversationTitle,

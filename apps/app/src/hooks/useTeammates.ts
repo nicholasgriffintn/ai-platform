@@ -1,4 +1,5 @@
 import type { TeammateFormData } from "@ngriffin_uk/polychat-component-account";
+import { apiService } from "@ngriffin_uk/polychat-library-client";
 import type {
   TeammateResponse,
   HireTeammateInput,
@@ -6,8 +7,6 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-
-import { apiService } from "~/lib/api/api-service";
 
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 

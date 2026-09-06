@@ -54,9 +54,7 @@ export function selectModelsForSurface(models: ModelConfig, surface: ModelSurfac
     return models;
   }
 
-  return Object.fromEntries(
-    Object.entries(models).filter(([, model]) => !runsOnDevice(model)),
-  ) as ModelConfig;
+  return Object.fromEntries(Object.entries(models).filter(([, model]) => !runsOnDevice(model)));
 }
 
 export function getFeaturedModelIds(models: ModelConfig) {

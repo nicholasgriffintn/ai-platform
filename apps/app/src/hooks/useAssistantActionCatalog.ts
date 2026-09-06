@@ -1,5 +1,5 @@
 import type { ModelToolDefinition } from "@ngriffin_uk/polychat-library-chat/model-tools";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   buildAssistantActionCatalog,
   type AssistantActionCatalog,

@@ -13,7 +13,7 @@ import {
 } from "@ngriffin_uk/polychat-component-models";
 import { ShortcutTooltip } from "@ngriffin_uk/polychat-component-ui";
 import { clearModelResponseSettings } from "@ngriffin_uk/polychat-library-chat";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { getDefaultLiveModelId } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import {
   createModelReferenceMap,

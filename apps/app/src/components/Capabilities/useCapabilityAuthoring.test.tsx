@@ -17,7 +17,7 @@ vi.mock("react-router", async (importOriginal) => ({
   useNavigate: () => navigate,
 }));
 
-vi.mock("@ngriffin_uk/polychat-library-react", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   useChatStore: (selector: (state: { user: { id: number } }) => unknown) =>
     selector({ user: { id: 7 } }),
 }));

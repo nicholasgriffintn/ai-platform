@@ -4,11 +4,10 @@ import {
   ConversationTitleContext,
 } from "@ngriffin_uk/polychat-component-conversation";
 import { buildAgentTraceEntries } from "@ngriffin_uk/polychat-library-chat/agent-trace";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { API_BASE_URL, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useMemo } from "react";
 
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
-import { API_BASE_URL } from "~/constants";
 import { useChat } from "~/hooks/useChat";
 
 import { ConversationThreadNavigation } from "./ConversationThreadNavigation";

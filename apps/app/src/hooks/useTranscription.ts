@@ -1,3 +1,4 @@
+import { createRealtimeSession } from "@ngriffin_uk/polychat-library-client";
 import {
   connectOpenAIRealtimeWebRTC,
   preferOpusAudioCodec,
@@ -5,8 +6,6 @@ import {
 } from "@ngriffin_uk/polychat-library-realtime";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-
-import { createRealtimeSession } from "~/lib/api/realtime-service";
 
 interface TranscriptionOptions {
   onTranscriptionReceived: (text: string, isPartial?: boolean) => void;

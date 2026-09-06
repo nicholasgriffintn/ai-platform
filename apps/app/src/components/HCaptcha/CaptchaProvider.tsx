@@ -1,7 +1,9 @@
+import {
+  CAPTCHA_SITE_KEY,
+  shouldEnableCaptcha,
+  useCaptchaStore,
+} from "@ngriffin_uk/polychat-library-client";
 import { Suspense, lazy, useEffect } from "react";
-
-import { CAPTCHA_SITE_KEY, shouldEnableCaptcha } from "~/constants";
-import { useCaptchaStore } from "~/state/stores/captchaStore";
 
 const HCaptchaVerifierLazy = lazy(() =>
   import("./HCaptchaVerifier").then((d) => ({

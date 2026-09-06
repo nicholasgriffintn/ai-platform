@@ -1,5 +1,5 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import React, { Suspense, lazy } from "react";
 
 import { ChatNavbar } from "~/components/Navbar";

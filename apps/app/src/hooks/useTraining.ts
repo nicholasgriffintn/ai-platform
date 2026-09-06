@@ -1,10 +1,3 @@
-import type {
-  DeployTrainingModelRequest,
-  TrainingProviderId,
-  StartTrainingJobRequest,
-} from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   deleteTrainingDeployment,
   deployTrainingModel,
@@ -14,7 +7,13 @@ import {
   fetchTrainingJobs,
   fetchTrainingModels,
   startTrainingJob,
-} from "~/lib/api/training";
+} from "@ngriffin_uk/polychat-library-client";
+import type {
+  DeployTrainingModelRequest,
+  TrainingProviderId,
+  StartTrainingJobRequest,
+} from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const TRAINING_QUERY_KEYS = {
   models: ["training", "models"],

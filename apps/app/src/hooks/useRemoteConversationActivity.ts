@@ -1,4 +1,4 @@
-import { useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
+import { useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
   isTerminalChatRunStatus,
   type ChatRun,

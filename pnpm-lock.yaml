@@ -1386,6 +1386,28 @@ importers:
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
 
   packages/library-client:
+    dependencies:
+      '@ngriffin_uk/polychat-component-experiences':
+        specifier: workspace:^
+        version: link:../component-experiences
+      '@ngriffin_uk/polychat-library-chat':
+        specifier: workspace:^
+        version: link:../library-chat
+      '@ngriffin_uk/polychat-library-realtime':
+        specifier: workspace:^
+        version: link:../library-realtime
+      '@ngriffin_uk/polychat-library-surface':
+        specifier: workspace:^
+        version: link:../library-surface
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+      zustand:
+        specifier: '*'
+        version: 5.0.15(@types/react@19.2.18)(react@19.2.8)
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -1402,6 +1424,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vite:
+        specifier: 8.2.2
+        version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0)
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))

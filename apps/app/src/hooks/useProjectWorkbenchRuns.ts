@@ -1,16 +1,15 @@
 import {
+  listActivity,
+  fetchSandboxRunControl,
+  fetchSandboxRunEvents,
+  fetchSandboxRunInstructions,
+} from "@ngriffin_uk/polychat-library-client";
+import {
   SANDBOX_RUNS_CAPABILITY_ID,
   sandboxRunDataSchema,
   type SandboxRunData,
 } from "@ngriffin_uk/polychat-schemas";
 import { useQuery } from "@tanstack/react-query";
-
-import { listActivity } from "~/lib/api/activity";
-import {
-  fetchSandboxRunControl,
-  fetchSandboxRunEvents,
-  fetchSandboxRunInstructions,
-} from "~/lib/api/sandbox";
 
 const ACTIVE_REFRESH_MS = 2_000;
 const IDLE_REFRESH_MS = 30_000;

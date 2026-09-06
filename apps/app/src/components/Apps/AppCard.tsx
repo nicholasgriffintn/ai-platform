@@ -1,5 +1,5 @@
 import { AppCard as ControlledAppCard } from "@ngriffin_uk/polychat-component-capabilities";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
 
 interface AppCardProps {

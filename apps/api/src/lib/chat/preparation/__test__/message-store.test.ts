@@ -6,7 +6,7 @@ import type { CoreChatOptions, Message } from "~/types";
 import { storeUserTurn } from "../message-store";
 
 function userMessage(content: string, overrides: Partial<Message> = {}): Message {
-  return { role: "user", content, ...overrides } as Message;
+  return { role: "user", content, ...overrides };
 }
 
 function snapshotMessage(content: string): Message {
@@ -47,7 +47,7 @@ function baseOptions(overrides: Partial<CoreChatOptions> = {}): CoreChatOptions 
     mode: "normal",
     messages: [],
     ...overrides,
-  } as CoreChatOptions;
+  };
 }
 
 async function run(
@@ -118,7 +118,7 @@ describe("storeUserTurn", () => {
         { type: "text", text: "look at this" },
         { type: "image_url", image_url: { url: "https://example.com/a.png" } },
       ],
-    } as Partial<Message>);
+    });
 
     await run(conversationManager, baseOptions(), lastMessage, "look at this");
 

@@ -6,12 +6,12 @@ import {
   withMessageSpeech,
 } from "@ngriffin_uk/polychat-library-chat/message-speech";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
+import { apiService } from "@ngriffin_uk/polychat-library-client";
 import { canReplaceStoredConversationMessages } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { useConversationStorage } from "~/hooks/useConversationStorage";
-import { apiService } from "~/lib/api/api-service";
 import type { Message } from "~/types";
 
 export function useAutoPlayResponses({

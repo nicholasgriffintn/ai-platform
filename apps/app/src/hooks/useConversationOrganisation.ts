@@ -1,18 +1,17 @@
+import {
+  CHATS_QUERY_KEY,
+  createConversationGroup,
+  deleteConversationGroup,
+  getConversationOrganisation,
+  moveConversationToGroup,
+  updateConversationOrganisation,
+} from "@ngriffin_uk/polychat-library-client";
 import type {
   ConversationGroup,
   ConversationGroupScope,
   UpdateConversationOrganisation,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { CHATS_QUERY_KEY } from "~/constants";
-import {
-  createConversationGroup,
-  deleteConversationGroup,
-  getConversationOrganisation,
-  moveConversationToGroup,
-  updateConversationOrganisation,
-} from "~/lib/api/conversation-organisation";
 
 import { projectQueryKey } from "./useWorkspaces";
 

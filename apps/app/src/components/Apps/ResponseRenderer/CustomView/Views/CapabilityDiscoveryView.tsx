@@ -3,7 +3,7 @@ import {
   RecipeConfigurationDialog,
 } from "@ngriffin_uk/polychat-component-capabilities";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   CAPABILITY_DISCOVERY_DATA_KEY,
   capabilityDiscoveryResultSchema,

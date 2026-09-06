@@ -1,3 +1,4 @@
+import { CHATS_QUERY_KEY } from "@ngriffin_uk/polychat-library-client";
 import {
   answerUserQuestionsSchema,
   resolveProjectTaskToolApprovalSchema,
@@ -7,7 +8,6 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 
 import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
-import { CHATS_QUERY_KEY } from "~/constants";
 import { getErrorMessage } from "~/lib/errors";
 
 import { useProjectTask, useProjectTasks } from "./useProjectTasks";

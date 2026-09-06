@@ -1,7 +1,7 @@
 import { SidebarHeader as ControlledSidebarHeader } from "@ngriffin_uk/polychat-component-navigation";
+import { APP_NAME } from "@ngriffin_uk/polychat-library-client";
 import type { ReactNode } from "react";
 
-import { APP_NAME } from "~/constants";
 import { useUIStore } from "~/state/stores/uiStore";
 
 interface SidebarHeaderProps {

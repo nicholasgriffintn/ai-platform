@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
   storeProviderApiKey: vi.fn(),
 }));
 
-vi.mock("~/lib/api/api-service", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   apiService: {
     deleteProviderApiKey: mocks.deleteProviderApiKey,
     getProviderSettings: vi.fn(async () => []),

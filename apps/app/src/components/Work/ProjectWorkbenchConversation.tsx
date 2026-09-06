@@ -12,7 +12,7 @@ import {
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { buildAgentTraceEntries } from "@ngriffin_uk/polychat-library-chat/agent-trace";
 import { buildRunActivityEntries } from "@ngriffin_uk/polychat-library-chat/run-activity";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { getOutputArtifactContent, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { Activity } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
@@ -23,7 +23,6 @@ import { useProjectWorkbenchDiff } from "~/hooks/useProjectWorkbenchEvidence";
 import { useProjectWorkbenchPreferences } from "~/hooks/useProjectWorkbenchPreferences";
 import { useProjectWorkbenchPreview } from "~/hooks/useProjectWorkbenchPreview";
 import { useProjectWorkbenchRuns } from "~/hooks/useProjectWorkbenchRuns";
-import { getOutputArtifactContent } from "~/lib/api/outputs";
 import { getErrorMessage } from "~/lib/errors";
 import {
   deriveProjectWorkbenchControlState,

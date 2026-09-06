@@ -18,7 +18,7 @@ const mocks = vi.hoisted(() => ({
   updateRecipeInstallation: vi.fn(),
 }));
 
-vi.mock("~/lib/api/recipes", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   deleteRecipeInstallation: vi.fn(),
   installAssistantRecipe: mocks.installAssistantRecipe,
   invokeAssistantRecipe: vi.fn(),

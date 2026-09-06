@@ -1,11 +1,13 @@
+import {
+  fetchToolConfigurations,
+  saveToolConfiguration,
+} from "@ngriffin_uk/polychat-library-client";
 import type {
   ModelToolConfiguration,
   ModelToolId,
   SavedToolConfigurationsResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { fetchToolConfigurations, saveToolConfiguration } from "~/lib/api/tool-configurations";
 
 export const TOOL_CONFIGURATIONS_QUERY_KEY = ["toolConfigurations"];
 

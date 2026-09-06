@@ -1,4 +1,4 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router";
 

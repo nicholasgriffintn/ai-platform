@@ -1,5 +1,5 @@
 import { UserMenuItem as ControlledUserMenuItem } from "@ngriffin_uk/polychat-component-navigation";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useIsHydrated } from "~/hooks/useIsHydrated";

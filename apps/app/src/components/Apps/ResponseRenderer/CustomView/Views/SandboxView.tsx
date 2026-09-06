@@ -1,7 +1,6 @@
 import { SandboxView as ControlledSandboxView } from "@ngriffin_uk/polychat-component-content";
+import { submitSandboxRunInstruction } from "@ngriffin_uk/polychat-library-client";
 import { toast } from "sonner";
-
-import { submitSandboxRunInstruction } from "~/lib/api/sandbox";
 
 interface SandboxViewProps {
   type: string;

@@ -1,6 +1,6 @@
 import { ProductHeaderShell, ProductModeSwitch } from "@ngriffin_uk/polychat-component-navigation";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useHeaderScrollEdge } from "@ngriffin_uk/polychat-utility-react";
 import { Cloud, CloudOff, Menu, PanelLeftOpen } from "lucide-react";
 import { type ReactNode, useRef } from "react";

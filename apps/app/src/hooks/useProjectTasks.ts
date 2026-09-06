@@ -1,14 +1,3 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
-import type {
-  AnswerUserQuestionsInput,
-  CreateProjectTaskInput,
-  ProjectFlow,
-  ProjectTask,
-  ResolveProjectTaskToolApprovalInput,
-  UpdateProjectTaskInput,
-} from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   acceptProjectTask,
   answerProjectTaskQuestions,
@@ -20,8 +9,19 @@ import {
   startProjectTask,
   setProjectFlow,
   updateProjectTask,
-} from "~/lib/api/project-tasks";
-import { listTaskInbox, updateTaskInboxReceipts } from "~/lib/api/task-notifications";
+  listTaskInbox,
+  updateTaskInboxReceipts,
+  useChatStore,
+} from "@ngriffin_uk/polychat-library-client";
+import type {
+  AnswerUserQuestionsInput,
+  CreateProjectTaskInput,
+  ProjectFlow,
+  ProjectTask,
+  ResolveProjectTaskToolApprovalInput,
+  UpdateProjectTaskInput,
+} from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const projectTasksQueryKey = (projectId: string) => ["project-tasks", projectId] as const;
 export const TASK_ATTENTION_QUERY_KEY = ["task-attention"] as const;

@@ -1,4 +1,4 @@
-import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import { useEffect, useRef, useState } from "react";
 
 import { derivePetPresence, PET_CHEER_WINDOW_MS, type PetPresence } from "~/lib/pet/clip";

@@ -1,17 +1,17 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import {
+  CHATS_QUERY_KEY,
+  apiService,
+  applyChatRunReplay,
+  replaceConversationRunSnapshot,
+  type AuthoritativeChatRunSnapshot,
+  type ChatRunReplayState,
+  useChatStore,
+} from "@ngriffin_uk/polychat-library-client";
 import { updateConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { isTerminalChatRunStatus, type ChatRun } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
-import { CHATS_QUERY_KEY } from "~/constants";
-import { apiService } from "~/lib/api/api-service";
-import {
-  applyChatRunReplay,
-  replaceConversationRunSnapshot,
-  type AuthoritativeChatRunSnapshot,
-  type ChatRunReplayState,
-} from "~/lib/chat/run-replay";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import type { Conversation } from "~/types";
 

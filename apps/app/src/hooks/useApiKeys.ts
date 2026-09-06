@@ -1,6 +1,5 @@
+import { apiService } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { apiService } from "~/lib/api/api-service";
 
 interface ApiKey {
   id: string;

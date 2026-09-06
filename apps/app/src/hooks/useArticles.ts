@@ -1,5 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   analyseArticle,
   extractArticleContent,
@@ -9,7 +7,8 @@ import {
   generateReport,
   prepareSessionForRerun,
   summariseArticle,
-} from "~/lib/api/apps";
+} from "@ngriffin_uk/polychat-library-client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useFetchArticleReports = (projectId?: string, options?: { enabled?: boolean }) => {
   return useQuery({

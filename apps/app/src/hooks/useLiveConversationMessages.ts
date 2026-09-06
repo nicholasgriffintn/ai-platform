@@ -1,5 +1,5 @@
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { CHATS_QUERY_KEY, apiService, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { RealtimeTranscriptResult } from "@ngriffin_uk/polychat-library-realtime/messages";
 import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 import { canReplaceStoredConversationMessages } from "@ngriffin_uk/polychat-schemas/conversation-replacement";
@@ -7,8 +7,6 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 
-import { CHATS_QUERY_KEY } from "~/constants";
-import { apiService } from "~/lib/api/api-service";
 import {
   buildLiveMessage,
   createLiveTurn,

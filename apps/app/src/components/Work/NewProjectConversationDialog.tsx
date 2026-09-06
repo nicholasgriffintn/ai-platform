@@ -1,5 +1,5 @@
 import { StartConversationDialog } from "@ngriffin_uk/polychat-component-workspaces";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 

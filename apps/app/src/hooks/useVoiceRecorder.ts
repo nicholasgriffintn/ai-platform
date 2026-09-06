@@ -1,6 +1,5 @@
+import { apiService } from "@ngriffin_uk/polychat-library-client";
 import { useRef, useState } from "react";
-
-import { apiService } from "~/lib/api/api-service";
 
 interface UseVoiceRecorderProps {
   onTranscribe: (data: {

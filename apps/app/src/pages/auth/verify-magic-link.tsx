@@ -1,4 +1,5 @@
 import { PageStatus } from "@ngriffin_uk/polychat-component-ui";
+import { authService } from "@ngriffin_uk/polychat-library-client";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -6,7 +7,6 @@ import { useNavigate, useSearchParams } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { useAuthStatus } from "~/hooks/useAuth";
-import { authService } from "~/lib/api/auth-service";
 
 export function meta() {
   return [

@@ -11,7 +11,7 @@ import {
   getComposerInlineTokenText,
 } from "@ngriffin_uk/polychat-library-chat/composer-commands";
 import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 

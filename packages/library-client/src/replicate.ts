@@ -1,0 +1,139 @@
+import type {
+  ReplicateModel,
+  ReplicatePrediction,
+  ExecuteReplicateRequest,
+  ReplicateExecuteResponse,
+  ReplicateModelsResponse,
+  ReplicatePredictionResponse,
+  ReplicatePredictionsResponse,
+} from "@ngriffin_uk/polychat-schemas";
+
+import { apiService } from "./api-service";
+import { fetchApi } from "./fetch-wrapper";
+import { returnFetchedData } from "./http";
+import { withProjectScope } from "./project-scope";
+
+export const fetchReplicateModels = async (projectId?: string): Promise<ReplicateModel[]> => {
+  try {
+    let headers = {};
+
+    try {
+      headers = await apiService.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers:", error);
+    }
+
+    const response = await fetchApi(withProjectScope("/apps/replicate/models", projectId), {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Replicate models: ${response.statusText}`);
+    }
+
+    const data = await returnFetchedData<ReplicateModelsResponse>(response);
+
+    return data.models || [];
+  } catch (error) {
+    console.error("Error fetching Replicate models:", error);
+    throw error;
+  }
+};
+
+export const executeReplicateModel = async (
+  request: ExecuteReplicateRequest,
+  projectId?: string,
+): Promise<ReplicatePrediction> => {
+  try {
+    const headers = await apiService.getHeaders();
+
+    const response = await fetchApi(withProjectScope("/apps/replicate/execute", projectId), {
+      method: "POST",
+      headers: {
+        ...headers,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const errorData = await returnFetchedData<{ error?: string }>(response);
+
+      throw new Error(
+        errorData?.error || `Failed to execute Replicate model: ${response.statusText}`,
+      );
+    }
+
+    const data = await returnFetchedData<ReplicateExecuteResponse>(response);
+
+    return data.response.data;
+  } catch (error) {
+    console.error("Error executing Replicate model:", error);
+    throw error;
+  }
+};
+
+export const fetchReplicatePredictions = async (
+  projectId?: string,
+): Promise<ReplicatePrediction[]> => {
+  try {
+    let headers = {};
+
+    try {
+      headers = await apiService.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers:", error);
+    }
+
+    const response = await fetchApi(withProjectScope("/apps/replicate/predictions", projectId), {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch predictions: ${response.statusText}`);
+    }
+
+    const data = await returnFetchedData<ReplicatePredictionsResponse>(response);
+
+    return data.predictions || [];
+  } catch (error) {
+    console.error("Error fetching predictions:", error);
+    throw error;
+  }
+};
+
+export const fetchReplicatePrediction = async (
+  predictionId: string,
+  projectId?: string,
+): Promise<ReplicatePrediction> => {
+  try {
+    let headers = {};
+
+    try {
+      headers = await apiService.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers:", error);
+    }
+
+    const response = await fetchApi(
+      withProjectScope(`/apps/replicate/predictions/${predictionId}`, projectId),
+      {
+        method: "GET",
+        headers,
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch prediction: ${response.statusText}`);
+    }
+
+    const data = await returnFetchedData<ReplicatePredictionResponse>(response);
+
+    return data.prediction;
+  } catch (error) {
+    console.error(`Error fetching prediction ${predictionId}:`, error);
+    throw error;
+  }
+};

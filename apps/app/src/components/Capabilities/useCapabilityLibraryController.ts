@@ -1,5 +1,5 @@
 import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilities";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   isRecipeConfigured,
   type ModelToolConfiguration,

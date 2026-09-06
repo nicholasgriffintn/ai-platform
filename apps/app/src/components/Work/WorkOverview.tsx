@@ -4,7 +4,7 @@ import {
   WorkAccessEmptyState,
   WorkspaceCardGrid,
 } from "@ngriffin_uk/polychat-component-workspaces";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useState } from "react";
 

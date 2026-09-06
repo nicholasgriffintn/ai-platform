@@ -1,5 +1,5 @@
 import { SearchDialog as ControlledSearchDialog } from "@ngriffin_uk/polychat-component-navigation";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 

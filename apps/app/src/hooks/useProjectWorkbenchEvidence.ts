@@ -1,8 +1,6 @@
+import { boundTextToBytes, getOutputArtifactContent } from "@ngriffin_uk/polychat-library-client";
 import type { SandboxRunData } from "@ngriffin_uk/polychat-schemas";
 import { useQuery } from "@tanstack/react-query";
-
-import { boundTextToBytes } from "~/lib/api/bounded-response";
-import { getOutputArtifactContent } from "~/lib/api/outputs";
 
 const MAX_DIFF_PREVIEW_BYTES = 1_000_000;
 

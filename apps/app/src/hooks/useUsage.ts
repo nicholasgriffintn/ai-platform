@@ -1,11 +1,11 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-
 import {
   getUsageBalance,
   getUsageSummary,
   listUsageEvents,
   getWorkspaceUsageSummary,
-} from "~/lib/api/usage";
+} from "@ngriffin_uk/polychat-library-client";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+
 import { getNextUsageEventsPageParam } from "~/lib/usage-ledger";
 
 export const USAGE_QUERY_KEYS = {

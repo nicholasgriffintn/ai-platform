@@ -1,7 +1,6 @@
+import { fetchRealtimeLiveProviders } from "@ngriffin_uk/polychat-library-client";
 import { createRealtimeLiveProviderOptions } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import { useQuery } from "@tanstack/react-query";
-
-import { fetchRealtimeLiveProviders } from "~/lib/api/realtime-service";
 
 export const REALTIME_PROVIDERS_QUERY_KEY = ["realtime", "providers"] as const;
 

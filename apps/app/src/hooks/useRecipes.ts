@@ -1,3 +1,11 @@
+import {
+  deleteRecipeInstallation,
+  installAssistantRecipe,
+  invokeAssistantRecipe,
+  listAssistantRecipes,
+  listRecipeInstallations,
+  updateRecipeInstallation,
+} from "@ngriffin_uk/polychat-library-client";
 import type {
   RecipeConfiguration,
   RecipeInstallation,
@@ -6,15 +14,6 @@ import type {
   RecipeInstallationUpdateRequest,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import {
-  deleteRecipeInstallation,
-  installAssistantRecipe,
-  invokeAssistantRecipe,
-  listAssistantRecipes,
-  listRecipeInstallations,
-  updateRecipeInstallation,
-} from "~/lib/api/recipes";
 
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 

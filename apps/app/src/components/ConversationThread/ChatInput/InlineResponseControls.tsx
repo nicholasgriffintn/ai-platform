@@ -5,7 +5,7 @@ import {
   getDefaultVerbosity,
   getVerbosityOptions,
 } from "@ngriffin_uk/polychat-library-chat/verbosity";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   EMPTY_MODEL_CONFIG,
   formatReasoningLabel,

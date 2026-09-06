@@ -1,6 +1,6 @@
 import { ArtifactPanel } from "@ngriffin_uk/polychat-component-content";
 import { ButtonLink, LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
-import { ApiError } from "@ngriffin_uk/polychat-library-client";
+import { ApiError, fetchSharedConversationHistory } from "@ngriffin_uk/polychat-library-client";
 import { PlusCircle } from "lucide-react";
 
 import "~/styles/scrollbar.css";
@@ -13,7 +13,6 @@ import { MessageList } from "~/components/ConversationThread/MessageList";
 import { PageShell } from "~/components/Core/PageShell";
 import { useArtifactPanel } from "~/hooks/useArtifactPanel";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
-import { fetchSharedConversationHistory } from "~/lib/api/shared-conversation";
 import type { Message } from "~/types";
 
 export function meta({ params }: { params: { share_id: string } }) {

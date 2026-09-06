@@ -27,7 +27,7 @@ addRoute(app, "get", "/balance", {
   handler: ({ query, serviceContext, user, anonymousUser }) =>
     getUsageBalance(
       serviceContext,
-      user?.id ? userCreditActor(user.id) : anonymousCreditActor(anonymousUser?.id as string),
+      user?.id ? userCreditActor(user.id) : anonymousCreditActor(anonymousUser?.id),
       query.period,
     ),
 });

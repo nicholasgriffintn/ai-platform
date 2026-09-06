@@ -25,7 +25,11 @@ import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
 import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
-import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
+import {
+  resolveConnectorOperationApproval,
+  useChatStore,
+  useStreamActivityStore,
+} from "@ngriffin_uk/polychat-library-client";
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
@@ -52,7 +56,6 @@ import { useModels } from "~/hooks/useModels";
 import { usePetNudgeSources } from "~/hooks/usePetNudgeSources";
 import { usePetFollowEnabled } from "~/hooks/usePetTravel";
 import { useRemoteConversationActivity } from "~/hooks/useRemoteConversationActivity";
-import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
 import type { ChatSuggestion } from "~/lib/chat-suggestions";
 import { isModelSubmissionBlocked } from "~/lib/chat/model-readiness";
 import { getErrorMessage } from "~/lib/errors";

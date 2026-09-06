@@ -2,11 +2,14 @@ import type {
   ProjectWorkbenchPreviewDisplayState,
   ProjectWorkbenchServiceItem,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  createSandboxPreview,
+  fetchSandboxPreview,
+  revokeSandboxPreview,
+} from "@ngriffin_uk/polychat-library-client";
 import type { SandboxPreviewAccess } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-
-import { createSandboxPreview, fetchSandboxPreview, revokeSandboxPreview } from "~/lib/api/sandbox";
 
 const ACTIVE_REFRESH_MS = 2_000;
 

@@ -1,6 +1,6 @@
+import { getAnalyticsConfig } from "@ngriffin_uk/polychat-library-client";
 import { useEffect, useState } from "react";
 
-import { getAnalyticsConfig } from "~/constants";
 import type { ClientPostHog } from "~/lib/analytics/client";
 
 let postHogClientPromise: Promise<ClientPostHog | null> | null = null;

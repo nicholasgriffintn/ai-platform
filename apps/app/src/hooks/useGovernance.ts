@@ -1,10 +1,3 @@
-import type {
-  CreateTemplateInput,
-  ProjectDetail,
-  WorkspaceRole,
-} from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   createTemplate,
   deleteTemplate,
@@ -17,7 +10,13 @@ import {
   removeWorkspaceMember,
   transferWorkspaceOwnership,
   updateWorkspaceMember,
-} from "~/lib/api/governance";
+} from "@ngriffin_uk/polychat-library-client";
+import type {
+  CreateTemplateInput,
+  ProjectDetail,
+  WorkspaceRole,
+} from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { projectQueryKey, workspaceQueryKey, WORKSPACES_QUERY_KEY } from "./useWorkspaces";
 

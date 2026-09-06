@@ -1,9 +1,9 @@
 import { Button, Card, Switch } from "@ngriffin_uk/polychat-component-ui";
+import { getNotificationInstallationId } from "@ngriffin_uk/polychat-library-client";
 import type { TaskNotificationCategory } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 
 import { useTaskNotifications } from "~/hooks/useTaskNotifications";
-import { getNotificationInstallationId } from "~/lib/notifications/installation";
 
 const CATEGORY_LABELS: Record<TaskNotificationCategory, string> = {
   decisions: "Decisions and approvals",

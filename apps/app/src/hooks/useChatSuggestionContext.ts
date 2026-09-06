@@ -1,5 +1,5 @@
 import type { ComposerCommandAction } from "@ngriffin_uk/polychat-component-conversation";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 

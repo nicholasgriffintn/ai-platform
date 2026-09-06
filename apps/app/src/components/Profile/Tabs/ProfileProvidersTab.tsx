@@ -14,6 +14,7 @@ import {
   ConfirmationDialog,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { ProviderSetting } from "@ngriffin_uk/polychat-library-client";
 import { formatProviderLabel, recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 import type { RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,7 +33,6 @@ import {
 } from "~/hooks/useConnectors";
 import { useConnectorSetup } from "~/hooks/useConnectorSetup";
 import { useUser } from "~/hooks/useUser";
-import type { ProviderSetting } from "~/lib/api/services/user-service";
 import { completeConnectorAuthPopup } from "~/lib/connector-auth-popup";
 
 import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel";

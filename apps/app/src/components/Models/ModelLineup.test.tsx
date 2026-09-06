@@ -29,7 +29,7 @@ const catalogue: ModelConfig = {
   },
 };
 
-vi.mock("@ngriffin_uk/polychat-library-react", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   useChatStore: (selector: (value: { isAuthenticated: boolean }) => unknown) =>
     selector({ isAuthenticated: state.isAuthenticated }),
 }));

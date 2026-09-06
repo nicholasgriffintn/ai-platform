@@ -1,11 +1,10 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useToolsStore, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { AssistantActionResult } from "@ngriffin_uk/polychat-schemas";
 import { toast } from "sonner";
 
 import { useStartRecipeConnector } from "~/hooks/useConnectors";
 import { useInstallAssistantRecipe, useInvokeAssistantRecipe } from "~/hooks/useRecipes";
 import { launchAssistantAction } from "~/lib/assistant-action-flow";
-import { useToolsStore } from "~/state/stores/toolsStore";
 
 interface UseAssistantActionSubmitOptions {
   projectId?: string;

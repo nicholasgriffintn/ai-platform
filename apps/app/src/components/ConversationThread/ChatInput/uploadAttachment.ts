@@ -1,8 +1,7 @@
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
+import { apiService } from "@ngriffin_uk/polychat-library-client";
+import type { UploadFileOptions } from "@ngriffin_uk/polychat-library-client";
 import type { MarkdownConversionOptions } from "@ngriffin_uk/polychat-schemas";
-
-import { apiService } from "~/lib/api/api-service";
-import type { UploadFileOptions } from "~/lib/api/services/upload-service";
 
 const SUPPORTED_MARKDOWN_IMAGE_LANGUAGES = [
   "en",

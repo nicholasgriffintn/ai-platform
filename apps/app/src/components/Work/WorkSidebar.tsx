@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-component-navigation";
 import { ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
-import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 

@@ -1,3 +1,4 @@
+import { CHATS_QUERY_KEY } from "@ngriffin_uk/polychat-library-client";
 import {
   updateConversationInChatCaches,
   upsertConversationInChatCaches,
@@ -6,7 +7,6 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it } from "vitest";
 
-import { CHATS_QUERY_KEY } from "~/constants";
 import type { Conversation, ConversationListPage } from "~/types";
 
 function conversation(id: string, title: string): Conversation {

@@ -17,7 +17,7 @@ import {
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   evaluateModelContinuity,
   getModelInteractionCapabilities,

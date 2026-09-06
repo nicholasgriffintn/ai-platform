@@ -4,7 +4,7 @@ import type {
   Message,
 } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { filterConversationsByListOptions } from "@ngriffin_uk/polychat-library-chat/conversations";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { IDBPDatabase } from "idb";
 
 import { getDatabase, isIndexedDBSupported, storeName } from "~/hooks/useIndexedDB";

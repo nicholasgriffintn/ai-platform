@@ -1,4 +1,4 @@
-import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
   getModelInteractionCapabilities,
   type SandboxTaskType,

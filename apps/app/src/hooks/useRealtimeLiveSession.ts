@@ -1,3 +1,4 @@
+import { createRealtimeSession } from "@ngriffin_uk/polychat-library-client";
 import {
   connectRealtimeWebRTC,
   isRealtimeWebSocketConnection,
@@ -53,7 +54,6 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { createRealtimeSession } from "~/lib/api/realtime-service";
 import { getErrorMessage } from "~/lib/errors";
 import {
   createRealtimeSessionController,

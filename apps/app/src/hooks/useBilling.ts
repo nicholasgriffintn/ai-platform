@@ -1,8 +1,12 @@
+import {
+  apiService,
+  createBillingPortalSession,
+  listPlans,
+  setOverageEnabled,
+} from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { USAGE_QUERY_KEYS } from "~/hooks/useUsage";
-import { apiService } from "~/lib/api/api-service";
-import { createBillingPortalSession, listPlans, setOverageEnabled } from "~/lib/api/usage";
 
 const PORTAL_AVAILABILITY_KEY = ["stripe", "portal-available"] as const;
 const OVERAGE_AVAILABILITY_KEY = ["stripe", "overage-available"] as const;

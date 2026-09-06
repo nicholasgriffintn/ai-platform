@@ -1,14 +1,14 @@
-import type { SkillAvailabilityResponse } from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { capabilityCatalogQueryKey } from "~/hooks/useCapabilityCatalog";
-import { projectQueryKey } from "~/hooks/useWorkspaces";
 import {
   createSkill,
   deleteSkill,
   fetchPersonalSkills,
   setPersonalSkillEnabled,
-} from "~/lib/api/skills";
+} from "@ngriffin_uk/polychat-library-client";
+import type { SkillAvailabilityResponse } from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { capabilityCatalogQueryKey } from "~/hooks/useCapabilityCatalog";
+import { projectQueryKey } from "~/hooks/useWorkspaces";
 
 export const PERSONAL_SKILLS_QUERY_KEY = ["personalSkills"];
 

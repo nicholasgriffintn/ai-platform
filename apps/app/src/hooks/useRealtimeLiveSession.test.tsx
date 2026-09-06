@@ -40,7 +40,7 @@ const mocks = vi.hoisted(() => ({
   }>,
 }));
 
-vi.mock("~/lib/api/realtime-service", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   createRealtimeSession: mocks.createRealtimeSession,
 }));
 

@@ -1,3 +1,4 @@
+import { taskService } from "@ngriffin_uk/polychat-library-client";
 import type {
   CreateTaskResponse,
   GetMemorySynthesisResponse,
@@ -5,8 +6,6 @@ import type {
   TriggerMemorySynthesisRequest,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { taskService } from "~/lib/api/task-service";
 
 export const TASK_QUERY_KEYS = {
   tasks: ["tasks"],

@@ -1,4 +1,11 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import {
+  getTaskNotificationSettings,
+  registerTaskNotifications,
+  removeTaskNotificationRegistration,
+  updateTaskNotificationSettings,
+  getNotificationInstallationId,
+  useChatStore,
+} from "@ngriffin_uk/polychat-library-client";
 import type {
   TaskNotificationCategory,
   UpdateTaskNotificationPreferences,
@@ -6,13 +13,6 @@ import type {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import {
-  getTaskNotificationSettings,
-  registerTaskNotifications,
-  removeTaskNotificationRegistration,
-  updateTaskNotificationSettings,
-} from "~/lib/api/task-notifications";
-import { getNotificationInstallationId } from "~/lib/notifications/installation";
 import { decodeWebPushPublicKey, notificationPermission } from "~/lib/notifications/web-push";
 
 export const TASK_NOTIFICATION_SETTINGS_QUERY_KEY = ["task-notification-settings"] as const;

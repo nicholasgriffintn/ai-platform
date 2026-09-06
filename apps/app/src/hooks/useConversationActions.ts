@@ -3,14 +3,12 @@ import {
   createConversationThread,
   getThreadPoint,
 } from "@ngriffin_uk/polychat-library-chat/threading";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { CHATS_QUERY_KEY, apiService, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { CHATS_QUERY_KEY } from "~/constants";
-import { apiService } from "~/lib/api/api-service";
 import { getComposerDraftAfterRetry } from "~/lib/chat/retry-composer";
 import { useComposerDraft } from "~/state/composer-draft";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";

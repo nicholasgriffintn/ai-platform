@@ -1,6 +1,5 @@
+import { listActivity } from "@ngriffin_uk/polychat-library-client";
 import { useInfiniteQuery } from "@tanstack/react-query";
-
-import { listActivity } from "~/lib/api/activity";
 
 export function useActivity(projectId?: string) {
   const query = useInfiniteQuery({

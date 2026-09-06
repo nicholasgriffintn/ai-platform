@@ -1,19 +1,3 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
-import type {
-  AddProjectCapabilityInput,
-  CreateProjectInput,
-  CreateWorkspaceInput,
-  CreateWorkspaceInvitationInput,
-  ProjectDetail,
-  ProjectSummary,
-  SandboxEnvironmentCacheAction,
-  UpdateProjectInput,
-  UpdateWorkspaceInput,
-  WorkspaceDetail,
-  WorkspaceSummary,
-} from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
-
 import {
   acceptWorkspaceInvitation,
   addProjectCapability,
@@ -30,7 +14,23 @@ import {
   updateProject,
   updateProjectEnvironmentCache,
   updateWorkspace,
-} from "~/lib/api/workspaces";
+  useChatStore,
+} from "@ngriffin_uk/polychat-library-client";
+import type {
+  AddProjectCapabilityInput,
+  CreateProjectInput,
+  CreateWorkspaceInput,
+  CreateWorkspaceInvitationInput,
+  ProjectDetail,
+  ProjectSummary,
+  SandboxEnvironmentCacheAction,
+  UpdateProjectInput,
+  UpdateWorkspaceInput,
+  WorkspaceDetail,
+  WorkspaceSummary,
+} from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+
 import { requireProjectRouteScope } from "~/lib/work/project-route-scope";
 
 export const WORKSPACES_QUERY_KEY = ["workspaces"] as const;

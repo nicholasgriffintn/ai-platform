@@ -27,7 +27,7 @@ vi.mock("./useSkills", () => ({
   usePersonalSkills: () => ({ query: { data: undefined } }),
 }));
 
-vi.mock("@ngriffin_uk/polychat-library-react", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   useChatStore: (selector: (state: Record<string, boolean>) => unknown) =>
     selector({ isAuthenticated: true, isAuthenticationLoading: false }),
 }));

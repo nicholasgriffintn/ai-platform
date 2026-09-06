@@ -1,3 +1,4 @@
+import { strudelService } from "@ngriffin_uk/polychat-library-client";
 import type {
   GenerateStrudelRequest,
   GenerateStrudelResponse,
@@ -6,8 +7,6 @@ import type {
   UpdateStrudelPatternInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { strudelService } from "~/lib/api/services/strudel-service";
 
 export const STRUDEL_QUERY_KEYS = {
   root: ["strudel"] as const,

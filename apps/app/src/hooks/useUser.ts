@@ -1,6 +1,5 @@
+import { apiService } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { apiService } from "~/lib/api/api-service";
 
 import { MODELS_QUERY_KEY } from "./useModels";
 import { REALTIME_PROVIDERS_QUERY_KEY } from "./useRealtimeProviders";

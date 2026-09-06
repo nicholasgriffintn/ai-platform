@@ -1,4 +1,5 @@
 import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
+import { apiService } from "@ngriffin_uk/polychat-library-client";
 import type { GoalStatus } from "@ngriffin_uk/polychat-schemas";
 import { goalStatusLabels } from "@ngriffin_uk/polychat-schemas/goals";
 import { useQueryClient } from "@tanstack/react-query";
@@ -6,7 +7,6 @@ import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
 import { useGoal, GOAL_QUERY_KEY } from "~/hooks/useGoal";
-import { apiService } from "~/lib/api/api-service";
 import { getErrorMessage } from "~/lib/errors";
 
 export interface GoalView {

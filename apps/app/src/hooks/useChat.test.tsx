@@ -1,14 +1,14 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { apiService, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 
-import { apiService } from "~/lib/api/api-service";
 import { localChatService } from "~/lib/local/local-chat-service";
 
 import { useChat } from "./useChat";
 
-vi.mock("~/lib/api/api-service", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-client")>()),
   apiService: { getChat: vi.fn() },
 }));
 

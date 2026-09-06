@@ -1,6 +1,8 @@
+import {
+  fetchCapabilityCatalog,
+  fetchPublicCapabilityCatalogue,
+} from "@ngriffin_uk/polychat-library-client";
 import { useQuery } from "@tanstack/react-query";
-
-import { fetchCapabilityCatalog, fetchPublicCapabilityCatalogue } from "~/lib/api/capabilities";
 
 export const CAPABILITY_CATALOG_QUERY_KEY = ["capabilityCatalog"] as const;
 

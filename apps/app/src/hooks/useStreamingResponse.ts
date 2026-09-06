@@ -5,7 +5,12 @@ import {
   normalizeMessage,
 } from "@ngriffin_uk/polychat-library-chat/messages";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
-import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
+import {
+  CHATS_QUERY_KEY,
+  apiService,
+  useChatStore,
+  useStreamActivityStore,
+} from "@ngriffin_uk/polychat-library-client";
 import { updateConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import {
   chatRunCommandReceiptSchema,
@@ -20,10 +25,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import { toast } from "sonner";
 
-import { CHATS_QUERY_KEY } from "~/constants";
 import { GOAL_QUERY_KEY } from "~/hooks/useGoal";
 import { USAGE_QUERY_KEYS } from "~/hooks/useUsage";
-import { apiService } from "~/lib/api/api-service";
 import { resolveAcceptedRunCommand } from "~/lib/chat/run-command";
 import { createStreamProgressCoalescer } from "~/lib/chat/stream-progress-coalescer";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";

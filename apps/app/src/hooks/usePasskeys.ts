@@ -3,12 +3,13 @@ import {
   createBrowserAuthTransport,
   isWebAuthnSupported,
 } from "@ngriffin_uk/auth-react";
-import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import {
+  returnFetchedData,
+  API_BASE_URL,
+  authService,
+  fetchApi,
+} from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-
-import { API_BASE_URL } from "~/constants";
-import { authService } from "~/lib/api/auth-service";
-import { fetchApi } from "~/lib/api/fetch-wrapper";
 
 interface Passkey {
   id: number;

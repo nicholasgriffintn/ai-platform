@@ -1,5 +1,6 @@
+import { getBeaconConfig } from "@ngriffin_uk/polychat-library-client";
+
 import { Analytics } from "~/components/Core/Analytics";
-import { getBeaconConfig } from "~/constants";
 
 const beaconConfig = getBeaconConfig();
 

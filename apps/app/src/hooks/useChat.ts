@@ -3,8 +3,13 @@ import {
   isLocallyCreatedConversation,
   preserveOptimisticMessages,
 } from "@ngriffin_uk/polychat-library-chat/conversations";
-import { ApiError } from "@ngriffin_uk/polychat-library-client";
-import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
+import {
+  ApiError,
+  CHATS_QUERY_KEY,
+  apiService,
+  useChatStore,
+  useStreamActivityStore,
+} from "@ngriffin_uk/polychat-library-client";
 import {
   removeConversationFromChatCaches,
   updateConversationInChatCaches,
@@ -12,8 +17,6 @@ import {
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { CHATS_QUERY_KEY } from "~/constants";
-import { apiService } from "~/lib/api/api-service";
 import { getConversationRefetchInterval } from "~/lib/chat/conversation-polling";
 import { recoverUnacknowledgedConversation } from "~/lib/chat/pending-conversation";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";

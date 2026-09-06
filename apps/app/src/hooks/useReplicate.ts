@@ -1,12 +1,11 @@
-import type { ExecuteReplicateRequest } from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   fetchReplicateModels,
   executeReplicateModel,
   fetchReplicatePredictions,
   fetchReplicatePrediction,
-} from "~/lib/api/replicate";
+} from "@ngriffin_uk/polychat-library-client";
+import type { ExecuteReplicateRequest } from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const REPLICATE_QUERY_KEY = "replicate";
 const REPLICATE_MODELS_STALE_TIME = 30 * 60 * 1000;

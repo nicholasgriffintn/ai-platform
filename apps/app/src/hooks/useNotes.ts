@@ -1,6 +1,3 @@
-import type { Note, NoteCreateRequest, NoteUpdateRequest } from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   createNote,
   deleteNote,
@@ -9,7 +6,9 @@ import {
   formatNoteAPI,
   updateNote,
   generateNotesFromMedia,
-} from "~/lib/api/apps";
+} from "@ngriffin_uk/polychat-library-client";
+import type { Note, NoteCreateRequest, NoteUpdateRequest } from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useFetchNotes = (projectId?: string, options?: { enabled?: boolean }) => {
   return useQuery<Note[]>({

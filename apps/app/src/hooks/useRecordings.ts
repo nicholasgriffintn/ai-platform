@@ -1,7 +1,11 @@
+import {
+  fetchRecording,
+  fetchRecordings,
+  processRecording,
+  uploadRecording,
+} from "@ngriffin_uk/polychat-library-client";
 import type { Recording, RecordingListItem } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { fetchRecording, fetchRecordings, processRecording, uploadRecording } from "~/lib/api/apps";
 
 export const useFetchRecordings = (projectId?: string, options?: { enabled?: boolean }) => {
   return useQuery<RecordingListItem[]>({

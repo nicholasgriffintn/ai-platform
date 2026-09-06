@@ -1,10 +1,9 @@
 import { resolveConversationStorageMode } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { CHATS_QUERY_KEY, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { upsertConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
-import { CHATS_QUERY_KEY } from "~/constants";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { localChatService } from "~/lib/local/local-chat-service";
 import type { ChatRequestOptions, Conversation } from "~/types";

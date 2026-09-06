@@ -1,8 +1,6 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { listWorkAttention, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { WorkAttentionQuery } from "@ngriffin_uk/polychat-schemas";
 import { useQuery } from "@tanstack/react-query";
-
-import { listWorkAttention } from "~/lib/api/attention";
 
 export function useWorkAttention(query: WorkAttentionQuery) {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);

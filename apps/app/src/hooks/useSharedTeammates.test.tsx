@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
   unshareTeammate: vi.fn(),
 }));
 
-vi.mock("~/lib/api/api-service", () => ({ apiService: mocks }));
+vi.mock("@ngriffin_uk/polychat-library-client", () => ({ apiService: mocks }));
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 

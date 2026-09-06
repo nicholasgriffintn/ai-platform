@@ -9,7 +9,7 @@ import {
   SidebarNavSection,
 } from "@ngriffin_uk/polychat-component-navigation";
 import { Button, ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
-import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import { Image as ImageIcon, Loader2, MessageCircle, Search, SquarePen } from "lucide-react";
 import { useCallback, useState } from "react";

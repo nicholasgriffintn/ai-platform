@@ -1,5 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   createOutputShare,
   describeOutputDocument,
@@ -11,7 +9,8 @@ import {
   revokeOutputShare,
   restoreOutputRevision,
   updateOutput,
-} from "~/lib/api/outputs";
+} from "@ngriffin_uk/polychat-library-client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const OUTPUT_QUERY_KEYS = {
   all: ["outputs"] as const,

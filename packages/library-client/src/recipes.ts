@@ -1,0 +1,163 @@
+import type {
+  AssistantRecipe,
+  AssistantRecipeInstallResponse,
+  AssistantRecipesResponse,
+  RecipeConfiguration,
+  RecipeInvocationResponse,
+  RecipeInstallation,
+  RecipeInstallationTrigger,
+  RecipeInstallationUpdateRequest,
+  RecipeInstallationsResponse,
+} from "@ngriffin_uk/polychat-schemas";
+
+import { apiService } from "./api-service";
+import { fetchApi, fetchApiOrThrow } from "./fetch-wrapper";
+import { returnFetchedData } from "./http";
+
+export async function listAssistantRecipes(): Promise<AssistantRecipesResponse> {
+  let headers = {};
+
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error preparing recipe headers:", error);
+  }
+
+  const response = await fetchApi("/apps/recipes", { method: "GET", headers });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch assistant recipes");
+  }
+
+  return returnFetchedData<AssistantRecipesResponse>(response);
+}
+
+export async function getAssistantRecipe(recipeId: string): Promise<AssistantRecipe> {
+  let headers = {};
+
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error preparing recipe headers:", error);
+  }
+
+  const response = await fetchApi(`/apps/recipes/${recipeId}`, { method: "GET", headers });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch assistant recipe");
+  }
+
+  return returnFetchedData<AssistantRecipe>(response);
+}
+
+export async function installAssistantRecipe(
+  recipeId: string,
+  triggers?: RecipeInstallationTrigger[],
+  configuration?: RecipeConfiguration,
+  projectId?: string,
+): Promise<AssistantRecipeInstallResponse> {
+  let headers = {};
+
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error preparing recipe install headers:", error);
+  }
+
+  const response = await fetchApiOrThrow(`/apps/recipes/${recipeId}/install`, {
+    method: "POST",
+    headers,
+    body: { channel: "web", triggers, configuration, projectId },
+  });
+
+  return returnFetchedData<AssistantRecipeInstallResponse>(response);
+}
+
+export async function invokeAssistantRecipe(
+  recipeId: string,
+  input?: string,
+  projectId?: string,
+): Promise<RecipeInvocationResponse> {
+  let headers = {};
+
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error preparing recipe invocation headers:", error);
+  }
+
+  const response = await fetchApiOrThrow(`/apps/recipes/${recipeId}/invoke`, {
+    method: "POST",
+    headers,
+    body: { channel: "web", input, projectId },
+  });
+
+  return returnFetchedData<RecipeInvocationResponse>(response);
+}
+
+export async function listRecipeInstallations(
+  projectId?: string,
+): Promise<RecipeInstallationsResponse> {
+  let headers = {};
+
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error preparing recipe installation headers:", error);
+  }
+
+  const path = projectId
+    ? `/apps/recipes/installations?projectId=${encodeURIComponent(projectId)}`
+    : "/apps/recipes/installations";
+  const response = await fetchApi(path, { method: "GET", headers });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch installed assistant recipes");
+  }
+
+  return returnFetchedData<RecipeInstallationsResponse>(response);
+}
+
+export async function updateRecipeInstallation(
+  installationId: string,
+  update: RecipeInstallationUpdateRequest,
+): Promise<RecipeInstallation> {
+  let headers = {};
+
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error preparing recipe installation update headers:", error);
+  }
+
+  const response = await fetchApi(`/apps/recipes/installations/${installationId}`, {
+    method: "PUT",
+    headers,
+    body: update,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update installed assistant recipe");
+  }
+
+  return returnFetchedData<RecipeInstallation>(response);
+}
+
+export async function deleteRecipeInstallation(installationId: string): Promise<void> {
+  let headers = {};
+
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error preparing recipe installation delete headers:", error);
+  }
+
+  const response = await fetchApi(`/apps/recipes/installations/${installationId}`, {
+    method: "DELETE",
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete installed assistant recipe");
+  }
+}

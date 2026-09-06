@@ -1,8 +1,8 @@
 import { ChatMessageView } from "@ngriffin_uk/polychat-component-conversation";
+import { apiService } from "@ngriffin_uk/polychat-library-client";
 import type { ComponentProps } from "react";
 
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
-import { apiService } from "~/lib/api/api-service";
 
 import { InlineModelSelector } from "../InlineModelSelector";
 

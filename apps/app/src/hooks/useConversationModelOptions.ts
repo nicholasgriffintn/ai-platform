@@ -1,4 +1,4 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   doesModelMatchId,
   EMPTY_MODEL_CONFIG,

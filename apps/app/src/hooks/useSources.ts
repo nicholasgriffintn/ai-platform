@@ -1,10 +1,3 @@
-import type {
-  CreateSourceCollectionInput,
-  CreateSourceInput,
-  SourceKind,
-} from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   addCollectionSources,
   createSource,
@@ -16,7 +9,13 @@ import {
   listSources,
   listProjectContextSources,
   setProjectContextSources,
-} from "~/lib/api/sources";
+} from "@ngriffin_uk/polychat-library-client";
+import type {
+  CreateSourceCollectionInput,
+  CreateSourceInput,
+  SourceKind,
+} from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const SOURCE_QUERY_KEYS = {
   all: ["sources"] as const,

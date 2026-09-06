@@ -5,7 +5,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@ngriffin_uk/polychat-component-ui";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { CHATS_QUERY_KEY, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Feather, SquarePen } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
@@ -13,7 +13,6 @@ import { useLocation, useNavigate } from "react-router";
 
 import { ConversationThread } from "~/components/ConversationThread";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { CHATS_QUERY_KEY } from "~/constants";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChat } from "~/hooks/useChat";
 import type { ChatSuggestion } from "~/lib/chat-suggestions";

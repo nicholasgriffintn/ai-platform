@@ -1,8 +1,8 @@
 import { isModelToolId } from "@ngriffin_uk/polychat-library-chat/model-tools";
+import { useToolsStore } from "@ngriffin_uk/polychat-library-client";
 import { readToolIds, type TeammateResponse } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useRef } from "react";
 
-import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatMode } from "~/types";
 
 type TeammateWithTools = Pick<TeammateResponse, "id" | "enabled_tools">;

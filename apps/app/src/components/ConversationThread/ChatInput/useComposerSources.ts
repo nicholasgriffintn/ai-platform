@@ -1,10 +1,9 @@
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
+import { API_BASE_URL, getSource } from "@ngriffin_uk/polychat-library-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { API_BASE_URL } from "~/constants";
 import { useSources } from "~/hooks/useSources";
-import { getSource } from "~/lib/api/sources";
 import {
   createSourceAttachment,
   type SourceAttachmentCapabilities,

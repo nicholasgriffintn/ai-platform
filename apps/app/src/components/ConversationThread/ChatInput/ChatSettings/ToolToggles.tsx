@@ -1,6 +1,6 @@
 import { ToolToggleMenu } from "@ngriffin_uk/polychat-component-conversation";
 import type { ModelToolId } from "@ngriffin_uk/polychat-library-chat/model-tools";
-import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { useToolsStore, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   Code,
   Database,
@@ -15,7 +15,6 @@ import {
 
 import { useModels } from "~/hooks/useModels";
 import { useModelToolOptions } from "~/hooks/useModelTools";
-import { useToolsStore } from "~/state/stores/toolsStore";
 
 interface ToolTogglesProps {
   isDisabled?: boolean;
