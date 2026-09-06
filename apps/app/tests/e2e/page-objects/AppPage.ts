@@ -104,8 +104,12 @@ export class AppPage extends BasePage {
   async selectTheme(
     theme: "System" | "Light" | "Paper" | "Dawn" | "Dark" | "Blue" | "Fern" | "Plum",
   ) {
-    await this.page.getByRole("button", { name: /^Theme / }).click();
+    await this.openThemeOptions();
     await this.page.getByRole("menuitemradio", { name: theme, exact: true }).click();
+  }
+
+  async openThemeOptions() {
+    await this.page.getByRole("button", { name: /^Theme / }).click();
   }
 
   async openKeyboardShortcuts() {

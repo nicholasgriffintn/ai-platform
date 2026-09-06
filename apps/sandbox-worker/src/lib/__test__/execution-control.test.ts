@@ -38,6 +38,35 @@ describe("execution control", () => {
     ).rejects.toBeInstanceOf(SandboxTimeoutError);
   });
 
+  it.each([401, 403, 503])(
+    "stops execution when control authority cannot be read (%i)",
+    async (status) => {
+      const fetch = vi
+        .fn<Fetcher["fetch"]>()
+        .mockResolvedValue(new Response("Unavailable", { status }));
+      const control = createExecutionControl({
+        runId: "run-1",
+        userToken: "token",
+        apiService: { fetch },
+      });
+
+      await expect(control.checkpoint("Cancelled")).rejects.toThrow(
+        `Run control request failed (${status})`,
+      );
+      const request = fetch.mock.calls[0]?.[0];
+
+      expect(request).toBeInstanceOf(Request);
+      if (!(request instanceof Request)) {
+        throw new Error("Expected an authenticated control request");
+      }
+
+      expect(request.headers.get("User-Agent")).toBe(
+        "Polychat-Sandbox-Worker/1.0 (+https://polychat.app)",
+      );
+      expect(request.headers.get("Authorization")).toBe("Bearer token");
+    },
+  );
+
   it("waits while paused and emits paused/resumed events", async () => {
     vi.useFakeTimers();
     const serviceFetchMock = vi

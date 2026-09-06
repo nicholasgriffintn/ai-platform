@@ -15,6 +15,8 @@
 - [ ] Configure duplicate ports, a dependency cycle, a directory outside the repository, an inline credential and a command requiring approval. Confirm invalid declarations cannot save or start, and the risky command waits for the initiating runner's approval.
 - [ ] Occupy the declared port before startup and confirm the run fails rather than treating the existing process as healthy. Configure a health path that never succeeds and confirm startup stops at its timeout.
 - [ ] Make a running service fail under each restart policy. Confirm `never` does not restart, `on_failure` ignores only a clean exit, `always` restarts a clean exit, and no policy exceeds three automatic attempts.
-- [ ] Cancel or complete the run with services active. Confirm every service stops in reverse dependency order and later controls conflict with the terminal run.
+- [x] Cancel or complete the run with services active. Confirm every service stops in reverse dependency order and later controls conflict with the terminal run.
 
 **Stop and report if:** a non-runner controls a service, an undeclared port becomes reachable, a process survives the run, output is unbounded or unredacted, or automatic restarts exceed the saved limit.
+
+**Automated evidence:** `features/sandbox-controls.spec.ts` passes completion and cancellation with a watcher and dependent HTTP service. Verify dependency-ordered startup, reverse-order shutdown, stopped terminal Proof and terminal mutation conflicts; repeated cancellation preserves the terminal result.

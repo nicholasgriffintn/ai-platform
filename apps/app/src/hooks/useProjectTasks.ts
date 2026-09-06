@@ -149,6 +149,7 @@ export function useProjectTasks(projectId: string) {
   });
 
   const answer = useMutation({
+    networkMode: "always",
     mutationFn: ({ taskId, input }: { taskId: string; input: AnswerUserQuestionsInput }) =>
       answerProjectTaskQuestions(projectId, taskId, input),
     onSuccess: ({ task }) => {
@@ -158,6 +159,7 @@ export function useProjectTasks(projectId: string) {
   });
 
   const approval = useMutation({
+    networkMode: "always",
     mutationFn: ({
       taskId,
       input,

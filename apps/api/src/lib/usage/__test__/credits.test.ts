@@ -1,6 +1,8 @@
 import { creditMicrosFromCredits, type UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
+import type { UsageReservationRepository } from "~/repositories/UsageReservationRepository";
+
 import { userCreditActor } from "../creditActor";
 import {
   admitTurn,
@@ -22,7 +24,9 @@ function createRepositories(
 ) {
   const applyDeltas = vi.fn(async (_params: Record<string, unknown>) => {});
   const getBalance = vi.fn(async () => options.balance ?? null);
-  const createUserReservationWithBalance = vi.fn(async () => true);
+  const createUserReservationWithBalance = vi.fn<
+    UsageReservationRepository["createUserReservationWithBalance"]
+  >(async () => true);
   const finishUserReservationWithBalance = vi.fn(async () => ({ ref_id: "run-1" }));
   const getReservation = vi.fn(async () => ({
     kind: "chat_run",
@@ -268,7 +272,7 @@ describe("admitTurn", () => {
     expect(admission.admitted).toBe(true);
     expect(createUserReservationWithBalance).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: "chat_run:run-1",
+        id: expect.any(String),
         kind: "chat_run",
         refId: "run-1",
         userId: 7,
@@ -286,7 +290,12 @@ describe("admitTurn", () => {
     await admission.reservation.release("released");
 
     expect(finishUserReservationWithBalance).toHaveBeenCalledOnce();
-    expect(finishUserReservationWithBalance).toHaveBeenCalledWith("chat_run", "run-1", "settled");
+    expect(finishUserReservationWithBalance).toHaveBeenCalledWith(
+      "chat_run",
+      "run-1",
+      "settled",
+      createUserReservationWithBalance.mock.calls[0]?.[0].id,
+    );
   });
 });
 

@@ -1,0 +1,6 @@
+{
+  "name": "polychat-e2e-sandbox",
+  "main": "../../../../sandbox-worker/src/index.ts",
+  "compatibility_date": "2026-08-08",
+  "compatibility_flags": ["nodejs_compat"],
+}

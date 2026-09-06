@@ -8,7 +8,7 @@
 
 ## Verify
 
-- [ ] Start a multi-step project task, close the initiating client immediately, and confirm the queue-owned task continues to a persisted terminal or waiting run without the request remaining open.
+- [x] Start a multi-step project task, close the initiating client immediately, and confirm the queue-owned task continues to a persisted terminal or waiting run without the request remaining open.
 - [ ] Hold one delivery beyond a queue redelivery and confirm the second delivery retries while the first owner lease is live; confirm only one project-task settlement is committed.
 - [ ] Terminate a Worker after the run reaches `running` but before a safe checkpoint. Confirm redelivery records `interrupted`, blocks the project task, and does not repeat the model/tool step automatically.
 - [ ] Terminate after the run persists `succeeded`, `awaiting_input` or `awaiting_approval` but before project-task settlement. Confirm redelivery reconciles the saved result or interaction without another model/tool invocation.
@@ -18,3 +18,7 @@
 - [ ] Confirm a personal stored Chat still reports best-effort connection recovery and a local-only Chat creates no server run, queue task or durable reservation.
 
 **Stop and report if:** two owners commit, a redelivery repeats an external write, a lost owner leaves reserved credits, an expired interaction remains clickable, or local-only content reaches server storage.
+
+## Automated local evidence — 6 September 2026
+
+Run `pnpm test:e2e apps/app/tests/e2e/features/project-tasks.spec.ts`. The queued question task continues after its initiating page closes, persists `awaiting_input` with two questions, and reopens with the same conversation and run identity. Leave lease loss, redelivery, expiry and operator checks pending.

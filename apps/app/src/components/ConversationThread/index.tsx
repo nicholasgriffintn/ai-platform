@@ -53,6 +53,7 @@ import { usePetFollowEnabled } from "~/hooks/usePetTravel";
 import { useRemoteConversationActivity } from "~/hooks/useRemoteConversationActivity";
 import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
 import type { ChatSuggestion } from "~/lib/chat-suggestions";
+import { isModelSubmissionBlocked } from "~/lib/chat/model-readiness";
 import { openExternalUrl } from "~/lib/external-navigation";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -862,6 +863,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         ) : null}
         {currentConversation?.latest_run &&
         (currentConversation.latest_run.status === "failed" ||
+          currentConversation.latest_run.status === "cancelled" ||
           currentConversation.latest_run.status === "interrupted") ? (
           <ChatRunStatusBanner run={currentConversation.latest_run} />
         ) : null}
@@ -870,6 +872,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           ref={chatInputRef}
           handleSubmit={handleSubmit}
           isLoading={isStreamLoading || isModelInitializing || isConversationLoading}
+          isSubmissionBlocked={
+            chatMode !== "local" &&
+            isModelSubmissionBlocked(model, selectedModelConfig, isModelsLoading)
+          }
           streamStarted={streamStarted}
           controller={controller}
           onStopResponse={abortStream}

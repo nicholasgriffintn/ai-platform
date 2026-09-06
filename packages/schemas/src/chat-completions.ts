@@ -197,6 +197,7 @@ export const chatMessageContentPartSchema = z
 
 export const chatCompletionMessageSchema = z
   .object({
+    id: z.string().min(1).optional().describe("Stable application message identifier."),
     role: z
       .enum(["developer", "system", "user", "assistant", "tool"])
       .describe("Message author role."),

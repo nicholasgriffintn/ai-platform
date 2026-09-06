@@ -80,6 +80,8 @@ export async function runSandboxCommand(
     onOutput?: (output: { stream: "stdout" | "stderr"; data: string }) => Promise<void> | void;
   },
 ): Promise<SandboxCommandResult> {
+  options?.abortSignal?.throwIfAborted();
+
   if (!sandbox.execStream) {
     return sandbox.exec(command);
   }
@@ -87,9 +89,7 @@ export async function runSandboxCommand(
   const stdout: string[] = [];
   const stderr: string[] = [];
   let completedResult: SandboxCommandResult | undefined;
-  const stream = await sandbox.execStream(command, {
-    signal: options?.abortSignal,
-  });
+  const stream = await sandbox.execStream(command);
 
   for await (const event of parseSSEStream<ExecEvent>(stream, options?.abortSignal)) {
     if (event.type === "stdout" && event.data) {
@@ -427,4 +427,23 @@ export function extractCommands(text: string): string[] {
   }
 
   return commands;
+}
+
+export function uniqueOutputLines(value: string): string[] {
+  return Array.from(
+    new Set(
+      value
+        .split("\n")
+        .map((entry) => entry.trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+export function resolveAbsoluteRepoTargetDir(sandboxRoot: string, repoTargetDir: string): string {
+  if (repoTargetDir.startsWith("/")) {
+    return repoTargetDir;
+  }
+
+  return `${sandboxRoot.replace(/\/+$/, "")}/${repoTargetDir.replace(/^\/+/, "")}`;
 }

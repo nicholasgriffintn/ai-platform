@@ -190,6 +190,7 @@ export async function runAgentLoop(
     store: params.requestParams.store,
   });
   const providerIO = createAgentProviderIO();
+  const callerToolNames = new Set(params.requestParams.tools?.map((tool) => tool.function.name));
   const runtimeMessages = providerIO.initialMessages(
     toProviderMessages(params.requestParams.messages),
   );
@@ -564,7 +565,10 @@ export async function runAgentLoop(
       }
 
       return {
-        toolCalls: hasToolCalls ? providerIO.agentToolCalls(turn.toolCalls) : [],
+        toolCalls:
+          hasToolCalls && !turn.toolCalls.some((tool) => callerToolNames.has(tool.function.name))
+            ? providerIO.agentToolCalls(turn.toolCalls)
+            : [],
         text: turn.content,
         assistantMessage: {
           role: "assistant",

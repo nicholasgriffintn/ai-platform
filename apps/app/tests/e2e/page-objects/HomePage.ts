@@ -184,7 +184,16 @@ export class HomePage extends BasePage {
   }
 
   async conveneCouncil() {
+    const completionResponse = this.waitForCompletionRequest();
+
     await this.clickElement(this.page.getByRole("button", { name: "Convene", exact: true }));
+    const response = await completionResponse;
+
+    if (!response.ok()) {
+      throw new Error(
+        `Council continuation failed with ${response.status()}: ${await response.text()}`,
+      );
+    }
   }
 
   async sendMessageWithSkillCommand(skillName: string, message: string) {

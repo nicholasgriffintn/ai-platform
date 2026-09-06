@@ -129,6 +129,21 @@ describe("runAgentLoop", () => {
     expect(mocks.handleToolCalls).not.toHaveBeenCalled();
   });
 
+  it("returns caller-owned tool calls without executing them or requesting another turn", async () => {
+    const { params, runTurn } = createParams([toolTurn("run_script")]);
+
+    params.requestParams.tools = [{ type: "function", function: { name: "run_script" } }];
+
+    const result = await runAgentLoop(params);
+
+    expect(result.response.tool_calls).toEqual([
+      expect.objectContaining({ function: { name: "run_script", arguments: "{}" } }),
+    ]);
+    expect(result.toolResponses).toEqual([]);
+    expect(mocks.handleToolCalls).not.toHaveBeenCalled();
+    expect(runTurn).toHaveBeenCalledTimes(1);
+  });
+
   it("stores the assistant message for every turn it runs", async () => {
     const { params } = createParams([toolTurn("get_weather"), textTurn("It is sunny.")]);
 

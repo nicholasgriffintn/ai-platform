@@ -105,6 +105,7 @@ export function useChat(
 ) {
   const {
     isAuthenticated,
+    isAuthenticationLoading,
     isPro,
     localOnlyMode,
     locallyCreatedConversationIds,
@@ -183,7 +184,7 @@ export function useChat(
         return preserveOptimisticMessages(localChat, getCachedConversation());
       }
     },
-    enabled: !!completion_id,
+    enabled: !!completion_id && !isAuthenticationLoading,
     staleTime: CHAT_DETAIL_STALE_TIME,
     gcTime: CHAT_QUERY_GC_TIME,
     refetchInterval: (currentQuery) =>

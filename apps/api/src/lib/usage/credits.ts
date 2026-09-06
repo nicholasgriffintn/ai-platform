@@ -9,6 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
+import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 import {
@@ -203,6 +204,7 @@ function createDurableTurnReservation(
   kind: "chat_run",
   refId: string,
   creditMicros: number,
+  reservationId: string,
 ): TurnReservation {
   let finished = false;
 
@@ -214,7 +216,7 @@ function createDurableTurnReservation(
       }
 
       finished = true;
-      await finishUsageReservation({ repositories, kind, refId, outcome });
+      await finishUsageReservation({ repositories, kind, refId, outcome, reservationId });
     },
   };
 }
@@ -240,8 +242,9 @@ export async function admitTurn(params: AdmitTurnParams): Promise<TurnAdmission>
 
   if (params.durableReservation) {
     const durable = params.durableReservation;
+    const reservationId = generateId();
     const created = await params.repositories.usageReservations.createUserReservationWithBalance({
-      id: `${durable.kind}:${durable.refId}`,
+      id: reservationId,
       userId: durable.userId,
       period: position.period,
       kind: durable.kind,
@@ -265,6 +268,7 @@ export async function admitTurn(params: AdmitTurnParams): Promise<TurnAdmission>
         durable.kind,
         durable.refId,
         params.estimatedCreditMicros,
+        reservationId,
       ),
     };
   }

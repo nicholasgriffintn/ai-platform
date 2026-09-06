@@ -73,7 +73,7 @@ export function ComposerShell({
           )}
           {footerOverride}
           {(footerStart || footerEnd) && (
-            <div className="flex items-center justify-between gap-1 sm:gap-2">
+            <div className="@container/composer-footer flex items-center justify-between gap-1 sm:gap-2">
               <div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
                 {footerStart}
               </div>

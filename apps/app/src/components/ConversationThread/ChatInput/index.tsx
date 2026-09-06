@@ -126,6 +126,7 @@ interface ChatInputProps {
   };
   handleSubmit: (attachments?: AttachmentData[]) => void | Promise<boolean>;
   isLoading: boolean;
+  isSubmissionBlocked?: boolean;
   streamStarted: boolean;
   controller?: AbortController;
   onStopResponse?: () => void;
@@ -175,6 +176,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       handleSubmit,
       goalState,
       isLoading,
+      isSubmissionBlocked = false,
       streamStarted,
       controller,
       onStopResponse,
@@ -699,7 +701,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         composerSources.attachments.length === 0) ||
       isLoading ||
       isUploading ||
-      isAuthenticationLoading;
+      isAuthenticationLoading ||
+      isSubmissionBlocked;
 
     useComposerShortcuts({
       dictate: canUseDictation

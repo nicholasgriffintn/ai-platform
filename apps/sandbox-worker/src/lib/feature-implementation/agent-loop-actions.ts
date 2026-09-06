@@ -8,6 +8,7 @@ import {
   quoteForShell,
   runSandboxCommand,
 } from "../commands";
+import { runSandboxScript } from "../script-execution";
 import { resolveCommandApproval } from "./command-approval";
 import {
   MAX_COMMANDS,
@@ -635,18 +636,15 @@ export async function handleRunScriptAction(
     commandTotal: MAX_COMMANDS,
   });
 
-  let scriptContext: Awaited<ReturnType<typeof context.sandbox.createCodeContext>> | undefined;
   let execution: Awaited<ReturnType<typeof context.sandbox.runCode>>;
 
   try {
-    scriptContext = await context.sandbox.createCodeContext({
-      language: scriptLanguage,
-      cwd: context.repoTargetDir,
-    });
-    execution = await context.sandbox.runCode(decision.code, {
-      context: scriptContext,
-      language: scriptLanguage,
-    });
+    execution = await runSandboxScript(
+      context.sandbox,
+      decision.code,
+      scriptLanguage,
+      context.repoTargetDir,
+    );
   } catch (error) {
     context.state.consecutiveCommandFailures += 1;
     const errorMessage = error instanceof Error ? error.message : "Script execution failed";
@@ -680,14 +678,6 @@ export async function handleRunScriptAction(
     }
 
     return;
-  } finally {
-    if (scriptContext?.id) {
-      try {
-        await context.sandbox.deleteCodeContext(scriptContext.id);
-      } catch {
-        // Ignore cleanup errors to avoid masking script execution outcomes.
-      }
-    }
   }
 
   await context.guardExecution("Sandbox run cancelled after script execution");

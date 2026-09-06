@@ -14,7 +14,7 @@
 - [ ] Start on iPhone and stop from web. Confirm the same cross-device transition and no conversation-wide fallback stop request.
 - [ ] Pause a run for a question and for approval. Confirm both clients distinguish each waiting state from running, cancelling, failed, interrupted, cancelled and completed outcomes.
 - [ ] Resume a waiting run, then submit a delayed cancellation for its previous attempt. Confirm HTTP 409 and verify the successor attempt continues.
-- [ ] Repeat a cancellation with the same command identity and payload. Confirm the same receipt is returned and no additional cancellation action occurs; reuse the command with changed input and confirm HTTP 409.
+- [x] Repeat a cancellation with the same command identity and payload. Confirm the same receipt is returned and no additional cancellation action occurs; reuse the command with changed input and confirm HTTP 409.
 - [ ] Revoke project membership before exact-run status and cancellation requests. Confirm both return not found and reveal no run or message data.
 - [ ] Run an external tool that takes longer than the owner’s cancellation poll. Confirm the UI remains at `cancelling` until the call settles, then becomes `cancelled` without replaying the effect.
 - [ ] Confirm anonymous, explicitly non-stored and local-only conversations keep their existing device-local stop behaviour and create no recoverable server run.
@@ -22,3 +22,7 @@
 **Expected interval:** a client observing a detached active run refreshes at most every two seconds; the originating live client uses SSE and issues no replay reads. A live owner checks authoritative cancellation at roughly one-second intervals between safe model/tool boundaries; an already-running provider or external tool call may extend final interruption.
 
 **Stop and report if:** an intermediate message ends recovery, a cancellation affects another run or attempt, either client drops authoritative partial messages, a non-member can read or cancel a project run, or the UI labels an accepted request as fully cancelled before owner confirmation.
+
+## Automated evidence — 5 September 2026
+
+The local Chromium **cancels one run idempotently and stops detached recovery** journey passed with real run endpoints. Reusing the exact command returns the original receipt with `duplicate: true`; changing its expected attempt returns 409. Reload shows Task cancelled, removes Stop requested and stops active recovery. Cross-device iPhone steps remain unconfirmed.

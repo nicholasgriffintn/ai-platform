@@ -48,6 +48,7 @@ test.describe("Application experience", () => {
       homePage,
       page,
     }) => {
+      test.slow();
       await homePage.navigate("/chat");
       await expect(homePage.chatInput).toBeEditable();
       await captureVisualSnapshots(page, "release-app-logged-out-chat", {

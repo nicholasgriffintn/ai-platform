@@ -142,7 +142,8 @@ export function replaceComposerDirectiveWithCursor(
   const replacementEnd = replacementStart + value.length;
   const insertedValue = options.appendTrailingSpace && value && !after ? `${value} ` : value;
   const replacementCursorPosition =
-    replacementStart + (options.cursorOffset ?? insertedValue.length);
+    replacementStart +
+    (options.cursorOffset ?? value.length + (options.appendTrailingSpace && value ? 1 : 0));
 
   if (!before && !value) {
     return { input: after, cursorPosition: 0, replacementStart: 0, replacementEnd: 0 };

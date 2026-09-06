@@ -40,6 +40,25 @@ describe("composer command parsing", () => {
     });
   });
 
+  it("opens a model submenu before a drafted prompt without consuming the prompt", () => {
+    const input = "/model Keep this drafted question intact";
+    const directive = getComposerDirectiveQuery(input, 3);
+
+    if (!directive) {
+      throw new Error("Expected a model directive");
+    }
+
+    const selection = replaceComposerDirectiveWithCursor(input, directive, "/model", {
+      appendTrailingSpace: true,
+    });
+    const submenu = getComposerDirectiveQuery(selection.input, selection.cursorPosition);
+
+    expect(submenu?.query).toBe("model ");
+    expect(submenu && removeComposerDirective(selection.input, submenu)).toBe(
+      "Keep this drafted question intact",
+    );
+  });
+
   it("detects agent mentions after whitespace", () => {
     expect(getComposerDirectiveQuery("ask @review", 11)).toEqual({
       trigger: "@",

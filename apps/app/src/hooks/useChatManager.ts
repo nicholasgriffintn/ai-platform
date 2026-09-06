@@ -171,13 +171,7 @@ export function useChatManager(
           startNewConversation(conversationId);
         }
 
-        const userMessage = prepareUserMessage(
-          input,
-          attachments,
-          currentModel,
-          conversationMode,
-          overrideRequestOptions?.options?.toolInteraction,
-        );
+        const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
 
         await cancelConversationQueries(conversationId);
         await addMessageToConversation(conversationId, userMessage);
@@ -204,6 +198,15 @@ export function useChatManager(
           conversationId,
           overrideRequestOptions,
         );
+
+        const toolInteraction = overrideRequestOptions?.options?.toolInteraction;
+
+        if (response.status === "success" && toolInteraction) {
+          await addMessageToConversation(conversationId, {
+            ...userMessage,
+            data: { ...userMessage.data, toolInteraction },
+          });
+        }
 
         return response;
       } catch (error) {

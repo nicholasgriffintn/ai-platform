@@ -8,11 +8,17 @@
 
 ## Verify
 
-- [ ] Open a generic approval in personal Chat, choose **Approve**, and confirm both actions disable with a submitting message until the request succeeds.
-- [ ] Throttle or fail the approval request. Confirm the card shows an inline failure, does not claim the choice was accepted, and permits one retry.
-- [ ] Double-click an approval action while the request is in flight. Confirm only one submission reaches the API.
+- [x] Open a generic approval in personal Chat, choose **Approve**, and confirm both actions disable with a submitting message until the request succeeds.
+- [x] Throttle or fail the approval request. Confirm the card shows an inline failure, does not claim the choice was accepted, and permits one retry.
+- [x] Double-click an approval action while the request is in flight. Confirm only one submission reaches the API.
 - [ ] Resolve the same project approval from another web session, then refresh or refetch the first session. Confirm the persisted approved or rejected state replaces its local state.
 - [ ] Open an expired approval payload. Confirm the card shows expiry and no approval action.
 - [ ] Approve an exact tool operation and confirm only the stored interaction and approved tool name are submitted; reject it and confirm no approved tool name is granted.
 
 **Stop and report if:** A card reports a choice before the server acknowledges it, retries execute a different operation, or an expired/resolved card remains actionable.
+
+## Automated evidence — 5 September 2026
+
+`features/interactions.spec.ts` passed against the real local app/API and a deterministic provider tool call. Going offline exposed optimistic interaction metadata resolving the card before acknowledgement. The host now attaches that resolution only after successful submission; the fixed journey confirms an inline failure, enabled retry and disabled Approve/Reject controls with a submitting message until success. Exact project-tool authority and cross-session reconciliation remain open.
+
+The 6 September rerun also double-clicks the retry and observes exactly one completion submission. A second journey confirmed and fixed premature question acknowledgement: answers remain editable after failure and sending disables controls until success. Both journeys passed.

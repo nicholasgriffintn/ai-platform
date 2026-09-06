@@ -8,11 +8,17 @@
 
 ## Verify
 
-- [ ] Select a specific model in a conversation, refresh the page, and confirm the selector still shows that model, not Auto.
-- [ ] Set a reasoning effort or verbosity alongside the model, refresh, and confirm those settings survive too.
+- [x] Select a specific model in a conversation, refresh the page, and confirm the selector still shows that model, not Auto.
+- [x] Set a reasoning effort or verbosity alongside the model, refresh, and confirm those settings survive too.
 - [ ] Refresh on a slow connection (throttled network) and confirm the selector shows its loading state and then the chosen model, never Auto in between.
-- [ ] Select Auto deliberately, refresh, and confirm it stays Auto.
-- [ ] As a pro account, select a pro-only model, refresh, and confirm it survives — this is the case where sign-in state resolves after the model list.
+- [x] Select Auto deliberately, refresh, and confirm it stays Auto.
+- [x] As a pro account, select a pro-only model, refresh, and confirm it survives — this is the case where sign-in state resolves after the model list.
 - [ ] Sign out with a pro-only model selected and confirm the selector falls back to the default model rather than staying on one the account cannot use.
 
 **Stop and report if:** the selection changes on refresh, or a model the account cannot use stays selected.
+
+## Automated evidence — 5 September 2026
+
+Local Chromium E2E: `features/model-selection.spec.ts`, **retains a Pro model and response controls after reload, then preserves deliberate Auto**, passed. The real completion request retains GPT-6 Astra, High reasoning, Caveman verbosity and Fast processing after reload; a deliberate Auto selection survives reload and omits an explicit model from the next request. Artificially delayed catalogue/authentication and sign-out remain unchecked.
+
+**Conflicting outcome:** the sign-out fallback step predates [ADR 0062](../../skills/polychat-setup/references/architecture/decisions/0062-expire-readiness-and-make-model-handoffs-explicit.md), which requires retaining a non-executable selection and asking for an explicit replacement. E2E confirms the selection is retained after sign-out. Leave the older fallback step unchecked; verify blocking and recovery against the current readiness contract.

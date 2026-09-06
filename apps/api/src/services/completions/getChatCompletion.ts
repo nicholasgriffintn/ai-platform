@@ -92,6 +92,7 @@ export const handleGetChatCompletion = async (
   if (!Array.isArray(conversation.messages)) {
     return {
       ...conversation,
+      is_archived: Boolean(conversation.is_archived),
       active_operation: activeOperation,
       latest_run: latestRun,
     };
@@ -103,6 +104,7 @@ export const handleGetChatCompletion = async (
 
   return {
     ...conversation,
+    is_archived: Boolean(conversation.is_archived),
     active_operation: activeOperation,
     latest_run: latestRun,
     messages: await hydrateConnectorApprovalMessageState({

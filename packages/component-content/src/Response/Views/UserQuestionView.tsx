@@ -1,15 +1,9 @@
 import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import { ChevronLeft, ChevronRight, CircleQuestionMark, PencilLine } from "lucide-react";
-import { useState } from "react";
 
 import type { ToolInteractionHandler } from "../registry";
-import { readUserQuestionSet, type UserQuestionAnswer } from "./userQuestionData";
-
-const TOOL_NAME = "ask_user";
-
-function formatAnswers(answers: UserQuestionAnswer[]): string {
-  return answers.map(({ questionId, answer }) => `${questionId}: ${answer}`).join("\n");
-}
+import { readUserQuestionSet } from "./userQuestionData";
+import { useUserQuestionSubmission } from "./useUserQuestionSubmission";
 
 export function UserQuestionView({
   data,
@@ -21,45 +15,21 @@ export function UserQuestionView({
   onToolInteraction?: ToolInteractionHandler;
 }) {
   const questionSet = readUserQuestionSet(data);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<UserQuestionAnswer[]>([]);
-  const [otherAnswer, setOtherAnswer] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const {
+    answerCurrent,
+    currentIndex,
+    currentQuestion,
+    isResolved,
+    isSubmitting,
+    otherAnswer,
+    setCurrentIndex,
+    setOtherAnswer,
+    submissionStatus,
+  } = useUserQuestionSubmission(questionSet, onToolInteraction);
 
   if (!questionSet) {
     return null;
   }
-
-  const isResolved = questionSet.resolved || submitted;
-  const currentQuestion = questionSet.questions[currentIndex];
-  const answerCurrent = (answer: string) => {
-    const trimmed = answer.trim();
-
-    if (!trimmed || !currentQuestion || isResolved || !onToolInteraction) {
-      return;
-    }
-
-    const nextAnswers = [
-      ...answers.filter((item) => item.questionId !== currentQuestion.id),
-      { questionId: currentQuestion.id, answer: trimmed },
-    ];
-
-    setAnswers(nextAnswers);
-    setOtherAnswer("");
-
-    if (currentIndex < questionSet.questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-
-      return;
-    }
-
-    setSubmitted(true);
-    void onToolInteraction(TOOL_NAME, "submitPrompt", {
-      interactionId: questionSet.interactionId,
-      answers: nextAnswers,
-      input: formatAnswers(nextAnswers),
-    });
-  };
 
   return (
     <section
@@ -92,6 +62,15 @@ export function UserQuestionView({
       ) : currentQuestion ? (
         <div className="space-y-3 p-3">
           <p className="px-1 text-sm font-medium text-foreground">{currentQuestion.prompt}</p>
+          {submissionStatus === "failed" ? (
+            <p role="alert" className="px-1 text-xs font-medium text-failure">
+              Answers were not submitted. Try again.
+            </p>
+          ) : isSubmitting ? (
+            <p aria-live="polite" className="px-1 text-xs text-muted-foreground">
+              Sending answers…
+            </p>
+          ) : null}
 
           {currentQuestion.options.length > 0 ? (
             <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface">
@@ -99,7 +78,8 @@ export function UserQuestionView({
                 <button
                   key={option.label}
                   type="button"
-                  onClick={() => answerCurrent(option.label)}
+                  disabled={isSubmitting}
+                  onClick={() => void answerCurrent(option.label)}
                   className="group flex w-full cursor-pointer items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-surface-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-active-work"
                 >
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-surface-elevated text-xs font-medium text-muted-foreground group-hover:bg-selection">
@@ -128,7 +108,7 @@ export function UserQuestionView({
               className="flex items-center gap-2"
               onSubmit={(event) => {
                 event.preventDefault();
-                answerCurrent(otherAnswer);
+                void answerCurrent(otherAnswer);
               }}
             >
               <div className="relative min-w-0 flex-1">
@@ -140,13 +120,19 @@ export function UserQuestionView({
                 <input
                   type="text"
                   value={otherAnswer}
+                  disabled={isSubmitting}
                   onChange={(event) => setOtherAnswer(event.target.value)}
                   placeholder="Write an answer…"
                   aria-label={`Answer: ${currentQuestion.prompt}`}
                   className="h-10 w-full rounded-lg border border-border-strong bg-surface pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-active-work"
                 />
               </div>
-              <Button type="submit" variant="primary" size="sm" disabled={!otherAnswer.trim()}>
+              <Button
+                type="submit"
+                variant="primary"
+                size="sm"
+                disabled={isSubmitting || !otherAnswer.trim()}
+              >
                 {currentIndex === questionSet.questions.length - 1 ? "Send answers" : "Next"}
               </Button>
             </form>
@@ -157,6 +143,7 @@ export function UserQuestionView({
               variant="ghost"
               size="sm"
               icon={<ChevronLeft size={14} />}
+              disabled={isSubmitting}
               onClick={() => setCurrentIndex(currentIndex - 1)}
             >
               Previous question

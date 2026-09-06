@@ -2,6 +2,7 @@ import { PolychatApi } from "../fixtures/polychat-api";
 import { expect, provisionPersonaSession, test } from "../fixtures/polychat-test";
 import { createSilentWavFixture, TEXT_MESSAGE_CASES } from "../fixtures/test-data";
 import { HomePage } from "../page-objects";
+import { isChatRunRecoveryRequest } from "../support/chat-run-requests";
 import { E2E_APP_BASE_URL } from "../support/environment";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
@@ -655,11 +656,9 @@ test.describe("Pro message attachments", () => {
   }) => {
     let activeReplayRequests = 0;
     let maximumConcurrentReplayRequests = 0;
-    const isReplayRequest = (url: string) =>
-      /\/chat\/runs\/[^/]+\/(?:events|snapshot)$/.test(new URL(url).pathname);
 
     page.on("request", (request) => {
-      if (isReplayRequest(request.url())) {
+      if (isChatRunRecoveryRequest(request.url())) {
         activeReplayRequests += 1;
         maximumConcurrentReplayRequests = Math.max(
           maximumConcurrentReplayRequests,
@@ -668,12 +667,12 @@ test.describe("Pro message attachments", () => {
       }
     });
     page.on("requestfinished", (request) => {
-      if (isReplayRequest(request.url())) {
+      if (isChatRunRecoveryRequest(request.url())) {
         activeReplayRequests -= 1;
       }
     });
     page.on("requestfailed", (request) => {
-      if (isReplayRequest(request.url())) {
+      if (isChatRunRecoveryRequest(request.url())) {
         activeReplayRequests -= 1;
       }
     });
@@ -716,7 +715,7 @@ test.describe("Pro message attachments", () => {
     let replayRequestCount = 0;
 
     page.on("request", (request) => {
-      if (/\/chat\/runs\/[^/]+\/(?:events|snapshot)$/.test(new URL(request.url()).pathname)) {
+      if (isChatRunRecoveryRequest(request.url())) {
         replayRequestCount += 1;
       }
     });
@@ -745,7 +744,17 @@ test.describe("Pro message attachments", () => {
       expect.stringMatching(/cancelling|cancelled/),
     ]);
 
+    const duplicate = await polychatApi.cancelChatRun(run.id, run.attempt, "e2e-cancel-1");
+
+    expect(duplicate).toEqual({ ...receipts[0], duplicate: true });
+    const runApi = new ChatRunApi(page.request);
+
+    expect(await runApi.cancelStatus(run.id, run.attempt + 1, "e2e-cancel-1")).toBe(409);
+
     await page.reload();
+    await expect(page.getByText("Task cancelled", { exact: true })).toBeVisible({
+      timeout: 10_000,
+    });
     await expect(homePage.stopResponseButton).toBeHidden({ timeout: 10_000 });
     await expect(page.getByText("Stop requested", { exact: true })).toHaveCount(0);
     const settledReplayRequestCount = replayRequestCount;
@@ -1046,7 +1055,11 @@ test.describe("Cold conversation history as pro", () => {
 
     await expect(actions).toBeFocused();
     await actions.press("Enter");
-    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Home");
+    await expect(page.getByRole("menuitem", { name: "Pin", exact: true })).toBeFocused();
+    await page.keyboard.press("End");
+    await expect(page.getByRole("menuitem", { name: "Delete", exact: true })).toBeFocused();
+    await page.keyboard.press("ArrowUp");
     await expect(page.getByRole("menuitem", { name: "Rename", exact: true })).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(actions).toBeFocused();
@@ -1110,3 +1123,4 @@ test.describe("Goals as free", () => {
     await expect(page.getByRole("button", { name: /^\/goal/ })).toHaveCount(0);
   });
 });
+import { ChatRunApi } from "../fixtures/chat-run-api";

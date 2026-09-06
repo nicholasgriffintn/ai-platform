@@ -1,7 +1,7 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatCompletionParameters } from "~/types";
-import { calculateReasoningBudget, resolveEffectiveMaxTokens } from "~/utils/parameters";
+import { calculateReasoningBudget, resolveRequiredMaxTokens } from "~/utils/parameters";
 
 import {
   resolveAdaptiveThinkingEffort,
@@ -15,13 +15,15 @@ const MINIMUM_THINKING_BUDGET = 1024;
 export interface BedrockReasoningRequest {
   additionalModelRequestFields?: Record<string, unknown>;
   allowsSampling: boolean;
+  maxTokens?: number;
 }
 
 function resolveThinkingBudget(
   params: ChatCompletionParameters,
   modelConfig: ModelConfigItem,
+  maxTokens: number,
 ): number | undefined {
-  const budgetCeiling = resolveEffectiveMaxTokens(params, modelConfig) - 1;
+  const budgetCeiling = maxTokens - 1;
 
   if (budgetCeiling < MINIMUM_THINKING_BUDGET) {
     return undefined;
@@ -54,7 +56,8 @@ export function buildBedrockReasoningRequest(
     return { allowsSampling: true };
   }
 
-  const budgetTokens = resolveThinkingBudget(params, modelConfig);
+  const maxTokens = resolveRequiredMaxTokens(params, modelConfig);
+  const budgetTokens = resolveThinkingBudget(params, modelConfig, maxTokens);
 
   if (budgetTokens === undefined) {
     return { allowsSampling: true };
@@ -62,6 +65,7 @@ export function buildBedrockReasoningRequest(
 
   return {
     allowsSampling: true,
+    maxTokens,
     additionalModelRequestFields: {
       thinking: { type: "enabled", budget_tokens: budgetTokens },
     },

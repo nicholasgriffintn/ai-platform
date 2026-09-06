@@ -10,8 +10,12 @@
 
 - [ ] Open the sidebar settings popover with the mouse. Nothing inside it shows a focus ring and the Theme row is not highlighted.
 - [ ] Open the popover with the keyboard, press Tab, and confirm focus moves to the first row inside the popover.
-- [ ] Hover or click the Theme row. A submenu opens beside the popover listing System and the seven themes, with the current one ticked. Choosing another theme applies it and leaves the popover open.
+- [x] Hover or click the Theme row. A submenu opens beside the popover listing System and the seven themes, with the current one ticked. Choosing another theme applies it and leaves the popover open.
 - [ ] Repeat the Theme row check on a narrow viewport and confirm the submenu is repositioned to stay on screen.
 - [ ] On Profile, Customisation, Theme, switch to a dark theme and confirm the Light, Paper and Dawn preview cards show dark headings and preview text on their light backgrounds, and vice versa on a light theme.
 
 **Stop and report if:** choosing a theme from the submenu closes the popover, the submenu opens off screen, or preview card text is unreadable in either appearance.
+
+## Automated evidence — 5 September 2026
+
+`features/themes.spec.ts`, **keeps sidebar settings open after a theme change and remembers it after reload**, passed locally in Chromium. It confirms all eight choices, the selected radio, Fern application, an open settings popover, persistence and reversal to Light. Positioning and preview contrast still require visual review.

@@ -22,3 +22,7 @@
 **Expected bounds:** the server retains the newest 500 events for each run, returns at most 100 per replay page and clients observing detached active runs poll every two seconds. The originating live client uses SSE and makes no replay requests. Large message and output content remains in authorised stored resources referenced by events.
 
 **Stop and report if:** a cursor gap is hidden, a repeated event duplicates visible state, terminal state regresses, the snapshot/replay boundary loses a write, a newer protocol breaks native conversation rendering, or revoked membership can still read activity.
+
+## Automated evidence — 5 September 2026
+
+The local Chromium `features/run-replay.spec.ts` journey passed: snapshot cursor validation, strictly increasing later sequences, stable unique event IDs, identical repeated replay pages, and snapshot reset for a cursor ahead of the server. This uses a delayed streamed provider reply and real stored run endpoints. Leave the combined multi-step, retention-window, protocol-injection and cross-client steps open.

@@ -22,13 +22,31 @@ test.describe("Recovery and unavailable states", () => {
       appPage,
       homePage,
       page,
+      polychatApi,
     }) => {
       await homePage.navigate("/chat");
       await homePage.selectModel("GPT OSS 120B");
-      await homePage.sendMessage("Trigger an error");
+      const request = await homePage.sendMessageAndRequireCompletion("Trigger an error");
+      const completionId = homePage.completionIdFromRequest(request);
+
       await expect(page.getByText("Task failed", { exact: true })).toBeVisible();
       await expect(page.getByText(/Deterministic provider failure/)).toBeVisible();
       await expect(appPage.notification(/Deterministic provider failure/)).toHaveCount(0);
+      const stored = await polychatApi.getConversation(completionId);
+
+      expect(stored.messages?.filter((message) => message.role === "user")).toHaveLength(1);
+      expect(request.messages).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: stored.messages?.find((message) => message.role === "user")?.id,
+          }),
+        ]),
+      );
+      expect(
+        await page
+          .locator('[data-role="user"]')
+          .evaluateAll((messages) => messages.map((message) => message.getAttribute("data-id"))),
+      ).toEqual(stored.messages?.filter((message) => message.role === "user").map(({ id }) => id));
       await expect(page.locator('[data-role="user"]')).toHaveText(["Trigger an error"]);
       await expect(homePage.chatInput).toBeEditable();
 

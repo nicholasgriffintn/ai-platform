@@ -6,6 +6,7 @@ import type { ConversationThreadModeConfig } from "~/components/ConversationThre
 import { useConversationLaunchModeConfig } from "~/components/ConversationThread/useConversationLaunchModeConfig";
 import { HomeDiscover } from "~/components/Discover/HomeDiscover";
 import { useChats } from "~/hooks/useChat";
+import { useConversationRoute } from "~/hooks/useConversationRoute";
 import { createChatWelcome } from "~/lib/chat-welcome";
 import { useChatStore } from "~/state/stores/chatStore";
 
@@ -16,6 +17,9 @@ interface HomeConversationThreadProps {
 export function HomeConversationThread({ urlModeConfig }: HomeConversationThreadProps) {
   const { completionId } = useParams<"completionId">();
   const modeConfig = useConversationLaunchModeConfig(urlModeConfig, completionId);
+
+  useConversationRoute({ surface: "personal", pathConversationId: completionId });
+
   const user = useChatStore((state) => state.user);
   const userSettings = useChatStore((state) => state.userSettings);
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);

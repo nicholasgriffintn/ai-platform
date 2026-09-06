@@ -52,6 +52,7 @@ export interface FinishUsageReservationParams {
   kind: UsageReservationKind;
   refId: string;
   outcome: "settled" | "released";
+  reservationId?: string;
 }
 
 export async function finishUsageReservation(
@@ -71,6 +72,7 @@ export async function finishUsageReservation(
       params.kind,
       params.refId,
       params.outcome,
+      params.reservationId,
     );
   }
 

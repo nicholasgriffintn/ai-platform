@@ -83,7 +83,7 @@ export interface ChatStore {
 
 export const useChatStore = create<ChatStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       currentConversationId: undefined,
       locallyCreatedConversationIds: {},
       isComposingGoal: false,
@@ -189,39 +189,13 @@ export const useChatStore = create<ChatStore>()(
         }),
 
       initializeStore: async (completionId?: string) => {
+        if (completionId) {
+          set({ currentConversationId: completionId });
+        }
+
         const apiKey = await apiKeyService.getApiKey();
 
         set({ hasApiKey: !!apiKey });
-
-        const checkAuthAndSetConversation = async () => {
-          if (completionId) {
-            let attempts = 0;
-            const maxAttempts = 100;
-
-            const trySetConversation = () => {
-              attempts++;
-              if (attempts > maxAttempts) {
-                console.warn(
-                  "Timed out waiting for authentication to complete so did not set conversation ID",
-                );
-
-                return;
-              }
-
-              if (get().isAuthenticationLoading) {
-                setTimeout(trySetConversation, 100);
-
-                return;
-              }
-
-              set({ currentConversationId: completionId });
-            };
-
-            trySetConversation();
-          }
-        };
-
-        void checkAuthAndSetConversation();
       },
     }),
     {

@@ -55,7 +55,15 @@ export class UsageReservationRepository extends BaseRepository {
         `INSERT INTO usage_reservation (
            id, user_id, period, kind, ref_id, credit_micros, status, expires_at
          ) VALUES (?, ?, ?, ?, ?, ?, 'held', ?)
-         ON CONFLICT (kind, ref_id) DO NOTHING`,
+         ON CONFLICT (kind, ref_id) DO UPDATE SET
+           id = excluded.id,
+           period = excluded.period,
+           credit_micros = excluded.credit_micros,
+           status = 'held',
+           expires_at = excluded.expires_at,
+           updated_at = CURRENT_TIMESTAMP
+         WHERE usage_reservation.status IN ('settled', 'released')
+           AND usage_reservation.user_id = excluded.user_id`,
       ).bind(
         params.id,
         params.userId,
@@ -70,6 +78,7 @@ export class UsageReservationRepository extends BaseRepository {
          SET reserved_credit_micros = reserved_credit_micros + ?,
              updated_at = CURRENT_TIMESTAMP
          WHERE user_id = ? AND period = ?
+           AND changes() > 0
            AND EXISTS (
              SELECT 1 FROM usage_reservation
              WHERE id = ? AND status = 'held'
@@ -116,13 +125,15 @@ export class UsageReservationRepository extends BaseRepository {
     kind: UsageReservationKind,
     refId: string,
     outcome: Extract<UsageReservationStatus, "settled" | "released">,
+    expectedReservationId?: string,
   ): Promise<UsageReservationRow | null> {
     const statements = [
       this.env.DB.prepare(
         `UPDATE usage_reservation
          SET status = 'releasing', updated_at = CURRENT_TIMESTAMP
-         WHERE kind = ? AND ref_id = ? AND status = 'held'`,
-      ).bind(kind, refId),
+         WHERE kind = ? AND ref_id = ? AND status = 'held'
+           AND (? IS NULL OR id = ?)`,
+      ).bind(kind, refId, expectedReservationId ?? null, expectedReservationId ?? null),
       this.env.DB.prepare(
         `UPDATE usage_balance
          SET reserved_credit_micros = MAX(

@@ -8,11 +8,15 @@
 
 ## Verify
 
-- [ ] Signed out, open `/capabilities`. Confirm the lede counts experiences, tools and recipe templates, and the section chips scroll to Experiences, Model tools, Function tools, Recipes and Curated by you.
+- [x] Signed out, open `/capabilities`. Confirm the lede counts experiences, tools and recipe templates, and the section chips scroll to Experiences, Model tools, Function tools, Recipes and Curated by you.
 - [ ] Compare Function tools against the signed-in library on a free account: the public page should list more tools, with Pro badges on the premium ones and Your keys badges on the bring-your-own-key ones.
 - [ ] Confirm each recipe card shows its category, whether it automates or integrates, and chips for its connected services with glyphs.
-- [ ] Confirm the Curated by you section shows Sign in to start curating when signed out and Open your capabilities when signed in, and that the latter opens `/chat/capabilities`.
+- [x] Confirm the Curated by you section shows Sign in to start curating when signed out and Open your capabilities when signed in, and that the latter opens `/chat/capabilities`.
 - [ ] Open `/pricing` or `/models` and confirm the sidebar's Back to Home icon and label line up exactly with the Discover links beneath, including the Discover heading's left edge.
 - [ ] Check `/capabilities` at 390px: cards stack with the icon above the title and the section chips wrap.
 
 **Stop and report if:** A premium tool appears without a Pro badge, a recipe card lacks its services, or the sidebar items still sit at different indents.
+
+## Automated evidence — 5 September 2026
+
+Both `features/public-catalogues.spec.ts` local Chromium journeys passed. Counts are checked against the real public catalogue, all section links reach their headings, guests can open sign-in and a signed-in free account can open its personal library. Representative Pro and Your keys badges also passed; complete comparison with the free library and visual checks remain open.
