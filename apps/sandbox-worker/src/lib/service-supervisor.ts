@@ -17,6 +17,7 @@ import {
   type SandboxProcessInstance,
 } from "./commands";
 import { delay } from "./delay";
+import { hasSandboxErrorCode } from "./errors";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { listeningPortsFromProcNet, READ_LISTENING_SOCKETS_COMMAND } from "./network-ports";
 import { redactSandboxOutput } from "./output-redaction";
@@ -404,7 +405,25 @@ export class ProjectServiceSupervisor {
     await this.options.checkpoint(`Sandbox run cancelled before starting ${definition.name}`);
 
     if (definition.expectedPort !== undefined) {
-      await this.waitForPortRelease(definition.expectedPort);
+      try {
+        await this.waitForPortRelease(definition.expectedPort);
+      } catch (error) {
+        const message = serviceErrorMessage(error);
+
+        service.status = "failed";
+        service.error = message;
+        await this.emit({
+          type: "service_failed",
+          serviceName: definition.name,
+          serviceStatus: service.status,
+          servicePort: definition.expectedPort,
+          serviceRestartCount: service.restartCount,
+          serviceHealthPath:
+            definition.healthCheck?.type === "http" ? definition.healthCheck.path : undefined,
+          error: message,
+        });
+        throw new Error(`Service ${definition.name} failed to start: ${message}`, { cause: error });
+      }
     }
 
     service.desiredStopped = false;
@@ -496,7 +515,9 @@ export class ProjectServiceSupervisor {
         throw error;
       }
 
-      const timedOut = error instanceof ProcessReadyTimeoutError;
+      const timedOut =
+        error instanceof ProcessReadyTimeoutError ||
+        hasSandboxErrorCode(error, "PROCESS_READY_TIMEOUT");
       const message = serviceErrorMessage(error);
 
       service.status = timedOut ? "timed_out" : "failed";
@@ -622,11 +643,11 @@ export class ProjectServiceSupervisor {
       return;
     }
 
-    let status: Awaited<ReturnType<Process["getStatus"]>>;
+    let observedProcess: Process | null;
 
     try {
       await this.collectProcessLogs(service);
-      status = await process.getStatus();
+      observedProcess = await this.options.sandbox.getProcess(process.id);
     } catch (error) {
       service.observationFailures += 1;
       service.status = "unhealthy";
@@ -653,6 +674,8 @@ export class ProjectServiceSupervisor {
 
       return;
     }
+
+    const status = observedProcess?.status ?? "error";
 
     if (status === "starting" || status === "running") {
       if (service.definition.expectedPort !== undefined && service.definition.healthCheck) {
@@ -718,7 +741,7 @@ export class ProjectServiceSupervisor {
       return;
     }
 
-    const exitCode = process.exitCode;
+    const exitCode = observedProcess?.exitCode;
     const message = `Service exited unexpectedly${exitCode === undefined ? "" : ` with code ${exitCode}`}`;
 
     await this.handleUnexpectedStop(

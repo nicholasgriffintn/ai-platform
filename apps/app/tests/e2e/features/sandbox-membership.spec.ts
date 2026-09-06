@@ -84,6 +84,11 @@ test.describe("Sandbox project authority", () => {
       ).toBe(403);
       await memberWorkbench.selectPane("Activity");
       await expect(memberWorkbench.panel).toContainText("fixture");
+      const memberOutput = memberWorkbench.serviceOutput("watcher");
+
+      await expect(memberOutput.output).toBeHidden();
+      await memberOutput.toggle.click();
+      await expect(memberOutput.output).toContainText("E2E_WATCHER_READY");
       await expect(
         memberTab.getByRole("button", { name: "Restart fixture", exact: true }),
       ).toBeDisabled();

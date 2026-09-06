@@ -63,7 +63,7 @@ export type SandboxExecInstance = Pick<ReturnType<typeof getSandbox>, "exec"> &
   Partial<Pick<ReturnType<typeof getSandbox>, "execStream" | "createBackup" | "restoreBackup">>;
 
 export type SandboxProcessInstance = SandboxExecInstance &
-  Pick<ReturnType<typeof getSandbox>, "startProcess" | "unexposePort">;
+  Pick<ReturnType<typeof getSandbox>, "getProcess" | "startProcess" | "unexposePort">;
 
 interface RepoInfo {
   displayName: string;

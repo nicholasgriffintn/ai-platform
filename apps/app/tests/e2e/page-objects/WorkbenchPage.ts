@@ -48,16 +48,23 @@ export class WorkbenchPage extends BasePage {
       .filter({ has: this.page.getByText(name, { exact: true }) });
   }
 
-  serviceLog(name: string, stream: "stdout" | "stderr") {
-    const details = this.page.getByRole("group", {
-      name: `Show ${name} ${stream} log`,
-      exact: true,
-    });
+  serviceOutput(name: string) {
+    const entry = this.page
+      .getByRole("region", { name: "Conversation and run timeline", exact: true })
+      .getByRole("listitem")
+      .filter({ has: this.page.getByText(`Service running · ${name}`, { exact: true }) });
 
     return {
-      toggle: details.getByText(`Show ${name} ${stream} log`, { exact: true }),
-      output: details.getByRole("log", { name: `${name} ${stream} output`, exact: true }),
+      toggle: entry.getByText(/output updates/),
+      output: entry.locator("pre"),
     };
+  }
+
+  proofService(name: string) {
+    return this.page
+      .getByRole("list", { name: "Declared service outcomes", exact: true })
+      .getByRole("listitem")
+      .filter({ has: this.page.getByText(name, { exact: true }) });
   }
 
   async controlService(name: string, action: "Start" | "Stop" | "Restart") {

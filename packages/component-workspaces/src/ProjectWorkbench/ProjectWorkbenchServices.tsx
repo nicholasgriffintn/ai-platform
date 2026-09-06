@@ -11,10 +11,6 @@ export interface ProjectWorkbenchServiceItem {
   restartCount: number;
   updatedAt?: string;
   error?: string;
-  logs: Array<{
-    stream: "stdout" | "stderr";
-    output: string;
-  }>;
 }
 
 export interface ProjectWorkbenchServicesProps {
@@ -159,24 +155,6 @@ export function ProjectWorkbenchServices({
                 </div>
               </div>
               {service.error ? <p className="mt-2 text-xs text-failure">{service.error}</p> : null}
-              {service.logs.map((log, index) => {
-                const label = `Show ${service.name} ${log.stream} log`;
-
-                return (
-                  <details key={`${log.stream}-${index}`} className="mt-2 max-w-full">
-                    <summary className="text-muted-foreground cursor-pointer text-xs">
-                      {label}
-                    </summary>
-                    <pre
-                      role="log"
-                      aria-label={`${service.name} ${log.stream} output`}
-                      className="bg-canvas mt-2 max-h-48 overflow-auto rounded-md p-2 font-mono text-xs whitespace-pre-wrap break-all"
-                    >
-                      {log.output}
-                    </pre>
-                  </details>
-                );
-              })}
             </li>
           );
         })}
