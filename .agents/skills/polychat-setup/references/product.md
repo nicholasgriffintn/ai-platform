@@ -37,7 +37,7 @@ Changing models affects the next run and keeps compatible attachments and the co
 
 ## Find conversations and results
 
-Conversation lists can group ordinary chats and task conversations. In a saved remote conversation, **Branches** opens related threads without copying history. Personal branches remain owner-scoped; project branches remain within the same membership-authorised project. Local-only and iOS navigation do not gain this web branch browser.
+Conversation lists can group ordinary chats and task conversations. In a saved remote conversation, **Threads** opens related threads without copying history, and any reply can start one. Personal threads remain owner-scoped; project threads remain within the same membership-authorised project. Local-only and iOS navigation do not gain this web thread browser.
 
 Each accepted stored task has one run identity and an authoritative state that is separate from the conversation and its visible assistant messages. Web and iOS preserve that identity, while repeated submissions are only safely deduplicated when they reuse the same command identity. Queue-dispatched project tasks continue independently of the request that starts them. Personal stored Chat remains best-effort after a connection loss, and local-only Chat remains private to the device with no server recovery.
 

@@ -1,5 +1,5 @@
 import type {
-  ConversationBranch,
+  ConversationThread,
   ConversationArchiveFilter,
   ConversationSortBy,
   ConversationType,
@@ -100,21 +100,21 @@ export class ConversationRepository extends BaseRepository {
            AND related.id != c.id
            AND related.project_id IS c.project_id
            AND (c.project_id IS NOT NULL OR related.user_id = c.user_id)
-       ) AS has_branches
+       ) AS has_threads
        FROM conversation c WHERE c.id = ?`,
       [conversationId],
       true,
     );
 
-    return conversation ? { ...conversation, has_branches: conversation.has_branches === 1 } : null;
+    return conversation ? { ...conversation, has_threads: conversation.has_threads === 1 } : null;
   }
 
-  public async listConversationBranches(
+  public async listConversationThreads(
     conversationId: string,
     userId: number,
     projectId: string | null,
     limit: number,
-  ): Promise<Array<Omit<ConversationBranch, "is_archived"> & { is_archived: number }>> {
+  ): Promise<Array<Omit<ConversationThread, "is_archived"> & { is_archived: number }>> {
     return this.runQuery(
       `WITH RECURSIVE scoped AS (
          SELECT id, parent_conversation_id FROM conversation

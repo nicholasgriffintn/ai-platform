@@ -16,7 +16,9 @@ export interface BranchConversationParams {
   parentMessageId: string;
 }
 
-export function canBranchFromMessage(message: Pick<Message, "id" | "role" | "parts">): boolean {
+export function canStartThreadFromMessage(
+  message: Pick<Message, "id" | "role" | "parts">,
+): boolean {
   return Boolean(
     message.id &&
     !isCompactionMarkerMessage(message) &&
@@ -24,7 +26,7 @@ export function canBranchFromMessage(message: Pick<Message, "id" | "role" | "par
   );
 }
 
-export function getBranchPoint(messages: Message[], messageId: string): BranchPoint | null {
+export function getThreadPoint(messages: Message[], messageId: string): BranchPoint | null {
   const messageIndex = messages.findIndex((message) => message.id === messageId);
 
   if (messageIndex === -1) {
@@ -33,7 +35,7 @@ export function getBranchPoint(messages: Message[], messageId: string): BranchPo
 
   const message = messages[messageIndex];
 
-  if (!canBranchFromMessage(message)) {
+  if (!canStartThreadFromMessage(message)) {
     return null;
   }
 
@@ -53,7 +55,7 @@ export function createBranchMetadata(parentConversationId: string, parentMessage
   };
 }
 
-export function createBranchConversation({
+export function createConversationThread({
   conversation,
   conversationId,
   isLocalOnly,

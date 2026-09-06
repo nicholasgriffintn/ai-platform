@@ -55,4 +55,4 @@ export * from "./ConversationColumn";
 export * from "./Live/LiveStatusHeader";
 export { ResolvedToolCallsProvider, useResolvedToolCallIds } from "./Message/ResolvedToolCalls";
 
-export * from "./ConversationBranchesButton";
+export * from "./ConversationThreadsButton";

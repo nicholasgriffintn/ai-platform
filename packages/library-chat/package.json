@@ -42,11 +42,11 @@
       "import": "./dist/attachments.js",
       "require": "./dist/attachments.cjs"
     },
-    "./branching": {
-      "polychat-source": "./src/branching.ts",
-      "types": "./dist/branching.d.ts",
-      "import": "./dist/branching.js",
-      "require": "./dist/branching.cjs"
+    "./threading": {
+      "polychat-source": "./src/threading.ts",
+      "types": "./dist/threading.d.ts",
+      "import": "./dist/threading.js",
+      "require": "./dist/threading.cjs"
     },
     "./compaction-command": {
       "polychat-source": "./src/compaction-command.ts",

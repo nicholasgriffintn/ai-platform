@@ -111,8 +111,8 @@ export const ChatMessageView = ({
   isEditing = false,
   onSaveEdit,
   onCancelEdit,
-  onBranch,
-  isBranching = false,
+  onStartThread,
+  isStartingThread = false,
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
   isArchivedByCompaction = false,
@@ -142,8 +142,8 @@ export const ChatMessageView = ({
   isEditing?: boolean;
   onSaveEdit?: (newContent: string) => void;
   onCancelEdit?: () => void;
-  onBranch?: (messageId: string, modelId?: string) => void;
-  isBranching?: boolean;
+  onStartThread?: (messageId: string, modelId?: string) => void;
+  isStartingThread?: boolean;
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
   isArchivedByCompaction?: boolean;
@@ -284,8 +284,8 @@ export const ChatMessageView = ({
                 isRetrying={isRetrying}
                 onEdit={onEdit}
                 isEditing={isEditing}
-                onBranch={onBranch}
-                isBranching={isBranching}
+                onStartThread={onStartThread}
+                isStartingThread={isStartingThread}
                 onRequestSecondOpinion={onRequestSecondOpinion}
                 isRequestingSecondOpinion={isRequestingSecondOpinion}
                 isArchivedByCompaction={isArchivedByCompaction}

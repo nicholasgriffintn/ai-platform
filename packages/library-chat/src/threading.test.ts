@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  canBranchFromMessage,
-  createBranchConversation,
-  createBranchMetadata,
-  getBranchPoint,
-} from "./branching";
 import type { Message } from "./conversation-types";
+import {
+  canStartThreadFromMessage,
+  createConversationThread,
+  createBranchMetadata,
+  getThreadPoint,
+} from "./threading";
 
 const messages = [
   { id: "user-1", role: "user", content: "Question" },
@@ -16,7 +16,7 @@ const messages = [
 
 describe("conversation branching", () => {
   it("branches from user messages by generating a new response", () => {
-    expect(getBranchPoint(messages, "user-1")).toEqual({
+    expect(getThreadPoint(messages, "user-1")).toEqual({
       message: messages[0],
       messages: [messages[0]],
       shouldGenerateResponse: true,
@@ -24,7 +24,7 @@ describe("conversation branching", () => {
   });
 
   it("branches from assistant messages without generating another assistant response", () => {
-    expect(getBranchPoint(messages, "assistant-1")).toEqual({
+    expect(getThreadPoint(messages, "assistant-1")).toEqual({
       message: messages[1],
       messages: [messages[0], messages[1]],
       shouldGenerateResponse: false,
@@ -32,8 +32,8 @@ describe("conversation branching", () => {
   });
 
   it("rejects non-branchable messages", () => {
-    expect(canBranchFromMessage(messages[2])).toBe(false);
-    expect(getBranchPoint(messages, "tool-1")).toBeNull();
+    expect(canStartThreadFromMessage(messages[2])).toBe(false);
+    expect(getThreadPoint(messages, "tool-1")).toBeNull();
   });
 
   it("rejects assistant-shaped compaction markers", () => {
@@ -44,8 +44,8 @@ describe("conversation branching", () => {
       parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
     } as Message;
 
-    expect(canBranchFromMessage(compactionMarker)).toBe(false);
-    expect(getBranchPoint([...messages, compactionMarker], "compaction-1")).toBeNull();
+    expect(canStartThreadFromMessage(compactionMarker)).toBe(false);
+    expect(getThreadPoint([...messages, compactionMarker], "compaction-1")).toBeNull();
   });
 
   it("builds branch metadata and conversation parent fields consistently", () => {
@@ -57,7 +57,7 @@ describe("conversation branching", () => {
     });
 
     expect(
-      createBranchConversation({
+      createConversationThread({
         conversation: {
           id: "conversation-1",
           title: "Original",

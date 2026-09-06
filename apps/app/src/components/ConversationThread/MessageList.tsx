@@ -63,8 +63,8 @@ interface MessageListProps {
   ) => void;
   messages?: Message[];
   isSharedView?: boolean;
-  onBranch?: (messageId: string, modelId?: string) => void;
-  isBranching?: boolean;
+  onStartThread?: (messageId: string, modelId?: string) => void;
+  isStartingThread?: boolean;
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
   hideInlineUserQuestions?: boolean;
@@ -88,8 +88,8 @@ export const MessageList = ({
   onArtifactOpen,
   messages: propMessages,
   isSharedView = false,
-  onBranch,
-  isBranching = false,
+  onStartThread,
+  isStartingThread = false,
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
   hideInlineUserQuestions = false,
@@ -309,8 +309,8 @@ export const MessageList = ({
                             }
                           }}
                           onCancelEdit={stopEditingMessage}
-                          onBranch={onBranch}
-                          isBranching={isBranching}
+                          onStartThread={onStartThread}
+                          isStartingThread={isStartingThread}
                           onRequestSecondOpinion={
                             canAccessProFeatures ? onRequestSecondOpinion : undefined
                           }

@@ -3,7 +3,7 @@ import {
   authoredSkillHistoryResponseSchema,
   authoredSkillVersionedDocumentSchema,
   chatRunCommandReceiptResponseSchema,
-  conversationBranchesResponseSchema,
+  conversationThreadsResponseSchema,
   getChatCompletionResponseSchema,
   usageBalanceResponseSchema,
   usageEventsResponseSchema,
@@ -435,19 +435,19 @@ export class PolychatApi {
     await requireSuccessfulResponse(response, "Update conversation");
   }
 
-  async getConversationBranches(conversationId: string) {
+  async getConversationThreads(conversationId: string) {
     const response = await this.request.get(
-      `${API_BASE_URL}/chat/completions/${conversationId}/branches`,
+      `${API_BASE_URL}/chat/completions/${conversationId}/threads`,
     );
 
-    await requireSuccessfulResponse(response, "Load conversation branches");
+    await requireSuccessfulResponse(response, "Load conversation threads");
 
-    return conversationBranchesResponseSchema.parse(await response.json());
+    return conversationThreadsResponseSchema.parse(await response.json());
   }
 
-  async conversationBranchesStatus(conversationId: string): Promise<number> {
+  async conversationThreadsStatus(conversationId: string): Promise<number> {
     return (
-      await this.request.get(`${API_BASE_URL}/chat/completions/${conversationId}/branches`)
+      await this.request.get(`${API_BASE_URL}/chat/completions/${conversationId}/threads`)
     ).status();
   }
 }

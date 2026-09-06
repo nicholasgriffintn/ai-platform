@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { resolveProjectModelTier } from "~/lib/chat/policy/project-model-tier";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getConversationBranches } from "~/services/completions/conversationBranches";
+import { getConversationBranches } from "~/services/completions/conversationThreads";
 import { ErrorType } from "~/utils/errors";
 
 import { applyProjectCodingEnvironment, resolveProjectChatContext } from "../chatContext";
@@ -21,7 +21,7 @@ function createContext({
   const repositories = {
     conversations: {
       getConversation: vi.fn().mockResolvedValue(conversation),
-      listConversationBranches: vi.fn().mockResolvedValue([]),
+      listConversationThreads: vi.fn().mockResolvedValue([]),
     },
     workspaces: {
       getProject: vi.fn().mockResolvedValue({
@@ -336,11 +336,11 @@ describe("project chat context", () => {
 });
 
 describe("conversation branch access", () => {
-  it("uses creator ownership for personal branches and membership for project branches", async () => {
+  it("uses creator ownership for personal threads and membership for project threads", async () => {
     const personal = createContext({ conversation: { id: "c1", user_id: 7, project_id: null } });
 
     await getConversationBranches(personal.context, "c1");
-    expect(personal.repositories.conversations.listConversationBranches).toHaveBeenCalledWith(
+    expect(personal.repositories.conversations.listConversationThreads).toHaveBeenCalledWith(
       "c1",
       7,
       null,
@@ -351,7 +351,7 @@ describe("conversation branch access", () => {
     });
 
     await getConversationBranches(project.context, "c2");
-    expect(project.repositories.conversations.listConversationBranches).toHaveBeenCalledWith(
+    expect(project.repositories.conversations.listConversationThreads).toHaveBeenCalledWith(
       "c2",
       7,
       "project-1",
@@ -365,7 +365,7 @@ describe("conversation branch access", () => {
     await expect(getConversationBranches(personal.context, "private")).rejects.toMatchObject({
       statusCode: 404,
     });
-    expect(personal.repositories.conversations.listConversationBranches).not.toHaveBeenCalled();
+    expect(personal.repositories.conversations.listConversationThreads).not.toHaveBeenCalled();
     const project = createContext({
       conversation: { user_id: 7, project_id: "project-1" },
       membership: null,
@@ -374,13 +374,13 @@ describe("conversation branch access", () => {
     await expect(getConversationBranches(project.context, "project-chat")).rejects.toMatchObject({
       statusCode: 404,
     });
-    expect(project.repositories.conversations.listConversationBranches).not.toHaveBeenCalled();
+    expect(project.repositories.conversations.listConversationThreads).not.toHaveBeenCalled();
   });
 
   it("bounds large trees, retains the current branch, and hides omitted parent identifiers", async () => {
     const { context, repositories } = createContext({ conversation: { id: "c200", user_id: 7 } });
 
-    repositories.conversations.listConversationBranches.mockResolvedValue(
+    repositories.conversations.listConversationThreads.mockResolvedValue(
       Array.from({ length: 201 }, (_, index) => ({
         id: `c${index}`,
         title: `Branch ${index}`,
@@ -392,11 +392,11 @@ describe("conversation branch access", () => {
     const result = await getConversationBranches(context, "c200");
 
     expect(result.truncated).toBe(true);
-    expect(result.branches).toHaveLength(200);
-    expect(result.branches.some((branch) => branch.id === "c200")).toBe(true);
+    expect(result.threads).toHaveLength(200);
+    expect(result.threads.some((thread) => thread.id === "c200")).toBe(true);
     expect(
-      result.branches.every(
-        (branch) => branch.parent_conversation_id === null && branch.is_archived,
+      result.threads.every(
+        (thread) => thread.parent_conversation_id === null && thread.is_archived,
       ),
     ).toBe(true);
   });
