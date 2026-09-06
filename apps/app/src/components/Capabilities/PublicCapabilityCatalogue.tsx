@@ -1,12 +1,11 @@
-import { getIcon } from "@ngriffin_uk/polychat-component-capabilities";
-import { ProviderGlyph } from "@ngriffin_uk/polychat-component-models";
 import {
-  Badge,
-  Button,
-  ButtonLink,
-  EmptyState,
-  Skeleton,
-} from "@ngriffin_uk/polychat-component-ui";
+  CatalogueCard,
+  CatalogueSection,
+  CatalogueSkeletonGrid,
+  getIcon,
+} from "@ngriffin_uk/polychat-component-capabilities";
+import { ProviderGlyph } from "@ngriffin_uk/polychat-component-models";
+import { Badge, Button, ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import type {
   ModelToolDefinition,
   ProjectExperienceDefinition,
@@ -14,7 +13,6 @@ import type {
   Tool,
 } from "@ngriffin_uk/polychat-schemas";
 import { Bot, Sparkles, Terminal, Workflow, Wrench } from "lucide-react";
-import type { ReactNode } from "react";
 
 import { useAuthStatus } from "~/hooks/useAuth";
 import { usePublicCapabilityCatalogue } from "~/hooks/useCapabilityCatalog";
@@ -28,80 +26,6 @@ const CATALOGUE_SECTIONS = [
   { id: "recipes", label: "Recipes" },
   { id: "yours", label: "Curated by you" },
 ] as const;
-
-function CatalogueSection({
-  id,
-  eyebrow,
-  title,
-  lede,
-  children,
-}: {
-  id: string;
-  eyebrow: string;
-  title: string;
-  lede: string;
-  children: ReactNode;
-}) {
-  const headingId = `capabilities-${id}-title`;
-
-  return (
-    <section id={id} aria-labelledby={headingId} className="scroll-mt-20 space-y-5">
-      <div className="space-y-2">
-        <p className="polychat-eyebrow">{eyebrow}</p>
-        <h2
-          id={headingId}
-          className="font-display text-foreground text-3xl font-medium tracking-tight text-balance"
-        >
-          {title}
-        </h2>
-        <p className="text-muted-foreground max-w-prose leading-relaxed">{lede}</p>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function CatalogueCard({
-  icon,
-  title,
-  description,
-  badges,
-  footer,
-}: {
-  icon: ReactNode;
-  title: string;
-  description: string;
-  badges?: ReactNode;
-  footer?: ReactNode;
-}) {
-  return (
-    <li className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4 lg:flex-row">
-      <span className="bg-surface-elevated text-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1 space-y-1">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-foreground text-sm font-medium">{title}</span>
-          {badges}
-        </div>
-        <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed">{description}</p>
-        {footer}
-      </div>
-    </li>
-  );
-}
-
-function SkeletonGrid({ count }: { count: number }) {
-  return (
-    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading">
-      {Array.from({ length: count }, (_, index) => (
-        <li key={index}>
-          <Skeleton className="h-24 w-full rounded-xl" />
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 function ExperienceList({ experiences }: { experiences: ProjectExperienceDefinition[] }) {
   return (
@@ -305,38 +229,51 @@ export function PublicCapabilityCatalogue() {
         <>
           <CatalogueSection
             id="experiences"
+            headingId="capabilities-experiences-title"
             eyebrow="Built in"
             title="Experiences"
             lede="Whole workflows with their own surface: research, writing, media, music and code. Switch each one on where you want it."
           >
-            {isLoading ? <SkeletonGrid count={6} /> : <ExperienceList experiences={experiences} />}
+            {isLoading ? (
+              <CatalogueSkeletonGrid count={6} />
+            ) : (
+              <ExperienceList experiences={experiences} />
+            )}
           </CatalogueSection>
           <CatalogueSection
             id="model-tools"
+            headingId="capabilities-model-tools-title"
             eyebrow="Built in"
             title="Model tools"
             lede="Tools a model can call mid-reply, invoked with a slash command or picked up automatically when the task calls for them."
           >
-            {isLoading ? <SkeletonGrid count={6} /> : <ModelToolList modelTools={modelTools} />}
+            {isLoading ? (
+              <CatalogueSkeletonGrid count={6} />
+            ) : (
+              <ModelToolList modelTools={modelTools} />
+            )}
           </CatalogueSection>
           <CatalogueSection
             id="tools"
+            headingId="capabilities-tools-title"
             eyebrow="Built in"
             title="Function tools"
             lede="Everything the assistant can do beyond talking. Some need a Pro plan, some run on your own provider keys, and the rest come with every account."
           >
-            {isLoading ? <SkeletonGrid count={9} /> : <ToolList tools={tools} />}
+            {isLoading ? <CatalogueSkeletonGrid count={9} /> : <ToolList tools={tools} />}
           </CatalogueSection>
           <CatalogueSection
             id="recipes"
+            headingId="capabilities-recipes-title"
             eyebrow="Templates"
             title="Recipes"
             lede="One-tap setups that connect your services and run on a schedule or an event. Install one and it becomes yours to configure."
           >
-            {isLoading ? <SkeletonGrid count={6} /> : <RecipeList recipes={recipes} />}
+            {isLoading ? <CatalogueSkeletonGrid count={6} /> : <RecipeList recipes={recipes} />}
           </CatalogueSection>
           <CatalogueSection
             id="yours"
+            headingId="capabilities-yours-title"
             eyebrow="Curated by you"
             title="Teammates, skills and installed recipes are yours"
             lede="The catalogue ends where your account begins. Nothing here is shared across people; each person or workspace builds its own set."
