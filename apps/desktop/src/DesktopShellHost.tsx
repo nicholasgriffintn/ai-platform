@@ -1,0 +1,24 @@
+import { type ShellHost, ShellHostProvider } from "@ngriffin_uk/polychat-component-shell";
+import { WEB_APP_BASE_URL } from "@ngriffin_uk/polychat-library-client";
+import { type ReactNode, useMemo } from "react";
+
+import { unavailableOnDesktop } from "./lib/host-features";
+
+export function DesktopShellHost({
+  children,
+  onSignIn,
+}: {
+  children: ReactNode;
+  onSignIn: () => void;
+}) {
+  const host = useMemo<ShellHost>(
+    () => ({
+      webBaseUrl: WEB_APP_BASE_URL,
+      openAssistant: unavailableOnDesktop("Ask Poly"),
+      openSignIn: onSignIn,
+    }),
+    [onSignIn],
+  );
+
+  return <ShellHostProvider host={host}>{children}</ShellHostProvider>;
+}

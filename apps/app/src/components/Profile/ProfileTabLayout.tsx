@@ -1,7 +1,5 @@
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import type { ComponentProps, ReactNode } from "react";
-
-import { PageShell } from "~/components/Core/PageShell";
-
 type ProfileTabHeaderProps = ComponentProps<typeof PageShell.Header>;
 
 export interface ProfileTabProps {

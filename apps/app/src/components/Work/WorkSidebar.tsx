@@ -4,6 +4,12 @@ import {
   ConversationListSection,
   DEFAULT_WORK_CONVERSATION_LIST_FILTERS,
 } from "@ngriffin_uk/polychat-component-navigation";
+import {
+  ConversationGroupsDialog,
+  ConversationItemActions,
+  SidebarFooter,
+  SidebarHeader,
+} from "@ngriffin_uk/polychat-component-shell";
 import { ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
@@ -21,11 +27,6 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
-
-import { ConversationGroupsDialog } from "~/components/ConversationGroupsDialog";
-import { ConversationItemActions } from "~/components/ConversationItemActions";
-import { SidebarFooter } from "~/components/Sidebar/SidebarFooter";
-import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
 
 import { useProjectConversationActions } from "./useProjectConversationActions";
 import { useWorkData } from "./WorkDataContext";

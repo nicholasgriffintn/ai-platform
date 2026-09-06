@@ -1,3 +1,4 @@
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import {
   TaskAttentionList,
@@ -13,7 +14,6 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 import { CreateProjectDialog } from "./CreateProjectDialog";

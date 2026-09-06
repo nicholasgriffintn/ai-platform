@@ -1,8 +1,6 @@
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { ProjectActivityList } from "@ngriffin_uk/polychat-component-workspaces";
 import { useActivity } from "@ngriffin_uk/polychat-library-react";
-
-import { PageShell } from "~/components/Core/PageShell";
-
 export function ProjectActivity({ projectId }: { projectId: string }) {
   const {
     data: activities,

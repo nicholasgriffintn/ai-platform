@@ -1,25 +1,9 @@
-import { ButtonLink, PageStatus, Pet } from "@ngriffin_uk/polychat-component-ui";
-
-import { PageShell } from "~/components/Core/PageShell";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { NotFoundPage } from "@ngriffin_uk/polychat-component-shell";
 
 export function meta() {
   return [{ title: "404 - Page Not Found" }, { name: "description", content: "Page not found" }];
 }
 
 export default function CatchAllRoute() {
-  return (
-    <PageShell title="Page Not Found" sidebarContent={<StandardSidebarContent />}>
-      <PageStatus
-        icon={<Pet size={96} />}
-        title="This page has flown off."
-        message="Whatever perched here has moved on. Check the URL, or head back somewhere familiar."
-        className="h-full"
-      >
-        <ButtonLink variant="outline" href="/">
-          Back to the nest
-        </ButtonLink>
-      </PageStatus>
-    </PageShell>
-  );
+  return <NotFoundPage />;
 }

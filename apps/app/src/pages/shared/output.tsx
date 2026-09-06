@@ -1,3 +1,4 @@
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import {
   ButtonLink,
   Card,
@@ -12,8 +13,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
-import { PageShell } from "~/components/Core/PageShell";
-
 export function meta() {
   return [
     { title: "Shared output - Polychat" },

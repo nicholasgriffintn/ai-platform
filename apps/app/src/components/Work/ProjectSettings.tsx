@@ -1,3 +1,4 @@
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { ButtonLink, Card } from "@ngriffin_uk/polychat-component-ui";
 import {
   ProjectTeammatesCard,
@@ -6,7 +7,6 @@ import {
 import { getProjectBasePath, isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
 import { ChevronLeft } from "lucide-react";
 
-import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 import { ProjectBriefCard } from "./ProjectBriefCard";

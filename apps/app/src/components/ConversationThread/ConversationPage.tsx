@@ -3,15 +3,14 @@ import {
   type ThreadModeConfig,
   useConversationLaunchModeConfig,
 } from "@ngriffin_uk/polychat-component-conversation";
+import {
+  ChatSidebar,
+  ConversationProductHeader,
+  ConversationThreadNavigation,
+  PageShell,
+} from "@ngriffin_uk/polychat-component-shell";
 import { PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
-
-import { ChatSidebar } from "~/components/ChatSidebar";
-import { PageShell } from "~/components/Core/PageShell";
-
-import { ConversationProductHeader } from "./ConversationProductHeader";
-import { ConversationThreadNavigation } from "./ConversationThreadNavigation";
-
 interface ConversationPageProps {
   embedded?: boolean;
   title: string;

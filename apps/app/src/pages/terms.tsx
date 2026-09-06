@@ -1,4 +1,5 @@
 import { Prose } from "@ngriffin_uk/polychat-component-content";
+import { PageShell, StandardSidebarContent } from "@ngriffin_uk/polychat-component-shell";
 import {
   APP_NAME,
   CONTACT_LINK,
@@ -6,10 +7,6 @@ import {
   TERMS_EFFECTIVE_DATE,
 } from "@ngriffin_uk/polychat-library-client";
 import { Link } from "react-router";
-
-import { PageShell } from "~/components/Core/PageShell";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
-
 export function meta() {
   return [
     { title: "Terms of Service - Polychat" },

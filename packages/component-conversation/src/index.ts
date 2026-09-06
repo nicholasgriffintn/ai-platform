@@ -1,4 +1,3 @@
-export * from "./Thread/ConversationHeader";
 export * from "./Thread/ConversationSurface";
 export * from "./ResponseViews";
 export * from "./Thread/InlineModelSelector";

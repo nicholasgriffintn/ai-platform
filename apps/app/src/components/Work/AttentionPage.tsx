@@ -1,4 +1,5 @@
 import { SettingsSection, TaskList } from "@ngriffin_uk/polychat-component-account";
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import {
   WorkAccessEmptyState,
   WorkAttentionView,
@@ -16,7 +17,6 @@ import {
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 
-import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 export function AttentionPage() {

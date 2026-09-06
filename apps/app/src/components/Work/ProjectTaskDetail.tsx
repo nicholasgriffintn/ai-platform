@@ -1,4 +1,5 @@
 import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { BackLink, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import { TaskDetail } from "@ngriffin_uk/polychat-component-workspaces";
 import {
@@ -11,8 +12,6 @@ import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-
-import { PageShell } from "~/components/Core/PageShell";
 
 import { useProjectTaskTeammates } from "./useProjectTaskTeammates";
 import { useWorkData } from "./WorkDataContext";

@@ -1,0 +1,64 @@
+{
+  "name": "@ngriffin_uk/polychat-component-shell",
+  "version": "0.1.0",
+  "description": "Connected navigation shell shared by the Polychat web and desktop apps",
+  "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "polychat-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:package": "pnpm build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-component-content": "workspace:^",
+    "@ngriffin_uk/polychat-component-conversation": "workspace:^",
+    "@ngriffin_uk/polychat-component-models": "workspace:^",
+    "@ngriffin_uk/polychat-component-navigation": "workspace:^",
+    "@ngriffin_uk/polychat-component-ui": "workspace:^",
+    "@ngriffin_uk/polychat-library-chat": "workspace:^",
+    "@ngriffin_uk/polychat-library-client": "workspace:^",
+    "@ngriffin_uk/polychat-library-react": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "@ngriffin_uk/polychat-utility-react": "workspace:^",
+    "lucide-react": "1.37.0"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@testing-library/react": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "jsdom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "*",
+    "react": "catalog:react-peer",
+    "react-dom": "catalog:react-peer",
+    "react-router": "*",
+    "sonner": "*",
+    "zustand": "*"
+  }
+}

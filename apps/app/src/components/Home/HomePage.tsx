@@ -1,14 +1,20 @@
 import { ConversationSurfaceLayout } from "@ngriffin_uk/polychat-component-conversation";
-import { CanvasGenerationsView } from "@ngriffin_uk/polychat-component-experiences/media";
-import { PageTitle } from "@ngriffin_uk/polychat-component-ui";
-import { useComposerPrefill } from "@ngriffin_uk/polychat-library-react";
+import {
+  CanvasGenerationsView,
+  CanvasSidebarControls,
+} from "@ngriffin_uk/polychat-component-experiences/media";
+import {
+  ChatSidebar,
+  ConversationProductHeader,
+  PageShell,
+  ProductModeHeader,
+} from "@ngriffin_uk/polychat-component-shell";
+import { Button, PageTitle } from "@ngriffin_uk/polychat-component-ui";
+import { useComposerPrefill, useTrackEvent } from "@ngriffin_uk/polychat-library-react";
+import { Image as ImageIcon, MessageCircle } from "lucide-react";
 import { useState } from "react";
 
 import { useCanvasStudio } from "~/components/Canvas/useCanvasStudio";
-import { ChatSidebar } from "~/components/ChatSidebar";
-import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
-import { PageShell } from "~/components/Core/PageShell";
-import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 
 import { HomeConversationThread } from "./HomeConversationThread";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
@@ -17,16 +23,36 @@ export function HomePage() {
   const [isCanvasMode, setIsCanvasMode] = useState(false);
   const { modeConfig } = useHomeChatModeConfig();
   const canvas = useCanvasStudio({ enabled: isCanvasMode });
+  const { trackEvent } = useTrackEvent();
 
   useComposerPrefill();
+
+  const toggleCanvasMode = () => {
+    setIsCanvasMode(!isCanvasMode);
+
+    trackEvent({
+      name: isCanvasMode ? "switch_to_chat" : "switch_to_canvas",
+      category: "sidebar",
+      label: isCanvasMode ? "switch_to_chat" : "switch_to_canvas",
+      value: 1,
+    });
+  };
 
   return (
     <PageShell
       sidebarContent={
         <ChatSidebar
-          canvas={canvas}
-          isCanvasMode={isCanvasMode}
-          onCanvasModeChange={setIsCanvasMode}
+          contentOverride={isCanvasMode ? <CanvasSidebarControls canvas={canvas} /> : undefined}
+          headerActions={
+            <Button
+              type="button"
+              variant={isCanvasMode ? "iconActive" : "icon"}
+              title={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
+              aria-label={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
+              icon={isCanvasMode ? <MessageCircle size={20} /> : <ImageIcon size={20} />}
+              onClick={toggleCanvasMode}
+            />
+          }
         />
       }
       fullBleed
