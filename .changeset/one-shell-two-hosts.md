@@ -1,4 +1,6 @@
 ---
+"@assistant/app": minor
+"@assistant/desktop": minor
 "@ngriffin_uk/polychat-component-shell": minor
 "@ngriffin_uk/polychat-component-conversation": major
 "@ngriffin_uk/polychat-library-client": minor

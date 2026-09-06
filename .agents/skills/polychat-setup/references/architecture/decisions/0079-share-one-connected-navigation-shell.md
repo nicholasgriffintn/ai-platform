@@ -1,4 +1,4 @@
-# ADR 0078: Share one connected navigation shell between web and desktop
+# ADR 0079: Share one connected navigation shell between web and desktop
 
 Status: Implemented in `packages/component-shell`, `apps/app` and `apps/desktop`; the desktop application is not yet released.
 

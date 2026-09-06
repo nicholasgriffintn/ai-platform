@@ -11,6 +11,7 @@ export * from "./hooks/useArtifactPanel";
 export * from "./hooks/useAssistantActionCatalog";
 export * from "./hooks/useAuth";
 export * from "./hooks/useBilling";
+export * from "./hooks/useDesktopDownloads";
 export * from "./hooks/useCanAccessProFeatures";
 export * from "./hooks/useCanvas";
 export * from "./hooks/useCapabilityCatalog";
