@@ -44,4 +44,6 @@ export * from "./ProjectWorkbench/ProjectWorkbenchShell";
 export * from "./ProjectWorkbench/ProjectWorkbenchRunPanel";
 export * from "./ProjectWorkbench/ProjectWorkbenchRunControls";
 export * from "./ProjectWorkbench/ProjectWorkbenchServices";
+export * from "./ProjectWorkbench/ProjectWorkbenchSection";
+export * from "./ProjectWorkbench/ProjectWorkbenchApprovals";
 export * from "./ProjectWorkbench/ProjectWorkbenchPreview";

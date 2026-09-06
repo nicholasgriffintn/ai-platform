@@ -191,77 +191,83 @@ export function ProjectConversationPage({
       conversationMessages={currentConversation?.messages}
       task={conversationTask}
     >
-      <ConversationPage
-        embedded
-        pathConversationId={conversationId}
-        title={project?.name ?? "Project conversation"}
-        modeConfig={{
-          contextAttachments: isNewConversation ? projectSources.attachments : [],
-          contextAttachmentsReady: !isNewConversation || !projectSources.isLoading,
-          assistantActionRoutes: {
-            recipes: recipeManagementPath,
-          },
-          assistantActionCatalog: {
-            includeTeammates: false,
-            includeTools: false,
-            projectId,
-          },
-          allowedAssistantActionCapabilities: capabilities,
-          toolSelectionLocked: true,
-          welcomeTitle: codingEnvironment
-            ? codingPresentation.title
-            : (project?.name ?? "Project conversation"),
-          welcomeDescription: codingEnvironment
-            ? codingPresentation.description
-            : project?.description ||
-              "This conversation uses the project's instructions and capabilities.",
-          welcomeSuggestions: codingEnvironment ? codingPresentation.suggestions : undefined,
-          welcomeCapabilitySuggestions: false,
-          inputPlaceholder: {
-            newConversation: codingEnvironment
-              ? codingPresentation.placeholder
-              : "Message about this project…",
-            followUp: codingEnvironment ? codingPresentation.placeholder : "Reply…",
-          },
-          inputControls: codingEnvironment ? (
-            <ProjectCodingTaskControl
-              taskType={taskType}
-              isDisabled={isStreamLoading}
-              onChange={handleTaskTypeChange}
-            />
-          ) : (
-            <ProjectFileAsTaskControl
-              isEnabled={fileAsTask.isEnabled}
-              isDisabled={isStreamLoading || fileAsTask.isFiling}
-              onChange={fileAsTask.setIsEnabled}
-            />
-          ),
-          ...(fileAsTask.isEnabled && !codingEnvironment ? { onFileAsTask: fileAsTask.file } : {}),
-          requestOptions: {
-            metadata: { project_id: projectId },
-            ...(codingEnvironment
-              ? {
-                  options: {
-                    sandbox: {
-                      enabled: true,
-                      installationId: codingEnvironment.installationId,
-                      repo: codingEnvironment.repository,
-                      taskType,
-                      promptStrategy: codingEnvironment.promptStrategy,
-                      deliveryPolicy: codingEnvironment.deliveryPolicy,
-                      environmentSetup: codingEnvironment.environmentSetup,
-                      timeoutSeconds: codingEnvironment.timeoutSeconds,
-                    },
-                  },
-                }
+      {({ runSteering, composerBanner }) => (
+        <ConversationPage
+          embedded
+          pathConversationId={conversationId}
+          title={project?.name ?? "Project conversation"}
+          modeConfig={{
+            contextAttachments: isNewConversation ? projectSources.attachments : [],
+            contextAttachmentsReady: !isNewConversation || !projectSources.isLoading,
+            assistantActionRoutes: {
+              recipes: recipeManagementPath,
+            },
+            assistantActionCatalog: {
+              includeTeammates: false,
+              includeTools: false,
+              projectId,
+            },
+            allowedAssistantActionCapabilities: capabilities,
+            toolSelectionLocked: true,
+            welcomeTitle: codingEnvironment
+              ? codingPresentation.title
+              : (project?.name ?? "Project conversation"),
+            welcomeDescription: codingEnvironment
+              ? codingPresentation.description
+              : project?.description ||
+                "This conversation uses the project's instructions and capabilities.",
+            welcomeSuggestions: codingEnvironment ? codingPresentation.suggestions : undefined,
+            welcomeCapabilitySuggestions: false,
+            inputPlaceholder: {
+              newConversation: codingEnvironment
+                ? codingPresentation.placeholder
+                : "Message about this project…",
+              followUp: codingEnvironment ? codingPresentation.placeholder : "Reply…",
+            },
+            inputControls: codingEnvironment ? (
+              <ProjectCodingTaskControl
+                taskType={taskType}
+                isDisabled={isStreamLoading}
+                onChange={handleTaskTypeChange}
+              />
+            ) : (
+              <ProjectFileAsTaskControl
+                isEnabled={fileAsTask.isEnabled}
+                isDisabled={isStreamLoading || fileAsTask.isFiling}
+                onChange={fileAsTask.setIsEnabled}
+              />
+            ),
+            ...(fileAsTask.isEnabled && !codingEnvironment
+              ? { onFileAsTask: fileAsTask.file }
               : {}),
-          },
-          analyticsSource: "project",
-          hideComposerSuggestions: true,
-          pendingUserQuestions: pendingQuestions,
-          onToolInteraction,
-        }}
-      />
+            requestOptions: {
+              metadata: { project_id: projectId },
+              ...(codingEnvironment
+                ? {
+                    options: {
+                      sandbox: {
+                        enabled: true,
+                        installationId: codingEnvironment.installationId,
+                        repo: codingEnvironment.repository,
+                        taskType,
+                        promptStrategy: codingEnvironment.promptStrategy,
+                        deliveryPolicy: codingEnvironment.deliveryPolicy,
+                        environmentSetup: codingEnvironment.environmentSetup,
+                        timeoutSeconds: codingEnvironment.timeoutSeconds,
+                      },
+                    },
+                  }
+                : {}),
+            },
+            analyticsSource: "project",
+            hideComposerSuggestions: true,
+            pendingUserQuestions: pendingQuestions,
+            onToolInteraction,
+            composerBanner,
+            runSteering,
+          }}
+        />
+      )}
     </ProjectWorkbenchConversation>
   );
 }

@@ -24,7 +24,7 @@ test.describe("Sandbox command approval", () => {
             setupCommands: ["curl --version"],
             resumeCommands: [],
             runtimes: [],
-            setupTimeoutSeconds: 60,
+            setupTimeoutSeconds: action === "Expire" ? 180 : 60,
           },
         },
         action === "Expire" ? 300 : 120,
@@ -67,7 +67,6 @@ test.describe("Sandbox command approval", () => {
           ({ event }) => event.type === "environment_setup_command_started",
         ),
       ).toBe(false);
-      await workbench.openSteering();
       await expect(
         page.getByRole("region", { name: "Pending command approvals", exact: true }),
       ).toContainText("curl --version");
@@ -94,7 +93,6 @@ test.describe("Sandbox command approval", () => {
           { timeout: action === "Expire" ? 130_000 : 5_000 },
         )
         .toBe(action === "Approve" ? "approved" : action === "Expire" ? "timed_out" : "rejected");
-      await page.keyboard.press("Escape");
       expect(
         (
           await sandbox.respondToApproval(
@@ -111,8 +109,23 @@ test.describe("Sandbox command approval", () => {
       const events = await sandbox.events(run.runId);
 
       if (action === "Expire") {
-        expect(events.some(({ event }) => event.type === "command_approval_escalated")).toBe(true);
-        expect(events.some(({ event }) => event.type === "command_approval_timed_out")).toBe(true);
+        await expect
+          .poll(
+            async () => {
+              const latestEvents = await sandbox.events(run.runId);
+
+              return {
+                escalated: latestEvents.some(
+                  ({ event }) => event.type === "command_approval_escalated",
+                ),
+                timedOut: latestEvents.some(
+                  ({ event }) => event.type === "command_approval_timed_out",
+                ),
+              };
+            },
+            { timeout: 10_000 },
+          )
+          .toEqual({ escalated: true, timedOut: true });
       }
 
       expect(events.some(({ event }) => event.type === "environment_setup_command_started")).toBe(

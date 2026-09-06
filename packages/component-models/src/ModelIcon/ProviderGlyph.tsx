@@ -2,6 +2,7 @@ import { type ComponentProps, type ReactNode, Suspense, lazy, useMemo } from "re
 
 import type { IconType } from "./icon-type";
 import { ICON_LOADERS } from "./iconLoaders";
+import { resolveProviderIconName } from "./resolveIconName";
 
 export interface ProviderGlyphProps extends ComponentProps<IconType> {
   name: string;
@@ -10,7 +11,8 @@ export interface ProviderGlyphProps extends ComponentProps<IconType> {
 
 export function ProviderGlyph({ name, fallback = null, ...props }: ProviderGlyphProps) {
   const Icon = useMemo(() => {
-    const loadIcon = ICON_LOADERS[name];
+    const iconName = resolveProviderIconName(name);
+    const loadIcon = iconName ? ICON_LOADERS[iconName] : undefined;
 
     return loadIcon ? lazy(loadIcon) : null;
   }, [name]);

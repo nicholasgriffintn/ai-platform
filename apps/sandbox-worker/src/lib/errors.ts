@@ -23,6 +23,21 @@ export interface ClassifiedSandboxError {
   retryable: boolean;
 }
 
+export function hasSandboxErrorCode(error: unknown, code: string): boolean {
+  if (typeof error !== "object" || error === null || !("errorResponse" in error)) {
+    return false;
+  }
+
+  const response = error.errorResponse;
+
+  return (
+    typeof response === "object" &&
+    response !== null &&
+    "code" in response &&
+    response.code === code
+  );
+}
+
 function messageIncludes(message: string, terms: string[]): boolean {
   const lowerMessage = message.toLowerCase();
 

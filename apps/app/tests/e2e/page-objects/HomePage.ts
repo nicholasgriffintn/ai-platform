@@ -78,12 +78,16 @@ export class HomePage extends BasePage {
   async selectModel(modelName: string) {
     await this.clickElement(this.modelSelector);
     const modelsTab = this.page.getByRole("tab", { name: "Models", exact: true });
+    const search = this.page.getByRole("textbox", { name: "Search models" });
 
     if (await modelsTab.isVisible()) {
       await modelsTab.click();
     }
 
-    await this.fillInput(this.page.getByRole("textbox", { name: "Search models" }), modelName);
+    await search.waitFor({ state: "visible", timeout: 2_000 }).catch(async () => {
+      await this.clickElement(this.modelSelector);
+    });
+    await this.fillInput(search, modelName);
     const options = this.page.locator('[role="option"]:not([aria-disabled="true"])');
     const candidate = options.filter({ hasText: modelName }).first();
 

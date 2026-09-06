@@ -120,6 +120,13 @@ function getAttachmentIconAndLabel(attachment: AttachmentData) {
   return { preview: null, label: "" };
 }
 
+export interface ConversationRunSteering {
+  placeholder: string;
+  disabledReason?: string;
+  isSubmitting?: boolean;
+  onSubmit: (content: string) => Promise<void>;
+}
+
 interface ChatInputProps {
   goalState?: {
     canUseGoals: boolean;
@@ -148,6 +155,7 @@ interface ChatInputProps {
   modelScope?: ModelSelectorScope;
   onModelChange?: ModelSelectionChangeHandler;
   activeRunStatus?: ChatRunStatus | null;
+  runSteering?: ConversationRunSteering;
   hasConversationHistory?: boolean;
   disableAttachments?: boolean;
   hideComposerActionMenu?: boolean;
@@ -191,6 +199,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       modelScope = "default",
       onModelChange,
       activeRunStatus,
+      runSteering,
       hasConversationHistory = false,
       disableAttachments = false,
       hideComposerActionMenu = false,
@@ -699,7 +708,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     }, [chatModeCommand, commandActions, liveModeCommand]);
     const canUseDictation = canUseProComposerActions && !liveModeCommand?.isActive;
     const shouldRenderInputControls = hideTextInput && controls;
-    const isStoppable = isLoading && streamStarted && Boolean(onStopResponse || controller);
+    const isSteering = Boolean(runSteering);
+    const isSteeringBlocked = Boolean(runSteering?.disabledReason);
+    const isInputDisabled = isSteering ? isSteeringBlocked : isLoading;
+    const isStoppable =
+      !isSteering && isLoading && streamStarted && Boolean(onStopResponse || controller);
     const showComposerActionMenu = !hideComposerActionMenu && canShowActionMenu;
     const showVoiceControls = !hideVoiceControls && Boolean(canUseDictation || liveModeCommand);
     const hasComposerActions =
@@ -711,7 +724,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         !selectedAssistantAction?.item &&
         selectedAttachments.length === 0 &&
         composerSources.attachments.length === 0) ||
-      isLoading ||
+      isInputDisabled ||
+      Boolean(runSteering?.isSubmitting) ||
       isUploading ||
       isAuthenticationLoading ||
       isSubmissionBlocked;
@@ -782,7 +796,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           inputHelp={
             hideTextInput
               ? undefined
-              : "Type your message and press Enter to send. Use Shift+Enter for a new line."
+              : isSteering
+                ? "Type an instruction and press Enter to send it. The run picks it up at the next safe boundary."
+                : "Type your message and press Enter to send. Use Shift+Enter for a new line."
           }
           input={
             hideTextInput ? undefined : (
@@ -796,17 +812,21 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                 onTokenPositionsChange={handleComposerTokenPositionsChange}
                 onKeyDown={handleKeyDown}
                 placeholder={
-                  isComposingGoal
-                    ? "Describe what done looks like..."
-                    : !currentConversationId
-                      ? (placeholder?.newConversation ??
-                        NEW_CONVERSATION_PLACEHOLDERS[
-                          placeholderSeed % NEW_CONVERSATION_PLACEHOLDERS.length
-                        ])
-                      : (placeholder?.followUp ??
-                        FOLLOW_UP_PLACEHOLDERS[placeholderSeed % FOLLOW_UP_PLACEHOLDERS.length])
+                  runSteering
+                    ? (runSteering.disabledReason ?? runSteering.placeholder)
+                    : isComposingGoal
+                      ? "Describe what done looks like..."
+                      : !currentConversationId
+                        ? (placeholder?.newConversation ??
+                          NEW_CONVERSATION_PLACEHOLDERS[
+                            placeholderSeed % NEW_CONVERSATION_PLACEHOLDERS.length
+                          ])
+                        : (placeholder?.followUp ??
+                          FOLLOW_UP_PLACEHOLDERS[placeholderSeed % FOLLOW_UP_PLACEHOLDERS.length])
                 }
-                disabled={isRecording || isTranscribing || isLoading || isAuthenticationLoading}
+                disabled={
+                  isRecording || isTranscribing || isInputDisabled || isAuthenticationLoading
+                }
                 ariaLabel="Message input"
                 ariaDescribedBy="message-input-help"
               />
@@ -883,11 +903,13 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                     onClick={() => void submitSelectedAttachments()}
                     disabled={isComposerSubmitDisabled}
                     className="bg-human-action text-human-action-foreground hover:bg-human-action/90 cursor-pointer rounded-md p-2.5 shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                    title="Send message"
-                    aria-label="Send message"
+                    title={isSteering ? "Send instruction" : "Send message"}
+                    aria-label={isSteering ? "Send instruction" : "Send message"}
                   >
                     <Send className="h-5 w-5" />
-                    <span className="sr-only">Send message</span>
+                    <span className="sr-only">
+                      {isSteering ? "Send instruction" : "Send message"}
+                    </span>
                   </Button>
                 )}
               </>

@@ -13,12 +13,13 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import {
   agentModeSchema,
+  createSuggestedProjectFlow,
   type ProjectFlow,
   type ProjectFlowStage,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 import { titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
-import { ArrowDown, ArrowUp, Plus, Settings2, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Settings2, Sparkles, Trash2 } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
 export interface FlowEditorDialogProps {
@@ -76,6 +77,7 @@ export function FlowEditorDialog({
 }: FlowEditorDialogProps) {
   const [stages, setStages] = useState<ProjectFlowStage[]>([]);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const isNewFlow = flow === null;
 
   useEffect(() => {
     if (open) {
@@ -146,8 +148,25 @@ export function FlowEditorDialog({
                 Add teammates and skills through project Capabilities, where you can also build a
                 new teammate for this project.
               </p>
+              {isNewFlow ? (
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Not sure where to start? The suggested pipeline runs research, plan, build and
+                  review with the project default agent, pausing for you after plan and review.
+                </p>
+              ) : null}
             </div>
             <div className="flex flex-wrap gap-2">
+              {isNewFlow ? (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  icon={<Sparkles size={13} />}
+                  onClick={() => setStages(createSuggestedProjectFlow().stages)}
+                >
+                  Use suggested pipeline
+                </Button>
+              ) : null}
               <ButtonLink
                 href={createTeammateHref}
                 variant="ghost"

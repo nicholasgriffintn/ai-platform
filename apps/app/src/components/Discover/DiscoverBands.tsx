@@ -1,5 +1,7 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 
+import { SectionNav } from "~/components/Core/SectionNav";
+
 import { CapabilitiesBand } from "./bands/CapabilitiesBand";
 import { ChatAndWorkBand } from "./bands/ChatAndWorkBand";
 import { KeysBand } from "./bands/KeysBand";
@@ -10,22 +12,6 @@ import { DISCOVER_SECTIONS } from "./discover-sections";
 
 export interface DiscoverBandsProps {
   variant: "home" | "page";
-}
-
-function DiscoverSectionNav() {
-  return (
-    <nav aria-label="Discover sections" className="flex flex-wrap gap-2">
-      {DISCOVER_SECTIONS.map((section) => (
-        <a
-          key={section.id}
-          href={`#${section.id}`}
-          className="bg-surface border-border text-muted-foreground hover:border-border-strong hover:text-foreground rounded-full border px-3 py-1 text-xs font-medium no-underline transition-colors"
-        >
-          {section.label}
-        </a>
-      ))}
-    </nav>
-  );
 }
 
 export function DiscoverBands({ variant }: DiscoverBandsProps) {
@@ -43,7 +29,7 @@ export function DiscoverBands({ variant }: DiscoverBandsProps) {
             One place to talk to every model, keep what comes of it, and bring other people in when
             a question grows into a project.
           </p>
-          <DiscoverSectionNav />
+          <SectionNav label="Discover sections" sections={DISCOVER_SECTIONS} />
         </header>
       )}
       <ChatAndWorkBand />

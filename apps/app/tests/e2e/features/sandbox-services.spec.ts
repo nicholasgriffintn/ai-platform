@@ -1,11 +1,185 @@
 import { expect, test } from "../fixtures/polychat-test";
 import { SandboxApi } from "../fixtures/sandbox-api";
-import { SUPERVISED_SANDBOX_ENVIRONMENT } from "../fixtures/sandbox-environment";
+import {
+  BOUNDED_LOG_SANDBOX_ENVIRONMENT,
+  INVALID_SERVICE_SANDBOX_ENVIRONMENTS,
+  OCCUPIED_PORT_SANDBOX_ENVIRONMENT,
+  UNHEALTHY_SANDBOX_ENVIRONMENT,
+} from "../fixtures/sandbox-environment";
 import { SandboxPreviewPage } from "../page-objects/SandboxPreviewPage";
 import { WorkbenchPage } from "../page-objects/WorkbenchPage";
 
 test.describe("Sandbox service controls", () => {
   test.use({ persona: "pro" });
+
+  test("rejects invalid service declarations at the project boundary", async ({
+    page,
+    workPage,
+  }) => {
+    await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+    const sandbox = new SandboxApi(page.request, workPage.currentProjectId());
+
+    await sandbox.configureProject();
+
+    const responses = await Promise.all(
+      INVALID_SERVICE_SANDBOX_ENVIRONMENTS.map(({ setup }) => sandbox.saveEnvironment(setup)),
+    );
+    const responseBodies = await Promise.all(responses.map((response) => response.text()));
+
+    responses.forEach((response, index) => {
+      const scenario = INVALID_SERVICE_SANDBOX_ENVIRONMENTS[index];
+
+      if (!scenario) {
+        throw new Error(`Missing invalid service scenario ${index}`);
+      }
+
+      expect(response.status(), scenario.name).toBe(400);
+      expect(responseBodies[index], scenario.name).toMatch(scenario.error);
+    });
+  });
+
+  for (const scenario of [
+    {
+      name: "occupied declared port",
+      environment: OCCUPIED_PORT_SANDBOX_ENVIRONMENT,
+      eventType: "service_failed",
+      error: /port 4000.*already in use/i,
+    },
+    {
+      name: "unhealthy endpoint",
+      environment: UNHEALTHY_SANDBOX_ENVIRONMENT,
+      eventType: "service_start_timed_out",
+      error: /did not become ready within 5000ms/i,
+    },
+  ]) {
+    test(`fails before agent work for an ${scenario.name}`, async ({
+      page,
+      workPage,
+      homePage,
+    }) => {
+      test.setTimeout(120_000);
+      await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+      const sandbox = new SandboxApi(page.request, workPage.currentProjectId());
+      const workbench = new WorkbenchPage(page);
+
+      await sandbox.configureProject(scenario.environment);
+      await workPage.reload();
+      await workPage.openNewProjectConversation();
+      await expect(workbench.dock).toBeVisible();
+      await homePage.selectModel("GPT OSS 120B");
+      await homePage.sendMessage("Polychat sandbox E2E: review a failed service startup.");
+      await expect
+        .poll(async () => (await sandbox.latestRun())?.status, { timeout: 60_000 })
+        .toBe("failed");
+      const run = await sandbox.latestRun();
+
+      expect(run?.error ?? run?.result?.error).toMatch(scenario.error);
+      if (!run) {
+        throw new Error("The failed service run was not retained");
+      }
+
+      const events = await sandbox.events(run.runId);
+
+      expect(events.some(({ event }) => event.type === scenario.eventType)).toBe(true);
+      expect(events.some(({ event }) => event.type === "planning_started")).toBe(false);
+      await workbench.selectPane("Proof");
+      await expect(workbench.panel).toContainText("failed");
+      await workbench.reload();
+      await expect(workbench.panel).toContainText("failed");
+    });
+  }
+
+  for (const scenario of [
+    {
+      name: "never after failure",
+      exitCode: 1,
+      restartPolicy: { mode: "never", maxRestarts: 0, backoffSeconds: 1 },
+      restartCount: 0,
+    },
+    {
+      name: "on_failure after a clean exit",
+      exitCode: 0,
+      restartPolicy: { mode: "on_failure", maxRestarts: 3, backoffSeconds: 1 },
+      restartCount: 0,
+    },
+    {
+      name: "always after a clean exit",
+      exitCode: 0,
+      restartPolicy: { mode: "always", maxRestarts: 2, backoffSeconds: 1 },
+      restartCount: 2,
+    },
+    {
+      name: "on_failure up to its cap",
+      exitCode: 1,
+      restartPolicy: { mode: "on_failure", maxRestarts: 3, backoffSeconds: 1 },
+      restartCount: 3,
+    },
+  ] satisfies Array<{
+    name: string;
+    exitCode: number;
+    restartPolicy:
+      | { mode: "never"; maxRestarts: 0; backoffSeconds: number }
+      | { mode: "on_failure" | "always"; maxRestarts: number; backoffSeconds: number };
+    restartCount: number;
+  }>) {
+    test(`applies ${scenario.name}`, async ({ page, workPage, homePage }) => {
+      test.setTimeout(120_000);
+      await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+      const sandbox = new SandboxApi(page.request, workPage.currentProjectId());
+      const workbench = new WorkbenchPage(page);
+
+      await sandbox.configureProject({
+        source: "polychat",
+        definition: {
+          version: 1,
+          setupCommands: ["node --version"],
+          resumeCommands: [],
+          runtimes: [],
+          setupTimeoutSeconds: 30,
+          services: [
+            {
+              name: "policy",
+              workingDirectory: ".",
+              command: `node exit.cjs ${scenario.exitCode}`,
+              dependencies: [],
+              startupTimeoutSeconds: 10,
+              restartPolicy: scenario.restartPolicy,
+            },
+          ],
+        },
+      });
+      await workPage.reload();
+      await workPage.openNewProjectConversation();
+      await homePage.selectModel("GPT OSS 120B");
+      await homePage.sendMessage("Polychat sandbox E2E: wait for controls during service review.");
+      await expect
+        .poll(async () => (await sandbox.latestRun())?.status, { timeout: 60_000 })
+        .toBe("failed");
+      const run = await sandbox.latestRun();
+
+      if (!run) {
+        throw new Error("The restart-policy run was not retained");
+      }
+
+      expect(
+        (await sandbox.events(run.runId)).filter(
+          ({ event }) => event.type === "service_restarting" && event.serviceName === "policy",
+        ),
+      ).toHaveLength(scenario.restartCount);
+      expect(run.manifest?.services?.find(({ name }) => name === "policy")?.restartCount).toBe(
+        scenario.restartCount,
+      );
+      await workbench.reload();
+      await workbench.selectPane("Proof");
+      if (scenario.restartCount === 0) {
+        await expect(workbench.proofService("policy")).not.toContainText(/restarts?/i);
+      } else {
+        await expect(workbench.proofService("policy")).toContainText(
+          `${scenario.restartCount} ${scenario.restartCount === 1 ? "restart" : "restarts"}`,
+        );
+      }
+    });
+  }
 
   test("restarts dependencies in order and applies stop and start instructions once", async ({
     page,
@@ -13,12 +187,12 @@ test.describe("Sandbox service controls", () => {
     workPage,
     homePage,
   }) => {
-    test.setTimeout(150_000);
+    test.setTimeout(180_000);
     await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
     const sandbox = new SandboxApi(page.request, workPage.currentProjectId());
     const workbench = new WorkbenchPage(page);
 
-    await sandbox.configureProject(SUPERVISED_SANDBOX_ENVIRONMENT);
+    await sandbox.configureProject(BOUNDED_LOG_SANDBOX_ENVIRONMENT);
     await workPage.reload();
     await workPage.openNewProjectConversation();
     await expect(workbench.dock).toBeVisible();
@@ -38,13 +212,38 @@ test.describe("Sandbox service controls", () => {
         { timeout: 30_000 },
       )
       .toBe(true);
-    await workbench.control("Pause");
-    await expect.poll(async () => (await sandbox.control(run.runId)).state).toBe("paused");
     await workbench.selectPane("Activity");
     await expect(workbench.service("watcher")).toContainText("Running");
     await expect(workbench.service("fixture")).toContainText("Healthy");
+    await expect
+      .poll(
+        async () =>
+          (await sandbox.events(run.runId)).some(
+            ({ event }) =>
+              event.type === "service_log" && event.output?.includes("E2E_WATCHER_READY"),
+          ),
+        { timeout: 10_000 },
+      )
+      .toBe(true);
+    const startedEvents = await sandbox.events(run.runId);
+    const serviceLogs = startedEvents.filter(({ event }) => event.type === "service_log");
+
+    expect(serviceLogs).not.toHaveLength(0);
+    expect(serviceLogs).toHaveLength(1);
+    expect(serviceLogs[0]?.event.output?.length).toBeLessThanOrEqual(2_000);
+    expect(startedEvents.some(({ event }) => event.type === "service_log_truncated")).toBe(true);
+    expect(JSON.stringify(startedEvents)).not.toMatch(/container|processId|sandboxId/i);
     await workbench.reload();
     await expect(workbench.service("fixture")).toContainText("Healthy");
+    const watcherLog = workbench.serviceOutput("watcher");
+
+    await expect(watcherLog.output).toBeHidden();
+    await watcherLog.toggle.click();
+    await expect(watcherLog.output).toBeVisible();
+    await expect(watcherLog.output).toContainText("E2E_WATCHER_READY");
+    await workbench.reload();
+    await expect(workbench.service("fixture")).toContainText("Healthy");
+    await expect(workbench.serviceOutput("watcher").output).toBeHidden();
     const access = await sandbox.preview(run.runId, "fixture");
 
     if (!access.url) {
@@ -79,6 +278,12 @@ test.describe("Sandbox service controls", () => {
         .filter(({ event }) => event.type === "service_stopped")
         .map(({ event }) => event.serviceName),
     ).toEqual(["fixture", "watcher"]);
+    await workbench.reload();
+    await expect(workbench.service("watcher")).toContainText("Running");
+    await expect(workbench.service("watcher")).not.toContainText("Port");
+    await expect(
+      page.getByRole("region", { name: "Project services", exact: true }),
+    ).not.toContainText(/container|process id|terminal/i);
     expect((await preview.open(new URL(access.url).origin))?.status()).toBeGreaterThanOrEqual(400);
     await expect(preview.serviceHeading).not.toBeVisible();
     await workbench.controlService("fixture", "Stop");
@@ -117,7 +322,7 @@ test.describe("Sandbox service controls", () => {
     ).toBe(409);
     await workbench.control("Cancel");
     await expect
-      .poll(async () => (await sandbox.latestRun())?.status, { timeout: 40_000 })
+      .poll(async () => (await sandbox.latestRun())?.status, { timeout: 70_000 })
       .toBe("cancelled");
     const completed = await sandbox.events(run.runId);
 

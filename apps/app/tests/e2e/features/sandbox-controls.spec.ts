@@ -58,12 +58,9 @@ test.describe("Sandbox run supervision", () => {
           ({ event }) => event.type === "quality_gate_started",
         ),
       ).toBe(false);
-      await workbench.openSteering();
       await workbench.addInstruction("Keep the verified README change.");
-      await expect(page.getByRole("dialog", { name: "Steer this run" })).toContainText(
-        "Keep the verified README change.",
-      );
-      await page.keyboard.press("Escape");
+      await workbench.selectPane("Activity");
+      await expect(workbench.panel).toContainText("Keep the verified README change.");
       const key = "repeatable-sandbox-instruction";
 
       expect(

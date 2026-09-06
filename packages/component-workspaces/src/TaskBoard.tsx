@@ -430,6 +430,7 @@ export function TaskBoard({
           </div>
         ) : tasks.length ? (
           <EmptyState
+            variant="inset"
             icon={<SlidersHorizontal className="text-muted-foreground" size={24} />}
             title="No work matches"
             message="Adjust the queue filters to see more work."
@@ -442,6 +443,7 @@ export function TaskBoard({
           />
         ) : (
           <EmptyState
+            variant="inset"
             icon={<ListChecks className="text-muted-foreground" size={24} />}
             title="The queue is empty"
             message="Add an outcome, then let the configured teammates move it through the pipeline."

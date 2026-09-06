@@ -36,7 +36,7 @@ Steer a live run through its existing sandbox instruction queue and execution-co
 
 Record the current user on instructions accepted from the public API. Internal worker-authored approval requests may omit that actor. Preview annotations use the same runner-only instruction boundary, so the Activity event traces the annotation to its submitting user without granting the preview application any API credential or parent-page action.
 
-Project membership permits these run records to be read. Only the initiating runner may add instructions, change run control or resolve its command approvals. Approval expiry and one-time resolution remain coordinator decisions, and presentation state such as an open steering dialog never grants or persists authority.
+Project membership permits these run records to be read. Only the initiating runner may add instructions, change run control or resolve its command approvals. Approval expiry and one-time resolution remain coordinator decisions, and presentation state such as the composer's steering mode never grants or persists authority.
 
 On wide surfaces, keep Conversation visible beside one selected supporting pane. Narrow web and iOS may show one pane at a time, use a drawer or navigate to a detail view. Pane names and contract semantics are shared; layout, navigation and local interaction state are not. Do not require React components to be shared with iOS.
 

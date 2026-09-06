@@ -55,6 +55,7 @@ import { useRemoteConversationActivity } from "~/hooks/useRemoteConversationActi
 import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
 import type { ChatSuggestion } from "~/lib/chat-suggestions";
 import { isModelSubmissionBlocked } from "~/lib/chat/model-readiness";
+import { getErrorMessage } from "~/lib/errors";
 import { openExternalUrl } from "~/lib/external-navigation";
 import { useComposerDraft } from "~/state/composer-draft";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
@@ -63,7 +64,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 
-import { ChatInput, type ChatInputHandle } from "./ChatInput";
+import { ChatInput, type ChatInputHandle, type ConversationRunSteering } from "./ChatInput";
 import { ChatRunStatusBanner } from "./ChatRunStatusBanner";
 import { ChatSuggestions } from "./ChatSuggestions";
 import { FooterInfo } from "./FooterInfo";
@@ -122,6 +123,8 @@ export interface ConversationThreadModeConfig {
   onClearContextAttachments?: () => void;
   pendingUserQuestions?: UserQuestionSet | null;
   onFileAsTask?: (objective: string) => Promise<boolean>;
+  composerBanner?: ReactNode;
+  runSteering?: ConversationRunSteering;
   onToolInteraction?: (
     toolName: string,
     action: Parameters<ToolInteractionHandler>[1],
@@ -371,6 +374,29 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         return false;
       }
 
+      const runSteering = modeConfig?.runSteering;
+
+      if (runSteering) {
+        const instruction = composerInput.trim();
+
+        if (!instruction) {
+          return false;
+        }
+
+        setComposerInput("");
+
+        try {
+          await runSteering.onSubmit(instruction);
+
+          return true;
+        } catch (error) {
+          setComposerInput(instruction);
+          toast.error(getErrorMessage(error, "The instruction could not be sent"));
+
+          return false;
+        }
+      }
+
       if (fileAsTask) {
         const objective = composerInput.trim();
 
@@ -583,6 +609,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       compactConversation,
       sendMessage,
       resolveAssistantActionSubmit,
+      modeConfig?.runSteering,
       trackEvent,
       trackError,
       currentConversationId,
@@ -636,7 +663,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
-      if (isStreamLoading || isModelInitializing) {
+      if ((isStreamLoading && !modeConfig?.runSteering) || isModelInitializing) {
         return;
       }
 
@@ -667,6 +694,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       isStreamLoading,
       isModelInitializing,
       handleSubmit,
+      modeConfig?.runSteering,
     ],
   );
 
@@ -895,6 +923,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           currentConversation.latest_run.status === "interrupted") ? (
           <ChatRunStatusBanner run={currentConversation.latest_run} />
         ) : null}
+        {modeConfig?.composerBanner}
         <ChatInput
           goalState={goalState}
           ref={chatInputRef}
@@ -915,6 +944,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           modelScope={modeConfig?.modelScope}
           onModelChange={modeConfig?.onModelChange}
           activeRunStatus={currentConversation?.latest_run?.status}
+          runSteering={modeConfig?.runSteering}
           hasConversationHistory={messages.length > 0}
           hideComposerActionMenu={modeConfig?.hideComposerActionMenu}
           allowedAssistantActionCapabilities={modeConfig?.allowedAssistantActionCapabilities}

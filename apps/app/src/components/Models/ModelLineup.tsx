@@ -1,4 +1,4 @@
-import { getModelTierIcon, ModelIcon, ProviderGlyph } from "@ngriffin_uk/polychat-component-models";
+import { getModelTierIcon, ModelIcon } from "@ngriffin_uk/polychat-component-models";
 import { Badge, cn, Skeleton } from "@ngriffin_uk/polychat-component-ui";
 import {
   formatReasoningLabel,
@@ -15,6 +15,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
+import { MODELS_SECTIONS } from "~/components/Models/models-sections";
+import { ModelsSection } from "~/components/Models/ModelsSection";
+import { ProviderMark } from "~/components/Models/ProviderMark";
 import { useModelCatalogue, useModels } from "~/hooks/useModels";
 import { formatProviderLabel } from "~/lib/model-catalogue";
 import {
@@ -79,15 +82,7 @@ function EntryMark({ entry, size = 16 }: { entry: LineupEntryView; size?: number
       size={size}
     />
   ) : (
-    <ProviderGlyph
-      name={entry.provider}
-      size={size}
-      fallback={
-        <span aria-hidden className="text-muted-foreground font-mono text-[10px] uppercase">
-          {entry.provider.charAt(0)}
-        </span>
-      }
-    />
+    <ProviderMark provider={entry.provider} size={size} />
   );
 }
 
@@ -316,31 +311,11 @@ export function ModelLineup() {
   const { isLoading } = useLineupModels();
 
   return (
-    <div className="space-y-12">
-      <header className="space-y-4 pt-2">
-        <p className="polychat-eyebrow">Modes and models</p>
-        <h1 className="font-display text-foreground text-4xl font-medium tracking-tight text-balance md:text-5xl">
-          The right model for each job
-        </h1>
-        <p className="text-muted-foreground max-w-prose text-lg leading-relaxed">
-          Polychat leans on the strongest generalist models where reasoning matters and on small,
-          fast models where speed and cost do. Pick a tier per message and the first model your plan
-          can reach wins, whether that is through Polychat or your own provider keys.
-        </p>
-      </header>
-
-      <section aria-labelledby="lineup-tiers-title" className="space-y-5">
-        <div className="space-y-1">
-          <h2
-            id="lineup-tiers-title"
-            className="font-display text-foreground text-2xl font-medium tracking-tight"
-          >
-            Tiers
-          </h2>
-          <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">
-            {MODEL_LINEUP_RUNTIME_DEFINITIONS.hosted.description}
-          </p>
-        </div>
+    <>
+      <ModelsSection
+        section={MODELS_SECTIONS.tiers}
+        description={`Polychat leans on the strongest generalist models where reasoning matters and on small, fast models where speed and cost do. ${MODEL_LINEUP_RUNTIME_DEFINITIONS.hosted.description}`}
+      >
         {isLoading ? (
           <LineupSkeleton />
         ) : (
@@ -350,55 +325,29 @@ export function ModelLineup() {
             ))}
           </ul>
         )}
-      </section>
+      </ModelsSection>
 
-      <section aria-labelledby="lineup-local-title" className="space-y-5">
-        <div className="space-y-1">
-          <h2
-            id="lineup-local-title"
-            className="font-display text-foreground text-2xl font-medium tracking-tight"
-          >
-            On your own hardware
-          </h2>
-          <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">
-            The same tiers apply when nothing leaves your machine. Sizes are chosen to fit typical
-            laptops first and larger local servers second.
-          </p>
-        </div>
+      <ModelsSection
+        section={MODELS_SECTIONS.local}
+        description="The same tiers apply when nothing leaves your machine. Sizes are chosen to fit typical laptops first and larger local servers second."
+      >
         <div className="grid gap-4 lg:grid-cols-2">
           <LocalRuntimeTable runtime="browser" />
           <LocalRuntimeTable runtime="local-server" />
         </div>
-      </section>
+      </ModelsSection>
 
-      <section aria-labelledby="lineup-system-title" className="space-y-5">
-        <div className="space-y-1">
-          <h2
-            id="lineup-system-title"
-            className="font-display text-foreground text-2xl font-medium tracking-tight"
-          >
-            System models
-          </h2>
-          <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">
-            Specialist jobs use fixed, inexpensive models rather than the conversation tier. Each
-            list is a hierarchy too, so a Free plan still gets a working default.
-          </p>
-        </div>
+      <ModelsSection
+        section={MODELS_SECTIONS.system}
+        description="Specialist jobs use fixed, inexpensive models rather than the conversation tier. Each list is a hierarchy too, so a Free plan still gets a working default."
+      >
         <SystemModels />
-      </section>
+      </ModelsSection>
 
-      <section aria-labelledby="lineup-automations-title" className="space-y-5">
-        <div className="space-y-1">
-          <h2
-            id="lineup-automations-title"
-            className="font-display text-foreground text-2xl font-medium tracking-tight"
-          >
-            Behind the scenes
-          </h2>
-          <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">
-            Where the other parts of Polychat get their models from.
-          </p>
-        </div>
+      <ModelsSection
+        section={MODELS_SECTIONS.behindTheScenes}
+        description="Where the other parts of Polychat get their models from."
+      >
         <ul aria-label="Automations" className="grid gap-3 sm:grid-cols-2">
           {AUTOMATION_ROWS.map((row) => (
             <li
@@ -415,7 +364,7 @@ export function ModelLineup() {
             </li>
           ))}
         </ul>
-      </section>
-    </div>
+      </ModelsSection>
+    </>
   );
 }
