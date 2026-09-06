@@ -16,3 +16,5 @@
 - [ ] Confirm no screenshot bytes, preview cookie, bootstrap grant, forwarding token, container address or DOM selector is written to conversation, Activity, browser logs or API logs.
 
 **Stop and report if:** preview content gains trusted control placement or parent-page authority, feedback can be forged by the frame or submitted by a non-runner, duplicate instructions appear, or stale access continues after authority is removed.
+
+**Local automated evidence:** `features/sandbox-preview.spec.ts` confirms an embedded healthy service, the trusted route field, Mobile preset, a marked region, element reference and annotation. One ordinary message instruction retains that context and its Activity presentation after reload. `features/sandbox-membership.spec.ts` confirms another member can review the frame while feedback and run controls remain disabled; removing membership denies existing external access and replacement preview access. Actor attribution, remaining viewport states, existing embedded access after removal and malicious-frame behaviour still need coverage.

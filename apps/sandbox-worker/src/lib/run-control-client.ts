@@ -6,42 +6,9 @@ import {
   type SandboxRunInstructionEnvelope,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { createPolychatRequest } from "./polychat-request";
+import { createPolychatRequest, fetchWithTimeout } from "./polychat-request";
 
 const DEFAULT_CONTROL_REQUEST_TIMEOUT_MS = 8000;
-
-async function fetchWithTimeout(
-  execute: (signal: AbortSignal) => Promise<Response>,
-  timeoutMs: number,
-  signal?: AbortSignal,
-): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutHandle = setTimeout(() => {
-    controller.abort();
-  }, timeoutMs);
-
-  const forwardAbort = () => {
-    controller.abort();
-  };
-
-  if (signal) {
-    if (signal.aborted) {
-      clearTimeout(timeoutHandle);
-      throw new DOMException("Request aborted", "AbortError");
-    }
-
-    signal.addEventListener("abort", forwardAbort, { once: true });
-  }
-
-  try {
-    return await execute(controller.signal);
-  } finally {
-    clearTimeout(timeoutHandle);
-    if (signal) {
-      signal.removeEventListener("abort", forwardAbort);
-    }
-  }
-}
 
 export interface RunControlClientOptions {
   userToken: string;

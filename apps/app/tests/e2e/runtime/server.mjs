@@ -8,11 +8,14 @@ import { fileURLToPath } from "node:url";
 import { Miniflare } from "miniflare";
 
 import { resolveProjectTaskModelResponse } from "./project-task-model.mjs";
+import { normaliseResponsesRequest, responsesToolCallResponse } from "./provider-request.mjs";
 import {
   createSandboxWorkerOptions,
   mockSandboxGitHubRequest,
   resolveSandboxContainerEngine,
   resolveSandboxModelTool,
+  SANDBOX_WORKER_NAME,
+  stopSandboxContainers,
 } from "./sandbox-runtime.mjs";
 
 const runtimeDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -145,9 +148,10 @@ export class MockAi extends WorkerEntrypoint {
 		}
     const content = body?.messages?.at(-1)?.content;
     const prompt = typeof content === "string" ? content : JSON.stringify(content ?? "");
+    const responseText = prompt.includes("You are a title generator") ? "Release validation chat" : "E2E response: " + prompt;
     if (body?.stream) {
       const chunks = [
-        { response: "E2E response: " + prompt },
+        { response: responseText },
         {
           response: "",
           usage: { prompt_tokens: 8, completion_tokens: 4, total_tokens: 12 },
@@ -161,7 +165,7 @@ export class MockAi extends WorkerEntrypoint {
       }).body;
     }
     return {
-      response: "E2E response: " + prompt,
+      response: responseText,
       usage: { prompt_tokens: 8, completion_tokens: 4, total_tokens: 12 },
     };
   }
@@ -712,7 +716,25 @@ async function mockExternalRequest(request) {
       });
     }
 
-    const responseText = `E2E response: ${JSON.stringify(body.input ?? "")}`;
+    const normalised = normaliseResponsesRequest(body);
+    const prompt = extractPrompt(normalised);
+    const taskResponse = resolveProjectTaskModelResponse(normalised);
+    const toolCall =
+      resolveSandboxModelTool(normalised) ??
+      taskResponse?.toolCall ??
+      resolveToolCallTrigger(prompt);
+
+    if (toolCall) {
+      return responsesToolCallResponse(toolCall, body.model, body.stream);
+    }
+
+    const responseText = taskResponse
+      ? taskResponse.content
+      : prompt.includes("Polychat sandbox E2E")
+        ? "Update README.md, then validate the change with:\n```sh\nnode verify.cjs\n```"
+        : prompt.includes("You are a title generator")
+          ? "Release validation chat"
+          : `E2E response: ${JSON.stringify(body.input ?? "")}`;
 
     if (body.stream === true) {
       return openAiResponsesStreamingResponse(responseText);
@@ -987,7 +1009,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
           AI: { name: "external-services", entrypoint: "MockAi" },
           SEND_EMAIL: { name: "external-services", entrypoint: "MockEmail" },
           TRAINING_WORKER: { name: "training" },
-          SANDBOX_WORKER: { name: "sandbox" },
+          SANDBOX_WORKER: { name: SANDBOX_WORKER_NAME },
         },
         outboundService: mockExternalRequest,
       },
@@ -1445,6 +1467,7 @@ async function seedPersonas(database, seedMaterial) {
 }
 
 let runtime;
+let stopping = false;
 
 async function start() {
   const apiBundle = buildWorkerBundle(
@@ -1476,11 +1499,20 @@ async function start() {
 }
 
 async function stop(exitCode = 0) {
+  if (stopping) {
+    return;
+  }
+
+  stopping = true;
   try {
-    await runtime?.dispose();
+    stopSandboxContainers();
   } finally {
-    rmSync(temporaryDirectory, { recursive: true, force: true });
-    process.exit(exitCode);
+    try {
+      await runtime?.dispose();
+    } finally {
+      rmSync(temporaryDirectory, { recursive: true, force: true });
+      process.exit(exitCode);
+    }
   }
 }
 

@@ -4,6 +4,7 @@ Run the pending queue against isolated local data. Checked boxes record automate
 
 ## Results
 
+- **Current release:** `pnpm test:e2e:release` passes all 172 browser journeys after the title fixture and preview CSP fixes, including real sandbox execution, controls, environment failures, cache, approval/rejection and member preview authority. The visual report contains 169 matched and 110 changed captures; changed captures still require review. Additional service-control and approval-expiry cases are being validated separately.
 - **Checkout:** started clean on local `main`; no branch, worktree, push or PR.
 - **Build:** `pnpm build:e2e` passed.
 - **Baseline:** `pnpm test:e2e:release` ran 139 Chromium journeys: 136 passed, three failed, none skipped.
@@ -31,6 +32,13 @@ Run the pending queue against isolated local data. Checked boxes record automate
 - **Latest full suites:** API passed 1,905 tests across 260 files; web passed 286 tests across 70 files. E2E typechecking passed using the app workspace's TypeScript executable.
 
 ## Environment and remaining evidence
+
+- The member review journey passes: current membership permits service review, runner-only controls and feedback stay disabled, direct control and instruction requests return 403, and removing membership revokes existing preview access and denies replacement access. Both command approval journeys pass, including rejection before execution and a conflicting second resolution. E2E typechecking passes with these additions.
+- The next full release run passed 115 of 169 journeys before failures from an outdated title-provider fixture and another lost Wrangler proxy connection. Update the Workers AI and Responses title fixtures for the current model tiers; all five affected focused conversation and billing journeys now pass. Repeat the full suite with the new approval and membership journeys before claiming release completion.
+
+- The post-tier sandbox/model run passed 13 of 14 journeys and exposed the app's CSP blocking the embedded preview. Permit only the configured preview wildcard host through `VITE_SANDBOX_PREVIEW_HOST`; 19 focused security-policy tests pass. The extended preview rerun passes external and embedded access, partitioned cookies, signature/origin/replay rejection, service-principal enforcement, revocation and persisted review feedback. The latest API and web suites pass 1,902 tests across 258 files and 290 tests across 71 files; sandbox passes 80 tests across 15 files. Start a fresh full release run after these fixes.
+
+- Sandbox supervision and cache passed three complete journeys covering pause/resume, pause/cancel and snapshot reuse/rebuild/delete. The initial preview journey passed real gateway access, replay rejection and HTTP revocation. Sandbox tests passed 80 tests across 15 files. Rebuild all package consumers after the shared checkout's model-tier update before repeating the wider suites.
 
 - Run the documented test runtime with access to Wrangler's local registry. The sandboxed attempt failed during startup; the same command succeeded with sandbox approval. Native tests similarly required access to CoreSimulator.
 - One release run lost Wrangler's proxy connection after 96 journeys, causing downstream connection failures. The following full run remained stable; no alternate host, port or runtime workaround was used.

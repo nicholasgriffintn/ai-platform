@@ -3,7 +3,7 @@ import { expect, test } from "../fixtures/polychat-test";
 test.describe("Persisted model selection", () => {
   test.use({ persona: "pro" });
 
-  test("retains a Pro model and response controls after reload, then preserves deliberate Auto", async ({
+  test("retains a Pro model and response controls after reload, then preserves the Default tier", async ({
     homePage,
     page,
   }) => {
@@ -25,12 +25,12 @@ test.describe("Persisted model selection", () => {
     expect(request.verbosity).toBe("caveman");
     expect(request.service_tier).toBe("fast");
     await homePage.waitForChatResponse(0);
-    await homePage.selectAutomaticMode("Auto");
+    await homePage.selectModelTier("Default");
     await homePage.reload();
     await homePage.waitForPersonaReady("pro");
-    await expect(page.getByLabel("Select a model", { exact: true })).toContainText("Auto");
+    await expect(page.getByLabel("Select a model", { exact: true })).toContainText("Default");
     const automatic = await homePage.sendMessageAndRequireCompletion(
-      "Use my deliberate Auto selection",
+      "Use my deliberate Default tier selection",
     );
 
     expect(automatic.model).toBeUndefined();

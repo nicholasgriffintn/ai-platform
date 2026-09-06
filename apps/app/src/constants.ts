@@ -1,8 +1,14 @@
+import { sandboxPreviewFrameSource } from "~/lib/preview-origin";
+
 export const IS_PRODUCTION = import.meta.env.PROD;
 export const IS_DEVELOPMENT = import.meta.env.DEV;
 export const BUILD_MODE = import.meta.env.MODE;
 
 const IS_E2E_BUILD = BUILD_MODE === "e2e";
+const PREVIEW_FRAME_SOURCE = sandboxPreviewFrameSource(
+  import.meta.env.VITE_SANDBOX_PREVIEW_HOST,
+  IS_DEVELOPMENT || IS_E2E_BUILD,
+);
 
 export const APP_NAME = "Polychat";
 export const CONTACT_LINK = "https://nicholasgriffin.dev/contact";
@@ -51,6 +57,7 @@ const COMMON_CSP = {
     "https://hcaptcha.com",
     "https://*.hcaptcha.com",
     "https://strudel.cc",
+    ...(PREVIEW_FRAME_SOURCE ? [PREVIEW_FRAME_SOURCE] : []),
   ],
   styleSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com", "'self'", "'unsafe-inline'"],
   fontSrc: ["'self'", "data:"],

@@ -957,7 +957,7 @@ test.describe("Pro message attachments", () => {
     await expect(page.getByText("Council convened", { exact: true })).toBeVisible();
 
     await homePage.reload();
-    await homePage.openConversation(/Convene a council on the safes/);
+    await homePage.openConversation(/Convene a council on the safes|Release validation chat/);
     const selectedMembers = page.getByRole("list", { name: "Selected council members" });
 
     await expect(page.getByText("Council convened", { exact: true })).toBeVisible();

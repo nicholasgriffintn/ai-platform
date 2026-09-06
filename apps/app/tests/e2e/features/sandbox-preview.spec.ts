@@ -22,6 +22,7 @@ test.describe("Private sandbox previews", () => {
     await sandbox.configureProject(SUPERVISED_SANDBOX_ENVIRONMENT);
     await workPage.reload();
     await workPage.openNewProjectConversation();
+    await expect(workbench.dock).toBeVisible();
     await homePage.selectModel("GPT OSS 120B");
     await homePage.sendMessage(
       "Polychat sandbox E2E: wait for controls while reviewing the service.",
@@ -65,6 +66,14 @@ test.describe("Private sandbox previews", () => {
       throw new Error("The preview URL is missing its bootstrap grant");
     }
 
+    const unprivileged = await sandbox.authorisePreviewWithoutServicePrincipal(
+      grant,
+      url.hostname.split(".")[0] ?? "",
+    );
+
+    expect(unprivileged.status()).toBe(403);
+    expect(await unprivileged.text()).not.toContain("forwardToken");
+
     const parts = grant.split(".");
 
     parts[2] = `${parts[2]?.startsWith("a") ? "b" : "a"}${parts[2]?.slice(1)}`;
@@ -88,6 +97,7 @@ test.describe("Private sandbox previews", () => {
     const cookie = cookies.find(({ name }) => name === "__Host-polychat_preview");
 
     expect(cookie).toMatchObject({ secure: true, httpOnly: true, domain: url.hostname, path: "/" });
+    expect(cookie?.partitionKey).toBeTruthy();
     const replay = await preview.open(access.url);
 
     expect(replay?.status()).toBeGreaterThanOrEqual(400);
@@ -120,12 +130,12 @@ test.describe("Private sandbox previews", () => {
       .poll(
         async () =>
           (await sandbox.instructions(run.runId)).filter(({ instruction }) =>
-            instruction.content.includes("Keep the preview heading readable."),
+            instruction.content?.includes("Keep the preview heading readable."),
           ).length,
       )
       .toBe(1);
     const feedback = (await sandbox.instructions(run.runId)).find(({ instruction }) =>
-      instruction.content.includes("Keep the preview heading readable."),
+      instruction.content?.includes("Keep the preview heading readable."),
     );
 
     expect(feedback?.instruction.kind).toBe("message");

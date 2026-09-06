@@ -16,6 +16,7 @@ import {
   quoteForShell,
   type SandboxProcessInstance,
 } from "./commands";
+import { delay } from "./delay";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { listeningPortsFromProcNet, READ_LISTENING_SOCKETS_COMMAND } from "./network-ports";
 import { redactSandboxOutput } from "./output-redaction";
@@ -54,34 +55,6 @@ export interface ProjectServiceSupervisorOptions {
   abortSignal?: AbortSignal;
   checkpoint: (abortMessage: string) => Promise<void>;
   emit: (event: TaskEvent) => Promise<void>;
-}
-
-function delay(milliseconds: number, signal?: AbortSignal): Promise<void> {
-  if (signal?.aborted) {
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve) => {
-    let settled = false;
-    const finish = () => {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
-      clearTimeout(timeout);
-      signal?.removeEventListener("abort", finish);
-      resolve();
-    };
-
-    const timeout = setTimeout(finish, milliseconds);
-
-    signal?.addEventListener("abort", finish, { once: true });
-
-    if (signal?.aborted) {
-      finish();
-    }
-  });
 }
 
 function topologicalServices(services: SandboxServiceDefinition[]): SandboxServiceDefinition[] {
