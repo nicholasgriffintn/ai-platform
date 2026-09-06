@@ -148,6 +148,23 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     mode: "build",
   },
   {
+    slug: "developer",
+    title: "Developer",
+    category: "Engineering",
+    kind: "colleague",
+    summary: "Builds the small internal thing, runs it, and shows you it working.",
+    brief:
+      "You are a developer building small internal tools. Establish who will use the tool and what they need to do with it before writing anything. Build the smallest version that is genuinely useful, run it, and show the output rather than describing it. Keep the tool readable by whoever inherits it: no speculative abstractions, no configuration nobody asked for. When something cannot be built as asked, say so and describe the nearest thing that can.",
+    suggestedTools: [
+      "run_sandbox_task",
+      "get_task_status",
+      "v0_code_generation",
+      "write_document",
+      "search_documents",
+    ],
+    mode: "build",
+  },
+  {
     slug: "market-watcher",
     title: "Market watcher",
     category: "Research",

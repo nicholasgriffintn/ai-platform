@@ -1,5 +1,6 @@
 import { Card, ConfirmationDialog, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
+  ProjectStarterList,
   WorkspaceAuditList,
   WorkspaceTemplateList,
 } from "@ngriffin_uk/polychat-component-workspaces";
@@ -9,6 +10,7 @@ import { toast } from "sonner";
 
 import { PageShell } from "~/components/Core/PageShell";
 import {
+  useProjectStarters,
   useTemplateMutations,
   useWorkspaceAudit,
   useWorkspaceTemplates,
@@ -24,6 +26,7 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
   const canManage = workspaceQuery.data?.role === "owner" || workspaceQuery.data?.role === "admin";
   const templates = useWorkspaceTemplates(workspaceId, canManage);
   const audit = useWorkspaceAudit(workspaceId, canManage);
+  const starters = useProjectStarters(canManage);
   const mutations = useTemplateMutations(workspaceId);
   const projectTemplates = templates.data?.filter((template) => template.kind === "project") ?? [];
 
@@ -31,7 +34,8 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
     <PageShell.Content className="max-w-6xl">
       <PageShell.Header title="Governance" />
       <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
-        Review workspace spend, manage reusable project templates, and review workspace changes.
+        Review workspace spend, start a project from a starter, manage reusable project templates,
+        and review workspace changes.
       </p>
 
       {workspaceQuery.isLoading ? (
@@ -50,6 +54,21 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
             projects={workspaceQuery.data?.projects ?? []}
           />
           <div className="grid gap-8 lg:grid-cols-2">
+            <ProjectStarterList
+              starters={starters.data ?? []}
+              isLoading={starters.isLoading}
+              errorMessage={starters.error?.message}
+              startingSlug={
+                mutations.startFromStarter.isPending ? mutations.startFromStarter.variables : null
+              }
+              onStart={async (starterSlug) => {
+                const project = await mutations.startFromStarter.mutateAsync(starterSlug);
+
+                toast.success("Project created, teammates hired");
+                void navigate(`/work/${workspaceId}/projects/${project.id}`);
+              }}
+            />
+
             <WorkspaceTemplateList
               templates={projectTemplates}
               isLoading={templates.isLoading}
