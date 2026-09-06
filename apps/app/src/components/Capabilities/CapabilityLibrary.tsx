@@ -82,21 +82,21 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 
         {hasAuthenticationError ? (
           <SignInEmptyState
-            title="Sign in to manage capabilities"
-            message="Sign in to choose which experiences, recipes, skills, and tools you can use."
+            title="Sign in to manage your teammates"
+            message="Sign in to choose the teammates, apps, automations, skills and tools you use."
             className="min-h-[300px]"
           />
         ) : isLoading ? (
           <CardGridLoadingSkeleton count={6} label="Loading capabilities" />
         ) : controller.scopeError || controller.catalog.error ? (
           <EmptyState
-            title="Capabilities unavailable"
+            title="Teammates unavailable"
             message={(controller.scopeError ?? controller.catalog.error)?.message ?? "Try again."}
           />
         ) : controller.catalog.groups.length === 0 ? (
           <EmptyState
             icon={<SearchX size={24} className="text-muted-foreground" />}
-            title="No matching capabilities"
+            title="Nothing matches"
             message="Try another search, type, or category."
             className="min-h-[240px]"
           />

@@ -3,7 +3,6 @@ export * from "./AppCard";
 export * from "./CapabilityCard";
 export * from "./CapabilityFilters";
 export * from "./capability-theme";
-export * from "./ExperienceGrid";
 export * from "./Recipes";
 export * from "./ToolForm/FormField";
 export * from "./ToolConfigurationDialog";

@@ -5,22 +5,22 @@ import { usePublicCapabilityCatalogue } from "~/hooks/useCapabilityCatalog";
 
 import { DiscoverBand } from "../DiscoverBand";
 
-const EXPERIENCE_LIMIT = 6;
+const APP_LIMIT = 6;
 
-export function CapabilitiesBand() {
+export function TeammatesBand() {
   const { data, isLoading } = usePublicCapabilityCatalogue();
-  const experiences = (data?.experiences ?? []).slice(0, EXPERIENCE_LIMIT);
+  const apps = (data?.experiences ?? []).slice(0, APP_LIMIT);
   const toolCount = (data?.modelTools.length ?? 0) + (data?.tools.length ?? 0);
-  const recipeCount = data?.recipes.length ?? 0;
+  const automationCount = data?.recipes.length ?? 0;
   const lede = data
-    ? `Experiences for research, writing, media and code, ${toolCount} tools a model can call, and ${recipeCount} recipe templates that run on a schedule or an event. Teammates, skills and the recipes you install are yours to curate.`
-    : "Experiences for research, writing, media and code, tools a model can call, and recipe templates that run on a schedule or an event. Teammates, skills and the recipes you install are yours to curate.";
+    ? `Apps for research, writing, media and code, ${toolCount} tools a model can call, and ${automationCount} automation templates that run on a schedule or an event. Teammates, skills and the automations you install are yours to curate.`
+    : "Apps for research, writing, media and code, tools a model can call, and automation templates that run on a schedule or an event. Teammates, skills and the automations you install are yours to curate.";
 
   return (
     <DiscoverBand
-      id="capabilities"
+      id="teammates"
       eyebrow="Beyond the reply"
-      title="Capabilities, not just chat"
+      title="Teammates, apps and automations"
       lede={lede}
       actions={
         <ButtonLink variant="outline" href="/apps">
@@ -35,7 +35,7 @@ export function CapabilitiesBand() {
                 <Skeleton className="h-24 w-full rounded-xl" />
               </li>
             ))
-          : experiences.map((experience) => (
+          : apps.map((experience) => (
               <li
                 key={experience.id}
                 className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4 lg:flex-row"

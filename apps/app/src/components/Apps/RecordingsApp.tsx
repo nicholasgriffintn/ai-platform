@@ -16,7 +16,7 @@ import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useFetchRecording, useFetchRecordings, useProcessRecording } from "~/hooks/useRecordings";
 import { isAuthenticationError } from "~/lib/errors";
 
-export function RecordingsExperience({ basePath, projectId, subpath }: ExperienceProps) {
+export function RecordingsApp({ basePath, projectId, subpath }: ExperienceProps) {
   const segments = subpath.split("/").filter(Boolean);
   const recordingId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;
   const isNew = segments[0] === "new";

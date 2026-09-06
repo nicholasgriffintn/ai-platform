@@ -6,9 +6,9 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import { Puzzle } from "lucide-react";
 
+import { AppRuntime } from "~/components/Apps/AppRuntime";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { ExperienceRenderer } from "~/components/Experiences/ExperienceRenderer";
 import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
 import {
   type AppProjectScope,
@@ -77,7 +77,7 @@ export function AppRoute({
           }
         />
       ) : (
-        <ExperienceRenderer
+        <AppRuntime
           basePath={basePath}
           projectId={surface.projectId}
           runtime={definition.runtime}

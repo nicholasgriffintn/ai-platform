@@ -12,7 +12,7 @@ import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useFetchArticleReport, useFetchArticleReports } from "~/hooks/useArticles";
 import { isAuthenticationError } from "~/lib/errors";
 
-export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceProps) {
+export function ArticlesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const segments = subpath.split("/").filter(Boolean);
   const articleId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;
   const isNew = segments[0] === "new";

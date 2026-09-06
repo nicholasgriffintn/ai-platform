@@ -28,7 +28,7 @@ import { useUIStore } from "~/state/stores/uiStore";
 
 const STARTER_PATTERN = 's("bd sd, hh*8").bank("RolandTR909").gain(0.8)';
 
-export function StrudelExperience({ basePath, projectId, subpath }: ExperienceProps) {
+export function StrudelApp({ basePath, projectId, subpath }: ExperienceProps) {
   const segments = subpath.split("/").filter(Boolean);
   const patternId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;
   const isNew = segments[0] === "new";

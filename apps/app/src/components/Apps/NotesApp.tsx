@@ -21,7 +21,7 @@ import {
 } from "~/hooks/useNotes";
 import { isAuthenticationError } from "~/lib/errors";
 
-export function NotesExperience({ basePath, projectId, subpath }: ExperienceProps) {
+export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const navigate = useNavigate();
   const segments = subpath.split("/").filter(Boolean);
   const noteId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;

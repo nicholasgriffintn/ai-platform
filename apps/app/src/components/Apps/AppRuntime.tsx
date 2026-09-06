@@ -31,25 +31,25 @@ const TrainingDashboard = lazy(async () => {
 
   return { default: module.TrainingDashboard };
 });
-const ArticlesExperience = lazy(async () => {
-  const module = await import("./ArticlesExperience");
+const ArticlesApp = lazy(async () => {
+  const module = await import("./ArticlesApp");
 
-  return { default: module.ArticlesExperience };
+  return { default: module.ArticlesApp };
 });
-const NotesExperience = lazy(async () => {
-  const module = await import("./NotesExperience");
+const NotesApp = lazy(async () => {
+  const module = await import("./NotesApp");
 
-  return { default: module.NotesExperience };
+  return { default: module.NotesApp };
 });
-const RecordingsExperience = lazy(async () => {
-  const module = await import("./RecordingsExperience");
+const RecordingsApp = lazy(async () => {
+  const module = await import("./RecordingsApp");
 
-  return { default: module.RecordingsExperience };
+  return { default: module.RecordingsApp };
 });
-const StrudelExperience = lazy(async () => {
-  const module = await import("./StrudelExperience");
+const StrudelApp = lazy(async () => {
+  const module = await import("./StrudelApp");
 
-  return { default: module.StrudelExperience };
+  return { default: module.StrudelApp };
 });
 
 function ReplicateExperience({
@@ -78,7 +78,7 @@ function ReplicateExperience({
   return <ReplicateModels basePath={basePath} projectId={projectId} />;
 }
 
-function ExperienceContent({ basePath, projectId, runtime, subpath }: ExperienceRendererProps) {
+function ExperienceContent({ basePath, projectId, runtime, subpath }: AppRuntimeProps) {
   if (runtime === "replicate") {
     return <ReplicateExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
@@ -88,15 +88,15 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: Experience
   }
 
   if (runtime === "articles") {
-    return <ArticlesExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
+    return <ArticlesApp basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
 
   if (runtime === "recordings") {
-    return <RecordingsExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
+    return <RecordingsApp basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
 
   if (runtime === "notes") {
-    return <NotesExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
+    return <NotesApp basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
 
   if (runtime === "image-studio") {
@@ -104,20 +104,20 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: Experience
   }
 
   if (runtime === "strudel") {
-    return <StrudelExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
+    return <StrudelApp basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
 
   return <EmptyState title="Experience unavailable" message="This experience is not supported." />;
 }
 
-interface ExperienceRendererProps {
+interface AppRuntimeProps {
   basePath: string;
   projectId?: string;
   runtime: string;
   subpath: string;
 }
 
-export function ExperienceRenderer(props: ExperienceRendererProps) {
+export function AppRuntime(props: AppRuntimeProps) {
   return (
     <Suspense fallback={<ContentLoadingSkeleton />}>
       <ExperienceContent {...props} />

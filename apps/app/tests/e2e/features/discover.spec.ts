@@ -28,7 +28,7 @@ test("opens each public tour section and restores a direct pricing link", async 
   for (const [label, id] of [
     ["Chat and Work", "chat-and-work"],
     ["Models", "models"],
-    ["Capabilities", "capabilities"],
+    ["Teammates", "teammates"],
     ["Pets", "pets"],
     ["Pricing", "pricing"],
     ["Your keys", "keys"],
