@@ -8,6 +8,7 @@ import {
   localMessageSchema,
   type DesktopModelRunRequest,
   type DesktopStreamEvent,
+  type HostedRunRequest,
 } from "@ngriffin_uk/polychat-schemas";
 import { createAsyncEventQueue } from "@ngriffin_uk/polychat-utility-core";
 import { Channel, invoke } from "@tauri-apps/api/core";
@@ -21,6 +22,7 @@ export type ConnectedDesktopBackend = Pick<
   | "probeEndpoint"
   | "discoverModels"
   | "startModelRun"
+  | "startHostedRun"
   | "listConversations"
   | "saveConversation"
   | "listMessages"
@@ -60,29 +62,34 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
     desktopRuntimeReadinessSchema.parse(await invoke("probe_endpoint", { endpointId })),
   discoverModels: async (endpointId) =>
     discoveredModelSchema.array().parse(await invoke("discover_models", { endpointId })),
-  startModelRun: async (request: DesktopModelRunRequest): Promise<DesktopRun> => {
-    const runId = globalThis.crypto.randomUUID();
-    const queue = createAsyncEventQueue<DesktopStreamEvent>();
-    const channel = new Channel();
-
-    channel.onmessage = (raw) => {
-      const event = desktopStreamEventSchema.parse(raw);
-
-      queue.push(event);
-
-      if (event.type === "finished" || event.type === "failed") {
-        queue.close();
-      }
-    };
-
-    void invoke("start_model_run", { runId, request, onEvent: channel }).catch(() => queue.close());
-
-    return {
-      runId,
-      cancel: () => {
-        void invoke("cancel_model_run", { runId });
-      },
-      events: queue.events,
-    };
-  },
+  startHostedRun: async (request: HostedRunRequest): Promise<DesktopRun> =>
+    startRun("start_hosted_run", request),
+  startModelRun: async (request: DesktopModelRunRequest): Promise<DesktopRun> =>
+    startRun("start_model_run", request),
 };
+
+function startRun(command: string, request: unknown): Promise<DesktopRun> {
+  const runId = globalThis.crypto.randomUUID();
+  const queue = createAsyncEventQueue<DesktopStreamEvent>();
+  const channel = new Channel();
+
+  channel.onmessage = (raw) => {
+    const event = desktopStreamEventSchema.parse(raw);
+
+    queue.push(event);
+
+    if (event.type === "finished" || event.type === "failed") {
+      queue.close();
+    }
+  };
+
+  void invoke(command, { runId, request, onEvent: channel }).catch(() => queue.close());
+
+  return Promise.resolve({
+    runId,
+    cancel: () => {
+      void invoke("cancel_model_run", { runId });
+    },
+    events: queue.events,
+  });
+}

@@ -216,6 +216,17 @@ export const desktopModelRunRequestSchema = z.object({
 
 export type DesktopModelRunRequest = z.infer<typeof desktopModelRunRequestSchema>;
 
+export const HOSTED_ENDPOINT_ID = "polychat-cloud" as const;
+
+export const hostedRunRequestSchema = z.object({
+  model: z.string().min(1),
+  messages: z
+    .array(z.object({ role: z.enum(["system", "user", "assistant"]), content: z.string() }))
+    .min(1),
+});
+
+export type HostedRunRequest = z.infer<typeof hostedRunRequestSchema>;
+
 export const desktopAgentRunRequestSchema = z.object({
   endpointId: z.string().min(1),
   sessionNativeId: z.string().min(1).nullable(),

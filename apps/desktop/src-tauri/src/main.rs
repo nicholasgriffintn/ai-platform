@@ -28,6 +28,7 @@ const DISCOVERY_TIMEOUT: Duration = Duration::from_secs(10);
 const RUN_TIMEOUT: Duration = Duration::from_secs(600);
 const BUILT_IN_APPROVED_AT: &str = "1970-01-01T00:00:00Z";
 const SESSION_SECRET: &str = "session-token";
+const HOSTED_ENDPOINT_ID: &str = "polychat-cloud";
 const API_BASE_URL: &str = match option_env!("POLYCHAT_API_BASE_URL") {
     Some(value) => value,
     None => "https://api.polychat.app",
@@ -114,6 +115,53 @@ fn authorised_endpoint(store: &Store, endpoint_id: &str) -> Result<(DesktopEndpo
         .ok_or_else(|| refusal_detail(EgressRefusal::UnknownEndpoint))?;
 
     Ok((endpoint, target))
+}
+
+async fn stream_lines(
+    response: reqwest::Response,
+    run_id: &str,
+    registry: &RunRegistry,
+    mut parse: impl FnMut(&str) -> StreamChunk,
+    emit: &impl Fn(StreamEvent),
+) -> Result<&'static str, String> {
+    let mut stream = response.bytes_stream();
+    let mut buffer = String::new();
+
+    while let Some(piece) = stream.next().await {
+        if registry.is_cancelled(run_id) {
+            return Ok("cancelled");
+        }
+
+        let piece = match piece {
+            Ok(piece) => piece,
+            Err(cause) => {
+                emit(StreamEvent::Failed {
+                    run_id: run_id.to_string(),
+                    failure: "unknown".to_string(),
+                    message: cause.to_string(),
+                });
+
+                return Ok("interrupted");
+            }
+        };
+
+        buffer.push_str(&String::from_utf8_lossy(&piece));
+
+        while let Some(index) = buffer.find('\n') {
+            let line: String = buffer.drain(..=index).collect();
+
+            match parse(&line) {
+                StreamChunk::Text(delta) => emit(StreamEvent::Text {
+                    run_id: run_id.to_string(),
+                    delta,
+                }),
+                StreamChunk::Done => return Ok("complete"),
+                StreamChunk::Ignored => {}
+            }
+        }
+    }
+
+    Ok("complete")
 }
 
 fn http_client(timeout: Duration) -> Result<reqwest::Client, String> {
@@ -307,6 +355,86 @@ fn encode_query_value(value: &str) -> String {
 }
 
 #[tauri::command]
+async fn start_hosted_run(
+    run_id: String,
+    request: chat::HostedRunRequest,
+    on_event: Channel<StreamEvent>,
+    registry: State<'_, RunRegistry>,
+) -> Result<(), String> {
+    let Some(session) = secrets::read(SESSION_SECRET)? else {
+        return Err("Sign in before using a cloud model.".to_string());
+    };
+
+    let emit = |event: StreamEvent| {
+        let _ = on_event.send(event);
+    };
+
+    emit(StreamEvent::Started {
+        run_id: run_id.clone(),
+        endpoint_id: HOSTED_ENDPOINT_ID.to_string(),
+        at: timestamp(),
+    });
+    emit(StreamEvent::Progress {
+        run_id: run_id.clone(),
+        state: "queued".to_string(),
+    });
+
+    let response = match http_client(RUN_TIMEOUT)?
+        .post(format!("{API_BASE_URL}/chat/completions"))
+        .bearer_auth(session)
+        .json(&chat::hosted_body(&request))
+        .send()
+        .await
+    {
+        Ok(response) => response,
+        Err(cause) => {
+            registry.forget(&run_id);
+            emit(StreamEvent::Failed {
+                run_id: run_id.clone(),
+                failure: "unreachable".to_string(),
+                message: cause.to_string(),
+            });
+
+            return Ok(());
+        }
+    };
+
+    if !response.status().is_success() {
+        let failure = match response.status().as_u16() {
+            401 | 403 => "unauthorised",
+            404 => "model-not-found",
+            _ => "unknown",
+        };
+        let status = response.status().as_u16();
+
+        registry.forget(&run_id);
+        emit(StreamEvent::Failed {
+            run_id: run_id.clone(),
+            failure: failure.to_string(),
+            message: format!("Polychat answered with status {status}"),
+        });
+
+        return Ok(());
+    }
+
+    emit(StreamEvent::Progress {
+        run_id: run_id.clone(),
+        state: "generating".to_string(),
+    });
+
+    let reason = stream_lines(response, &run_id, &registry, chat::parse_hosted_line, &emit).await?;
+
+    registry.forget(&run_id);
+    emit(StreamEvent::Finished {
+        run_id,
+        reason: reason.to_string(),
+        at: timestamp(),
+    });
+
+    Ok(())
+}
+
+#[tauri::command]
 fn cancel_model_run(run_id: String, registry: State<'_, RunRegistry>) {
     registry.cancel(&run_id);
 }
@@ -380,45 +508,14 @@ async fn start_model_run(
         state: "generating".to_string(),
     });
 
-    let mut stream = response.bytes_stream();
-    let mut buffer = String::new();
-    let mut reason = "complete";
-
-    'outer: while let Some(piece) = stream.next().await {
-        if registry.is_cancelled(&run_id) {
-            reason = "cancelled";
-            break;
-        }
-
-        let piece = match piece {
-            Ok(piece) => piece,
-            Err(cause) => {
-                registry.forget(&run_id);
-                emit(StreamEvent::Failed {
-                    run_id: run_id.clone(),
-                    failure: "unknown".to_string(),
-                    message: cause.to_string(),
-                });
-
-                return Ok(());
-            }
-        };
-
-        buffer.push_str(&String::from_utf8_lossy(&piece));
-
-        while let Some(index) = buffer.find('\n') {
-            let line: String = buffer.drain(..=index).collect();
-
-            match chat::parse_stream_line(&endpoint, &line) {
-                StreamChunk::Text(delta) => emit(StreamEvent::Text {
-                    run_id: run_id.clone(),
-                    delta,
-                }),
-                StreamChunk::Done => break 'outer,
-                StreamChunk::Ignored => {}
-            }
-        }
-    }
+    let reason = stream_lines(
+        response,
+        &run_id,
+        &registry,
+        |line| chat::parse_stream_line(&endpoint, line),
+        &emit,
+    )
+    .await?;
 
     registry.forget(&run_id);
     emit(StreamEvent::Finished {
@@ -460,6 +557,7 @@ fn main() {
             list_messages,
             append_message,
             start_model_run,
+            start_hosted_run,
             cancel_model_run
         ])
         .run(tauri::generate_context!())
