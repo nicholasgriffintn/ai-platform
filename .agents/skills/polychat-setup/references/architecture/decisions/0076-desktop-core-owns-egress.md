@@ -1,8 +1,8 @@
 # ADR 0076: Give the desktop shell a core that owns egress
 
-Status: Accepted design; not implemented.
+Status: Implemented in `apps/desktop`; not yet released.
 
-This design describes a desktop application that does not yet exist. Do not describe any of it as available behaviour.
+The application is not packaged or signed, so nothing here has shipped to anyone. Do not describe it as available to users.
 
 ## Problem
 

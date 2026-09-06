@@ -1,8 +1,8 @@
 # ADR 0077: Separate model runtimes from agent runtimes
 
-Status: Accepted design; not implemented.
+Status: Implemented in `apps/desktop`; not yet released.
 
-This design depends on the desktop shell described in [0076](0076-desktop-core-owns-egress.md) and is not implemented. Do not describe any of it as available behaviour.
+Both contracts have adapters: Ollama, LM Studio and llama.cpp as model runtimes, OpenClaw and Hermes as agent runtimes. Neither vendor publishes a stable client contract, so the agent adapters read tolerantly and a gateway that answers differently yields nothing rather than failing.
 
 ## Problem
 

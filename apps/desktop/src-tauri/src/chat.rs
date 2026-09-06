@@ -111,7 +111,7 @@ fn hosted_content_delta(event: &Value) -> String {
 
 pub fn chat_path(endpoint: &DesktopEndpoint) -> &'static str {
     match endpoint.vendor.as_str() {
-        "lmstudio" => "/v1/chat/completions",
+        "lmstudio" | "llamacpp" => "/v1/chat/completions",
         _ => "/api/chat",
     }
 }
@@ -124,7 +124,7 @@ pub fn chat_body(endpoint: &DesktopEndpoint, request: &ModelRunRequest) -> Value
         .collect();
 
     match endpoint.vendor.as_str() {
-        "lmstudio" => {
+        "lmstudio" | "llamacpp" => {
             let mut body = json!({
                 "model": request.native_model_id,
                 "messages": messages,
@@ -155,7 +155,7 @@ pub fn chat_body(endpoint: &DesktopEndpoint, request: &ModelRunRequest) -> Value
 
 pub fn parse_stream_line(endpoint: &DesktopEndpoint, line: &str) -> StreamChunk {
     match endpoint.vendor.as_str() {
-        "lmstudio" => parse_server_sent_line(line),
+        "lmstudio" | "llamacpp" => parse_server_sent_line(line),
         _ => parse_newline_delimited_line(line),
     }
 }

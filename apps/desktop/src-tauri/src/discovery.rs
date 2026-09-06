@@ -27,6 +27,7 @@ pub struct DiscoveredModel {
 pub fn models_path(endpoint: &DesktopEndpoint) -> &'static str {
     match endpoint.vendor.as_str() {
         "lmstudio" => "/api/v0/models",
+        "llamacpp" => "/v1/models",
         _ => "/api/tags",
     }
 }
@@ -38,6 +39,7 @@ pub fn parse_models(
 ) -> Vec<DiscoveredModel> {
     match endpoint.vendor.as_str() {
         "lmstudio" => parse_lmstudio(&endpoint.id, body, discovered_at),
+        "llamacpp" => parse_openai_models(&endpoint.id, body, discovered_at),
         _ => parse_ollama(&endpoint.id, body, discovered_at),
     }
 }
@@ -76,6 +78,45 @@ fn parse_ollama(endpoint_id: &str, body: &Value, discovered_at: &str) -> Vec<Dis
                     thinking: false,
                 },
                 loaded: false,
+                discovered_at: discovered_at.to_string(),
+            })
+        })
+        .collect()
+}
+
+fn parse_openai_models(
+    endpoint_id: &str,
+    body: &Value,
+    discovered_at: &str,
+) -> Vec<DiscoveredModel> {
+    let Some(entries) = body.get("data").and_then(Value::as_array) else {
+        return Vec::new();
+    };
+
+    entries
+        .iter()
+        .filter_map(|entry| {
+            let native_id = entry.get("id")?.as_str()?;
+
+            Some(DiscoveredModel {
+                endpoint_id: endpoint_id.to_string(),
+                native_id: native_id.to_string(),
+                display_name: native_id.to_string(),
+                context_tokens: entry
+                    .get("meta")
+                    .and_then(|meta| meta.get("n_ctx_train"))
+                    .and_then(Value::as_u64)
+                    .and_then(|value| u32::try_from(value).ok()),
+                parameter_size_bytes: entry
+                    .get("meta")
+                    .and_then(|meta| meta.get("size"))
+                    .and_then(Value::as_u64),
+                capabilities: ModelCapabilities {
+                    tools: false,
+                    vision: false,
+                    thinking: false,
+                },
+                loaded: true,
                 discovered_at: discovered_at.to_string(),
             })
         })
@@ -209,6 +250,24 @@ mod tests {
     }
 
     #[test]
+    fn reads_llama_cpp_models_from_its_openai_listing() {
+        let body = json!({
+            "data": [
+                { "id": "qwen3-8b.gguf", "meta": { "n_ctx_train": 32_768, "size": 5_000_000_000_u64 } },
+                { "id": "no-meta.gguf" }
+            ]
+        });
+
+        let models = parse_models(&endpoint("llamacpp"), &body, "2026-09-06T09:00:00Z");
+
+        assert_eq!(models.len(), 2);
+        assert_eq!(models[0].context_tokens, Some(32_768));
+        assert_eq!(models[0].parameter_size_bytes, Some(5_000_000_000));
+        assert!(models[0].loaded);
+        assert_eq!(models[1].context_tokens, None);
+    }
+
+    #[test]
     fn returns_nothing_when_a_runtime_answers_with_an_unexpected_shape() {
         let body = json!({ "error": "not found" });
 
@@ -220,5 +279,6 @@ mod tests {
     fn asks_each_vendor_for_models_at_its_own_path() {
         assert_eq!(models_path(&endpoint("ollama")), "/api/tags");
         assert_eq!(models_path(&endpoint("lmstudio")), "/api/v0/models");
+        assert_eq!(models_path(&endpoint("llamacpp")), "/v1/models");
     }
 }

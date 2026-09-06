@@ -12,7 +12,7 @@ export const DESKTOP_RUNTIME_KINDS = ["model", "agent"] as const;
 export const desktopRuntimeKindSchema = z.enum(DESKTOP_RUNTIME_KINDS);
 export type DesktopRuntimeKind = z.infer<typeof desktopRuntimeKindSchema>;
 
-export const MODEL_RUNTIME_VENDORS = ["ollama", "lmstudio"] as const;
+export const MODEL_RUNTIME_VENDORS = ["ollama", "lmstudio", "llamacpp"] as const;
 export const modelRuntimeVendorSchema = z.enum(MODEL_RUNTIME_VENDORS);
 export type ModelRuntimeVendor = z.infer<typeof modelRuntimeVendorSchema>;
 

@@ -10,11 +10,13 @@ Issue one key per gateway rather than reusing a personal key, and name it after 
 
 Usage from a gateway is attributed to the account that owns the key and is spent against that account's plan. A gateway can run a long autonomous loop without a person watching it, so agree a budget before handing one a key.
 
-## What Polychat does not yet do
+## Polychat as a surface
 
-Reading a gateway's sessions from Polychat, or exposing Polychat to a gateway as an MCP server, are accepted designs rather than behaviour. See [ADR 0077](../architecture/decisions/0077-separate-model-runtimes-from-agent-runtimes.md) for the contract that work will follow, and treat any claim that Polychat can drive a gateway today as untrue.
+The desktop application can also work the other way round: add a gateway as an agent runtime and it lists that gateway's sessions, resumes one by sending it a prompt, and shows the permission requests it raises. Nothing consequential runs until someone presses allow, and there is no standing approval to grant.
 
-The desktop shell recognises the two agent vendors when an endpoint is added, and enforces the transport rules that connecting to one will require, but it cannot yet start or resume a session on one.
+A gateway on a network address needs HTTPS or a stored pairing secret before the desktop application will reach it, because a connection to one is authority to execute code on the machine hosting it. Loopback is exempt from that rule and remains the default.
+
+Exposing Polychat to a gateway as an MCP server is still only a design. See [ADR 0077](../architecture/decisions/0077-separate-model-runtimes-from-agent-runtimes.md).
 
 ## Before building against a gateway
 
