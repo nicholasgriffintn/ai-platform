@@ -257,11 +257,11 @@ export class PolychatApi {
     await requireSuccessfulResponse(response, "Delete project skill");
   }
 
-  async projectUpdateStatus(projectId: string, defaultRouterMode: string): Promise<number> {
+  async projectUpdateStatus(projectId: string, defaultModelTier: string | null): Promise<number> {
     return (
       await this.request.put(`${API_BASE_URL}/projects/${projectId}`, {
         headers: BROWSER_REQUEST_HEADERS,
-        data: { defaultRouterMode },
+        data: { defaultModelTier },
       })
     ).status();
   }

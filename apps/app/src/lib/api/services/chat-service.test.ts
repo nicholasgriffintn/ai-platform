@@ -1096,7 +1096,7 @@ describe("ChatService streaming", () => {
     expect(body.max_steps).toBeUndefined();
   });
 
-  it("sends automatic router mode without an explicit model", async () => {
+  it("sends the model tier without an explicit model", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       createSseResponse([data("[DONE]")]),
     );
@@ -1111,7 +1111,7 @@ describe("ChatService streaming", () => {
       endpoint: "/chat/completions",
       messages: [{ role: "user", content: "hello" } as Message],
       mode: "remote",
-      modelRouterMode: "pro",
+      modelTier: "high",
       onProgress: () => {},
       onStateChange: () => {},
       signal: new AbortController().signal,
@@ -1121,7 +1121,7 @@ describe("ChatService streaming", () => {
     const body = JSON.parse(String(request?.body));
 
     expect(body.model).toBeUndefined();
-    expect(body.model_router_mode).toBe("pro");
+    expect(body.model_tier).toBe("high");
   });
 
   it("sends chat compaction policy from chat settings", async () => {

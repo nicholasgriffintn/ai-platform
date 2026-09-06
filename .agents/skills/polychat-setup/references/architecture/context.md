@@ -42,22 +42,23 @@ Use this map to locate current responsibilities. Read the relevant [ADR](decisio
 
 Paths below are relative to `apps/api/src`.
 
-| Responsibility                           | Start here                                                                                          |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| HTTP / request context                   | `lib/http/routeBuilder.ts`, `lib/context/serviceContext.ts`                                         |
-| D1 persistence                           | `repositories/`, `lib/database/schema.ts`                                                           |
-| Workspace and project access             | `services/workspaces/access.ts`                                                                     |
-| Sources, outputs and templates           | Their owning `services/` and repository modules                                                     |
-| Provider adapters / model policy         | `lib/providers/registry/`, `lib/providers/models/policy.ts`                                         |
-| Model defaults                           | `packages/schemas/src/model-defaults.ts` at repository root                                         |
-| Tool catalogue / execution               | `services/functions/definitions/` / `services/functions/index.ts`                                   |
-| Skills and revisions                     | `services/skills/`, `AuthoredSkillRepository`; built-ins in `data-model/skills/`                    |
-| Agent access and request assembly        | `services/agents/access.ts`, `services/agents/completion-request.ts`                                |
-| Project task dispatch and interaction    | `services/project-tasks/`, `ProjectTaskRepository`                                                  |
-| Task attention and notification delivery | `services/project-tasks/attention.ts`, `services/task-notifications/`, `TaskNotificationRepository` |
-| Connector sessions and approvals         | `services/apps/connectors/`                                                                         |
-| Realtime catalogue and sessions          | `services/realtime/`, registered realtime adapters                                                  |
-| Usage and credits                        | `lib/usage/`, `UsageEventRepository`, plan records in D1                                            |
+| Responsibility                           | Start here                                                                                                             |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| HTTP / request context                   | `lib/http/routeBuilder.ts`, `lib/context/serviceContext.ts`                                                            |
+| D1 persistence                           | `repositories/`, `lib/database/schema.ts`                                                                              |
+| Workspace and project access             | `services/workspaces/access.ts`                                                                                        |
+| Sources, outputs and templates           | Their owning `services/` and repository modules                                                                        |
+| Provider adapters / model policy         | `lib/providers/registry/`, `lib/providers/models/policy.ts`                                                            |
+| Model lineup and tiers                   | `packages/schemas/src/model-lineup.ts`; `lib/chat/policy/model-access.ts`, `project-model-tier.ts`, `system-models.ts` |
+| Media model defaults                     | `packages/schemas/src/model-defaults.ts` at repository root                                                            |
+| Tool catalogue / execution               | `services/functions/definitions/` / `services/functions/index.ts`                                                      |
+| Skills and revisions                     | `services/skills/`, `AuthoredSkillRepository`; built-ins in `data-model/skills/`                                       |
+| Agent access and request assembly        | `services/agents/access.ts`, `services/agents/completion-request.ts`                                                   |
+| Project task dispatch and interaction    | `services/project-tasks/`, `ProjectTaskRepository`                                                                     |
+| Task attention and notification delivery | `services/project-tasks/attention.ts`, `services/task-notifications/`, `TaskNotificationRepository`                    |
+| Connector sessions and approvals         | `services/apps/connectors/`                                                                                            |
+| Realtime catalogue and sessions          | `services/realtime/`, registered realtime adapters                                                                     |
+| Usage and credits                        | `lib/usage/`, `UsageEventRepository`, plan records in D1                                                               |
 
 ## Conversation execution
 
@@ -197,7 +198,7 @@ The API model catalogue separates **families**, shared **model definitions** and
 
 Keep customisation drafts in `component-account` as field-level edits over hydrated settings. Refresh untouched controls as settings arrive, preserve local edits until the server returns matching values, and discard drafts when the settings identity changes.
 
-Chat and Work compose the same `ConversationThread` and scoped capability surfaces. Keep backend catalogue metadata authoritative and project request metadata intact. Automatic routing admits text-response chat models, excluding media generation, realtime and specialist extraction models; multimodal chat inputs remain eligible. Failed AI prompt analysis falls back to keyword requirements before scoring eligible models. Host controllers supply resolved links and actions to render packages through their existing providers.
+Chat and Work compose the same `ConversationThread` and scoped capability surfaces. Keep backend catalogue metadata authoritative and project request metadata intact. A request names a model or a **model tier** (`low`, `medium`, `high`, `ultra`); without either, the project's default tier applies, then Medium. `packages/schemas/src/model-lineup.ts` fixes each tier's ordered agent and coding candidates per runtime (hosted, browser WebLLM, local server) plus the system-task lineups for titling, compaction, housekeeping, reading, guardrails, dictation and media. Resolution walks each list and takes the first model the account can execute, so plan and provider keys decide the model without scoring prompts; the candidate's reasoning effort becomes the request default when the model supports it. Text-response chat models are eligible, media generation, realtime and specialist extraction models are not, and attachments narrow the list to models that accept them. The web selector and `/models` show what each tier resolves to; both use the same shared resolver. See [ADR 0071](decisions/0071-fix-model-tiers-instead-of-scoring-prompts.md).
 
 Use shared UI primitives for buttons, dialogs, focus, overlays and reduced motion. Tool messages and parts share `ToolResultView`; declared renderers and payload shape choose the body. Presentation components emit typed, optionally asynchronous intents and only show local acknowledgement after the host action succeeds; persisted interaction state remains authoritative. Native task cards support structured question choices, written answers and exact approve/reject actions. Unknown interaction types stay visible but non-actionable. The stable task destination is `(workspaceId, projectId, taskId, conversationId?)`; inbox and push links resolve that destination against current state and access rather than treating a message as authority. Task activity uses the same project, task and run identities, with an open type plus stable category/status presentation fields that later context, retry, attention, evidence, usage and performance work can extend. Stream rendering coalesces supersedable text, yields after bounded progress batches and flushes before authoritative boundaries. Conversation detail loads the newest 100 visible messages and pages backwards under the same access check; stored output stays complete while text, JSON and table renderers start with expandable bounds. See [streaming operations](../operations/streaming-responsiveness.md) and [ADR 0068](decisions/0068-bound-live-streams-and-page-durable-history.md).
 

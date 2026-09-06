@@ -13,6 +13,7 @@ import { createModelEnsembleStream } from "~/lib/chat/core/model-ensemble";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { resolveTurnStepBudget } from "~/lib/chat/policy/step-budget";
+import { applyTierReasoningEffort } from "~/lib/chat/policy/tier-reasoning";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
@@ -106,9 +107,13 @@ export class ChatOrchestrator {
     });
   }
 
-  async process(options: CoreChatOptions) {
+  async process(requestOptions: CoreChatOptions) {
+    let options = requestOptions;
+
     try {
       const validationResult = await this.validator.validate(options);
+
+      options = applyTierReasoningEffort(options, validationResult.context.reasoningEffort);
 
       if (!validationResult?.validation?.isValid) {
         logger.warn("Validation failed", {

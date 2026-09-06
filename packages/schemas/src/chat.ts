@@ -20,7 +20,6 @@ export {
   chatResponseFormatSchema,
   chatToolChoiceSchema,
   connectorApprovalIdSchema,
-  modelRouterModeSchema,
   toolInteractionResolutionSchema,
   partialChatCompletionsJsonSchema,
   createChatCompletionsResponseSchema,
@@ -33,7 +32,6 @@ export type {
   ChatCompletionResponseBody,
   ChatHostedToolSettings,
   ChatRequestOptions,
-  ModelRouterMode,
   ParsedChatCompletionRequestBody,
   ToolInteractionResolution,
 } from "./chat-completions";

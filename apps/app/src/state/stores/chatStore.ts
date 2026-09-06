@@ -1,7 +1,7 @@
 import type {
   AssistantActionSelection,
   HomeChatModeId,
-  ModelRouterMode,
+  ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -54,8 +54,8 @@ export interface ChatStore {
   setHomeChatMode: (mode: HomeChatModeId) => void;
   model: string | null;
   setModel: (model: string | null) => void;
-  autoMode: ModelRouterMode;
-  setAutoMode: (mode: ModelRouterMode) => void;
+  modelTier: ModelTier | null;
+  setModelTier: (tier: ModelTier | null) => void;
   useMultiModel: boolean;
   setUseMultiModel: (useMultiModel: boolean) => void;
   selectedAgentId: string | null;
@@ -137,8 +137,8 @@ export const useChatStore = create<ChatStore>()(
       setHomeChatMode: (mode) => set({ homeChatMode: mode }),
       model: null,
       setModel: (model) => set({ model }),
-      autoMode: "auto",
-      setAutoMode: (autoMode) => set({ autoMode }),
+      modelTier: null,
+      setModelTier: (modelTier) => set({ modelTier }),
       useMultiModel: false,
       setUseMultiModel: (useMultiModel) => set({ useMultiModel }),
       selectedAgentId: null,
@@ -226,14 +226,14 @@ export const useChatStore = create<ChatStore>()(
     }),
     {
       name: "chat-store",
-      version: 2,
+      version: 3,
       migrate: migrateChatStore,
       partialize: (state) => ({
         localOnlyMode: state.localOnlyMode,
         chatMode: state.chatMode,
         homeChatMode: state.homeChatMode,
         model: state.model,
-        autoMode: state.autoMode,
+        modelTier: state.modelTier,
         useMultiModel: state.useMultiModel,
         chatSettings: state.chatSettings,
         selectedAgentId: state.selectedAgentId,

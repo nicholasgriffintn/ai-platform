@@ -52,6 +52,7 @@ export async function executeSandboxRunStream(
     context: serviceContext,
     user,
     model: payload.model,
+    projectId,
   });
   const timeoutConfig = buildSandboxTimeoutConfig({
     env,

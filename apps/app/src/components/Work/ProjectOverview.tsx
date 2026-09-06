@@ -81,7 +81,7 @@ export function ProjectOverview({
             description: project.description,
             instructions: project.instructions,
             colour: project.colour,
-            defaultRouterMode: project.defaultRouterMode,
+            defaultModelTier: project.defaultModelTier,
             codingEnvironment: project.codingEnvironment,
           },
           capabilities: project.capabilities.map((capability) => ({

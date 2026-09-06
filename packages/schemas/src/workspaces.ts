@@ -1,8 +1,8 @@
 import z from "zod/v4";
 
 import { conversationTypeSchema } from "./chat";
-import { modelRouterModeSchema } from "./chat-completions";
 import { conversationGroupSchema, conversationSnoozeSchema } from "./conversation-organisation";
+import { modelTierSchema } from "./model-lineup";
 import { projectFlowSchema } from "./project-tasks";
 import { sandboxEnvironmentCacheSummarySchema } from "./sandbox-cache";
 import {
@@ -86,7 +86,7 @@ export const projectSummarySchema = z.object({
   updatedAt: z.string().nullable(),
   conversationCount: z.number().int().nonnegative().default(0),
   capabilityCount: z.number().int().nonnegative().default(0),
-  defaultRouterMode: modelRouterModeSchema.optional(),
+  defaultModelTier: modelTierSchema.nullable().optional(),
   codingEnvironment: projectCodingEnvironmentSchema.nullable(),
   environmentCache: sandboxEnvironmentCacheSummarySchema.nullable().optional(),
 });
@@ -133,7 +133,7 @@ export const updateWorkspaceSchema = z
   });
 
 const projectFields = {
-  defaultRouterMode: modelRouterModeSchema.optional(),
+  defaultModelTier: modelTierSchema.nullable().optional(),
   name: z.string().trim().min(2).max(100),
   description: z.string().trim().max(1000),
   instructions: z.string().trim().max(8000),

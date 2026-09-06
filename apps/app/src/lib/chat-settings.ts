@@ -1,3 +1,4 @@
+import type { ModelTier } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ChatSettings } from "~/types";
@@ -33,9 +34,30 @@ export function migrateLegacySamplingDefaults(persistedState: unknown, version: 
   };
 }
 
+const LEGACY_AUTO_MODE_TIERS: Record<string, ModelTier> = {
+  lite: "low",
+  standard: "medium",
+  pro: "high",
+  max: "ultra",
+};
+
+export function migrateLegacyAutoMode(persistedState: unknown, version: number): unknown {
+  if (version >= 3 || !isRecord(persistedState) || !("autoMode" in persistedState)) {
+    return persistedState;
+  }
+
+  const { autoMode, ...state } = persistedState;
+  const modelTier = typeof autoMode === "string" ? LEGACY_AUTO_MODE_TIERS[autoMode] : undefined;
+
+  return {
+    ...state,
+    modelTier: modelTier ?? null,
+  };
+}
+
 export function migrateChatStore(persistedState: unknown, version: number): unknown {
-  return migrateLegacySamplingDefaults(
-    migrateLegacyMaxOutputTokens(persistedState, version),
+  return migrateLegacyAutoMode(
+    migrateLegacySamplingDefaults(migrateLegacyMaxOutputTokens(persistedState, version), version),
     version,
   );
 }

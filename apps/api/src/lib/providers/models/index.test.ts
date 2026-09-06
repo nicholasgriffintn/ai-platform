@@ -1,8 +1,12 @@
 import {
+  findModelByReference,
   isActiveModel,
-  MODEL_POLICY_REFERENCES,
+  MODEL_TIER_LINEUP,
+  MODEL_TIER_ROLES,
+  MODEL_TIERS,
   type ModelConfigItem,
   REALTIME_LIVE_PROVIDER_MANIFEST,
+  SYSTEM_MODEL_LINEUP,
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
@@ -112,22 +116,56 @@ describe("model response defaults", () => {
 });
 
 describe("central model policy catalogue", () => {
-  it("resolves every policy reference to an active model from the expected provider", () => {
+  it("keeps every lineup candidate on an active catalogue model that supports its effort", () => {
     const models = getModels({ shouldUseCache: false });
-    const references = MODEL_POLICY_REFERENCES;
+    const candidates = [
+      ...(["hosted", "local-server"] as const).flatMap((runtime) =>
+        MODEL_TIERS.flatMap((tier) =>
+          MODEL_TIER_ROLES.flatMap((role) =>
+            MODEL_TIER_LINEUP[runtime][tier][role].map((candidate) => ({
+              ...candidate,
+              location: `${runtime}/${tier}/${role}`,
+            })),
+          ),
+        ),
+      ),
+      ...SYSTEM_MODEL_LINEUP.flatMap((role) =>
+        role.candidates.map((candidate) => ({ ...candidate, location: `system/${role.id}` })),
+      ),
+    ];
+    const problems: string[] = [];
 
-    expect(references.length).toBeGreaterThan(0);
+    expect(candidates.length).toBeGreaterThan(0);
 
-    for (const reference of references) {
-      const entry = models[reference.model];
+    for (const candidate of candidates) {
+      const entry = findModelByReference(models, candidate);
+      const label = `${candidate.location}: ${candidate.provider}/${candidate.model}`;
 
       if (!entry) {
-        throw new Error(`${reference.provider}:${reference.model} is absent from the catalogue`);
+        problems.push(`${label} is absent from the catalogue`);
+        continue;
       }
 
-      expect(entry.provider, reference.model).toBe(reference.provider);
-      expect(isActiveModel(entry), `${reference.model} is inactive`).toBe(true);
+      if (!isActiveModel(entry.config)) {
+        problems.push(`${label} is inactive`);
+      }
+
+      if (!candidate.effort) {
+        continue;
+      }
+
+      const supported = entry.config.reasoningConfig?.supportedEffortLevels ?? [];
+
+      if (!supported.includes(candidate.effort)) {
+        problems.push(
+          `${label} prescribes effort ${candidate.effort} but supports ${
+            supported.length ? supported.join(", ") : "no effort levels"
+          }`,
+        );
+      }
     }
+
+    expect(problems).toEqual([]);
   });
 
   it("resolves every realtime default to an active model from the expected provider", () => {

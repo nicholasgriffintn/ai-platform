@@ -1,12 +1,14 @@
 import {
-  getAutoRouterModeIcon,
   getHoverPreviewPosition,
+  getModelTierIcon,
+  getModelTierLabel,
   ModelHoverPreview,
   type ModelHoverPreviewState,
   ModelSelectorPanel,
   type ModelSelectorPanelLayout,
   type ModelSelectorTab,
   ModelSelectorTrigger,
+  type ModelTierSelection,
   useHoverPreviewDismiss,
 } from "@ngriffin_uk/polychat-component-models";
 import { ShortcutTooltip } from "@ngriffin_uk/polychat-component-ui";
@@ -14,7 +16,6 @@ import { getDefaultLiveModelId } from "@ngriffin_uk/polychat-library-realtime/li
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
-  getAutoRouterModeDefinition,
   getAvailableModels,
   getChatAndRealtimeModelsByMode,
   getFeaturedModelIds,
@@ -81,8 +82,8 @@ export const ModelSelector = ({
     isPro,
     model,
     setModel,
-    autoMode,
-    setAutoMode,
+    modelTier,
+    setModelTier,
     chatMode,
     setChatMode,
     chatSettings,
@@ -111,7 +112,7 @@ export const ModelSelector = ({
     }
 
     if (model === null) {
-      return "auto";
+      return "tiers";
     }
 
     return "models";
@@ -120,7 +121,7 @@ export const ModelSelector = ({
   const automaticModelOption: ModelConfigItem = {
     id: "auto",
     matchingModel: "auto",
-    name: "Automatic",
+    name: getModelTierLabel(modelTier),
     provider: "System",
     modalities: { input: ["text"], output: ["text"] },
     strengths: [],
@@ -181,10 +182,8 @@ export const ModelSelector = ({
     [filteredModels],
   );
   const defaultModelId = useMemo(() => getDefaultModelId(filteredModels), [filteredModels]);
-  const selectedAutoMode = getAutoRouterModeDefinition(autoMode);
-  const SelectedAutoModeIcon = getAutoRouterModeIcon(selectedAutoMode.id);
-  const selectedAutoModeDisplayName =
-    selectedAutoMode.id === "auto" ? selectedAutoMode.label : `${selectedAutoMode.label} auto`;
+  const SelectedTierIcon = getModelTierIcon(modelTier);
+  const selectedTierDisplayName = `${getModelTierLabel(modelTier)} tier`;
   const selectedModelInfo =
     model === null ? automaticModelOption : getModelByReference(filteredModelReferences, model);
 
@@ -214,12 +213,16 @@ export const ModelSelector = ({
       return matchesSearch && matchesCapability;
     });
   }, [filteredModels, searchQuery, selectedCapability]);
-  const autoModeModels = useMemo(
+  const tierRuntime = chatMode === "local" ? "browser" : "hosted";
+  const tierModels = useMemo(
     () =>
-      Object.values(getModelsByMode(availableModels, "remote")).filter((modelConfig) =>
-        isModelSelectableForAccount(modelConfig, isPro),
+      Object.values(
+        getModelsByMode(availableModels, chatMode === "local" ? "local" : "remote"),
+      ).filter(
+        (modelConfig) =>
+          modelConfig.isExecutable ?? isModelSelectableForAccount(modelConfig, isPro),
       ),
-    [availableModels, isPro],
+    [availableModels, chatMode, isPro],
   );
 
   const isCatalogueUnverified =
@@ -488,28 +491,32 @@ export const ModelSelector = ({
     scheduleHoverPreviewDismiss();
   };
 
-  const handleSelectAutoMode = (nextAutoMode: typeof autoMode) => {
-    setChatMode("remote");
+  const handleSelectTier = ({ tier, agent }: ModelTierSelection) => {
+    setModelTier(tier);
     setSelectedAgentId(null);
-    setAutoMode(nextAutoMode);
-    selectModelWithDefaults(null, {
-      ...chatSettings,
-      localOnly: false,
-    });
-    onModelChange?.(null);
+
+    if (chatMode === "local" && agent) {
+      selectModelWithDefaults(agent.id, { ...chatSettings, localOnly: true });
+      onModelChange?.(agent.id, agent.config);
+    } else {
+      setChatMode("remote");
+      selectModelWithDefaults(null, { ...chatSettings, localOnly: false });
+      onModelChange?.(null);
+    }
+
     closeSelector();
 
     trackEvent({
-      name: "set_auto_mode",
+      name: "set_model_tier",
       category: "conversation",
-      label: "select_auto_mode",
-      value: nextAutoMode,
+      label: "select_model_tier",
+      value: tier ?? "default",
     });
   };
 
   const handleTabChange = (tab: ModelSelectorTab) => {
     setSelectedTab(tab);
-    if (tab === "auto") {
+    if (tab === "tiers") {
       setChatMode("remote");
       setSelectedAgentId(null);
       selectModelWithDefaults(null, {
@@ -533,14 +540,14 @@ export const ModelSelector = ({
   const triggerLabel = isAgentLabel
     ? `${selectedAgent?.name} - ${agentModelLabel}`
     : model === null
-      ? selectedAutoModeDisplayName
+      ? selectedTierDisplayName
       : selectedModelLabel;
   const triggerTitle = isAgentLabel
     ? `${selectedAgent?.name} - ${agentModelLabel}`
     : isModelLockedByAgent
       ? `${agentModelLabel} (set by agent)`
       : model === null
-        ? selectedAutoModeDisplayName
+        ? selectedTierDisplayName
         : selectedModelLabel;
 
   return (
@@ -566,9 +573,9 @@ export const ModelSelector = ({
               <span
                 className="inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center"
                 role="img"
-                aria-label={`${selectedAutoMode.label} automatic mode icon`}
+                aria-label={`${getModelTierLabel(modelTier)} tier icon`}
               >
-                <SelectedAutoModeIcon className="h-4 w-4" aria-hidden="true" />
+                <SelectedTierIcon className="h-4 w-4" aria-hidden="true" />
               </span>
             ) : undefined
           }
@@ -588,7 +595,7 @@ export const ModelSelector = ({
               if (isModelListOnlyScope) {
                 setSelectedTab("models");
               } else if (model === null) {
-                setSelectedTab("auto");
+                setSelectedTab("tiers");
               } else {
                 setSelectedTab("models");
               }
@@ -607,7 +614,7 @@ export const ModelSelector = ({
           onKeyDown={handleKeyDown}
           selectedTab={selectedTab}
           onTabChange={handleTabChange}
-          showAutoTab={!isModelListOnlyScope}
+          showTiersTab={!isModelListOnlyScope}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
           capabilities={capabilities}
@@ -615,9 +622,10 @@ export const ModelSelector = ({
           onCapabilityChange={setSelectedCapability}
           chatMode={isLiveScope ? undefined : chatMode}
           onChatModeChange={isLiveScope ? undefined : handleToggleModelSource}
-          autoModeModels={autoModeModels}
-          autoMode={autoMode}
-          onAutoModeChange={handleSelectAutoMode}
+          tierModels={tierModels}
+          tierRuntime={tierRuntime}
+          modelTier={modelTier}
+          onModelTierChange={handleSelectTier}
           models={filteredModelList}
           featuredModelIds={featuredModelIds}
           isDisabled={isDisabled}

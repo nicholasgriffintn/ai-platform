@@ -9,7 +9,7 @@ const mockGetChatProvider = vi.fn();
 const mockProviderGetResponse = vi.fn();
 
 vi.mock("~/lib/providers/models", () => ({
-  getAuxiliaryModel: (...args: unknown[]) => mockGetAuxiliaryModel(...args),
+  getCompactionModel: (...args: unknown[]) => mockGetAuxiliaryModel(...args),
 }));
 
 vi.mock("~/lib/providers/capabilities/chat", () => ({

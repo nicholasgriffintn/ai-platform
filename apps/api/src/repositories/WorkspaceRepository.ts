@@ -1,6 +1,6 @@
 import type {
   ConversationType,
-  ModelRouterMode,
+  ModelTier,
   ProjectCapabilityKind,
   ProjectCodingEnvironment,
   WorkspaceRole,
@@ -73,7 +73,7 @@ export interface ProjectRow {
   description: string;
   instructions: string;
   colour: string;
-  default_router_mode?: ModelRouterMode;
+  default_model_tier?: ModelTier | null;
   coding_enabled?: number;
   coding_installation_id?: number | null;
   coding_repository?: string | null;
@@ -464,7 +464,7 @@ export class WorkspaceRepository extends BaseRepository {
     description: string;
     instructions: string;
     colour: string;
-    defaultRouterMode?: ModelRouterMode;
+    defaultModelTier?: ModelTier | null;
     codingEnvironment?: ProjectCodingEnvironment | null;
     createdBy: number;
   }): Promise<void> {
@@ -474,7 +474,7 @@ export class WorkspaceRepository extends BaseRepository {
 				 coding_enabled, coding_installation_id, coding_repository,
 				 coding_prompt_strategy, coding_should_commit, coding_delivery_policy,
 				 coding_environment_setup, coding_environment_cache, coding_cache_generation,
-				 coding_timeout_seconds, created_by, default_router_mode)
+				 coding_timeout_seconds, created_by, default_model_tier)
 				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         params.id,
@@ -498,7 +498,7 @@ export class WorkspaceRepository extends BaseRepository {
         0,
         params.codingEnvironment?.timeoutSeconds ?? 900,
         params.createdBy,
-        params.defaultRouterMode ?? "auto",
+        params.defaultModelTier ?? null,
       ],
     );
   }
@@ -526,7 +526,7 @@ export class WorkspaceRepository extends BaseRepository {
 					  coding_enabled, coding_installation_id, coding_repository,
 					  coding_prompt_strategy, coding_should_commit, coding_delivery_policy,
 					  coding_environment_setup, coding_environment_cache, coding_cache_generation,
-					  coding_timeout_seconds, created_by, default_router_mode)
+					  coding_timeout_seconds, created_by, default_model_tier)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
@@ -551,7 +551,7 @@ export class WorkspaceRepository extends BaseRepository {
           0,
           params.codingEnvironment?.timeoutSeconds ?? 900,
           params.createdBy,
-          params.defaultRouterMode ?? "auto",
+          params.defaultModelTier ?? null,
         ),
       ...capabilities.map((capability) =>
         database
@@ -621,7 +621,7 @@ export class WorkspaceRepository extends BaseRepository {
         "description",
         "instructions",
         "colour",
-        "default_router_mode",
+        "default_model_tier",
         "coding_enabled",
         "coding_installation_id",
         "coding_repository",
