@@ -23,6 +23,7 @@ pub struct LocalMessage {
     pub conversation_id: String,
     pub role: String,
     pub content: String,
+    pub status: String,
     pub created_at: String,
 }
 
@@ -111,6 +112,7 @@ impl Store {
                         REFERENCES conversations (id) ON DELETE CASCADE,
                     role TEXT NOT NULL,
                     content TEXT NOT NULL,
+                    status TEXT NOT NULL DEFAULT 'complete',
                     created_at TEXT NOT NULL
                 );
                 CREATE INDEX IF NOT EXISTS messages_by_conversation
@@ -235,13 +237,14 @@ impl Store {
     pub fn append_message(&self, message: &LocalMessage) -> Result<(), String> {
         self.with_connection(|connection| {
             connection.execute(
-                "INSERT INTO messages (id, conversation_id, role, content, created_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5)",
+                "INSERT INTO messages (id, conversation_id, role, content, status, created_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
                 params![
                     message.id,
                     message.conversation_id,
                     message.role,
                     message.content,
+                    message.status,
                     message.created_at,
                 ],
             )?;
@@ -257,7 +260,7 @@ impl Store {
     pub fn list_messages(&self, conversation_id: &str) -> Result<Vec<LocalMessage>, String> {
         self.with_connection(|connection| {
             let mut statement = connection.prepare(
-                "SELECT id, conversation_id, role, content, created_at
+                "SELECT id, conversation_id, role, content, status, created_at
                  FROM messages
                  WHERE conversation_id = ?1
                  ORDER BY created_at, id",
@@ -269,7 +272,8 @@ impl Store {
                     conversation_id: row.get(1)?,
                     role: row.get(2)?,
                     content: row.get(3)?,
-                    created_at: row.get(4)?,
+                    status: row.get(4)?,
+                    created_at: row.get(5)?,
                 })
             })?;
 
@@ -397,6 +401,7 @@ mod tests {
             conversation_id: conversation_id.to_string(),
             role: role.to_string(),
             content: format!("content of {id}"),
+            status: "complete".to_string(),
             created_at: created_at.to_string(),
         }
     }
@@ -464,6 +469,24 @@ mod tests {
         let listed = store.list_conversations("account-1").expect("listed");
 
         assert_eq!(listed[0].id, "older");
+    }
+
+    #[test]
+    fn keeps_an_interrupted_reply_marked_as_interrupted() {
+        let store = store();
+
+        store
+            .save_conversation(&conversation("a", "account-1"))
+            .expect("saved");
+
+        let mut stopped = message("m1", "a", "assistant", "2026-09-06T09:00:00Z");
+        stopped.status = "interrupted".to_string();
+
+        store.append_message(&stopped).expect("appended");
+
+        let messages = store.list_messages("a").expect("listed");
+
+        assert_eq!(messages[0].status, "interrupted");
     }
 
     #[test]

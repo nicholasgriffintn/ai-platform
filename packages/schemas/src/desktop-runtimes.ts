@@ -194,6 +194,7 @@ export const localMessageSchema = z.object({
   conversationId: z.string().min(1),
   role: z.enum(["system", "user", "assistant"]),
   content: z.string(),
+  status: z.enum(["complete", "interrupted"]),
   createdAt: z.string(),
 });
 

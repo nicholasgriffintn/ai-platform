@@ -23,6 +23,7 @@
 - [ ] Add an address that is not loopback while claiming loopback and confirm it is refused before anything is stored.
 - [ ] Send a prompt, close the window, reopen it and confirm the exchange is still there under that model.
 - [ ] Confirm a cancelled run still stores whatever text arrived before it stopped, rather than discarding it or storing nothing.
+- [ ] Confirm a stopped reply is shown as stopped when the conversation is reopened, and that it is never silently continued or replayed.
 - [ ] Press Sign in with GitHub; confirm the system browser opens, sign-in completes, the browser page says it is safe to close, and the window reports being signed in.
 - [ ] Confirm the session is in the operating system keychain under the application identifier, and that it is not in the local database, the window's storage or any log.
 - [ ] Restart and confirm the signed-in state survives; sign out and confirm the keychain entry is gone.

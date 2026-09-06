@@ -150,3 +150,30 @@ describe("fake endpoint management", () => {
     await expect(backend.listEndpoints()).resolves.toEqual([endpoint]);
   });
 });
+
+describe("interrupted replies", () => {
+  it("keeps a stopped reply distinguishable from a finished one", async () => {
+    const backend = createFakeDesktopBackend();
+
+    await backend.appendMessage({
+      id: "m1",
+      conversationId: "c1",
+      role: "assistant",
+      content: "partial",
+      status: "interrupted",
+      createdAt: "2026-09-06T09:00:00.000Z",
+    });
+    await backend.appendMessage({
+      id: "m2",
+      conversationId: "c1",
+      role: "assistant",
+      content: "whole",
+      status: "complete",
+      createdAt: "2026-09-06T09:00:01.000Z",
+    });
+
+    const stored = await backend.listMessages("c1");
+
+    expect(stored.map((message) => message.status)).toEqual(["interrupted", "complete"]);
+  });
+});

@@ -57,6 +57,7 @@ export function Composer({
           <li key={message.id}>
             <span>{message.role === "user" ? "You" : model.displayName}</span>
             <p>{message.content}</p>
+            {message.status === "interrupted" ? <span>Stopped before it finished</span> : null}
           </li>
         ))}
       </ol>

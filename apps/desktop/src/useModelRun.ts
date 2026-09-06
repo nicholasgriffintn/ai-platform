@@ -24,12 +24,14 @@ function newMessage(
   conversationId: string,
   role: LocalMessage["role"],
   content: string,
+  status: LocalMessage["status"] = "complete",
 ): LocalMessage {
   return {
     id: globalThis.crypto.randomUUID(),
     conversationId,
     role,
     content,
+    status,
     createdAt: new Date().toISOString(),
   };
 }
@@ -102,6 +104,7 @@ export function useModelRun(backend: ConnectedDesktopBackend, model: DiscoveredM
 
       cancelRef.current = run.cancel;
       let answer = "";
+      let ended: LocalMessage["status"] = "interrupted";
 
       try {
         for await (const event of run.events) {
@@ -117,12 +120,16 @@ export function useModelRun(backend: ConnectedDesktopBackend, model: DiscoveredM
           if (event.type === "failed") {
             setState((current) => ({ ...current, failure: event.message }));
           }
+
+          if (event.type === "finished") {
+            ended = event.reason === "complete" ? "complete" : "interrupted";
+          }
         }
       } finally {
         cancelRef.current = null;
 
         if (answer.length > 0) {
-          const reply = newMessage(conversationId, "assistant", answer);
+          const reply = newMessage(conversationId, "assistant", answer, ended);
 
           await backend.appendMessage(reply);
           setState((current) => ({
