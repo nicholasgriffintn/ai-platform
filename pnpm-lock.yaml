@@ -1448,6 +1448,9 @@ importers:
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
+      idb:
+        specifier: 8.0.3
+        version: 8.0.3
       zustand:
         specifier: '*'
         version: 5.0.15(@types/react@19.2.18)(react@19.2.8)

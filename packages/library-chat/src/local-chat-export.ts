@@ -1,13 +1,7 @@
-import type { Conversation } from "~/types";
+import type { Conversation } from "./conversation-types";
+import type { LocalChatExport } from "./local-conversation-store";
 
 export const LOCAL_CHAT_EXPORT_VERSION = 1 as const;
-
-export interface LocalChatExport {
-  version: typeof LOCAL_CHAT_EXPORT_VERSION;
-  exportedAt: string;
-  conversationCount: number;
-  conversations: Conversation[];
-}
 
 export function buildLocalChatExport(
   conversations: Conversation[],

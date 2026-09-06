@@ -1,3 +1,4 @@
+import { getLocalChatScope } from "@ngriffin_uk/polychat-library-chat";
 import {
   filterConversationsByListOptions,
   isLocallyCreatedConversation,
@@ -10,6 +11,7 @@ import {
   useChatStore,
   useStreamActivityStore,
 } from "@ngriffin_uk/polychat-library-client";
+import { localChatService } from "@ngriffin_uk/polychat-library-react";
 import {
   removeConversationFromChatCaches,
   updateConversationInChatCaches,
@@ -20,8 +22,6 @@ import { useMemo } from "react";
 import { getConversationRefetchInterval } from "~/lib/chat/conversation-polling";
 import { recoverUnacknowledgedConversation } from "~/lib/chat/pending-conversation";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
-import { getLocalChatScope } from "~/lib/local/local-chat-scope";
-import { localChatService } from "~/lib/local/local-chat-service";
 import type { ChatRequestOptions, Conversation, ConversationListOptions, Message } from "~/types";
 
 import { useConversationStorage } from "./useConversationStorage";

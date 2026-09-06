@@ -1,3 +1,4 @@
+import { getLocalChatScope } from "@ngriffin_uk/polychat-library-chat";
 import { resolveConversationStorageMode } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import { readCompactionStatusMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import {
@@ -31,7 +32,6 @@ import { resolveAcceptedRunCommand } from "~/lib/chat/run-command";
 import { createStreamProgressCoalescer } from "~/lib/chat/stream-progress-coalescer";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
 import { getErrorMessage } from "~/lib/errors";
-import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useConversationScope } from "~/state/conversation-scope";

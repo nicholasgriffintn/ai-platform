@@ -39,7 +39,8 @@
     "@ngriffin_uk/polychat-library-client": "workspace:^",
     "@ngriffin_uk/polychat-library-surface": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
-    "@ngriffin_uk/polychat-utility-core": "workspace:^"
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "idb": "8.0.3"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",

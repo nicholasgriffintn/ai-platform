@@ -1,3 +1,11 @@
+import {
+  buildLocalChatExport,
+  readLocalChatExport,
+  setLocalConversationStore,
+  type LocalChatExport,
+  getLocalChatScope,
+  isConversationInLocalScope,
+} from "@ngriffin_uk/polychat-library-chat";
 import type {
   Conversation,
   ConversationListOptions,
@@ -7,14 +15,7 @@ import { filterConversationsByListOptions } from "@ngriffin_uk/polychat-library-
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { IDBPDatabase } from "idb";
 
-import { getDatabase, isIndexedDBSupported, storeName } from "~/hooks/useIndexedDB";
-
-import {
-  buildLocalChatExport,
-  readLocalChatExport,
-  type LocalChatExport,
-} from "./local-chat-export";
-import { getLocalChatScope, isConversationInLocalScope } from "./local-chat-scope";
+import { getDatabase, isIndexedDBSupported, storeName } from "./useIndexedDB";
 
 const LS_PREFIX = "polychat_conversation_";
 
@@ -347,3 +348,5 @@ class LocalChatService {
 }
 
 export const localChatService = LocalChatService.getInstance();
+
+setLocalConversationStore(localChatService);

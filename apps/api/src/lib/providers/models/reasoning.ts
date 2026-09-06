@@ -22,7 +22,7 @@ export type AdaptiveThinkingEffort = Extract<
   "low" | "medium" | "high" | "xhigh" | "max"
 >;
 
-const ADAPTIVE_THINKING_EFFORTS: readonly ReasoningEffortLevel[] = new Set([
+const ADAPTIVE_THINKING_EFFORTS: ReadonlySet<ReasoningEffortLevel> = new Set([
   "low",
   "medium",
   "high",

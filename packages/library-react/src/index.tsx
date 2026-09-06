@@ -1,3 +1,4 @@
+export * from "./local/indexeddb-conversation-store";
 import { shouldRetryApiQuery } from "@ngriffin_uk/polychat-library-client/retry";
 import {
   noopSurfaceAnalytics,
