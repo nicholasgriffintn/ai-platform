@@ -414,7 +414,7 @@ export const start_conversation: ApiToolDefinition = {
       ...(args.openingMessage ? { openingMessage: args.openingMessage } : {}),
       ...(args.teammateId ? { teammateId: args.teammateId } : {}),
     };
-    const place = project ? `${project.name}` : "your personal chat";
+    const place = project ? project.name : "your personal chat";
 
     return {
       status: "success",

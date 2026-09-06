@@ -21,7 +21,7 @@ export function TaskCreditSummary({ plan }: { plan: ProjectTaskPlanEvidence }) {
 
   return (
     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-muted-foreground">
-      <span className="font-mono tabular-nums text-foreground">
+      <span className="font-mono text-foreground tabular-nums">
         {credits.toLocaleString(undefined, { maximumFractionDigits: 2 })} credits
       </span>
       <span>{isRunning ? "so far" : "in total"}</span>

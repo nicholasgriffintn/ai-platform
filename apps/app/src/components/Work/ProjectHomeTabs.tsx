@@ -1,8 +1,7 @@
 import { cn, NavLink } from "@ngriffin_uk/polychat-component-ui";
+import { getProjectBasePath } from "@ngriffin_uk/polychat-library-react";
 import { FolderOpen, ListChecks, MessagesSquare } from "lucide-react";
 import type { ReactNode } from "react";
-
-import { getProjectBasePath } from "~/lib/conversation-route";
 
 export type ProjectHomeTab = "chat" | "tasks" | "files";
 
@@ -10,7 +9,7 @@ function tabClass({ isActive }: { isActive: boolean }): string {
   return cn(
     "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm no-underline transition-colors hover:!no-underline",
     isActive
-      ? "bg-selection text-foreground font-medium"
+      ? "bg-selection font-medium text-foreground"
       : "text-muted-foreground hover:text-foreground",
   );
 }

@@ -13,12 +13,12 @@ export function ColorPicker({ currentColor, setCurrentColor }: ColorPickerProps)
           type="color"
           value={currentColor}
           onChange={(e) => setCurrentColor(e.target.value)}
-          className="w-10 h-10 rounded-md cursor-pointer border-0"
+          className="h-10 w-10 cursor-pointer rounded-md border-0"
           title="Custom Color"
         />
         <span className="text-sm text-muted-foreground">Custom Color</span>
       </div>
-      <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+      <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
         {COLORS.map((color) => (
           <button
             key={color}

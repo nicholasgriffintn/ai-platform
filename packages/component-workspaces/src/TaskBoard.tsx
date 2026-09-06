@@ -162,7 +162,7 @@ function TaskRow({
         </div>
         <Link
           href={href}
-          className="block line-clamp-2 text-sm font-semibold text-foreground no-underline hover:!text-active-work hover:!no-underline"
+          className="line-clamp-2 block text-sm font-semibold text-foreground no-underline hover:!text-active-work hover:!no-underline"
         >
           {task.objective}
         </Link>
@@ -293,7 +293,7 @@ function FlowStrip({
                 className="relative rounded-lg border border-border bg-surface p-3"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background text-[11px] font-semibold">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-[11px] font-semibold text-background">
                     {index + 1}
                   </span>
                   <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">

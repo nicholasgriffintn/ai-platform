@@ -1,7 +1,6 @@
 import { SignInEmptyState as ControlledSignInEmptyState } from "@ngriffin_uk/polychat-component-ui";
+import { useUIStore } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
-
-import { useUIStore } from "~/state/stores/uiStore";
 
 interface SignInEmptyStateProps {
   title?: ReactNode;

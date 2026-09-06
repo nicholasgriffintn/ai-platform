@@ -24,7 +24,7 @@ function ArtifactPreview({
   if (status === "idle" || !artifact) {
     return (
       <EmptyState
-        icon={<FileArchive className="text-muted-foreground size-5" />}
+        icon={<FileArchive className="size-5 text-muted-foreground" />}
         title="Choose an artifact"
         message="Content is fetched through its authorised Output when you open it."
         className="min-h-52 border-0 bg-transparent"
@@ -35,7 +35,7 @@ function ArtifactPreview({
   if (status === "loading") {
     return (
       <EmptyState
-        icon={<FileArchive className="text-muted-foreground size-5" />}
+        icon={<FileArchive className="size-5 text-muted-foreground" />}
         title={`Loading ${artifact.name}`}
         message="Fetching a bounded preview…"
         className="min-h-52 border-0 bg-transparent"
@@ -46,7 +46,7 @@ function ArtifactPreview({
   if (status === "failed" || !content) {
     return (
       <EmptyState
-        icon={<FileWarning className="text-failure size-5" />}
+        icon={<FileWarning className="size-5 text-failure" />}
         title="Artifact unavailable"
         message={errorMessage ?? "The authorised content could not be loaded."}
         className="min-h-52 border-0 bg-transparent"
@@ -57,7 +57,7 @@ function ArtifactPreview({
   if (content.binary) {
     return (
       <EmptyState
-        icon={<FileWarning className="text-muted-foreground size-5" />}
+        icon={<FileWarning className="size-5 text-muted-foreground" />}
         title="Binary artifact"
         message="This file is recorded but cannot be previewed safely as text."
         className="min-h-52 border-0 bg-transparent"
@@ -72,11 +72,11 @@ function ArtifactPreview({
         <Badge variant="outline">{artifact.kind}</Badge>
       </div>
       {content.truncated ? (
-        <output className="bg-attention/10 text-attention block rounded-lg px-3 py-2 text-sm">
+        <output className="block rounded-lg bg-attention/10 px-3 py-2 text-sm text-attention">
           This artifact is too large to render in full. Showing a bounded preview.
         </output>
       ) : null}
-      <pre className="border-border bg-canvas text-foreground max-h-[34rem] overflow-auto rounded-lg border p-3 text-xs leading-5">
+      <pre className="max-h-[34rem] overflow-auto rounded-lg border border-border bg-canvas p-3 text-xs leading-5 text-foreground">
         <code>{content.text}</code>
       </pre>
     </section>
@@ -87,7 +87,7 @@ function ChangedFilePreview({ file, truncated }: { file: DiffFile; truncated: bo
   if (file.binary) {
     return (
       <EmptyState
-        icon={<FileWarning className="text-muted-foreground size-5" />}
+        icon={<FileWarning className="size-5 text-muted-foreground" />}
         title="Binary file"
         message="This changed file is recorded but cannot be decoded safely as text."
         className="min-h-52 border-0 bg-transparent"
@@ -103,7 +103,7 @@ function ChangedFilePreview({ file, truncated }: { file: DiffFile; truncated: bo
   if (!patch) {
     return (
       <EmptyState
-        icon={<FileWarning className="text-muted-foreground size-5" />}
+        icon={<FileWarning className="size-5 text-muted-foreground" />}
         title="File preview unavailable"
         message="The run recorded this changed file without reviewable text."
         className="min-h-52 border-0 bg-transparent"
@@ -118,11 +118,11 @@ function ChangedFilePreview({ file, truncated }: { file: DiffFile; truncated: bo
         <Badge variant="outline">{file.status}</Badge>
       </div>
       {truncated ? (
-        <output className="bg-attention/10 text-attention block rounded-lg px-3 py-2 text-sm">
+        <output className="block rounded-lg bg-attention/10 px-3 py-2 text-sm text-attention">
           This file is part of a bounded diff preview.
         </output>
       ) : null}
-      <pre className="border-border bg-canvas text-foreground max-h-[34rem] overflow-auto rounded-lg border p-3 text-xs leading-5 whitespace-pre-wrap">
+      <pre className="max-h-[34rem] overflow-auto rounded-lg border border-border bg-canvas p-3 text-xs leading-5 whitespace-pre-wrap text-foreground">
         <code>{patch}</code>
       </pre>
     </section>
@@ -132,7 +132,7 @@ function ChangedFilePreview({ file, truncated }: { file: DiffFile; truncated: bo
 function UnavailableFilePreview({ path }: { path: string }) {
   return (
     <EmptyState
-      icon={<FileWarning className="text-muted-foreground size-5" />}
+      icon={<FileWarning className="size-5 text-muted-foreground" />}
       title="File preview unavailable"
       message={`${path} was recorded without reviewable content.`}
       className="min-h-52 border-0 bg-transparent"
@@ -161,7 +161,7 @@ export function RunFilesView({
   if (visibleFiles.length === 0 && artifacts.length === 0) {
     return (
       <EmptyState
-        icon={<File className="text-muted-foreground size-5" />}
+        icon={<File className="size-5 text-muted-foreground" />}
         title="No file evidence available"
         message="Changed files and private run artifacts will appear here when recorded."
         className="min-h-52 border-0 bg-transparent"
@@ -175,7 +175,7 @@ export function RunFilesView({
         <section aria-labelledby="changed-files-heading">
           <h3
             id="changed-files-heading"
-            className="text-muted-foreground px-2 text-xs font-medium tracking-wide uppercase"
+            className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase"
           >
             Changed files
           </h3>
@@ -201,14 +201,14 @@ export function RunFilesView({
               ))}
             </ul>
           ) : (
-            <p className="text-muted-foreground px-2 py-2 text-sm">No text diff available</p>
+            <p className="px-2 py-2 text-sm text-muted-foreground">No text diff available</p>
           )}
         </section>
 
         <section aria-labelledby="run-artifacts-heading">
           <h3
             id="run-artifacts-heading"
-            className="text-muted-foreground px-2 text-xs font-medium tracking-wide uppercase"
+            className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase"
           >
             Run artifacts
           </h3>
@@ -235,7 +235,7 @@ export function RunFilesView({
               ))}
             </ul>
           ) : (
-            <p className="text-muted-foreground px-2 py-2 text-sm">No private artifacts recorded</p>
+            <p className="px-2 py-2 text-sm text-muted-foreground">No private artifacts recorded</p>
           )}
         </section>
       </div>

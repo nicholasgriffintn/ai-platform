@@ -2,9 +2,7 @@ import {
   ProviderApiKeyModal as ControlledProviderApiKeyModal,
   type ProviderApiKeyModalProps as ControlledProviderApiKeyModalProps,
 } from "@ngriffin_uk/polychat-component-account";
-
-import { useTrackEvent } from "~/hooks/use-track-event";
-import { useUser } from "~/hooks/useUser";
+import { useTrackEvent, useUser } from "@ngriffin_uk/polychat-library-react";
 
 type ProviderApiKeyModalProps = Omit<
   ControlledProviderApiKeyModalProps,

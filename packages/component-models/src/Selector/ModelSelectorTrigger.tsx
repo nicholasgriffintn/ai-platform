@@ -47,13 +47,13 @@ export function ModelSelectorTrigger({
       aria-haspopup="listbox"
       aria-expanded={isOpen}
       aria-label="Select a model"
-      className={`bg-selection text-foreground hover:bg-active-work/15 flex w-full cursor-pointer items-center gap-2 rounded-md transition-colors disabled:cursor-not-allowed ${minimal ? "px-2 py-1" : "px-3 py-1.5"}`}
+      className={`flex w-full cursor-pointer items-center gap-2 rounded-md bg-selection text-foreground transition-colors hover:bg-active-work/15 disabled:cursor-not-allowed ${minimal ? "px-2 py-1" : "px-3 py-1.5"}`}
     >
       {loading ? (
-        <div className="flex items-center gap-2 w-full min-w-0">
-          <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+        <div className="flex w-full min-w-0 items-center gap-2">
+          <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
           {!minimal && (
-            <span className="text-sm max-w-[250px] truncate w-full" title={loading.title}>
+            <span className="w-full max-w-[250px] truncate text-sm" title={loading.title}>
               {loading.message} {loading.progress !== undefined && `(${loading.progress}%)`}
             </span>
           )}
@@ -64,7 +64,7 @@ export function ModelSelectorTrigger({
             <ModelIcon modelName={modelName || ""} provider={modelProvider} size={18} mono={mono} />
           )}
           {!minimal && (
-            <span className="text-sm max-w-[250px] truncate w-full" title={title}>
+            <span className="w-full max-w-[250px] truncate text-sm" title={title}>
               {label}
             </span>
           )}

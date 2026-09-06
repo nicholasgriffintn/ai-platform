@@ -8,13 +8,6 @@ import {
   CardGridLoadingSkeleton,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
-import { parseCommaSeparatedTags } from "@ngriffin_uk/polychat-utility-core";
-import { Music2, Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
-
-import { StrudelCreateStudio } from "~/components/Apps/Strudel/StrudelCreateStudio";
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import {
   useDeleteStrudelPattern,
   useGenerateStrudelPattern,
@@ -22,9 +15,16 @@ import {
   useStrudelPattern,
   useStrudelPatterns,
   useUpdateStrudelPattern,
-} from "~/hooks/useStrudel";
-import { isAuthenticationError } from "~/lib/errors";
-import { useUIStore } from "~/state/stores/uiStore";
+  isAuthenticationError,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
+import { parseCommaSeparatedTags } from "@ngriffin_uk/polychat-utility-core";
+import { Music2, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
+
+import { StrudelCreateStudio } from "~/components/Apps/Strudel/StrudelCreateStudio";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 const STARTER_PATTERN = 's("bd sd, hh*8").bank("RolandTR909").gain(0.8)';
 

@@ -116,10 +116,10 @@ describe("model response defaults", () => {
 });
 
 describe("central model policy catalogue", () => {
-  it("keeps every lineup candidate on an active catalogue model that supports its effort", () => {
+  it("keeps every served lineup candidate on an active catalogue model that supports its effort", () => {
     const models = getModels({ shouldUseCache: false });
     const candidates = [
-      ...(["hosted", "local-server"] as const).flatMap((runtime) =>
+      ...(["hosted"] as const).flatMap((runtime) =>
         MODEL_TIERS.flatMap((tier) =>
           MODEL_TIER_ROLES.flatMap((role) =>
             MODEL_TIER_LINEUP[runtime][tier][role].map((candidate) => ({

@@ -1,8 +1,6 @@
+import { useTemplateMutations, getErrorMessage } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectDetail } from "@ngriffin_uk/polychat-schemas";
 import { toast } from "sonner";
-
-import { useTemplateMutations } from "~/hooks/useGovernance";
-import { getErrorMessage } from "~/lib/errors";
 
 export function useProjectTemplateSave(workspaceId: string, project: ProjectDetail | null) {
   const templates = useTemplateMutations(workspaceId);

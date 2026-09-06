@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "The only permissions the Polychat window holds. Network egress, storage and secrets stay in Rust commands rather than webview capabilities.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

@@ -1,10 +1,10 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { ComposerDirectiveQuery } from "@ngriffin_uk/polychat-library-chat/composer-commands";
 import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
+import type { ComposerCommandAction } from "@ngriffin_uk/polychat-utility-react";
 import { AtSign, ChevronLeft, ChevronRight, Command, Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
-import type { ComposerCommandAction } from "../composerCommandTypes";
 import {
   ASSISTANT_ACTION_ITEM_EMPTY_LABEL,
   ASSISTANT_ACTION_ITEM_SCOPE_LABEL,
@@ -77,11 +77,11 @@ export function ComposerDirectiveMenu({
   }
 
   return (
-    <div className="border-border bg-popover text-popover-foreground absolute right-0 bottom-full left-0 z-50 mb-2 overflow-hidden rounded-xl border p-2 shadow-[var(--polychat-elevated-shadow)]">
+    <div className="absolute right-0 bottom-full left-0 z-50 mb-2 overflow-hidden rounded-xl border border-border bg-popover p-2 text-popover-foreground shadow-[var(--polychat-elevated-shadow)]">
       {isSlashDirective && activeSlashCommand ? (
         <button
           type="button"
-          className="border-border text-muted-foreground hover:text-foreground flex w-full items-center gap-2 border-b px-3 py-2 text-left text-xs"
+          className="flex w-full items-center gap-2 border-b border-border px-3 py-2 text-left text-xs text-muted-foreground hover:text-foreground"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => {
             if (onSlashCommandBack) {
@@ -96,7 +96,7 @@ export function ComposerDirectiveMenu({
           <span>Back to actions</span>
         </button>
       ) : (
-        <div className="border-border text-muted-foreground flex items-center gap-2 border-b px-3 py-2 text-xs">
+        <div className="flex items-center gap-2 border-b border-border px-3 py-2 text-xs text-muted-foreground">
           {isSlashDirective ? (
             <Command className="h-3.5 w-3.5" aria-hidden="true" />
           ) : (
@@ -117,7 +117,7 @@ export function ComposerDirectiveMenu({
                 className={cn(
                   resultClassName,
                   index === highlightedIndex &&
-                    "bg-accent text-accent-foreground ring-active-work/40 ring-1 ring-inset",
+                    "bg-accent text-accent-foreground ring-1 ring-active-work/40 ring-inset",
                   command.disabled && "cursor-not-allowed opacity-50",
                 )}
                 onMouseDown={(event) => event.preventDefault()}
@@ -150,7 +150,7 @@ export function ComposerDirectiveMenu({
           : canUseTeammates
             ? groupAssistantActionItems(filteredActionItems).map((group) => (
                 <div key={group.label} className="py-1">
-                  <div className="text-muted-foreground px-3 pb-1 text-[11px] font-semibold uppercase">
+                  <div className="px-3 pb-1 text-[11px] font-semibold text-muted-foreground uppercase">
                     {group.label}
                   </div>
                   {group.items.map((item) => {
@@ -169,7 +169,7 @@ export function ComposerDirectiveMenu({
                         className={cn(
                           resultClassName,
                           index === highlightedIndex &&
-                            "bg-accent text-accent-foreground ring-active-work/40 ring-1 ring-inset",
+                            "bg-accent text-accent-foreground ring-1 ring-active-work/40 ring-inset",
                         )}
                         onMouseDown={(event) => event.preventDefault()}
                         onPointerMove={() => onActiveSuggestionIndexChange?.(index)}
@@ -194,18 +194,18 @@ export function ComposerDirectiveMenu({
             : null}
 
         {!isSlashDirective && !canUseTeammates ? (
-          <p className="text-muted-foreground px-3 py-4 text-sm">
+          <p className="px-3 py-4 text-sm text-muted-foreground">
             {ASSISTANT_ACTION_ITEM_SCOPE_LABEL} are available in Chat mode.
           </p>
         ) : null}
         {!isSlashDirective && isLoadingTeammates ? (
-          <div className="text-muted-foreground flex items-center gap-2 px-3 py-4 text-sm">
+          <div className="flex items-center gap-2 px-3 py-4 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Loading capabilities…
           </div>
         ) : null}
         {resultCount === 0 && !isLoadingTeammates ? (
-          <p className="text-muted-foreground px-3 py-4 text-sm">
+          <p className="px-3 py-4 text-sm text-muted-foreground">
             No {isSlashDirective ? "actions" : ASSISTANT_ACTION_ITEM_EMPTY_LABEL} match this search.
           </p>
         ) : null}

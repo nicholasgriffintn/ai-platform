@@ -10,9 +10,12 @@ import {
   collectFieldEnumOptions,
   parseReferenceImages,
 } from "@ngriffin_uk/polychat-component-experiences/media";
+import {
+  useCanvasGenerations,
+  useCanvasModels,
+  useGenerateCanvasOutputs,
+} from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useMemo, useState } from "react";
-
-import { useCanvasGenerations, useCanvasModels, useGenerateCanvasOutputs } from "~/hooks/useCanvas";
 
 import { useDrawingStudio } from "./Drawing/useDrawingStudio";
 

@@ -5,14 +5,16 @@ import {
   WorkspaceOverviewSkeleton,
   WorkspaceProjectsSection,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  useTaskAttention,
+  useDeleteWorkspace,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useTaskAttention } from "~/hooks/useProjectTasks";
-import { useDeleteWorkspace } from "~/hooks/useWorkspaces";
-import { isAuthenticationError } from "~/lib/errors";
 
 import { CreateProjectDialog } from "./CreateProjectDialog";
 import { InviteMemberDialog } from "./InviteMemberDialog";
@@ -86,7 +88,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 
         {workspaceAttention.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-foreground mb-3 text-sm font-semibold">Waiting on you</h2>
+            <h2 className="mb-3 text-sm font-semibold text-foreground">Waiting on you</h2>
             <TaskAttentionList
               items={workspaceAttention}
               itemHref={(item) =>

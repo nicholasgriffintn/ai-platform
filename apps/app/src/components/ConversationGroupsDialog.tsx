@@ -1,7 +1,6 @@
 import { ConversationGroupsDialog as ControlledConversationGroupsDialog } from "@ngriffin_uk/polychat-component-navigation";
+import { useConversationOrganisation } from "@ngriffin_uk/polychat-library-react";
 import type { ConversationGroupScope } from "@ngriffin_uk/polychat-schemas";
-
-import { useConversationOrganisation } from "~/hooks/useConversationOrganisation";
 
 interface ConversationGroupsDialogProps {
   conversationId: string | null;

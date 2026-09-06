@@ -124,7 +124,7 @@ describe("createStreamingTurnTransport", () => {
     const { sink } = createSink();
 
     const turn = await createStreamingTurnTransport().runTurn({
-      request: { env: context.env, model: "claude-opus-5", messages: [] } as never,
+      request: { env: context.env, model: "claude-opus-5", messages: [] },
       sink,
       context: { ...context, model: "claude-opus-5", provider: "anthropic" },
     });

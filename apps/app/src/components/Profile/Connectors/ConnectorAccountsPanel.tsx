@@ -1,7 +1,9 @@
 import { ConnectorAccountsPanel as ControlledConnectorAccountsPanel } from "@ngriffin_uk/polychat-component-account";
+import {
+  useRecipeConnectorAccounts,
+  useUpdateRecipeConnectorAccount,
+} from "@ngriffin_uk/polychat-library-react";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
-
-import { useRecipeConnectorAccounts, useUpdateRecipeConnectorAccount } from "~/hooks/useConnectors";
 
 export function ConnectorAccountsPanel({
   provider,

@@ -2,11 +2,13 @@ import {
   type RecordingFormData,
   RecordingWorkflowStep,
 } from "@ngriffin_uk/polychat-component-experiences/content";
+import {
+  useProcessRecording,
+  useUploadRecording,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-library-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-
-import { useProcessRecording, useUploadRecording } from "~/hooks/useRecordings";
-import { getErrorMessage } from "~/lib/errors";
 
 type RecordingProcess = "transcribe" | "summarise" | "generate-image";
 type ProcessingKey = "transcribing" | "summarizing" | "generatingImage";

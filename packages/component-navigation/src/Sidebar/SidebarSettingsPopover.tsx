@@ -6,8 +6,8 @@ import {
   PopoverContent,
   PopoverTrigger,
   ThemeMenu,
-  type ThemePreference,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { ThemePreference } from "@ngriffin_uk/polychat-library-chat";
 import {
   ChevronDown,
   ChevronUp,
@@ -75,15 +75,15 @@ function SidebarUsageSummary({
   isLoading: boolean;
 }) {
   return (
-    <section className="border-border border-b p-3">
+    <section className="border-b border-border p-3">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-foreground text-sm font-semibold">Usage</h2>
+          <h2 className="text-sm font-semibold text-foreground">Usage</h2>
         </div>
       </div>
 
       {usage.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {isLoading ? "Loading usage…" : "Usage is temporarily unavailable."}
         </p>
       ) : (
@@ -91,17 +91,17 @@ function SidebarUsageSummary({
           {usage.map((item) => (
             <div key={item.id}>
               <div className="mb-1 flex items-center justify-between gap-3 text-xs">
-                <span className="text-foreground font-medium">{item.label}</span>
+                <span className="font-medium text-foreground">{item.label}</span>
                 <span className="text-muted-foreground">{item.value}</span>
               </div>
               {item.percentage === null ? (
-                <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span className={cn("h-1.5 w-1.5 rounded-full", usageToneClasses[item.tone])} />
                   <span>{item.assistiveLabel}</span>
                 </div>
               ) : (
                 <div
-                  className="bg-selection h-2 rounded-full"
+                  className="h-2 rounded-full bg-selection"
                   role="meter"
                   aria-label={item.assistiveLabel}
                   aria-valuemin={0}
@@ -211,11 +211,11 @@ export function SidebarSettingsPopover({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus:ring-sidebar-ring flex w-full min-w-0 items-center justify-between gap-3 rounded-none px-3 py-3 text-left transition-colors focus:ring-2 focus:ring-inset focus:outline-none"
+          className="flex w-full min-w-0 items-center justify-between gap-3 rounded-none bg-sidebar px-3 py-3 text-left text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus:ring-2 focus:ring-sidebar-ring focus:outline-none focus:ring-inset"
           aria-label="Open settings and configuration"
         >
           <span className="flex min-w-0 items-center gap-2">
-            <span className="bg-selection text-foreground flex h-7 w-7 shrink-0 items-center justify-center rounded-md">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-selection text-foreground">
               <SidebarUserAvatar
                 account={account}
                 isAuthenticated={isAuthenticated}
@@ -224,12 +224,12 @@ export function SidebarSettingsPopover({
             </span>
             <span className="flex min-w-0 flex-1 items-center gap-2">
               <span className="min-w-0 truncate text-sm font-medium">{displayName}</span>
-              <span className="bg-selection text-muted-foreground shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium">
+              <span className="shrink-0 rounded-full bg-selection px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                 {planLabel}
               </span>
             </span>
           </span>
-          <TriggerIcon className="text-muted-foreground h-4 w-4 shrink-0" aria-hidden="true" />
+          <TriggerIcon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -239,7 +239,7 @@ export function SidebarSettingsPopover({
         side="top"
         sideOffset={8}
         collisionPadding={{ top: 64, right: 8, bottom: 88, left: 8 }}
-        className="border-border bg-popover text-popover-foreground w-[calc(var(--radix-popover-trigger-width)-1rem)] max-w-[calc(var(--radix-popover-trigger-width)-1rem)] p-3 shadow-[var(--polychat-elevated-shadow)]"
+        className="w-[calc(var(--radix-popover-trigger-width)-1rem)] max-w-[calc(var(--radix-popover-trigger-width)-1rem)] border-border bg-popover p-3 text-popover-foreground shadow-[var(--polychat-elevated-shadow)]"
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           contentRef.current?.focus();
@@ -284,7 +284,7 @@ export function SidebarSettingsPopover({
             )}
           </div>
 
-          <div className="border-border space-y-1 border-t pt-2">
+          <div className="space-y-1 border-t border-border pt-2">
             {theme && (
               <ThemeMenu
                 value={theme.value}

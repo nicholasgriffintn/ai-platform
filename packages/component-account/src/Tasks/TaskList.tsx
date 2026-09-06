@@ -36,7 +36,7 @@ function TaskItem({ task }: { task: Task }) {
       icon={getStatusIcon(task.status || "pending")}
       label={`${TASK_LABELS[task.task_type] ?? task.task_type} - ${task.status?.toUpperCase()}`}
       sublabel={taskSublabel(task)}
-      className="border-border bg-surface border"
+      className="border border-border bg-surface"
     />
   );
 }
@@ -62,7 +62,7 @@ export function TaskList({ tasks, isLoading = false, limit = 10 }: TaskListProps
         ) : tasks.length === 0 ? (
           <EmptyState
             message="No tasks found. Trigger a memory synthesis to get started!"
-            className="bg-transparent dark:bg-transparent py-6 px-0"
+            className="bg-transparent px-0 py-6 dark:bg-transparent"
           />
         ) : (
           <ul className="space-y-2">

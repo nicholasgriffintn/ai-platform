@@ -53,7 +53,7 @@ export function CreditBalanceCard({ balance }: CreditBalanceCardProps) {
       </div>
 
       <div
-        className="bg-selection relative mt-4 h-3 overflow-hidden rounded-full"
+        className="relative mt-4 h-3 overflow-hidden rounded-full bg-selection"
         role="meter"
         aria-label={`${formatCredits(credits.used)} of ${formatCredits(credits.included)} included credits used, ${formatCredits(reserveRemaining)} of reserve remaining`}
         aria-valuemin={0}
@@ -73,7 +73,7 @@ export function CreditBalanceCard({ balance }: CreditBalanceCardProps) {
           )}
         </div>
         <div
-          className="bg-surface absolute inset-y-0 w-0.5"
+          className="absolute inset-y-0 w-0.5 bg-surface"
           style={{ left: `${reserveStartPercentage}%` }}
         />
       </div>

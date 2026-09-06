@@ -155,6 +155,7 @@ export const modelConfigItemSchema = z.object({
   isDefault: z.boolean().optional(),
   isExecutable: z.boolean().optional(),
   readiness: readinessSchema.optional(),
+  runsOn: z.enum(["server", "device"]).optional(),
   isPlatformEnabled: z.boolean().optional(),
   isByokEnabled: z.boolean().optional(),
   hiddenFromDefaultList: z.boolean().optional(),

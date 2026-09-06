@@ -1,11 +1,14 @@
+import {
+  useModelCatalogue,
+  groupModelsByProvider,
+  isCatalogueModel,
+} from "@ngriffin_uk/polychat-library-react";
 import { useMemo } from "react";
 
 import { SectionNav } from "~/components/Core/SectionNav";
 import { ModelLineup } from "~/components/Models/ModelLineup";
 import { MODELS_SECTION_NAV } from "~/components/Models/models-sections";
 import { ProviderCatalogue } from "~/components/Models/ProviderCatalogue";
-import { useModelCatalogue } from "~/hooks/useModels";
-import { groupModelsByProvider, isCatalogueModel } from "~/lib/model-catalogue";
 
 export function ModelsCatalogue() {
   const { data, isLoading, error } = useModelCatalogue();
@@ -20,10 +23,10 @@ export function ModelsCatalogue() {
     <div className="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-6">
       <header className="space-y-5 pt-2 pb-12">
         <p className="polychat-eyebrow">Models</p>
-        <h1 className="font-display text-foreground text-4xl font-medium tracking-tight text-balance md:text-5xl">
+        <h1 className="font-display text-4xl font-medium tracking-tight text-balance text-foreground md:text-5xl">
           Every model, one perch
         </h1>
-        <p className="text-muted-foreground max-w-prose text-lg leading-relaxed">{lede}</p>
+        <p className="max-w-prose text-lg leading-relaxed text-muted-foreground">{lede}</p>
         <SectionNav label="Models sections" sections={MODELS_SECTION_NAV} />
       </header>
       <ModelLineup />

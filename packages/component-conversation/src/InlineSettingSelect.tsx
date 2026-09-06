@@ -73,12 +73,12 @@ export function InlineSettingSelect<T extends string>({
       <PopoverContent
         side="top"
         align="start"
-        className="border-border bg-popover text-popover-foreground w-56 p-1 shadow-[var(--polychat-elevated-shadow)]"
+        className="w-56 border-border bg-popover p-1 text-popover-foreground shadow-[var(--polychat-elevated-shadow)]"
         aria-label={label}
       >
         <div
           id={id}
-          className="text-muted-foreground px-2 py-1.5 text-[11px] font-semibold uppercase"
+          className="px-2 py-1.5 text-[11px] font-semibold text-muted-foreground uppercase"
         >
           {label}
         </div>
@@ -97,12 +97,12 @@ export function InlineSettingSelect<T extends string>({
                   setIsOpen(false);
                 }}
                 className={cn(
-                  "text-popover-foreground hover:bg-selection flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm",
+                  "flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm text-popover-foreground hover:bg-selection",
                   isSelected && "bg-selection font-medium",
                 )}
               >
                 <span>{option.label}</span>
-                {isSelected && <span className="text-muted-foreground text-xs">Selected</span>}
+                {isSelected && <span className="text-xs text-muted-foreground">Selected</span>}
               </button>
             );
           })}

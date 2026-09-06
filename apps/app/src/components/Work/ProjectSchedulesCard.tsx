@@ -5,6 +5,8 @@ import {
 } from "@ngriffin_uk/polychat-component-capabilities";
 import { ConfirmationDialog, FormDialog, FormSelect } from "@ngriffin_uk/polychat-component-ui";
 import { ScheduledRecipeList } from "@ngriffin_uk/polychat-component-workspaces";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { useAssistantRecipes, useRecipeInstallations } from "@ngriffin_uk/polychat-library-react";
 import { getRecipeScheduleTrigger } from "@ngriffin_uk/polychat-schemas";
 import type {
   AssistantRecipe,
@@ -16,8 +18,6 @@ import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo, useState } from "react";
 
 import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
-import { useAssistantRecipes, useRecipeInstallations } from "~/hooks/useRecipes";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export function ProjectSchedulesCard({
   workspaceId,

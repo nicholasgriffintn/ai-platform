@@ -1,0 +1,122 @@
+import { taskService } from "@ngriffin_uk/polychat-library-client";
+import type {
+  CreateTaskResponse,
+  GetMemorySynthesisResponse,
+  ListTasksResponse,
+  TriggerMemorySynthesisRequest,
+} from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+export const TASK_QUERY_KEYS = {
+  tasks: ["tasks"],
+  task: (taskId: string) => ["tasks", taskId],
+  synthesis: (namespace?: string) => ["memory-synthesis", namespace ?? "global"],
+  synthesisHistory: (namespace?: string) => ["memory-synthesis-history", namespace ?? "global"],
+};
+
+type MemorySynthesisHistoryResponse = {
+  syntheses: NonNullable<GetMemorySynthesisResponse["synthesis"]>[];
+  total: number;
+};
+
+const ACTIVE_TASK_STATUSES = new Set(["pending", "queued", "running"]);
+
+export function useTasks({ shouldRefetch = true }) {
+  const queryClient = useQueryClient();
+
+  const { data: tasksData, isLoading: isLoadingTasks } = useQuery<ListTasksResponse>({
+    queryKey: TASK_QUERY_KEYS.tasks,
+    queryFn: () => taskService.listTasks(),
+    staleTime: 1000 * 10, // 10 seconds
+    refetchInterval: (query) => {
+      if (!shouldRefetch) {
+        return false;
+      }
+
+      const data = query.state.data;
+
+      if (!data) {
+        return false;
+      }
+
+      const hasActiveTasks = data.tasks.some((task) =>
+        ACTIVE_TASK_STATUSES.has(String(task.status)),
+      );
+
+      return hasActiveTasks ? 1000 * 30 : false;
+    },
+  });
+
+  const triggerSynthesisMutation = useMutation<
+    CreateTaskResponse,
+    Error,
+    TriggerMemorySynthesisRequest | undefined
+  >({
+    mutationFn: async (data) => {
+      return await taskService.triggerMemorySynthesis(data);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.tasks });
+    },
+  });
+
+  const cancelTaskMutation = useMutation<{ success: boolean }, Error, string>({
+    mutationFn: async (taskId: string) => {
+      return await taskService.cancelTask(taskId);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.tasks });
+    },
+  });
+
+  return {
+    tasks: tasksData?.tasks || [],
+    totalTasks: tasksData?.total || 0,
+    isLoadingTasks,
+
+    triggerSynthesis: triggerSynthesisMutation.mutate,
+    triggerSynthesisAsync: triggerSynthesisMutation.mutateAsync,
+    isTriggeringSynthesis: triggerSynthesisMutation.isPending,
+
+    cancelTask: cancelTaskMutation.mutate,
+    isCancellingTask: cancelTaskMutation.isPending,
+  };
+}
+
+export function useMemorySynthesis(namespace = "global") {
+  const queryClient = useQueryClient();
+
+  const { data: synthesisData, isLoading: isLoadingSynthesis } =
+    useQuery<GetMemorySynthesisResponse>({
+      queryKey: TASK_QUERY_KEYS.synthesis(namespace),
+      queryFn: () => taskService.getActiveSynthesis(namespace),
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchInterval: 1000 * 30,
+    });
+
+  const { data: historyData, isLoading: isLoadingHistory } =
+    useQuery<MemorySynthesisHistoryResponse>({
+      queryKey: TASK_QUERY_KEYS.synthesisHistory(namespace),
+      queryFn: () => taskService.getSynthesisHistory(namespace, 10),
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchInterval: 1000 * 30,
+    });
+
+  return {
+    synthesis: synthesisData?.synthesis,
+    isLoadingSynthesis,
+
+    history: historyData?.syntheses || [],
+    historyTotal: historyData?.total || 0,
+    isLoadingHistory,
+
+    refresh: () => {
+      void queryClient.invalidateQueries({
+        queryKey: TASK_QUERY_KEYS.synthesis(namespace),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: TASK_QUERY_KEYS.synthesisHistory(namespace),
+      });
+    },
+  };
+}

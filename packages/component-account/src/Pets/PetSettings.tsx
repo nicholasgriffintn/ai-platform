@@ -169,7 +169,7 @@ export function PetSettings({
 
         {error ? <p className="text-sm text-failure">{error}</p> : null}
 
-        <div className="flex justify-end mt-4">
+        <div className="mt-4 flex justify-end">
           <TextLink href="/pets" size="xs" trailingIcon={<ArrowRight size={13} />}>
             Meet the pets
           </TextLink>

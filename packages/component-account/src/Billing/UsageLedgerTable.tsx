@@ -81,7 +81,7 @@ export function UsageLedgerTable({
             onClick={() => onSourceChange(filter)}
             className={
               source === filter
-                ? "bg-human-action text-human-action-foreground rounded-full px-3 py-1 text-xs font-medium"
+                ? "rounded-full bg-human-action px-3 py-1 text-xs font-medium text-human-action-foreground"
                 : "rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:border-border-strong"
             }
           >
@@ -102,10 +102,10 @@ export function UsageLedgerTable({
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-                <th className="pb-2 pr-3 font-medium">When</th>
-                <th className="pb-2 pr-3 font-medium">What</th>
-                <th className="pb-2 pr-3 font-medium">Amount</th>
+              <tr className="border-b border-border text-left text-xs tracking-wide text-muted-foreground uppercase">
+                <th className="pr-3 pb-2 font-medium">When</th>
+                <th className="pr-3 pb-2 font-medium">What</th>
+                <th className="pr-3 pb-2 font-medium">Amount</th>
                 <th className="pb-2 text-right font-medium">Credits</th>
               </tr>
             </thead>

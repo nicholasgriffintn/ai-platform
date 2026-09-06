@@ -1,6 +1,5 @@
 import { ShareTeammateModal } from "@ngriffin_uk/polychat-component-account";
-
-import { useTeammateSharing } from "~/hooks/useSharedTeammates";
+import { useTeammateSharing } from "@ngriffin_uk/polychat-library-react";
 
 interface ShareTeammateDialogProps {
   teammate: { id: string; name: string; description?: string | null } | null;

@@ -48,7 +48,7 @@ export function SourceList({
   }
 
   if (isLoading) {
-    return <Card className="text-muted-foreground p-5 text-sm shadow-none">Loading sources…</Card>;
+    return <Card className="p-5 text-sm text-muted-foreground shadow-none">Loading sources…</Card>;
   }
 
   if (!sources?.length) {
@@ -73,12 +73,12 @@ export function SourceList({
           key={source.id}
           className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-0"
         >
-          <div className="bg-selection text-muted-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-selection text-muted-foreground">
             {source.kind === "url" ? <Link2 size={17} /> : <FileText size={17} />}
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-sm font-medium">{source.title}</h3>
-            <p className="text-xs capitalize text-muted-foreground">
+            <p className="text-xs text-muted-foreground capitalize">
               {source.kind} · {formatDate(source.updatedAt ?? source.createdAt)}
             </p>
           </div>

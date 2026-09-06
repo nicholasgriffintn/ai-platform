@@ -239,9 +239,9 @@ export class RequestPreparer {
 
   private resolveMessageText(validationContext: ValidationContext): string {
     const { lastMessage } = validationContext;
-    const lastMessageContent = Array.isArray(lastMessage!.content)
-      ? lastMessage!.content
-      : [{ type: "text" as const, text: lastMessage!.content as string }];
+    const lastMessageContent = Array.isArray(lastMessage.content)
+      ? lastMessage.content
+      : [{ type: "text" as const, text: lastMessage.content as string }];
 
     return sanitiseInput(lastMessageContent.find((c) => c.type === "text")?.text || "");
   }

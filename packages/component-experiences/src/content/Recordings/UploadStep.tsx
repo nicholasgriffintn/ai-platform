@@ -5,9 +5,8 @@ import {
   SingleFileUploader,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { RecordingFormData } from "@ngriffin_uk/polychat-schemas/experiences";
 import { Link as LinkIcon } from "lucide-react";
-
-import type { RecordingFormData } from "./types";
 
 export interface UploadStepProps {
   formData: RecordingFormData;
@@ -33,8 +32,8 @@ export function UploadStep({
   uploaderAnalytics,
 }: UploadStepProps) {
   return (
-    <div className="border-border bg-surface rounded-lg border p-6">
-      <h2 className="text-xl font-semibold mb-4 text-foreground">Upload Your Recording</h2>
+    <div className="rounded-lg border border-border bg-surface p-6">
+      <h2 className="mb-4 text-xl font-semibold text-foreground">Upload Your Recording</h2>
 
       <div className="space-y-4">
         <FormInput
@@ -58,7 +57,7 @@ export function UploadStep({
         />
 
         <div>
-          <div className="flex space-x-4 mb-4">
+          <div className="mb-4 flex space-x-4">
             <label className="inline-flex items-center">
               <input
                 type="radio"
@@ -66,7 +65,7 @@ export function UploadStep({
                 value="file"
                 checked={formData.audioSource === "file"}
                 onChange={() => setFormData((prev) => ({ ...prev, audioSource: "file" }))}
-                className="h-4 w-4 text-active-work focus:ring-active-work border-border-strong"
+                className="h-4 w-4 border-border-strong text-active-work focus:ring-active-work"
               />
               <span className="ml-2 text-foreground">Upload File</span>
             </label>
@@ -77,7 +76,7 @@ export function UploadStep({
                 value="url"
                 checked={formData.audioSource === "url"}
                 onChange={() => setFormData((prev) => ({ ...prev, audioSource: "url" }))}
-                className="h-4 w-4 text-active-work focus:ring-active-work border-border-strong"
+                className="h-4 w-4 border-border-strong text-active-work focus:ring-active-work"
               />
               <span className="ml-2 text-foreground">Enter URL</span>
             </label>
@@ -85,7 +84,7 @@ export function UploadStep({
 
           {formData.audioSource === "file" ? (
             <>
-              <label htmlFor="audioFile" className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="audioFile" className="mb-1 block text-sm font-medium text-foreground">
                 Audio File * (MP3, WAV, M4A)
               </label>
               <SingleFileUploader
@@ -113,7 +112,7 @@ export function UploadStep({
                 required
                 className="pl-10"
               />
-              <div className="absolute left-3 top-[37px] pointer-events-none">
+              <div className="pointer-events-none absolute top-[37px] left-3">
                 <LinkIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
               </div>
             </div>

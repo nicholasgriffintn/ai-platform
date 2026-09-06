@@ -1,16 +1,15 @@
-import type {
-  RecipeComposioTriggerCreateRequest,
-  RecipeConnectorProvider,
-} from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   createRecipeComposioTrigger,
   deleteRecipeComposioTrigger,
   listRecipeComposioTriggers,
   listRecipeComposioTriggerTypes,
   updateRecipeComposioTrigger,
-} from "~/lib/api/recipe-composio-triggers";
+} from "@ngriffin_uk/polychat-library-client";
+import type {
+  RecipeComposioTriggerCreateRequest,
+  RecipeConnectorProvider,
+} from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const recipeComposioTriggersQueryKey = (installationId: string) =>
   ["recipe-composio-triggers", installationId] as const;

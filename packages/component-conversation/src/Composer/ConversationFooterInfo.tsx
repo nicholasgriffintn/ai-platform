@@ -39,14 +39,14 @@ export const ConversationFooterInfo = ({
               By using Polychat, you agree to our{" "}
               <Link
                 href="/terms"
-                className="hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-active-work focus:ring-offset-2 rounded-sm"
+                className="rounded-sm underline hover:text-foreground focus:ring-2 focus:ring-active-work focus:ring-offset-2 focus:outline-none"
               >
                 Terms
               </Link>{" "}
               &{" "}
               <Link
                 href="/privacy"
-                className="hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-active-work focus:ring-offset-2 rounded-sm"
+                className="rounded-sm underline hover:text-foreground focus:ring-2 focus:ring-active-work focus:ring-offset-2 focus:outline-none"
               >
                 Privacy
               </Link>

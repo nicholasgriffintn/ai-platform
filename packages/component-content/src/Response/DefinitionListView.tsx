@@ -13,7 +13,7 @@ export function DefinitionListView({ entries }: { entries: DefinitionEntry[] }) 
       {entries.map((entry) => (
         <div key={entry.key} className="contents">
           <dt className="text-muted-foreground">{entry.label}</dt>
-          <dd className="m-0 break-words font-medium tabular-nums text-foreground">
+          <dd className="m-0 font-medium break-words text-foreground tabular-nums">
             {entry.value}
           </dd>
         </div>

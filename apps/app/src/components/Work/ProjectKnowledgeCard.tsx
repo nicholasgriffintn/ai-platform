@@ -1,12 +1,11 @@
 import { ProjectKnowledgeCard as ControlledProjectKnowledgeCard } from "@ngriffin_uk/polychat-component-workspaces";
-import { toast } from "sonner";
-
 import {
   useProjectContextSources,
   useSetProjectContextSources,
   useSources,
-} from "~/hooks/useSources";
-import { getProjectFilesPath } from "~/lib/files-route";
+  getProjectFilesPath,
+} from "@ngriffin_uk/polychat-library-react";
+import { toast } from "sonner";
 
 export function ProjectKnowledgeCard({
   workspaceId,

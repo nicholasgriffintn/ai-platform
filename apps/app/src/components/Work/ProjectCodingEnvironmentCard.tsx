@@ -1,8 +1,11 @@
 import { ProjectCodingEnvironmentCard as ControlledProjectCodingEnvironmentCard } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  useSandboxConnections,
+  useSandboxRepositoryOptions,
+  useProjectEnvironmentCacheAction,
+  useUpdateProject,
+} from "@ngriffin_uk/polychat-library-react";
 import type { ProjectDetail } from "@ngriffin_uk/polychat-schemas";
-
-import { useSandboxConnections, useSandboxRepositoryOptions } from "~/hooks/useSandbox";
-import { useProjectEnvironmentCacheAction, useUpdateProject } from "~/hooks/useWorkspaces";
 
 export function ProjectCodingEnvironmentCard({
   canManage,

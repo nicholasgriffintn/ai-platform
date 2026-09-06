@@ -11,7 +11,7 @@ const MAX_VISIBLE_TASKS = 4;
 
 function statusIcon(status: ProjectTaskStatus) {
   if (status === "running") {
-    return <Loader2 className="text-active-work animate-spin" size={14} />;
+    return <Loader2 className="animate-spin text-active-work" size={14} />;
   }
 
   if (status === "blocked") {
@@ -50,14 +50,14 @@ export function ProjectTasksSummary({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-foreground text-sm font-semibold">Tasks</h2>
+        <h2 className="text-sm font-semibold text-foreground">Tasks</h2>
         <TextLink href={boardHref} size="xs" trailingIcon={<ArrowRight size={13} />}>
           Open tasks
         </TextLink>
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground text-sm">Loading tasks…</p>
+        <p className="text-sm text-muted-foreground">Loading tasks…</p>
       ) : openTasks.length === 0 ? (
         <EmptyState
           icon={<ListChecks className="text-muted-foreground" size={24} />}
@@ -78,13 +78,13 @@ export function ProjectTasksSummary({
               href={taskHref(task)}
               className="group block no-underline hover:!no-underline"
             >
-              <div className="border-border bg-surface group-hover:border-border-strong flex items-center gap-3 rounded-lg border p-3">
+              <div className="flex items-center gap-3 rounded-lg border border-border bg-surface p-3 group-hover:border-border-strong">
                 {statusIcon(task.status)}
                 <div className="min-w-0 flex-1">
-                  <p className="text-foreground truncate text-sm font-medium group-hover:underline">
+                  <p className="truncate text-sm font-medium text-foreground group-hover:underline">
                     {task.objective}
                   </p>
-                  <p className="text-muted-foreground text-xs">
+                  <p className="text-xs text-muted-foreground">
                     {projectTaskStatusLabels[task.status]}
                     {task.blockedDetail ? ` · ${task.blockedDetail}` : ""}
                   </p>
@@ -95,7 +95,7 @@ export function ProjectTasksSummary({
           ))}
 
           <div className="flex items-center justify-between pt-1">
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               {openTasks.length} open
               {needsAttention.length > 0 ? ` · ${needsAttention.length} needing a look` : ""}
             </p>

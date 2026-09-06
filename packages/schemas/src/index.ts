@@ -84,6 +84,7 @@ export * from "./conversation-title";
 export * from "./council";
 export * from "./credit-bands";
 export * from "./cron";
+export * from "./desktop-runtimes";
 export * from "./goals";
 export * from "./internal-service-auth";
 export * from "./memory-documents";
@@ -159,3 +160,4 @@ export * from "./recipe-trigger-configuration";
 export * from "./strudel";
 
 export * from "./conversation-threads";
+export * from "./model-selection-ui";

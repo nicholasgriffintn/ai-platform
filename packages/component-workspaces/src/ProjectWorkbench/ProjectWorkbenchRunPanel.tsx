@@ -63,7 +63,7 @@ function PanelMessage({
 
   return (
     <EmptyState
-      icon={<Icon className="text-muted-foreground size-5" />}
+      icon={<Icon className="size-5 text-muted-foreground" />}
       title={title}
       message={message}
       className="min-h-52 border-0 bg-transparent"
@@ -89,13 +89,13 @@ function ActivityPanel({ run }: { run: SandboxRunData }) {
       {events.map((event) => (
         <li
           key={`${event.timestamp ?? "untimed"}-${event.type}-${event.instructionId ?? ""}-${event.commandIndex ?? ""}-${event.agentStep ?? ""}`}
-          className="border-border flex gap-3 border-b py-3 last:border-0"
+          className="flex gap-3 border-b border-border py-3 last:border-0"
         >
-          <span className="bg-active-work mt-1.5 size-1.5 shrink-0 rounded-full" />
+          <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-active-work" />
           <div className="min-w-0">
             <p className="text-sm capitalize">{eventLabel(event)}</p>
             {event.timestamp ? (
-              <p className="text-muted-foreground mt-0.5 text-xs">{formatDate(event.timestamp)}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{formatDate(event.timestamp)}</p>
             ) : null}
           </div>
         </li>
@@ -123,14 +123,14 @@ function ChangesPanel({ run }: { run: SandboxRunData }) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-surface-elevated rounded-lg p-4">
+      <div className="rounded-lg bg-surface-elevated p-4">
         <p className="text-sm font-medium">Changes are ready to review</p>
-        <p className="text-muted-foreground mt-1 text-xs">
+        <p className="mt-1 text-xs text-muted-foreground">
           {changedFiles.size > 0 ? `${changedFiles.size} changed files · ` : ""}
           {diff.split("\n").length.toLocaleString()} diff lines
         </p>
       </div>
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         Detailed file navigation and bounded diff rendering will extend this panel.
       </p>
     </div>
@@ -155,7 +155,7 @@ function FilesPanel({ run }: { run: SandboxRunData }) {
   return (
     <ul aria-label="Files reported by the run" className="space-y-1">
       {paths.map((path) => (
-        <li key={path} className="bg-surface-elevated rounded-md px-3 py-2 font-mono text-xs">
+        <li key={path} className="rounded-md bg-surface-elevated px-3 py-2 font-mono text-xs">
           {path}
         </li>
       ))}
@@ -187,15 +187,15 @@ function ProofPanel({ run }: { run: SandboxRunData }) {
       <ProofSection title="Outcome">
         <p className="text-sm font-medium capitalize">{manifest.outcome.status}</p>
         {manifest.outcome.summary ? (
-          <p className="text-muted-foreground mt-1 text-sm leading-6">{manifest.outcome.summary}</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">{manifest.outcome.summary}</p>
         ) : null}
         {manifest.outcome.status === "failed" ? (
-          <p className="bg-failure/10 text-failure mt-2 rounded-lg p-3 text-sm">
+          <p className="mt-2 rounded-lg bg-failure/10 p-3 text-sm text-failure">
             {manifest.outcome.error}
           </p>
         ) : null}
         {manifest.outcome.status === "cancelled" && manifest.outcome.cancellationReason ? (
-          <p className="text-muted-foreground mt-1 text-sm">
+          <p className="mt-1 text-sm text-muted-foreground">
             {manifest.outcome.cancellationReason}
           </p>
         ) : null}
@@ -207,7 +207,7 @@ function ProofPanel({ run }: { run: SandboxRunData }) {
 
       <ProofSection title="Repository">
         <p className="text-sm">{manifest.repository.name}</p>
-        <p className="text-muted-foreground mt-1 font-mono text-xs">
+        <p className="mt-1 font-mono text-xs text-muted-foreground">
           {revision ?? "Revision not recorded"}
         </p>
       </ProofSection>
@@ -220,14 +220,14 @@ function ProofPanel({ run }: { run: SandboxRunData }) {
         {manifest.changes.files.length > 0 ? (
           <ul className="mt-2 space-y-1" aria-label="Changed files">
             {manifest.changes.files.map((file) => (
-              <li key={file} className="bg-surface-elevated rounded px-2 py-1 font-mono text-xs">
+              <li key={file} className="rounded bg-surface-elevated px-2 py-1 font-mono text-xs">
                 {file}
               </li>
             ))}
           </ul>
         ) : null}
         {manifest.changes.filesTruncated ? (
-          <p className="text-muted-foreground mt-2 text-xs">
+          <p className="mt-2 text-xs text-muted-foreground">
             Showing {manifest.changes.files.length} of {manifest.changes.fileCount} files
           </p>
         ) : null}
@@ -238,7 +238,7 @@ function ProofPanel({ run }: { run: SandboxRunData }) {
         {manifest.validation.checks.length > 0 ? (
           <ul className="mt-2 space-y-2" aria-label="Validation results">
             {manifest.validation.checks.map((check) => (
-              <li key={check.command} className="bg-surface-elevated rounded-lg p-2">
+              <li key={check.command} className="rounded-lg bg-surface-elevated p-2">
                 <p className="font-mono text-xs">{check.command}</p>
                 <p
                   className={`mt-1 text-xs capitalize ${check.status === "failed" ? "text-failure" : "text-success"}`}
@@ -382,7 +382,7 @@ function ProofPanel({ run }: { run: SandboxRunData }) {
             {manifest.artifacts.map((artifact) => (
               <li key={artifact.outputId}>
                 <a
-                  className="text-active-work text-sm underline-offset-4 hover:underline"
+                  className="text-sm text-active-work underline-offset-4 hover:underline"
                   href={artifact.url}
                 >
                   {artifact.name}
@@ -391,7 +391,7 @@ function ProofPanel({ run }: { run: SandboxRunData }) {
             ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground text-sm">No artifacts recorded</p>
+          <p className="text-sm text-muted-foreground">No artifacts recorded</p>
         )}
       </ProofSection>
 
@@ -411,7 +411,7 @@ function ProofPanel({ run }: { run: SandboxRunData }) {
       <ProofList title="Incomplete work" values={manifest.incompleteWork} />
 
       <ProofSection title="Recorded">
-        <p className="text-muted-foreground text-xs">
+        <p className="text-xs text-muted-foreground">
           Started {formatDate(manifest.timestamps.startedAt)} · Finished{" "}
           {formatDate(manifest.timestamps.completedAt)}
         </p>
@@ -423,7 +423,7 @@ function ProofPanel({ run }: { run: SandboxRunData }) {
 function ProofSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{title}</h3>
+      <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{title}</h3>
       <div className="mt-1">{children}</div>
     </section>
   );
@@ -456,7 +456,7 @@ function ProofList({
           ))}
         </ul>
       ) : (
-        <p className="text-muted-foreground text-sm">None recorded</p>
+        <p className="text-sm text-muted-foreground">None recorded</p>
       )}
     </ProofSection>
   );

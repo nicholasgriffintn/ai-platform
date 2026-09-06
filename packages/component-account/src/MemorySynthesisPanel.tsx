@@ -59,7 +59,7 @@ export function MemorySynthesisPanel({
           <p className="text-sm text-muted-foreground">Loading memory synthesis…</p>
         ) : synthesis ? (
           <div className="space-y-3">
-            <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
+            <p className="text-sm leading-6 whitespace-pre-wrap text-foreground">
               {synthesis.synthesis_text}
             </p>
             <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -80,11 +80,11 @@ export function MemorySynthesisPanel({
 
         {!isLoadingHistory && previousSyntheses.length > 0 ? (
           <div className="mt-5 border-t border-border pt-5">
-            <h3 className="text-muted-foreground text-sm font-medium mb-3">Previous syntheses</h3>
+            <h3 className="mb-3 text-sm font-medium text-muted-foreground">Previous syntheses</h3>
             <div className="space-y-3">
               {previousSyntheses.map((item) => (
-                <div key={item.id} className="bg-surface-elevated rounded-lg p-3">
-                  <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                <div key={item.id} className="rounded-lg bg-surface-elevated p-3">
+                  <p className="text-sm whitespace-pre-wrap text-muted-foreground">
                     {item.synthesis_text}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">

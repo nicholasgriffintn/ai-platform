@@ -3,6 +3,13 @@ import {
   RecipeConfigurationDialog,
 } from "@ngriffin_uk/polychat-component-capabilities";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useRecipeConnectors,
+  useConnectorSetup,
+  useAssistantRecipes,
+  useRecipeInstallations,
+} from "@ngriffin_uk/polychat-library-react";
 import {
   CAPABILITY_DISCOVERY_DATA_KEY,
   capabilityDiscoveryResultSchema,
@@ -16,10 +23,6 @@ import { Plug } from "lucide-react";
 
 import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
-import { useRecipeConnectors } from "~/hooks/useConnectors";
-import { useConnectorSetup } from "~/hooks/useConnectorSetup";
-import { useAssistantRecipes, useRecipeInstallations } from "~/hooks/useRecipes";
-import { useChatStore } from "~/state/stores/chatStore";
 
 function getMissingConnectors(
   recipe: AssistantRecipe,

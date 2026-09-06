@@ -14,7 +14,7 @@ export function SidebarNavSection({ children, title }: { children: ReactNode; ti
   return (
     <div className="space-y-1">
       {title && (
-        <p className="text-muted-foreground px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em]">
+        <p className="px-2 pb-1.5 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
           {title}
         </p>
       )}
@@ -61,7 +61,7 @@ export function SidebarNavButton({
     <button type="button" className={sidebarNavLinkClass({ isActive })} onClick={onClick}>
       {icon}
       <span className="min-w-0 flex-1 truncate text-left">{children}</span>
-      {shortcut && <kbd className="text-muted-foreground text-[10px] font-medium">{shortcut}</kbd>}
+      {shortcut && <kbd className="text-[10px] font-medium text-muted-foreground">{shortcut}</kbd>}
     </button>
   );
 }

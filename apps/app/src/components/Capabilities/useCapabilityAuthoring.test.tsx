@@ -1,36 +1,33 @@
+import { getProjectSurface, PERSONAL_SURFACE } from "@ngriffin_uk/polychat-library-react";
 import type { TeammateResponse, WorkspaceSummary } from "@ngriffin_uk/polychat-schemas";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getProjectSurface, PERSONAL_SURFACE } from "~/lib/capability-surfaces";
-
 import { useCapabilityAuthoring, type CapabilityAuthoringInput } from "./useCapabilityAuthoring";
 
 const navigate = vi.fn();
 const teammateList: TeammateResponse[] = [];
 const workspaceList: WorkspaceSummary[] = [];
+const hireTeammateMock = vi.hoisted(() => vi.fn());
 
 vi.mock("react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("react-router")>()),
   useNavigate: () => navigate,
 }));
 
-vi.mock("~/state/stores/chatStore", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-client")>()),
   useChatStore: (selector: (state: { user: { id: number } }) => unknown) =>
     selector({ user: { id: 7 } }),
 }));
 
-vi.mock("~/hooks/useWorkspaces", () => ({
+vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-react")>()),
   useWorkspaces: () => ({ data: { workspaces: workspaceList }, isLoading: false }),
   useAddProjectCapability: () => ({ isPending: false, error: null, mutateAsync: vi.fn() }),
   useRemoveProjectCapability: () => ({ isPending: false, error: null, mutate: vi.fn() }),
-}));
-
-const hireTeammateMock = vi.fn(async () => teammate({ id: "teammate-hired" }));
-
-vi.mock("~/hooks/useTeammates", () => ({
   TEAMMATES_QUERY_KEYS: { all: ["teammates"], detail: (id: string) => ["teammates", id] },
   useTeammate: () => ({ data: undefined, isLoading: false, error: null }),
   usePublishTeammateToWorkspace: () => ({ isPending: false, error: null, mutateAsync: vi.fn() }),
@@ -127,7 +124,8 @@ function addChoice(
 
 beforeEach(() => {
   navigate.mockReset();
-  hireTeammateMock.mockClear();
+  hireTeammateMock.mockReset();
+  hireTeammateMock.mockResolvedValue(teammate({ id: "teammate-hired" }));
   teammateList.length = 0;
   workspaceList.length = 0;
 });

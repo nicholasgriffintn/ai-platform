@@ -23,22 +23,22 @@ export function ToolResultCard({
   onReset,
 }: ToolResultCardProps) {
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="mx-auto max-w-3xl">
       <div
         className={cn(
-          "border border-border rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-surface-elevated hover:border-border-strong",
+          "rounded-xl border border-border bg-surface-elevated p-5 transition-all duration-200 hover:border-border-strong hover:shadow-lg",
           "bg-gradient-to-br",
           getCardGradient(theme),
           "mb-6",
         )}
       >
         <div className="mb-6">
-          <div className="flex items-center space-x-4 mb-4">
-            <div className={cn("p-3 rounded-lg shadow-sm", getIconContainerClass(theme))}>
+          <div className="mb-4 flex items-center space-x-4">
+            <div className={cn("rounded-lg p-3 shadow-sm", getIconContainerClass(theme))}>
               {getIcon(icon, theme)}
             </div>
             <div>
-              <h1 className={cn("text-2xl font-bold mb-2 text-foreground")}>{name} - Results</h1>
+              <h1 className={cn("mb-2 text-2xl font-bold text-foreground")}>{name} - Results</h1>
               <p className={cn("text-muted-foreground")}>{message || `Results for ${name}`}</p>
               {timestamp && (
                 <p className={cn("text-sm text-muted-foreground", "mt-1")}>
@@ -49,9 +49,9 @@ export function ToolResultCard({
           </div>
         </div>
 
-        <div className="bg-surface-elevated p-5 rounded-lg">{children}</div>
+        <div className="rounded-lg bg-surface-elevated p-5">{children}</div>
 
-        <div className="flex justify-between mt-6">
+        <div className="mt-6 flex justify-between">
           <Button variant="secondary" onClick={onReset}>
             Start Over
           </Button>

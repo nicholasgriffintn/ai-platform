@@ -4,20 +4,20 @@ import {
   WorkAttentionView,
   type WorkAttentionFilters,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useTasks,
+  useWorkAttention,
+  getErrorMessage,
+  readWorkAttentionQuery,
+  workAttentionItemHref,
+  writeWorkAttentionFilters,
+} from "@ngriffin_uk/polychat-library-react";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useTasks } from "~/hooks/useTasks";
-import { useWorkAttention } from "~/hooks/useWorkAttention";
-import { getErrorMessage } from "~/lib/errors";
-import {
-  readWorkAttentionQuery,
-  workAttentionItemHref,
-  writeWorkAttentionFilters,
-} from "~/lib/work-attention";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export function AttentionPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,7 +40,7 @@ export function AttentionPage() {
   return (
     <PageShell.Content className="max-w-6xl">
       <PageShell.Header title="Attention" />
-      <p className="text-muted-foreground mb-6 text-sm">
+      <p className="mb-6 text-sm text-muted-foreground">
         Everything waiting on you: project work across every workspace you can access, and your own
         background tasks.
       </p>

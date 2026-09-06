@@ -1,7 +1,7 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import type { RecordingFormData } from "@ngriffin_uk/polychat-schemas/experiences";
 import { BookText, ImageIcon, Mic } from "lucide-react";
 
-import type { RecordingFormData } from "./types";
 import { RecordingWorkflowStep } from "./workflow";
 
 interface ProcessingStepProps {
@@ -42,8 +42,8 @@ export function ProcessingStep({
   const hasErrors = Object.values(processingErrors).some((error) => error !== null);
 
   return (
-    <div className="border-border bg-surface rounded-lg border p-6">
-      <h2 className="text-xl font-semibold mb-6 text-foreground">Processing Your Recording</h2>
+    <div className="rounded-lg border border-border bg-surface p-6">
+      <h2 className="mb-6 text-xl font-semibold text-foreground">Processing Your Recording</h2>
 
       <div className="space-y-6">
         {formData.transcribe && (

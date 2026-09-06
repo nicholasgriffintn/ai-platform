@@ -1,8 +1,12 @@
 import { Prose } from "@ngriffin_uk/polychat-component-content";
+import {
+  APP_NAME,
+  CONTACT_LINK,
+  PRIVACY_EFFECTIVE_DATE,
+} from "@ngriffin_uk/polychat-library-client";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
-import { APP_NAME, CONTACT_LINK, PRIVACY_EFFECTIVE_DATE } from "~/constants";
 
 export function meta() {
   return [

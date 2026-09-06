@@ -7,6 +7,12 @@ import {
   MediaGenerationModal,
 } from "@ngriffin_uk/polychat-component-experiences/content";
 import { Link } from "@ngriffin_uk/polychat-component-ui";
+import {
+  useNoteFormatter,
+  useGenerateNotesFromMedia,
+  useTabAudioCapture,
+  useTranscription,
+} from "@ngriffin_uk/polychat-library-react";
 import type { NoteMetadata as NoteMetadataType } from "@ngriffin_uk/polychat-schemas";
 import {
   formatTextWithSpacing,
@@ -19,10 +25,6 @@ import { toast } from "sonner";
 
 import { useAutoSave } from "~/components/Apps/Notes/hooks/useAutoSave";
 import { useKeyboardShortcuts } from "~/components/Apps/Notes/hooks/useKeyboardShortcuts";
-import { useNoteFormatter } from "~/hooks/useNoteFormatter";
-import { useGenerateNotesFromMedia } from "~/hooks/useNotes";
-import { useTabAudioCapture } from "~/hooks/useTabAudioCapture";
-import { useTranscription } from "~/hooks/useTranscription";
 
 interface NoteEditorProps {
   noteId?: string;

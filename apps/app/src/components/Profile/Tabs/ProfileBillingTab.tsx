@@ -6,12 +6,6 @@ import {
   UsageSummaryCard,
 } from "@ngriffin_uk/polychat-component-account";
 import { EmptyState, SignInEmptyState } from "@ngriffin_uk/polychat-component-ui";
-import type { UsageSource } from "@ngriffin_uk/polychat-schemas";
-import { Loader2 } from "lucide-react";
-import { useState } from "react";
-import { useNavigate } from "react-router";
-
-import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 import {
   useBillingPortalAvailability,
   useCancelSubscription,
@@ -21,11 +15,19 @@ import {
   useReactivateSubscription,
   useSetOverage,
   useSubscription,
-} from "~/hooks/useBilling";
-import { useUsageBalance, useUsageEvents, useUsageSummary } from "~/hooks/useUsage";
-import { isAuthenticationError } from "~/lib/errors";
-import { flattenUsageEventPages } from "~/lib/usage-ledger";
-import { useUIStore } from "~/state/stores/uiStore";
+  useUsageBalance,
+  useUsageEvents,
+  useUsageSummary,
+  isAuthenticationError,
+  flattenUsageEventPages,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
+import type { UsageSource } from "@ngriffin_uk/polychat-schemas";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router";
+
+import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 
 const IS_DISABLED = import.meta.env.VITE_BILLING_DISABLED === "true";
 
@@ -110,7 +112,7 @@ function BillingBody() {
 
   if (isBalanceLoading) {
     return (
-      <div className="text-muted-foreground flex items-center justify-center py-12">
+      <div className="flex items-center justify-center py-12 text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
       </div>
     );

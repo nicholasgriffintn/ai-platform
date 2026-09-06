@@ -27,13 +27,13 @@ export function RecordingCardGrid({ recordings, newRecordingHref }: RecordingCar
         {recordings.map((item) => (
           <Link key={item.id} href={item.href} className="group no-underline hover:!no-underline">
             <Card className="h-full gap-3 p-5 shadow-none hover:border-border-strong">
-              <div className="bg-selection aspect-video overflow-hidden rounded-lg">
+              <div className="aspect-video overflow-hidden rounded-lg bg-selection">
                 {item.imageUrl && (
                   <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
                 )}
               </div>
               <h2 className="font-semibold text-foreground group-hover:underline">{item.title}</h2>
-              <p className="text-xs capitalize text-muted-foreground">
+              <p className="text-xs text-muted-foreground capitalize">
                 {item.status} · {new Date(item.createdAt).toLocaleDateString()}
               </p>
             </Card>

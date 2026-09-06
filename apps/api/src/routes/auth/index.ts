@@ -3,7 +3,7 @@ import {
   githubCallbackSchema,
   githubLoginSchema,
   jwtTokenResponseSchema,
-  mobileAuthExchangeSchema,
+  nativeAuthExchangeSchema,
   userSchema,
   errorResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -17,11 +17,11 @@ import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleAppleIdentityTokenSignIn } from "~/services/auth/apple";
 import { handleAssistantAuthUiRequest } from "~/services/auth/authUi";
-import { buildMobileRedirectUri, requireMobileRedirectUri } from "~/services/auth/mobile";
+import { buildNativeRedirectUri, requireNativeRedirectUri } from "~/services/auth/native";
 import {
   handleLogout,
-  exchangeMobileAuthCode,
-  generateMobileAuthExchangeCode,
+  exchangeNativeAuthCode,
+  generateNativeAuthExchangeCode,
   generateUserToken,
   extractSessionIdFromCookies,
   createLogoutCookie,
@@ -82,17 +82,37 @@ addRoute(app, "get", "/github", {
   },
   handler: async ({ raw }) =>
     (async (c: Context) => {
-      const { platform, redirect_uri } = c.req.valid("query" as never) as {
-        platform?: "web" | "mobile";
+      const { platform, redirect_uri, client_state } = c.req.valid("query" as never) as {
+        platform?: "web" | "mobile" | "desktop";
         redirect_uri?: string;
+        client_state?: string;
       };
-      const mobileRedirectUri =
-        platform === "mobile" ? requireMobileRedirectUri(redirect_uri, "/callback") : undefined;
+      const nativePlatform = platform === "mobile" || platform === "desktop" ? platform : undefined;
+      const nativeRedirectUri = nativePlatform
+        ? requireNativeRedirectUri(redirect_uri, "/callback", nativePlatform)
+        : undefined;
+
+      if (nativePlatform === "desktop" && !client_state) {
+        throw new AssistantError(
+          "Desktop sign-in requires a client state",
+          ErrorType.PARAMS_ERROR,
+          400,
+        );
+      }
+
       const serviceContext = getServiceContext(c);
       const github = createAssistantGitHubAuth(serviceContext);
       const githubAuthUrl = await github.providers.github.startAuthorization({
         scopes: ["user:email"],
-        ...(mobileRedirectUri ? { context: { mobileRedirectUri } } : {}),
+        ...(nativeRedirectUri && nativePlatform
+          ? {
+              context: {
+                nativeRedirectUri,
+                nativePlatform,
+                ...(client_state ? { nativeClientState: client_state } : {}),
+              },
+            }
+          : {}),
       });
 
       return c.redirect(githubAuthUrl.toString());
@@ -135,18 +155,26 @@ addRoute(app, "get", "/github/callback", {
 
       const { user, token: sessionId } = result.session;
 
-      if (user.continuation?.mobileRedirectUri) {
-        const validatedRedirectUri = requireMobileRedirectUri(
-          user.continuation.mobileRedirectUri,
+      if (user.continuation?.nativeRedirectUri) {
+        const validatedRedirectUri = requireNativeRedirectUri(
+          user.continuation.nativeRedirectUri,
           "/callback",
+          user.continuation.nativePlatform ?? "mobile",
         );
-        const { code: mobileCode } = await generateMobileAuthExchangeCode({
+        const { code: nativeCode } = await generateNativeAuthExchangeCode({
           context: serviceContext,
           userId: user.record.id,
           sessionId,
         });
 
-        return c.redirect(buildMobileRedirectUri(validatedRedirectUri, { code: mobileCode }));
+        return c.redirect(
+          buildNativeRedirectUri(validatedRedirectUri, {
+            code: nativeCode,
+            ...(user.continuation.nativeClientState
+              ? { state: user.continuation.nativeClientState }
+              : {}),
+          }),
+        );
       }
 
       c.header("Set-Cookie", createSessionCookie(sessionId));
@@ -342,17 +370,17 @@ addRoute(app, "get", "/token", {
     })(raw),
 });
 
-addRoute(app, "post", "/mobile/exchange", {
+addRoute(app, "post", "/native/exchange", {
   tags: ["auth"],
-  summary: "Exchange mobile auth code for a user token",
-  bodySchema: mobileAuthExchangeSchema,
+  summary: "Exchange a native sign-in code for a user token",
+  bodySchema: nativeAuthExchangeSchema,
   responses: {
     200: {
-      description: "Returns a JWT token for the authenticated mobile user",
+      description: "Returns a JWT token for the authenticated native user",
       schema: jwtTokenResponseSchema,
     },
     401: {
-      description: "Invalid or expired mobile auth code",
+      description: "Invalid or expired sign-in code",
       schema: errorResponseSchema,
     },
     500: {
@@ -364,7 +392,7 @@ addRoute(app, "post", "/mobile/exchange", {
     (async (c: Context) => {
       const { code } = c.req.valid("json" as never) as { code: string };
       const serviceContext = getServiceContext(c);
-      const { token, expires_in, sessionId } = await exchangeMobileAuthCode({
+      const { token, expires_in, sessionId } = await exchangeNativeAuthCode({
         context: serviceContext,
         code,
       });

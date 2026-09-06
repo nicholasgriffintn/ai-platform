@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createPolychatClient } from "./index";
+import { createPolychatClient } from "./http";
 
 describe("createPolychatClient", () => {
   it("injects transport, auth policy, CSRF, and serialises object bodies", async () => {

@@ -15,7 +15,7 @@ export function SectionNav({ label, sections }: SectionNavProps) {
         <a
           key={section.id}
           href={`#${section.id}`}
-          className="bg-surface border-border text-muted-foreground hover:border-border-strong hover:text-foreground rounded-full border px-3 py-1 text-xs font-medium no-underline transition-colors"
+          className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted-foreground no-underline transition-colors hover:border-border-strong hover:text-foreground"
         >
           {section.label}
         </a>

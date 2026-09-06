@@ -14,7 +14,7 @@ describe("SessionRepository", () => {
       DB: { prepare },
     } as any);
 
-    const consumed = await repository.consumeMobileAuthCode({
+    const consumed = await repository.consumeNativeAuthCode({
       jti: "code-jti",
       sessionId: "session-1",
       userId: 123,
@@ -38,7 +38,7 @@ describe("SessionRepository", () => {
       DB: { prepare },
     } as any);
 
-    const consumed = await repository.consumeMobileAuthCode({
+    const consumed = await repository.consumeNativeAuthCode({
       jti: "code-jti",
       sessionId: "session-1",
       userId: 123,

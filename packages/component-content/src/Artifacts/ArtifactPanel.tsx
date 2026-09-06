@@ -18,7 +18,7 @@ const ArtifactSandbox = lazy(() =>
 );
 
 const SandboxLoading = () => (
-  <div className="flex items-center justify-center h-full w-full bg-surface p-4 text-sm text-muted-foreground">
+  <div className="flex h-full w-full items-center justify-center bg-surface p-4 text-sm text-muted-foreground">
     Loading sandbox...
   </div>
 );
@@ -33,12 +33,12 @@ const FileTabs = ({
   onSelectTab: (index: number) => void;
 }) => {
   return (
-    <div className="file-tabs overflow-x-auto whitespace-nowrap px-1 border-b border-border flex">
+    <div className="file-tabs flex overflow-x-auto border-b border-border px-1 whitespace-nowrap">
       {artifacts.map((artifact, index) => (
         <button
           key={artifact.identifier || index}
           type="button"
-          className={`py-2 px-3 text-xs inline-block ${
+          className={`inline-block px-3 py-2 text-xs ${
             activeIndex === index
               ? "border-b-2 border-active-work font-medium text-active-work"
               : "text-muted-foreground hover:text-foreground"
@@ -69,11 +69,11 @@ const ContentViewer = ({
     artifact.language?.toLowerCase() === "md";
 
   return (
-    <div className="p-4 flex-1 overflow-auto">
-      <div className="mb-2 text-xs text-muted-foreground flex justify-between items-center">
+    <div className="flex-1 overflow-auto p-4">
+      <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
         <div>
           {artifact.language && (
-            <span className="mr-2 px-2 py-1 bg-surface-elevated rounded text-foreground">
+            <span className="mr-2 rounded bg-surface-elevated px-2 py-1 text-foreground">
               {artifact.language}
             </span>
           )}
@@ -92,7 +92,7 @@ const ContentViewer = ({
         )}
       </div>
       <div className="artifact-content-full">
-        <div className="prose dark:prose-invert max-w-none">
+        <div className="prose max-w-none dark:prose-invert">
           <MemoizedMarkdown>
             {isMarkdown
               ? artifact.content
@@ -227,24 +227,22 @@ export const ArtifactPanel = ({
       tabIndex={-1}
       // Closed, the panel is only translated off-screen, so hide it from tab order too.
       inert={!isVisible}
-      className={`absolute right-0 top-0 h-full 
- w-full 2xl:w-[650px]
- bg-surface border-l border-border shadow-xl z-50 transition-transform duration-300 ease-in-out ${isVisible ? "translate-x-0" : "translate-x-full"} `}
+      className={`absolute top-0 right-0 z-50 h-full w-full border-l border-border bg-surface shadow-xl transition-transform duration-300 ease-in-out 2xl:w-[650px] ${isVisible ? "translate-x-0" : "translate-x-full"} `}
     >
-      <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-2 text-foreground min-w-0 flex-1 overflow-hidden">
+      <div className="flex h-full flex-col">
+        <div className="flex items-center justify-between border-b border-border p-4">
+          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-foreground">
             {icon}
             <span
               id="artifact-panel-title"
-              className="font-semibold text-lg text-foreground truncate"
+              className="truncate text-lg font-semibold text-foreground"
             >
               {allArtifacts.length > 1
                 ? `Combined Artifacts (${allArtifacts.length})`
                 : currentArtifact.title || "Artifact"}
             </span>
           </div>
-          <div className="flex gap-2 flex-shrink-0 ml-2">
+          <div className="ml-2 flex flex-shrink-0 gap-2">
             {!showFileTabs && !isDocument && (
               <Button
                 variant="icon"
@@ -306,7 +304,7 @@ export const ArtifactPanel = ({
           </div>
         )}
 
-        <div className="flex-1 overflow-hidden bg-surface text-foreground flex flex-col">
+        <div className="flex flex-1 flex-col overflow-hidden bg-surface text-foreground">
           {(activeTab === "code" || !showPreviewTab) && (
             <>
               {showFileTabs && (
@@ -334,15 +332,15 @@ export const ArtifactPanel = ({
           )}
 
           {activeTab === "preview" && codeArtifact && (
-            <div className="h-full flex flex-col">
-              <div className="p-2 bg-surface-elevated text-xs text-muted-foreground">
+            <div className="flex h-full flex-col">
+              <div className="bg-surface-elevated p-2 text-xs text-muted-foreground">
                 Live Preview (React + DOM)
               </div>
 
               {previewError && (
-                <div className="p-3 m-3 border border-failure/45 bg-failure/12 text-failure rounded text-sm">
-                  <h4 className="font-medium mb-1">Error rendering preview:</h4>
-                  <pre className="text-xs overflow-auto whitespace-pre-wrap">{previewError}</pre>
+                <div className="m-3 rounded border border-failure/45 bg-failure/12 p-3 text-sm text-failure">
+                  <h4 className="mb-1 font-medium">Error rendering preview:</h4>
+                  <pre className="overflow-auto text-xs whitespace-pre-wrap">{previewError}</pre>
                 </div>
               )}
 

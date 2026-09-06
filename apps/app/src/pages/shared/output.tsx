@@ -4,6 +4,8 @@ import {
   PageStatus,
   textLinkClassName,
 } from "@ngriffin_uk/polychat-component-ui";
+import { API_BASE_URL, getSharedOutput } from "@ngriffin_uk/polychat-library-client";
+import { useRunnableTool } from "@ngriffin_uk/polychat-library-react";
 import type { SharedOutput } from "@ngriffin_uk/polychat-schemas";
 import { FileQuestion, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -11,9 +13,6 @@ import { useParams } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { PageShell } from "~/components/Core/PageShell";
-import { API_BASE_URL } from "~/constants";
-import { useRunnableTool } from "~/hooks/useRunnableTools";
-import { getSharedOutput } from "~/lib/api/outputs";
 
 export function meta() {
   return [
@@ -69,7 +68,7 @@ export default function SharedOutputPage() {
           <div className="flex items-center gap-3">
             <FileQuestion size={20} className="text-muted-foreground" />
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 {output.capabilityId}
               </p>
               <h1 className="text-xl font-semibold">{output.title}</h1>

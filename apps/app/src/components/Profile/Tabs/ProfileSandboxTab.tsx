@@ -1,5 +1,13 @@
 import { SandboxConnectionList } from "@ngriffin_uk/polychat-component-account";
 import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
+import {
+  useConnectSandboxInstallation,
+  useDeleteSandboxConnection,
+  useSandboxConnections,
+  useSandboxInstallConfig,
+  isAuthenticationError,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
@@ -7,14 +15,6 @@ import { toast } from "sonner";
 
 import { SandboxAddGitHubConnection } from "~/components/Models/SandboxAddGitHubConnection";
 import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
-import {
-  useConnectSandboxInstallation,
-  useDeleteSandboxConnection,
-  useSandboxConnections,
-  useSandboxInstallConfig,
-} from "~/hooks/useSandbox";
-import { isAuthenticationError } from "~/lib/errors";
-import { useUIStore } from "~/state/stores/uiStore";
 
 interface ConnectionFormState {
   installationId: string;

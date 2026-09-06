@@ -2,6 +2,18 @@ import type {
   TeammateFormData,
   TeammatePublishState,
 } from "@ngriffin_uk/polychat-component-account";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useCapabilityCatalog,
+  useModels,
+  useTeammate,
+  useTeammates,
+  usePublishTeammateToWorkspace,
+  useTools,
+  useWorkspaces,
+  getTeammatePublishTargets,
+  resolveTeammateManagePermission,
+} from "@ngriffin_uk/polychat-library-react";
 import type {
   TeammateResponse,
   ModelConfig,
@@ -13,17 +25,6 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-
-import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
-import { useModels } from "~/hooks/useModels";
-import { useTeammate, useTeammates, usePublishTeammateToWorkspace } from "~/hooks/useTeammates";
-import { useTools } from "~/hooks/useTools";
-import { useWorkspaces } from "~/hooks/useWorkspaces";
-import {
-  getTeammatePublishTargets,
-  resolveTeammateManagePermission,
-} from "~/lib/teammates/teammate-permissions";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export const NEW_TEAMMATE_ID = "new";
 

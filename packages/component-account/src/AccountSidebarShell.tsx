@@ -49,16 +49,16 @@ export function AccountSidebarShell({
         aria-modal={isDrawer ? true : undefined}
         aria-label={isDrawer ? "Account navigation" : undefined}
         tabIndex={isDrawer ? -1 : undefined}
-        className={`bg-surface border-border fixed z-50 h-full w-64 border-r transition-transform duration-300 ease-in-out md:relative ${
-          sidebarVisible ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:border-0"
+        className={`fixed z-50 h-full w-64 border-r border-border bg-surface transition-transform duration-300 ease-in-out md:relative ${
+          sidebarVisible ? "translate-x-0" : "-translate-x-full md:w-0 md:translate-x-0 md:border-0"
         }`}
       >
         {sidebarVisible && (
-          <div className="flex flex-col h-full w-64">
-            <div className="bg-surface border-border sticky top-0 z-10 w-full border-r border-b">
+          <div className="flex h-full w-64 flex-col">
+            <div className="sticky top-0 z-10 w-full border-r border-b border-border bg-surface">
               {header}
             </div>
-            <nav className="flex flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden px-2 pt-2 pb-[50px]">
+            <nav className="flex flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto px-2 pt-2 pb-[50px]">
               <Link href={homeHref} className={cn(accountSidebarRowClass, "no-underline")}>
                 <Home className="h-4 w-4 flex-shrink-0" />
                 <span className="min-w-0 flex-1 truncate">Back to Home</span>
@@ -75,7 +75,7 @@ export function AccountSidebarShell({
                   disabled={isLoggingOut}
                   className={cn(
                     accountSidebarRowClass,
-                    "hover:text-failure mt-auto disabled:cursor-not-allowed disabled:opacity-50",
+                    "mt-auto hover:text-failure disabled:cursor-not-allowed disabled:opacity-50",
                   )}
                 >
                   {isLoggingOut ? (
@@ -87,7 +87,7 @@ export function AccountSidebarShell({
                 </button>
               )}
             </nav>
-            <div className="border-border bg-surface sticky bottom-0 overflow-visible border-t border-r">
+            <div className="sticky bottom-0 overflow-visible border-t border-r border-border bg-surface">
               {footer}
             </div>
           </div>

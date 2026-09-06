@@ -24,23 +24,23 @@ export function RecordingDetailView({ recording, onDownloadTranscript }: Recordi
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="w-full lg:w-1/3 lg:sticky lg:top-4 lg:self-start lg:max-h-screen lg:overflow-y-auto">
-          <div className="bg-selection aspect-square overflow-hidden rounded-lg">
+      <div className="flex flex-col gap-8 lg:flex-row">
+        <div className="w-full lg:sticky lg:top-4 lg:max-h-screen lg:w-1/3 lg:self-start lg:overflow-y-auto">
+          <div className="aspect-square overflow-hidden rounded-lg bg-selection">
             {recording.imageUrl ? (
               <img
                 src={recording.imageUrl}
                 alt={recording.title}
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
             ) : (
-              <div className="bg-selection flex h-full w-full items-center justify-center">
+              <div className="flex h-full w-full items-center justify-center bg-selection">
                 <span className="text-muted-foreground">No image</span>
               </div>
             )}
           </div>
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-3 text-foreground">Listen</h3>
+            <h3 className="mb-3 text-lg font-semibold text-foreground">Listen</h3>
             <audio controls className="w-full" src={recording.audioUrl}>
               Your browser does not support the audio element.
             </audio>
@@ -48,7 +48,7 @@ export function RecordingDetailView({ recording, onDownloadTranscript }: Recordi
         </div>
 
         <div className="w-full lg:w-2/3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
             <span>{new Date(recording.createdAt).toLocaleDateString()}</span>
             <span>•</span>
             <span>{formatDuration(recording.duration)}</span>
@@ -56,23 +56,23 @@ export function RecordingDetailView({ recording, onDownloadTranscript }: Recordi
 
           {recording.summary && (
             <div className="border-t border-border pt-6 pb-2">
-              <h2 className="text-xl font-semibold mb-4 text-foreground">Summary</h2>
-              <div className="border-border bg-surface rounded-lg border p-5">
-                <p className="text-foreground whitespace-pre-line">{recording.summary}</p>
+              <h2 className="mb-4 text-xl font-semibold text-foreground">Summary</h2>
+              <div className="rounded-lg border border-border bg-surface p-5">
+                <p className="whitespace-pre-line text-foreground">{recording.summary}</p>
               </div>
             </div>
           )}
 
           {recording.description && recording.description !== recording.summary && (
             <div className="pt-6 pb-2">
-              <h2 className="text-xl font-semibold mb-4 text-foreground">Description</h2>
-              <Markdown className="text-foreground mb-6">{recording.description}</Markdown>
+              <h2 className="mb-4 text-xl font-semibold text-foreground">Description</h2>
+              <Markdown className="mb-6 text-foreground">{recording.description}</Markdown>
             </div>
           )}
 
           {recording.transcript && (
             <div className="pt-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-foreground">Transcript</h2>
                 <Button
                   onClick={onDownloadTranscript}
@@ -84,9 +84,9 @@ export function RecordingDetailView({ recording, onDownloadTranscript }: Recordi
                   Download
                 </Button>
               </div>
-              <div className="border-border bg-surface max-h-[500px] overflow-y-auto rounded-lg border p-5">
+              <div className="max-h-[500px] overflow-y-auto rounded-lg border border-border bg-surface p-5">
                 {typeof recording.transcript === "string" ? (
-                  <p className="text-foreground whitespace-pre-line">{recording.transcript}</p>
+                  <p className="whitespace-pre-line text-foreground">{recording.transcript}</p>
                 ) : (
                   <TranscriptViewer
                     transcript={recording.transcript}

@@ -344,7 +344,7 @@ function renderComposerDom(element: HTMLElement, value: string, tokens: Composer
     tokenElement.dataset.testid = "composer-token-part";
     tokenElement.contentEditable = "false";
     tokenElement.className = cn(
-      "mx-1 inline-flex max-w-56 select-none items-center gap-1.5 rounded-md border px-2 py-0.5 align-baseline text-sm font-medium leading-normal",
+      "mx-1 inline-flex max-w-56 items-center gap-1.5 rounded-md border px-2 py-0.5 align-baseline text-sm leading-normal font-medium select-none",
       getTokenClassName(token.kind),
     );
     tokenElement.textContent = tokenText;
@@ -511,7 +511,7 @@ export const TokenizedComposerInput = forwardRef<
           aria-disabled={disabled}
           contentEditable={!disabled}
           suppressContentEditableWarning
-          className="min-h-[36px] w-full whitespace-pre-wrap break-words bg-transparent text-base leading-6 outline-none"
+          className="min-h-[36px] w-full bg-transparent text-base leading-6 break-words whitespace-pre-wrap outline-none"
           onInput={(event) =>
             emitCurrentState(
               event.nativeEvent instanceof InputEvent && event.nativeEvent.isComposing,
@@ -532,7 +532,7 @@ export const TokenizedComposerInput = forwardRef<
         />
         {isEmpty && (
           <span
-            className="pointer-events-none absolute left-0 top-0 leading-6 text-muted-foreground"
+            className="pointer-events-none absolute top-0 left-0 leading-6 text-muted-foreground"
             data-dynamic-copy=""
           >
             {placeholder}

@@ -1,7 +1,6 @@
 import { ProjectConversationStarter as ControlledProjectConversationStarter } from "@ngriffin_uk/polychat-component-workspaces";
+import { createAssistantActionConversationUrl } from "@ngriffin_uk/polychat-library-react";
 import { useNavigate } from "react-router";
-
-import { createAssistantActionConversationUrl } from "~/lib/assistant-action-launch";
 
 export function ProjectConversationStarter({
   workspaceId,

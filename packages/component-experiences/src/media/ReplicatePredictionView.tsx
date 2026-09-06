@@ -33,8 +33,8 @@ export function ReplicatePredictionView({
 }: ReplicatePredictionViewProps) {
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-active-work" />
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-active-work" />
       </div>
     );
   }
@@ -52,8 +52,8 @@ export function ReplicatePredictionView({
     }
 
     return (
-      <div className="p-4 bg-attention/12 text-attention rounded-md border border-attention/45">
-        <h3 className="font-semibold mb-2">Failed to load prediction</h3>
+      <div className="rounded-md border border-attention/45 bg-attention/12 p-4 text-attention">
+        <h3 className="mb-2 font-semibold">Failed to load prediction</h3>
         <p>Please try again later.</p>
       </div>
     );
@@ -79,8 +79,8 @@ export function ReplicatePredictionView({
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-3xl font-bold text-foreground mb-2 break-words">
+        <div className="min-w-0 flex-1">
+          <h1 className="mb-2 text-3xl font-bold break-words text-foreground">
             {prompt || prediction.modelName || prediction.modelId}
           </h1>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -94,7 +94,7 @@ export function ReplicatePredictionView({
           </div>
         </div>
         <span
-          className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap shrink-0 ${
+          className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap ${
             statusColors[prediction.status ?? ""] ?? "bg-selection text-muted-foreground"
           }`}
         >
@@ -103,9 +103,9 @@ export function ReplicatePredictionView({
       </div>
 
       {prediction.status === "processing" && (
-        <Card className="p-6 bg-attention/12 border-attention/45">
+        <Card className="border-attention/45 bg-attention/12 p-6">
           <div className="flex items-center gap-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-attention/45" />
+            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-attention/45" />
             <div>
               <h3 className="font-semibold text-attention">Processing</h3>
               <p className="text-sm text-attention">
@@ -118,32 +118,32 @@ export function ReplicatePredictionView({
       )}
 
       {prediction.status === "failed" && prediction.error && (
-        <Card className="p-6 bg-failure/12 border-failure/45">
-          <h3 className="font-semibold text-failure mb-2">Prediction Failed</h3>
+        <Card className="border-failure/45 bg-failure/12 p-6">
+          <h3 className="mb-2 font-semibold text-failure">Prediction Failed</h3>
           <p role="alert" className="text-sm text-failure">
             {prediction.error}
           </p>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {(prediction.status === "succeeded" || prediction.status === "completed") &&
           hasPredictionOutput && (
-            <Card className="p-6 lg:col-span-2 order-2 lg:order-1">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Output</h2>
+            <Card className="order-2 p-6 lg:order-1 lg:col-span-2">
+              <h2 className="mb-4 text-xl font-semibold text-foreground">Output</h2>
               <OutputRenderer output={predictionOutput} />
             </Card>
           )}
 
         <Card
-          className={`p-6 order-1 lg:order-2 ${(prediction.status === "succeeded" || prediction.status === "completed") && hasPredictionOutput ? "" : "lg:col-span-3"}`}
+          className={`order-1 p-6 lg:order-2 ${(prediction.status === "succeeded" || prediction.status === "completed") && hasPredictionOutput ? "" : "lg:col-span-3"}`}
         >
-          <h2 className="text-xl font-semibold text-foreground mb-4">Input Parameters</h2>
+          <h2 className="mb-4 text-xl font-semibold text-foreground">Input Parameters</h2>
           <div className="space-y-3">
             {Object.entries(prediction.input || {}).map(([key, value]) => (
               <div key={key} className="flex flex-col">
-                <span className="text-sm font-medium text-foreground mb-1">{key}:</span>
-                <span className="bg-surface-elevated text-muted-foreground rounded p-2 font-mono text-sm break-all">
+                <span className="mb-1 text-sm font-medium text-foreground">{key}:</span>
+                <span className="rounded bg-surface-elevated p-2 font-mono text-sm break-all text-muted-foreground">
                   {formatUnknownValue(value)}
                 </span>
               </div>
@@ -167,7 +167,7 @@ function OutputRenderer({ output }: OutputRendererProps) {
           if (isRecord(item)) {
             if (item.type === "text") {
               return (
-                <div key={index} className="prose dark:prose-invert max-w-none">
+                <div key={index} className="prose max-w-none dark:prose-invert">
                   {getStringProperty(item, "text")}
                 </div>
               );
@@ -209,7 +209,7 @@ function OutputRenderer({ output }: OutputRendererProps) {
   }
 
   return (
-    <pre className="bg-surface-elevated overflow-auto rounded-lg p-4 font-mono text-sm">
+    <pre className="overflow-auto rounded-lg bg-surface-elevated p-4 font-mono text-sm">
       {formatUnknownValue(output)}
     </pre>
   );
@@ -227,7 +227,7 @@ function OutputItem({ item }: OutputItemProps) {
 
   if (!url) {
     return (
-      <pre className="bg-surface-elevated overflow-auto rounded-lg p-4 font-mono text-sm">
+      <pre className="overflow-auto rounded-lg bg-surface-elevated p-4 font-mono text-sm">
         {formatUnknownValue(item)}
       </pre>
     );
@@ -251,7 +251,7 @@ function OutputItem({ item }: OutputItemProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block text-active-work no-underline hover:underline text-sm"
+          className="mt-2 inline-block text-sm text-active-work no-underline hover:underline"
         >
           Open in new tab →
         </a>
@@ -270,7 +270,7 @@ function OutputItem({ item }: OutputItemProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block text-active-work no-underline hover:underline text-sm"
+          className="mt-2 inline-block text-sm text-active-work no-underline hover:underline"
         >
           Open in new tab →
         </a>
@@ -289,7 +289,7 @@ function OutputItem({ item }: OutputItemProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block text-active-work no-underline hover:underline text-sm"
+          className="mt-2 inline-block text-sm text-active-work no-underline hover:underline"
         >
           Open in new tab →
         </a>

@@ -74,12 +74,12 @@ export function ResearchReport({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide">
-        <span className="rounded-full bg-active-work/10 text-active-work px-3 py-1">
+      <div className="flex flex-wrap gap-2 text-xs font-medium tracking-wide uppercase">
+        <span className="rounded-full bg-active-work/10 px-3 py-1 text-active-work">
           Provider: {providerLabel}
         </span>
         {run?.processor && (
-          <span className="rounded-full bg-creative/10 text-creative px-3 py-1">
+          <span className="rounded-full bg-creative/10 px-3 py-1 text-creative">
             Processor: {run.processor}
           </span>
         )}
@@ -87,14 +87,14 @@ export function ResearchReport({
           <span
             className={`rounded-full px-3 py-1 ${
               statusColors[normalizedStatus] ??
-              "bg-selection text-muted-foreground border border-border"
+              "border border-border bg-selection text-muted-foreground"
             }`}
           >
             Status: {normalizedStatus}
           </span>
         )}
         {lastUpdatedAt && (
-          <span className="bg-selection text-muted-foreground rounded-full px-3 py-1">
+          <span className="rounded-full bg-selection px-3 py-1 text-muted-foreground">
             Updated {lastUpdatedAt.toLocaleTimeString()}
           </span>
         )}
@@ -117,19 +117,19 @@ export function ResearchReport({
       )}
 
       {Array.isArray(warnings) && warnings.length > 0 && (
-        <div className="rounded-md border border-attention/60 bg-attention/12 text-attention px-4 py-3 text-sm">
+        <div className="rounded-md border border-attention/60 bg-attention/12 px-4 py-3 text-sm text-attention">
           {warnings.join(" ")}
         </div>
       )}
 
       {typeof warnings === "string" && warnings && (
-        <div className="rounded-md border border-attention/60 bg-attention/12 text-attention px-4 py-3 text-sm">
+        <div className="rounded-md border border-attention/60 bg-attention/12 px-4 py-3 text-sm text-attention">
           {warnings}
         </div>
       )}
 
       {providerWarning && (
-        <div className="rounded-md border border-attention/60 bg-attention/12 text-attention px-4 py-3 text-sm">
+        <div className="rounded-md border border-attention/60 bg-attention/12 px-4 py-3 text-sm text-attention">
           {providerWarning}
         </div>
       )}
@@ -137,7 +137,7 @@ export function ResearchReport({
       {output && (
         <>
           {isTextContent ? (
-            <div className="prose dark:prose-invert max-w-none text-foreground">
+            <div className="prose max-w-none text-foreground dark:prose-invert">
               <MemoizedMarkdown>{content}</MemoizedMarkdown>
             </div>
           ) : (
@@ -148,12 +148,12 @@ export function ResearchReport({
 
       {output && evidenceCount > 0 && (
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">Evidence & Citations</h2>
             {evidenceCount > 4 && (
               <button
                 type="button"
-                className="text-xs font-medium text-active-work hover:text-active-work transition-colors"
+                className="text-xs font-medium text-active-work transition-colors hover:text-active-work"
                 onClick={() => setShowAllEvidence((prev) => !prev)}
               >
                 {showAllEvidence ? "Show fewer citations" : `Show all ${evidenceCount} citations`}
@@ -165,10 +165,10 @@ export function ResearchReport({
             {displayedEvidence.map((item: ResearchFieldBasis, index: number) => (
               <div
                 key={`${item.field}-${index}`}
-                className="border-border bg-surface-elevated rounded-lg border p-4"
+                className="rounded-lg border border-border bg-surface-elevated p-4"
               >
-                <div className="flex flex-wrap gap-2 items-center justify-between">
-                  <p className="text-sm font-semibold text-active-work uppercase tracking-wide">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-semibold tracking-wide text-active-work uppercase">
                     {item.field}
                   </p>
                   {item.confidence && (
@@ -187,14 +187,14 @@ export function ResearchReport({
                     {item.citations.map((citation: ResearchCitation, citationIndex: number) => (
                       <li
                         key={`${item.field}-citation-${citationIndex}`}
-                        className="border-border bg-surface rounded-md border p-3"
+                        className="rounded-md border border-border bg-surface p-3"
                       >
                         {citation.url ? (
                           <a
                             href={citation.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-sm font-medium text-active-work hover:text-active-work transition-colors"
+                            className="inline-flex items-center gap-1 text-sm font-medium text-active-work transition-colors hover:text-active-work"
                           >
                             {citation.title || extractHostname(citation.url)}
                             <ExternalLink className="h-3.5 w-3.5" />

@@ -88,6 +88,7 @@ test.describe("Sandbox service controls", () => {
         await workbench.selectPane("Preview");
         await expect(workbench.panel).toContainText("Service starting");
       }
+
       await expect
         .poll(async () => (await sandbox.latestRun())?.status, { timeout: 60_000 })
         .toBe("failed");

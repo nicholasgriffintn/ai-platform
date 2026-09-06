@@ -27,7 +27,7 @@ export function ConversationListActions({
       trigger={
         <button
           type="button"
-          className="text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           aria-label="Conversation list actions"
           title="Conversation list actions"
         >
@@ -45,7 +45,7 @@ export function ConversationListActions({
         {!isMixed && matchingCount > 0 && ` (${matchingCount})`}
       </OptionsMenuAction>
       {isMixed && (
-        <p className="text-muted-foreground px-2 py-1.5">
+        <p className="px-2 py-1.5 text-muted-foreground">
           Filter by status to archive or restore in bulk.
         </p>
       )}

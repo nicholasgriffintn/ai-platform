@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ApiError } from "./index";
+import { ApiError } from "./http";
 import {
   parseRetryAfterBodyMs,
   parseRetryAfterHeaderMs,

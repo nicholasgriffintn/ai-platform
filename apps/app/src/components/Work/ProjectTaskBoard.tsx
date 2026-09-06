@@ -6,6 +6,15 @@ import {
   type CreateTaskInput,
   type CreateTaskIntent,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  useCapabilityCatalog,
+  useProjectTasks,
+  getTeammateEditorPath,
+  getProjectSurface,
+  getProjectConversationPath,
+  getErrorMessage,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -14,11 +23,6 @@ import { toast } from "sonner";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { NEW_TEAMMATE_ID } from "~/components/Teammates/useTeammateEditorController";
-import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
-import { useProjectTasks } from "~/hooks/useProjectTasks";
-import { getTeammateEditorPath, getProjectSurface } from "~/lib/capability-surfaces";
-import { getProjectConversationPath } from "~/lib/conversation-route";
-import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
 import { ProjectHomeHeader } from "./ProjectHomeHeader";
 import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates";
@@ -123,15 +127,15 @@ export function ProjectTaskBoard({
             </Button>
           }
         />
-        <p className="text-muted-foreground mb-6 max-w-3xl text-sm">
+        <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
           Route outcomes through specialist teammates, watch live work, and step in only when a
           stage needs review or approval.
         </p>
 
         {isLoading ? (
-          <p className="text-muted-foreground text-sm">Loading project tasks…</p>
+          <p className="text-sm text-muted-foreground">Loading project tasks…</p>
         ) : error ? (
-          <p role="alert" className="text-failure text-sm">
+          <p role="alert" className="text-sm text-failure">
             {error.message}
           </p>
         ) : (

@@ -1,46 +1,20 @@
-import {
-  type AnchorHTMLAttributes,
-  type ComponentType,
-  createContext,
-  forwardRef,
-  type ReactNode,
-  useContext,
-  useMemo,
-} from "react";
+import type {
+  LinkComponent,
+  LinkComponents,
+  LinkRenderProps,
+  NavLinkComponent,
+  NavLinkRenderProps,
+} from "@ngriffin_uk/polychat-utility-react";
+import { createContext, type ReactNode, forwardRef, useContext, useMemo } from "react";
 
-/**
- * Render packages never construct host routes. They receive a resolved `href` and let the host
- * decide how navigation happens, so a desktop or mobile shell can supply its own router.
- */
-export interface LinkRenderProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
-  href: string;
-  children?: ReactNode;
-}
-
-export interface NavLinkState {
-  isActive: boolean;
-}
-
-export interface NavLinkRenderProps extends Omit<
-  AnchorHTMLAttributes<HTMLAnchorElement>,
-  "className"
-> {
-  href: string;
-  /** Only treat the link as active on an exact path match. */
-  end?: boolean;
-  className?: string | ((state: NavLinkState) => string);
-  children?: ReactNode;
-}
-
-export type LinkComponent = ComponentType<LinkRenderProps & { ref?: React.Ref<HTMLAnchorElement> }>;
-export type NavLinkComponent = ComponentType<
-  NavLinkRenderProps & { ref?: React.Ref<HTMLAnchorElement> }
->;
-
-export interface LinkComponents {
-  Link: LinkComponent;
-  NavLink: NavLinkComponent;
-}
+export type {
+  LinkComponent,
+  LinkComponents,
+  LinkRenderProps,
+  NavLinkComponent,
+  NavLinkRenderProps,
+  NavLinkState,
+} from "@ngriffin_uk/polychat-utility-react";
 
 const AnchorLink: LinkComponent = forwardRef<HTMLAnchorElement, LinkRenderProps>(
   function AnchorLink(props, ref) {

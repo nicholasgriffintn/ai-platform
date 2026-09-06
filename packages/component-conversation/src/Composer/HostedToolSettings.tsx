@@ -38,7 +38,7 @@ export function HostedToolSettings({
 
   return (
     <div className="space-y-3 border-t border-border px-1 pt-3">
-      <div className="px-1 text-[11px] font-semibold uppercase text-muted-foreground">
+      <div className="px-1 text-[11px] font-semibold text-muted-foreground uppercase">
         Hosted Tools
       </div>
 

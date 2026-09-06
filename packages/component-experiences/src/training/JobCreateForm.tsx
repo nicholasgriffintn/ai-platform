@@ -122,7 +122,7 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
         }))}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <FormInput
           id="training-job-name"
           label="Job name"
@@ -143,7 +143,7 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
       </div>
 
       {datasetMode === "s3" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <FormInput
             id="training-s3-uri"
             label="Training S3 URI"
@@ -160,7 +160,7 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           <FormInput
             id="training-filter-app"
             label="App name"
@@ -192,7 +192,7 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <FormInput
           id="training-output-uri"
           label="Output S3 URI"
@@ -209,7 +209,7 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <FormInput
           id="training-entry-point"
           label="Entry point"

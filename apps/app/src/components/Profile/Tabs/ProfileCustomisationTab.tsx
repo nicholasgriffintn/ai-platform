@@ -1,10 +1,10 @@
 import { USER_SETTINGS_FORM_ID } from "@ngriffin_uk/polychat-component-account";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { useAuthStatus } from "@ngriffin_uk/polychat-library-react";
 
 import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 import { ThemeSettings } from "~/components/Profile/ThemeSettings";
 import { UserSettingsForm } from "~/components/Profile/UserSettingsForm";
-import { useAuthStatus } from "~/hooks/useAuth";
 
 export function ProfileCustomisationTab() {
   const { user, userSettings, isAuthenticated, isUpdatingUserSettings } = useAuthStatus();

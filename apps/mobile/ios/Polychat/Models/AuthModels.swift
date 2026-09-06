@@ -45,7 +45,7 @@ public struct MagicLinkVerifyRequest: Codable {
     public let token: String
 }
 
-public struct MobileAuthExchangeRequest: Codable {
+public struct NativeAuthExchangeRequest: Codable {
     public let code: String
 }
 

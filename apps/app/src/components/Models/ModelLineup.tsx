@@ -1,5 +1,14 @@
 import { getModelTierIcon, ModelIcon } from "@ngriffin_uk/polychat-component-models";
 import { Badge, cn, Skeleton } from "@ngriffin_uk/polychat-component-ui";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useModelCatalogue,
+  useModels,
+  formatProviderLabel,
+  resolveLineupHeadline,
+  toModelRecordById,
+  type LineupEntryView,
+} from "@ngriffin_uk/polychat-library-react";
 import {
   formatReasoningLabel,
   MODEL_LINEUP_RUNTIME_DEFINITIONS,
@@ -18,14 +27,6 @@ import { useMemo } from "react";
 import { MODELS_SECTIONS } from "~/components/Models/models-sections";
 import { ModelsSection } from "~/components/Models/ModelsSection";
 import { ProviderMark } from "~/components/Models/ProviderMark";
-import { useModelCatalogue, useModels } from "~/hooks/useModels";
-import { formatProviderLabel } from "~/lib/model-catalogue";
-import {
-  resolveLineupHeadline,
-  toModelRecordById,
-  type LineupEntryView,
-} from "~/lib/model-lineup-view";
-import { useChatStore } from "~/state/stores/chatStore";
 
 const TIER_ACCENT: Record<ModelTier, string> = {
   low: "text-success bg-success/10 border-success/25",
@@ -96,14 +97,14 @@ function EntryLine({
   compact?: boolean;
 }) {
   if (!entry) {
-    return <span className="text-muted-foreground text-xs">Nothing configured</span>;
+    return <span className="text-xs text-muted-foreground">Nothing configured</span>;
   }
 
   const showYours = yours !== undefined && yours?.id !== entry.id;
 
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <span className="text-foreground flex min-w-0 items-center gap-2 text-sm font-medium">
+      <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-foreground">
         <span className="flex h-5 w-5 shrink-0 items-center justify-center">
           <EntryMark entry={entry} />
         </span>
@@ -114,12 +115,12 @@ function EntryLine({
           </Badge>
         )}
       </span>
-      <span className="text-muted-foreground pl-7 font-mono text-[11px]">
+      <span className="pl-7 font-mono text-[11px] text-muted-foreground">
         {formatProviderLabel(entry.provider)}
         {compact && entry.effort ? ` · ${formatReasoningLabel(entry.effort)}` : ""}
       </span>
       {showYours && (
-        <span className="text-muted-foreground pl-7 text-[11px]">
+        <span className="pl-7 text-[11px] text-muted-foreground">
           {yours ? (
             <>
               On your plan: <span className="text-foreground">{yours.name}</span> via{" "}
@@ -171,7 +172,7 @@ function TierCard({ tier }: { tier: (typeof MODEL_TIER_DEFINITIONS)[number] }) {
   const Icon = getModelTierIcon(tier.id);
 
   return (
-    <li className="bg-surface border-border flex flex-col gap-4 rounded-2xl border p-5">
+    <li className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
       <div className="flex items-start gap-3">
         <span
           className={cn(
@@ -182,13 +183,13 @@ function TierCard({ tier }: { tier: (typeof MODEL_TIER_DEFINITIONS)[number] }) {
           <Icon className="h-4 w-4" aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <h3 className="font-display text-foreground text-xl font-medium tracking-tight">
+          <h3 className="font-display text-xl font-medium tracking-tight text-foreground">
             {tier.label}
           </h3>
-          <p className="text-muted-foreground text-sm leading-relaxed">{tier.description}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{tier.description}</p>
         </div>
       </div>
-      <dl className="divide-border grid divide-y">
+      <dl className="grid divide-y divide-border">
         {MODEL_TIER_ROLES.map((role: ModelTierRole) => {
           const entry = entries.get(`${tier.id}:${role}`);
 
@@ -213,33 +214,33 @@ function LocalRuntimeTable({ runtime }: { runtime: "browser" | "local-server" })
   return (
     <section
       aria-labelledby={`lineup-${runtime}-title`}
-      className="bg-surface border-border rounded-2xl border p-5"
+      className="rounded-2xl border border-border bg-surface p-5"
     >
       <h3
         id={`lineup-${runtime}-title`}
-        className="font-display text-foreground text-xl font-medium tracking-tight"
+        className="font-display text-xl font-medium tracking-tight text-foreground"
       >
         {definition.label}
       </h3>
-      <p className="text-muted-foreground mt-1 text-sm leading-relaxed">{definition.description}</p>
+      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{definition.description}</p>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="polychat-eyebrow">
-              <th scope="col" className="pb-2 pr-4 font-medium">
+              <th scope="col" className="pr-4 pb-2 font-medium">
                 Tier
               </th>
               {MODEL_TIER_ROLES.map((role) => (
-                <th key={role} scope="col" className="pb-2 pr-4 font-medium">
+                <th key={role} scope="col" className="pr-4 pb-2 font-medium">
                   {MODEL_TIER_ROLE_DEFINITIONS[role].label}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-border divide-y">
+          <tbody className="divide-y divide-border">
             {MODEL_TIER_DEFINITIONS.map((tier) => (
               <tr key={tier.id}>
-                <th scope="row" className="text-foreground py-3 pr-4 align-top font-medium">
+                <th scope="row" className="py-3 pr-4 align-top font-medium text-foreground">
                   {tier.label}
                 </th>
                 {MODEL_TIER_ROLES.map((role) => (
@@ -282,11 +283,11 @@ function SystemModels() {
       {rows.map(({ role, headline, yours }) => (
         <li
           key={role.id}
-          className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4"
+          className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4"
         >
           <div>
-            <h3 className="text-foreground text-sm font-semibold">{role.label}</h3>
-            <p className="text-muted-foreground text-xs leading-relaxed">{role.description}</p>
+            <h3 className="text-sm font-semibold text-foreground">{role.label}</h3>
+            <p className="text-xs leading-relaxed text-muted-foreground">{role.description}</p>
           </div>
           <EntryLine entry={headline} yours={yours} compact />
         </li>
@@ -352,11 +353,11 @@ export function ModelLineup() {
           {AUTOMATION_ROWS.map((row) => (
             <li
               key={row.label}
-              className="bg-surface border-border flex items-start justify-between gap-4 rounded-xl border p-4"
+              className="flex items-start justify-between gap-4 rounded-xl border border-border bg-surface p-4"
             >
               <div className="min-w-0">
-                <h3 className="text-foreground text-sm font-semibold">{row.label}</h3>
-                <p className="text-muted-foreground text-xs leading-relaxed">{row.description}</p>
+                <h3 className="text-sm font-semibold text-foreground">{row.label}</h3>
+                <p className="text-xs leading-relaxed text-muted-foreground">{row.description}</p>
               </div>
               <Badge variant="outline" className="shrink-0">
                 {row.uses}

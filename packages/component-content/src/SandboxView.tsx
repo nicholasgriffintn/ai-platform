@@ -20,9 +20,9 @@ export interface SandboxApprovalRequest {
 export function SandboxView({ type, data, onResolveApproval }: SandboxViewProps) {
   if (type === "sandbox_plan") {
     return (
-      <div className="border-border bg-surface-elevated space-y-3 rounded-md border p-3">
-        <div className="text-foreground flex items-center gap-2 text-sm font-medium">
-          <Clock className="text-active-work h-4 w-4" />
+      <div className="space-y-3 rounded-md border border-border bg-surface-elevated p-3">
+        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <Clock className="h-4 w-4 text-active-work" />
           <span>Plan</span>
         </div>
         <div className="prose prose-sm max-w-none dark:prose-invert">
@@ -58,17 +58,17 @@ function SandboxResultView({ data }: { data: Record<string, unknown> }) {
   const summary = typeof data.summary === "string" ? data.summary : undefined;
 
   return (
-    <div className="border-border bg-surface-elevated space-y-3 rounded-md border p-3">
+    <div className="space-y-3 rounded-md border border-border bg-surface-elevated p-3">
       <div className="flex flex-wrap items-center gap-2">
         {isFailed ? (
-          <AlertTriangle className="text-failure h-4 w-4" />
+          <AlertTriangle className="h-4 w-4 text-failure" />
         ) : (
-          <CheckCircle2 className="text-success h-4 w-4" />
+          <CheckCircle2 className="h-4 w-4 text-success" />
         )}
-        <span className="text-foreground text-sm font-medium">Result</span>
+        <span className="text-sm font-medium text-foreground">Result</span>
         {typeof data.status === "string" && <Badge variant="outline">{data.status}</Badge>}
         {branchName && (
-          <span className="text-muted-foreground inline-flex min-w-0 items-center gap-1 text-xs">
+          <span className="inline-flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
             <GitBranch className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{branchName}</span>
           </span>
@@ -80,7 +80,7 @@ function SandboxResultView({ data }: { data: Record<string, unknown> }) {
         </div>
       )}
       {error && (
-        <div className="border-failure/30 bg-failure/10 text-failure rounded border p-2 text-sm">
+        <div className="rounded border border-failure/30 bg-failure/10 p-2 text-sm text-failure">
           {String(error)}
         </div>
       )}
@@ -132,28 +132,28 @@ function SandboxEventView({
   };
 
   return (
-    <div className="border-border bg-surface-elevated space-y-2 rounded-md border p-3 text-sm">
+    <div className="space-y-2 rounded-md border border-border bg-surface-elevated p-3 text-sm">
       <div className="flex min-w-0 items-center gap-2">
         {approvalRequired ? (
-          <AlertTriangle className="text-attention h-4 w-4" />
+          <AlertTriangle className="h-4 w-4 text-attention" />
         ) : (
-          <Terminal className="text-active-work h-4 w-4" />
+          <Terminal className="h-4 w-4 text-active-work" />
         )}
-        <span className="text-foreground min-w-0 truncate font-medium">
+        <span className="min-w-0 truncate font-medium text-foreground">
           {String(data.description ?? data.type ?? "Sandbox event")}
         </span>
       </div>
       {typeof event.command === "string" && event.command.trim() && (
-        <code className="border-border bg-canvas text-foreground block overflow-x-auto rounded border px-2 py-1 text-xs">
+        <code className="block overflow-x-auto rounded border border-border bg-canvas px-2 py-1 text-xs text-foreground">
           {event.command}
         </code>
       )}
       {typeof event.path === "string" && event.path.trim() && (
-        <div className="text-muted-foreground text-xs">{event.path}</div>
+        <div className="text-xs text-muted-foreground">{event.path}</div>
       )}
       {output.trim() && <CodeBlock label={String(event.stream ?? "Output")} value={output} />}
       {typeof event.error === "string" && event.error.trim() && (
-        <div className="border-failure/30 bg-failure/10 text-failure rounded border p-2 text-xs">
+        <div className="rounded border border-failure/30 bg-failure/10 p-2 text-xs text-failure">
           {event.error}
         </div>
       )}
@@ -181,7 +181,7 @@ function SandboxEventView({
         </div>
       )}
       {resolutionStatus && (
-        <div className="text-muted-foreground text-xs font-medium">
+        <div className="text-xs font-medium text-muted-foreground">
           Approval {resolutionStatus}.
         </div>
       )}
@@ -200,8 +200,8 @@ function CodeBlock({
 }) {
   return (
     <div className="space-y-1">
-      <div className="text-muted-foreground text-xs font-medium">{label}</div>
-      <pre className="border-border bg-canvas text-foreground max-h-96 overflow-auto rounded border p-2 text-xs">
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
+      <pre className="max-h-96 overflow-auto rounded border border-border bg-canvas p-2 text-xs text-foreground">
         <code className={language ? `language-${language}` : undefined}>{value}</code>
       </pre>
     </div>

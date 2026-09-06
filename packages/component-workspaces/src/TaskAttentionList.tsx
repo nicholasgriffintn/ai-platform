@@ -89,14 +89,14 @@ export function TaskAttentionList({
                   <Badge variant="secondary" className="text-[11px]">
                     {KIND_LABELS[item.kind]}
                   </Badge>
-                  <span className="text-muted-foreground truncate text-xs">{item.projectName}</span>
+                  <span className="truncate text-xs text-muted-foreground">{item.projectName}</span>
                   {!item.isRead && <span className="size-2 rounded-full bg-active-work" />}
                 </div>
-                <p className="text-foreground mt-1 line-clamp-2 text-sm font-medium group-hover:underline">
+                <p className="mt-1 line-clamp-2 text-sm font-medium text-foreground group-hover:underline">
                   {item.objective}
                 </p>
                 {item.detail && (
-                  <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{item.detail}</p>
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.detail}</p>
                 )}
               </div>
             </div>

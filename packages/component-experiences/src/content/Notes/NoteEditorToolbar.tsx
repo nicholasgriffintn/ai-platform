@@ -119,7 +119,7 @@ export const NoteEditorToolbar = memo(function NoteEditorToolbar({
     <div
       role="toolbar"
       aria-label="Note editor toolbar"
-      className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-2 sm:px-4 py-2 border-t text-sm gap-2"
+      className="flex flex-col gap-2 border-t px-2 py-2 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4"
     >
       <div className="flex flex-wrap items-center gap-2 sm:gap-4">
         <label htmlFor="fontFamily" className="sr-only">

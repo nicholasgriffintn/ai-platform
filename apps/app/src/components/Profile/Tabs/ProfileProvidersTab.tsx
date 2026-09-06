@@ -14,6 +14,16 @@ import {
   ConfirmationDialog,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { ProviderSetting } from "@ngriffin_uk/polychat-library-client";
+import {
+  useTrackEvent,
+  RECIPE_CONNECTORS_QUERY_KEY,
+  useDisconnectRecipeConnector,
+  useRecipeConnectors,
+  useConnectorSetup,
+  useUser,
+  completeConnectorAuthPopup,
+} from "@ngriffin_uk/polychat-library-react";
 import { formatProviderLabel, recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 import type { RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
@@ -24,16 +34,6 @@ import { toast } from "sonner";
 
 import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
 import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
-import { useTrackEvent } from "~/hooks/use-track-event";
-import {
-  RECIPE_CONNECTORS_QUERY_KEY,
-  useDisconnectRecipeConnector,
-  useRecipeConnectors,
-} from "~/hooks/useConnectors";
-import { useConnectorSetup } from "~/hooks/useConnectorSetup";
-import { useUser } from "~/hooks/useUser";
-import type { ProviderSetting } from "~/lib/api/services/user-service";
-import { completeConnectorAuthPopup } from "~/lib/connector-auth-popup";
 
 import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
@@ -280,7 +280,7 @@ export function ProfileProvidersTab() {
               {
                 label: isSyncingProviders ? "Syncing..." : "Sync Providers",
                 onClick: () => syncProviders(),
-                icon: <RefreshCcw className="h-4 w-4 mr-2" />,
+                icon: <RefreshCcw className="mr-2 h-4 w-4" />,
                 disabled: isSyncingProviders,
                 variant: "secondary",
               },
@@ -326,14 +326,14 @@ export function ProfileProvidersTab() {
         ) : totalProviderCount === 0 ? (
           <EmptyState
             message="No providers available"
-            className="bg-transparent dark:bg-transparent border-none py-10 px-0"
+            className="border-none bg-transparent px-0 py-10 dark:bg-transparent"
           />
         ) : catalogueItems.length === 0 ? (
           <EmptyState
             message={
               providerSearch ? "No providers match your search" : "No providers in this view"
             }
-            className="bg-transparent dark:bg-transparent border-none py-10 px-0"
+            className="border-none bg-transparent px-0 py-10 dark:bg-transparent"
           />
         ) : (
           <ProviderCatalogue items={catalogueItems} />

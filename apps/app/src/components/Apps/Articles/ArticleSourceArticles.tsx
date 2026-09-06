@@ -1,6 +1,5 @@
 import { ArticleSourceArticleList } from "@ngriffin_uk/polychat-component-experiences/content";
-
-import { useFetchSourceArticlesByIds } from "~/hooks/useArticles";
+import { useFetchSourceArticlesByIds } from "@ngriffin_uk/polychat-library-react";
 
 interface ArticleSourceArticlesProps {
   sourceIds: string[];

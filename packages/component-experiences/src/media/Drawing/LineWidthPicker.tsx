@@ -21,15 +21,14 @@ export function LineWidthPicker({ lineWidth, setLineWidth }: LineWidthPickerProp
               type="button"
               key={width}
               onClick={() => setLineWidth(width)}
-              className={`p-2 h-12 rounded-md flex items-center justify-center
-                transition-all duration-200 ${
+              className={`flex h-12 items-center justify-center rounded-md p-2 transition-all duration-200 ${
                 lineWidth === width
-                  ? "bg-primary/10 border-2 border-primary shadow-sm scale-105 outline outline-[2px solid #3b82f6]"
+                  ? "outline-[2px solid #3b82f6] scale-105 border-2 border-primary bg-primary/10 shadow-sm outline"
                   : "border border-muted hover:border-primary/50 hover:bg-muted"
               } `}
               title={`${width}px`}
             >
-              <div className="w-full flex items-center justify-center">
+              <div className="flex w-full items-center justify-center">
                 <div
                   className="rounded-full bg-foreground"
                   style={{
@@ -43,8 +42,8 @@ export function LineWidthPicker({ lineWidth, setLineWidth }: LineWidthPickerProp
         </div>
       </div>
 
-      <div className="p-3 border rounded-md bg-background">
-        <div className="w-full h-[2px] bg-muted" />
+      <div className="rounded-md border bg-background p-3">
+        <div className="h-[2px] w-full bg-muted" />
         <div
           className="w-full rounded-full bg-foreground transition-all duration-200"
           style={{

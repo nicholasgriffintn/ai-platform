@@ -91,8 +91,8 @@ export function DeploymentsPanel({
 
   return (
     <>
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,420px)_1fr] gap-6">
-        <Card className="shadow-none h-fit">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,420px)_1fr]">
+        <Card className="h-fit shadow-none">
           <CardHeader>
             <CardTitle>Create deployment</CardTitle>
           </CardHeader>
@@ -121,7 +121,7 @@ export function DeploymentsPanel({
             </CardHeader>
             <CardContent>
               {deployments.length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                   {deployments.map((deployment) => {
                     const key = trainingRecordKey(deployment);
 
@@ -129,7 +129,7 @@ export function DeploymentsPanel({
                       <div key={key} className="rounded-md border border-border p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <div className="font-medium text-foreground truncate">
+                            <div className="truncate font-medium text-foreground">
                               {deployment.deploymentName}
                             </div>
                             <div className="text-xs text-muted-foreground">

@@ -1,12 +1,8 @@
+import type { ProjectWorkbenchPreviewRegion } from "@ngriffin_uk/polychat-utility-react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { useState } from "react";
 
-export interface ProjectWorkbenchPreviewRegion {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+export type { ProjectWorkbenchPreviewRegion } from "@ngriffin_uk/polychat-utility-react";
 
 interface PreviewPoint {
   x: number;

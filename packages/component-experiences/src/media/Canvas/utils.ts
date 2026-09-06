@@ -1,6 +1,9 @@
+import type {
+  CanvasInputField,
+  CanvasMode,
+  CanvasModel,
+} from "@ngriffin_uk/polychat-schemas/experiences";
 import { titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
-
-import type { CanvasInputField, CanvasMode, CanvasModel } from "./types";
 
 interface MediaPreview {
   url: string;

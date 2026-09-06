@@ -8,7 +8,7 @@ import type { CanvasStudioState } from "./controller";
 export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState }) {
   return (
     <div className="flex h-full min-h-0 flex-col p-2">
-      <div className="border-border bg-surface shrink-0 grid grid-cols-[repeat(3,minmax(0,1fr))] rounded-xl border p-1">
+      <div className="grid shrink-0 grid-cols-[repeat(3,minmax(0,1fr))] rounded-xl border border-border bg-surface p-1">
         <button
           type="button"
           aria-label="Image generation"
@@ -63,27 +63,27 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
         <>
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pt-4 pb-4">
             <div className="space-y-2">
-              <label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+              <label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                 Prompt
               </label>
               <textarea
                 value={canvas.prompt}
                 onChange={(event) => canvas.setPrompt(event.target.value)}
                 rows={4}
-                className="border-border bg-surface text-foreground focus:border-active-work w-full rounded-xl border px-3 py-2 text-sm outline-none"
+                className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-active-work"
                 placeholder="Describe what to generate..."
               />
             </div>
 
             {canvas.mediaMode === "image" && (
               <div className="space-y-2">
-                <label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+                <label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Negative Prompt
                 </label>
                 <input
                   value={canvas.negativePrompt}
                   onChange={(event) => canvas.setNegativePrompt(event.target.value)}
-                  className="border-border bg-surface text-foreground focus:border-active-work w-full rounded-xl border px-3 py-2 text-sm outline-none"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-active-work"
                   placeholder="Optional"
                 />
               </div>
@@ -91,14 +91,14 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 
             {canvas.mediaMode === "image" && (
               <div className="space-y-2">
-                <label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+                <label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Reference Images
                 </label>
                 <textarea
                   value={canvas.referenceInput}
                   onChange={(event) => canvas.setReferenceInput(event.target.value)}
                   rows={3}
-                  className="border-border bg-surface text-foreground focus:border-active-work w-full rounded-xl border px-3 py-2 text-sm outline-none"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-active-work"
                   placeholder="One URL per line"
                 />
               </div>
@@ -106,21 +106,21 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+                <label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Models
                 </label>
-                <span className="text-muted-foreground text-xs">
+                <span className="text-xs text-muted-foreground">
                   {canvas.selectedModelIds.length} selected
                 </span>
               </div>
               <input
                 value={canvas.modelSearch}
                 onChange={(event) => canvas.setModelSearch(event.target.value)}
-                className="border-border bg-surface text-foreground focus:border-active-work w-full rounded-xl border px-3 py-2 text-sm outline-none"
+                className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-active-work"
                 placeholder="Search models"
               />
 
-              <div className="border-border bg-surface max-h-60 space-y-2 overflow-auto rounded-xl border p-2">
+              <div className="max-h-60 space-y-2 overflow-auto rounded-xl border border-border bg-surface p-2">
                 {canvas.visibleModels.map((model) => {
                   const selected = canvas.selectedModelIds.includes(model.id);
 
@@ -141,7 +141,7 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
                         <span className="shrink-0 text-xs uppercase">{model.provider}</span>
                       </div>
                       {model.requiresReferenceImage && (
-                        <p className="mt-1 text-[11px] font-medium uppercase tracking-wide opacity-80">
+                        <p className="mt-1 text-[11px] font-medium tracking-wide uppercase opacity-80">
                           Requires reference image
                         </p>
                       )}
@@ -152,7 +152,7 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
                   );
                 })}
                 {!canvas.isModelsLoading && canvas.visibleModels.length === 0 && (
-                  <p className="text-muted-foreground px-2 py-3 text-xs">
+                  <p className="px-2 py-3 text-xs text-muted-foreground">
                     No models match this filter.
                   </p>
                 )}
@@ -166,9 +166,9 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
             />
           </div>
 
-          <div className="border-border bg-surface/95 shrink-0 space-y-2 border-t pt-2 backdrop-blur">
+          <div className="shrink-0 space-y-2 border-t border-border bg-surface/95 pt-2 backdrop-blur">
             {canvas.error && (
-              <p role="alert" className="bg-failure/12 text-failure rounded-lg px-3 py-2 text-xs">
+              <p role="alert" className="rounded-lg bg-failure/12 px-3 py-2 text-xs text-failure">
                 {canvas.error instanceof Error
                   ? canvas.error.message
                   : "Could not load Canvas resources."}

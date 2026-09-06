@@ -25,7 +25,7 @@ export function WorkspaceCardGrid({ workspaces }: { workspaces: WorkspaceCardIte
           <Card className="h-full p-6 transition-colors group-hover:border-border-strong">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs capitalize text-muted-foreground">{workspace.role}</p>
+                <p className="text-xs text-muted-foreground capitalize">{workspace.role}</p>
                 <h2 className="mt-1 text-lg font-semibold text-foreground group-hover:underline">
                   {workspace.name}
                 </h2>

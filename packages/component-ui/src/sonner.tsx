@@ -1,6 +1,5 @@
+import type { ThemeAppearance } from "@ngriffin_uk/polychat-library-chat";
 import { Toaster as Sonner, type ToasterProps as SonnerProps } from "sonner";
-
-import type { ThemeAppearance } from "./theme";
 
 const toasterStyle: React.CSSProperties & Record<string, string> = {
   "--normal-bg": "var(--popover)",

@@ -22,18 +22,18 @@ export type AdaptiveThinkingEffort = Extract<
   "low" | "medium" | "high" | "xhigh" | "max"
 >;
 
-const ADAPTIVE_THINKING_EFFORTS: readonly ReasoningEffortLevel[] = [
+const ADAPTIVE_THINKING_EFFORTS: ReadonlySet<ReasoningEffortLevel> = new Set([
   "low",
   "medium",
   "high",
   "xhigh",
   "max",
-];
+]);
 
 function isAdaptiveThinkingEffort(
   reasoningEffort: ReasoningEffortLevel,
 ): reasoningEffort is AdaptiveThinkingEffort {
-  return ADAPTIVE_THINKING_EFFORTS.includes(reasoningEffort);
+  return ADAPTIVE_THINKING_EFFORTS.has(reasoningEffort);
 }
 
 export function isConfiguredReasoningEffort(

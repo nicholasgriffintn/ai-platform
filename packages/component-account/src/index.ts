@@ -1,3 +1,4 @@
+export * from "./WelcomeScreen";
 export * from "./AccountNavigation";
 export * from "./AccountPrompt";
 export * from "./AccountSidebarShell";

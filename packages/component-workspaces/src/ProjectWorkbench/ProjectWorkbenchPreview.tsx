@@ -1,5 +1,10 @@
 import { Button, EmptyState, FormSelect, Textarea, cn } from "@ngriffin_uk/polychat-component-ui";
-import type { SandboxPreviewAccess, SandboxPreviewState } from "@ngriffin_uk/polychat-schemas";
+import type { SandboxPreviewAccess } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ProjectWorkbenchPreviewDisplayState,
+  ProjectWorkbenchPreviewFeedback,
+  ProjectWorkbenchPreviewViewport,
+} from "@ngriffin_uk/polychat-utility-react";
 import {
   ExternalLink,
   Focus,
@@ -21,23 +26,11 @@ import {
   usePreviewRegionSelection,
 } from "./usePreviewRegionSelection";
 
-export type ProjectWorkbenchPreviewDisplayState = SandboxPreviewState | "loading";
-
-export interface ProjectWorkbenchPreviewViewport {
-  id: "fit" | "mobile" | "tablet" | "desktop";
-  label: string;
-  width?: number;
-  height: number;
-}
-
-export interface ProjectWorkbenchPreviewFeedback {
-  annotation: string;
-  elementReference?: string;
-  region?: ProjectWorkbenchPreviewRegion;
-  route: string;
-  serviceName: string;
-  viewport: ProjectWorkbenchPreviewViewport;
-}
+export type {
+  ProjectWorkbenchPreviewDisplayState,
+  ProjectWorkbenchPreviewFeedback,
+  ProjectWorkbenchPreviewViewport,
+} from "@ngriffin_uk/polychat-utility-react";
 
 export interface ProjectWorkbenchPreviewProps {
   services: ProjectWorkbenchServiceItem[];
@@ -169,7 +162,7 @@ function PreviewStateMessage({
 
   return (
     <EmptyState
-      icon={<MonitorPlay className="text-muted-foreground size-5" />}
+      icon={<MonitorPlay className="size-5 text-muted-foreground" />}
       title={presentation.label}
       message={disabledReason ?? presentation.detail}
       className="min-h-72 rounded-none border-0 bg-transparent"
@@ -224,9 +217,9 @@ function PreviewFrame({
   const visibleRegion = draftRegion ?? region;
 
   return (
-    <div className="bg-canvas min-h-0 overflow-auto p-3">
+    <div className="min-h-0 overflow-auto bg-canvas p-3">
       <div
-        className="border-border-strong bg-surface relative mx-auto shrink-0 border"
+        className="relative mx-auto shrink-0 border border-border-strong bg-surface"
         style={{ width: viewport.width ? `${viewport.width}px` : "100%", height: viewport.height }}
       >
         <iframe
@@ -241,7 +234,7 @@ function PreviewFrame({
         {visibleRegion ? (
           <div
             aria-hidden="true"
-            className="border-active-work bg-active-work/10 pointer-events-none absolute border-2"
+            className="pointer-events-none absolute border-2 border-active-work bg-active-work/10"
             style={selectionStyle(visibleRegion)}
           />
         ) : null}
@@ -249,7 +242,7 @@ function PreviewFrame({
           <div
             {...overlayProps}
             aria-label="Drag over the preview to mark a feedback region"
-            className="bg-active-work/5 absolute inset-0 cursor-crosshair touch-none"
+            className="absolute inset-0 cursor-crosshair touch-none bg-active-work/5"
           />
         ) : null}
       </div>
@@ -381,9 +374,9 @@ export function ProjectWorkbenchPreview({
 
   return (
     <section aria-label="Service preview" className="@container flex min-h-full flex-col gap-3">
-      <div className="bg-surface-elevated border-border flex flex-wrap items-center gap-2 border-b px-3 py-2">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface-elevated px-3 py-2">
         <div className="flex min-w-0 items-center gap-2">
-          <ShieldCheck className="text-success size-4 shrink-0" aria-hidden="true" />
+          <ShieldCheck className="size-4 shrink-0 text-success" aria-hidden="true" />
           <span className="text-xs font-medium">Trusted review controls</span>
         </div>
         <div className="ml-auto">
@@ -407,10 +400,10 @@ export function ProjectWorkbenchPreview({
           />
         ) : service ? (
           <div className="flex items-center gap-2 text-sm">
-            <Laptop className="text-creative size-4" aria-hidden="true" />
+            <Laptop className="size-4 text-creative" aria-hidden="true" />
             <span className="font-mono font-medium">{service.name}</span>
             {service.expectedPort ? (
-              <span className="text-muted-foreground text-xs">Port {service.expectedPort}</span>
+              <span className="text-xs text-muted-foreground">Port {service.expectedPort}</span>
             ) : null}
           </div>
         ) : null}
@@ -425,7 +418,7 @@ export function ProjectWorkbenchPreview({
                   navigatePreview();
                 }}
               >
-                <label className="text-muted-foreground text-xs" htmlFor="preview-route">
+                <label className="text-xs text-muted-foreground" htmlFor="preview-route">
                   Recorded route
                 </label>
                 <div className="mt-1 flex gap-1">
@@ -437,7 +430,7 @@ export function ProjectWorkbenchPreview({
                     }
                     maxLength={500}
                     spellCheck={false}
-                    className="border-input bg-surface text-foreground focus:border-ring focus:ring-ring/30 min-h-9 min-w-0 flex-1 border px-3 font-mono text-xs outline-none focus:ring-[3px]"
+                    className="min-h-9 min-w-0 flex-1 border border-input bg-surface px-3 font-mono text-xs text-foreground outline-none focus:border-ring focus:ring-[3px] focus:ring-ring/30"
                   />
                   <Button type="submit" variant="secondary" size="sm">
                     Go
@@ -445,7 +438,7 @@ export function ProjectWorkbenchPreview({
                 </div>
               </form>
               <fieldset className="m-0 border-0 p-0">
-                <legend className="text-muted-foreground text-xs">Viewport</legend>
+                <legend className="text-xs text-muted-foreground">Viewport</legend>
                 <div className="mt-1 flex gap-1">
                   {VIEWPORTS.map((candidate) => {
                     const Icon = VIEWPORT_ICONS[candidate.id];
@@ -472,10 +465,10 @@ export function ProjectWorkbenchPreview({
               </fieldset>
             </div>
 
-            <div className="border-border bg-surface overflow-hidden border">
-              <div className="border-border flex flex-wrap items-center gap-2 border-b px-2 py-1.5">
-                <span className="text-muted-foreground text-xs">Untrusted preview content</span>
-                <span className="text-muted-foreground font-mono text-[11px]">
+            <div className="overflow-hidden border border-border bg-surface">
+              <div className="flex flex-wrap items-center gap-2 border-b border-border px-2 py-1.5">
+                <span className="text-xs text-muted-foreground">Untrusted preview content</span>
+                <span className="font-mono text-[11px] text-muted-foreground">
                   {viewport.width ? `${viewport.width} × ${viewport.height}` : "Fit to panel"}
                 </span>
                 <div className="ml-auto flex flex-wrap gap-1">
@@ -551,18 +544,18 @@ export function ProjectWorkbenchPreview({
               />
             </div>
 
-            <div className="border-border bg-surface-elevated border p-3">
+            <div className="border border-border bg-surface-elevated p-3">
               <div className="flex items-start gap-2">
-                <Focus className="text-creative mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <Focus className="mt-0.5 size-4 shrink-0 text-creative" aria-hidden="true" />
                 <div>
                   <h3 className="text-sm font-medium">Send review feedback</h3>
-                  <p className="text-muted-foreground mt-0.5 text-xs">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     Route, viewport and any marked region are attached to an attributable run
                     instruction. Preview content cannot submit it.
                   </p>
                 </div>
               </div>
-              <label className="text-muted-foreground mt-3 block text-xs" htmlFor="preview-target">
+              <label className="mt-3 block text-xs text-muted-foreground" htmlFor="preview-target">
                 Element reference <span className="font-normal">(optional)</span>
               </label>
               <input
@@ -572,10 +565,10 @@ export function ProjectWorkbenchPreview({
                 maxLength={160}
                 placeholder="For example: Save button in the account form"
                 disabled={!canSubmitFeedback}
-                className="border-input bg-surface text-foreground focus:border-ring focus:ring-ring/30 mt-1 min-h-9 w-full border px-3 text-sm outline-none focus:ring-[3px] disabled:opacity-60"
+                className="mt-1 min-h-9 w-full border border-input bg-surface px-3 text-sm text-foreground outline-none focus:border-ring focus:ring-[3px] focus:ring-ring/30 disabled:opacity-60"
               />
               <label
-                className="text-muted-foreground mt-3 block text-xs"
+                className="mt-3 block text-xs text-muted-foreground"
                 htmlFor="preview-feedback"
               >
                 Feedback
@@ -600,13 +593,13 @@ export function ProjectWorkbenchPreview({
                 >
                   Send instruction
                 </Button>
-                <span className="text-muted-foreground text-xs">
+                <span className="text-xs text-muted-foreground">
                   {activeRouteState.activeRoute} · {viewport.label}
                   {regionSelection.region ? " · Region marked" : ""}
                 </span>
               </div>
               {!canSubmitFeedback && feedbackDisabledReason ? (
-                <p className="text-attention mt-2 text-xs">{feedbackDisabledReason}</p>
+                <p className="mt-2 text-xs text-attention">{feedbackDisabledReason}</p>
               ) : null}
             </div>
           </>
@@ -621,7 +614,7 @@ export function ProjectWorkbenchPreview({
         )}
 
         {errorMessage || localError ? (
-          <p role="alert" className="text-failure px-1 text-xs">
+          <p role="alert" className="px-1 text-xs text-failure">
             {localError ?? errorMessage}
           </p>
         ) : null}

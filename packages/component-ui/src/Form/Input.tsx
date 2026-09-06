@@ -39,17 +39,17 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
           ref={ref}
           id={controlId}
           className={cn(
-            "border-input bg-surface text-foreground focus:border-ring focus:ring-ring/30 rounded-md border px-3 py-1.5 text-sm focus:ring-[3px] focus:outline-none",
+            "rounded-md border border-input bg-surface px-3 py-1.5 text-sm text-foreground focus:border-ring focus:ring-[3px] focus:ring-ring/30 focus:outline-none",
             fullWidth && "w-full",
             className,
-            disabled && "opacity-50 cursor-not-allowed",
+            disabled && "cursor-not-allowed opacity-50",
           )}
           aria-describedby={describedBy}
           disabled={disabled}
           {...props}
         />
         {description && (
-          <p id={descriptionId} className="text-muted-foreground mt-1 text-xs">
+          <p id={descriptionId} className="mt-1 text-xs text-muted-foreground">
             {description}
           </p>
         )}

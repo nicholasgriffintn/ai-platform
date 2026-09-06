@@ -1,14 +1,14 @@
 import { XIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { Button } from "./Button";
+import { Button, ButtonLink } from "./Button";
 import { cn } from "./utils";
 
 export interface PetBubbleProps {
   children: ReactNode;
   placement?: "left" | "top";
   actionLabel?: string;
-  onAction?: () => void;
+  actionHref?: string;
   onDismiss?: () => void;
   className?: string;
 }
@@ -22,15 +22,15 @@ export function PetBubble({
   children,
   placement = "left",
   actionLabel,
-  onAction,
+  actionHref,
   onDismiss,
   className,
 }: PetBubbleProps) {
   return (
     <div
       className={cn(
-        "border-border bg-surface-elevated text-foreground absolute z-20 w-max max-w-56 rounded-lg border px-2.5 py-1.5 text-left text-xs leading-snug shadow-[var(--polychat-elevated-shadow)]",
-        "animate-in fade-in-0 zoom-in-95 duration-150 motion-reduce:animate-none",
+        "absolute z-20 w-max max-w-56 rounded-lg border border-border bg-surface-elevated px-2.5 py-1.5 text-left text-xs leading-snug text-foreground shadow-[var(--polychat-elevated-shadow)]",
+        "animate-in duration-150 fade-in-0 zoom-in-95 motion-reduce:animate-none",
         PLACEMENT_CLASSES[placement],
         className,
       )}
@@ -48,11 +48,11 @@ export function PetBubble({
         </Button>
       ) : null}
       <p className={cn("m-0", onDismiss && "pl-5")}>{children}</p>
-      {actionLabel && onAction ? (
+      {actionLabel && actionHref ? (
         <div className="mt-1.5 flex items-center gap-1.5">
-          <Button type="button" variant="outline" size="sm" className="h-6 px-2" onClick={onAction}>
+          <ButtonLink href={actionHref} variant="outline" size="sm" className="h-6 px-2">
             {actionLabel}
-          </Button>
+          </ButtonLink>
         </div>
       ) : null}
     </div>

@@ -2,11 +2,8 @@ import {
   UserSettingsForm as ControlledUserSettingsForm,
   type UserSettings,
 } from "@ngriffin_uk/polychat-component-account";
+import { useTrackEvent, useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
-
-import { useTrackEvent } from "~/hooks/use-track-event";
-import { useAuthStatus } from "~/hooks/useAuth";
-import { useUIStore } from "~/state/stores/uiStore";
 
 interface UserSettingsFormProps {
   userSettings: UserSettings | null;

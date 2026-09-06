@@ -15,7 +15,7 @@ Read only the guides relevant to the task:
 - Production rollout: [deployment](references/deployment.md).
 - Rebranding: [white-labelling](references/white-labelling.md).
 - Optional Workers: [sandbox](references/components/sandbox-worker.md), [training](references/components/training-worker.md).
-- Operations: [connectors](references/operations/composio-connectors.md), [billing](references/operations/stripe-billing.md), [usage](references/operations/loop-cost-controls.md), [OCR](references/operations/ocr.md).
+- Operations: [connectors](references/operations/composio-connectors.md), [billing](references/operations/stripe-billing.md), [usage](references/operations/loop-cost-controls.md), [OCR](references/operations/ocr.md), [agent gateways](references/operations/agent-gateways.md).
 - Architecture: [context](references/architecture/context.md) and the relevant [decision](references/architecture/decisions.md). Accepted but unimplemented designs are labelled separately.
 - Validation: root `AGENTS.md`, [E2E](references/testing/e2e.md), and [human verification](references/verification.md).
 

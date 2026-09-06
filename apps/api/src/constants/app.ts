@@ -3,6 +3,8 @@ export const APP_DESCRIPTION =
   "Polychat is a multi-model AI assistant platform that orchestrates chats, agents, retrieval, and artifact workflows across leading AI providers.";
 
 export const LOCAL_HOST = "localhost:5173";
+export const DESKTOP_LOCAL_HOST = "localhost:5183";
+export const DESKTOP_ORIGINS = ["tauri://localhost", "http://tauri.localhost"] as const;
 export const PROD_HOST = "polychat.app";
 
 export const METRICS_LOCAL_HOST = "localhost:9090";

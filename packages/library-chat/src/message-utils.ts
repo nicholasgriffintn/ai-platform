@@ -60,7 +60,7 @@ export function splitContentByArtifacts(content: string): {
 
     if (
       identifierEnd === identifierStart ||
-      content.startsWith(ARTIFACT_MARKER_END, identifierEnd) === false
+      !content.startsWith(ARTIFACT_MARKER_END, identifierEnd)
     ) {
       searchFrom = markerStart + 1;
       continue;

@@ -1,9 +1,7 @@
 import { ButtonLink, Skeleton } from "@ngriffin_uk/polychat-component-ui";
+import { usePlans, formatPlanPrice } from "@ngriffin_uk/polychat-library-react";
 import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo } from "react";
-
-import { usePlans } from "~/hooks/useBilling";
-import { formatPlanPrice } from "~/lib/plan-format";
 
 import { DiscoverBand } from "../DiscoverBand";
 
@@ -33,20 +31,20 @@ export function PricingBand() {
           : plans.map((plan) => (
               <li
                 key={plan.id}
-                className="bg-surface border-border flex flex-col gap-1 rounded-xl border p-4"
+                className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4"
               >
-                <span className="text-foreground text-sm font-medium">{plan.name}</span>
-                <span className="font-display text-foreground text-2xl font-medium tracking-tight">
+                <span className="text-sm font-medium text-foreground">{plan.name}</span>
+                <span className="font-display text-2xl font-medium tracking-tight text-foreground">
                   {plan.price === 0 ? "Free" : formatPlanPrice(plan.price)}
                   {plan.price > 0 && (
-                    <span className="text-muted-foreground font-sans text-xs font-normal">
+                    <span className="font-sans text-xs font-normal text-muted-foreground">
                       {" "}
                       a month
                     </span>
                   )}
                 </span>
                 {plan.included_credits !== null && (
-                  <span className="text-muted-foreground text-xs">
+                  <span className="text-xs text-muted-foreground">
                     {formatCredits(plan.included_credits)} credits a month
                   </span>
                 )}

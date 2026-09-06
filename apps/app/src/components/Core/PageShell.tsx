@@ -11,7 +11,6 @@ import {
 import type { ReactNode } from "react";
 
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
-import { useResponsiveSidebar } from "~/hooks/useResponsiveSidebar";
 import { ProductShell } from "~/layouts/ProductShell";
 
 interface PageShellProps {
@@ -41,7 +40,6 @@ function PageShellRoot({
   bgClassName,
   projectColour,
 }: PageShellProps) {
-  useResponsiveSidebar();
   const { headerContext, registeredHeader } = usePageShellHeaderRegistry();
 
   const effectiveTitle = registeredHeader?.title ?? title;

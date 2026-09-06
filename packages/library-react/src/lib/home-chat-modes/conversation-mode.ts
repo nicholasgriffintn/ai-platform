@@ -1,0 +1,48 @@
+import type {
+  ChatRequestOptions,
+  Conversation,
+} from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import {
+  conversationModeMetadataSchema,
+  type ConversationModeMetadata,
+  type HomeChatModeId,
+} from "@ngriffin_uk/polychat-schemas";
+
+export function buildConversationModeMetadata(params: {
+  mode: HomeChatModeId;
+  requestOptions?: ChatRequestOptions;
+}): ConversationModeMetadata | undefined {
+  const { mode, requestOptions } = params;
+
+  if (mode === "chat") {
+    return { mode };
+  }
+
+  const parsed = conversationModeMetadataSchema.safeParse({
+    mode,
+    requestOptions: requestOptions?.options,
+    smsSettings:
+      mode === "sms" && requestOptions?.options?.channel?.id === "sms"
+        ? {
+            from: requestOptions.options.channel.from,
+            to: requestOptions.options.channel.to,
+          }
+        : undefined,
+  });
+
+  return parsed.success ? parsed.data : undefined;
+}
+
+export function getConversationModeMetadata(
+  conversation: Conversation | null | undefined,
+): ConversationModeMetadata | null {
+  for (const message of conversation?.messages ?? []) {
+    const parsed = conversationModeMetadataSchema.safeParse(message.data?.conversationMode);
+
+    if (parsed.success) {
+      return parsed.data;
+    }
+  }
+
+  return null;
+}

@@ -48,7 +48,7 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
           {label && labelPosition === "right" && <Label htmlFor={controlId}>{label}</Label>}
         </div>
         {description && (
-          <p id={descriptionId} className="text-xs text-muted-foreground mt-1">
+          <p id={descriptionId} className="mt-1 text-xs text-muted-foreground">
             {description}
           </p>
         )}

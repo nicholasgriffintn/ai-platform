@@ -86,7 +86,7 @@ export const TableView = ({ data }: TableViewProps) => {
               <th
                 key={header.key}
                 scope="col"
-                className={`px-3 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground ${
+                className={`px-3 py-2 text-xs font-medium tracking-wider text-muted-foreground uppercase ${
                   isNumericColumn(visibleRows, header.key) ? "text-right" : "text-left"
                 }`}
               >
@@ -104,7 +104,7 @@ export const TableView = ({ data }: TableViewProps) => {
               {headers.map((header) => (
                 <td
                   key={`${rowIndex}-${header.key}`}
-                  className={`max-w-[24rem] break-words px-3 py-2 align-top text-sm text-muted-foreground ${
+                  className={`max-w-[24rem] px-3 py-2 align-top text-sm break-words text-muted-foreground ${
                     isNumericColumn(visibleRows, header.key)
                       ? "text-right tabular-nums"
                       : "text-left"

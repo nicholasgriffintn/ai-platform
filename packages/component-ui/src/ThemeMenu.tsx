@@ -1,7 +1,10 @@
+import {
+  getThemePreferenceOptions,
+  type ThemePreference,
+} from "@ngriffin_uk/polychat-library-chat";
 import { ChevronRight, Palette } from "lucide-react";
 
 import { OptionsMenu, OptionsMenuRadioGroup } from "./OptionsMenu";
-import { getThemePreferenceOptions, type ThemePreference } from "./theme";
 import { cn } from "./utils";
 
 const OPTIONS = getThemePreferenceOptions().map((option) => ({
@@ -47,7 +50,7 @@ export function ThemeMenu({
             <Palette className="h-4 w-4" aria-hidden="true" />
             <span>Theme</span>
           </span>
-          <span className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs">
+          <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
             {selected?.label}
             <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
           </span>

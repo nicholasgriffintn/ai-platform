@@ -28,7 +28,9 @@ allowBuilds:
   better-sqlite3: true
   core-js: false
   core-js-pure: false
+  edgedriver: false
   esbuild: false
+  geckodriver: false
   protobufjs: false
   sharp: false
   workerd: false

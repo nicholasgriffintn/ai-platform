@@ -1,4 +1,4 @@
-import { ApiError } from "./index";
+import { ApiError } from "./http";
 
 const DEFAULT_QUERY_RETRY_COUNT = 2;
 const RETRYABLE_HTTP_STATUS_CODES = new Set([408, 425, 429]);

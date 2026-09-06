@@ -1,5 +1,6 @@
 import { RunChangesView, RunFilesView } from "@ngriffin_uk/polychat-component-content";
 import { RunActivityPanel } from "@ngriffin_uk/polychat-component-conversation";
+import type { ConversationRunSteering } from "@ngriffin_uk/polychat-component-conversation";
 import {
   ProjectWorkbenchApprovals,
   ProjectWorkbenchRunControls,
@@ -11,27 +12,24 @@ import {
   type ProjectWorkbenchPane,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { buildAgentTraceEntries } from "@ngriffin_uk/polychat-library-chat/agent-trace";
+import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { buildRunActivityEntries } from "@ngriffin_uk/polychat-library-chat/run-activity";
-import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
-import { Activity } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
-
-import type { ConversationRunSteering } from "~/components/ConversationThread/ChatInput";
-import { useProjectWorkbenchControls } from "~/hooks/useProjectWorkbenchControls";
-import { useProjectWorkbenchDiff } from "~/hooks/useProjectWorkbenchEvidence";
-import { useProjectWorkbenchPreferences } from "~/hooks/useProjectWorkbenchPreferences";
-import { useProjectWorkbenchPreview } from "~/hooks/useProjectWorkbenchPreview";
-import { useProjectWorkbenchRuns } from "~/hooks/useProjectWorkbenchRuns";
-import { getOutputArtifactContent } from "~/lib/api/outputs";
-import { getErrorMessage } from "~/lib/errors";
+import { getOutputArtifactContent, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  useProjectWorkbenchControls,
+  useProjectWorkbenchDiff,
+  useProjectWorkbenchPreferences,
+  useProjectWorkbenchPreview,
+  useProjectWorkbenchRuns,
+  getErrorMessage,
   deriveProjectWorkbenchControlState,
   deriveProjectWorkbenchPresentation,
   deriveProjectWorkbenchServices,
-} from "~/lib/project-workbench";
-import { formatProjectWorkbenchPreviewFeedback } from "~/lib/project-workbench-preview";
-import { useChatStore } from "~/state/stores/chatStore";
-import type { Message } from "~/types";
+  formatProjectWorkbenchPreviewFeedback,
+} from "@ngriffin_uk/polychat-library-react";
+import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import { Activity } from "lucide-react";
+import { useMemo, type ReactNode } from "react";
 
 export interface ProjectWorkbenchConversationSlots {
   runSteering?: ConversationRunSteering;

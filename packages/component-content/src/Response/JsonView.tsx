@@ -145,7 +145,7 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
         variant="icon"
         size="xs"
         onClick={() => copy(JSON.stringify(data, null, 2))}
-        className="absolute right-1.5 top-1.5"
+        className="absolute top-1.5 right-1.5"
         aria-label={copied ? "Payload copied" : "Copy payload"}
         title={copied ? "Copied" : "Copy payload"}
       >

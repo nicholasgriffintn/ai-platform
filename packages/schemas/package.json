@@ -37,17 +37,23 @@
       "import": "./dist/compaction-status.mjs",
       "require": "./dist/compaction-status.js"
     },
-    "./goals": {
-      "polychat-source": "./src/goals.ts",
-      "types": "./dist/goals.d.ts",
-      "import": "./dist/goals.mjs",
-      "require": "./dist/goals.js"
-    },
     "./conversation-replacement": {
       "polychat-source": "./src/conversation-replacement.ts",
       "types": "./dist/conversation-replacement.d.ts",
       "import": "./dist/conversation-replacement.mjs",
       "require": "./dist/conversation-replacement.js"
+    },
+    "./experiences": {
+      "polychat-source": "./src/experiences.ts",
+      "types": "./dist/experiences.d.ts",
+      "import": "./dist/experiences.mjs",
+      "require": "./dist/experiences.js"
+    },
+    "./goals": {
+      "polychat-source": "./src/goals.ts",
+      "types": "./dist/goals.d.ts",
+      "import": "./dist/goals.mjs",
+      "require": "./dist/goals.js"
     },
     "./message-part-utils": {
       "polychat-source": "./src/message-part-utils.ts",
@@ -72,6 +78,12 @@
       "types": "./dist/tool-ids.d.ts",
       "import": "./dist/tool-ids.mjs",
       "require": "./dist/tool-ids.js"
+    },
+    "./user-profile": {
+      "polychat-source": "./src/user-profile.ts",
+      "types": "./dist/user-profile.d.ts",
+      "import": "./dist/user-profile.mjs",
+      "require": "./dist/user-profile.js"
     }
   },
   "publishConfig": {

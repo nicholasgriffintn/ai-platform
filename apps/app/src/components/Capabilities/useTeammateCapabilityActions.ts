@@ -1,14 +1,17 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  capabilityCatalogQueryKey,
+  useTeammates,
+  useWorkspaces,
+  getTeammateEditorPath,
+  type CapabilitySurface,
+  resolveTeammateManagePermission,
+} from "@ngriffin_uk/polychat-library-react";
 import type { TeammateResponse, HireTeammateInput } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { NEW_TEAMMATE_ID } from "~/components/Teammates/useTeammateEditorController";
-import { capabilityCatalogQueryKey } from "~/hooks/useCapabilityCatalog";
-import { useTeammates } from "~/hooks/useTeammates";
-import { useWorkspaces } from "~/hooks/useWorkspaces";
-import { getTeammateEditorPath, type CapabilitySurface } from "~/lib/capability-surfaces";
-import { resolveTeammateManagePermission } from "~/lib/teammates/teammate-permissions";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export interface TeammateCapabilityActions {
   attachableTeammates: TeammateResponse[];

@@ -18,18 +18,18 @@ export function ComposerActionMenuRow({
   return (
     <div className="flex min-w-0 flex-1 items-center gap-3">
       <span
-        className="text-muted-foreground flex h-5 w-5 shrink-0 items-center justify-center"
+        className="flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground"
         aria-hidden="true"
       >
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-medium leading-5">{label}</span>
+        <span className="block truncate leading-5 font-medium">{label}</span>
         {description ? (
-          <span className="text-muted-foreground block truncate text-xs">{description}</span>
+          <span className="block truncate text-xs text-muted-foreground">{description}</span>
         ) : null}
       </span>
-      {isActive ? <Check className="text-active-work h-4 w-4 shrink-0" aria-hidden="true" /> : null}
+      {isActive ? <Check className="h-4 w-4 shrink-0 text-active-work" aria-hidden="true" /> : null}
     </div>
   );
 }

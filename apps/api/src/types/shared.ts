@@ -91,12 +91,7 @@ export type IEnv = {
   BEACON_BACKEND_ENABLED?: string;
   BEACON_ENDPOINT?: string;
   BEACON_SITE_ID?: string;
-  OLLAMA_ENABLED?: string;
-  OLLAMA_URL?: string;
   OLLAMA_CLOUD_API_KEY?: string;
-  LMSTUDIO_ENABLED?: string;
-  LMSTUDIO_URL?: string;
-  LMSTUDIO_API_KEY?: string;
   ZAI_API_KEY?: string;
   MOONSHOT_API_KEY?: string;
   MINIMAX_API_KEY?: string;

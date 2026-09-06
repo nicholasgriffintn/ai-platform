@@ -1,3 +1,15 @@
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useChat,
+  useConversationRoute,
+  useModels,
+  useProjectConversationSources,
+  projectQueryKey,
+  getCapabilityLibraryPath,
+  getProjectSurface,
+  getErrorMessage,
+  getProjectCodingPresentation,
+} from "@ngriffin_uk/polychat-library-react";
 import {
   getModelInteractionCapabilities,
   type SandboxTaskType,
@@ -8,17 +20,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { ConversationPage } from "~/components/ConversationThread/ConversationPage";
-import { useChat } from "~/hooks/useChat";
-import { useConversationRoute } from "~/hooks/useConversationRoute";
-import { useModels } from "~/hooks/useModels";
-import { useProjectConversationSources } from "~/hooks/useProjectConversationSources";
 import { useProjectTaskInteractions } from "~/hooks/useProjectTaskInteractions";
-import { projectQueryKey } from "~/hooks/useWorkspaces";
-import { getCapabilityLibraryPath, getProjectSurface } from "~/lib/capability-surfaces";
-import { getErrorMessage } from "~/lib/errors";
-import { getProjectCodingPresentation } from "~/lib/project-coding-presentation";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
 import { ProjectFileAsTaskControl } from "./ProjectFileAsTaskControl";

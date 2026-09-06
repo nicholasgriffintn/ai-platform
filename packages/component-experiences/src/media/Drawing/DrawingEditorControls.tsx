@@ -8,16 +8,16 @@ import { ToolPicker } from "./ToolPicker";
 
 export function DrawingEditorControls({ drawing }: { drawing: DrawingStudioState }) {
   return (
-    <div className="border-border bg-surface space-y-4 rounded-xl border p-4 shadow-sm">
+    <div className="space-y-4 rounded-xl border border-border bg-surface p-4 shadow-sm">
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           Tools
         </h3>
         <ToolPicker isFillMode={drawing.isFillMode} setIsFillMode={drawing.setIsFillMode} />
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           Colours
         </h3>
         <ColorPicker

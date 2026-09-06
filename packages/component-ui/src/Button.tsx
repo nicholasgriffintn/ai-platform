@@ -141,8 +141,8 @@ export function buttonClassName({
   "variant" | "size" | "fullWidth" | "collapseLabel" | "className"
 > = {}): string {
   return cn(
-    "polychat-motion-micro inline-flex cursor-pointer select-none items-center justify-center gap-2 rounded-md border border-solid font-medium whitespace-nowrap transition-colors",
-    "focus-visible:outline-ring focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none",
+    "polychat-motion-micro inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-solid font-medium whitespace-nowrap transition-colors select-none",
+    "focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     resolveSizeStyles(variant, size, resolveCollapse(collapseLabel)),
     variantStyles[variant],
     fullWidth && "w-full",

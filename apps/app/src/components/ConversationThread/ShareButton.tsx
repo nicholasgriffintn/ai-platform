@@ -1,5 +1,6 @@
+import { apiService } from "@ngriffin_uk/polychat-library-client";
+
 import { ShareDialog } from "~/components/Content/ShareDialog";
-import { apiService } from "~/lib/api/api-service";
 
 interface ShareButtonProps {
   conversationId: string;

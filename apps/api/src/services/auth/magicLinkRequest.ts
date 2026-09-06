@@ -1,5 +1,5 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { buildMobileRedirectUri, requireMobileRedirectUri } from "~/services/auth/mobile";
+import { buildNativeRedirectUri, requireAnyNativeRedirectUri } from "~/services/auth/native";
 import { createAssistantMagicLinkAuth } from "~/services/auth/sharedAuth";
 import { sendMagicLinkEmail } from "~/services/notifications";
 
@@ -12,16 +12,16 @@ export async function requestAssistantMagicLink({
   readonly email: string;
   readonly redirectUri?: string;
 }): Promise<void> {
-  const mobileRedirectUri = redirectUri
-    ? requireMobileRedirectUri(redirectUri, "/magic-link")
+  const nativeRedirectUri = redirectUri
+    ? requireAnyNativeRedirectUri(redirectUri, "/magic-link")
     : undefined;
   const magicLink = createAssistantMagicLinkAuth(context, async (delivery) => {
     if (!context.env.APP_BASE_URL) {
       return;
     }
 
-    const link = mobileRedirectUri
-      ? buildMobileRedirectUri(mobileRedirectUri, {
+    const link = nativeRedirectUri
+      ? buildNativeRedirectUri(nativeRedirectUri, {
           token: delivery.token,
         })
       : `${context.env.APP_BASE_URL}/auth/verify-magic-link?token=${encodeURIComponent(delivery.token)}`;

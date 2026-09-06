@@ -4,12 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 
 import { InvitationAcceptPage } from "./InvitationAcceptPage";
 
-vi.mock("~/state/stores/chatStore", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-client")>()),
   useChatStore: (selector: (state: { isAuthenticated: boolean }) => unknown) =>
     selector({ isAuthenticated: false }),
 }));
 
-vi.mock("~/hooks/useWorkspaces", () => ({
+vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-react")>()),
   useAcceptWorkspaceInvitation: () => ({
     data: undefined,
     error: null,

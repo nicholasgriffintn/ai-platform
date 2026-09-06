@@ -1,4 +1,4 @@
-import { THEME_BOOTSTRAP_SCRIPT } from "@ngriffin_uk/polychat-component-ui";
+import { THEME_BOOTSTRAP_SCRIPT } from "@ngriffin_uk/polychat-library-chat";
 import { Links, Meta, Scripts, ScrollRestoration } from "react-router";
 
 interface AppShellProps {

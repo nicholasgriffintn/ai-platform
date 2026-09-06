@@ -1,0 +1,67 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { UploadService } from "./upload-service";
+
+const mocks = vi.hoisted(() => ({
+  fetchApi: vi.fn(),
+  returnFetchedData: vi.fn(),
+}));
+
+vi.mock("../fetch-wrapper", () => ({
+  fetchApi: mocks.fetchApi,
+}));
+
+vi.mock("../http", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../http")>()),
+  returnFetchedData: mocks.returnFetchedData,
+}));
+
+describe("UploadService", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.fetchApi.mockResolvedValue(new Response(null, { status: 200 }));
+    mocks.returnFetchedData.mockResolvedValue({ sourceId: "source-1" });
+  });
+
+  it("uploads dictation as an authenticated file form", async () => {
+    const service = new UploadService(async () => ({ Authorization: "Bearer token" }));
+    const audio = new Blob(["audio"], { type: "audio/webm" });
+
+    mocks.returnFetchedData.mockResolvedValue({
+      response: { status: "success", content: "Hello" },
+    });
+
+    await expect(service.transcribeAudio(audio)).resolves.toEqual({
+      response: { status: "success", content: "Hello" },
+    });
+
+    const requestInit = mocks.fetchApi.mock.calls[0]?.[1];
+
+    expect(requestInit?.headers).toEqual({ Authorization: "Bearer token" });
+    expect(requestInit?.body).toBeInstanceOf(FormData);
+    if (!(requestInit?.body instanceof FormData)) {
+      throw new Error("Expected transcription body to be FormData");
+    }
+
+    expect(requestInit.body.get("audio")).toBeInstanceOf(File);
+  });
+
+  it("includes the project scope in file uploads", async () => {
+    const service = new UploadService(async () => ({ Authorization: "Bearer token" }));
+
+    await service.uploadFile(
+      new File(["image"], "screenshot.png", { type: "image/png" }),
+      "image",
+      { projectId: "project-1" },
+    );
+
+    const requestInit = mocks.fetchApi.mock.calls[0]?.[1];
+
+    expect(requestInit?.body).toBeInstanceOf(FormData);
+    if (!(requestInit?.body instanceof FormData)) {
+      throw new Error("Expected upload body to be FormData");
+    }
+
+    expect(requestInit.body.get("project_id")).toBe("project-1");
+  });
+});

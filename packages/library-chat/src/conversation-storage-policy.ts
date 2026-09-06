@@ -1,26 +1,38 @@
 import type { ChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 
-export type ChatMode = "remote" | "local" | "tool" | "agent";
 export type ChatRequestOptions = Partial<ChatCompletionRequestBody>;
 
 export interface ConversationStorageState {
-  chatMode: ChatMode;
   isAuthenticated: boolean;
   isPro: boolean;
-  localOnlyMode: boolean;
-  settingsLocalOnly: boolean;
+  temporaryChat: boolean;
+  temporaryChatsDefault: boolean;
+  /** The answer is being produced on this machine, so its content never reaches the service. */
+  runsOnDevice?: boolean;
+}
+
+export interface ConversationStorageMode {
+  isTemporary: boolean;
+  isProjectScoped: boolean;
+  shouldSyncRemote: boolean;
 }
 
 export function resolveConversationStorageMode(
   state: ConversationStorageState,
   requestOptions?: ChatRequestOptions,
-) {
-  const isProjectScoped = Boolean(requestOptions?.metadata?.project_id);
-  const isLocalOnly =
+): ConversationStorageMode {
+  const isProjectScoped = Boolean(requestOptions?.metadata?.project_id) && !state.runsOnDevice;
+
+  if (isProjectScoped) {
+    return { isTemporary: false, isProjectScoped, shouldSyncRemote: true };
+  }
+
+  const isTemporary =
+    Boolean(state.runsOnDevice) ||
     !state.isAuthenticated ||
     !state.isPro ||
-    (!isProjectScoped &&
-      (state.localOnlyMode || state.settingsLocalOnly || state.chatMode === "local"));
+    state.temporaryChat ||
+    state.temporaryChatsDefault;
 
-  return { isLocalOnly, isProjectScoped, shouldSyncRemote: !isLocalOnly };
+  return { isTemporary, isProjectScoped, shouldSyncRemote: !isTemporary };
 }

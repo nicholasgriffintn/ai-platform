@@ -7,6 +7,13 @@ import {
 import { ProviderGlyph } from "@ngriffin_uk/polychat-component-models";
 import { Badge, Button, ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
+  useAuthStatus,
+  usePublicCapabilityCatalogue,
+  buildComposerPrefillHref,
+  getPlacePaths,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
+import {
   listTeammateRolesByCategory,
   TEAMMATE_PERMISSIONS_SENTENCE,
   type ModelToolDefinition,
@@ -16,12 +23,6 @@ import {
   type Tool,
 } from "@ngriffin_uk/polychat-schemas";
 import { Bot, Sparkles, Terminal, Workflow, Wrench } from "lucide-react";
-
-import { useAuthStatus } from "~/hooks/useAuth";
-import { usePublicCapabilityCatalogue } from "~/hooks/useCapabilityCatalog";
-import { buildComposerPrefillHref } from "~/lib/composer-prefill";
-import { getPlacePaths } from "~/lib/navigation/places";
-import { useUIStore } from "~/state/stores/uiStore";
 
 const CATALOGUE_SECTIONS = [
   { id: "apps", label: "Apps" },
@@ -122,7 +123,7 @@ function AutomationList({ recipes }: { recipes: RecipeCatalogueSummary[] }) {
                 {recipe.integrations.map((integration) => (
                   <li
                     key={integration.id}
-                    className="bg-surface-elevated text-muted-foreground flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px]"
+                    className="flex items-center gap-1 rounded-md bg-surface-elevated px-1.5 py-0.5 text-[11px] text-muted-foreground"
                   >
                     <ProviderGlyph name={integration.providerId} size={12} />
                     {integration.name}
@@ -152,7 +153,7 @@ function ModelToolList({ modelTools }: { modelTools: ModelToolDefinition[] }) {
               {tool.requiresConfiguration && <Badge variant="warning">Needs setup</Badge>}
             </>
           }
-          footer={<p className="text-muted-foreground font-mono text-[11px]">{tool.command}</p>}
+          footer={<p className="font-mono text-[11px] text-muted-foreground">{tool.command}</p>}
         />
       ))}
     </ul>
@@ -208,13 +209,13 @@ function CuratedByYou() {
         {items.map((item) => (
           <li
             key={item.title}
-            className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4"
+            className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4"
           >
-            <span className="bg-selection text-active-work flex h-10 w-10 items-center justify-center rounded-lg">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-selection text-active-work">
               {item.icon}
             </span>
-            <span className="text-foreground text-sm font-medium">{item.title}</span>
-            <p className="text-muted-foreground text-xs leading-relaxed">{item.body}</p>
+            <span className="text-sm font-medium text-foreground">{item.title}</span>
+            <p className="text-xs leading-relaxed text-muted-foreground">{item.body}</p>
           </li>
         ))}
       </ul>
@@ -250,11 +251,11 @@ export function PublicAppsCatalogue() {
     <div className="mx-auto w-full max-w-5xl space-y-14 px-4 pb-16 sm:px-6">
       <header className="space-y-4 pt-2">
         <p className="polychat-eyebrow">The catalogue</p>
-        <h1 className="font-display text-foreground text-4xl font-medium tracking-tight text-balance md:text-5xl">
+        <h1 className="font-display text-4xl font-medium tracking-tight text-balance text-foreground md:text-5xl">
           Everything you can ask for on your first day
         </h1>
-        <p className="text-muted-foreground max-w-prose text-lg leading-relaxed">{lede}</p>
-        <p className="text-muted-foreground max-w-prose leading-relaxed">
+        <p className="max-w-prose text-lg leading-relaxed text-muted-foreground">{lede}</p>
+        <p className="max-w-prose leading-relaxed text-muted-foreground">
           Every app and teammate below opens a conversation with the ask already typed, so you can
           see what happens before you decide anything. {TEAMMATE_PERMISSIONS_SENTENCE}
         </p>
@@ -263,7 +264,7 @@ export function PublicAppsCatalogue() {
             <a
               key={section.id}
               href={`#${section.id}`}
-              className="bg-surface border-border text-foreground hover:border-border-strong rounded-full border px-3 py-1 text-xs font-medium no-underline transition-colors"
+              className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-foreground no-underline transition-colors hover:border-border-strong"
             >
               {section.label}
             </a>
@@ -299,7 +300,7 @@ export function PublicAppsCatalogue() {
             <div className="space-y-8">
               {roleGroups.map((group) => (
                 <div key={group.category} className="space-y-3">
-                  <h3 className="text-foreground text-sm font-medium">{group.category}</h3>
+                  <h3 className="text-sm font-medium text-foreground">{group.category}</h3>
                   <RoleList roles={group.roles} />
                 </div>
               ))}

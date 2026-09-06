@@ -13,9 +13,9 @@ export function NavbarSidebarToggle({
   onToggleSidebar,
 }: NavbarSidebarToggleProps) {
   return (
-    <div className="border-sidebar-border bg-sidebar sticky top-0 z-10 w-full border-b">
-      <div className="m-2 flex items-center justify-between max-w-full">
-        <div className="flex items-center min-w-0">
+    <div className="sticky top-0 z-10 w-full border-b border-sidebar-border bg-sidebar">
+      <div className="m-2 flex max-w-full items-center justify-between">
+        <div className="flex min-w-0 items-center">
           <div className="flex-shrink-0">
             <Button
               type="button"

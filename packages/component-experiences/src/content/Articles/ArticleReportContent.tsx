@@ -8,17 +8,17 @@ interface ArticleReportContentProps {
 
 export function ArticleReportContent({ report }: ArticleReportContentProps) {
   return (
-    <div className="border-border bg-surface rounded-lg border p-5 shadow-sm">
-      <h3 className="text-lg font-medium mb-4 flex items-center text-foreground">
+    <div className="rounded-lg border border-border bg-surface p-5 shadow-sm">
+      <h3 className="mb-4 flex items-center text-lg font-medium text-foreground">
         <FileText size={18} className="mr-2 text-active-work" />
         Report Content
       </h3>
       {report.content.report?.content ? (
-        <div className="prose dark:prose-invert border-border bg-surface-elevated max-w-none rounded-lg border p-5">
+        <div className="prose max-w-none rounded-lg border border-border bg-surface-elevated p-5 dark:prose-invert">
           <Markdown>{report.content.report.content}</Markdown>
         </div>
       ) : (
-        <p className="bg-surface-elevated text-muted-foreground rounded-lg p-4 italic">
+        <p className="rounded-lg bg-surface-elevated p-4 text-muted-foreground italic">
           No report content available.
         </p>
       )}

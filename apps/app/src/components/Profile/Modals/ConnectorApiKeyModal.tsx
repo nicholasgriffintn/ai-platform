@@ -1,8 +1,7 @@
 import { ConnectorApiKeyModal as ControlledConnectorApiKeyModal } from "@ngriffin_uk/polychat-component-account";
+import { useStoreRecipeConnectorApiKey } from "@ngriffin_uk/polychat-library-react";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { toast } from "sonner";
-
-import { useStoreRecipeConnectorApiKey } from "~/hooks/useConnectors";
 
 interface ConnectorApiKeyModalProps {
   open: boolean;

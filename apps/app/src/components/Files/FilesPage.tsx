@@ -1,9 +1,13 @@
 import { ButtonLink } from "@ngriffin_uk/polychat-component-ui";
+import {
+  type FilesTab,
+  getFilesTabPath,
+  parseFilesSubpath,
+} from "@ngriffin_uk/polychat-library-react";
 import { Plus } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
 import { PageShell } from "~/components/Core/PageShell";
-import { type FilesTab, getFilesTabPath, parseFilesSubpath } from "~/lib/files-route";
 
 import { MemoryLibrary } from "./MemoryLibrary";
 import { OutputsLibrary } from "./OutputsLibrary";
@@ -60,7 +64,7 @@ export function FilesPage({
             : undefined
         }
       />
-      <p className="text-muted-foreground mb-4 max-w-3xl text-sm">{activeTab.description}</p>
+      <p className="mb-4 max-w-3xl text-sm text-muted-foreground">{activeTab.description}</p>
       <nav aria-label="Files sections" className="mb-6">
         <ul className="flex flex-wrap gap-1">
           {TABS.map((candidate) => (

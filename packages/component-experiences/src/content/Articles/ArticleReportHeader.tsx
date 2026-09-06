@@ -9,8 +9,8 @@ export interface ArticleReportHeaderProps {
 
 export function ArticleReportHeader({ report, isShared, rerunControl }: ArticleReportHeaderProps) {
   return (
-    <div className="border-border bg-surface rounded-lg border p-5 shadow-sm">
-      <div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
+    <div className="rounded-lg border border-border bg-surface p-5 shadow-sm">
+      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
         <h2 className="text-xl font-semibold text-foreground">
           {report.content.title || report.title || `Report (ID: ${report.id})`}
         </h2>

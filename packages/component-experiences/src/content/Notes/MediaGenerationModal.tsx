@@ -114,7 +114,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
             value={mediaUrl}
             onChange={(e) => setMediaUrl(e.target.value)}
             placeholder="https:// or s3://"
-            className="w-full border rounded p-2 bg-transparent"
+            className="w-full rounded border bg-transparent p-2"
           />
 
           <div>
@@ -125,7 +125,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
               id="note-type"
               value={noteType}
               onChange={(e) => setNoteType(e.target.value as NoteType)}
-              className="mt-2 w-full bg-transparent border rounded p-2"
+              className="mt-2 w-full rounded border bg-transparent p-2"
             >
               {[
                 "general",
@@ -158,7 +158,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
             </label>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <span className="text-sm font-medium">Outputs</span>
               <div className="mt-2 grid grid-cols-1 gap-2">
@@ -194,7 +194,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                   <label
                     key={opt.id}
                     className={`flex items-center gap-2 text-sm ${
-                      opt.videoOnly && !useVideoAnalysis ? "opacity-50 cursor-not-allowed" : ""
+                      opt.videoOnly && !useVideoAnalysis ? "cursor-not-allowed opacity-50" : ""
                     }`}
                   >
                     <input
@@ -213,15 +213,15 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                     />
                     {opt.label}
                     {opt.videoOnly && (
-                      <span className="text-xs text-active-work font-medium">VIDEO</span>
+                      <span className="text-xs font-medium text-active-work">VIDEO</span>
                     )}
                   </label>
                 ))}
               </div>
             </div>
             <div>
-              <div className="border border-active-work/45 bg-active-work/12 rounded-lg p-4">
-                <h3 className="text-sm font-medium text-active-work mb-3">🎥 Video Intelligence</h3>
+              <div className="rounded-lg border border-active-work/45 bg-active-work/12 p-4">
+                <h3 className="mb-3 text-sm font-medium text-active-work">🎥 Video Intelligence</h3>
                 <div className="space-y-3">
                   <label htmlFor="video-analysis" className="flex items-center gap-2 text-sm">
                     <input
@@ -255,7 +255,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                   <label
                     htmlFor="video-search"
                     className={`flex items-center gap-2 text-sm ${
-                      !useVideoAnalysis ? "opacity-50 cursor-not-allowed" : ""
+                      !useVideoAnalysis ? "cursor-not-allowed opacity-50" : ""
                     }`}
                   >
                     <input id="video-search" type="checkbox" checked={false} disabled readOnly />

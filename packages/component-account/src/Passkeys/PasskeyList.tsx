@@ -30,12 +30,12 @@ export interface PasskeyListProps {
 
 function UnsupportedNotice() {
   return (
-    <Card className="bg-attention/12 border-attention/45 p-5">
+    <Card className="border-attention/45 bg-attention/12 p-5">
       <div className="flex">
-        <Shield className="h-5 w-5 text-attention mr-3 flex-shrink-0" />
+        <Shield className="mr-3 h-5 w-5 flex-shrink-0 text-attention" />
         <div>
-          <h3 className="text-attention font-medium">Passkeys not supported</h3>
-          <p className="text-attention text-sm mt-1">
+          <h3 className="font-medium text-attention">Passkeys not supported</h3>
+          <p className="mt-1 text-sm text-attention">
             Your browser doesn't support passkeys. Try using a newer browser like Chrome, Safari, or
             Edge.
           </p>
@@ -66,7 +66,7 @@ export function PasskeyList({
         <div className="space-y-4">
           {[1, 2].map((num) => (
             <Card key={`skeleton-${num}`} className="p-4">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <Skeleton className="h-5 w-32" />
                   <Skeleton className="h-4 w-48" />
@@ -86,16 +86,16 @@ export function PasskeyList({
               variant="primary"
               onClick={onRegister}
               disabled={isRegistering}
-              icon={<KeyRound className="h-4 w-4 mr-2" />}
+              icon={<KeyRound className="mr-2 h-4 w-4" />}
             >
               {isRegistering ? "Adding..." : "Add Passkey"}
             </Button>
           }
-          className="bg-transparent dark:bg-transparent p-6"
+          className="bg-transparent p-6 dark:bg-transparent"
         />
       ) : (
         <>
-          <p className="text-muted-foreground text-sm mb-4">
+          <p className="mb-4 text-sm text-muted-foreground">
             Passkeys allow you to sign in to your account using biometrics (like fingerprint or face
             recognition) or your device PIN instead of a password.
           </p>
@@ -109,7 +109,7 @@ export function PasskeyList({
                 badge={
                   passkey.backed_up ? (
                     <span className="inline-flex items-center rounded-full bg-success/12 px-2 py-0.5 text-xs text-success">
-                      <Shield className="h-3 w-3 mr-1" /> Synced
+                      <Shield className="mr-1 h-3 w-3" /> Synced
                     </span>
                   ) : undefined
                 }

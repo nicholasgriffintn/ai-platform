@@ -1,6 +1,6 @@
 # Architecture context
 
-Use this map to locate current responsibilities. Read the relevant [ADR](decisions.md) for rationale; provider lifecycle 0038 and governance 0040 remain accepted designs awaiting implementation. Project Workbench 0043 is implemented as a web presentation boundary, with deeper evidence views extending it incrementally.
+Use this map to locate current responsibilities. Read the relevant [ADR](decisions.md) for rationale; provider lifecycle 0038 and governance 0040 remain accepted designs awaiting implementation; the desktop shell 0076 and its runtime split 0077 are implemented but unreleased. Project Workbench 0043 is implemented as a web presentation boundary, with deeper evidence views extending it incrementally.
 
 ## Vocabulary
 
@@ -26,6 +26,8 @@ Use this map to locate current responsibilities. Read the relevant [ADR](decisio
 | Conversation organisation      | Per-user pin, unread and snooze state plus a single personal or project-scoped group per conversation; never access or execution authority.              |
 | Recipe schedule                | Repeatable recipe installation trigger whose occurrences run as tasks and produce attributable conversations.                                            |
 | Credit / reserve / reservation | Metered allowance / plan grace beyond the allowance / held estimate for work not yet settled.                                                            |
+| Model runtime                  | A stateless completion server such as Ollama or LM Studio. Polychat owns the conversation, prompt, tools and memory. Accepted design 0077.               |
+| Agent runtime                  | A self-hosted gateway owning its own sessions, memory and tool execution. Polychat is a surface onto it and approves each action. See ADR 0077.          |
 
 ## Deployables and shared packages
 
@@ -34,6 +36,7 @@ Use this map to locate current responsibilities. Read the relevant [ADR](decisio
 | `apps/app`             | React Router web/PWA. Controllers bind server queries, local storage, UI preferences and presentation.          |
 | `apps/api`             | Hono Worker: public auth, request validation, persistence, providers, queues, schedules and webhooks.           |
 | `apps/mobile/ios`      | Swift client with its own wire and stream consumers.                                                            |
+| `apps/desktop`         | Tauri shell: webview renderer plus a Rust core owning allowlisted egress, storage, secrets and sign-in.         |
 | `apps/sandbox-worker`  | Isolated coding execution, approvals, cancellation and task events.                                             |
 | `apps/training`        | Internal provider training/deployment execution and persisted job events.                                       |
 | `packages/schemas`     | Shared Zod contracts, stream events and pricing primitives.                                                     |

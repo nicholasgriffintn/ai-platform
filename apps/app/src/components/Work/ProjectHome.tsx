@@ -4,14 +4,17 @@ import {
   ProjectHomeActions,
   ProjectOverviewSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  useArchiveProject,
+  getProjectBasePath,
+  getProjectConversationPath,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useArchiveProject } from "~/hooks/useWorkspaces";
-import { getProjectBasePath, getProjectConversationPath } from "~/lib/conversation-route";
-import { isAuthenticationError } from "~/lib/errors";
 
 import { ProjectConversationStarter } from "./ProjectConversationStarter";
 import { ProjectHomeHeader } from "./ProjectHomeHeader";
@@ -49,7 +52,7 @@ export function ProjectHome({
 
   if (error || !project) {
     return (
-      <div role="alert" className="text-failure p-10 text-sm">
+      <div role="alert" className="p-10 text-sm text-failure">
         {error?.message ?? "Project not found"}
       </div>
     );
@@ -108,7 +111,7 @@ export function ProjectHome({
         }}
       >
         {archiveProject.error && (
-          <p role="alert" className="text-failure text-sm">
+          <p role="alert" className="text-sm text-failure">
             {archiveProject.error.message}
           </p>
         )}

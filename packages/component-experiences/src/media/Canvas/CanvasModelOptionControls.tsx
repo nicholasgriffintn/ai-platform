@@ -1,7 +1,7 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@ngriffin_uk/polychat-component-ui";
+import type { CanvasInputField } from "@ngriffin_uk/polychat-schemas/experiences";
 import { Info } from "lucide-react";
 
-import type { CanvasInputField } from "./types";
 import { formatCanvasFieldLabel } from "./utils";
 
 interface CanvasModelOptionControlsProps {
@@ -81,7 +81,7 @@ function FieldHelp({ field }: { field: CanvasInputField }) {
         <button
           type="button"
           aria-label={`Help for ${formatCanvasFieldLabel(field.name)}`}
-          className="text-muted-foreground hover:bg-selection hover:text-foreground focus:ring-ring inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition focus:ring-2 focus:outline-none"
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-selection hover:text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
         >
           <Info className="h-4 w-4" />
         </button>
@@ -98,7 +98,7 @@ function FieldLabel({ field, label }: { field: CanvasInputField; label: string }
     <div className="flex items-center justify-between gap-2">
       <label
         htmlFor={`canvas-option-${field.name}`}
-        className="text-foreground text-sm font-medium leading-5"
+        className="text-sm leading-5 font-medium text-foreground"
       >
         {label}
       </label>
@@ -118,10 +118,10 @@ export function CanvasModelOptionControls({
 
   return (
     <div className="space-y-2">
-      <label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+      <label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
         Options
       </label>
-      <div className="border-border bg-surface overflow-hidden rounded-xl border">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
         {fields.map((field) => {
           const fieldTypes = getFieldTypes(field);
           const label = formatCanvasFieldLabel(field.name);
@@ -131,14 +131,14 @@ export function CanvasModelOptionControls({
             return (
               <div
                 key={field.name}
-                className="border-border space-y-1.5 border-b px-3 py-2.5 last:border-b-0"
+                className="space-y-1.5 border-b border-border px-3 py-2.5 last:border-b-0"
               >
                 <FieldLabel field={field} label={label} />
                 <select
                   id={`canvas-option-${field.name}`}
                   value={typeof value === "string" ? value : ""}
                   onChange={(event) => onChange(field.name, event.target.value)}
-                  className="border-border bg-surface-elevated text-foreground focus:border-active-work h-9 w-full rounded-lg border px-2.5 text-sm outline-none transition"
+                  className="h-9 w-full rounded-lg border border-border bg-surface-elevated px-2.5 text-sm text-foreground transition outline-none focus:border-active-work"
                 >
                   <option value="">Default</option>
                   {field.enum
@@ -159,12 +159,12 @@ export function CanvasModelOptionControls({
             return (
               <div
                 key={field.name}
-                className="border-border flex items-center justify-between gap-3 border-b px-3 py-2.5 last:border-b-0"
+                className="flex items-center justify-between gap-3 border-b border-border px-3 py-2.5 last:border-b-0"
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <label
                     htmlFor={`canvas-option-${field.name}`}
-                    className="text-foreground text-sm font-medium leading-5"
+                    className="text-sm leading-5 font-medium text-foreground"
                   >
                     {label}
                   </label>
@@ -175,7 +175,7 @@ export function CanvasModelOptionControls({
                   type="checkbox"
                   checked={value === true}
                   onChange={(event) => onChange(field.name, event.target.checked)}
-                  className="border-border bg-surface-elevated text-active-work focus:ring-ring h-5 w-5 shrink-0 rounded"
+                  className="h-5 w-5 shrink-0 rounded border-border bg-surface-elevated text-active-work focus:ring-ring"
                 />
               </div>
             );
@@ -185,7 +185,7 @@ export function CanvasModelOptionControls({
             return (
               <div
                 key={field.name}
-                className="border-border space-y-1.5 border-b px-3 py-2.5 last:border-b-0"
+                className="space-y-1.5 border-b border-border px-3 py-2.5 last:border-b-0"
               >
                 <FieldLabel field={field} label={label} />
                 <textarea
@@ -193,7 +193,7 @@ export function CanvasModelOptionControls({
                   value={typeof value === "string" ? value : ""}
                   onChange={(event) => onChange(field.name, event.target.value)}
                   rows={3}
-                  className="border-border bg-surface-elevated text-foreground focus:border-active-work w-full rounded-lg border px-2.5 py-2 text-sm outline-none transition"
+                  className="w-full rounded-lg border border-border bg-surface-elevated px-2.5 py-2 text-sm text-foreground transition outline-none focus:border-active-work"
                   placeholder={getFieldPlaceholder(field)}
                 />
               </div>
@@ -203,7 +203,7 @@ export function CanvasModelOptionControls({
           return (
             <div
               key={field.name}
-              className="border-border space-y-1.5 border-b px-3 py-2.5 last:border-b-0"
+              className="space-y-1.5 border-b border-border px-3 py-2.5 last:border-b-0"
             >
               <FieldLabel field={field} label={label} />
               <input
@@ -215,7 +215,7 @@ export function CanvasModelOptionControls({
                 }
                 value={typeof value === "string" ? value : ""}
                 onChange={(event) => onChange(field.name, event.target.value)}
-                className="border-border bg-surface-elevated text-foreground focus:border-active-work h-9 w-full rounded-lg border px-2.5 text-sm outline-none transition"
+                className="h-9 w-full rounded-lg border border-border bg-surface-elevated px-2.5 text-sm text-foreground transition outline-none focus:border-active-work"
                 placeholder={getFieldPlaceholder(field)}
               />
             </div>

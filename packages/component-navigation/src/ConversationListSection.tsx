@@ -19,9 +19,9 @@ export function ConversationListSection({
   children,
 }: ConversationListSectionProps) {
   return (
-    <div className="border-border mt-2 border-t px-2 pt-4">
+    <div className="mt-2 border-t border-border px-2 pt-4">
       <div className="flex items-center justify-between px-2 pb-1.5">
-        <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
+        <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
           Recent
         </p>
         {controls}

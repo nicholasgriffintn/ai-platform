@@ -1,15 +1,14 @@
 import { InvitationAcceptView } from "@ngriffin_uk/polychat-component-workspaces";
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
-
-import { useAcceptWorkspaceInvitation } from "~/hooks/useWorkspaces";
-import { isAuthenticationError } from "~/lib/errors";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  useAcceptWorkspaceInvitation,
+  isAuthenticationError,
   clearWorkspaceInvitationToken,
   consumeWorkspaceInvitationToken,
-} from "~/lib/work/invitation-token";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useUIStore } from "~/state/stores/uiStore";
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 
 export function InvitationAcceptPage() {
   const [searchParams] = useSearchParams();

@@ -6,12 +6,14 @@ import {
   Label,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
+import {
+  useMemoryDocument,
+  useMemoryDocuments,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-library-react";
 import { BookOpenText, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-import { useMemoryDocument, useMemoryDocuments } from "~/hooks/useMemoryDocuments";
-import { getErrorMessage } from "~/lib/errors";
 
 export function MemoryLibrary({ projectId }: { projectId?: string }) {
   const { documents, isLoading, error, create, update, remove } = useMemoryDocuments(projectId);
@@ -48,7 +50,7 @@ export function MemoryLibrary({ projectId }: { projectId?: string }) {
 
   if (error) {
     return (
-      <p role="alert" className="text-failure text-sm">
+      <p role="alert" className="text-sm text-failure">
         {error.message}
       </p>
     );
@@ -112,7 +114,7 @@ export function MemoryLibrary({ projectId }: { projectId?: string }) {
             const isOpen = openName === document.name;
 
             return (
-              <li key={document.id} className="border-border rounded-lg border p-3">
+              <li key={document.id} className="rounded-lg border border-border p-3">
                 <div className="flex items-start justify-between gap-3">
                   <button
                     type="button"
@@ -124,7 +126,7 @@ export function MemoryLibrary({ projectId }: { projectId?: string }) {
                     }}
                   >
                     <span className="block truncate text-sm font-medium">{document.name}</span>
-                    <span className="text-muted-foreground block truncate text-xs">
+                    <span className="block truncate text-xs text-muted-foreground">
                       {document.excerpt || "Empty"} · revision {document.revision}
                     </span>
                   </button>

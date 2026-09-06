@@ -1,12 +1,14 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useKeyboardShortcuts,
+  APP_KEYBOARD_SHORTCUT_SECTIONS,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
 import React, { Suspense, lazy } from "react";
 
 import { ChatNavbar } from "~/components/Navbar";
 import { SearchDialog } from "~/components/Search/SearchDialog";
-import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
-import { APP_KEYBOARD_SHORTCUT_SECTIONS } from "~/lib/keyboard-shortcuts";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useUIStore } from "~/state/stores/uiStore";
 
 export const MAIN_CONTENT_ID = "main-content";
 
@@ -87,7 +89,7 @@ export function ProductShell({
       >
         <a
           href={`#${MAIN_CONTENT_ID}`}
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-md focus:bg-popover focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-popover-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[90] focus:rounded-md focus:bg-popover focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-popover-foreground focus:shadow-lg focus:ring-2 focus:ring-ring focus:outline-none"
         >
           Skip to main content
         </a>
@@ -99,7 +101,7 @@ export function ProductShell({
             </div>
           )}
 
-          <div className="flex h-full min-w-0 flex-1 flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pr-[env(safe-area-inset-right)]">
+          <div className="flex h-full min-w-0 flex-1 flex-col pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)]">
             {displayNavBar && (
               <ChatNavbar showSidebarToggle={showSidebarToggleInNavbar && !sidebarVisible} />
             )}

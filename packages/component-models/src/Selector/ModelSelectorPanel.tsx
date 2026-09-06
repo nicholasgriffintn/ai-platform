@@ -96,7 +96,7 @@ export function ModelSelectorPanel({
       tabIndex={-1}
       aria-modal="false"
       style={layout ? { left: `${layout.left}px`, width: `${layout.width}px` } : undefined}
-      className="border-border bg-surface-elevated absolute bottom-full left-0 z-50 mb-1 flex max-h-[70vh] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border shadow-[var(--polychat-elevated-shadow)] sm:max-h-[75vh] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
+      className="absolute bottom-full left-0 z-50 mb-1 flex max-h-[70vh] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border border-border bg-surface-elevated shadow-[var(--polychat-elevated-shadow)] sm:max-h-[75vh] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
       aria-label="Model selection dialog"
     >
       {selectedTab === "models" && (
@@ -108,11 +108,11 @@ export function ModelSelectorPanel({
                 placeholder="Search models..."
                 value={searchQuery}
                 onChange={(event) => onSearchQueryChange(event.target.value)}
-                className="border-border bg-surface text-foreground placeholder:text-muted-foreground focus:border-active-work w-full rounded-md border py-2 pr-3 pl-8 text-sm focus:outline-none"
+                className="w-full rounded-md border border-border bg-surface py-2 pr-3 pl-8 text-sm text-foreground placeholder:text-muted-foreground focus:border-active-work focus:outline-none"
                 aria-label="Search models"
               />
               <Search
-                className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden="true"
               />
             </div>
@@ -125,7 +125,7 @@ export function ModelSelectorPanel({
 
                   onCapabilityChange(nextCapability);
                 }}
-                className="border-border bg-surface text-foreground focus:border-active-work w-full appearance-none rounded-md border py-2 pr-3 pl-8 text-sm focus:outline-none"
+                className="w-full appearance-none rounded-md border border-border bg-surface py-2 pr-3 pl-8 text-sm text-foreground focus:border-active-work focus:outline-none"
                 aria-label="Filter by model type"
               >
                 <option value="">All model types</option>
@@ -136,7 +136,7 @@ export function ModelSelectorPanel({
                 ))}
               </select>
               <Filter
-                className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden="true"
               />
             </div>
@@ -155,7 +155,7 @@ export function ModelSelectorPanel({
 
           onTabChange(tab);
         }}
-        className="min-h-0 flex-1 px-2 pb-2 pt-2"
+        className="min-h-0 flex-1 px-2 pt-2 pb-2"
       >
         {showTiersTab && (
           <>
@@ -190,10 +190,10 @@ export function ModelSelectorPanel({
               <div>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-xs text-muted-foreground">Model Source:</div>
-                  <div className="bg-surface inline-flex items-center rounded-md p-0.5">
+                  <div className="inline-flex items-center rounded-md bg-surface p-0.5">
                     <button
                       type="button"
-                      className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
+                      className={`flex cursor-pointer items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
                         chatMode === "remote"
                           ? "bg-selection text-foreground"
                           : "text-muted-foreground hover:bg-selection/60 hover:text-foreground"
@@ -206,7 +206,7 @@ export function ModelSelectorPanel({
                     </button>
                     <button
                       type="button"
-                      className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
+                      className={`flex cursor-pointer items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
                         chatMode === "local"
                           ? "bg-selection text-foreground"
                           : "text-muted-foreground hover:bg-selection/60 hover:text-foreground"

@@ -20,7 +20,7 @@ export function TrainingSummaryBar({
 }: TrainingSummaryBarProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 flex-1">
+      <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
         <TrainingSummaryCard label="Models" value={modelCount} />
         <TrainingSummaryCard label="Jobs" value={jobCount} />
         <TrainingSummaryCard label="Deployments" value={deploymentCount} />

@@ -258,21 +258,21 @@ export function StrudelStudio({
               Start from a tried-and-tested groove. These load instantly—no AI request needed.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2 max-h-[340px] overflow-y-auto px-4">
+          <CardContent className="max-h-[340px] space-y-2 overflow-y-auto px-4">
             {examples.map((example) => (
               <button
                 key={example.id}
                 type="button"
                 onClick={() => onSelectExample(example)}
                 className={cn(
-                  "w-full rounded-lg border border-dashed border-border px-4 py-3 text-left transition hover:border-active-work/60 cursor-pointer",
+                  "w-full cursor-pointer rounded-lg border border-dashed border-border px-4 py-3 text-left transition hover:border-active-work/60",
                   selectedExampleId === example.id && "border-active-work/80 bg-active-work/5",
                 )}
               >
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="font-medium">{example.name}</p>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                    <p className="line-clamp-2 text-sm text-muted-foreground">
                       {example.description}
                     </p>
                   </div>

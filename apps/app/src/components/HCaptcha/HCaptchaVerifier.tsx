@@ -1,6 +1,5 @@
+import { EventCategory, useTrackEvent } from "@ngriffin_uk/polychat-library-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-
-import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 
 interface HCaptchaProps {
   siteKey: string;

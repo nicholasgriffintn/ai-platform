@@ -1,3 +1,4 @@
+import type { CapabilitySurface, EnabledCapability } from "@ngriffin_uk/polychat-library-react";
 import type {
   TeammateResponse,
   HireTeammateInput,
@@ -12,7 +13,6 @@ import type {
   AuthoredSkillActions,
 } from "~/components/Capabilities/CapabilityGroups";
 import { useTeammateCapabilityActions } from "~/components/Capabilities/useTeammateCapabilityActions";
-import type { CapabilitySurface, EnabledCapability } from "~/lib/capability-surfaces";
 
 interface PendingCapabilityDeletion {
   id: string;

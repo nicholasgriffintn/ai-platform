@@ -32,7 +32,7 @@ export function textLinkClassName({
 }: Pick<TextLinkProps, "tone" | "size" | "className"> = {}): string {
   return cn(
     "group inline-flex max-w-full items-center gap-1 border-b border-transparent font-medium no-underline transition-colors hover:!no-underline",
-    "focus-visible:outline-ring focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none",
+    "focus:outline-none focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     sizeStyles[size],
     toneStyles[tone],
     className,

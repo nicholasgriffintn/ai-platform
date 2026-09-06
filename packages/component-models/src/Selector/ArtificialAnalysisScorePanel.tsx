@@ -138,7 +138,7 @@ export function ArtificialAnalysisScorePanel({
             target="_blank"
             rel="noreferrer"
             aria-label={`${item.label} score ${formatScore(item.value)}`}
-            className="border-border bg-surface group rounded-md border px-2 py-1.5 transition-colors hover:border-border-strong hover:bg-selection/60"
+            className="group rounded-md border border-border bg-surface px-2 py-1.5 transition-colors hover:border-border-strong hover:bg-selection/60"
           >
             <div className="mb-1 flex items-center justify-between gap-2">
               <span className="text-[11px] font-medium text-muted-foreground">{item.label}</span>
@@ -152,7 +152,7 @@ export function ArtificialAnalysisScorePanel({
                 <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-muted-foreground" />
               </span>
             </div>
-            <div className="bg-selection h-1.5 overflow-hidden rounded-full">
+            <div className="h-1.5 overflow-hidden rounded-full bg-selection">
               <div
                 className="h-full rounded-full bg-success"
                 style={{ width: getScoreWidth(item) }}

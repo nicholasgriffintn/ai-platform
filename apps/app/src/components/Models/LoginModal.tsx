@@ -5,12 +5,17 @@ import {
   isWebAuthnSupported,
 } from "@ngriffin_uk/auth-react";
 import { AuthenticationStatusDialog, SignInDialog } from "@ngriffin_uk/polychat-component-account";
+import {
+  API_BASE_URL,
+  APPLE_SIGN_IN_CLIENT_ID,
+  APP_NAME,
+} from "@ngriffin_uk/polychat-library-client";
+import {
+  useTrackEvent,
+  useAuthStatus,
+  getLoginErrorMessage,
+} from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useMemo } from "react";
-
-import { API_BASE_URL, APPLE_SIGN_IN_CLIENT_ID, APP_NAME } from "~/constants";
-import { useTrackEvent } from "~/hooks/use-track-event";
-import { useAuthStatus } from "~/hooks/useAuth";
-import { getLoginErrorMessage } from "~/lib/auth/login-error";
 
 interface LoginModalProps {
   open: boolean;

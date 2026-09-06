@@ -1,0 +1,7 @@
+{
+  "app": {
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://assistant-assets.nickgriffin.uk; font-src 'self'; media-src 'self' blob: https://assistant-assets.nickgriffin.uk; connect-src 'self' ipc: http://ipc.localhost http://localhost:5183 ws://localhost:5183 http://localhost:8787 ws://localhost:8787; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    }
+  }
+}

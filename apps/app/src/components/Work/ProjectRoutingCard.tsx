@@ -1,7 +1,6 @@
 import { ProjectRoutingCard as ControlledProjectRoutingCard } from "@ngriffin_uk/polychat-component-workspaces";
+import { useUpdateProject } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectDetail } from "@ngriffin_uk/polychat-schemas";
-
-import { useUpdateProject } from "~/hooks/useWorkspaces";
 
 export function ProjectRoutingCard({
   project,

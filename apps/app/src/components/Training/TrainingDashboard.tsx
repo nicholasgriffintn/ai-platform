@@ -19,6 +19,18 @@ import {
   TabsTrigger,
   CardSkeleton,
 } from "@ngriffin_uk/polychat-component-ui";
+import {
+  useDeleteTrainingDeployment,
+  useDeployTrainingModel,
+  useTrainingDeploymentEvents,
+  useTrainingDeployments,
+  useTrainingJobEvents,
+  useTrainingJobs,
+  useTrainingModels,
+  useStartTrainingJob,
+  getErrorMessage,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import type {
   DeployTrainingModelRequest,
   TrainingDeployment,
@@ -31,17 +43,6 @@ import { Activity, Boxes, ListChecks, Server } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import {
-  useDeleteTrainingDeployment,
-  useDeployTrainingModel,
-  useTrainingDeploymentEvents,
-  useTrainingDeployments,
-  useTrainingJobEvents,
-  useTrainingJobs,
-  useTrainingModels,
-  useStartTrainingJob,
-} from "~/hooks/useTraining";
-import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
 const EMPTY_MODELS: TrainingModelDefinition[] = [];
 const EMPTY_JOBS: TrainingJob[] = [];

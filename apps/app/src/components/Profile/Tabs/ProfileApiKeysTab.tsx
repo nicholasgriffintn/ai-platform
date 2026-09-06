@@ -1,12 +1,10 @@
 import { ApiKeysPanel, type GeneratedApiKey } from "@ngriffin_uk/polychat-component-account";
+import { useApiKeys, isAuthenticationError, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { CopyButton } from "~/components/Content/CopyButton";
 import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
-import { useApiKeys } from "~/hooks/useApiKeys";
-import { isAuthenticationError } from "~/lib/errors";
-import { useUIStore } from "~/state/stores/uiStore";
 
 export function ProfileApiKeysTab() {
   const {

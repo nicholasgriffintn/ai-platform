@@ -1,4 +1,23 @@
 import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilities";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useProjectCapabilityCatalog,
+  useRecipeInstallations,
+  useDeleteSkill,
+  usePersonalSkills,
+  useToolConfigurations,
+  useAddProjectCapability,
+  useRemoveProjectCapability,
+  type CapabilitySurface,
+  type EnabledCapability,
+  getConversationPath,
+  getProjectSurface,
+  PERSONAL_SURFACE,
+  filterProjectCapabilities,
+  getProjectCapabilityCategories,
+  getProjectCapabilityKind,
+  groupProjectCapabilities,
+} from "@ngriffin_uk/polychat-library-react";
 import {
   isRecipeConfigured,
   type ModelToolConfiguration,
@@ -14,25 +33,6 @@ import { useMemo, useState } from "react";
 
 import { useRecipeActionRequest } from "~/components/Apps/Recipes/useRecipeActionRequest";
 import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
-import { useProjectCapabilityCatalog } from "~/hooks/useProjectCapabilityCatalog";
-import { useRecipeInstallations } from "~/hooks/useRecipes";
-import { useDeleteSkill, usePersonalSkills } from "~/hooks/useSkills";
-import { useToolConfigurations } from "~/hooks/useToolConfigurations";
-import { useAddProjectCapability, useRemoveProjectCapability } from "~/hooks/useWorkspaces";
-import {
-  type CapabilitySurface,
-  type EnabledCapability,
-  getConversationPath,
-  getProjectSurface,
-  PERSONAL_SURFACE,
-} from "~/lib/capability-surfaces";
-import {
-  filterProjectCapabilities,
-  getProjectCapabilityCategories,
-  getProjectCapabilityKind,
-  groupProjectCapabilities,
-} from "~/lib/project-capability-catalog";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export interface PersonalSkillControls {
   byId: Map<string, SkillAvailability>;

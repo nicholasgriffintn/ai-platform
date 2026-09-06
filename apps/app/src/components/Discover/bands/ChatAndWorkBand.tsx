@@ -16,18 +16,18 @@ function ProductCard({
   points: string[];
 }) {
   return (
-    <div className="bg-surface border-border flex flex-col gap-4 rounded-xl border p-5">
+    <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5">
       <div className="flex items-center gap-2">
-        <span className="bg-selection text-active-work flex h-8 w-8 items-center justify-center rounded-lg">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-selection text-active-work">
           {icon}
         </span>
-        <span className="font-display text-foreground text-xl font-medium">{name}</span>
+        <span className="font-display text-xl font-medium text-foreground">{name}</span>
       </div>
-      <p className="text-muted-foreground text-sm leading-relaxed">{summary}</p>
-      <ul className="text-foreground space-y-2 text-sm">
+      <p className="text-sm leading-relaxed text-muted-foreground">{summary}</p>
+      <ul className="space-y-2 text-sm text-foreground">
         {points.map((point) => (
           <li key={point} className="flex gap-2">
-            <span aria-hidden className="bg-active-work mt-2 h-1.5 w-1.5 shrink-0 rounded-full" />
+            <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-active-work" />
             <span>{point}</span>
           </li>
         ))}

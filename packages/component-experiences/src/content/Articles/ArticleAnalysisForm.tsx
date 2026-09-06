@@ -79,7 +79,7 @@ export function ArticleAnalysisForm({ session, onReportGenerated }: ArticleAnaly
             const isBusy = session.processingArticles || session.reportGenerating || isExtracting;
 
             return (
-              <div key={article.id} className="border-border bg-surface rounded-lg border p-4">
+              <div key={article.id} className="rounded-lg border border-border bg-surface p-4">
                 <div className="mb-3 flex items-start justify-between">
                   <h3 className="text-lg font-semibold text-foreground">Article {index + 1}</h3>
                   {session.articles.length > 1 && (

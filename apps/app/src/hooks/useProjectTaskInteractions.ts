@@ -1,3 +1,10 @@
+import type { ThreadModeConfig } from "@ngriffin_uk/polychat-component-conversation";
+import { CHATS_QUERY_KEY } from "@ngriffin_uk/polychat-library-client";
+import {
+  getErrorMessage,
+  useProjectTask,
+  useProjectTasks,
+} from "@ngriffin_uk/polychat-library-react";
 import {
   answerUserQuestionsSchema,
   resolveProjectTaskToolApprovalSchema,
@@ -5,12 +12,6 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
-
-import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
-import { CHATS_QUERY_KEY } from "~/constants";
-import { getErrorMessage } from "~/lib/errors";
-
-import { useProjectTask, useProjectTasks } from "./useProjectTasks";
 
 export function useProjectTaskInteractions(projectId: string, currentConversationId?: string) {
   const queryClient = useQueryClient();
@@ -31,7 +32,7 @@ export function useProjectTaskInteractions(projectId: string, currentConversatio
   );
 
   const handleTaskQuestionInteraction = useCallback<
-    NonNullable<ConversationThreadModeConfig["onToolInteraction"]>
+    NonNullable<ThreadModeConfig["onToolInteraction"]>
   >(
     async (toolName, action, data) => {
       if (action !== "submitPrompt") {

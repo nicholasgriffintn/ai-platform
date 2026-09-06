@@ -62,11 +62,11 @@ export function ConversationGroupsDialog({
         </DialogHeader>
 
         {isLoading || !availableGroups ? (
-          <p className="text-muted-foreground py-6 text-sm">Loading groups…</p>
+          <p className="py-6 text-sm text-muted-foreground">Loading groups…</p>
         ) : (
           <div className="space-y-3">
             {availableGroups.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No groups yet.</p>
+              <p className="text-sm text-muted-foreground">No groups yet.</p>
             ) : (
               <ul className="space-y-1">
                 {availableGroups.map((group) => {
@@ -75,7 +75,7 @@ export function ConversationGroupsDialog({
                   return (
                     <li
                       key={group.id}
-                      className="hover:bg-muted flex items-center gap-2 rounded p-2"
+                      className="flex items-center gap-2 rounded p-2 hover:bg-muted"
                     >
                       <Checkbox
                         checked={isCurrent}

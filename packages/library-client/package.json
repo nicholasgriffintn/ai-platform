@@ -40,11 +40,23 @@
     "test:package": "pnpm build",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@ngriffin_uk/polychat-library-chat": "workspace:^",
+    "@ngriffin_uk/polychat-library-realtime": "workspace:^",
+    "@ngriffin_uk/polychat-library-surface": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^"
+  },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
     "@types/node": "catalog:",
+    "jsdom": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
+    "vite": "8.2.2",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "zustand": "*"
   }
 }

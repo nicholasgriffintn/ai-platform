@@ -1,17 +1,11 @@
 import { Badge, Button } from "@ngriffin_uk/polychat-component-ui";
 import type { SandboxServiceAction, SandboxServiceStatus } from "@ngriffin_uk/polychat-schemas";
+import type { ProjectWorkbenchServiceItem } from "@ngriffin_uk/polychat-utility-react";
 import { CirclePlay, RefreshCw, Server, Square } from "lucide-react";
 
 import { ProjectWorkbenchSection } from "./ProjectWorkbenchSection";
 
-export interface ProjectWorkbenchServiceItem {
-  name: string;
-  status: SandboxServiceStatus;
-  expectedPort?: number;
-  restartCount: number;
-  updatedAt?: string;
-  error?: string;
-}
+export type { ProjectWorkbenchServiceItem } from "@ngriffin_uk/polychat-utility-react";
 
 export interface ProjectWorkbenchServicesProps {
   services: ProjectWorkbenchServiceItem[];

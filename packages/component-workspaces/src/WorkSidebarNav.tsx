@@ -99,7 +99,7 @@ export function WorkSidebarNav({
       {workspace && (
         <div className="space-y-2">
           <div className="flex items-center gap-2 px-2">
-            <p className="text-sidebar-foreground min-w-0 flex-1 truncate text-xs font-bold uppercase tracking-wider">
+            <p className="min-w-0 flex-1 truncate text-xs font-bold tracking-wider text-sidebar-foreground uppercase">
               {workspace.name}
             </p>
           </div>
@@ -119,7 +119,7 @@ export function WorkSidebarNav({
 
       {workspace && workspace.projects.length > 0 && (
         <div>
-          <p className="text-muted-foreground px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em]">
+          <p className="px-3 pb-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
             Projects
           </p>
           <ul className="space-y-1">
@@ -189,7 +189,7 @@ export function WorkSidebarNav({
 
       {workspaceShortcuts?.length ? (
         <div>
-          <p className="text-muted-foreground px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em]">
+          <p className="px-3 pb-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
             Your workspaces
           </p>
           <ul className="space-y-1">

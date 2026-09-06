@@ -1,9 +1,7 @@
 import { Button, ButtonLink } from "@ngriffin_uk/polychat-component-ui";
+import { useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { KeyRound, Lock, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
-
-import { useAuthStatus } from "~/hooks/useAuth";
-import { useUIStore } from "~/state/stores/uiStore";
 
 import { DiscoverBand } from "../DiscoverBand";
 
@@ -54,14 +52,14 @@ export function KeysBand() {
         {POINTS.map((point) => (
           <li
             key={point.title}
-            className="bg-surface border-border flex gap-3 rounded-xl border p-4"
+            className="flex gap-3 rounded-xl border border-border bg-surface p-4"
           >
-            <span className="bg-selection text-active-work flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-selection text-active-work">
               {point.icon}
             </span>
             <span className="min-w-0">
-              <span className="text-foreground block text-sm font-medium">{point.title}</span>
-              <span className="text-muted-foreground mt-1 block text-xs leading-relaxed">
+              <span className="block text-sm font-medium text-foreground">{point.title}</span>
+              <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
                 {point.body}
               </span>
             </span>

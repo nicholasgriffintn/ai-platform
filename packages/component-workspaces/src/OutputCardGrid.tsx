@@ -19,7 +19,7 @@ export function OutputCardGrid({ outputs }: OutputCardGridProps) {
       {outputs.map((item) => (
         <Link key={item.id} href={item.href} className="group no-underline hover:!no-underline">
           <Card className="h-full gap-3 p-5 shadow-none hover:border-border-strong">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               {item.capabilityId}
             </p>
             <h2 className="font-semibold text-foreground group-hover:underline">{item.title}</h2>

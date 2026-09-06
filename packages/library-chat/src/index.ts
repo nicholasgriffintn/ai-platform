@@ -1,3 +1,11 @@
+export * from "./device-models";
+export * from "./desktop-execution";
+export * from "./conversation-list-filters";
+export * from "./theme";
+export * from "./local-chat-scope";
+export * from "./local-chat-export";
+export * from "./local-conversation-store";
+export * from "./chat-settings";
 export type { AttachmentData } from "./attachments";
 export { COMPACT_CONVERSATION_COMMAND, isCompactConversationCommand } from "./compaction-command";
 export {
@@ -10,6 +18,13 @@ export {
 } from "./goal-command";
 export { getGoalMessageMarker, type GoalMessageMarker } from "./message-goal-status";
 export { resolveConversationStorageMode } from "./conversation-storage-policy";
+export {
+  createFakeDesktopBackend,
+  type DesktopBackend,
+  type DesktopRun,
+  type FakeDesktopBackend,
+  type FakeDesktopBackendSeed,
+} from "./desktop-backend";
 export {
   compareConversationsBySort,
   conversationActivityCutoff,

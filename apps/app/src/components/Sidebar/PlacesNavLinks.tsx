@@ -1,7 +1,6 @@
 import { SidebarNavLink } from "@ngriffin_uk/polychat-component-navigation";
+import { getPlacePaths, type ProductMode } from "@ngriffin_uk/polychat-library-react";
 import { BellRing, FolderOpen, UsersRound } from "lucide-react";
-
-import { getPlacePaths, type ProductMode } from "~/lib/navigation/places";
 
 export function PlacesNavLinks({
   mode = "chat",

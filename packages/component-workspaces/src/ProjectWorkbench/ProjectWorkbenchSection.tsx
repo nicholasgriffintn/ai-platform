@@ -20,7 +20,7 @@ export function ProjectWorkbenchSection({
   return (
     <section aria-label={label ?? title} className={cn("space-y-2", className)}>
       <div className="flex items-center gap-2">
-        <Icon className="text-creative size-4" aria-hidden="true" />
+        <Icon className="size-4 text-creative" aria-hidden="true" />
         <h3 className="text-sm font-medium">{title}</h3>
       </div>
       {children}

@@ -89,7 +89,7 @@ export function SingleFileUploader({
         onDragOver={handleDragOver}
         onDrop={handleDropWithNotification}
         data-dragging={isDragging || undefined}
-        className="border-input hover:bg-accent/50 data-[dragging=true]:bg-accent/50 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 flex min-h-40 flex-col items-center justify-center rounded-xl border border-dashed p-4 transition-colors has-disabled:pointer-events-none has-disabled:opacity-50 has-[input:focus]:ring-[3px]"
+        className="flex min-h-40 flex-col items-center justify-center rounded-xl border border-dashed border-input p-4 transition-colors hover:bg-accent/50 has-disabled:pointer-events-none has-disabled:opacity-50 has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
       >
         <input
           {...getInputProps()}
@@ -101,20 +101,20 @@ export function SingleFileUploader({
 
         <div className="flex flex-col items-center justify-center text-center">
           <div
-            className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
+            className="mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
             aria-hidden="true"
           >
             <UploadIcon className="size-4 opacity-60" />
           </div>
           <p className="mb-1.5 text-sm font-medium">{label}</p>
-          <p className="text-muted-foreground text-xs">
+          <p className="text-xs text-muted-foreground">
             {hint ?? `Drag & drop or click to browse (max. ${formatBytes(maxSize)})`}
           </p>
         </div>
       </button>
 
       {errors.length > 0 && (
-        <div className="text-destructive flex items-center gap-1 text-xs" role="alert">
+        <div className="flex items-center gap-1 text-xs text-destructive" role="alert">
           <AlertCircleIcon className="size-3 shrink-0" />
           <span>{errors[0]}</span>
         </div>
@@ -136,7 +136,7 @@ export function SingleFileUploader({
             <Button
               size="icon"
               variant="ghost"
-              className="text-muted-foreground/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
+              className="-me-2 size-8 text-muted-foreground/80 hover:bg-transparent hover:text-foreground"
               onClick={() => handleRemoveFile(files[0]?.id)}
               aria-label="Remove file"
             >

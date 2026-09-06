@@ -12,6 +12,7 @@ import {
   SearchInput,
   Skeleton,
 } from "@ngriffin_uk/polychat-component-ui";
+import { filterModelsByQuery, type ModelProviderGroup } from "@ngriffin_uk/polychat-library-react";
 import { getModelDisplayName, type ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { formatCompactCount } from "@ngriffin_uk/polychat-utility-core";
 import { useDeferredValue, useMemo, useState } from "react";
@@ -19,7 +20,6 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { MODELS_SECTIONS } from "~/components/Models/models-sections";
 import { ModelsSection } from "~/components/Models/ModelsSection";
 import { ProviderMark } from "~/components/Models/ProviderMark";
-import { filterModelsByQuery, type ModelProviderGroup } from "~/lib/model-catalogue";
 
 const PROVIDER_PREVIEW_LIMIT = 9;
 
@@ -29,14 +29,14 @@ function ModelCard({ model }: { model: ModelConfigItem }) {
   const contextWindow = model.contextWindow ?? model.context_length;
 
   return (
-    <li className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4">
+    <li className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4">
       <div className="flex items-start gap-3">
-        <span className="text-foreground flex h-6 w-6 shrink-0 items-center justify-center">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center text-foreground">
           <ModelIcon url={model.avatarUrl} modelName={name} provider={model.provider} size={20} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-foreground text-sm font-medium break-words">{name}</span>
+            <span className="text-sm font-medium break-words text-foreground">{name}</span>
             {model.isFeatured && <Badge variant="info">Featured</Badge>}
             {model.isFree && <Badge variant="success">Free</Badge>}
             {model.status === "beta" && <Badge variant="warning">Beta</Badge>}
@@ -44,14 +44,14 @@ function ModelCard({ model }: { model: ModelConfigItem }) {
             {model.openWeights && <Badge variant="outline">Open weights</Badge>}
           </div>
           {model.description && (
-            <p className="text-muted-foreground mt-1 line-clamp-3 text-xs leading-relaxed">
+            <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-muted-foreground">
               {model.description}
             </p>
           )}
         </div>
       </div>
       {(inputs.length > 0 || contextWindow) && (
-        <dl className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px]">
+        <dl className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-muted-foreground">
           {inputs.length > 0 && (
             <div className="flex gap-1.5">
               <dt className="uppercase">In</dt>
@@ -100,7 +100,7 @@ function ProviderModelsDialog({
     <Dialog open={open} onOpenChange={onOpenChange} width="min(72rem, 94vw)">
       <DialogContent className="flex max-h-[85vh] flex-col gap-4 overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="font-display flex items-center gap-2 text-2xl font-medium tracking-tight">
+          <DialogTitle className="flex items-center gap-2 font-display text-2xl font-medium tracking-tight">
             <ProviderMark provider={group.provider} size={20} />
             {group.label}
           </DialogTitle>
@@ -144,12 +144,12 @@ function ProviderGroup({ group }: { group: ModelProviderGroup }) {
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="bg-surface border-border text-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-foreground">
             <ProviderMark provider={group.provider} size={18} />
           </span>
           <h3
             id={headingId}
-            className="font-display text-foreground truncate text-xl font-medium tracking-tight"
+            className="truncate font-display text-xl font-medium tracking-tight text-foreground"
           >
             {group.label}
           </h3>
@@ -162,7 +162,7 @@ function ProviderGroup({ group }: { group: ModelProviderGroup }) {
       {hasOverflow && (
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-muted-foreground text-xs">
+            <span className="text-xs text-muted-foreground">
               Showing the first {PROVIDER_PREVIEW_LIMIT} of {group.models.length}.
             </span>
             <Button
@@ -195,7 +195,7 @@ function ProviderFilter({
       "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
       isActive
         ? "border-active-work bg-selection text-foreground"
-        : "bg-surface border-border text-foreground hover:border-border-strong",
+        : "border-border bg-surface text-foreground hover:border-border-strong",
     );
 
   return (
@@ -221,7 +221,7 @@ function ProviderFilter({
           >
             <ProviderMark provider={group.provider} size={12} />
             {group.label}
-            <span className="text-muted-foreground font-mono">{group.models.length}</span>
+            <span className="font-mono text-muted-foreground">{group.models.length}</span>
           </button>
         );
       })}

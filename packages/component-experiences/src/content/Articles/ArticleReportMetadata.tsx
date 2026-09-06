@@ -11,18 +11,18 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
   const [isMetadataExpanded, setIsMetadataExpanded] = useState(false);
 
   return (
-    <div className="border-border bg-surface overflow-hidden rounded-lg border shadow-sm">
+    <div className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
       <button
         type="button"
         onClick={() => setIsMetadataExpanded(!isMetadataExpanded)}
-        className="w-full flex items-center justify-between p-5 text-left hover:bg-surface-elevated transition-colors"
+        className="flex w-full items-center justify-between p-5 text-left transition-colors hover:bg-surface-elevated"
       >
-        <h3 className="text-lg font-medium flex items-center text-foreground">
+        <h3 className="flex items-center text-lg font-medium text-foreground">
           <Info size={18} className="mr-2 text-active-work" />
           Report Metadata
         </h3>
         <div className="flex items-center">
-          <span className="text-sm text-muted-foreground mr-2">
+          <span className="mr-2 text-sm text-muted-foreground">
             {isMetadataExpanded ? "Hide" : "Show"} details
           </span>
           <ArrowDown
@@ -36,10 +36,10 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
       </button>
 
       {isMetadataExpanded && (
-        <div className="p-5 border-t border-border animate-in slide-in-from-top-10 duration-300">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border-border bg-surface-elevated rounded-lg border p-4">
-              <h4 className="text-sm font-medium mb-3 flex items-center text-foreground">
+        <div className="animate-in border-t border-border p-5 duration-300 slide-in-from-top-10">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="rounded-lg border border-border bg-surface-elevated p-4">
+              <h4 className="mb-3 flex items-center text-sm font-medium text-foreground">
                 <Info size={14} className="mr-2 text-active-work" />
                 Basic Information
               </h4>
@@ -61,25 +61,25 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
               </div>
             </div>
 
-            <div className="border-border bg-surface-elevated rounded-lg border p-4">
-              <h4 className="text-sm font-medium mb-3 flex items-center text-foreground">
+            <div className="rounded-lg border border-border bg-surface-elevated p-4">
+              <h4 className="mb-3 flex items-center text-sm font-medium text-foreground">
                 <ExternalLink size={14} className="mr-2 text-active-work" />
                 Citation Information
               </h4>
               {report.content.report?.citations?.length ? (
                 <div className="space-y-2">
-                  <span className="text-sm font-medium text-foreground block mb-1">Citations:</span>
-                  <ul className="text-sm list-none pl-0 space-y-1.5">
+                  <span className="mb-1 block text-sm font-medium text-foreground">Citations:</span>
+                  <ul className="list-none space-y-1.5 pl-0 text-sm">
                     {report.content.report.citations.map((citation: string, i: number) => (
                       <li
                         key={`citation-${report.id}-${i}`}
-                        className="border-border bg-surface rounded border p-2 break-all"
+                        className="rounded border border-border bg-surface p-2 break-all"
                       >
                         <a
                           href={citation}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-active-work hover:text-active-work inline-flex items-center transition-colors group"
+                          className="group inline-flex items-center text-active-work transition-colors hover:text-active-work"
                         >
                           <span className="truncate group-hover:underline">{citation}</span>
                           <ExternalLink size={10} className="ml-1 flex-shrink-0" />
@@ -94,15 +94,15 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 
               {report.content.report?.verifiedQuotes && (
                 <div className="mt-4">
-                  <span className="text-sm font-medium text-foreground block mb-2">
+                  <span className="mb-2 block text-sm font-medium text-foreground">
                     Quotes Verification:
                   </span>
-                  <div className="border-border bg-surface space-y-3 rounded border p-3 text-sm">
+                  <div className="space-y-3 rounded border border-border bg-surface p-3 text-sm">
                     <div className="flex items-center">
-                      <span className="font-medium mr-2 text-foreground">Status:</span>
+                      <span className="mr-2 font-medium text-foreground">Status:</span>
                       <span
                         className={cn(
-                          "px-2 py-0.5 rounded-full text-xs font-medium",
+                          "rounded-full px-2 py-0.5 text-xs font-medium",
                           report.content.report.verifiedQuotes.verified
                             ? "bg-success/12 text-success"
                             : "bg-failure/12 text-failure",
@@ -115,14 +115,14 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
                     </div>
 
                     {report.content.report.verifiedQuotes.missingQuotes.length > 0 && (
-                      <div className="pt-2 border-t border-border">
+                      <div className="border-t border-border pt-2">
                         <span className="font-medium text-foreground">Missing Quotes:</span>
-                        <ul className="list-disc pl-5 mt-2 space-y-1.5">
+                        <ul className="mt-2 list-disc space-y-1.5 pl-5">
                           {report.content.report.verifiedQuotes.missingQuotes.map(
                             (quote: string, i: number) => (
                               <li
                                 key={`missing-quote-${report.id}-${i}`}
-                                className="border-border bg-surface-elevated text-foreground rounded border p-2"
+                                className="rounded border border-border bg-surface-elevated p-2 text-foreground"
                               >
                                 "{quote}"
                               </li>
@@ -144,9 +144,9 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 
 function MetadataItem({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start py-1.5 border-b border-border last:border-0">
-      <span className="font-medium text-foreground w-32 flex-shrink-0 mb-1 sm:mb-0">{label}:</span>
-      <span className="text-muted-foreground break-words min-w-0">{children}</span>
+    <div className="flex flex-col border-b border-border py-1.5 last:border-0 sm:flex-row sm:items-start">
+      <span className="mb-1 w-32 flex-shrink-0 font-medium text-foreground sm:mb-0">{label}:</span>
+      <span className="min-w-0 break-words text-muted-foreground">{children}</span>
     </div>
   );
 }

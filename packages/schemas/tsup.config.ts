@@ -4,6 +4,7 @@ export default defineConfig({
   entry: [
     "src/index.ts",
     "src/analytics.ts",
+    "src/experiences.ts",
     "src/chat-stream.ts",
     "src/compaction-status.ts",
     "src/goals.ts",
@@ -12,6 +13,7 @@ export default defineConfig({
     "src/provider-messages.ts",
     "src/sandbox-constants.ts",
     "src/tool-ids.ts",
+    "src/user-profile.ts",
   ],
   format: ["cjs", "esm"],
   dts: true,

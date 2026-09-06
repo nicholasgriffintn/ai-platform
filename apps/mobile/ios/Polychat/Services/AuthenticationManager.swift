@@ -269,7 +269,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
         error = nil
 
         do {
-            if let token = try await apiClient?.exchangeMobileAuthCode(code) {
+            if let token = try await apiClient?.exchangeNativeAuthCode(code) {
                 try applyToken(token)
                 _ = await refreshUser()
             }

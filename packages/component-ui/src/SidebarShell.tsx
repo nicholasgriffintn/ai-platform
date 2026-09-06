@@ -51,22 +51,22 @@ export function SidebarShell({
         aria-label={isDrawer ? label : undefined}
         tabIndex={isDrawer ? -1 : undefined}
         className={cn(
-          "fixed md:relative z-50 h-full w-64",
+          "fixed z-50 h-full w-64 md:relative",
           "bg-sidebar text-sidebar-foreground",
           "polychat-motion-panel transition-transform",
-          "border-sidebar-border border-r",
-          visible ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:border-0",
+          "border-r border-sidebar-border",
+          visible ? "translate-x-0" : "-translate-x-full md:w-0 md:translate-x-0 md:border-0",
           className,
         )}
       >
         {visible && (
           <div className={cn("flex h-full w-full flex-col", contentClassName)}>
-            {header && <div className="bg-sidebar sticky top-0 z-10 w-full">{header}</div>}
+            {header && <div className="sticky top-0 z-10 w-full bg-sidebar">{header}</div>}
 
-            <div className="flex-1 overflow-y-auto overflow-x-hidden">{children}</div>
+            <div className="flex-1 overflow-x-hidden overflow-y-auto">{children}</div>
 
             {footer && (
-              <div className="border-sidebar-border bg-sidebar sticky bottom-0 overflow-visible border-t border-r">
+              <div className="sticky bottom-0 overflow-visible border-t border-r border-sidebar-border bg-sidebar">
                 {footer}
               </div>
             )}

@@ -5,6 +5,7 @@ import {
   ReplicateModelFilters,
 } from "@ngriffin_uk/polychat-component-experiences/media";
 import { Button, EmptyState, CardSkeleton } from "@ngriffin_uk/polychat-component-ui";
+import { useReplicateModels, isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
 import type { CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
 import { Sparkles } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -12,8 +13,6 @@ import { useNavigate } from "react-router";
 
 import { AppCard } from "~/components/Apps/AppCard";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useReplicateModels } from "~/hooks/useReplicate";
-import { isAuthenticationError } from "~/lib/errors";
 
 const DEFAULT_CATEGORY = "Creative Tools";
 
@@ -103,8 +102,8 @@ export function ReplicateModels({ basePath, projectId }: { basePath: string; pro
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto max-w-7xl px-4">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <CardSkeleton count={6} showHeader showFooter />
         </div>
       </div>

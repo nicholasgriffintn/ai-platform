@@ -10,13 +10,17 @@ import {
   FormInput,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
+import { API_BASE_URL } from "@ngriffin_uk/polychat-library-client";
+import {
+  useSourceCollections,
+  useSourceMutations,
+  useSources,
+} from "@ngriffin_uk/polychat-library-react";
 import type { SourceKind } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { MemorySynthesisPanel } from "~/components/Profile/MemorySynthesisPanel";
-import { API_BASE_URL } from "~/constants";
-import { useSourceCollections, useSourceMutations, useSources } from "~/hooks/useSources";
 
 const sourceKinds: Array<{ value: "" | SourceKind; label: string }> = [
   { value: "", label: "All sources" },

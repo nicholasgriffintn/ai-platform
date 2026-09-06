@@ -1,6 +1,7 @@
 import { ConversationSurfaceLayout } from "@ngriffin_uk/polychat-component-conversation";
 import { CanvasGenerationsView } from "@ngriffin_uk/polychat-component-experiences/media";
 import { PageTitle } from "@ngriffin_uk/polychat-component-ui";
+import { useComposerPrefill } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 
 import { useCanvasStudio } from "~/components/Canvas/useCanvasStudio";
@@ -8,7 +9,6 @@ import { ChatSidebar } from "~/components/ChatSidebar";
 import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
-import { useComposerPrefill } from "~/hooks/useComposerPrefill";
 
 import { HomeConversationThread } from "./HomeConversationThread";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig";

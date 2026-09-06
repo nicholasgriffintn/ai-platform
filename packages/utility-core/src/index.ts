@@ -1,4 +1,6 @@
 export * from "./arrays.js";
+export * from "./async-queue.js";
+export * from "./collections.js";
 export * from "./colors.js";
 export * from "./dates.js";
 export * from "./errors.js";
@@ -6,6 +8,7 @@ export * from "./ids.js";
 export * from "./markdown.js";
 export * from "./numbers.js";
 export * from "./objects.js";
+export * from "./private-hosts.js";
 export * from "./strings.js";
 export * from "./urls.js";
 export * from "./user-ids.js";

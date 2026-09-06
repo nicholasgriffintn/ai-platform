@@ -36,7 +36,7 @@ function SummaryGroup({
 
   return (
     <div>
-      <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+      <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
         {title}
       </h2>
       <ul className="mt-2 space-y-2">
@@ -48,7 +48,7 @@ function SummaryGroup({
                 {formatCredits(row.credits)} credits · {formatUsdFromMicros(row.cost_micros)}
               </span>
             </div>
-            <div className="bg-selection mt-1 h-1 rounded-full">
+            <div className="mt-1 h-1 rounded-full bg-selection">
               <div
                 className="h-full rounded-full bg-creative transition-[width] duration-500 ease-out"
                 style={{ width: `${getBoundedPercentage(row.credits, totalCredits)}%` }}

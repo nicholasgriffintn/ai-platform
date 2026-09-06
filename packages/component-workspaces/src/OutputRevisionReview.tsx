@@ -135,7 +135,7 @@ function RevisionColumn({
     <article className="min-w-0 rounded-md border border-border bg-surface p-3">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm font-medium">{title}</p>
-      <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-words rounded bg-surface-elevated p-2 text-xs">
+      <pre className="mt-2 max-h-80 overflow-auto rounded bg-surface-elevated p-2 text-xs break-words whitespace-pre-wrap">
         {content}
       </pre>
     </article>

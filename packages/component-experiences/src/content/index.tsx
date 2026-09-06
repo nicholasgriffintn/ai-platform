@@ -48,7 +48,7 @@ export * from "./Recordings/ProcessingStep";
 export * from "./Recordings/ProcessStep";
 export * from "./Recordings/ProgressStepper";
 export * from "./Recordings/TranscriptViewer";
-export * from "./Recordings/types";
+export * from "@ngriffin_uk/polychat-schemas/experiences";
 export * from "./Recordings/workflow";
 export * from "./Articles/ArticleSourceArticleList";
 export * from "./Research/ResearchReport";

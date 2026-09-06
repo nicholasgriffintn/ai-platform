@@ -1,5 +1,15 @@
 import type { RecipeEventTriggerProvider } from "@ngriffin_uk/polychat-component-capabilities";
 import {
+  useRecipeConnectors,
+  useConnectorSetup,
+  ASSISTANT_RECIPES_QUERY_KEY,
+  useDeleteRecipeInstallation,
+  useInstallAssistantRecipe,
+  useInvokeAssistantRecipe,
+  useUpdateRecipeInstallation,
+  createRecipeConversationActionPath,
+} from "@ngriffin_uk/polychat-library-react";
+import {
   type AssistantRecipe,
   buildRecipeConfigurationFromFields,
   type ConfigurationFormValues,
@@ -15,17 +25,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
-
-import { useRecipeConnectors } from "~/hooks/useConnectors";
-import { useConnectorSetup } from "~/hooks/useConnectorSetup";
-import {
-  ASSISTANT_RECIPES_QUERY_KEY,
-  useDeleteRecipeInstallation,
-  useInstallAssistantRecipe,
-  useInvokeAssistantRecipe,
-  useUpdateRecipeInstallation,
-} from "~/hooks/useRecipes";
-import { createRecipeConversationActionPath } from "~/lib/assistant-action-launch";
 
 import { getRecipeEventTriggerProviders } from "./recipeEventTriggerProviders";
 

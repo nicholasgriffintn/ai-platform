@@ -7,9 +7,9 @@ export interface TrainingSummaryCardProps {
 
 export function TrainingSummaryCard({ label, value }: TrainingSummaryCardProps) {
   return (
-    <Card className="shadow-none py-4">
+    <Card className="py-4 shadow-none">
       <CardContent className="space-y-1">
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
           {label}
         </div>
         <div className="text-2xl font-semibold text-foreground">{value}</div>

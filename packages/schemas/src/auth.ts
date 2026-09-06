@@ -1,8 +1,9 @@
 import z from "zod/v4";
 
 export const githubLoginSchema = z.object({
-  platform: z.enum(["web", "mobile"]).optional(),
+  platform: z.enum(["web", "mobile", "desktop"]).optional(),
   redirect_uri: z.string().optional(),
+  client_state: z.string().min(8).max(128).optional(),
 });
 
 export const githubCallbackSchema = z.object({
@@ -10,7 +11,7 @@ export const githubCallbackSchema = z.object({
   state: z.string().min(1),
 });
 
-export const mobileAuthExchangeSchema = z.object({
+export const nativeAuthExchangeSchema = z.object({
   code: z.string().min(1),
 });
 

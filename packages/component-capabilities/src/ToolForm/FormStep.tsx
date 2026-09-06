@@ -11,10 +11,10 @@ interface FormStepProps {
 
 export const FormStep = ({ step, formData, onChange, errors }: FormStepProps) => {
   return (
-    <div className="bg-surface-elevated border border-border p-6 rounded-lg shadow-sm">
-      <h2 className="text-xl font-semibold mb-2 text-foreground">{step.title}</h2>
+    <div className="rounded-lg border border-border bg-surface-elevated p-6 shadow-sm">
+      <h2 className="mb-2 text-xl font-semibold text-foreground">{step.title}</h2>
 
-      {step.description && <p className="text-muted-foreground mb-6">{step.description}</p>}
+      {step.description && <p className="mb-6 text-muted-foreground">{step.description}</p>}
 
       <div className="space-y-4">
         {step.fields.map((field) => (

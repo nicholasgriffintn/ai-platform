@@ -44,10 +44,10 @@ function PredictionCard({ basePath, prediction }: PredictionCardProps) {
       href={`${basePath}/predictions/${prediction.id}`}
       className="group block no-underline hover:!no-underline"
     >
-      <Card className="p-6 hover:shadow-lg transition-all">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-foreground group-hover:underline mb-1 break-words">
+      <Card className="p-6 transition-all hover:shadow-lg">
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h3 className="mb-1 text-lg font-semibold break-words text-foreground group-hover:underline">
               {String(prediction.input?.prompt || prediction.modelName || prediction.modelId || "")}
             </h3>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -61,7 +61,7 @@ function PredictionCard({ basePath, prediction }: PredictionCardProps) {
             </div>
           </div>
           <span
-            className={`px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap shrink-0 ${
+            className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap ${
               statusColors[prediction.status ?? ""]
             }`}
           >
@@ -71,7 +71,7 @@ function PredictionCard({ basePath, prediction }: PredictionCardProps) {
 
         {prediction.status === "processing" && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-border-strong" />
+            <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-border-strong" />
             <span>Processing...</span>
           </div>
         )}

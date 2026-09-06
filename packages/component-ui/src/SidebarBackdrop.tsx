@@ -20,7 +20,7 @@ export function SidebarBackdrop({
     <button
       type="button"
       className={cn(
-        "bg-[var(--polychat-overlay)] fixed inset-0 z-20 cursor-default md:hidden",
+        "fixed inset-0 z-20 cursor-default bg-[var(--polychat-overlay)] md:hidden",
         className,
       )}
       onClick={onClose}

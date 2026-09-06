@@ -1,7 +1,5 @@
-import { ButtonLink } from "@ngriffin_uk/polychat-component-ui";
-
-import { PetPreview } from "~/components/Core/PetPreview";
-import { PET_FLOCK } from "~/lib/pet/lore";
+import { ButtonLink, PetPreview } from "@ngriffin_uk/polychat-component-ui";
+import { PET_FLOCK } from "@ngriffin_uk/polychat-library-react";
 
 import { DiscoverBand } from "../DiscoverBand";
 
@@ -22,7 +20,7 @@ export function PetsBand() {
         {PET_FLOCK.members.map((member) => (
           <li
             key={member.slug}
-            className="bg-surface border-border flex flex-col items-center gap-2 rounded-xl border p-4 text-center"
+            className="flex flex-col items-center gap-2 rounded-xl border border-border bg-surface p-4 text-center"
           >
             <span className="flex h-20 w-20 items-end justify-center overflow-hidden">
               <PetPreview
@@ -32,8 +30,8 @@ export function PetsBand() {
                 deferLoading
               />
             </span>
-            <span className="text-foreground text-sm font-medium">{member.name}</span>
-            <span className="text-muted-foreground text-xs">{member.tagline}</span>
+            <span className="text-sm font-medium text-foreground">{member.name}</span>
+            <span className="text-xs text-muted-foreground">{member.tagline}</span>
           </li>
         ))}
       </ul>

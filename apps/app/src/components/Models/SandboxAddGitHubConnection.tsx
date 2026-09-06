@@ -2,9 +2,11 @@ import {
   SandboxConnectionDialog,
   type SandboxConnectionFormState,
 } from "@ngriffin_uk/polychat-component-account";
+import {
+  useSandboxInstallConfig,
+  useUpsertSandboxConnection,
+} from "@ngriffin_uk/polychat-library-react";
 import { toast } from "sonner";
-
-import { useSandboxInstallConfig, useUpsertSandboxConnection } from "~/hooks/useSandbox";
 
 interface SandboxAddGitHubConnectionProps {
   isOpen: boolean;

@@ -7,7 +7,7 @@ import { session } from "~/lib/database/schema";
 import { BaseRepository } from "./BaseRepository";
 import { toAuthSessionRecord, type StoredSessionRecord } from "./sessionRecord";
 
-interface ConsumeMobileAuthCodeOptions {
+interface ConsumeNativeAuthCodeOptions {
   jti: string;
   sessionId: string;
   userId: number;
@@ -165,12 +165,12 @@ export class SessionRepository extends BaseRepository implements SessionStore {
     await this.executeRun(insert.query, insert.values);
   }
 
-  public async consumeMobileAuthCode({
+  public async consumeNativeAuthCode({
     jti,
     sessionId,
     userId,
     expiresAt,
-  }: ConsumeMobileAuthCodeOptions): Promise<boolean> {
+  }: ConsumeNativeAuthCodeOptions): Promise<boolean> {
     await this.executeRun(
       `DELETE FROM mobile_auth_exchange_code
        WHERE datetime(expires_at) <= datetime('now')`,

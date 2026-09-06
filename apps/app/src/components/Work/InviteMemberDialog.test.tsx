@@ -5,7 +5,8 @@ import { InviteMemberDialog } from "./InviteMemberDialog";
 
 const reset = vi.fn();
 
-vi.mock("~/hooks/useWorkspaces", () => ({
+vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-react")>()),
   useInviteWorkspaceMember: () => ({
     data: { inviteUrl: "https://polychat.test/work/invitations?token=secret" },
     error: null,

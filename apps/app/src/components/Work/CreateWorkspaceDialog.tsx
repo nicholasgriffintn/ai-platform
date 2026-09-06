@@ -1,7 +1,6 @@
 import { CreateWorkspaceDialog as ControlledCreateWorkspaceDialog } from "@ngriffin_uk/polychat-component-workspaces";
+import { useCreateWorkspace } from "@ngriffin_uk/polychat-library-react";
 import { useNavigate } from "react-router";
-
-import { useCreateWorkspace } from "~/hooks/useWorkspaces";
 
 export function CreateWorkspaceDialog({
   open,

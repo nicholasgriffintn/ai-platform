@@ -53,7 +53,7 @@ describe("buildSystemPrompt", () => {
 
   it("prefers an explicit request prompt over generating one", async () => {
     const result = await buildSystemPrompt(
-      baseParams({ options: { ...baseParams().options, system_prompt: "explicit" } }) as any,
+      baseParams({ options: { ...baseParams().options, system_prompt: "explicit" } }),
     );
 
     expect(result).toBe("explicit");
@@ -64,7 +64,7 @@ describe("buildSystemPrompt", () => {
     const result = await buildSystemPrompt(
       baseParams({
         sanitisedMessages: [{ role: "system", content: "from history" }] as Message[],
-      }) as any,
+      }),
     );
 
     expect(result).toBe("from history");
@@ -72,7 +72,7 @@ describe("buildSystemPrompt", () => {
   });
 
   it("generates a prompt when neither is supplied", async () => {
-    const result = await buildSystemPrompt(baseParams() as any);
+    const result = await buildSystemPrompt(baseParams());
 
     expect(result).toBe("generated prompt");
     expect(mocks.getSystemPrompt).toHaveBeenCalledTimes(1);
@@ -83,7 +83,7 @@ describe("buildSystemPrompt", () => {
       baseParams({
         options: { ...baseParams().options, mode: "no_system" },
         projectContext: { instructions: "be terse" } as ProjectChatContext,
-      }) as any,
+      }),
     );
 
     expect(result).toBe("Project instructions:\nbe terse");
@@ -95,7 +95,7 @@ describe("buildSystemPrompt", () => {
       baseParams({
         projectContext: { instructions: "be terse" } as ProjectChatContext,
         activeGoal: { status: "active" } as any,
-      }) as any,
+      }),
     );
 
     expect(result).toBe("generated prompt\n\nProject instructions:\nbe terse\n\nGOAL CONTRACT");
@@ -103,7 +103,7 @@ describe("buildSystemPrompt", () => {
 
   it("ignores a goal that is no longer active", async () => {
     const result = await buildSystemPrompt(
-      baseParams({ activeGoal: { status: "completed" } as any }) as any,
+      baseParams({ activeGoal: { status: "completed" } as any }),
     );
 
     expect(result).toBe("generated prompt");
@@ -113,7 +113,7 @@ describe("buildSystemPrompt", () => {
   it("appends personal memory context when memory is enabled", async () => {
     const repositories = createRepositories("remembered things");
     const result = await buildSystemPrompt(
-      baseParams({ repositories, memoryPolicy: { enabled: true } as any }) as any,
+      baseParams({ repositories, memoryPolicy: { enabled: true } as any }),
     );
 
     expect(result).toContain("generated prompt");
@@ -128,7 +128,7 @@ describe("buildSystemPrompt", () => {
         repositories,
         memoryPolicy: { enabled: true } as any,
         memoryScope: { type: "project", projectId: "p1" },
-      }) as any,
+      }),
     );
 
     expect(repositories.memorySyntheses.getActiveSynthesis).not.toHaveBeenCalled();
@@ -142,7 +142,7 @@ describe("buildSystemPrompt", () => {
     );
 
     const result = await buildSystemPrompt(
-      baseParams({ repositories, memoryPolicy: { enabled: true } as any }) as any,
+      baseParams({ repositories, memoryPolicy: { enabled: true } as any }),
     );
 
     expect(result).toBe("generated prompt");

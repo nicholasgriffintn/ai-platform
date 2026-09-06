@@ -272,12 +272,12 @@ export function ModelsList({
   };
 
   return (
-    <div className="border-border bg-surface flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
-      <div className="flex min-h-0 flex-1 flex-col max-h-[320px] sm:max-h-[420px] sm:min-h-[320px] sm:flex-row">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-surface">
+      <div className="flex max-h-[320px] min-h-0 flex-1 flex-col sm:max-h-[420px] sm:min-h-[320px] sm:flex-row">
         {!isSearchActive && (
-          <div className="border-b border-border/70 sm:flex sm:w-16 sm:flex-col sm:border-b-0 sm:border-r md:w-20">
+          <div className="border-b border-border/70 sm:flex sm:w-16 sm:flex-col sm:border-r sm:border-b-0 md:w-20">
             <div className="overflow-x-auto px-2 py-2 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:px-2">
-              <div className="flex gap-2 sm:space-y-1 sm:block">
+              <div className="flex gap-2 sm:block sm:space-y-1">
                 {providerEntries.map((providerEntry) => {
                   const isFeaturedProvider = providerEntry.key === FEATURED_PROVIDER_KEY;
                   const isSelected = selectedProvider === providerEntry.key;
@@ -312,7 +312,7 @@ export function ModelsList({
                       <span className="line-clamp-1 min-w-0 flex-1 text-left sm:w-full sm:flex-none sm:text-center">
                         {isFeaturedProvider ? "Featured" : providerEntry.label.split(" ")[0]}
                       </span>
-                      <span className="bg-selection text-foreground rounded-full px-1.5 py-0.5 text-[10px]">
+                      <span className="rounded-full bg-selection px-1.5 py-0.5 text-[10px] text-foreground">
                         {providerEntry.models.length}
                       </span>
                     </button>
@@ -326,7 +326,7 @@ export function ModelsList({
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div className="flex-shrink-0 border-b border-border/70 px-3 py-2">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
-              <h4 className="text-sm font-semibold text-foreground whitespace-normal break-words">
+              <h4 className="text-sm font-semibold break-words whitespace-normal text-foreground">
                 {isSearchActive ? "Search results" : selectedProviderEntry?.label || "Models"}
               </h4>
               <span className="flex-shrink-0 text-xs text-muted-foreground">
@@ -336,7 +336,7 @@ export function ModelsList({
           </div>
           <div
             ref={modelListRef}
-            className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2"
+            className="flex-1 overflow-x-hidden overflow-y-auto px-3 py-2"
             onMouseLeave={() => onInfoHoverEnd?.()}
           >
             <div role="group" aria-label="Available models">
@@ -354,7 +354,7 @@ export function ModelsList({
                     return (
                       <div key={providerEntry.key} className="space-y-1">
                         <div className="flex items-center justify-between gap-2 px-1 py-1">
-                          <h5 className="text-xs font-semibold uppercase text-muted-foreground">
+                          <h5 className="text-xs font-semibold text-muted-foreground uppercase">
                             {providerEntry.label}
                           </h5>
                           <span className="text-xs text-muted-foreground">

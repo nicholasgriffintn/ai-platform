@@ -44,7 +44,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
 
     return (
       <div className="space-y-1">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           {label && <Label htmlFor={controlId}>{label}</Label>}
           {displayValue && <span className="text-sm font-medium text-foreground">{value}</span>}
         </div>
@@ -58,7 +58,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
             step={step}
             value={value}
             className={cn(
-              "w-full appearance-none bg-transparent [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-border-strong [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-surface [&::-webkit-slider-thumb]:shadow-md",
+              "w-full appearance-none bg-transparent [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-border-strong [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-surface [&::-webkit-slider-thumb]:shadow-md",
               className,
             )}
             aria-valuemin={min}
@@ -69,7 +69,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
             {...props}
           />
           <div
-            className="absolute top-1/2 left-0 h-[2px] -translate-y-1/2 bg-active-work pointer-events-none"
+            className="pointer-events-none absolute top-1/2 left-0 h-[2px] -translate-y-1/2 bg-active-work"
             style={{
               width: `${percentage}%`,
             }}
@@ -77,14 +77,14 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
           />
         </div>
         {markers && (
-          <div className="flex justify-between text-xs text-muted-foreground mt-1">
+          <div className="mt-1 flex justify-between text-xs text-muted-foreground">
             {markers.map((marker) => (
               <span key={`marker-${marker}`}>{marker}</span>
             ))}
           </div>
         )}
         {description && (
-          <p id={descriptionId} className="text-xs text-muted-foreground mt-1">
+          <p id={descriptionId} className="mt-1 text-xs text-muted-foreground">
             {description}
           </p>
         )}

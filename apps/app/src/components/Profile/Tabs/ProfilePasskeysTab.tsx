@@ -1,10 +1,9 @@
 import { PasskeyList } from "@ngriffin_uk/polychat-component-account";
+import { useTrackEvent, usePasskeys } from "@ngriffin_uk/polychat-library-react";
 import { KeyRound } from "lucide-react";
 import { useEffect } from "react";
 
 import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
-import { useTrackEvent } from "~/hooks/use-track-event";
-import { usePasskeys } from "~/hooks/usePasskeys";
 
 export function ProfilePasskeysTab() {
   const { trackEvent } = useTrackEvent();
@@ -46,7 +45,7 @@ export function ProfilePasskeysTab() {
                 label: isRegisteringPasskey ? "Adding..." : "Add Passkey",
                 onClick: handleAddPasskey,
                 disabled: isRegisteringPasskey,
-                icon: <KeyRound className="h-4 w-4 mr-2" />,
+                icon: <KeyRound className="mr-2 h-4 w-4" />,
               },
             ]
           : []

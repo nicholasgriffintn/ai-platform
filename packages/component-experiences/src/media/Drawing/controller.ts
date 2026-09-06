@@ -1,6 +1,5 @@
+import type { Drawing } from "@ngriffin_uk/polychat-schemas/experiences";
 import type { RefObject } from "react";
-
-import type { Drawing } from "./types";
 
 /**
  * The contract the host controller fulfils for the drawing views. Canvas element access stays a

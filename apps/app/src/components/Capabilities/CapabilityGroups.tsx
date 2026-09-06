@@ -4,6 +4,13 @@ import {
   CapabilityGroupSection,
   type AuthoredCapabilityCardState,
 } from "@ngriffin_uk/polychat-component-capabilities";
+import {
+  type CapabilitySurface,
+  type EnabledCapability,
+  getCapabilityOpenPath,
+  getProjectCapabilityKind,
+  type ProjectCapabilityKindGroup,
+} from "@ngriffin_uk/polychat-library-react";
 import { parseModelToolConfiguration } from "@ngriffin_uk/polychat-schemas";
 import type {
   AssistantActionItem,
@@ -18,13 +25,6 @@ import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useNavigate } from "react-router";
 
 import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
-import {
-  type CapabilitySurface,
-  type EnabledCapability,
-  getCapabilityOpenPath,
-} from "~/lib/capability-surfaces";
-import type { ProjectCapabilityKindGroup } from "~/lib/project-capability-catalog";
-import { getProjectCapabilityKind } from "~/lib/project-capability-catalog";
 
 import { RecipeCapabilityCard } from "./RecipeCapabilityCard";
 import type { PersonalSkillControls } from "./useCapabilityLibraryController";

@@ -342,6 +342,7 @@ test.describe("Private sandbox previews", () => {
         expect(browserLog).not.toContain(sensitiveValue);
       }
     }
+
     expect(browserLog).not.toMatch(/forwardToken|ghs_|sk_|sandboxId|container(?:Id|Address)/i);
   });
 

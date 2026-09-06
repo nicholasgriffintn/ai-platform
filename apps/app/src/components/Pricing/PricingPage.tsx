@@ -1,13 +1,15 @@
 import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import {
+  useTrackEvent,
+  useAuthStatus,
+  useCreateCheckoutSession,
+  usePlans,
+  formatPlanPrice,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
 import type { Plan } from "@ngriffin_uk/polychat-schemas";
 import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
 import { Check, Loader2 } from "lucide-react";
-
-import { useTrackEvent } from "~/hooks/use-track-event";
-import { useAuthStatus } from "~/hooks/useAuth";
-import { useCreateCheckoutSession, usePlans } from "~/hooks/useBilling";
-import { formatPlanPrice } from "~/lib/plan-format";
-import { useUIStore } from "~/state/stores/uiStore";
 
 import { CreditLadder } from "./CreditLadder";
 
@@ -166,7 +168,7 @@ export function PricingPage() {
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
       <header className="text-center">
         <p className="polychat-eyebrow">Plans</p>
-        <h1 className="font-display text-foreground mt-2 text-4xl font-medium tracking-tight text-balance md:text-5xl">
+        <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-balance text-foreground md:text-5xl">
           Pricing
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-muted-foreground">

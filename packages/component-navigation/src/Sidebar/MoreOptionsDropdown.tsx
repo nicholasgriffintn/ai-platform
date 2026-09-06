@@ -24,7 +24,7 @@ export function MoreOptionsDropdown({
       position={position}
       menuClassName="w-48 rounded-md"
       trigger={
-        <div className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex cursor-pointer items-center justify-center rounded-md p-2">
+        <div className="flex cursor-pointer items-center justify-center rounded-md p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
           <MoreVertical size={20} />
           <span className="sr-only">More options</span>
         </div>
@@ -60,7 +60,7 @@ export function MoreOptionsDropdown({
         </a>
       </DropdownMenuItem>
 
-      <div className="bg-border my-1 h-px" />
+      <div className="my-1 h-px bg-border" />
 
       <DropdownMenuItem icon={<Keyboard size={16} />} onClick={onShowKeyboardShortcuts}>
         Keyboard Shortcuts
