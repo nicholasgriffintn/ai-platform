@@ -3,7 +3,7 @@ import type {
   AgentRuntimeSession,
   DesktopEndpoint,
 } from "@ngriffin_uk/polychat-schemas";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { ConnectedDesktopBackend } from "./desktop-backend";
 
@@ -36,6 +36,9 @@ export function AgentSessions({
   const [approval, setApproval] = useState<AgentApprovalRequest | null>(null);
   const [isRunning, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const cancelRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => cancelRef.current?.(), []);
 
   useEffect(() => {
     let active = true;
@@ -78,6 +81,7 @@ export function AgentSessions({
         prompt,
       });
 
+      cancelRef.current = run.cancel;
       let answer = "";
 
       for await (const event of run.events) {
@@ -97,6 +101,7 @@ export function AgentSessions({
     } catch (cause) {
       setError(String(cause));
     } finally {
+      cancelRef.current = null;
       setRunning(false);
     }
   }, [backend, endpoint.id, prompt, selected]);

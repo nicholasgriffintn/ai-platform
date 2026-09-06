@@ -5,6 +5,7 @@ mod chat;
 mod diagnostics;
 mod discovery;
 mod egress;
+mod lines;
 mod link;
 mod runs;
 mod secrets;
@@ -18,6 +19,7 @@ use diagnostics::Diagnostics;
 use discovery::DiscoveredModel;
 use egress::{DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport};
 use futures_util::StreamExt;
+use lines::LineReader;
 use runs::{RunRegistry, StreamEvent};
 use rusqlite::Connection;
 use serde::Serialize;
@@ -29,7 +31,9 @@ use url::Url;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(3);
 const DISCOVERY_TIMEOUT: Duration = Duration::from_secs(10);
-const RUN_TIMEOUT: Duration = Duration::from_secs(600);
+const RUN_IDLE_TIMEOUT: Duration = Duration::from_secs(120);
+const CANCEL_POLL: Duration = Duration::from_millis(200);
+const MAX_JSON_BODY: usize = 8 * 1024 * 1024;
 const BUILT_IN_APPROVED_AT: &str = "1970-01-01T00:00:00Z";
 const SESSION_SECRET: &str = "session-token";
 const HOSTED_ENDPOINT_ID: &str = "polychat-cloud";
@@ -129,16 +133,16 @@ async fn stream_lines(
     emit: &impl Fn(StreamEvent),
 ) -> Result<&'static str, String> {
     let mut stream = response.bytes_stream();
-    let mut buffer = String::new();
+    let mut reader = LineReader::default();
 
-    while let Some(piece) = stream.next().await {
-        if registry.is_cancelled(run_id) {
+    loop {
+        let Some(piece) = next_piece(&mut stream, run_id, registry).await else {
             return Ok("cancelled");
-        }
+        };
 
         let piece = match piece {
-            Ok(piece) => piece,
-            Err(cause) => {
+            Some(Ok(piece)) => piece,
+            Some(Err(cause)) => {
                 emit(StreamEvent::Failed {
                     run_id: run_id.to_string(),
                     failure: "unknown".to_string(),
@@ -147,13 +151,22 @@ async fn stream_lines(
 
                 return Ok("interrupted");
             }
+            None => return Ok("complete"),
         };
 
-        buffer.push_str(&String::from_utf8_lossy(&piece));
+        reader.push(&piece);
 
-        while let Some(index) = buffer.find('\n') {
-            let line: String = buffer.drain(..=index).collect();
+        if reader.overflowed() {
+            emit(StreamEvent::Failed {
+                run_id: run_id.to_string(),
+                failure: "unknown".to_string(),
+                message: "The runtime sent a single line too large to read.".to_string(),
+            });
 
+            return Ok("interrupted");
+        }
+
+        while let Some(line) = reader.next_line() {
             match parse(&line) {
                 StreamChunk::Text(delta) => emit(StreamEvent::Text {
                     run_id: run_id.to_string(),
@@ -164,13 +177,67 @@ async fn stream_lines(
             }
         }
     }
+}
 
-    Ok("complete")
+type PieceResult = Option<Result<bytes::Bytes, reqwest::Error>>;
+
+async fn next_piece<S>(stream: &mut S, run_id: &str, registry: &RunRegistry) -> Option<PieceResult>
+where
+    S: futures_util::Stream<Item = Result<bytes::Bytes, reqwest::Error>> + Unpin,
+{
+    loop {
+        if registry.is_cancelled(run_id) {
+            return None;
+        }
+
+        tokio::select! {
+            piece = stream.next() => return Some(piece),
+            _ = tokio::time::sleep(CANCEL_POLL) => {}
+        }
+    }
+}
+
+fn with_pairing(
+    builder: reqwest::RequestBuilder,
+    endpoint: &DesktopEndpoint,
+) -> Result<reqwest::RequestBuilder, String> {
+    match secrets::read(&secrets::pairing_key(&endpoint.id))? {
+        Some(secret) => Ok(builder.bearer_auth(secret)),
+        None => Ok(builder),
+    }
+}
+
+async fn read_bounded_json(response: reqwest::Response) -> Result<serde_json::Value, String> {
+    let mut stream = response.bytes_stream();
+    let mut body: Vec<u8> = Vec::new();
+
+    while let Some(piece) = stream.next().await {
+        let piece = piece.map_err(|cause| cause.to_string())?;
+
+        body.extend_from_slice(&piece);
+
+        if body.len() > MAX_JSON_BODY {
+            return Err(
+                "That runtime answered with more than this application will read.".to_string(),
+            );
+        }
+    }
+
+    serde_json::from_slice(&body).map_err(|cause| cause.to_string())
 }
 
 fn http_client(timeout: Duration) -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
         .timeout(timeout)
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .map_err(|cause| cause.to_string())
+}
+
+fn streaming_client() -> Result<reqwest::Client, String> {
+    reqwest::Client::builder()
+        .read_timeout(RUN_IDLE_TIMEOUT)
+        .redirect(reqwest::redirect::Policy::none())
         .build()
         .map_err(|cause| cause.to_string())
 }
@@ -181,7 +248,23 @@ fn list_endpoints(store: State<'_, Store>) -> Result<Vec<DesktopEndpoint>, Strin
 }
 
 #[tauri::command]
-fn save_endpoint(endpoint: DesktopEndpoint, store: State<'_, Store>) -> Result<(), String> {
+fn save_endpoint(
+    endpoint: DesktopEndpoint,
+    pairing_secret: Option<String>,
+    store: State<'_, Store>,
+) -> Result<(), String> {
+    let key = secrets::pairing_key(&endpoint.id);
+
+    match pairing_secret.as_deref().map(str::trim) {
+        Some(secret) if !secret.is_empty() => secrets::store(&key, secret)?,
+        Some(_) => secrets::forget(&key)?,
+        None => {}
+    }
+
+    let mut endpoint = endpoint;
+
+    endpoint.pairing_secret_stored = secrets::read(&key)?.is_some();
+
     egress::resolve_target(std::slice::from_ref(&endpoint), &endpoint.id)
         .map_err(refusal_detail)?;
 
@@ -190,6 +273,8 @@ fn save_endpoint(endpoint: DesktopEndpoint, store: State<'_, Store>) -> Result<(
 
 #[tauri::command]
 fn forget_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<(), String> {
+    secrets::forget(&secrets::pairing_key(&endpoint_id))?;
+
     store.forget_endpoint(&endpoint_id)
 }
 
@@ -264,10 +349,7 @@ async fn discover_models(
         ));
     }
 
-    let body = response
-        .json::<serde_json::Value>()
-        .await
-        .map_err(|cause| cause.to_string())?;
+    let body = read_bounded_json(response).await?;
 
     Ok(discovery::parse_models(&endpoint, &body, &timestamp()))
 }
@@ -313,11 +395,13 @@ fn sign_out() -> Result<(), String> {
 
 #[tauri::command]
 async fn sign_in() -> Result<(), String> {
-    let listener = link::LoopbackListener::bind()?;
+    let state = new_client_state();
+    let listener = link::LoopbackListener::bind(state.clone())?;
     let redirect_uri = listener.redirect_uri();
     let authorise = format!(
-        "{API_BASE_URL}/auth/github?platform=desktop&redirect_uri={}",
-        encode_query_value(&redirect_uri)
+        "{API_BASE_URL}/auth/github?platform=desktop&redirect_uri={}&client_state={}",
+        encode_query_value(&redirect_uri),
+        encode_query_value(&state)
     );
 
     opener::open_browser(&authorise).map_err(|cause| cause.to_string())?;
@@ -358,6 +442,14 @@ fn encode_query_value(value: &str) -> String {
     url::form_urlencoded::byte_serialize(value.as_bytes()).collect()
 }
 
+fn new_client_state() -> String {
+    let mut bytes = [0u8; 32];
+
+    getrandom::fill(&mut bytes).expect("the operating system random source");
+
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
 #[tauri::command]
 async fn start_hosted_run(
     run_id: String,
@@ -373,6 +465,8 @@ async fn start_hosted_run(
         let _ = on_event.send(event);
     };
 
+    registry.begin(&run_id);
+
     emit(StreamEvent::Started {
         run_id: run_id.clone(),
         endpoint_id: HOSTED_ENDPOINT_ID.to_string(),
@@ -383,7 +477,7 @@ async fn start_hosted_run(
         state: "queued".to_string(),
     });
 
-    let response = match http_client(RUN_TIMEOUT)?
+    let response = match streaming_client()?
         .post(format!("{API_BASE_URL}/chat/completions"))
         .bearer_auth(session)
         .json(&chat::hosted_body(&request))
@@ -455,8 +549,7 @@ async fn list_agent_sessions(
         .join(agents::sessions_path(&endpoint))
         .map_err(|cause| cause.to_string())?;
 
-    let response = http_client(DISCOVERY_TIMEOUT)?
-        .get(target)
+    let response = with_pairing(http_client(DISCOVERY_TIMEOUT)?.get(target), &endpoint)?
         .send()
         .await
         .map_err(|cause| cause.to_string())?;
@@ -469,10 +562,7 @@ async fn list_agent_sessions(
         ));
     }
 
-    let body = response
-        .json::<serde_json::Value>()
-        .await
-        .map_err(|cause| cause.to_string())?;
+    let body = read_bounded_json(response).await?;
 
     Ok(agents::parse_sessions(
         &endpoint,
@@ -493,12 +583,15 @@ async fn decide_approval(
         .join(&agents::decision_path(&endpoint, &request_id))
         .map_err(|cause| cause.to_string())?;
 
-    let response = http_client(REQUEST_TIMEOUT)?
-        .post(target)
-        .json(&agents::decision_body(approved))
-        .send()
-        .await
-        .map_err(|cause| cause.to_string())?;
+    let response = with_pairing(
+        http_client(REQUEST_TIMEOUT)?
+            .post(target)
+            .json(&agents::decision_body(approved)),
+        &endpoint,
+    )?
+    .send()
+    .await
+    .map_err(|cause| cause.to_string())?;
 
     if response.status().is_success() {
         return Ok(());
@@ -531,17 +624,22 @@ async fn start_agent_run(
         let _ = on_event.send(event);
     };
 
+    registry.begin(&run_id);
+
     emit(StreamEvent::Started {
         run_id: run_id.clone(),
         endpoint_id: endpoint.id.clone(),
         at: timestamp(),
     });
 
-    let response = match http_client(RUN_TIMEOUT)?
-        .post(target)
-        .json(&agents::prompt_body(&prompt))
-        .send()
-        .await
+    let response = match with_pairing(
+        streaming_client()?
+            .post(target)
+            .json(&agents::prompt_body(&prompt)),
+        &endpoint,
+    )?
+    .send()
+    .await
     {
         Ok(response) => response,
         Err(cause) => {
@@ -608,22 +706,26 @@ async fn stream_agent(
     emit: &impl Fn(StreamEvent),
 ) -> &'static str {
     let mut stream = response.bytes_stream();
-    let mut buffer = String::new();
+    let mut reader = LineReader::default();
 
-    while let Some(piece) = stream.next().await {
-        if registry.is_cancelled(run_id) {
+    loop {
+        let Some(piece) = next_piece(&mut stream, run_id, registry).await else {
             return "cancelled";
-        }
-
-        let Ok(piece) = piece else {
-            return "interrupted";
         };
 
-        buffer.push_str(&String::from_utf8_lossy(&piece));
+        let piece = match piece {
+            Some(Ok(piece)) => piece,
+            Some(Err(_)) => return "interrupted",
+            None => return "complete",
+        };
 
-        while let Some(index) = buffer.find('\n') {
-            let line: String = buffer.drain(..=index).collect();
+        reader.push(&piece);
 
+        if reader.overflowed() {
+            return "interrupted";
+        }
+
+        while let Some(line) = reader.next_line() {
             match agents::parse_agent_line(&line, session_native_id, host) {
                 AgentChunk::Text(delta) => emit(StreamEvent::Text {
                     run_id: run_id.to_string(),
@@ -635,8 +737,6 @@ async fn stream_agent(
             }
         }
     }
-
-    "complete"
 }
 
 fn approval_event(run_id: &str, request: AgentApprovalRequest) -> StreamEvent {
@@ -690,6 +790,8 @@ async fn start_model_run(
         let _ = on_event.send(event);
     };
 
+    registry.begin(&run_id);
+
     emit(StreamEvent::Started {
         run_id: run_id.clone(),
         endpoint_id: endpoint.id.clone(),
@@ -700,7 +802,7 @@ async fn start_model_run(
         state: "loading-model".to_string(),
     });
 
-    let response = match http_client(RUN_TIMEOUT)?
+    let response = match streaming_client()?
         .post(target)
         .json(&chat::chat_body(&endpoint, &request))
         .send()

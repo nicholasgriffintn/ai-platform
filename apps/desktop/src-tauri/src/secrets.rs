@@ -2,6 +2,10 @@ use keyring::Entry;
 
 const SERVICE: &str = "uk.co.nicholasgriffin.polychat.desktop";
 
+pub fn pairing_key(endpoint_id: &str) -> String {
+    format!("pairing:{endpoint_id}")
+}
+
 fn entry(name: &str) -> Result<Entry, String> {
     Entry::new(SERVICE, name).map_err(|cause| cause.to_string())
 }

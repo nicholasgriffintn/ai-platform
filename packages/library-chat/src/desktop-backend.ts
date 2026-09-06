@@ -21,7 +21,7 @@ export interface DesktopRun {
 
 export interface DesktopBackend {
   listEndpoints: () => Promise<DesktopEndpoint[]>;
-  saveEndpoint: (endpoint: DesktopEndpoint) => Promise<void>;
+  saveEndpoint: (endpoint: DesktopEndpoint, pairingSecret?: string) => Promise<void>;
   forgetEndpoint: (endpointId: string) => Promise<void>;
   probeEndpoint: (endpointId: string) => Promise<DesktopRuntimeReadiness>;
   discoverModels: (endpointId: string) => Promise<DiscoveredModel[]>;

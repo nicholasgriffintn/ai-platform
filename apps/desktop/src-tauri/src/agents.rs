@@ -34,17 +34,39 @@ pub fn sessions_path(endpoint: &DesktopEndpoint) -> &'static str {
     }
 }
 
+fn encode_segment(value: &str) -> String {
+    value
+        .chars()
+        .map(|character| {
+            if character.is_ascii_alphanumeric() || matches!(character, '-' | '_' | '.' | '~') {
+                character.to_string()
+            } else {
+                character
+                    .to_string()
+                    .as_bytes()
+                    .iter()
+                    .map(|byte| format!("%{byte:02X}"))
+                    .collect()
+            }
+        })
+        .collect()
+}
+
 pub fn prompt_path(endpoint: &DesktopEndpoint, session_native_id: &str) -> String {
+    let session = encode_segment(session_native_id);
+
     match endpoint.vendor.as_str() {
-        "hermes" => format!("/api/sessions/{session_native_id}/messages"),
-        _ => format!("/api/v1/sessions/{session_native_id}/messages"),
+        "hermes" => format!("/api/sessions/{session}/messages"),
+        _ => format!("/api/v1/sessions/{session}/messages"),
     }
 }
 
 pub fn decision_path(endpoint: &DesktopEndpoint, request_id: &str) -> String {
+    let request = encode_segment(request_id);
+
     match endpoint.vendor.as_str() {
-        "hermes" => format!("/api/approvals/{request_id}"),
-        _ => format!("/api/v1/approvals/{request_id}"),
+        "hermes" => format!("/api/approvals/{request}"),
+        _ => format!("/api/v1/approvals/{request}"),
     }
 }
 
@@ -309,6 +331,23 @@ mod tests {
         );
     }
 
+    #[test]
+    fn refuses_to_let_a_gateway_steer_the_path_with_its_own_identifiers() {
+        let gateway = endpoint("openclaw");
+
+        assert_eq!(
+            prompt_path(&gateway, "../../admin"),
+            "/api/v1/sessions/..%2F..%2Fadmin/messages"
+        );
+        assert_eq!(
+            decision_path(&gateway, "..%2f..%2fadmin"),
+            "/api/v1/approvals/..%252f..%252fadmin"
+        );
+        assert_eq!(
+            prompt_path(&gateway, "a b?c#d"),
+            "/api/v1/sessions/a%20b%3Fc%23d/messages"
+        );
+    }
     #[test]
     fn sends_a_decision_that_says_which_way_it_went() {
         assert_eq!(decision_body(true)["decision"], json!("approve"));

@@ -85,7 +85,9 @@ impl Store {
     fn migrate(&self) -> Result<(), String> {
         self.with_connection(|connection| {
             connection.execute_batch(
-                "CREATE TABLE IF NOT EXISTS endpoints (
+                "PRAGMA foreign_keys = ON;
+                PRAGMA journal_mode = WAL;
+                CREATE TABLE IF NOT EXISTS endpoints (
                     id TEXT PRIMARY KEY,
                     kind TEXT NOT NULL,
                     vendor TEXT NOT NULL,
@@ -282,8 +284,8 @@ impl Store {
     }
 
     pub fn seed_missing(&self, endpoints: &[DesktopEndpoint]) -> Result<(), String> {
-        for endpoint in endpoints {
-            self.with_connection(|connection| {
+        self.with_connection(|connection| {
+            for endpoint in endpoints {
                 connection.execute(
                     "INSERT OR IGNORE INTO endpoints (id, kind, vendor, label, url, transport,
                                                       pairing_secret_stored, approved_at, last_seen_at)
@@ -300,12 +302,10 @@ impl Store {
                         endpoint.last_seen_at,
                     ],
                 )?;
+            }
 
-                Ok(())
-            })?;
-        }
-
-        Ok(())
+            Ok(())
+        })
     }
 }
 

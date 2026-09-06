@@ -177,3 +177,14 @@ describe("interrupted replies", () => {
     expect(stored.map((message) => message.status)).toEqual(["interrupted", "complete"]);
   });
 });
+
+describe("pairing secrets", () => {
+  it("does not carry a secret in the endpoint record itself", async () => {
+    const backend = createFakeDesktopBackend();
+
+    await backend.saveEndpoint(endpoint, "a-shared-secret");
+    const [stored] = await backend.listEndpoints();
+
+    expect(JSON.stringify(stored)).not.toContain("a-shared-secret");
+  });
+});

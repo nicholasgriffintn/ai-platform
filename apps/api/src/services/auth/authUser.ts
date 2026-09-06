@@ -9,6 +9,7 @@ export interface AssistantAuthUser extends AuthUserWithEmail {
   readonly continuation?: Readonly<{
     nativeRedirectUri?: string;
     nativePlatform?: "mobile" | "desktop";
+    nativeClientState?: string;
   }>;
 }
 

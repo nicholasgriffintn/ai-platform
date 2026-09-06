@@ -53,8 +53,8 @@ export type ConnectedDesktopBackend = Pick<
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
   listEndpoints: async () => desktopEndpointSchema.array().parse(await invoke("list_endpoints")),
-  saveEndpoint: async (endpoint) => {
-    await invoke("save_endpoint", { endpoint });
+  saveEndpoint: async (endpoint, pairingSecret) => {
+    await invoke("save_endpoint", { endpoint, pairingSecret: pairingSecret ?? null });
   },
   forgetEndpoint: async (endpointId) => {
     await invoke("forget_endpoint", { endpointId });
@@ -98,12 +98,12 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
       prompt: request.prompt,
     }),
   startHostedRun: async (request: HostedRunRequest): Promise<DesktopRun> =>
-    startRun("start_hosted_run", request),
+    startRun("start_hosted_run", { request }),
   startModelRun: async (request: DesktopModelRunRequest): Promise<DesktopRun> =>
-    startRun("start_model_run", request),
+    startRun("start_model_run", { request }),
 };
 
-function startRun(command: string, request: unknown): Promise<DesktopRun> {
+function startRun(command: string, args: Record<string, unknown>): Promise<DesktopRun> {
   const runId = globalThis.crypto.randomUUID();
   const queue = createAsyncEventQueue<DesktopStreamEvent>();
   const channel = new Channel();
@@ -118,12 +118,7 @@ function startRun(command: string, request: unknown): Promise<DesktopRun> {
     }
   };
 
-  const payload =
-    typeof request === "object" && request !== null && "sessionNativeId" in request
-      ? { runId, ...request, onEvent: channel }
-      : { runId, request, onEvent: channel };
-
-  void invoke(command, payload).catch(() => queue.close());
+  void invoke(command, { runId, ...args, onEvent: channel }).catch(() => queue.close());
 
   return Promise.resolve({
     runId,

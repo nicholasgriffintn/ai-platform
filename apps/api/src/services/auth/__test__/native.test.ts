@@ -126,3 +126,24 @@ describe("buildNativeRedirectUri", () => {
     );
   });
 });
+
+describe("the callback a desktop client receives", () => {
+  it("carries the state the client started with alongside the code", () => {
+    expect(
+      buildNativeRedirectUri("http://127.0.0.1:49152/callback", {
+        code: "abc.123",
+        state: "state-abc",
+      }),
+    ).toBe("http://127.0.0.1:49152/callback?code=abc.123&state=state-abc");
+  });
+
+  it("does not let a redirect target smuggle in its own state", () => {
+    expect(
+      isAllowedNativeRedirectUri(
+        "http://127.0.0.1:49152/callback?state=attacker",
+        "/callback",
+        "desktop",
+      ),
+    ).toBe(false);
+  });
+});

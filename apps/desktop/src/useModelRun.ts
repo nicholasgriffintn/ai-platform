@@ -149,5 +149,7 @@ export function useModelRun(backend: ConnectedDesktopBackend, model: DiscoveredM
     cancelRef.current?.();
   }, []);
 
+  useEffect(() => () => cancelRef.current?.(), []);
+
   return { ...state, send, cancel };
 }

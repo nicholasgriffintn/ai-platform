@@ -84,11 +84,6 @@ export const desktopRuntimeReadinessSchema = z.discriminatedUnion("status", [
     checkedAt: z.string(),
     detail: z.string().max(400).nullable(),
   }),
-  z.object({
-    status: z.literal("unrecognised"),
-    checkedAt: z.string(),
-    reportedVersion: z.string().nullable(),
-  }),
 ]);
 
 export type DesktopRuntimeReadiness = z.infer<typeof desktopRuntimeReadinessSchema>;

@@ -11,7 +11,12 @@ import type { ConnectedDesktopBackend } from "./desktop-backend";
 
 const VENDORS = [...MODEL_RUNTIME_VENDORS, ...AGENT_RUNTIME_VENDORS];
 
-function buildEndpoint(vendor: string, label: string, url: string): DesktopEndpoint {
+function buildEndpoint(
+  vendor: string,
+  label: string,
+  url: string,
+  hasPairingSecret: boolean,
+): DesktopEndpoint {
   const isAgent = (AGENT_RUNTIME_VENDORS as readonly string[]).includes(vendor);
 
   return desktopEndpointSchema.parse({
@@ -21,7 +26,7 @@ function buildEndpoint(vendor: string, label: string, url: string): DesktopEndpo
     label,
     url,
     transport: isLoopbackUrl(url) ? "loopback" : "network",
-    pairingSecretStored: false,
+    pairingSecretStored: hasPairingSecret,
     approvedAt: new Date().toISOString(),
     lastSeenAt: null,
   });
@@ -37,15 +42,20 @@ export function AddEndpoint({
   const [vendor, setVendor] = useState<string>(VENDORS[0]);
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
+  const [pairingSecret, setPairingSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   async function add() {
     setError(null);
 
     try {
-      await backend.saveEndpoint(buildEndpoint(vendor, label.trim(), url.trim()));
+      await backend.saveEndpoint(
+        buildEndpoint(vendor, label.trim(), url.trim(), pairingSecret.trim().length > 0),
+        pairingSecret.trim() || undefined,
+      );
       setLabel("");
       setUrl("");
+      setPairingSecret("");
       onAdded();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -85,6 +95,15 @@ export function AddEndpoint({
         value={url}
         onChange={(event) => setUrl(event.target.value)}
         placeholder="https://nest.local:18789"
+      />
+      <label htmlFor="endpoint-pairing">Pairing secret</label>
+      <input
+        id="endpoint-pairing"
+        type="password"
+        value={pairingSecret}
+        onChange={(event) => setPairingSecret(event.target.value)}
+        placeholder="Only needed for an agent gateway reached over the network without HTTPS"
+        autoComplete="off"
       />
       <button type="submit" disabled={label.trim().length === 0 || url.trim().length === 0}>
         Add

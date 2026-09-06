@@ -28,10 +28,6 @@ function hintFor(readiness: DesktopRuntimeReadiness | undefined): string | undef
     return "Needs authorisation";
   }
 
-  if (readiness?.status === "unrecognised") {
-    return "Unrecognised version";
-  }
-
   return undefined;
 }
 

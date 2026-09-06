@@ -1,5 +1,5 @@
 import type { DesktopRunProgress } from "@ngriffin_uk/polychat-schemas";
-import { useCallback, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 
 import type { ConnectedDesktopBackend } from "./desktop-backend";
 
@@ -22,6 +22,8 @@ export function CloudComposer({
   const [failure, setFailure] = useState<string | null>(null);
   const [isRunning, setRunning] = useState(false);
   const cancelRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => cancelRef.current?.(), []);
 
   const send = useCallback(async () => {
     setReply("");

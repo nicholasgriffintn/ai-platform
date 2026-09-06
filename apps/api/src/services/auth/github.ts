@@ -58,6 +58,7 @@ export async function resolveGitHubIdentity(
         site: getStringRecordValue(profile, "blog"),
         nativeRedirectUri: context["nativeRedirectUri"],
         nativePlatform: context["nativePlatform"],
+        nativeClientState: context["nativeClientState"],
       },
     },
   };
@@ -84,6 +85,7 @@ export async function resolveGitHubUser(
     ? {
         nativeRedirectUri: profile.nativeRedirectUri,
         nativePlatform: profile.nativePlatform === "desktop" ? "desktop" : "mobile",
+        ...(profile.nativeClientState ? { nativeClientState: profile.nativeClientState } : {}),
       }
     : undefined;
 
@@ -120,6 +122,7 @@ function readGitHubProfile(identity: ExternalIdentity) {
     site: getStringRecordValue(value, "site"),
     nativeRedirectUri: getStringRecordValue(value, "nativeRedirectUri"),
     nativePlatform: getStringRecordValue(value, "nativePlatform"),
+    nativeClientState: getStringRecordValue(value, "nativeClientState"),
   };
 }
 

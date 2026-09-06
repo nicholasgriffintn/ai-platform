@@ -82,20 +82,36 @@ addRoute(app, "get", "/github", {
   },
   handler: async ({ raw }) =>
     (async (c: Context) => {
-      const { platform, redirect_uri } = c.req.valid("query" as never) as {
+      const { platform, redirect_uri, client_state } = c.req.valid("query" as never) as {
         platform?: "web" | "mobile" | "desktop";
         redirect_uri?: string;
+        client_state?: string;
       };
       const nativePlatform = platform === "mobile" || platform === "desktop" ? platform : undefined;
       const nativeRedirectUri = nativePlatform
         ? requireNativeRedirectUri(redirect_uri, "/callback", nativePlatform)
         : undefined;
+
+      if (nativePlatform === "desktop" && !client_state) {
+        throw new AssistantError(
+          "Desktop sign-in requires a client state",
+          ErrorType.PARAMS_ERROR,
+          400,
+        );
+      }
+
       const serviceContext = getServiceContext(c);
       const github = createAssistantGitHubAuth(serviceContext);
       const githubAuthUrl = await github.providers.github.startAuthorization({
         scopes: ["user:email"],
         ...(nativeRedirectUri && nativePlatform
-          ? { context: { nativeRedirectUri, nativePlatform } }
+          ? {
+              context: {
+                nativeRedirectUri,
+                nativePlatform,
+                ...(client_state ? { nativeClientState: client_state } : {}),
+              },
+            }
           : {}),
       });
 
@@ -151,7 +167,14 @@ addRoute(app, "get", "/github/callback", {
           sessionId,
         });
 
-        return c.redirect(buildNativeRedirectUri(validatedRedirectUri, { code: mobileCode }));
+        return c.redirect(
+          buildNativeRedirectUri(validatedRedirectUri, {
+            code: mobileCode,
+            ...(user.continuation.nativeClientState
+              ? { state: user.continuation.nativeClientState }
+              : {}),
+          }),
+        );
       }
 
       c.header("Set-Cookie", createSessionCookie(sessionId));
