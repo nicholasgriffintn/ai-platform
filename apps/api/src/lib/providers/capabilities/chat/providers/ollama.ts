@@ -9,6 +9,7 @@ import {
 } from "~/utils/parameters";
 
 import { BaseProvider } from "./base";
+import { requireSelfHostedRuntimeUrl } from "./selfHostedRuntime";
 
 export class OllamaProvider extends BaseProvider {
   name = "ollama";
@@ -28,7 +29,7 @@ export class OllamaProvider extends BaseProvider {
   }
 
   protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
-    const ollamaUrl = params.env.OLLAMA_URL || "http://localhost:11434";
+    const ollamaUrl = requireSelfHostedRuntimeUrl(params.env.OLLAMA_URL, "Ollama");
 
     return `${ollamaUrl}/api/chat`;
   }

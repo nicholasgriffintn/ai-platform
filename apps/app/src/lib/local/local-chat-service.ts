@@ -9,6 +9,11 @@ import type { IDBPDatabase } from "idb";
 import { getDatabase, isIndexedDBSupported, storeName } from "~/hooks/useIndexedDB";
 import { useChatStore } from "~/state/stores/chatStore";
 
+import {
+  buildLocalChatExport,
+  readLocalChatExport,
+  type LocalChatExport,
+} from "./local-chat-export";
 import { getLocalChatScope, isConversationInLocalScope } from "./local-chat-scope";
 
 const LS_PREFIX = "polychat_conversation_";
@@ -296,6 +301,20 @@ class LocalChatService {
   /**
    * Delete all local chats from storage.
    */
+  public async exportLocalChats(): Promise<LocalChatExport> {
+    return buildLocalChatExport(await this.listLocalChats(), new Date().toISOString());
+  }
+
+  public async importLocalChats(value: unknown): Promise<number> {
+    const conversations = readLocalChatExport(value);
+
+    for (const conversation of conversations) {
+      await this.saveLocalChat(conversation);
+    }
+
+    return conversations.length;
+  }
+
   public async deleteAllLocalChats(): Promise<void> {
     if (!this.isDBSupported) {
       const keys = Object.keys(window.localStorage);

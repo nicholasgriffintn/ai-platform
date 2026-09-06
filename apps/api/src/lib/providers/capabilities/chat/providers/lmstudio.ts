@@ -2,8 +2,7 @@ import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { BaseProvider } from "./base";
-
-const LMSTUDIO_DEFAULT_BASE_URL = "http://127.0.0.1:1234";
+import { requireSelfHostedRuntimeUrl } from "./selfHostedRuntime";
 
 export class LMStudioProvider extends BaseProvider {
   name = "lmstudio";
@@ -23,7 +22,7 @@ export class LMStudioProvider extends BaseProvider {
   }
 
   protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
-    const baseUrl = params.env.LMSTUDIO_URL || LMSTUDIO_DEFAULT_BASE_URL;
+    const baseUrl = requireSelfHostedRuntimeUrl(params.env.LMSTUDIO_URL, "LM Studio");
 
     return `${baseUrl}/v1/chat/completions`;
   }
