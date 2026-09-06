@@ -1,21 +1,7 @@
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 
-import { AgentEditorPage } from "~/components/Agents/AgentEditorPage";
-import { PLACE_PATHS } from "~/lib/navigation/places";
+export default function LegacyPersonalTeammatePage() {
+  const { teammateId } = useParams();
 
-export function meta() {
-  return [{ title: "Configure an agent - Polychat" }];
-}
-
-export default function PersonalAgentPage() {
-  const { agentId = "" } = useParams();
-
-  return (
-    <AgentEditorPage
-      agentId={agentId}
-      agentsPath="/chat/agents"
-      backPath={PLACE_PATHS.library}
-      backLabel="Back to capabilities"
-    />
-  );
+  return <Navigate to={`/chat/teammates/${teammateId ?? "new"}`} replace />;
 }

@@ -74,7 +74,7 @@ describe("places and files routes", () => {
   it("maps paths to places", () => {
     expect(getActivePlace("/")).toBe("chat");
     expect(getActivePlace("/chat/abc")).toBe("chat");
-    expect(getActivePlace("/chat/agents/a1")).toBe("library");
+    expect(getActivePlace("/chat/teammates/a1")).toBe("library");
     expect(getActivePlace("/teammates")).toBe("library");
     expect(getActivePlace("/work/w1/projects/p1/files/made/o1")).toBe("work");
     expect(getActivePlace("/files/given")).toBe("files");

@@ -1,5 +1,5 @@
 import {
-  agentControlToolDefinitions,
+  teammateControlToolDefinitions,
   FINISH_TOOL_NAME,
 } from "@ngriffin_uk/polychat-library-tool-runtime";
 import {
@@ -452,8 +452,8 @@ export function getToolsForProvider(
     if (isAgentExecutionMode(params.mode)) {
       const controlTools =
         params.conversation_type === "task"
-          ? agentControlToolDefinitions.filter((tool) => tool.function.name !== FINISH_TOOL_NAME)
-          : agentControlToolDefinitions;
+          ? teammateControlToolDefinitions.filter((tool) => tool.function.name !== FINISH_TOOL_NAME)
+          : teammateControlToolDefinitions;
 
       tools = [...tools, ...formatToolCalls(providerName, controlTools)];
     }

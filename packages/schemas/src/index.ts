@@ -1,4 +1,4 @@
-export * from "./agents";
+export * from "./teammates";
 export * from "./agent-modes";
 export * from "./analytics";
 export * from "./assistant-actions";
@@ -36,7 +36,7 @@ export {
   readAssistantActionRequestOptions,
 } from "./assistant-actions";
 export type {
-  AssistantActionAgentSource,
+  AssistantActionTeammateSource,
   AssistantActionCatalog,
   AssistantActionCatalogSources,
   AssistantActionContextPayload,
@@ -129,8 +129,8 @@ export * from "./sandbox-cache";
 export * from "./sandbox-services";
 export * from "./sandbox-preview";
 export * from "./search";
-export * from "./shared-agents";
-export * from "./teammates";
+export * from "./shared-teammates";
+export * from "./teammate-roles";
 export * from "./shared";
 export * from "./sources";
 export * from "./stripe";

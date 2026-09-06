@@ -13,8 +13,8 @@ export function CapabilitiesBand() {
   const toolCount = (data?.modelTools.length ?? 0) + (data?.tools.length ?? 0);
   const recipeCount = data?.recipes.length ?? 0;
   const lede = data
-    ? `Experiences for research, writing, media and code, ${toolCount} tools a model can call, and ${recipeCount} recipe templates that run on a schedule or an event. Agents, skills and the recipes you install are yours to curate.`
-    : "Experiences for research, writing, media and code, tools a model can call, and recipe templates that run on a schedule or an event. Agents, skills and the recipes you install are yours to curate.";
+    ? `Experiences for research, writing, media and code, ${toolCount} tools a model can call, and ${recipeCount} recipe templates that run on a schedule or an event. Teammates, skills and the recipes you install are yours to curate.`
+    : "Experiences for research, writing, media and code, tools a model can call, and recipe templates that run on a schedule or an event. Teammates, skills and the recipes you install are yours to curate.";
 
   return (
     <DiscoverBand

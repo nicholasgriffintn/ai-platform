@@ -65,7 +65,7 @@ export function returnStandardPrompt({
     const reasoningEffort = request.reasoning?.effort ?? request.reasoning_effort ?? "none";
     const simulatedThinking = reasoningEffort === "simulated-thinking";
     const preferredLanguage = request.lang?.trim() || null;
-    const isAgent = AGENT_MODES.has(chatMode);
+    const isTeammate = AGENT_MODES.has(chatMode);
 
     const capabilities = resolvePromptCapabilities({
       supportsToolCalls,
@@ -83,7 +83,7 @@ export function returnStandardPrompt({
       .addLine()
       .add(
         buildAssistantPrinciplesSection({
-          isAgent,
+          isTeammate,
           supportsToolCalls: capabilities.supportsToolCalls,
           simulatedThinking: capabilities.simulatedThinking,
           preferredLanguage,
@@ -97,7 +97,7 @@ export function returnStandardPrompt({
             userTraits,
             userPreferences,
             isCoding,
-            isAgent,
+            isTeammate,
             capabilities.simulatedThinking,
           ),
         ),
@@ -105,7 +105,7 @@ export function returnStandardPrompt({
       .add(buildFormattingSection({ isCoding }))
       .addIf(isCoding, buildCodingConductSection())
       .add(buildSafetyStandardsSection())
-      .addIf(isAgent, buildAgentGuidelinesSection())
+      .addIf(isTeammate, buildAgentGuidelinesSection())
       .add(buildChannelSection(request.options?.channel))
       .add(buildSkillsSection(skills))
       .add(

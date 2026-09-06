@@ -4,7 +4,6 @@ import type { IEnv } from "~/types";
 
 import activity from "./activity";
 import admin from "./admin";
-import agents from "./agents";
 import apps from "./apps";
 import { registerSandboxPreviewAuthorisationRoute } from "./apps/sandbox/preview-authorisation";
 import audio from "./audio";
@@ -22,6 +21,7 @@ import skills from "./skills";
 import sources from "./sources";
 import stripe from "./stripe";
 import tasks from "./tasks";
+import teammates from "./teammates";
 import templates from "./templates";
 import tools from "./tools";
 import training from "./training";
@@ -55,7 +55,8 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/sources", sources);
   app.route("/realtime", realtime);
   app.route("/search", search);
-  app.route("/agents", agents);
+  app.route("/teammates", teammates);
+  app.route("/teammates", teammates);
   app.route("/admin", admin);
   app.route("/webhooks", webhook);
   app.route("/training", training);

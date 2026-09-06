@@ -1,4 +1,4 @@
-import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
+import type { TeammateResponse } from "@ngriffin_uk/polychat-schemas";
 import { AGENT_MODE_CONFIGS, updateUserSettingsSchema } from "@ngriffin_uk/polychat-schemas";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -8,8 +8,8 @@ import {
   AccountOverview,
   AccountPrompt,
   type AccountSection,
-  AgentEditor,
-  type AgentFormData,
+  TeammateEditor,
+  type TeammateFormData,
   SandboxConnectionList,
   prepareUserSettingsPayload,
 } from "./index";
@@ -148,13 +148,13 @@ describe("sandbox connection list", () => {
   });
 });
 
-describe("agent editor", () => {
-  const personalAgent: AgentResponse = {
-    id: "agent-1",
+describe("teammate editor", () => {
+  const personalTeammate: TeammateResponse = {
+    id: "teammate-1",
     user_id: 7,
     owner_scope_type: "user",
     owner_scope_id: "7",
-    derived_from_agent_id: null,
+    derived_from_teammate_id: null,
     kind: "colleague",
     name: "Researcher",
     description: "Finds things",
@@ -171,9 +171,9 @@ describe("agent editor", () => {
     created_at: "2026-01-01T00:00:00.000Z",
     updated_at: null,
   };
-  const workspaceAgent: AgentResponse = {
-    ...personalAgent,
-    id: "agent-2",
+  const workspaceTeammate: TeammateResponse = {
+    ...personalTeammate,
+    id: "teammate-2",
     owner_scope_type: "workspace",
     owner_scope_id: "workspace-1",
   };
@@ -184,12 +184,12 @@ describe("agent editor", () => {
     onPublish: vi.fn(),
   };
 
-  function renderEditor(overrides: Partial<Parameters<typeof AgentEditor>[0]> = {}) {
-    const onSubmit = vi.fn<(data: AgentFormData) => void>();
+  function renderEditor(overrides: Partial<Parameters<typeof TeammateEditor>[0]> = {}) {
+    const onSubmit = vi.fn<(data: TeammateFormData) => void>();
 
     render(
-      <AgentEditor
-        agent={personalAgent}
+      <TeammateEditor
+        teammate={personalTeammate}
         models={{}}
         tools={[]}
         skills={[]}
@@ -206,21 +206,21 @@ describe("agent editor", () => {
     return onSubmit;
   }
 
-  it("withholds saving and deleting from a viewer who cannot manage the agent", () => {
+  it("withholds saving and deleting from a viewer who cannot manage the teammate", () => {
     renderEditor({
-      agent: workspaceAgent,
+      teammate: workspaceTeammate,
       canManage: false,
-      cannotManageReason: "Aviary owns this agent.",
+      cannotManageReason: "Aviary owns this teammate.",
       ownerLabel: "Aviary",
     });
 
-    expect(screen.queryByRole("button", { name: "Save agent" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Delete agent" })).toBeNull();
-    expect(screen.getByText("Aviary owns this agent.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Save teammate" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete teammate" })).toBeNull();
+    expect(screen.getByText("Aviary owns this teammate.")).toBeTruthy();
     expect(screen.getByLabelText("Name").hasAttribute("disabled")).toBe(true);
   });
 
-  it("offers every agent mode and describes it from the mode configuration", () => {
+  it("offers every teammate mode and describes it from the mode configuration", () => {
     renderEditor();
 
     for (const mode of ["Chat", "Plan", "Build", "Explore"]) {
@@ -232,8 +232,8 @@ describe("agent editor", () => {
     );
   });
 
-  it("offers publishing only while the agent is still personally owned", () => {
-    renderEditor({ agent: workspaceAgent, ownerLabel: "Aviary", publish });
+  it("offers publishing only while the teammate is still personally owned", () => {
+    renderEditor({ teammate: workspaceTeammate, ownerLabel: "Aviary", publish });
 
     expect(screen.queryByLabelText("Publish to a workspace")).toBeNull();
 
@@ -244,11 +244,11 @@ describe("agent editor", () => {
   });
 
   it("reports the chosen mode and identity when the form is submitted", () => {
-    const onSubmit = renderEditor({ agent: null });
+    const onSubmit = renderEditor({ teammate: null });
 
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Scout" } });
     fireEvent.click(screen.getByRole("radio", { name: /^Plan/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Create agent" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create teammate" }));
 
     expect(onSubmit).toHaveBeenCalledOnce();
     expect(onSubmit.mock.calls[0][0]).toMatchObject({
@@ -259,19 +259,19 @@ describe("agent editor", () => {
   });
 
   it("clears a saved temperature override back to automatic sampling", () => {
-    const onSubmit = renderEditor({ agent: { ...personalAgent, temperature: 0.4 } });
+    const onSubmit = renderEditor({ teammate: { ...personalTeammate, temperature: 0.4 } });
 
     fireEvent.change(screen.getByLabelText("Temperature"), { target: { value: "" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save agent" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save teammate" }));
 
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ temperature: null }));
   });
 
   it("refuses a name that is only whitespace", () => {
-    const onSubmit = renderEditor({ agent: null });
+    const onSubmit = renderEditor({ teammate: null });
 
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "   " } });
-    fireEvent.click(screen.getByRole("button", { name: "Create agent" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create teammate" }));
 
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByRole("alert").textContent).toContain("name");

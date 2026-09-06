@@ -1,6 +1,5 @@
 import z from "zod/v4";
 
-import type { AgentSummary } from "./agents";
 import {
   assistantCapabilityDescriptorSchema,
   type AssistantCapabilityDescriptor,
@@ -16,6 +15,7 @@ import {
 import { partialChatCompletionsJsonSchema } from "./chat";
 import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation";
 import { SKILL_LOAD_TOOL_NAME, skillSourceSchema, type SkillSummary } from "./skills";
+import type { TeammateSummary } from "./teammates";
 import { mergeToolIds, normaliseToolIds } from "./tool-ids";
 import { toolIdsSchema, toolIdSchema, type Tool } from "./tools";
 
@@ -32,7 +32,7 @@ export const assistantActionVerbIdSchema = z.enum([
 ]);
 
 export const assistantActionItemKindSchema = z.enum([
-  "agent",
+  "teammate",
   "app",
   "connector",
   "installed_recipe",
@@ -49,7 +49,7 @@ export const assistantActionVerbSchema = z.object({
 });
 
 export const assistantActionItemMetadataSchema = z.object({
-  agentId: z.string().optional(),
+  teammateId: z.string().optional(),
   appId: z.string().optional(),
   appKind: z.enum(["dynamic", "frontend"]).optional(),
   authType: z.enum(["github_app", "api_key", "composio"]).optional(),
@@ -67,7 +67,7 @@ export const assistantActionItemMetadataSchema = z.object({
 export const assistantActionConversationLaunchSchema = z.object({
   kind: z.literal("conversation"),
   operation: z.enum(["ask_agent", "install_recipe", "invoke_recipe"]),
-  agentId: z.string().optional(),
+  teammateId: z.string().optional(),
   installationId: z.string().optional(),
   recipeId: z.string().optional(),
 });
@@ -196,7 +196,7 @@ export const assistantActionVerbs = [
     id: "run",
     command: "run",
     label: "Run",
-    description: "Run an installed recipe, app, agent, or tool-backed action.",
+    description: "Run an installed recipe, app, teammate, or tool-backed action.",
   },
   {
     id: "setup",
@@ -226,7 +226,7 @@ export const assistantActionVerbs = [
     id: "ask",
     command: "ask",
     label: "Ask",
-    description: "Ask an agent or selected assistant context.",
+    description: "Ask an teammate or selected assistant context.",
   },
   {
     id: "use",
@@ -236,7 +236,7 @@ export const assistantActionVerbs = [
   },
 ] satisfies AssistantActionVerb[];
 
-export type AssistantActionAgentSource = AgentSummary;
+export type AssistantActionTeammateSource = TeammateSummary;
 
 export interface AssistantActionModelToolDefinition {
   availabilityReason?: string;
@@ -251,7 +251,7 @@ export interface AssistantActionModelToolDefinition {
 }
 
 export interface AssistantActionCatalogSources {
-  agents?: readonly AssistantActionAgentSource[];
+  teammates?: readonly AssistantActionTeammateSource[];
   apps?: readonly CapabilityCatalogItem[];
   connectors?: readonly RecipeConnectorManifest[];
   installations?: readonly RecipeInstallation[];
@@ -407,69 +407,71 @@ function createAppCapabilityDescriptor(app: CapabilityCatalogItem): AssistantCap
   };
 }
 
-function isWorkspaceOwnedAgent(agent: AssistantActionAgentSource): boolean {
-  return agent.ownerScopeType === "workspace";
+function isWorkspaceOwnedTeammate(teammate: AssistantActionTeammateSource): boolean {
+  return teammate.ownerScopeType === "workspace";
 }
 
-function getAgentUnavailabilityReason(agent: AssistantActionAgentSource): string | undefined {
-  if (!agent.modelAvailable) {
-    return `${agent.model ?? "The pinned model"} cannot be run here.`;
+function getTeammateUnavailabilityReason(
+  teammate: AssistantActionTeammateSource,
+): string | undefined {
+  if (!teammate.modelAvailable) {
+    return `${teammate.model ?? "The pinned model"} cannot be run here.`;
   }
 
-  if (agent.unavailableSkillIds.length > 0) {
-    return `These skills are not available here: ${agent.unavailableSkillIds.join(", ")}.`;
+  if (teammate.unavailableSkillIds.length > 0) {
+    return `These skills are not available here: ${teammate.unavailableSkillIds.join(", ")}.`;
   }
 
-  if (agent.unavailableToolIds.length > 0) {
-    return `These tools are not available here: ${agent.unavailableToolIds.join(", ")}.`;
+  if (teammate.unavailableToolIds.length > 0) {
+    return `These tools are not available here: ${teammate.unavailableToolIds.join(", ")}.`;
   }
 
   return undefined;
 }
 
-function getAgentCapabilityCategory(agent: AssistantActionAgentSource): string {
-  return isWorkspaceOwnedAgent(agent) ? "Workspace" : "Personal";
+function getTeammateCapabilityCategory(teammate: AssistantActionTeammateSource): string {
+  return isWorkspaceOwnedTeammate(teammate) ? "Workspace" : "Personal";
 }
 
-function getAgentTags(agent: AssistantActionAgentSource): string[] {
+function getTeammateTags(teammate: AssistantActionTeammateSource): string[] {
   return [
-    "agent",
-    isWorkspaceOwnedAgent(agent) ? "workspace" : "personal",
-    ...(agent.mode ? [agent.mode] : []),
-    ...(agent.skillIds.length > 0 ? ["skills"] : []),
-    ...(agent.toolIds.length > 0 ? ["tools"] : []),
+    "teammate",
+    isWorkspaceOwnedTeammate(teammate) ? "workspace" : "personal",
+    ...(teammate.mode ? [teammate.mode] : []),
+    ...(teammate.skillIds.length > 0 ? ["skills"] : []),
+    ...(teammate.toolIds.length > 0 ? ["tools"] : []),
   ];
 }
 
-function createAgentCapabilityDescriptor(
-  agent: AssistantActionAgentSource,
+function createTeammateCapabilityDescriptor(
+  teammate: AssistantActionTeammateSource,
 ): AssistantCapabilityDescriptor {
-  const unavailabilityReason = getAgentUnavailabilityReason(agent);
-  const operationAccess = agent.toolIds.length > 0 ? "mixed" : "read";
-  const needsToolCalls = agent.toolIds.length > 0 || agent.skillIds.length > 0;
+  const unavailabilityReason = getTeammateUnavailabilityReason(teammate);
+  const operationAccess = teammate.toolIds.length > 0 ? "mixed" : "read";
+  const needsToolCalls = teammate.toolIds.length > 0 || teammate.skillIds.length > 0;
 
   return {
-    id: agent.id,
-    kind: "agent",
-    name: agent.name,
-    description: agent.description || undefined,
+    id: teammate.id,
+    kind: "teammate",
+    name: teammate.name,
+    description: teammate.description || undefined,
     availability: unavailabilityReason ? "unavailable" : "available",
     launch: {
       method: "conversation",
       action: "ask_agent",
     },
-    executionMode: "agent",
-    authRequirement: isWorkspaceOwnedAgent(agent) ? "pro" : "signed_in",
-    authState: isWorkspaceOwnedAgent(agent) ? "pro_required" : "signed_in",
+    executionMode: "teammate",
+    authRequirement: isWorkspaceOwnedTeammate(teammate) ? "pro" : "signed_in",
+    authState: isWorkspaceOwnedTeammate(teammate) ? "pro_required" : "signed_in",
     operationAccess,
     approvalPolicy: getApprovalPolicy(operationAccess),
     requiredModelCapabilities: needsToolCalls ? ["supportsToolCalls"] : [],
     requiredConnectors: [],
-    availabilityReason: unavailabilityReason ?? "Agent is ready to run.",
+    availabilityReason: unavailabilityReason ?? "Teammate is ready to run.",
     savedState: {
       supported: true,
     },
-    tags: getAgentTags(agent),
+    tags: getTeammateTags(teammate),
   };
 }
 
@@ -710,28 +712,28 @@ export function buildAssistantActionCatalog(
           href: app.href,
         },
       })),
-      ...(sources.agents ?? []).map((agent) => ({
-        id: `agent:${agent.id}`,
-        kind: "agent" as const,
-        label: agent.name,
-        capability: createAgentCapabilityDescriptor(agent),
-        description: agent.description || undefined,
-        status: agent.model ?? undefined,
+      ...(sources.teammates ?? []).map((teammate) => ({
+        id: `teammate:${teammate.id}`,
+        kind: "teammate" as const,
+        label: teammate.name,
+        capability: createTeammateCapabilityDescriptor(teammate),
+        description: teammate.description || undefined,
+        status: teammate.model ?? undefined,
         searchText: [
-          agent.name,
-          ...nonEmptyText(agent.description),
-          ...nonEmptyText(agent.model ?? undefined),
-          ...nonEmptyText(agent.mode ?? undefined),
-          ...agent.skillIds,
+          teammate.name,
+          ...nonEmptyText(teammate.description),
+          ...nonEmptyText(teammate.model ?? undefined),
+          ...nonEmptyText(teammate.mode ?? undefined),
+          ...teammate.skillIds,
         ],
         launch: {
           kind: "conversation" as const,
           operation: "ask_agent" as const,
-          agentId: agent.id,
+          teammateId: teammate.id,
         },
         metadata: {
-          agentId: agent.id,
-          category: getAgentCapabilityCategory(agent),
+          teammateId: teammate.id,
+          category: getTeammateCapabilityCategory(teammate),
         },
       })),
       ...(sources.skills ?? []).map((skill) => createSkillAssistantActionItem(skill)),

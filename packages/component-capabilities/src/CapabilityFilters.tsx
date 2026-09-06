@@ -1,6 +1,6 @@
 import { FormSelect, SearchInput } from "@ngriffin_uk/polychat-component-ui";
 
-export type CapabilityKind = "app" | "recipe" | "skill" | "tool" | "agent";
+export type CapabilityKind = "app" | "recipe" | "skill" | "tool" | "teammate";
 export type CapabilityFilter = "configured" | CapabilityKind;
 
 export interface CapabilityFiltersProps {
@@ -21,7 +21,7 @@ const capabilityFilters: Array<{ label: string; value: CapabilityFilter }> = [
   { label: "Recipes", value: "recipe" },
   { label: "Skills", value: "skill" },
   { label: "Tools", value: "tool" },
-  { label: "Agents", value: "agent" },
+  { label: "Teammates", value: "teammate" },
 ];
 
 export function CapabilityFilters({

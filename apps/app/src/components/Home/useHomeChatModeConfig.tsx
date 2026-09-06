@@ -52,7 +52,7 @@ export function useHomeChatModeConfig(): {
     homeChatMode,
     setHomeChatMode,
     setChatMode,
-    setSelectedAgentId,
+    setSelectedTeammateId,
     model: selectedModel,
     setModel,
     isPro,
@@ -258,9 +258,9 @@ export function useHomeChatModeConfig(): {
       return;
     }
 
-    setSelectedAgentId(null);
+    setSelectedTeammateId(null);
     setChatMode("remote");
-  }, [activeModeId, setChatMode, setSelectedAgentId]);
+  }, [activeModeId, setChatMode, setSelectedTeammateId]);
 
   const handleModeChange = useCallback(
     (modeId: HomeChatModeId) => {
@@ -272,7 +272,7 @@ export function useHomeChatModeConfig(): {
         next.delete("mode");
       } else {
         next.set("mode", modeId);
-        setSelectedAgentId(null);
+        setSelectedTeammateId(null);
         setChatMode("remote");
       }
 
@@ -310,7 +310,7 @@ export function useHomeChatModeConfig(): {
       setHomeChatMode,
       setLiveProvider,
       setSearchParams,
-      setSelectedAgentId,
+      setSelectedTeammateId,
       stopLiveSessionAndFlush,
     ],
   );
@@ -333,7 +333,7 @@ export function useHomeChatModeConfig(): {
         setModel(modelId);
         setActiveModeId("live");
         setHomeChatMode("live");
-        setSelectedAgentId(null);
+        setSelectedTeammateId(null);
         setChatMode("remote");
         setLiveProvider(nextLiveProvider);
         next.set("mode", "live");
@@ -363,7 +363,7 @@ export function useHomeChatModeConfig(): {
       setLiveProvider,
       setModel,
       setSearchParams,
-      setSelectedAgentId,
+      setSelectedTeammateId,
       stopLiveSessionAndFlush,
     ],
   );

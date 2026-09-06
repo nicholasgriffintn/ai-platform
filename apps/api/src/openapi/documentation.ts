@@ -1,5 +1,4 @@
 import { adminTagDescription } from "./content/tags/adminTagDescription.js";
-import { agentsTagDescription } from "./content/tags/agentsTagDescription.js";
 import { appsTagDescription } from "./content/tags/appsTagDescription.js";
 import { audioTagDescription } from "./content/tags/audioTagDescription.js";
 import { authTagDescription } from "./content/tags/authTagDescription.js";
@@ -13,6 +12,7 @@ import { realtimeTagDescription } from "./content/tags/realtimeTagDescription.js
 import { searchTagDescription } from "./content/tags/searchTagDescription.js";
 import { stripeTagDescription } from "./content/tags/stripeTagDescription.js";
 import { systemTagDescription } from "./content/tags/systemTagDescription.js";
+import { teammatesTagDescription } from "./content/tags/teammatesTagDescription.js";
 import { toolsTagDescription } from "./content/tags/toolsTagDescription.js";
 import { trainingTagDescription } from "./content/tags/trainingTagDescription.js";
 import { uploadsTagDescription } from "./content/tags/uploadsTagDescription.js";
@@ -20,7 +20,7 @@ import { userTagDescription } from "./content/tags/userTagDescription.js";
 
 export const tagDescriptions = {
   admin: adminTagDescription,
-  agents: agentsTagDescription,
+  teammates: teammatesTagDescription,
   apps: appsTagDescription,
   audio: audioTagDescription,
   auth: authTagDescription,

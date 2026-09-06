@@ -1,22 +1,12 @@
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 
-import { AgentEditorPage } from "~/components/Agents/AgentEditorPage";
-
-export function meta() {
-  return [{ title: "Configure an agent - Polychat" }];
-}
-
-export default function ProjectAgentPage() {
-  const { workspaceId = "", projectId = "", agentId = "" } = useParams();
-  const projectPath = `/work/${workspaceId}/projects/${projectId}`;
+export default function LegacyProjectTeammatePage() {
+  const { workspaceId, projectId, teammateId } = useParams();
 
   return (
-    <AgentEditorPage
-      agentId={agentId}
-      agentsPath={`${projectPath}/agents`}
-      backPath={`${projectPath}/library`}
-      backLabel="Back to capabilities"
-      projectId={projectId}
+    <Navigate
+      to={`/work/${workspaceId}/projects/${projectId}/teammates/${teammateId ?? "new"}`}
+      replace
     />
   );
 }

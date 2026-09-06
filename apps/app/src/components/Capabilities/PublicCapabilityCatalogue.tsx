@@ -211,7 +211,7 @@ function CuratedByYou() {
     {
       icon: <Bot size={20} strokeWidth={1.5} />,
       title: "Agents",
-      body: "Give an agent a name, a brief and the tools it may use, then hand it tasks in Chat or Work. Agents live in your account or a workspace, never in a shared list.",
+      body: "Give a teammate a name, a brief and the tools it may use, then hand it tasks in Chat or Work. Teammates live in your account or a workspace, never in a shared list.",
     },
     {
       icon: <Sparkles size={20} strokeWidth={1.5} />,
@@ -264,8 +264,8 @@ export function PublicCapabilityCatalogue() {
   const tools = data?.tools ?? [];
   const recipes = data?.recipes ?? [];
   const lede = data
-    ? `${experiences.length} experiences, ${modelTools.length + tools.length} tools and ${recipes.length} recipe templates come with every account. Agents, skills and the recipes you install are yours to curate.`
-    : "Experiences, tools and recipe templates come with every account. Agents, skills and the recipes you install are yours to curate.";
+    ? `${experiences.length} experiences, ${modelTools.length + tools.length} tools and ${recipes.length} recipe templates come with every account. Teammates, skills and the recipes you install are yours to curate.`
+    : "Experiences, tools and recipe templates come with every account. Teammates, skills and the recipes you install are yours to curate.";
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-14 px-4 pb-16 sm:px-6">
@@ -331,7 +331,7 @@ export function PublicCapabilityCatalogue() {
           <CatalogueSection
             id="yours"
             eyebrow="Curated by you"
-            title="Agents, skills and installed recipes are yours"
+            title="Teammates, skills and installed recipes are yours"
             lede="The catalogue ends where your account begins. Nothing here is shared across people; each person or workspace builds its own set."
           >
             <CuratedByYou />

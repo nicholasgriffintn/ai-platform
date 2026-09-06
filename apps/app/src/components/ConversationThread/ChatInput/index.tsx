@@ -218,10 +218,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       model,
       chatMode,
       isAuthenticationLoading,
-      selectedAgentId,
-      selectedAgentTokenPosition,
+      selectedTeammateId,
+      selectedTeammateTokenPosition,
       selectedAssistantAction,
-      setSelectedAgentTokenPosition,
+      setSelectedTeammateTokenPosition,
       setSelectedAssistantAction,
     } = useChatStore();
     const isPro = useChatStore((state) => state.isPro);
@@ -359,18 +359,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         });
       }
 
-      if (commandState.selectedAgent && typeof selectedAgentTokenPosition === "number") {
+      if (commandState.selectedTeammate && typeof selectedTeammateTokenPosition === "number") {
         tokens.push({
-          id: `agent:${commandState.selectedAgent.id}`,
-          kind: "agent",
-          label: commandState.selectedAgent.name,
-          position: selectedAgentTokenPosition,
+          id: `teammate:${commandState.selectedTeammate.id}`,
+          kind: "teammate",
+          label: commandState.selectedTeammate.name,
+          position: selectedTeammateTokenPosition,
         });
       }
 
       return tokens;
-    }, [commandState.selectedAgent, selectedAgentTokenPosition, selectedAssistantAction]);
-    const hasInlineAgentToken = composerTokens.some((token) => token.kind === "agent");
+    }, [commandState.selectedTeammate, selectedTeammateTokenPosition, selectedAssistantAction]);
+    const hasInlineTeammateToken = composerTokens.some((token) => token.kind === "teammate");
 
     const handleComposerTokenPositionsChange = (positions: ComposerInputTokenPosition[]) => {
       const nextPositions = new Map(positions.map((position) => [position.id, position.position]));
@@ -391,15 +391,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         }
       }
 
-      if (selectedAgentId) {
-        const nextPosition = nextPositions.get(`agent:${selectedAgentId}`);
+      if (selectedTeammateId) {
+        const nextPosition = nextPositions.get(`teammate:${selectedTeammateId}`);
 
         if (typeof nextPosition === "number") {
-          if (selectedAgentTokenPosition !== nextPosition) {
-            setSelectedAgentTokenPosition(nextPosition);
+          if (selectedTeammateTokenPosition !== nextPosition) {
+            setSelectedTeammateTokenPosition(nextPosition);
           }
-        } else if (typeof selectedAgentTokenPosition === "number") {
-          commandState.clearAgent();
+        } else if (typeof selectedTeammateTokenPosition === "number") {
+          commandState.clearTeammate();
         }
       }
     };
@@ -674,7 +674,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     ];
 
     const isToolSelectionLocked =
-      toolSelectionLocked || (chatMode === "agent" && selectedAgentId !== null);
+      toolSelectionLocked || (chatMode === "agent" && selectedTeammateId !== null);
     const canUseProComposerActions = isPro;
     const showInlineMultiModelToggle = isPro && !model && chatMode === "remote";
     const canShowToolMenu =
@@ -749,7 +749,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                     }
                   : undefined
               }
-              hideAgentChip={hasInlineAgentToken}
+              hideTeammateChip={hasInlineTeammateToken}
               onClearMode={modeControls?.onClearActive}
             />
           }

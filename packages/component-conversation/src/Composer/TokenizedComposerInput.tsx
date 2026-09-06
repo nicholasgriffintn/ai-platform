@@ -27,7 +27,7 @@ interface TokenizedComposerInputProps {
 
 export interface ComposerInputToken {
   id: string;
-  kind: "action" | "agent" | "skill" | "tool";
+  kind: "action" | "teammate" | "skill" | "tool";
   label: string;
   position: number;
   text?: string;
@@ -303,7 +303,7 @@ function normaliseTokens(value: string, tokens: ComposerInputToken[]) {
 
 function getTokenClassName(kind: ComposerInputToken["kind"]) {
   switch (kind) {
-    case "agent":
+    case "teammate":
       return "border-active-work/45 bg-active-work/10 text-active-work";
     case "skill":
       return "border-creative/45 bg-creative/10 text-creative";

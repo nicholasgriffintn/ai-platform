@@ -1,10 +1,10 @@
 import type { ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { canAccessAgent } from "~/services/agents/access";
 import { getRecipeById } from "~/services/apps/recipes";
 import { getExperienceCatalog } from "~/services/experiences/config";
 import { getSkillDefinition } from "~/services/skills";
+import { canAccessTeammate } from "~/services/teammates/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export async function validateCapabilityReference(
@@ -12,18 +12,18 @@ export async function validateCapabilityReference(
   capabilityId: string,
   context?: ServiceContext,
 ): Promise<void> {
-  if (kind === "agent") {
+  if (kind === "teammate") {
     const userId = context?.user?.id;
-    const agent =
-      context && userId ? await context.repositories.agents.getAgentById(capabilityId) : null;
+    const teammate =
+      context && userId ? await context.repositories.teammates.getTeammateById(capabilityId) : null;
 
-    if (!context || !userId || !agent) {
-      throw new AssistantError("Unknown agent", ErrorType.NOT_FOUND, 404);
+    if (!context || !userId || !teammate) {
+      throw new AssistantError("Unknown teammate", ErrorType.NOT_FOUND, 404);
     }
 
-    if (!(await canAccessAgent(context, agent, "read", userId))) {
+    if (!(await canAccessTeammate(context, teammate, "read", userId))) {
       throw new AssistantError(
-        "You can only attach an agent you can access",
+        "You can only attach an teammate you can access",
         ErrorType.FORBIDDEN,
         403,
       );

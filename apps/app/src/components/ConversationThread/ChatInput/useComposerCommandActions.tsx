@@ -1,7 +1,7 @@
 import {
   getComposerCommandMenuState,
   type ComposerActionCatalogConfig,
-  type ComposerAgentOption,
+  type ComposerTeammateOption,
   type ComposerAssistantActionCapability,
   type ComposerCommandAction,
 } from "@ngriffin_uk/polychat-component-conversation";
@@ -56,10 +56,10 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
-import { useAgents } from "~/hooks/useAgents";
 import { useAssistantActionCatalog } from "~/hooks/useAssistantActionCatalog";
 import { useModels } from "~/hooks/useModels";
 import { useModelToolOptions } from "~/hooks/useModelTools";
+import { useTeammates } from "~/hooks/useTeammates";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { clearModelResponseSettings } from "~/lib/chat-settings";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -119,21 +119,21 @@ export function useComposerCommandActions({
     model,
     modelTier,
     selectedAssistantAction,
-    selectedAgentId,
+    selectedTeammateId,
     setChatMode,
     setChatSettings,
     setModel,
     setModelTier,
     setSelectedAssistantAction,
-    setSelectedAgentId,
-    setSelectedAgentTokenPosition,
+    setSelectedTeammateId,
+    setSelectedTeammateTokenPosition,
     setUseMultiModel,
     useMultiModel,
   } = useChatStore();
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
-  const includeAgents = assistantActionCatalog?.includeAgents !== false;
-  const { agents, isLoadingAgents } = useAgents({ enabled: includeAgents });
+  const includeTeammates = assistantActionCatalog?.includeTeammates !== false;
+  const { teammates, isLoadingTeammates } = useTeammates({ enabled: includeTeammates });
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
   const selectedTools = useToolsStore((state) => state.selectedTools);
@@ -164,17 +164,17 @@ export function useComposerCommandActions({
     [modelToolOptions],
   );
   const actionCatalog = useAssistantActionCatalog({
-    includeAgents,
+    includeTeammates,
     modelTools: assistantActionCatalog?.includeTools === false ? [] : availableModelTools,
     projectId: assistantActionCatalog?.projectId,
   });
-  const canUseAgents =
+  const canUseTeammates =
     modeCommands.length === 0 ||
     !modeCommands.some((command) => command.isActive && command.command !== "chat");
   const toolSelectionLocked =
-    toolSelectionLockedOverride || (chatMode === "agent" && selectedAgentId !== null);
+    toolSelectionLockedOverride || (chatMode === "agent" && selectedTeammateId !== null);
   const allowedActionItems = useMemo(() => {
-    if (!canUseAgents) {
+    if (!canUseTeammates) {
       return [];
     }
 
@@ -201,7 +201,7 @@ export function useComposerCommandActions({
         allowedCapabilityIdsByKind.get(capabilityKind)?.has(item.capability.id) === true
       );
     });
-  }, [actionCatalog.items, allowedAssistantActionCapabilities, canUseAgents]);
+  }, [actionCatalog.items, allowedAssistantActionCapabilities, canUseTeammates]);
 
   const selectModelWithDefaults = useCallback(
     (nextModel: string | null, settings: ChatSettings = chatSettings) => {
@@ -241,8 +241,8 @@ export function useComposerCommandActions({
         command: `tier ${tier.command}`,
         icon: <Cpu className="h-4 w-4" aria-hidden="true" />,
         isActive: model === null && modelTier === tier.id,
-        disabled: selectedAgentId !== null,
-        disabledReason: "The selected agent controls the model.",
+        disabled: selectedTeammateId !== null,
+        disabledReason: "The selected teammate controls the model.",
         onSelect: () => {
           setModelTier(tier.id);
           selectModelWithDefaults(null);
@@ -262,8 +262,8 @@ export function useComposerCommandActions({
           command: `model ${modelId}`,
           icon: <Cpu className="h-4 w-4" aria-hidden="true" />,
           isActive: model === modelId,
-          disabled: selectedAgentId !== null,
-          disabledReason: "The selected agent controls the model.",
+          disabled: selectedTeammateId !== null,
+          disabledReason: "The selected teammate controls the model.",
           onSelect: () => selectModelWithDefaults(modelId),
         })),
     ],
@@ -273,7 +273,7 @@ export function useComposerCommandActions({
       model,
       modelTier,
       selectModelWithDefaults,
-      selectedAgentId,
+      selectedTeammateId,
       setModelTier,
     ],
   );
@@ -291,9 +291,9 @@ export function useComposerCommandActions({
     [modelCommands],
   );
 
-  const clearAgent = useCallback(() => {
-    setSelectedAgentId(null);
-    setSelectedAgentTokenPosition(null);
+  const clearTeammate = useCallback(() => {
+    setSelectedTeammateId(null);
+    setSelectedTeammateTokenPosition(null);
     if (chatMode === "agent") {
       setChatMode("remote");
       selectModelWithDefaults(defaultModelId ?? null, {
@@ -307,8 +307,8 @@ export function useComposerCommandActions({
     defaultModelId,
     selectModelWithDefaults,
     setChatMode,
-    setSelectedAgentId,
-    setSelectedAgentTokenPosition,
+    setSelectedTeammateId,
+    setSelectedTeammateTokenPosition,
   ]);
 
   const toggleTool = useCallback(
@@ -392,7 +392,7 @@ export function useComposerCommandActions({
           isActive: selectedTools.includes(tool.id),
           disabled: !tool.available || toolSelectionLocked,
           disabledReason: toolSelectionLocked
-            ? "Agent tools are controlled by the selected agent."
+            ? "Tools are controlled by the selected teammate."
             : tool.availabilityReason,
           onSelect: () => toggleTool(tool.id),
         };
@@ -628,24 +628,24 @@ export function useComposerCommandActions({
     );
   }, [allowedActionItems, directive]);
 
-  const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
+  const selectedTeammate = teammates.find((teammate) => teammate.id === selectedTeammateId);
 
-  const selectAgent = useCallback(
-    (agent: ComposerAgentOption) => {
-      if (!canUseAgents) {
+  const selectTeammate = useCallback(
+    (teammate: ComposerTeammateOption) => {
+      if (!canUseTeammates) {
         return undefined;
       }
 
-      setSelectedAgentId(agent.id);
+      setSelectedTeammateId(teammate.id);
       const selection = directive
-        ? replaceComposerDirectiveWithCursor(chatInput, directive, `@${agent.name}`, {
+        ? replaceComposerDirectiveWithCursor(chatInput, directive, `@${teammate.name}`, {
             appendTrailingSpace: true,
           })
-        : appendComposerInlineTokenWithCursor(chatInput, agent.name);
+        : appendComposerInlineTokenWithCursor(chatInput, teammate.name);
 
-      setSelectedAgentTokenPosition(selection.replacementStart);
+      setSelectedTeammateTokenPosition(selection.replacementStart);
       setChatMode("agent");
-      selectModelWithDefaults(agent.model ?? defaultModelId ?? null, {
+      selectModelWithDefaults(teammate.model ?? defaultModelId ?? null, {
         ...chatSettings,
         localOnly: false,
       });
@@ -654,7 +654,7 @@ export function useComposerCommandActions({
       return selection;
     },
     [
-      canUseAgents,
+      canUseTeammates,
       chatInput,
       chatSettings,
       directive,
@@ -662,23 +662,23 @@ export function useComposerCommandActions({
       selectModelWithDefaults,
       setChatMode,
       setChatInput,
-      setSelectedAgentId,
-      setSelectedAgentTokenPosition,
+      setSelectedTeammateId,
+      setSelectedTeammateTokenPosition,
     ],
   );
 
   const selectActionItem = useCallback(
     (item: AssistantActionItem, tokenText = getComposerInlineTokenText(item.label)) => {
-      if (!canUseAgents) {
+      if (!canUseTeammates) {
         return undefined;
       }
 
-      if (item.kind === "agent") {
-        const agentId = item.id.replace(/^agent:/, "");
-        const agent = agents.find((candidate) => candidate.id === agentId);
+      if (item.kind === "teammate") {
+        const teammateId = item.id.replace(/^teammate:/, "");
+        const teammate = teammates.find((candidate) => candidate.id === teammateId);
 
-        if (agent) {
-          return selectAgent(agent);
+        if (teammate) {
+          return selectTeammate(teammate);
         }
 
         return undefined;
@@ -707,11 +707,11 @@ export function useComposerCommandActions({
       return selection;
     },
     [
-      agents,
-      canUseAgents,
+      teammates,
+      canUseTeammates,
       chatInput,
       directive,
-      selectAgent,
+      selectTeammate,
       selectedAssistantAction,
       setChatInput,
       setSelectedAssistantAction,
@@ -763,7 +763,7 @@ export function useComposerCommandActions({
 
       command.onSelect();
       if (command.command !== "chat" && modeCommands.some((mode) => mode.id === command.id)) {
-        clearAgent();
+        clearTeammate();
       }
 
       consumeDirective();
@@ -772,7 +772,7 @@ export function useComposerCommandActions({
     },
     [
       chatInput,
-      clearAgent,
+      clearTeammate,
       consumeDirective,
       directive,
       modeCommands,
@@ -797,21 +797,21 @@ export function useComposerCommandActions({
 
   return {
     activeSlashCommand,
-    agents,
+    teammates,
     actionItems: allowedActionItems,
-    canUseAgents,
-    clearAgent,
+    canUseTeammates,
+    clearTeammate,
     filteredActionItems,
     filteredSlashCommands,
     exitSlashSubmenu,
-    isLoadingAgents,
+    isLoadingTeammates,
     modeCommands,
     selectActionItem,
-    selectAgent,
+    selectTeammate,
     selectSlashCommand,
     selectedAssistantAction,
-    selectedAgent,
-    selectedAgentId,
+    selectedTeammate,
+    selectedTeammateId,
     settingCommands,
     slashCommands,
   };

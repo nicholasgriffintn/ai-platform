@@ -1,10 +1,10 @@
 import z from "zod/v4";
 
-import { agentSummarySchema } from "./agents";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json";
 import { externalHttpUrlSchema } from "./navigation";
 import { outputSchema } from "./outputs";
 import { skillSummarySchema } from "./skills";
+import { teammateSummarySchema } from "./teammates";
 
 export const weatherQuerySchema = z.object({
   longitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),
@@ -235,7 +235,7 @@ export const assistantCapabilityKindSchema = z.enum([
   "dynamic_app",
   "frontend_app",
   "connector",
-  "agent",
+  "teammate",
   "skill",
   "tool",
 ]);
@@ -265,7 +265,7 @@ export const assistantCapabilityExecutionModeSchema = z.enum([
   "navigation",
   "connector_operation",
   "tool",
-  "agent",
+  "teammate",
 ]);
 
 export const assistantCapabilityAuthRequirementSchema = z.enum([
@@ -525,7 +525,7 @@ export const renderableToolSchema = z.object({
 });
 
 export const capabilityCatalogResponseSchema = z.object({
-  agents: z.array(agentSummarySchema),
+  teammates: z.array(teammateSummarySchema),
   experiences: z.array(projectExperienceDefinitionSchema),
   modelTools: z.array(modelToolDefinitionSchema),
   skills: z.array(skillSummarySchema),

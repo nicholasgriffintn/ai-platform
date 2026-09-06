@@ -66,7 +66,7 @@ export function useStreamingResponse(
     localOnlyMode,
     useMultiModel,
     modelTier,
-    selectedAgentId,
+    selectedTeammateId,
     markConversationRemoteAvailable,
     setModel,
     user,
@@ -521,7 +521,8 @@ export function useStreamingResponse(
             assistantMessage = await apiService.streamChatCompletions({
               chatSettings,
               completionId: conversationId,
-              endpoint: chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
+              endpoint:
+                chatMode === "agent" ? `/teammates/${selectedTeammateId}/completions` : undefined,
               messages: normalizedMessages,
               mode: chatMode,
               model: modelToSend,
@@ -643,7 +644,7 @@ export function useStreamingResponse(
       addAssistantMessage,
       useMultiModel,
       modelTier,
-      selectedAgentId,
+      selectedTeammateId,
       apiModels,
       updateLoading,
       webLLMService,

@@ -232,6 +232,13 @@
       "when": 1788689087294,
       "tag": "0032_light_the_enforcers",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1788689087295,
+      "tag": "0033_rename_agents_to_teammates",
+      "breakpoints": true
     }
   ]
 }

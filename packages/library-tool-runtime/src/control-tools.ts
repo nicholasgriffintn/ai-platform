@@ -34,7 +34,7 @@ export const finishToolDefinition: ToolDefinition = defineTool({
   required: ["summary"],
 });
 
-export const agentControlToolDefinitions: ToolDefinition[] = [
+export const teammateControlToolDefinitions: ToolDefinition[] = [
   updatePlanToolDefinition,
   finishToolDefinition,
 ];

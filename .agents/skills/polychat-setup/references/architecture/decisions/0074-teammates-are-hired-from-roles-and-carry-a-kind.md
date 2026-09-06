@@ -14,4 +14,4 @@ Every teammate has a `kind` of `colleague` or `bot`. A colleague is the existing
 
 ## Trade-off
 
-The role catalogue is curated code, not data: adding a role is a release. That keeps briefs reviewable and versioned with the product, at the cost of not being editable by an operator. Storage still uses the `agents` tables and their column names while the product vocabulary says teammate; renaming them needs a table-rename migration that Drizzle cannot generate without an interactive answer, so it is scheduled separately rather than hand-written. Bot restrictions are a tool-level refusal, so a bot given a custom MCP tool that writes elsewhere is still bounded only by the ordinary approval rules.
+The role catalogue is curated code, not data: adding a role is a release. That keeps briefs reviewable and versioned with the product, at the cost of not being editable by an operator. Bot restrictions are a tool-level refusal, so a bot given a custom MCP tool that writes elsewhere is still bounded only by the ordinary approval rules.

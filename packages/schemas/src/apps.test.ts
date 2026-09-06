@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { contentExtractSchema, recipeInstallationUpdateRequestSchema } from "./apps";
-import { buildAssistantActionCatalog, type AssistantActionAgentSource } from "./assistant-actions";
+import {
+  buildAssistantActionCatalog,
+  type AssistantActionTeammateSource,
+} from "./assistant-actions";
 import {
   deleteEmbeddingSchema,
   insertEmbeddingSchema,
@@ -225,9 +228,9 @@ describe("embedding provider configuration schemas", () => {
   });
 });
 
-describe("agent capability descriptors", () => {
-  const baseAgent: AssistantActionAgentSource = {
-    id: "agent-1",
+describe("teammate capability descriptors", () => {
+  const baseTeammate: AssistantActionTeammateSource = {
+    id: "teammate-1",
     name: "Researcher",
     description: "Reads long documents.",
     avatarUrl: null,
@@ -241,22 +244,22 @@ describe("agent capability descriptors", () => {
     unavailableToolIds: [],
   };
 
-  function describeAgent(agent: AssistantActionAgentSource) {
-    const [item] = buildAssistantActionCatalog({ agents: [agent] }).items;
+  function describeTeammate(teammate: AssistantActionTeammateSource) {
+    const [item] = buildAssistantActionCatalog({ teammates: [teammate] }).items;
 
     return item;
   }
 
-  it("reports an agent unavailable and says why when its model cannot be run", () => {
-    const item = describeAgent({ ...baseAgent, modelAvailable: false });
+  it("reports an teammate unavailable and says why when its model cannot be run", () => {
+    const item = describeTeammate({ ...baseTeammate, modelAvailable: false });
 
     expect(item.capability.availability).toBe("unavailable");
     expect(item.capability.availabilityReason).toContain("claude-sonnet");
   });
 
-  it("names the skills and tools this scope cannot give the agent", () => {
-    const item = describeAgent({
-      ...baseAgent,
+  it("names the skills and tools this scope cannot give the teammate", () => {
+    const item = describeTeammate({
+      ...baseTeammate,
       skillIds: ["artifacts"],
       unavailableSkillIds: ["artifacts"],
     });
@@ -265,16 +268,17 @@ describe("agent capability descriptors", () => {
     expect(item.capability.availabilityReason).toContain("artifacts");
   });
 
-  it("requires tool calling only from an agent that carries skills or tools", () => {
-    expect(describeAgent(baseAgent).capability.requiredModelCapabilities).toEqual([]);
+  it("requires tool calling only from an teammate that carries skills or tools", () => {
+    expect(describeTeammate(baseTeammate).capability.requiredModelCapabilities).toEqual([]);
     expect(
-      describeAgent({ ...baseAgent, toolIds: ["web_search"] }).capability.requiredModelCapabilities,
+      describeTeammate({ ...baseTeammate, toolIds: ["web_search"] }).capability
+        .requiredModelCapabilities,
     ).toEqual(["supportsToolCalls"]);
   });
 
-  it("separates a workspace agent from a personal one by auth and category", () => {
-    const personal = describeAgent(baseAgent);
-    const workspace = describeAgent({ ...baseAgent, ownerScopeType: "workspace" });
+  it("separates a workspace teammate from a personal one by auth and category", () => {
+    const personal = describeTeammate(baseTeammate);
+    const workspace = describeTeammate({ ...baseTeammate, ownerScopeType: "workspace" });
 
     expect(personal.capability.authRequirement).toBe("signed_in");
     expect(personal.metadata?.category).toBe("Personal");

@@ -8,7 +8,7 @@ export function meta() {
     {
       name: "description",
       content:
-        "Everything Polychat can do beyond a reply: built-in experiences, model tools, function tools and recipe templates, plus the agents, skills and recipes you curate yourself.",
+        "Everything Polychat can do beyond a reply: built-in experiences, model tools, function tools and recipe templates, plus the teammates, skills and recipes you curate yourself.",
     },
   ];
 }

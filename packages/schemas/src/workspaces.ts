@@ -13,7 +13,7 @@ import {
 import { sandboxEnvironmentSetupSchema } from "./sandbox-environment";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
-export const projectCapabilityKindSchema = z.enum(["app", "recipe", "skill", "tool", "agent"]);
+export const projectCapabilityKindSchema = z.enum(["app", "recipe", "skill", "tool", "teammate"]);
 export const projectCodingPromptStrategySchema = z.enum([
   "auto",
   "feature-delivery",
@@ -218,6 +218,7 @@ export const projectDetailSchema = projectSummarySchema.extend({
 
 export type WorkspaceRole = z.infer<typeof workspaceRoleSchema>;
 export type ProjectCapabilityKind = z.infer<typeof projectCapabilityKindSchema>;
+
 export type WorkspaceMember = z.infer<typeof workspaceMemberSchema>;
 export type WorkspaceInvitation = z.infer<typeof workspaceInvitationSchema>;
 export type WorkspaceInvitationDelivery = z.infer<typeof workspaceInvitationDeliverySchema>;

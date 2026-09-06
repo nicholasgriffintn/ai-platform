@@ -90,20 +90,20 @@ test.describe("Work experience", () => {
       await workPage.openProjectSurface("Teammates & tools");
       await capabilitiesPage.openAddMenuWithKeyboard();
 
-      await expect(capabilitiesPage.addMenuItem("New agent")).toContainText(
+      await expect(capabilitiesPage.addMenuItem("New teammate")).toContainText(
         "Configure a persona, its model, tools and skills",
       );
-      await expect(capabilitiesPage.addMenuItem("Attach an agent")).toContainText(
-        "Bring in an agent this workspace already owns",
+      await expect(capabilitiesPage.addMenuItem("Attach an teammate")).toContainText(
+        "Bring in an teammate this workspace already owns",
       );
       await expect(capabilitiesPage.addMenuItem("Add a skill")).toContainText(
-        "Upload an Agent Skills document",
+        "Upload an Teammate Skills document",
       );
-      await expect(capabilitiesPage.addMenuItem("Browse shared agents")).toHaveCount(0);
-      await expect(capabilitiesPage.addMenuItem("New agent")).toBeFocused();
+      await expect(capabilitiesPage.addMenuItem("Browse shared teammates")).toHaveCount(0);
+      await expect(capabilitiesPage.addMenuItem("New teammate")).toBeFocused();
 
       await capabilitiesPage.moveAddMenuSelection();
-      await expect(capabilitiesPage.addMenuItem("Attach an agent")).toBeFocused();
+      await expect(capabilitiesPage.addMenuItem("Attach an teammate")).toBeFocused();
       await capabilitiesPage.moveAddMenuSelection();
       await expect(capabilitiesPage.addMenuItem("Add a skill")).toBeFocused();
       await capabilitiesPage.selectAddMenuItemWithKeyboard();
@@ -112,10 +112,10 @@ test.describe("Work experience", () => {
 
       await capabilitiesPage.open();
       await capabilitiesPage.openAddMenuWithKeyboard();
-      await expect(capabilitiesPage.addMenuItem("Browse shared agents")).toContainText(
-        "Install an agent someone has published",
+      await expect(capabilitiesPage.addMenuItem("Browse shared teammates")).toContainText(
+        "Install an teammate someone has published",
       );
-      await expect(capabilitiesPage.addMenuItem("Attach an agent")).toHaveCount(0);
+      await expect(capabilitiesPage.addMenuItem("Attach an teammate")).toHaveCount(0);
       await capabilitiesPage.closeAddMenuWithKeyboard();
       await expect(capabilitiesPage.addMenu).toBeFocused();
     });

@@ -31,7 +31,7 @@ export interface CreateTaskDialogProps {
   open: boolean;
   flow: ProjectFlow | null;
   members: { userId: number; name: string | null }[];
-  agents: { id: string; name: string }[];
+  teammates: { id: string; name: string }[];
   boardTasks: ProjectTask[];
   isSubmitting?: boolean;
   errorMessage?: string;
@@ -60,7 +60,7 @@ export function CreateTaskDialog({
   open,
   flow,
   members,
-  agents,
+  teammates,
   boardTasks,
   isSubmitting = false,
   errorMessage,
@@ -74,7 +74,7 @@ export function CreateTaskDialog({
   const [contextNotes, setContextNotes] = useState("");
   const [assignee, setAssignee] = useState("");
   const [stageId, setStageId] = useState(flow?.stages[0]?.id ?? "");
-  const [agentId, setAgentId] = useState("");
+  const [teammateId, setTeammateId] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [constraintNotes, setConstraintNotes] = useState("");
   const [dependsOn, setDependsOn] = useState<string[]>([]);
@@ -88,7 +88,7 @@ export function CreateTaskDialog({
     setContextNotes("");
     setAssignee("");
     setStageId(flow?.stages[0]?.id ?? "");
-    setAgentId("");
+    setTeammateId("");
     setShowAdvanced(false);
     setConstraintNotes("");
     setDependsOn([]);
@@ -118,7 +118,9 @@ export function CreateTaskDialog({
         requireApprovalFor,
         assigneeUserId: assignee ? Number(assignee) : null,
         runner:
-          !stageId && agentId ? { kind: "conversation", agentId, model: null, mode: null } : null,
+          !stageId && teammateId
+            ? { kind: "conversation", teammateId, model: null, mode: null }
+            : null,
         stageId: stageId || null,
         tokenBudget: tokenBudget ? Number(tokenBudget) : null,
       },
@@ -136,7 +138,7 @@ export function CreateTaskDialog({
       <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-2xl">
         <form onSubmit={(event) => void handleSubmit(event)} className="space-y-5">
           <DialogHeader>
-            <DialogTitle>Add work to the agent queue</DialogTitle>
+            <DialogTitle>Add work to the teammate queue</DialogTitle>
             <DialogDescription>
               Define the outcome, choose its pipeline entry point, then save it or start the run.
             </DialogDescription>
@@ -152,7 +154,7 @@ export function CreateTaskDialog({
 
           <Field
             label="Acceptance criteria"
-            hint="The agent uses these to decide when its goal is complete."
+            hint="The teammate uses these to decide when its goal is complete."
           >
             <div className="space-y-2">
               {criteria.map((criterion, index) => (
@@ -218,15 +220,15 @@ export function CreateTaskDialog({
               </FormSelect>
             ) : (
               <FormSelect
-                label="Agent"
-                value={agentId}
-                onChange={(event) => setAgentId(event.target.value)}
+                label="Teammate"
+                value={teammateId}
+                onChange={(event) => setTeammateId(event.target.value)}
                 required
               >
-                <option value="">Choose an agent</option>
-                {agents.map((agent) => (
-                  <option key={agent.id} value={agent.id}>
-                    {agent.name}
+                <option value="">Choose an teammate</option>
+                {teammates.map((teammate) => (
+                  <option key={teammate.id} value={teammate.id}>
+                    {teammate.name}
                   </option>
                 ))}
               </FormSelect>

@@ -7,10 +7,10 @@ import z from "zod/v4";
 
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { listScopedAgentSummaries } from "~/services/agents";
 import { listRecipeCatalogueSummaries } from "~/services/apps/recipes";
 import { getProjectExperienceCatalog, MODEL_TOOL_DEFINITIONS } from "~/services/experiences/config";
 import { listScopedSkillSummaries } from "~/services/skills";
+import { listScopedTeammateSummaries } from "~/services/teammates";
 import { listCatalogueTools } from "~/services/tools/toolsOperations";
 
 const app = new Hono();
@@ -26,20 +26,20 @@ addRoute(app, "get", "/", {
   tags: ["capabilities"],
   summary: "List capability catalogue",
   description:
-    "Returns the agents, rich experiences, model tools and skills a project or person can enable. Function tools are published by /tools.",
+    "Returns the teammates, rich experiences, model tools and skills a project or person can enable. Function tools are published by /tools.",
   auth: "user-or-anonymous",
   querySchema: z.object({ projectId: z.string().min(1).optional() }),
   responses: {
     200: { description: "Capability catalogue", schema: capabilityCatalogResponseSchema },
   },
   handler: async ({ query, serviceContext, user }) => {
-    const [agents, skills] = await Promise.all([
-      listScopedAgentSummaries(serviceContext, user?.id, query.projectId),
+    const [teammates, skills] = await Promise.all([
+      listScopedTeammateSummaries(serviceContext, user?.id, query.projectId),
       listScopedSkillSummaries(serviceContext, user?.id, query.projectId),
     ]);
 
     return {
-      agents,
+      teammates,
       experiences: getProjectExperienceCatalog(),
       modelTools: MODEL_TOOL_DEFINITIONS,
       skills,
