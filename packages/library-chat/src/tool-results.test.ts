@@ -128,6 +128,30 @@ describe("resolveToolMessageDisplay", () => {
       status: "success",
     });
   });
+
+  it("exposes a bounded live preview without changing the stored result payload", () => {
+    const message = {
+      id: "tool-1",
+      role: "tool",
+      name: "search",
+      content: "Preview",
+      data: {
+        streamPreview: {
+          truncated: true,
+          fullMessageId: "tool-1",
+          originalCharacters: 90_000,
+          previewCharacters: 32_768,
+        },
+      },
+    } as unknown as Message;
+
+    expect(resolveToolMessageDisplay(message).streamPreview).toEqual({
+      truncated: true,
+      fullMessageId: "tool-1",
+      originalCharacters: 90_000,
+      previewCharacters: 32_768,
+    });
+  });
 });
 
 describe("applyToolInteractionResolutions", () => {

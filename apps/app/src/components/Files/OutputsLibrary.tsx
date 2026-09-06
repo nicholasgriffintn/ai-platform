@@ -2,6 +2,7 @@ import { Card, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat
 import {
   OutputCardGrid,
   OutputDetailHeader,
+  OutputRevisionReview,
   ShareLinkList,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { Puzzle } from "lucide-react";
@@ -12,9 +13,11 @@ import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import {
   useCreateOutputShare,
   useOutput,
+  useOutputHistory,
   useOutputs,
   useOutputShares,
   useRevokeOutputShare,
+  useRestoreOutputRevision,
 } from "~/hooks/useOutputs";
 import { useRunnableTool } from "~/hooks/useRunnableTools";
 import { isAuthenticationError } from "~/lib/errors";
@@ -25,7 +28,8 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
   const mintedShareTokens = useRef(new Map<string, string>());
   const createShare = useCreateOutputShare();
   const revokeShare = useRevokeOutputShare();
-  const outputId = subpath.split("/").filter(Boolean)[0];
+  const restoreRevision = useRestoreOutputRevision();
+  const outputId = subpath.split("/").find(Boolean);
   const { data: shares } = useOutputShares(outputId ?? null);
   const {
     data: outputs,
@@ -40,6 +44,7 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
     error: outputError,
   } = useOutput(outputId ?? null);
   const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
+  const { data: outputHistory, error: outputHistoryError } = useOutputHistory(outputId ?? null);
 
   if (outputId) {
     if (isOutputLoading) {
@@ -69,6 +74,7 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
         <OutputDetailHeader
           capabilityId={output.capabilityId}
           title={output.title}
+          provenance={output.provenance}
           isSharing={createShare.isPending}
           hasCopiedLink={copiedOutputId === output.id}
           errorMessage={shareError?.outputId === output.id ? shareError.message : undefined}
@@ -84,16 +90,40 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
 
               await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
               setCopiedOutputId(output.id);
-            } catch (error) {
+            } catch (shareFailure) {
               setCopiedOutputId(null);
               setShareError({
                 outputId: output.id,
-                message: error instanceof Error ? error.message : "Could not copy the share link",
+                message:
+                  shareFailure instanceof Error
+                    ? shareFailure.message
+                    : "Could not copy the share link",
               });
             }
           }}
         />
         <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
+        {outputHistory ? (
+          <OutputRevisionReview
+            history={outputHistory}
+            isRestoring={restoreRevision.isPending}
+            errorMessage={
+              restoreRevision.error?.message ??
+              (outputHistoryError ? "Revision history is unavailable." : undefined)
+            }
+            onRestore={async (revision, expectedRevision) => {
+              await restoreRevision.mutateAsync({
+                outputId: output.id,
+                revision,
+                expectedRevision,
+              });
+            }}
+          />
+        ) : outputHistoryError ? (
+          <p role="alert" className="text-sm text-failure">
+            Revision history is unavailable.
+          </p>
+        ) : null}
         <ShareLinkList
           shares={shares ?? []}
           revokingShareId={revokeShare.isPending ? (revokeShare.variables?.shareId ?? null) : null}

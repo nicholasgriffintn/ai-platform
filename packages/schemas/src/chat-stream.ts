@@ -118,6 +118,21 @@ export interface ParsedChatStreamSseBuffer {
   remainingBuffer: string;
 }
 
+export const CHAT_STREAM_MAX_EVENT_BYTES = 4 * 1024 * 1024;
+export const CHAT_STREAM_TOOL_PREVIEW_CHARACTERS = 32 * 1024;
+export const CHAT_STREAM_PROGRESS_BATCH_EVENTS = 64;
+
+const chatStreamProgressEventTypes = new Set([
+  "content_block_delta",
+  "response.output_text.delta",
+  "signature_delta",
+  "thinking_delta",
+]);
+
+export function isChatStreamProgressEvent(event: ParsedChatStreamSseEvent): boolean {
+  return typeof event.type === "string" && chatStreamProgressEventTypes.has(event.type);
+}
+
 interface PendingToolCall {
   id: string;
   name: string;
@@ -203,15 +218,25 @@ export function parseChatStreamSseEvent(block: string): ParsedChatStreamSseEvent
 
 export function parseChatStreamSseBuffer(
   buffer: string,
-  options: { flush?: boolean } = {},
+  options: { flush?: boolean; maxEventBytes?: number } = {},
 ): ParsedChatStreamSseBuffer {
   const blocks = buffer.split(/\r?\n\r?\n/);
   const trailingBuffer = blocks.pop() || "";
+  const maxEventBytes = options.maxEventBytes ?? CHAT_STREAM_MAX_EVENT_BYTES;
+
+  if (exceedsUtf8ByteLimit(trailingBuffer, maxEventBytes)) {
+    throw new RangeError(`Chat stream event exceeded ${maxEventBytes} bytes`);
+  }
+
   const completeBlocks =
     options.flush && trailingBuffer.trim() ? [...blocks, trailingBuffer] : blocks;
   const events = completeBlocks.flatMap((block): ParsedChatStreamSseEvent[] => {
     if (!block.trim()) {
       return [];
+    }
+
+    if (exceedsUtf8ByteLimit(block, maxEventBytes)) {
+      throw new RangeError(`Chat stream event exceeded ${maxEventBytes} bytes`);
     }
 
     const event = parseChatStreamSseEvent(`${block}\n\n`);
@@ -223,6 +248,18 @@ export function parseChatStreamSseBuffer(
     events,
     remainingBuffer: options.flush ? "" : trailingBuffer,
   };
+}
+
+function exceedsUtf8ByteLimit(value: string, maximumBytes: number): boolean {
+  if (value.length > maximumBytes) {
+    return true;
+  }
+
+  if (value.length * 3 <= maximumBytes) {
+    return false;
+  }
+
+  return new TextEncoder().encode(value).byteLength > maximumBytes;
 }
 
 export function formatChatStreamSseEvent(

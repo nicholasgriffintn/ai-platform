@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 2,
+    "reliability": 1,
+    "releaseDate": "December 29, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 33.2,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The chutes/XiaomiMiMo/MiMo V2 Flash family includes models that produce text.",
+  "models": {
+    "mimo-v2-flash": {
+      "defaults": {
+        "name": "MiMo V2 Flash",
+        "description": "MiMo V2 Flash accepts text and produces text."
+      }
+    }
+  }
+}

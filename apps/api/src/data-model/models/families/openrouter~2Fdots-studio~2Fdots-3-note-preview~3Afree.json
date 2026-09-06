@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 512000,
+    "maxTokens": 460800,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "August 14, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/dots studio/dots 3 note preview:free family includes models that produce text.",
+  "models": {
+    "dots3-note-preview-free": {
+      "defaults": {
+        "name": "Dots3-Note Preview (free)",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+      }
+    }
+  }
+}

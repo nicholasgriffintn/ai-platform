@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 30000,
+    "maxTokens": 30000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "September 2025",
+    "releaseDate": "September 2, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The regolo ai/apertus 70b family includes models that produce text.",
+  "models": {
+    "apertus-70b": {
+      "defaults": {
+        "name": "Apertus 70B",
+        "description": "Fully open 70B multilingual LLM supporting 1800+ languages with 65K context. Trained on 15T tokens of compliant open data. Apache 2.0, EU AI Act compliant."
+      }
+    }
+  }
+}

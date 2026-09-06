@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "contextWindow": 30000,
+    "maxTokens": 8000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "March 31, 2025",
+    "releaseDate": "August 12, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/baidu/ernie 4.5 vl 28b a3b family includes models that produce text.",
+  "models": {
+    "ernie-4-5-vl-28b-a3b": {
+      "defaults": {
+        "name": "ERNIE 4.5 VL 28B A3B",
+        "description": "ERNIE 4.5 VL 28B A3B accepts text, image and produces text."
+      }
+    }
+  }
+}

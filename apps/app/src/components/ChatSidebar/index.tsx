@@ -15,7 +15,8 @@ import { useCallback, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 import type { CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
-import { ConversationOrganisationDialog } from "~/components/ConversationOrganisationDialog";
+import { ConversationGroupsDialog } from "~/components/ConversationGroupsDialog";
+import { ConversationItemActions } from "~/components/ConversationItemActions";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
   useChats,
@@ -23,15 +24,16 @@ import {
   useSetAllChatsArchived,
   useUpdateChatTitle,
 } from "~/hooks/useChat";
-import { buildConversationGroups } from "~/lib/conversation-groups";
 import {
   getPersonalConversationPath,
   resolvePersonalConversationId,
 } from "~/lib/conversation-route";
+import { buildConversationSections } from "~/lib/conversation-sections";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
+import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
 
@@ -90,7 +92,7 @@ export const ChatSidebar = ({
   const updateTitle = useUpdateChatTitle();
   const setAllArchived = useSetAllChatsArchived();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [conversationToOrganise, setConversationToOrganise] = useState<string | null>(null);
+  const [conversationForGroups, setConversationForGroups] = useState<string | null>(null);
   const [confirmArchiveAll, setConfirmArchiveAll] = useState<boolean | null>(null);
   const loadMoreConversations = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -224,7 +226,7 @@ export const ChatSidebar = ({
     });
   };
 
-  const conversationGroups = buildConversationGroups(
+  const conversationSections = buildConversationSections(
     conversations.map((conversation) => ({
       id: conversation.id,
       type: conversation.type,
@@ -238,7 +240,7 @@ export const ChatSidebar = ({
       needsInput: conversationStreams[conversation.id ?? ""]?.status === "action-required",
       isPinned: conversation.isPinned,
       isUnread: conversation.isUnread,
-      labels: conversation.labels,
+      group: conversation.group,
     })),
     {
       groupBy: conversationListFilters.groupBy,
@@ -308,6 +310,11 @@ export const ChatSidebar = ({
                   Search
                 </SidebarNavButton>
               </SidebarNavSection>
+              {!isAuthenticated && (
+                <div className="mt-4">
+                  <DiscoverSidebarSection onNavigate={closeOnMobile} />
+                </div>
+              )}
             </div>
             <ConversationListSection
               isLoading={isLoading}
@@ -333,7 +340,7 @@ export const ChatSidebar = ({
             >
               {
                 <ConversationList
-                  groups={conversationGroups}
+                  sections={conversationSections}
                   activeConversationId={currentConversationId}
                   isConversationRoute={isConversationRoute}
                   localOnlyMode={localOnlyMode}
@@ -346,11 +353,18 @@ export const ChatSidebar = ({
                     ) : null
                   }
                   onSelect={handleConversationClick}
-                  onEditTitle={(conversationId, currentTitle) => {
-                    void handleEditTitle(conversationId, currentTitle);
-                  }}
-                  onDelete={(conversationId) => setConfirmDelete(conversationId)}
-                  onOrganise={setConversationToOrganise}
+                  renderItemActions={(conversation) => (
+                    <ConversationItemActions
+                      conversation={conversation}
+                      canOrganise={!conversation.isLocalOnly && !localOnlyMode}
+                      canManageGroups
+                      onEditTitle={(conversationId, currentTitle) => {
+                        void handleEditTitle(conversationId, currentTitle);
+                      }}
+                      onDelete={setConfirmDelete}
+                      onManageGroups={setConversationForGroups}
+                    />
+                  )}
                 />
               }
             </ConversationListSection>
@@ -382,10 +396,10 @@ export const ChatSidebar = ({
         onConfirm={confirmDeleteChat}
         isLoading={deleteChat.isPending}
       />
-      <ConversationOrganisationDialog
-        conversationId={conversationToOrganise}
-        canManageLabels
-        onOpenChange={(open) => !open && setConversationToOrganise(null)}
+      <ConversationGroupsDialog
+        conversationId={conversationForGroups}
+        canManageGroups
+        onOpenChange={(open) => !open && setConversationForGroups(null)}
       />
     </>
   );

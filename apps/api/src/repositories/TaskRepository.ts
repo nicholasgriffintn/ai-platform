@@ -154,22 +154,120 @@ export class TaskRepository extends BaseRepository {
 
   public async claimTaskForExecution(
     taskId: string,
-    options: { resumeInterrupted?: boolean } = {},
+    options: {
+      ownerToken: string;
+      leaseExpiresAt: string;
+      resumeInterrupted?: boolean;
+      now?: string;
+    },
   ): Promise<Task | null> {
+    const now = options.now ?? new Date().toISOString();
     const task = await this.runQuery<Task>(
       `UPDATE tasks
 			 SET status = 'running',
            last_attempted_at = ?,
+           execution_owner_token = ?,
+           execution_lease_expires_at = ?,
            attempts = attempts + CASE WHEN status = 'running' THEN 1 ELSE 0 END
 			 WHERE id = ?
          AND (
            status IN ('pending', 'queued')
-           OR (? = 1 AND status = 'running')
+           OR (
+             ? = 1
+             AND status = 'running'
+             AND (
+               execution_owner_token IS NULL
+               OR execution_lease_expires_at IS NULL
+               OR datetime(execution_lease_expires_at) <= datetime(?)
+             )
+           )
          )
 			 RETURNING *`,
-      [new Date().toISOString(), taskId, options.resumeInterrupted ? 1 : 0],
+      [
+        now,
+        options.ownerToken,
+        options.leaseExpiresAt,
+        taskId,
+        options.resumeInterrupted ? 1 : 0,
+        now,
+      ],
       true,
     );
+
+    return task ? this.parseTask(task) : null;
+  }
+
+  public async renewTaskExecutionLease(params: {
+    taskId: string;
+    ownerToken: string;
+    leaseExpiresAt: string;
+    now?: string;
+  }): Promise<string | null> {
+    const row = await this.runQuery<{ execution_lease_expires_at: string }>(
+      `UPDATE tasks
+       SET execution_lease_expires_at = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND status = 'running'
+         AND execution_owner_token = ?
+         AND datetime(execution_lease_expires_at) > datetime(?)
+       RETURNING execution_lease_expires_at`,
+      [
+        params.leaseExpiresAt,
+        params.taskId,
+        params.ownerToken,
+        params.now ?? new Date().toISOString(),
+      ],
+      true,
+    );
+
+    return row?.execution_lease_expires_at ?? null;
+  }
+
+  public async isTaskExecutionOwner(params: {
+    taskId: string;
+    ownerToken: string;
+    now?: string;
+  }): Promise<boolean> {
+    const row = await this.runQuery<{ owned: number }>(
+      `SELECT 1 AS owned FROM tasks
+       WHERE id = ?
+         AND status = 'running'
+         AND execution_owner_token = ?
+         AND datetime(execution_lease_expires_at) > datetime(?)`,
+      [params.taskId, params.ownerToken, params.now ?? new Date().toISOString()],
+      true,
+    );
+
+    return row?.owned === 1;
+  }
+
+  public async updateOwnedTask(
+    taskId: string,
+    ownerToken: string,
+    params: UpdateTaskParams,
+  ): Promise<Task | null> {
+    const updates = {
+      ...params,
+      execution_owner_token: null,
+      execution_lease_expires_at: null,
+    };
+    const update = this.buildUpdateQuery(
+      "tasks",
+      updates,
+      Object.keys(updates),
+      `id = ?
+       AND status = 'running'
+       AND execution_owner_token = ?
+       AND datetime(execution_lease_expires_at) > datetime(?)`,
+      [taskId, ownerToken, new Date().toISOString()],
+      { returning: "*" },
+    );
+
+    if (!update) {
+      return null;
+    }
+
+    const task = await this.runQuery<Task>(update.query, update.values, true);
 
     return task ? this.parseTask(task) : null;
   }

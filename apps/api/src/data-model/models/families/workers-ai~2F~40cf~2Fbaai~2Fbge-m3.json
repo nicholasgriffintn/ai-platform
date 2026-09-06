@@ -1,0 +1,33 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "strengths": [
+      "search",
+      "multilingual"
+    ],
+    "contextComplexity": 4,
+    "reliability": 5,
+    "releaseDate": "April 3, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/baai/bge m3 family includes models that produce embedding.",
+  "models": {
+    "bge-m3": {
+      "defaults": {
+        "name": "BGE M3",
+        "description": "A multi-lingual embeddings model that supports over 100 languages. It can also simultaneously perform dense retrieval, multi-vector retrieval, and sparse retrieval, with the ability to process inputs of different granularities."
+      }
+    }
+  }
+}

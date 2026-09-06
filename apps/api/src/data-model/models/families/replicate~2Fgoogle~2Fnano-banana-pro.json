@@ -1,0 +1,45 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "image",
+      "creative"
+    ],
+    "contextComplexity": 4,
+    "reliability": 4,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 1219,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 9
+        }
+      ]
+    }
+  },
+  "description": "The replicate/google/nano banana pro family includes models that produce image.",
+  "models": {
+    "google-nano-banana-pro": {
+      "defaults": {
+        "name": "Google Nano Banana Pro",
+        "description": "Google's state of the art image generation and editing model 🍌🍌"
+      }
+    }
+  }
+}

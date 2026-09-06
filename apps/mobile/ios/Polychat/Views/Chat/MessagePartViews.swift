@@ -31,7 +31,7 @@ struct ToolResultPartView: View {
                 .foregroundStyle(Color.polychat.primary)
 
             if let content = part.content?.prettyString, !content.isEmpty {
-                MarkdownText(content: content, isUser: false)
+                BoundedToolOutputView(content: content)
             } else {
                 Text("No tool output")
                     .font(.caption)

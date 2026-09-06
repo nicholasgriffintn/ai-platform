@@ -1,0 +1,202 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "kimi-k2-thinking": {
+      "model": "kimi-thinking/kimi-k2-thinking",
+      "matchingModel": "kimi-k2-thinking",
+      "overrides": {
+        "description": "Thinking Kimi model for slower research passes, planning, and hard technical questions",
+        "maxTokens": 262144,
+        "strengths": [
+          "reasoning",
+          "coding",
+          "agents",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "November 6, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "thinking"
+        }
+      }
+    },
+    "kimi-k2.5": {
+      "model": "kimi-k2/kimi-k2-5",
+      "matchingModel": "kimi-k2.5",
+      "overrides": {
+        "description": "Earlier Kimi frontier model for long-context agents, coding, and multimodal work",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "agents",
+          "tool_use",
+          "document"
+        ],
+        "speed": 3,
+        "releaseDate": "January 2026",
+        "lastUpdated": "January 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.003,
+        "supportsTemperature": false
+      }
+    },
+    "kimi-k2-0711-preview": {
+      "model": "kimi-k2/kimi-k2-0711",
+      "matchingModel": "kimi-k2-0711-preview",
+      "overrides": {
+        "maxTokens": 16384,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "July 14, 2025",
+        "lastUpdated": "July 14, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0025
+      },
+      "unset": [
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
+    },
+    "kimi-k2-0905-preview": {
+      "model": "kimi-k2/kimi-k2-0905",
+      "matchingModel": "kimi-k2-0905-preview",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "September 5, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0025
+      },
+      "unset": [
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
+    },
+    "kimi-k2-thinking-turbo": {
+      "model": "kimi-thinking/kimi-k2-thinking-turbo",
+      "matchingModel": "kimi-k2-thinking-turbo",
+      "overrides": {
+        "lastUpdated": "November 6, 2025",
+        "costPer1kInputTokens": 0.00115,
+        "costPer1kOutputTokens": 0.008
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "kimi-k2-turbo-preview": {
+      "model": "kimi-k2/kimi-k2-turbo",
+      "matchingModel": "kimi-k2-turbo-preview",
+      "overrides": {
+        "lastUpdated": "September 5, 2025",
+        "costPer1kInputTokens": 0.0024,
+        "costPer1kOutputTokens": 0.01
+      },
+      "unset": [
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
+    },
+    "kimi-k2.6": {
+      "model": "kimi-k2/kimi-k2-6",
+      "matchingModel": "kimi-k2.6",
+      "overrides": {
+        "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "April 21, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004
+      }
+    },
+    "kimi-k2.7-code": {
+      "model": "kimi-k2/kimi-k2-7-code",
+      "matchingModel": "kimi-k2.7-code",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
+        "lastUpdated": "June 12, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004,
+        "supportsTemperature": false
+      }
+    },
+    "kimi-k2.7-code-highspeed": {
+      "model": "kimi-k2/kimi-k2-7-code-highspeed",
+      "matchingModel": "kimi-k2.7-code-highspeed",
+      "overrides": {
+        "lastUpdated": "June 12, 2026",
+        "costPer1kInputTokens": 0.0019,
+        "costPer1kOutputTokens": 0.008,
+        "supportsTemperature": false
+      }
+    },
+    "kimi-k3": {
+      "model": "kimi-k3/kimi-k3",
+      "matchingModel": "kimi-k3",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsTemperature": false
+      }
+    }
+  }
+}

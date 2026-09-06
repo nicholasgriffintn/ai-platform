@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+  "models": {
+    "nova-micro": {
+      "defaults": {
+        "name": "Nova Micro",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "maxTokens": 8192,
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "December 3, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "nova-micro-1-0": {
+      "defaults": {
+        "name": "Nova Micro 1.0",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "maxTokens": 5120,
+        "knowledgeCutoffDate": "October 31, 2024",
+        "releaseDate": "December 5, 2024",
+        "supportsResponseFormat": false
+      }
+    }
+  }
+}

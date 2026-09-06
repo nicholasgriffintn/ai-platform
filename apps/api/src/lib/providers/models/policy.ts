@@ -1,14 +1,19 @@
 import {
-  doesModelMatchRouterMode,
+  DEFAULT_MODEL_TIER,
   getModelDisplayName,
-  getRouterModeFitScore,
   isActiveModel,
-  isActiveRouterModel,
+  isLineupEligibleModel,
   isModelSelectableForAccount,
   isTextInputChatModel,
+  resolveLineupCandidate,
+  resolveModelTierAlternate,
+  resolveModelTierSelection,
   type ModelConfig,
   type ModelConfigItem,
-  type ModelPolicyReference,
+  type ModelLineupCandidate,
+  type ModelTier,
+  type ModelTierRole,
+  type ResolvedLineupCandidate,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { CredentialAuthority, IUser } from "~/types";
@@ -43,42 +48,89 @@ export function getModelCredentialAuthority(
   return requiresByok ? "byok" : "platform";
 }
 
-function configuredProviderBonus(model: ModelConfigItem): number {
-  return model.isByokEnabled ? 1_000 : 0;
+export interface TierModelOptions {
+  isEligible?: (model: ModelConfigItem) => boolean;
+}
+
+function isConversationModel(model: ModelConfigItem) {
+  return isLineupEligibleModel(model) && isTextInputChatModel(model);
+}
+
+function tierEligibility(options: TierModelOptions) {
+  return (model: ModelConfigItem) =>
+    isConversationModel(model) && (options.isEligible?.(model) ?? true);
+}
+
+export function resolveTierModel(
+  models: ModelConfig,
+  user: Pick<IUser, "plan_id"> | undefined,
+  tier: ModelTier,
+  role: ModelTierRole,
+  options: TierModelOptions = {},
+): ResolvedLineupCandidate | null {
+  return resolveModelTierSelection(
+    getExecutableModelsForAccount(models, user),
+    "hosted",
+    tier,
+    role,
+    { isEligible: tierEligibility(options) },
+  );
+}
+
+export function resolveTierAlternateModel(
+  models: ModelConfig,
+  user: Pick<IUser, "plan_id"> | undefined,
+  tier: ModelTier,
+  role: ModelTierRole,
+  primary: ResolvedLineupCandidate,
+  options: TierModelOptions = {},
+): ResolvedLineupCandidate | null {
+  return resolveModelTierAlternate(
+    getExecutableModelsForAccount(models, user),
+    "hosted",
+    tier,
+    role,
+    primary,
+    { isEligible: tierEligibility(options) },
+  );
+}
+
+function firstConversationModel(
+  models: ModelConfig,
+  options: TierModelOptions,
+): { id: string; config: ModelConfigItem } | null {
+  const isEligible = tierEligibility(options);
+  const selected = Object.entries(models)
+    .filter(([, model]) => isEligible(model))
+    .sort(([, left], [, right]) => {
+      const byokDelta = Number(right.isByokEnabled === true) - Number(left.isByokEnabled === true);
+
+      return byokDelta || getModelDisplayName(left).localeCompare(getModelDisplayName(right));
+    })[0];
+
+  return selected ? { id: selected[0], config: selected[1] } : null;
 }
 
 export function tryResolveDefaultChatModel(
   models: ModelConfig,
   user?: Pick<IUser, "plan_id">,
+  options: TierModelOptions = {},
 ): { id: string; config: ModelConfigItem } | null {
-  const executableModels = getExecutableModelsForAccount(models, user);
-  const textModels = Object.entries(executableModels).filter(
-    ([, model]) => isActiveRouterModel(model) && isTextInputChatModel(model),
-  );
-  const preferredMode = user?.plan_id === "pro" ? "pro" : "standard";
-  const preferredModels = textModels.filter(([, model]) =>
-    doesModelMatchRouterMode(model, preferredMode),
-  );
-  const candidates = preferredModels.length > 0 ? preferredModels : textModels;
-  const selected = candidates.sort(([, left], [, right]) => {
-    const leftScore = configuredProviderBonus(left) + getRouterModeFitScore(left, preferredMode);
-    const rightScore = configuredProviderBonus(right) + getRouterModeFitScore(right, preferredMode);
+  const tierModel = resolveTierModel(models, user, DEFAULT_MODEL_TIER, "agent", options);
 
-    if (leftScore !== rightScore) {
-      return rightScore - leftScore;
-    }
+  if (tierModel) {
+    return { id: tierModel.id, config: tierModel.config };
+  }
 
-    return getModelDisplayName(left).localeCompare(getModelDisplayName(right));
-  })[0];
-
-  return selected ? { id: selected[0], config: selected[1] } : null;
+  return firstConversationModel(getExecutableModelsForAccount(models, user), options);
 }
 
 export function resolveDefaultChatModel(
   models: ModelConfig,
   user?: Pick<IUser, "plan_id">,
+  options: TierModelOptions = {},
 ): { id: string; config: ModelConfigItem } {
-  const selected = tryResolveDefaultChatModel(models, user);
+  const selected = tryResolveDefaultChatModel(models, user, options);
 
   if (!selected) {
     throw new AssistantError(
@@ -92,27 +144,8 @@ export function resolveDefaultChatModel(
 
 export function resolvePolicyModel(
   models: ModelConfig,
-  references: readonly ModelPolicyReference[],
+  references: readonly ModelLineupCandidate[],
   user?: Pick<IUser, "plan_id">,
-): { id: string; config: ModelConfigItem } | null {
-  const executableModels = getExecutableModelsForAccount(models, user);
-
-  for (const reference of references) {
-    const directMatch = executableModels[reference.model];
-
-    if (directMatch?.provider === reference.provider) {
-      return { id: reference.model, config: directMatch };
-    }
-
-    const matchingEntry = Object.entries(executableModels).find(
-      ([, model]) =>
-        model.provider === reference.provider && model.matchingModel === reference.model,
-    );
-
-    if (matchingEntry) {
-      return { id: matchingEntry[0], config: matchingEntry[1] };
-    }
-  }
-
-  return null;
+): ResolvedLineupCandidate | null {
+  return resolveLineupCandidate(getExecutableModelsForAccount(models, user), references);
 }

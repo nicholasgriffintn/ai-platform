@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "contextWindow": 262144,
+    "maxTokens": 262144,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 9, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true
+  },
+  "description": "The ollama/devstral small 2:24b family includes models that produce text.",
+  "models": {
+    "devstral-small-2-24b": {
+      "defaults": {
+        "name": "devstral-small-2:24b",
+        "description": "devstral-small-2:24b accepts text, image and produces text."
+      }
+    }
+  }
+}

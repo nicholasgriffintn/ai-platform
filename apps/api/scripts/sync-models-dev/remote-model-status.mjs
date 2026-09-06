@@ -5,7 +5,6 @@ import {
   OUTDATED_TAGS,
   VERSION_SUFFIX_REGEX,
 } from "./constants.mjs";
-import { getStringPropertyValue } from "./source-model-config.mjs";
 
 export function hasDeprecatedStatus(remoteConfig) {
   return (
@@ -258,8 +257,8 @@ export function isCurrentAliasModelId(modelId) {
   return CURRENT_ALIAS_SUFFIX_REGEX.test(modelId);
 }
 
-export function getEntryModelIds(entry, sourceFile) {
-  const matchingModel = getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile);
+export function getEntryModelIds(entry) {
+  const matchingModel = entry.config.matchingModel;
 
   return matchingModel ? [entry.modelKey, matchingModel] : [entry.modelKey];
 }
@@ -268,11 +267,11 @@ export function shouldProtectCurrentAlias(provider, modelId) {
   return isCurrentAliasModelId(modelId);
 }
 
-export function getCurrentAliasFamilies(entries, sourceFile, provider) {
+export function getCurrentAliasFamilies(entries, provider) {
   const families = new Set();
 
   for (const entry of entries) {
-    for (const modelId of getEntryModelIds(entry, sourceFile)) {
+    for (const modelId of getEntryModelIds(entry)) {
       if (shouldProtectCurrentAlias(provider, modelId)) {
         families.add(modelFamilyKey(modelId, provider));
       }

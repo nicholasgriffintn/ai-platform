@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 163840,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "January 27, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The chutes/tngtech/TNG R1T Chimera Turbo family includes models that produce text.",
+  "models": {
+    "tng-r1t-chimera-turbo": {
+      "defaults": {
+        "name": "TNG R1T Chimera Turbo",
+        "description": "TNG R1T Chimera Turbo accepts text and produces text."
+      }
+    }
+  }
+}

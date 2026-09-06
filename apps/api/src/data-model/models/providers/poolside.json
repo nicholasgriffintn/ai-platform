@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "poolside/laguna-m.1": {
+      "model": "laguna/laguna-m-1",
+      "matchingModel": "poolside/laguna-m.1",
+      "overrides": {
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "poolside/laguna-s-2.1": {
+      "model": "laguna/laguna-s-2-1",
+      "matchingModel": "poolside/laguna-s-2.1",
+      "overrides": {
+        "contextWindow": 1048576,
+        "lastUpdated": "July 21, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "poolside/laguna-xs-2.1": {
+      "model": "laguna/laguna-xs-2-1",
+      "matchingModel": "poolside/laguna-xs-2.1",
+      "overrides": {
+        "lastUpdated": "July 2, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    }
+  }
+}

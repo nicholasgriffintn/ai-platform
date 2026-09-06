@@ -1,0 +1,761 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The deepseek family includes models that produce text.",
+  "models": {
+    "deepseek-chat": {
+      "defaults": {
+        "openWeights": true,
+        "description": "DeepSeek's latest model optimized for coding, analysis, and mathematical tasks with strong reasoning capabilities.",
+        "knowledgeCutoffDate": "September 2025",
+        "releaseDate": "December 1, 2025"
+      }
+    },
+    "deepseek-chat-v3-1": {
+      "defaults": {
+        "name": "Deepseek Chat V3.1",
+        "description": "Deepseek Chat V3.1 accepts text and produces text.",
+        "contextWindow": 164000,
+        "maxTokens": 164000,
+        "releaseDate": "26 March 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-ocr-2": {
+      "defaults": {
+        "name": "DeepSeek OCR 2",
+        "openWeights": true,
+        "description": "High-accuracy OCR model for extracting text from documents, screenshots, receipts, and natural scenes",
+        "contextWindow": 4000,
+        "maxTokens": 4000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "January 27, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "deepseek-r1-05-28": {
+      "defaults": {
+        "name": "Deepseek R1 05/28",
+        "description": "Advanced DeepSeek R1 reasoning model hosted on Fireworks with enhanced mathematical and logical capabilities.",
+        "contextWindow": 160000,
+        "maxTokens": 16384,
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "May 28, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-r1-0528": {
+      "defaults": {
+        "description": "DeepSeek reasoning model for multi-step analysis, math, coding, and tools",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 20.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-r1-0528-qwen3-8b": {
+      "defaults": {
+        "name": "DeepSeek R1 0528 Qwen3 8B",
+        "description": "Qwen3 8B distilled reasoning model hosted on Chutes.",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "May 29, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 10.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-r1-0528-qwen3-8b-free": {
+      "defaults": {
+        "name": "Deepseek R1 0528 Qwen3 8B (free)",
+        "description": "Deepseek R1 0528 Qwen3 8B (free) accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "May 29, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 10.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-r1-distill-llama-70b": {
+      "defaults": {
+        "name": "DeepSeek R1 Distill Llama 70B",
+        "description": "DeepSeek R1 Distill Llama 70B accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 8192,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "January 20, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-r1-distill-llama-70b-free": {
+      "defaults": {
+        "name": "DeepSeek R1 Distill Llama 70B Free",
+        "description": "DeepSeek-R1-Distill-Qwen-32B outperforms OpenAI-o1-mini across various benchmarks, achieving new state-of-the-art results for dense models.",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "creative"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3
+      }
+    },
+    "deepseek-r1-distill-qwen-14b": {
+      "defaults": {
+        "name": "DeepSeek R1 Distill Qwen 14B",
+        "description": "DeepSeek R1 Distill Qwen 14B accepts text and produces text.",
+        "contextWindow": 64000,
+        "maxTokens": 8192,
+        "contextComplexity": 2,
+        "reliability": 1,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "January 29, 2025",
+        "supportsToolCalls": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-r1-tee": {
+      "defaults": {
+        "name": "DeepSeek R1 TEE",
+        "description": "DeepSeek R1 TEE accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 163840,
+        "releaseDate": "December 29, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    },
+    "deepseek-r1t-chimera": {
+      "defaults": {
+        "name": "DeepSeek R1T Chimera",
+        "description": "Reasoning-focused R1T Chimera model by TNGTech.",
+        "contextWindow": 163840,
+        "maxTokens": 163840,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "December 29, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    },
+    "deepseek-r1t2-chimera-free": {
+      "defaults": {
+        "name": "DeepSeek R1T2 Chimera (free)",
+        "description": "DeepSeek R1T2 Chimera (free) accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 163840,
+        "knowledgeCutoffDate": "July 2025",
+        "releaseDate": "July 8, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "deepseek-tng-r1t2-chimera": {
+      "defaults": {
+        "name": "DeepSeek TNG R1T2 Chimera",
+        "description": "Hybrid reasoning Chimera model by TNGTech.",
+        "contextWindow": 163840,
+        "maxTokens": 163840,
+        "knowledgeCutoffDate": "July 2025",
+        "releaseDate": "December 29, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "deepseek-tng-r1t2-chimera-tee": {
+      "defaults": {
+        "name": "DeepSeek TNG R1T2 Chimera TEE",
+        "openWeights": true,
+        "description": "DeepSeek TNG R1T2 Chimera TEE accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 163840,
+        "releaseDate": "April 25, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v3": {
+      "defaults": {
+        "name": "DeepSeek-V3",
+        "openWeights": true,
+        "description": "Open DeepSeek MoE chat model for coding, math, and general reasoning",
+        "contextWindow": 163840,
+        "maxTokens": 8192,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "December 26, 2024",
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 10.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v3-03-24": {
+      "defaults": {
+        "name": "Deepseek V3 03-24",
+        "description": "DeepSeek V3 model hosted on Fireworks, optimized for coding and analytical tasks.",
+        "contextWindow": 160000,
+        "maxTokens": 16384,
+        "strengths": [
+          "coding",
+          "analysis",
+          "multilingual",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "March 24, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 15.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v3-0324": {
+      "defaults": {
+        "openWeights": true,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "March 24, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 15.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v3-0324-tee": {
+      "defaults": {
+        "name": "DeepSeek V3 0324 TEE",
+        "openWeights": true,
+        "description": "DeepSeek V3 0324 TEE accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 65536,
+        "releaseDate": "December 29, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "deepseek-v3-1": {
+      "defaults": {
+        "name": "DeepSeek-V3.1",
+        "openWeights": true,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 163840,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "August 21, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 21,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v3-1-671b": {
+      "defaults": {
+        "name": "deepseek-v3.1:671b",
+        "description": "deepseek-v3.1:671b accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 163840,
+        "releaseDate": "August 21, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v3-1-nex-n1": {
+      "defaults": {
+        "name": "DeepSeek V3.1 Nex N1",
+        "description": "DeepSeek V3.1 Nex N1 accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 163840,
+        "releaseDate": "December 8, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "deepseek-v3-1-tee": {
+      "defaults": {
+        "name": "DeepSeek V3.1 TEE",
+        "openWeights": true,
+        "description": "DeepSeek V3.1 TEE accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 65536,
+        "releaseDate": "December 29, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v3-1-terminus": {
+      "defaults": {
+        "name": "DeepSeek V3.1 Terminus",
+        "openWeights": true,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 1,
+        "releaseDate": "September 22, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 21.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v3-1-terminus-exacto": {
+      "defaults": {
+        "name": "DeepSeek V3.1 Terminus (exacto)",
+        "description": "DeepSeek V3.1 Terminus (exacto) accepts text and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "July 2025",
+        "releaseDate": "September 22, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 21.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v3-1-terminus-tee": {
+      "defaults": {
+        "name": "DeepSeek V3.1 Terminus TEE",
+        "description": "DeepSeek V3.1 Terminus TEE accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 65536,
+        "releaseDate": "December 29, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "deepseek-v3-2": {
+      "defaults": {
+        "openWeights": true,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 163840,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "December 1, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 24.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v3-2-exp": {
+      "defaults": {
+        "name": "DeepSeek V3.2 Exp",
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 163840,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "September 29, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 21.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v3-2-speciale": {
+      "defaults": {
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "December 1, 2025",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 22.2,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v3-2-speciale-tee": {
+      "defaults": {
+        "name": "DeepSeek V3.2 Speciale TEE",
+        "description": "DeepSeek V3.2 Speciale TEE accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 65536,
+        "releaseDate": "December 29, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    },
+    "deepseek-v3-2-tee": {
+      "defaults": {
+        "name": "DeepSeek V3.2 TEE",
+        "openWeights": true,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "December 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v3-base-free": {
+      "defaults": {
+        "name": "DeepSeek V3 Base (free)",
+        "description": "DeepSeek V3 Base (free) accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 163840,
+        "knowledgeCutoffDate": "March 2025",
+        "releaseDate": "March 29, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "deepseek-v4-flash": {
+      "defaults": {
+        "name": "deepseek-v4-flash",
+        "description": "deepseek-v4-flash accepts text and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "releaseDate": "April 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4-flash-free": {
+      "defaults": {
+        "name": "DeepSeek V4 Flash (free)",
+        "description": "DeepSeek V4 Flash (free) accepts text and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 384000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "April 24, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 28.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v4-flash-latest": {
+      "defaults": {
+        "name": "DeepSeek V4 Flash Latest",
+        "openWeights": false,
+        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "contextWindow": 1310720,
+        "maxTokens": 131072,
+        "releaseDate": "August 1, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "deepseek-v4-pro": {
+      "defaults": {
+        "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
+        "releaseDate": "April 24, 2026"
+      }
+    },
+    "groq-deepseek-r1-distill-llama-70b-specdec": {
+      "defaults": {
+        "name": "Groq DeepSeek R1 Distill Llama 70B SpecDec",
+        "description": "Groq DeepSeek R1 Distill Llama 70B SpecDec accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "card": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+        "strengths": [
+          "reasoning",
+          "analysis"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "January 20, 2025"
+      }
+    },
+    "groq-deepseek-r1-distill-qwen-32b": {
+      "defaults": {
+        "name": "Groq DeepSeek R1 Distill Qwen 32B",
+        "description": "Groq DeepSeek R1 Distill Qwen 32B accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "card": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "January 20, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 11,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "r1-0528-free": {
+      "defaults": {
+        "name": "R1 0528 (free)",
+        "description": "R1 0528 (free) accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 163840,
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 4,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "May 28, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "r1-distill-qwen-32b": {
+      "defaults": {
+        "name": "R1 Distill Qwen 32B",
+        "description": "R1 Distill Qwen 32B accepts text and produces text.",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "July 31, 2024",
+        "releaseDate": "January 29, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 11,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "r1-free": {
+      "defaults": {
+        "name": "R1 (free)",
+        "description": "R1 (free) accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 163840,
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 4,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "January 20, 2025"
+      }
+    }
+  }
+}

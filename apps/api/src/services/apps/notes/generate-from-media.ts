@@ -163,8 +163,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
           { role: "system", content: notePrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.3,
-        max_tokens: 3000,
+        reasoning: { effort: "none" },
       },
       user.id,
     );

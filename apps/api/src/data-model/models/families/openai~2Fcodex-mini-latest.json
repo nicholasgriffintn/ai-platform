@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 200000,
+    "maxTokens": 100000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 2024",
+    "releaseDate": "May 16, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The openai/codex mini latest family includes models that produce text.",
+  "models": {
+    "codex-mini": {
+      "defaults": {
+        "name": "Codex Mini",
+        "description": "Codex Mini accepts text and produces text."
+      }
+    }
+  }
+}

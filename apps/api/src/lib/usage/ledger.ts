@@ -42,6 +42,8 @@ export interface UsageEventDraft {
   messageId?: string | null;
   activityId?: string | null;
   completionId?: string | null;
+  runId?: string | null;
+  runAttempt?: number | null;
   tier?: string;
   byok?: boolean;
   margin?: number;
@@ -132,6 +134,8 @@ export function buildUsageEventRow(draft: UsageEventDraft): UsageEventInsert {
     message_id: draft.messageId ?? null,
     activity_id: draft.activityId ?? null,
     completion_id: draft.completionId ?? null,
+    run_id: draft.runId ?? null,
+    run_attempt: draft.runAttempt ?? null,
     occurred_at: priced.occurredAt,
     period: priced.period,
     source: draft.source,

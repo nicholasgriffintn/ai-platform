@@ -1,0 +1,68 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The nousresearch family includes models that produce text.",
+  "models": {
+    "deephermes-3-mistral-24b-preview": {
+      "defaults": {
+        "name": "DeepHermes 3 Mistral 24B Preview",
+        "description": "DeepHermes 3 Mistral 24B Preview accepts text and produces text.",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "releaseDate": "December 29, 2025",
+        "supportsToolCalls": true
+      }
+    },
+    "hermes-3-405b-instruct": {
+      "defaults": {
+        "name": "Hermes 3 405B Instruct",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "August 16, 2024",
+        "supportsToolCalls": false
+      }
+    },
+    "hermes-3-70b-instruct": {
+      "defaults": {
+        "name": "Hermes 3 70B Instruct",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "August 18, 2024",
+        "supportsToolCalls": false
+      }
+    },
+    "hermes-4-14b": {
+      "defaults": {
+        "name": "Hermes 4 14B",
+        "description": "Hermes 4 14B accepts text and produces text.",
+        "contextWindow": 40960,
+        "maxTokens": 40960,
+        "releaseDate": "December 29, 2025",
+        "supportsToolCalls": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

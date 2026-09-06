@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "contextWindow": 8192,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "knowledgeCutoffDate": "June 2025",
+    "releaseDate": "December 8, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/sourceful/riverflow v2 standard preview family includes models that produce image.",
+  "models": {
+    "riverflow-v2-standard-preview": {
+      "defaults": {
+        "name": "Riverflow V2 Standard Preview",
+        "description": "Riverflow V2 Standard Preview accepts text, image and produces image."
+      }
+    }
+  }
+}

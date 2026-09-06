@@ -1,0 +1,45 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "image",
+      "creative"
+    ],
+    "contextComplexity": 4,
+    "reliability": 4,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 1159,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 8
+        }
+      ]
+    }
+  },
+  "description": "The replicate/google/nano banana family includes models that produce image.",
+  "models": {
+    "google-nano-banana": {
+      "defaults": {
+        "name": "Google Nano Banana",
+        "description": "Google's latest image editing model in Gemini 2.5"
+      }
+    }
+  }
+}

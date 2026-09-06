@@ -50,6 +50,8 @@ export interface RunPanelParams {
   env: IEnv;
   completionId: string;
   usageScopeId: string;
+  runId?: string;
+  runAttempt?: number;
   user?: IUser;
   model?: string;
   provider?: string;
@@ -181,8 +183,6 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
       model: selectedModel,
       provider: selectedProvider,
       messages,
-      temperature: 0.7,
-      max_tokens: 900,
       disable_functions: true,
       stream: false,
       store: false,
@@ -204,9 +204,11 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
       completionId: params.completionId,
       messageId: `panel:${params.usageScopeId}:${currentInvocation}`,
       conversationId: params.completionId,
+      runId: params.runId ?? null,
+      runAttempt: params.runAttempt ?? null,
     });
 
-    if (!result.response) {
+    if (typeof result.response !== "string" || !result.response.trim()) {
       throw new AssistantError("A panel member returned no response", ErrorType.PROVIDER_ERROR);
     }
 
@@ -215,10 +217,13 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
 
   const turns: PanelTurn[] = [];
   const queue: string[] = [params.openingMemberId ?? members[0].id];
+  const attempted = new Set<string>();
+  let attempts = 0;
+  let lastError: unknown;
   let stoppedReason: PanelResult["stoppedReason"] = "consensus";
 
   while (queue.length > 0) {
-    if (turns.length >= maxTurns) {
+    if (attempts >= maxTurns) {
       stoppedReason = "turn_budget";
       break;
     }
@@ -236,6 +241,9 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
 
     let raw: string;
 
+    attempted.add(member.id);
+    attempts += 1;
+
     try {
       raw = await complete(
         buildMemberSystemPrompt({ member, members, brief: params.turnBrief }),
@@ -243,7 +251,16 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
         member,
       );
     } catch (error) {
+      lastError = error;
       logger.warn("Panel member turn failed", { error, memberId: member.id });
+      if (queue.length === 0) {
+        const next = members.find((candidate) => !attempted.has(candidate.id));
+
+        if (next) {
+          queue.push(next.id);
+        }
+      }
+
       continue;
     }
 
@@ -266,7 +283,9 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
   }
 
   if (turns.length === 0) {
-    throw new AssistantError("Every panel member failed to respond", ErrorType.PROVIDER_ERROR);
+    throw lastError instanceof Error
+      ? lastError
+      : new AssistantError("No panel member produced a response", ErrorType.PROVIDER_ERROR);
   }
 
   const concluding = params.concludingMemberId

@@ -10,7 +10,27 @@ vi.mock("~/lib/storage", () => ({
   StorageService: { forPrivateAssets: vi.fn(() => ({ deleteObject })) },
 }));
 
-import { deleteOutput, formatSharedOutput, listOutputShares, listOutputs } from "..";
+import {
+  deleteOutput,
+  formatSharedOutput,
+  getOutput,
+  listOutputRevisions,
+  listOutputShares,
+  listOutputs,
+  restoreOutputRevision,
+} from "..";
+
+const provenance = {
+  protocolVersion: 1,
+  capturedAt: "2026-08-11T10:00:00.000Z",
+  completeness: "complete",
+  origin: "generated",
+  run: { id: "run-1", attempt: 2 },
+  model: { id: "model-1", provider: "provider-1" },
+  skills: [{ id: "research", name: "Research", revision: 4 }],
+  sources: [],
+  approvals: [],
+};
 
 const output: OutputRecord = {
   id: "output-1",
@@ -20,7 +40,7 @@ const output: OutputRecord = {
   parent_output_id: null,
   capability_id: "notes",
   group_id: null,
-  kind: "document",
+  kind: "note",
   title: "Launch notes",
   status: "ready",
   sensitivity: "personal",
@@ -30,6 +50,7 @@ const output: OutputRecord = {
   filename: null,
   byte_size: null,
   revision: 1,
+  provenance_json: JSON.stringify(provenance),
   created_at: "2026-08-11T10:00:00.000Z",
   updated_at: null,
 };
@@ -73,6 +94,7 @@ describe("output shares", () => {
     expect(shared).not.toHaveProperty("createdByUserId");
     expect(shared).not.toHaveProperty("projectId");
     expect(shared).not.toHaveProperty("conversationId");
+    expect(shared).not.toHaveProperty("provenance");
     expect(shared.file).not.toHaveProperty("key");
   });
 
@@ -108,6 +130,229 @@ describe("output shares", () => {
       ],
     });
     expect(listShares).toHaveBeenCalledWith(output.id);
+  });
+});
+
+describe("output provenance access", () => {
+  it("retains the original provenance on historical revisions", async () => {
+    const context = {
+      repositories: {
+        outputs: {
+          getOutput: vi.fn().mockResolvedValue(output),
+          listRevisions: vi.fn().mockResolvedValue([
+            {
+              output_id: output.id,
+              revision: 1,
+              title: output.title,
+              status: output.status,
+              sensitivity: output.sensitivity,
+              content: output.content,
+              provenance_json: output.provenance_json,
+              created_by_user_id: 42,
+              created_at: "2026-08-11T11:00:00.000Z",
+            },
+          ]),
+        },
+      },
+    } as unknown as ServiceContext;
+
+    const result = await listOutputRevisions(context, 42, output.id);
+
+    expect(result.revisions[0]?.provenance).toEqual(provenance);
+    expect(result.current).toMatchObject({
+      outputId: output.id,
+      revision: 1,
+      parentRevision: null,
+      operation: "created",
+    });
+    expect(result.restore).toEqual({
+      supported: true,
+      reason: null,
+      fields: ["title", "content"],
+    });
+  });
+
+  it("does not reveal personal provenance across owners", async () => {
+    const context = {
+      repositories: { outputs: { getOutput: vi.fn().mockResolvedValue(output) } },
+    } as unknown as ServiceContext;
+
+    await expect(getOutput(context, 7, output.id)).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("marks deleted or inaccessible source references unavailable without exposing a link", async () => {
+    const outputWithSource = {
+      ...output,
+      provenance_json: JSON.stringify({
+        ...provenance,
+        sources: [{ id: "source-1", name: "Deleted brief", state: "referenced" }],
+      }),
+    };
+    const context = {
+      repositories: {
+        outputs: { getOutput: vi.fn().mockResolvedValue(outputWithSource) },
+        sources: { getSource: vi.fn().mockResolvedValue(null) },
+      },
+    } as unknown as ServiceContext;
+
+    const result = await getOutput(context, 42, output.id);
+
+    expect(result.provenance.sources).toEqual([
+      { id: "source-1", name: "Deleted brief", state: "unavailable" },
+    ]);
+    expect(result.provenance.sources[0]).not.toHaveProperty("retrievalPath");
+  });
+
+  it("requires current workspace membership before returning project provenance", async () => {
+    const projectOutput = { ...output, project_id: "project-1", sensitivity: "internal" as const };
+    const context = {
+      requireUser: () => ({ id: 7, plan_id: "pro" }),
+      repositories: {
+        outputs: { getOutput: vi.fn().mockResolvedValue(projectOutput) },
+        workspaces: {
+          getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
+          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+          getMembership: vi.fn().mockResolvedValue(null),
+        },
+      },
+    } as unknown as ServiceContext;
+
+    await expect(getOutput(context, 7, projectOutput.id)).rejects.toMatchObject({
+      statusCode: 404,
+    });
+  });
+});
+
+describe("output revision restore", () => {
+  it("appends an auditable restore without changing status, sensitivity or provenance", async () => {
+    const target = {
+      output_id: output.id,
+      revision: 1,
+      title: "Earlier title",
+      status: "failed",
+      sensitivity: "confidential",
+      content: JSON.stringify({ body: "Earlier text" }),
+      provenance_json: output.provenance_json,
+      created_by_user_id: 42,
+      created_at: output.created_at,
+      operation: "created",
+      restored_from_revision: null,
+    };
+    const updateOutput = vi.fn().mockResolvedValue({
+      ...output,
+      revision: 3,
+      title: target.title,
+      content: target.content,
+      revision_operation: "restored",
+      restored_from_revision: 1,
+    });
+    const context = {
+      repositories: {
+        outputs: {
+          getOutput: vi.fn().mockResolvedValue({ ...output, revision: 2 }),
+          getRevision: vi.fn().mockResolvedValue(target),
+          updateOutput,
+        },
+      },
+    } as unknown as ServiceContext;
+
+    const restored = await restoreOutputRevision(context, 42, output.id, 1, {
+      expectedRevision: 2,
+    });
+
+    expect(updateOutput).toHaveBeenCalledWith(
+      output.id,
+      {
+        title: "Earlier title",
+        content: { body: "Earlier text" },
+        expectedRevision: 2,
+        updatedByUserId: 42,
+        operation: "restored",
+        restoredFromRevision: 1,
+      },
+      undefined,
+    );
+    expect(restored).toMatchObject({
+      revision: 3,
+      status: "ready",
+      sensitivity: "personal",
+      provenance,
+    });
+  });
+
+  it("rejects a stale revision fence before loading or restoring history", async () => {
+    const getRevision = vi.fn();
+    const updateOutput = vi.fn();
+    const context = {
+      repositories: {
+        outputs: {
+          getOutput: vi.fn().mockResolvedValue({ ...output, revision: 3 }),
+          getRevision,
+          updateOutput,
+        },
+      },
+    } as unknown as ServiceContext;
+
+    await expect(
+      restoreOutputRevision(context, 42, output.id, 1, { expectedRevision: 2 }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(getRevision).not.toHaveBeenCalled();
+    expect(updateOutput).not.toHaveBeenCalled();
+  });
+
+  it("revalidates project membership before loading or restoring history", async () => {
+    const getRevision = vi.fn();
+    const updateOutput = vi.fn();
+    const context = {
+      requireUser: () => ({ id: 42, plan_id: "pro" }),
+      repositories: {
+        outputs: {
+          getOutput: vi.fn().mockResolvedValue({
+            ...output,
+            project_id: "project-1",
+            revision: 2,
+          }),
+          getRevision,
+          updateOutput,
+        },
+        workspaces: {
+          getProject: vi.fn().mockResolvedValue({
+            id: "project-1",
+            workspace_id: "workspace-1",
+          }),
+          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+          getMembership: vi.fn().mockResolvedValue(null),
+        },
+      },
+    } as unknown as ServiceContext;
+
+    await expect(
+      restoreOutputRevision(context, 42, output.id, 1, { expectedRevision: 2 }),
+    ).rejects.toMatchObject({ statusCode: 404 });
+    expect(getRevision).not.toHaveBeenCalled();
+    expect(updateOutput).not.toHaveBeenCalled();
+  });
+
+  it("does not present an external function result as reversible", async () => {
+    const updateOutput = vi.fn();
+    const context = {
+      repositories: {
+        outputs: {
+          getOutput: vi.fn().mockResolvedValue({
+            ...output,
+            revision: 2,
+            capability_id: "gmail",
+            kind: "dynamic_app_response",
+          }),
+          updateOutput,
+        },
+      },
+    } as unknown as ServiceContext;
+
+    await expect(
+      restoreOutputRevision(context, 42, output.id, 1, { expectedRevision: 2 }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(updateOutput).not.toHaveBeenCalled();
   });
 });
 

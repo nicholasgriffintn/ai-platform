@@ -1,0 +1,60 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 8192,
+    "maxTokens": 1536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false
+  },
+  "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+  "models": {
+    "text-embedding-005": {
+      "defaults": {
+        "name": "Text Embedding 005",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "releaseDate": "August 1, 2024",
+        "supportsTemperature": true
+      }
+    },
+    "text-embedding-3-large": {
+      "defaults": {
+        "name": "text-embedding-3-large",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 8191,
+        "maxTokens": 3072,
+        "releaseDate": "January 25, 2024"
+      }
+    },
+    "text-embedding-3-small": {
+      "defaults": {
+        "name": "text-embedding-3-small",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 8191,
+        "releaseDate": "January 25, 2024"
+      }
+    },
+    "text-embedding-ada-002": {
+      "defaults": {
+        "name": "text-embedding-ada-002",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "releaseDate": "December 15, 2022"
+      }
+    },
+    "text-multilingual-embedding-002": {
+      "defaults": {
+        "name": "Text Multilingual Embedding 002",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "releaseDate": "March 1, 2024",
+        "supportsTemperature": true
+      }
+    }
+  }
+}

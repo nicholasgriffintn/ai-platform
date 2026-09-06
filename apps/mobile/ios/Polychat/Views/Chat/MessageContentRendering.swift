@@ -21,6 +21,12 @@ struct MessageContentView: View {
             } else {
                 MessageContentBlocksView(message: message)
             }
+
+            if message.data?.streamPreview?.truncated == true {
+                Text("Showing a bounded live preview. The full stored output is available after this conversation refreshes.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 }
@@ -173,7 +179,11 @@ private struct TextContentSection: View {
                 SearchGroundingView(searchGrounding: searchGrounding)
             }
 
-            ArtifactSplitContentView(formatted: formatted, isUser: role == "user")
+            if role == "tool" {
+                BoundedToolOutputView(content: text)
+            } else {
+                ArtifactSplitContentView(formatted: formatted, isUser: role == "user")
+            }
 
             if let data {
                 MessageDataAttachmentsView(data: data)

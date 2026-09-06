@@ -1,0 +1,42 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 3,
+    "reliability": 1,
+    "knowledgeCutoffDate": "May 2024",
+    "releaseDate": "April 16, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": 30.4,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The github copilot/o3 family includes models that produce text.",
+  "models": {
+    "o3-preview": {
+      "defaults": {
+        "name": "o3 (Preview)",
+        "description": "o3 (Preview) accepts text, image and produces text."
+      }
+    }
+  }
+}

@@ -165,6 +165,16 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
     );
   }
 
+  async markRunCleanupPending(input: { runId: string; cleanupAfter: string }): Promise<void> {
+    await this.executeRun(
+      `UPDATE composio_connector_session
+       SET state = 'cleanup_pending', cleanup_attempts = cleanup_attempts + 1,
+           cleanup_after = ?
+       WHERE run_id = ? AND state IN ('active', 'claimed')`,
+      [input.cleanupAfter, input.runId],
+    );
+  }
+
   async claimCleanup(input: {
     id: string;
     now: string;

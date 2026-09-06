@@ -32,6 +32,8 @@ export function ProjectTaskDetail({
   const detailQuery = useProjectTask(projectId, taskId);
   const task = detailQuery.data?.task ?? tasks.find((candidate) => candidate.id === taskId);
   const goal = detailQuery.data?.goal ?? null;
+  const activity = detailQuery.data?.activity;
+  const plan = detailQuery.data?.plan;
   const basePath = `/work/${workspaceId}/projects/${projectId}`;
 
   if (isLoading || detailQuery.isLoading) {
@@ -42,7 +44,7 @@ export function ProjectTaskDetail({
     );
   }
 
-  if (error || detailQuery.error || !task) {
+  if (error || detailQuery.error || !task || !activity || !plan) {
     return (
       <PageShell.Content className="max-w-6xl">
         <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
@@ -101,6 +103,8 @@ export function ProjectTaskDetail({
         <TaskDetail
           task={task}
           goal={goal}
+          activity={activity}
+          plan={plan}
           flow={flow}
           members={workspaceQuery.data?.members ?? []}
           agents={agents}
@@ -111,6 +115,10 @@ export function ProjectTaskDetail({
               : null
           }
           taskHref={(candidate) => `${basePath}/tasks/${candidate.id}`}
+          runHref={(conversationId, runId) =>
+            `${basePath}/chat?completion_id=${encodeURIComponent(conversationId)}&run_id=${encodeURIComponent(runId)}`
+          }
+          outputHref={(outputId) => `${basePath}/outputs/${encodeURIComponent(outputId)}`}
           isBusy={isBusy}
           onRun={() => void run()}
           onAccept={() => void acceptTask()}

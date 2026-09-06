@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 131072,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 2025",
+    "releaseDate": "January 28, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/arcee ai/trinity large preview:free family includes models that produce text.",
+  "models": {
+    "trinity-large-preview": {
+      "defaults": {
+        "name": "Trinity Large Preview",
+        "description": "Trinity Large Preview accepts text and produces text."
+      }
+    }
+  }
+}

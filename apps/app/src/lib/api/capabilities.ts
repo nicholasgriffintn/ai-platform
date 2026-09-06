@@ -1,5 +1,8 @@
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
-import type { CapabilityCatalogResponse } from "@ngriffin_uk/polychat-schemas";
+import type {
+  CapabilityCatalogResponse,
+  PublicCapabilityCatalogueResponse,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service";
 import { fetchApi } from "./fetch-wrapper";
@@ -26,3 +29,14 @@ export const fetchCapabilityCatalog = async (
 
   return returnFetchedData<CapabilityCatalogResponse>(response);
 };
+
+export const fetchPublicCapabilityCatalogue =
+  async (): Promise<PublicCapabilityCatalogueResponse> => {
+    const response = await fetchApi("/capabilities/catalogue", { method: "GET" });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch the capability catalogue: ${response.statusText}`);
+    }
+
+    return returnFetchedData<PublicCapabilityCatalogueResponse>(response);
+  };

@@ -7,6 +7,12 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/usage/reservations" });
 
+export const CHAT_RUN_RESERVATION_TTL_MS = 24 * 60 * 60 * 1000;
+
+export function chatRunReservationExpiresAt(now = Date.now()): string {
+  return new Date(now + CHAT_RUN_RESERVATION_TTL_MS).toISOString();
+}
+
 export interface HoldUsageReservationParams {
   repositories: RepositoryManager;
   userId: number;
@@ -46,6 +52,7 @@ export interface FinishUsageReservationParams {
   kind: UsageReservationKind;
   refId: string;
   outcome: "settled" | "released";
+  reservationId?: string;
 }
 
 export async function finishUsageReservation(
@@ -58,6 +65,15 @@ export async function finishUsageReservation(
 
   if (!reservation) {
     return null;
+  }
+
+  if (reservation.kind === "chat_run") {
+    return params.repositories.usageReservations.finishUserReservationWithBalance(
+      params.kind,
+      params.refId,
+      params.outcome,
+      params.reservationId,
+    );
   }
 
   const transitioned = await params.repositories.usageReservations.transitionHeldReservation(

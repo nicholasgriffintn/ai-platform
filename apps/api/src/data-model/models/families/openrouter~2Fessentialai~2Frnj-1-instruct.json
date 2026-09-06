@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 7, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/essentialai/rnj 1 instruct family includes models that produce text.",
+  "models": {
+    "rnj-1-instruct": {
+      "defaults": {
+        "name": "Rnj 1 Instruct",
+        "description": "Rnj 1 Instruct accepts text and produces text."
+      }
+    }
+  }
+}

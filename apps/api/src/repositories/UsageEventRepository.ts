@@ -14,6 +14,8 @@ export interface UsageEventInsert {
   message_id: string | null;
   activity_id: string | null;
   completion_id: string | null;
+  run_id: string | null;
+  run_attempt: number | null;
   occurred_at: string;
   period: string;
   source: UsageSource;
@@ -57,6 +59,17 @@ export interface UsageEventGroupRow {
   event_count: number;
 }
 
+export interface ChatRunUsageEventSummaryRow {
+  run_id: string;
+  run_attempt: number | null;
+  source: UsageSource;
+  event_count: number;
+  cost_micros: number;
+  credit_micros: number;
+  estimated_price_event_count: number;
+  input_tokens: number;
+}
+
 export interface ListUsageEventsParams {
   userId: number;
   period: string;
@@ -81,6 +94,8 @@ const INSERT_COLUMNS = [
   "message_id",
   "activity_id",
   "completion_id",
+  "run_id",
+  "run_attempt",
   "occurred_at",
   "period",
   "source",
@@ -274,6 +289,30 @@ export class UsageEventRepository extends BaseRepository {
 			   AND occurred_at >= ? AND occurred_at <= ?
 			 GROUP BY resource, unit`,
       [`${day}T00:00:00.000Z`, `${day}T23:59:59.999Z`],
+    );
+  }
+
+  async summariseChatRuns(runIds: readonly string[]): Promise<ChatRunUsageEventSummaryRow[]> {
+    if (runIds.length === 0) {
+      return [];
+    }
+
+    const placeholders = runIds.map(() => "?").join(", ");
+
+    return this.runQuery<ChatRunUsageEventSummaryRow>(
+      `SELECT run_id, run_attempt, source,
+              COUNT(*) AS event_count,
+              COALESCE(SUM(cost_micros), 0) AS cost_micros,
+              COALESCE(SUM(credit_micros), 0) AS credit_micros,
+              COALESCE(SUM(CASE WHEN estimated = 1 THEN 1 ELSE 0 END), 0)
+                AS estimated_price_event_count,
+              COALESCE(SUM(CASE WHEN unit LIKE '%input_tokens'
+                THEN quantity ELSE 0 END), 0) AS input_tokens
+       FROM usage_event
+       WHERE run_id IN (${placeholders})
+       GROUP BY run_id, run_attempt, source
+       ORDER BY run_id ASC, run_attempt ASC, source ASC`,
+      [...runIds],
     );
   }
 }

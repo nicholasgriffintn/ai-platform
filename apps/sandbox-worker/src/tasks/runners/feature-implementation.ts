@@ -18,6 +18,8 @@ import {
   truncateLog,
   quoteForShell,
   buildCommitMessage,
+  uniqueOutputLines,
+  resolveAbsoluteRepoTargetDir,
 } from "../../lib/commands";
 import { prepareSandboxEnvironment } from "../../lib/environment-setup";
 import { classifySandboxError } from "../../lib/errors";
@@ -50,17 +52,6 @@ import type {
   TaskSecrets,
   Env,
 } from "../../types";
-
-function lines(value: string): string[] {
-  return Array.from(
-    new Set(
-      value
-        .split("\n")
-        .map((entry) => entry.trim())
-        .filter(Boolean),
-    ),
-  );
-}
 
 function buildProofEvidence(params: {
   baseRevision?: string;
@@ -95,14 +86,6 @@ function buildProofEvidence(params: {
     residualRisks: params.residualRisks,
     incompleteWork: params.incompleteWork,
   };
-}
-
-function resolveAbsoluteRepoTargetDir(sandboxRoot: string, repoTargetDir: string): string {
-  if (repoTargetDir.startsWith("/")) {
-    return repoTargetDir;
-  }
-
-  return `${sandboxRoot.replace(/\/+$/, "")}/${repoTargetDir.replace(/^\/+/, "")}`;
 }
 
 export async function executeFeatureImplementation(
@@ -227,7 +210,7 @@ export async function executeFeatureImplementation(
       throw new Error(sandboxRootResult.stderr || "Failed to resolve sandbox working directory");
     }
 
-    const sandboxRoot = lines(sandboxRootResult.stdout).at(-1);
+    const sandboxRoot = uniqueOutputLines(sandboxRootResult.stdout).at(-1);
 
     if (!sandboxRoot) {
       throw new Error("Failed to resolve sandbox working directory");
@@ -478,7 +461,7 @@ export async function executeFeatureImplementation(
     );
 
     if (changedFilesResult.success) {
-      changedFiles = lines(changedFilesResult.stdout);
+      changedFiles = uniqueOutputLines(changedFilesResult.stdout);
     }
 
     await emit({
@@ -578,6 +561,8 @@ export async function executeFeatureImplementation(
 
     serviceSupervisor?.throwIfFailed();
 
+    await serviceSupervisor?.stop();
+
     return {
       success: true,
       logs: truncateLog(executionLogs.join("\n")),
@@ -604,6 +589,8 @@ export async function executeFeatureImplementation(
   } catch (error) {
     console.error("Error during sandbox task execution:", error);
     const classified = classifySandboxError(error);
+
+    await serviceSupervisor?.stop();
 
     await emit({
       type: classified.type === "cancelled" ? "task_cancelled" : "task_failed",

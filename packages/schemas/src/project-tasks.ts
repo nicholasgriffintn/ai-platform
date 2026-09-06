@@ -1,8 +1,16 @@
 import z from "zod/v4";
 
 import { agentModeSchema, toolPermissionSchema } from "./agent-modes";
+import { chatRunStatusSchema } from "./chat-runs";
 import { goalEvidenceEntrySchema, goalSchema } from "./goals";
-import { answerUserQuestionsSchema, userQuestionSetSchema } from "./user-questions";
+import { outputProvenanceSchema } from "./provenance";
+import { chatRunUsageSchema } from "./usage";
+import {
+  answerUserQuestionsSchema,
+  userQuestionAnswerSchema,
+  userQuestionSetSchema,
+  userQuestionsSchema,
+} from "./user-questions";
 
 export const projectTaskStatusSchema = z.enum([
   "backlog",
@@ -132,6 +140,10 @@ export const projectTaskCompletionSchema = z.object({
   stageId: z.string().min(1).nullable(),
   conversationId: z.string().min(1),
   goalId: z.string().min(1),
+  runId: z.string().min(1).nullable().optional(),
+  runAttempt: z.number().int().positive().nullable().optional(),
+  dispatchTaskId: z.string().min(1).nullable().optional(),
+  outputIds: z.array(z.string().min(1)).optional(),
   output: z.string(),
   evidence: z.array(goalEvidenceEntrySchema).default([]),
   approval: z.object({
@@ -161,6 +173,10 @@ export const projectTaskSchema = z.object({
   blockedReason: projectTaskBlockedReasonSchema.nullable(),
   blockedDetail: z.string().nullable(),
   stageId: z.string().nullable(),
+  flowSnapshot: z
+    .lazy(() => projectFlowSchema)
+    .nullable()
+    .optional(),
   runner: projectTaskRunnerSchema.nullable(),
   createdByUserId: z.number().int().positive(),
   assigneeUserId: z.number().int().positive().nullable(),
@@ -168,6 +184,7 @@ export const projectTaskSchema = z.object({
   conversationId: z.string().nullable(),
   goalId: z.string().nullable(),
   dispatchTaskId: z.string().nullable(),
+  runId: z.string().nullable().optional(),
   completions: z.array(projectTaskCompletionSchema).default([]),
   position: z.number(),
   tokenBudget: z.number().int().positive().nullable(),
@@ -176,6 +193,7 @@ export const projectTaskSchema = z.object({
   updatedAt: z.string().nullable(),
   startedAt: z.string().nullable(),
   completedAt: z.string().nullable(),
+  attentionVersion: z.number().int().positive().optional(),
 });
 
 export type ProjectTask = z.infer<typeof projectTaskSchema>;
@@ -267,12 +285,14 @@ export const PROJECT_TASK_ATTENTION_KINDS = [
   "review",
   "blocked",
   "assigned",
+  "completion",
 ] as const;
 
 export const projectTaskAttentionKindSchema = z.enum(PROJECT_TASK_ATTENTION_KINDS);
 export type ProjectTaskAttentionKind = z.infer<typeof projectTaskAttentionKindSchema>;
 
 export const projectTaskAttentionItemSchema = z.object({
+  id: z.string().min(1),
   kind: projectTaskAttentionKindSchema,
   taskId: z.string(),
   projectId: z.string(),
@@ -282,6 +302,10 @@ export const projectTaskAttentionItemSchema = z.object({
   detail: z.string().nullable(),
   conversationId: z.string().nullable(),
   since: z.string(),
+  requiresAction: z.boolean(),
+  isRead: z.boolean(),
+  readAt: z.string().nullable(),
+  deepLink: z.string().min(1),
 });
 
 export type ProjectTaskAttentionItem = z.infer<typeof projectTaskAttentionItemSchema>;
@@ -289,6 +313,7 @@ export type ProjectTaskAttentionItem = z.infer<typeof projectTaskAttentionItemSc
 export const projectTaskAttentionResponseSchema = z.object({
   items: z.array(projectTaskAttentionItemSchema),
   total: z.number().int().nonnegative(),
+  unread: z.number().int().nonnegative(),
 });
 
 export type ProjectTaskAttentionResponse = z.infer<typeof projectTaskAttentionResponseSchema>;
@@ -350,15 +375,6 @@ export const projectTaskToolApprovalSchema = z.object({
 
 export type ProjectTaskToolApproval = z.infer<typeof projectTaskToolApprovalSchema>;
 
-export const projectTaskDetailResponseSchema = z.object({
-  task: projectTaskSchema,
-  goal: goalSchema.nullable(),
-  pendingQuestions: userQuestionSetSchema.nullable(),
-  pendingApproval: projectTaskToolApprovalSchema.nullable(),
-});
-
-export type ProjectTaskDetailResponse = z.infer<typeof projectTaskDetailResponseSchema>;
-
 export const answerProjectTaskQuestionsSchema = answerUserQuestionsSchema;
 
 export const resolveProjectTaskToolApprovalSchema = z.object({
@@ -369,6 +385,180 @@ export const resolveProjectTaskToolApprovalSchema = z.object({
 export type ResolveProjectTaskToolApprovalInput = z.infer<
   typeof resolveProjectTaskToolApprovalSchema
 >;
+
+export const PROJECT_TASK_INTERACTION_PROTOCOL_VERSION = 1;
+
+export const projectTaskInteractionStatusSchema = z.enum([
+  "pending",
+  "resolved",
+  "expired",
+  "interrupted",
+]);
+
+const projectTaskInteractionBaseSchema = z.object({
+  protocolVersion: z.literal(PROJECT_TASK_INTERACTION_PROTOCOL_VERSION),
+  projectId: z.string().min(1),
+  taskId: z.string().min(1),
+  runId: z.string().min(1).nullable(),
+  interactionId: z.string().min(1),
+  status: projectTaskInteractionStatusSchema,
+  requestedAt: z.string(),
+  resolvedAt: z.string().nullable(),
+  detail: z.string().nullable(),
+});
+
+export const projectTaskQuestionInteractionSchema = projectTaskInteractionBaseSchema.extend({
+  type: z.literal("question"),
+  questions: userQuestionsSchema,
+  answers: z.array(userQuestionAnswerSchema).nullable(),
+});
+
+export const projectTaskApprovalInteractionSchema = projectTaskInteractionBaseSchema.extend({
+  type: z.literal("approval"),
+  toolName: z.string().min(1),
+  reason: z.string().min(1),
+  resolution: z.enum(["approved", "rejected"]).nullable(),
+});
+
+export const projectTaskInteractionSchema = z.discriminatedUnion("type", [
+  projectTaskQuestionInteractionSchema,
+  projectTaskApprovalInteractionSchema,
+]);
+
+export type ProjectTaskInteraction = z.infer<typeof projectTaskInteractionSchema>;
+
+export const PROJECT_TASK_ACTIVITY_PROTOCOL_VERSION = 1;
+
+export const projectTaskActivityCategorySchema = z.enum([
+  "plan",
+  "run",
+  "step",
+  "tool",
+  "interaction",
+  "output",
+]);
+
+export const projectTaskActivityStatusSchema = z.enum([
+  "proposed",
+  "active",
+  "waiting",
+  "succeeded",
+  "failed",
+  "interrupted",
+  "cancelled",
+  "resolved",
+  "unknown",
+]);
+
+export type ProjectTaskActivityStatus = z.infer<typeof projectTaskActivityStatusSchema>;
+
+export const projectTaskActivityItemSchema = z.object({
+  protocolVersion: z.literal(PROJECT_TASK_ACTIVITY_PROTOCOL_VERSION),
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  taskId: z.string().min(1),
+  runId: z.string().min(1).nullable(),
+  type: z.string().min(1),
+  category: projectTaskActivityCategorySchema,
+  status: projectTaskActivityStatusSchema,
+  title: z.string().trim().min(1),
+  detail: z.string().trim().min(1).nullable(),
+  items: z.array(z.string().trim().min(1)).default([]),
+  occurredAt: z.string(),
+  sourceId: z.string().min(1).nullable(),
+  actionable: z.boolean(),
+  terminal: z.boolean(),
+});
+
+export type ProjectTaskActivityItem = z.infer<typeof projectTaskActivityItemSchema>;
+
+export const projectTaskActivityTimelineSchema = z.object({
+  protocolVersion: z.literal(PROJECT_TASK_ACTIVITY_PROTOCOL_VERSION),
+  projectId: z.string().min(1),
+  taskId: z.string().min(1),
+  items: z.array(projectTaskActivityItemSchema),
+});
+
+export type ProjectTaskActivityTimeline = z.infer<typeof projectTaskActivityTimelineSchema>;
+
+export const PROJECT_TASK_PLAN_EVIDENCE_PROTOCOL_VERSION = 1;
+
+export const projectTaskPlanStatusSchema = z.enum(["active", "completed", "abandoned"]);
+
+export const projectTaskStageEvidenceStatusSchema = z.enum([
+  "proposed",
+  "executing",
+  "completed",
+  "failed",
+  "interrupted",
+  "abandoned",
+]);
+
+export const projectTaskStageOutputSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  kind: z.string().min(1),
+  status: z.enum(["pending", "ready", "failed", "archived"]),
+});
+
+export const projectTaskStageAttemptSchema = z.object({
+  id: z.string().min(1),
+  runId: z.string().min(1),
+  conversationId: z.string().min(1),
+  attempt: z.number().int().positive(),
+  status: chatRunStatusSchema,
+  startedAt: z.string().nullable(),
+  completedAt: z.string().nullable(),
+  terminalReason: z.string().nullable(),
+  provenance: outputProvenanceSchema,
+  completionIds: z.array(z.string().min(1)),
+  outputs: z.array(projectTaskStageOutputSchema),
+  usage: chatRunUsageSchema.optional(),
+});
+
+export const projectTaskStageEvidenceSchema = z.object({
+  id: z.string().min(1),
+  flowStageId: z.string().min(1).nullable(),
+  name: z.string().min(1),
+  status: projectTaskStageEvidenceStatusSchema,
+  input: z.object({
+    objective: z.string().min(1),
+    acceptanceCriterionIds: z.array(z.string().min(1)),
+  }),
+  attempts: z.array(projectTaskStageAttemptSchema),
+  completionIds: z.array(z.string().min(1)),
+  outputs: z.array(projectTaskStageOutputSchema),
+});
+
+export const projectTaskResumeCapabilitySchema = z.object({
+  supported: z.boolean(),
+  reason: z.string().min(1).nullable(),
+});
+
+export const projectTaskPlanEvidenceSchema = z.object({
+  protocolVersion: z.literal(PROJECT_TASK_PLAN_EVIDENCE_PROTOCOL_VERSION),
+  id: z.string().min(1),
+  status: projectTaskPlanStatusSchema,
+  stages: z.array(projectTaskStageEvidenceSchema),
+  resume: projectTaskResumeCapabilitySchema,
+});
+
+export type ProjectTaskPlanEvidence = z.infer<typeof projectTaskPlanEvidenceSchema>;
+export type ProjectTaskStageEvidence = z.infer<typeof projectTaskStageEvidenceSchema>;
+export type ProjectTaskStageAttempt = z.infer<typeof projectTaskStageAttemptSchema>;
+export type ProjectTaskResumeCapability = z.infer<typeof projectTaskResumeCapabilitySchema>;
+
+export const projectTaskDetailResponseSchema = z.object({
+  task: projectTaskSchema,
+  goal: goalSchema.nullable(),
+  pendingQuestions: userQuestionSetSchema.nullable(),
+  pendingApproval: projectTaskToolApprovalSchema.nullable(),
+  interaction: projectTaskInteractionSchema.nullable().default(null),
+  activity: projectTaskActivityTimelineSchema,
+  plan: projectTaskPlanEvidenceSchema,
+});
+
+export type ProjectTaskDetailResponse = z.infer<typeof projectTaskDetailResponseSchema>;
 
 export const projectTaskListResponseSchema = z.object({
   tasks: z.array(projectTaskSchema),

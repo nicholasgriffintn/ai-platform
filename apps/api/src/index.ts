@@ -86,7 +86,13 @@ app.use(
   cors({
     origin: corsOrigin,
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "x-captcha-token"],
+    allowHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-CSRF-Token",
+      "x-captcha-token",
+      "X-Notification-Installation",
+    ],
     credentials: true,
     maxAge: 86400,
   }),

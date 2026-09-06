@@ -1,3 +1,47 @@
+import z from "zod/v4";
+
+const remoteModelSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().optional(),
+    description: z.string().optional(),
+    family: z.string().optional(),
+    attachment: z.boolean().optional(),
+    temperature: z.boolean().optional(),
+    tool_call: z.boolean().optional(),
+    structured_output: z.boolean().optional(),
+    reasoning: z.boolean().optional(),
+    open_weights: z.boolean().optional(),
+    status: z.enum(["alpha", "beta", "deprecated"]).optional(),
+    modalities: z.object({ input: z.array(z.string()), output: z.array(z.string()) }).optional(),
+    limit: z
+      .object({
+        context: z.number().nonnegative().optional(),
+        output: z.number().nonnegative().optional(),
+      })
+      .passthrough()
+      .optional(),
+    cost: z
+      .object({
+        input: z.number().nonnegative().optional(),
+        output: z.number().nonnegative().optional(),
+        reasoning: z.number().nonnegative().optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+
+const remoteProvidersSchema = z.record(
+  z.string(),
+  z
+    .object({
+      models: z.record(z.string(), remoteModelSchema),
+      status: z.enum(["alpha", "beta", "deprecated"]).optional(),
+    })
+    .passthrough(),
+);
+
 export async function fetchApiData(apiUrl) {
   const response = await fetch(apiUrl, {
     headers: {
@@ -9,13 +53,15 @@ export async function fetchApiData(apiUrl) {
     throw new Error(`Failed to fetch ${apiUrl}: ${response.status}`);
   }
 
-  const json = await response.json();
+  return validateRemoteProviders(await response.json());
+}
 
+export function validateRemoteProviders(json) {
   if (!json || typeof json !== "object" || Array.isArray(json)) {
     throw new Error("models.dev payload is not a provider map");
   }
 
-  return json;
+  return remoteProvidersSchema.parse(json);
 }
 
 export function buildArtificialAnalysisModelsUrl(apiUrl) {

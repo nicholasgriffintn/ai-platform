@@ -1,0 +1,32 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "audio"
+    ],
+    "contextComplexity": 3,
+    "reliability": 4,
+    "releaseDate": "November 14, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/pipecat ai/smart turn v2 family includes models that produce text.",
+  "models": {
+    "pipecat-smart-turn-v2": {
+      "defaults": {
+        "name": "Pipecat Smart Turn v2",
+        "description": "An open source, community-driven, native audio turn detection model that detects end-of-turn in audio streams to determine when someone has finished speaking."
+      }
+    }
+  }
+}

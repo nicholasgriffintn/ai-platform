@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 131072,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "July 11, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/switchpoint/router family includes models that produce text.",
+  "models": {
+    "switchpoint-router": {
+      "defaults": {
+        "name": "Switchpoint Router",
+        "description": "Switchpoint Router accepts text and produces text."
+      }
+    }
+  }
+}

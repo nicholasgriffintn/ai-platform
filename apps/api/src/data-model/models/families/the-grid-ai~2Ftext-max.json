@@ -1,0 +1,40 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "February 26, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The the grid ai/text max family includes models that produce text.",
+  "models": {
+    "text-max": {
+      "defaults": {
+        "name": "Text Max",
+        "description": "Frontier models for deep reasoning, long context, and complex workflows. Any model that meets the contract spec can serve your request."
+      }
+    }
+  }
+}

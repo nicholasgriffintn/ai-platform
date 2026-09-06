@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": true
+  },
+  "description": "The model router family includes models that produce text.",
+  "models": {
+    "brick-v1-beta": {
+      "defaults": {
+        "name": "Brick v1 Beta",
+        "description": "Semantic router by Regolo.ai that directs each request to the most suitable model, optimizing costs and performance",
+        "contextWindow": 100000,
+        "maxTokens": 15000,
+        "releaseDate": "February 6, 2026",
+        "supportsTemperature": true
+      }
+    },
+    "model-router": {
+      "defaults": {
+        "name": "Model Router",
+        "description": "Automatic model router for matching prompts to suitable backends and budgets",
+        "contextWindow": 200000,
+        "maxTokens": 16384,
+        "releaseDate": "May 19, 2025"
+      }
+    }
+  }
+}

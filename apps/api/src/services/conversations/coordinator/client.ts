@@ -1,8 +1,18 @@
-import { threadStatusSchema, type ThreadOperation } from "@ngriffin_uk/polychat-schemas";
+import {
+  THREAD_LEASE_RENEWAL_INTERVAL_MS,
+  threadLeaseAcquisitionSchema,
+  threadLeaseOwnershipSchema,
+  threadLeaseReleaseSchema,
+  threadLeaseRenewalSchema,
+  threadStatusSchema,
+  type ThreadOperation,
+} from "@ngriffin_uk/polychat-schemas";
 
+import type { ConversationWriteFence } from "~/lib/conversation/write-fence";
 import { getDurableObjectStub, postDurableObjectJson } from "~/lib/durable-objects/client";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/conversations/coordinator/client" });
@@ -46,44 +56,188 @@ async function callCoordinator<T>(
   }
 }
 
-/**
- * Takes the thread for a synchronous operation. Returns false when another
- * operation already holds it, so the caller can refuse rather than race.
- * A deployment without the Durable Object treats the thread as free, exactly
- * as it did before the coordinator existed. A coordinator that is configured
- * but unreachable refuses instead: granting a lock we could not take would
- * let two turns interleave writes to the same conversation, and the caller
- * can retry a refusal.
- */
-export async function acquireThread(params: {
+export interface ThreadLease extends ConversationWriteFence {
+  readonly conversationId: string;
+  readonly kind: ThreadOperation;
+  readonly ownerToken: string;
+  readonly expiresAt: string;
+  release(): Promise<void>;
+}
+
+export interface ThreadLockRequest {
   env: IEnv | undefined;
   conversationId: string;
   kind: ThreadOperation;
-}): Promise<{ acquired: boolean; currentOperation?: string | null }> {
-  const outcome = await callCoordinator<{
-    acquired?: boolean;
-    currentOperation?: string | null;
-  }>(params.env, params.conversationId, "/acquire", { kind: params.kind });
+}
 
-  if (outcome.status === "unavailable") {
-    return { acquired: true };
-  }
+export type ThreadLockFailure = {
+  acquired: false;
+  currentOperation: ThreadOperation | null;
+  reason: "busy" | "unavailable";
+};
 
-  if (outcome.status === "failed") {
-    return { acquired: false, currentOperation: null };
-  }
+export type ThreadLockAcquisition = { acquired: true; lease: ThreadLease } | ThreadLockFailure;
+
+function leaseOwnershipLostError(): AssistantError {
+  return new AssistantError(
+    "This conversation is now owned by another operation. The stale attempt cannot save changes.",
+    ErrorType.CONFLICT_ERROR,
+    409,
+    { reason: "lease_ownership_lost" },
+  );
+}
+
+export function isThreadLeaseOwnershipLostError(error: unknown): boolean {
+  return error instanceof AssistantError && error.context?.reason === "lease_ownership_lost";
+}
+
+function createThreadLease(
+  request: ThreadLockRequest,
+  ownerToken: string,
+  initialExpiresAt: string,
+): ThreadLease {
+  let expiresAt = initialExpiresAt;
+  let lost = false;
+  let released = false;
+  let renewalTimer: ReturnType<typeof setTimeout> | undefined;
+  let renewalInFlight: Promise<void> | undefined;
+
+  const stopRenewal = () => {
+    if (renewalTimer !== undefined) {
+      clearTimeout(renewalTimer);
+      renewalTimer = undefined;
+    }
+  };
+
+  const markLost = () => {
+    lost = true;
+    stopRenewal();
+  };
+
+  const renew = async () => {
+    if (released || lost) {
+      return;
+    }
+
+    const outcome = await callCoordinator<unknown>(request.env, request.conversationId, "/renew", {
+      ownerToken,
+    });
+    const parsed =
+      outcome.status === "ok" ? threadLeaseRenewalSchema.safeParse(outcome.data) : null;
+
+    if (!parsed?.success || !parsed.data.renewed) {
+      markLost();
+
+      return;
+    }
+
+    expiresAt = parsed.data.expiresAt;
+
+    if (!released) {
+      scheduleRenewal();
+    }
+  };
+
+  const scheduleRenewal = () => {
+    stopRenewal();
+
+    renewalTimer = setTimeout(() => {
+      renewalTimer = undefined;
+      renewalInFlight = renew().finally(() => {
+        renewalInFlight = undefined;
+      });
+    }, THREAD_LEASE_RENEWAL_INTERVAL_MS);
+  };
+
+  const assertOwned = async () => {
+    if (released || lost) {
+      throw leaseOwnershipLostError();
+    }
+
+    const outcome = await callCoordinator<unknown>(request.env, request.conversationId, "/assert", {
+      ownerToken,
+    });
+    const parsed =
+      outcome.status === "ok" ? threadLeaseOwnershipSchema.safeParse(outcome.data) : null;
+
+    if (!parsed?.success || !parsed.data.owned) {
+      markLost();
+      throw leaseOwnershipLostError();
+    }
+
+    expiresAt = parsed.data.expiresAt;
+    scheduleRenewal();
+  };
+
+  const release = async () => {
+    if (released) {
+      return;
+    }
+
+    released = true;
+    stopRenewal();
+    await renewalInFlight;
+
+    const outcome = await callCoordinator<unknown>(
+      request.env,
+      request.conversationId,
+      "/release",
+      { ownerToken },
+    );
+    const parsed =
+      outcome.status === "ok" ? threadLeaseReleaseSchema.safeParse(outcome.data) : null;
+
+    if (!parsed?.success) {
+      logger.error("Conversation lease release could not be confirmed", {
+        conversationId: request.conversationId,
+        kind: request.kind,
+      });
+    }
+  };
+
+  scheduleRenewal();
 
   return {
-    acquired: outcome.data.acquired === true,
-    currentOperation: outcome.data.currentOperation,
+    conversationId: request.conversationId,
+    kind: request.kind,
+    ownerToken,
+    get expiresAt() {
+      return expiresAt;
+    },
+    assertOwned,
+    release,
   };
 }
 
-export async function releaseThread(params: {
-  env: IEnv | undefined;
-  conversationId: string;
-}): Promise<void> {
-  await callCoordinator(params.env, params.conversationId, "/release");
+export async function acquireThread(params: ThreadLockRequest): Promise<ThreadLockAcquisition> {
+  const ownerToken = generateId();
+  const outcome = await callCoordinator<unknown>(params.env, params.conversationId, "/acquire", {
+    kind: params.kind,
+    ownerToken,
+  });
+  const parsed =
+    outcome.status === "ok" ? threadLeaseAcquisitionSchema.safeParse(outcome.data) : null;
+
+  if (!parsed?.success) {
+    return {
+      acquired: false,
+      currentOperation: null,
+      reason: "unavailable",
+    };
+  }
+
+  if (!parsed.data.acquired) {
+    return {
+      acquired: false,
+      currentOperation: parsed.data.currentOperation,
+      reason: "busy",
+    };
+  }
+
+  return {
+    acquired: true,
+    lease: createThreadLease(params, ownerToken, parsed.data.expiresAt),
+  };
 }
 
 export async function getActiveThreadOperation(params: {
@@ -108,51 +262,62 @@ export async function getActiveThreadOperation(params: {
   return parsed.data.status === "running" ? parsed.data.currentOperation : null;
 }
 
-export function threadBusyError(currentOperation?: string | null): AssistantError {
+export function threadBusyError(currentOperation?: ThreadOperation | null): AssistantError {
   return new AssistantError(
     currentOperation
       ? `This conversation is already working on something (${currentOperation}). Try again once it finishes.`
       : "This conversation is already working on something. Try again once it finishes.",
     ErrorType.CONFLICT_ERROR,
+    409,
   );
 }
 
-export interface ThreadLockRequest {
-  env: IEnv | undefined;
-  conversationId: string;
-  kind: ThreadOperation;
+export function threadLockError(failure: ThreadLockFailure): AssistantError {
+  if (failure.reason === "unavailable") {
+    return new AssistantError(
+      "Conversation coordination is temporarily unavailable. Try again shortly.",
+      ErrorType.EXTERNAL_API_ERROR,
+      503,
+    );
+  }
+
+  return threadBusyError(failure.currentOperation);
 }
 
 export async function withThreadLock<T>(
   params: ThreadLockRequest,
-  run: () => Promise<T>,
+  run: (lease: ThreadLease) => Promise<T>,
 ): Promise<T> {
   const lock = await acquireThread(params);
 
-  if (!lock.acquired) {
-    throw threadBusyError(lock.currentOperation);
+  if (lock.acquired === false) {
+    throw threadLockError(lock);
   }
 
   try {
-    return await run();
+    await lock.lease.assertOwned();
+
+    return await run(lock.lease);
   } finally {
-    await releaseThread({ env: params.env, conversationId: params.conversationId });
+    await lock.lease.release();
   }
 }
 
 export async function withThreadLockIfFree<T>(
   params: ThreadLockRequest,
-  run: () => Promise<T>,
+  run: (lease: ThreadLease) => Promise<T>,
 ): Promise<T | null> {
   const lock = await acquireThread(params);
 
-  if (!lock.acquired) {
+  if (lock.acquired === false) {
     return null;
   }
 
   try {
-    return await run();
+    await lock.lease.assertOwned();
+
+    return await run(lock.lease);
   } finally {
-    await releaseThread({ env: params.env, conversationId: params.conversationId });
+    await lock.lease.release();
   }
 }

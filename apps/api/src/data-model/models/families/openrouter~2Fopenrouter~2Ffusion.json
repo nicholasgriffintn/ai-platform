@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "June 13, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The openrouter/openrouter/fusion family includes models that produce text.",
+  "models": {
+    "fusion": {
+      "defaults": {
+        "name": "Fusion",
+        "description": "General-purpose chat model for instruction following, writing, and analysis"
+      }
+    }
+  }
+}

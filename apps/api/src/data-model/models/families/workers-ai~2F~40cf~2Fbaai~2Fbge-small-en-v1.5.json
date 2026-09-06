@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "releaseDate": "April 3, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/baai/bge small en v1.5 family includes models that produce embedding.",
+  "models": {
+    "bge-small-en-v1-5": {
+      "defaults": {
+        "name": "BGE Small EN v1.5",
+        "description": "BGE Small EN v1.5 accepts text and produces embedding."
+      }
+    }
+  }
+}

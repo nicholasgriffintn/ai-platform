@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "February 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The greenpt/green s pro family includes models that produce text.",
+  "models": {
+    "green-s-pro": {
+      "defaults": {
+        "name": "Green S Pro",
+        "description": "GreenPT advanced speech-to-text model with multilingual transcription support"
+      }
+    }
+  }
+}

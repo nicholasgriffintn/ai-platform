@@ -177,8 +177,7 @@ export async function analyseHackerNewsStories({
         env,
         context,
         messages,
-        max_tokens: 2048,
-        temperature: 0.7,
+        reasoning: { effort: "none" },
       },
       user?.id,
     );

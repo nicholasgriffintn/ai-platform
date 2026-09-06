@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 4000,
+    "maxTokens": 2048,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "analysis",
+      "instruction"
+    ],
+    "contextComplexity": 2,
+    "reliability": 3,
+    "knowledgeCutoffDate": "December 2024",
+    "releaseDate": "January 1, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The osmosis family includes models that produce text.",
+  "models": {
+    "osmosis-structure-0-6b": {
+      "defaults": {
+        "name": "Osmosis Structure 0.6B",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads"
+      }
+    }
+  }
+}

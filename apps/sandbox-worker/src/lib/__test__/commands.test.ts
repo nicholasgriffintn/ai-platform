@@ -83,7 +83,7 @@ describe("runSandboxCommand", () => {
     );
 
     expect(exec).not.toHaveBeenCalled();
-    expect(execStream).toHaveBeenCalledWith("pnpm build", { signal: undefined });
+    expect(execStream).toHaveBeenCalledWith("pnpm build");
     expect(output).toEqual([
       { stream: "stdout", data: "building\n" },
       { stream: "stderr", data: "warning\n" },
@@ -108,6 +108,21 @@ describe("runSandboxCommand", () => {
 
     expect(exec).toHaveBeenCalledWith("pwd");
     expect(result.stdout).toBe("ok");
+  });
+
+  it("cancels a running stream locally without passing a signal over RPC", async () => {
+    const abortController = new AbortController();
+    const cancel = vi.fn();
+    const execStream = vi.fn().mockResolvedValue(new ReadableStream({ cancel }));
+    const result = runSandboxCommand({ exec: vi.fn(), execStream }, "long-running-command", {
+      abortSignal: abortController.signal,
+    });
+
+    abortController.abort();
+
+    await expect(result).rejects.toThrow(/operation was aborted/i);
+    expect(execStream).toHaveBeenCalledWith("long-running-command");
+    expect(cancel).toHaveBeenCalledTimes(1);
   });
 });
 

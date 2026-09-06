@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 3,
+    "reliability": 2,
+    "knowledgeCutoffDate": "September 2023",
+    "releaseDate": "September 12, 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 17,
+      "codingIndex": 34,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The azure openai/o1 preview family includes models that produce text.",
+  "models": {
+    "o1-preview": {
+      "defaults": {
+        "name": "o1-preview",
+        "description": "o1-preview accepts text and produces text."
+      }
+    }
+  }
+}

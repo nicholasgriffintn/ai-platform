@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "audio"
+    ],
+    "supportsAttachments": false
+  },
+  "description": "The replicate/resemble ai/chatterbox turbo family includes models that produce audio.",
+  "models": {
+    "chatterbox-turbo": {
+      "defaults": {
+        "name": "Chatterbox Turbo",
+        "description": "The fastest open source TTS model without sacrificing quality"
+      }
+    }
+  }
+}

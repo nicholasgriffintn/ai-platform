@@ -13,8 +13,6 @@ export type HuggingFaceLoadingError = {
   estimatedTimeSeconds?: number;
 };
 
-const DEFAULT_HUGGINGFACE_RETRY_ATTEMPTS = 3;
-const DEFAULT_HUGGINGFACE_RETRY_DELAY_MS = 1000;
 const DEFAULT_LOADING_POLL_INTERVAL_MS = 30000;
 const MAX_LOADING_POLL_INTERVAL_MS = 120000;
 const MIN_LOADING_POLL_INTERVAL_MS = 6000;
@@ -22,20 +20,6 @@ const PROTECTED_EXTRA_BODY_KEYS = new Set(["model", "messages", "stream"]);
 
 function readFiniteNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
-}
-
-function readIntegerOption(value: unknown, fallback: number, min: number, max: number): number {
-  const numberValue = readFiniteNumber(value);
-
-  if (numberValue === undefined) {
-    return fallback;
-  }
-
-  return Math.min(max, Math.max(min, Math.floor(numberValue)));
-}
-
-function readBackoffOption(value: unknown): "exponential" | "linear" {
-  return value === "linear" ? "linear" : "exponential";
 }
 
 function getErrorMessageFromBody(body: Record<string, any>): string | undefined {
@@ -99,27 +83,12 @@ function sanitizeExtraBody(extraBody: Record<string, any>): Record<string, any> 
 }
 
 export function getHuggingFaceFetchOptions(
-  params: ChatCompletionParameters,
+  _params: ChatCompletionParameters,
   modelConfig: ModelConfigItem,
 ): FetchAIResponseOptions {
-  const options = readOptionBag(params.options);
-  const huggingfaceOptions = readRecordOption(options, "huggingface");
-
   return {
     requestTimeout: modelConfig.timeout || 100000,
-    maxAttempts: readIntegerOption(
-      huggingfaceOptions.maxAttempts,
-      DEFAULT_HUGGINGFACE_RETRY_ATTEMPTS,
-      1,
-      5,
-    ),
-    retryDelay: readIntegerOption(
-      huggingfaceOptions.retryDelayMs,
-      DEFAULT_HUGGINGFACE_RETRY_DELAY_MS,
-      0,
-      30000,
-    ),
-    backoff: readBackoffOption(huggingfaceOptions.backoff),
+    maxAttempts: 1,
   };
 }
 

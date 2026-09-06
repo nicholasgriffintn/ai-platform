@@ -1,9 +1,13 @@
 import type {
   CreateOutputInput,
   Output,
+  OutputHistoryResponse,
+  OutputProvenance,
   OutputRevision,
   OutputShare,
   OutputSummary,
+  ProvenanceSource,
+  RestoreOutputRevisionInput,
   SharedOutput,
   UpdateOutputInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -13,12 +17,14 @@ import {
   isOutputDeletionPending,
   parseOutputContent as parseContent,
 } from "~/lib/outputs/deletion";
+import { createOutputProvenance, parseOutputProvenance } from "~/lib/provenance/output";
 import type {
   OutputRecord,
   OutputRevisionRecord,
   OutputShareRecord,
 } from "~/repositories/OutputRepository";
 import { recordProjectAudit } from "~/services/audit";
+import { requireSourceAccess } from "~/services/sources";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -26,6 +32,7 @@ import { generateId, randomHex } from "~/utils/id";
 
 import { requireConversationScope, requireOutputAccess, requireOutputRecordAccess } from "./access";
 import { deleteOutputResources } from "./delete-resources";
+import { getOutputRestoreCapability } from "./revision-policy";
 
 function formatFile(record: OutputRecord): Output["file"] {
   if (!record.storage_key || !record.mime_type) {
@@ -56,6 +63,7 @@ export function formatOutput(record: OutputRecord): Output {
     content: parseContent(record.content),
     file: formatFile(record),
     revision: record.revision,
+    provenance: parseOutputProvenance(record.provenance_json, record.created_at),
     createdAt: record.created_at,
     updatedAt: record.updated_at,
   };
@@ -84,21 +92,71 @@ export function formatSharedOutput(record: OutputRecord): SharedOutput {
 }
 
 function formatOutputSummary(record: OutputRecord): OutputSummary {
-  const { content: _content, ...summary } = formatOutput(record);
+  const { content: _content, provenance: _provenance, ...summary } = formatOutput(record);
 
   return summary;
+}
+
+async function resolveProvenanceSourceAccess(
+  context: ServiceContext,
+  userId: number,
+  provenance: OutputProvenance,
+): Promise<OutputProvenance> {
+  const sources = await Promise.all(
+    provenance.sources.map(async (source): Promise<ProvenanceSource> => {
+      try {
+        await requireSourceAccess(context, userId, source.id);
+
+        return { ...source, state: "referenced" };
+      } catch (error) {
+        if (
+          error instanceof AssistantError &&
+          (error.type === ErrorType.NOT_FOUND ||
+            error.type === ErrorType.FORBIDDEN ||
+            error.type === ErrorType.AUTHORISATION_ERROR)
+        ) {
+          return { ...source, state: "unavailable" };
+        }
+
+        throw error;
+      }
+    }),
+  );
+
+  return { ...provenance, sources };
 }
 
 function formatRevision(record: OutputRevisionRecord): OutputRevision {
   return {
     outputId: record.output_id,
     revision: record.revision,
+    parentRevision: record.revision > 1 ? record.revision - 1 : null,
     title: record.title,
     status: record.status,
     sensitivity: record.sensitivity,
     content: parseContent(record.content),
     createdByUserId: record.created_by_user_id,
     createdAt: record.created_at,
+    operation: record.operation ?? (record.revision === 1 ? "created" : "updated"),
+    restoredFromRevision: record.restored_from_revision ?? null,
+    provenance: parseOutputProvenance(record.provenance_json, record.created_at),
+  };
+}
+
+function formatCurrentRevision(record: OutputRecord): OutputRevision {
+  return {
+    outputId: record.id,
+    revision: record.revision,
+    parentRevision: record.revision > 1 ? record.revision - 1 : null,
+    title: record.title,
+    status: record.status,
+    sensitivity: record.sensitivity,
+    content: parseContent(record.content),
+    createdByUserId: record.revision_created_by_user_id ?? record.created_by_user_id,
+    createdAt: record.revision_created_at ?? record.updated_at ?? record.created_at,
+    operation: record.revision_operation ?? (record.revision === 1 ? "created" : "updated"),
+    restoredFromRevision: record.restored_from_revision ?? null,
+    provenance: parseOutputProvenance(record.provenance_json, record.created_at),
   };
 }
 
@@ -161,6 +219,7 @@ export async function createOutput(
       mimeType: input.file?.mimeType,
       filename: input.file?.filename,
       byteSize: input.file?.byteSize,
+      provenance: createOutputProvenance({ origin: "user", completeness: "partial" }),
     },
     workspaceId
       ? {
@@ -181,7 +240,12 @@ export async function getOutput(
   userId: number,
   outputId: string,
 ): Promise<Output> {
-  return formatOutput(await requireOutputAccess(context, userId, outputId));
+  const output = formatOutput(await requireOutputAccess(context, userId, outputId));
+
+  return {
+    ...output,
+    provenance: await resolveProvenanceSourceAccess(context, userId, output.provenance),
+  };
 }
 
 export async function getOutputIncludingDeleting(
@@ -197,7 +261,12 @@ export async function getOutputIncludingDeleting(
 
   await requireOutputRecordAccess(context, userId, output);
 
-  return formatOutput(output);
+  const formatted = formatOutput(output);
+
+  return {
+    ...formatted,
+    provenance: await resolveProvenanceSourceAccess(context, userId, formatted.provenance),
+  };
 }
 
 export async function listOutputs(
@@ -281,11 +350,104 @@ export async function listOutputRevisions(
   context: ServiceContext,
   userId: number,
   outputId: string,
-): Promise<{ revisions: OutputRevision[] }> {
-  await requireOutputAccess(context, userId, outputId);
+): Promise<OutputHistoryResponse> {
+  const output = await requireOutputAccess(context, userId, outputId);
+
+  const revisions = await context.repositories.outputs.listRevisions(outputId);
+  const current = formatCurrentRevision(output);
 
   return {
-    revisions: (await context.repositories.outputs.listRevisions(outputId)).map(formatRevision),
+    current: {
+      ...current,
+      provenance: await resolveProvenanceSourceAccess(context, userId, current.provenance),
+    },
+    revisions: await Promise.all(
+      revisions.map(async (revision) => {
+        const formatted = formatRevision(revision);
+
+        formatted.provenance = await resolveProvenanceSourceAccess(
+          context,
+          userId,
+          formatted.provenance,
+        );
+
+        return formatted;
+      }),
+    ),
+    restore: getOutputRestoreCapability(output),
+  };
+}
+
+export async function restoreOutputRevision(
+  context: ServiceContext,
+  userId: number,
+  outputId: string,
+  revision: number,
+  input: RestoreOutputRevisionInput,
+): Promise<Output> {
+  const current = await requireOutputAccess(context, userId, outputId, true);
+
+  if (current.revision !== input.expectedRevision) {
+    throw new AssistantError("Output has changed", ErrorType.CONFLICT_ERROR, 409);
+  }
+
+  const capability = getOutputRestoreCapability(current);
+
+  if (!capability.supported) {
+    throw new AssistantError(
+      capability.reason ?? "This output cannot be restored",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (revision >= current.revision) {
+    throw new AssistantError(
+      "Only an earlier output revision can be restored",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  const target = await context.repositories.outputs.getRevision(outputId, revision);
+
+  if (!target) {
+    throw new AssistantError("Output revision not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  const project = current.project_id
+    ? await context.repositories.workspaces.getProject(current.project_id)
+    : null;
+
+  if (current.project_id && !project) {
+    throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  const restored = await context.repositories.outputs.updateOutput(
+    outputId,
+    {
+      title: target.title,
+      content: parseContent(target.content),
+      expectedRevision: input.expectedRevision,
+      updatedByUserId: userId,
+      operation: "restored",
+      restoredFromRevision: revision,
+    },
+    project
+      ? {
+          workspaceId: project.workspace_id,
+          actorUserId: userId,
+          action: "output.restored",
+          outputId,
+          metadata: { fromRevision: revision, toRevision: input.expectedRevision + 1 },
+        }
+      : undefined,
+  );
+  const formatted = formatOutput(restored);
+
+  return {
+    ...formatted,
+    provenance: await resolveProvenanceSourceAccess(context, userId, formatted.provenance),
   };
 }
 

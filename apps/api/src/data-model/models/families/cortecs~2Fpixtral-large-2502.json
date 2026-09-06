@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "May 26, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The cortecs/pixtral large 2502 family includes models that produce text.",
+  "models": {
+    "pixtral-large-2502": {
+      "defaults": {
+        "name": "Pixtral Large 2502",
+        "description": "Pixtral Large (25.02) is a 124B open-weight multimodal model built on Mistral Large 2, offering advanced image understanding and strong performance across text and code tasks."
+      }
+    }
+  }
+}

@@ -1,11 +1,14 @@
 import type { AgentResponse, ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas";
-import { generateId, getFiniteNumberOrFallback } from "@ngriffin_uk/polychat-utility-core";
+import {
+  generateId,
+  getFiniteNumberOrFallback,
+  getNumberInputValue,
+} from "@ngriffin_uk/polychat-utility-core";
 
 import type { AgentFormData } from "../types";
 import type { AgentEditorValue } from "./types";
 
-export const DEFAULT_AGENT_TEMPERATURE = 0.7;
 export const DEFAULT_AGENT_MAX_STEPS = 20;
 
 function isModelSelectable(model: string, models: ModelConfig): boolean {
@@ -25,7 +28,7 @@ export function createAgentEditorValue(
       examples: [],
       mode: null,
       model: "",
-      temperature: DEFAULT_AGENT_TEMPERATURE,
+      temperature: "",
       maxSteps: DEFAULT_AGENT_MAX_STEPS,
       toolIds: [],
       skillIds: [],
@@ -48,7 +51,7 @@ export function createAgentEditorValue(
     })),
     mode: agent.mode,
     model: isModelSelectable(model, models) ? model : "",
-    temperature: getFiniteNumberOrFallback(agent.temperature, DEFAULT_AGENT_TEMPERATURE),
+    temperature: getNumberInputValue(agent.temperature),
     maxSteps: maxSteps > 0 ? maxSteps : DEFAULT_AGENT_MAX_STEPS,
     toolIds: agent.enabled_tools ?? [],
     skillIds: agent.skill_ids,
@@ -67,7 +70,7 @@ export function toAgentFormData(value: AgentEditorValue): AgentFormData {
     avatar_url: value.avatarUrl.trim(),
     servers: value.servers.map((server) => ({ url: server.url.trim(), type: server.type })),
     model: value.model,
-    temperature: getFiniteNumberOrFallback(value.temperature, DEFAULT_AGENT_TEMPERATURE),
+    temperature: value.temperature === "" ? null : value.temperature,
     max_steps: getFiniteNumberOrFallback(value.maxSteps, DEFAULT_AGENT_MAX_STEPS),
     system_prompt: value.systemPrompt,
     few_shot_examples: value.examples.map(({ input, output }) => ({

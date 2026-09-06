@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum ComposerAttachmentType: String {
+enum ComposerAttachmentType: String, Hashable {
     case image
     case document
     case audio

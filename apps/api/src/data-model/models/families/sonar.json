@@ -1,0 +1,34 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 3,
+    "reliability": 1,
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 9.5,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The sonar family includes models that produce text.",
+  "models": {
+    "sonar": {
+      "defaults": {
+        "name": "Sonar",
+        "description": "Sonar search model for current answers, retrieval, and citation-backed chat"
+      }
+    }
+  }
+}

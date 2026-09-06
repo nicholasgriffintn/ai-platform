@@ -1,0 +1,1 @@
+ALTER TABLE `project` ADD `default_model_tier` text;

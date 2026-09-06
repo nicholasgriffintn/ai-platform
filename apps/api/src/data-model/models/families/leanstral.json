@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 256000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "coding",
+      "reasoning",
+      "academic",
+      "agents"
+    ],
+    "contextComplexity": 4,
+    "reliability": 3,
+    "releaseDate": "June 30, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The leanstral family includes models that produce text.",
+  "models": {
+    "leanstral-1-5": {
+      "defaults": {
+        "name": "Leanstral 1.5",
+        "description": "Open-weight code agent for Lean 4 formal proof engineering, automated theorem proving, and autoformalisation.",
+        "card": "https://docs.mistral.ai/models/leanstral-1-5"
+      }
+    }
+  }
+}

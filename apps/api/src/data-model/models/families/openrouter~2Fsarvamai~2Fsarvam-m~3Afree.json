@@ -1,0 +1,39 @@
+{
+  "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 3,
+    "reliability": 1,
+    "knowledgeCutoffDate": "May 2025",
+    "releaseDate": "May 25, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 3,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The openrouter/sarvamai/sarvam m:free family includes models that produce text.",
+  "models": {
+    "sarvam-m-free": {
+      "defaults": {
+        "name": "Sarvam-M (free)",
+        "description": "Sarvam-M (free) accepts text and produces text."
+      }
+    }
+  }
+}

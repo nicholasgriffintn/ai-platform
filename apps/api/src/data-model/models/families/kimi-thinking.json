@@ -1,0 +1,109 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262000,
+    "maxTokens": 262000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "April 17, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
+  "models": {
+    "kimi-k2-6": {
+      "defaults": {
+        "name": "Kimi K2.6",
+        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "artificialAnalysis": {
+          "intelligenceIndex": 42.8,
+          "codingIndex": 56,
+          "agenticIndex": 30.3,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "kimi-k2-6-fast": {
+      "defaults": {
+        "name": "Kimi K2.6 Fast",
+        "description": "Kimi K2.6 Fast accepts text, image and produces text."
+      }
+    },
+    "kimi-k2-6-turbo": {
+      "defaults": {
+        "name": "Kimi K2.6 Turbo",
+        "description": "Kimi K2.6 Turbo accepts text, image and produces text."
+      }
+    },
+    "kimi-k2-thinking": {
+      "defaults": {
+        "name": "Kimi K2 Thinking",
+        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
+        "contextWindow": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "November 6, 2025",
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 32.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "kimi-k2-thinking-turbo": {
+      "defaults": {
+        "name": "Kimi K2 Thinking Turbo",
+        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "November 6, 2025",
+        "supportsAttachments": false
+      }
+    }
+  }
+}

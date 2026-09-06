@@ -1,0 +1,55 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "mercury-coder": {
+      "model": "inception/mercury-coder/mercury-coder",
+      "matchingModel": "mercury-coder",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "lastUpdated": "July 31, 2025",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.001,
+        "supportsFim": true,
+        "supportsNextEdit": true,
+        "supportsApplyEdit": true
+      }
+    },
+    "mercury": {
+      "model": "inception/mercury/mercury",
+      "matchingModel": "mercury",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "lastUpdated": "July 31, 2025",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.001
+      }
+    },
+    "mercury-2": {
+      "model": "mercury/mercury-2",
+      "matchingModel": "mercury-2",
+      "overrides": {
+        "speed": 4,
+        "knowledgeCutoffDate": "January 1, 2025",
+        "lastUpdated": "February 24, 2026",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00075
+      }
+    },
+    "mercury-edit-2": {
+      "model": "inception/mercury-edit-2/mercury-edit-2",
+      "matchingModel": "mercury-edit-2",
+      "overrides": {
+        "lastUpdated": "March 30, 2026",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00075,
+        "supportsToolCalls": false
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 1024000,
+    "maxTokens": 26214,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 30, 2024",
+    "releaseDate": "November 8, 2024",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/thedrummer/unslopnemo 12b family includes models that produce text.",
+  "models": {
+    "unslopnemo-12b": {
+      "defaults": {
+        "name": "UnslopNemo 12B",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads"
+      }
+    }
+  }
+}

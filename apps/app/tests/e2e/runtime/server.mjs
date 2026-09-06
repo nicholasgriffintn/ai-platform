@@ -7,11 +7,25 @@ import { fileURLToPath } from "node:url";
 
 import { Miniflare } from "miniflare";
 
+import { resolveProjectTaskModelResponse } from "./project-task-model.mjs";
+import {
+  createSandboxWorkerOptions,
+  mockSandboxGitHubRequest,
+  resolveSandboxContainerEngine,
+  resolveSandboxModelTool,
+} from "./sandbox-runtime.mjs";
+
 const runtimeDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(runtimeDirectory, "../../../../../");
 const temporaryDirectory = mkdtempSync(path.join(tmpdir(), "polychat-e2e-"));
 const buildDirectory = path.join(temporaryDirectory, "api");
 const trainingBuildDirectory = path.join(temporaryDirectory, "training");
+const sandboxBuildDirectory = path.join(temporaryDirectory, "sandbox");
+const sandboxGitHubPrivateKey = generateKeyPairSync("rsa", {
+  modulusLength: 2048,
+  privateKeyEncoding: { type: "pkcs8", format: "pem" },
+  publicKeyEncoding: { type: "spki", format: "pem" },
+}).privateKey;
 const compatibilityDate = "2026-08-08";
 const serverEncryptionKeyBytes = Buffer.alloc(32, 7);
 const composioAccounts = new Map();
@@ -256,6 +270,26 @@ function toolCallStreamingResponse(toolCall) {
  * provider mock free of model behaviour: a test asks for the tool by name in its prompt.
  */
 const TOOL_CALL_TRIGGERS = [
+  {
+    marker: "Request approval for the release check",
+    name: "request_approval",
+    arguments: () => JSON.stringify({ message: "Recover this interrupted stream after approval?" }),
+  },
+  {
+    marker: "Ask questions for the release check",
+    name: "ask_user",
+    arguments: () =>
+      JSON.stringify({
+        questions: [
+          {
+            id: "audience",
+            prompt: "Who should receive the release report?",
+            options: [{ label: "Maintainers" }, { label: "Everyone" }],
+          },
+          { id: "scope", prompt: "Which detail should the report emphasise?" },
+        ],
+      }),
+  },
   {
     marker: "Convene a council on",
     name: "select_council_members",
@@ -538,6 +572,11 @@ async function mockStripeRequest(request, url) {
 }
 
 async function mockExternalRequest(request) {
+  const githubResponse = mockSandboxGitHubRequest(request);
+
+  if (githubResponse) {
+    return githubResponse;
+  }
   const url = new URL(request.url);
 
   if (url.hostname === "backend.composio.dev") {
@@ -702,7 +741,10 @@ async function mockExternalRequest(request) {
     return Response.json({ error: { message: "Deterministic provider failure" } }, { status: 503 });
   }
 
-  const toolCall = resolveToolCallTrigger(prompt);
+  const taskResponse = resolveProjectTaskModelResponse(body);
+  const toolCall =
+    resolveSandboxModelTool(body) ??
+    (taskResponse ? taskResponse.toolCall : resolveToolCallTrigger(prompt));
 
   if (toolCall) {
     return body.stream
@@ -710,9 +752,13 @@ async function mockExternalRequest(request) {
       : Response.json(openAiToolCallResponse(toolCall));
   }
 
-  const content = prompt.includes("You are a title generator")
-    ? "Release validation chat"
-    : `E2E response: ${prompt}`;
+  const content = taskResponse
+    ? taskResponse.content
+    : prompt.includes("Polychat sandbox E2E")
+      ? "Update README.md, then validate the change with:\n```sh\nnode verify.cjs\n```"
+      : prompt.includes("You are a title generator")
+        ? "Release validation chat"
+        : `E2E response: ${prompt}`;
 
   if (url.pathname.includes("v1beta/models/")) {
     return url.pathname.includes("streamGenerateContent")
@@ -731,7 +777,7 @@ async function mockExternalRequest(request) {
     return streamingResponse(
       "E2E response: recovery data so far",
       " and the interrupted stream completed",
-      prompt.includes("after refreshing") ? 10_000 : 2_500,
+      2_500,
     );
   }
 
@@ -782,7 +828,7 @@ function buildWorkerBundle(workspace, configPath, outputDirectory) {
   };
 }
 
-function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
+function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, seedMaterial) {
   const readinessSessionHash = createHash("sha256")
     .update("polychat-e2e-pro-0")
     .digest("base64url");
@@ -793,9 +839,9 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 		export const toJSONSchema = undefined;
 	`;
   const apiEntryModule = `
-		import api, { SandboxRunCoordinator } from "./api.js";
+		import api, { ConversationCoordinator, SandboxRunCoordinator } from "./api.js";
 
-		export { SandboxRunCoordinator };
+		export { ConversationCoordinator, SandboxRunCoordinator };
 
 	function withExternalBindingShape(env) {
 			const ai = env.AI;
@@ -825,6 +871,9 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 
 		export default {
 			fetch(request, env, context) {
+				if (new URL(request.url).hostname.endsWith(".localhost")) {
+					return env.SANDBOX_WORKER.fetch(request);
+				}
 				return api.fetch(request, withExternalBindingShape(env), context);
 			},
 			scheduled(event, env, context) {
@@ -839,6 +888,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
   return {
     host: "127.0.0.1",
     port,
+    containerEngine: resolveSandboxContainerEngine(),
     workers: [
       {
         name: "api",
@@ -874,6 +924,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
           ALWAYS_ENABLED_PROVIDERS: "google-ai-studio,groq,mistral,openai,replicate,workers-ai",
           API_BASE_URL: apiBaseUrl,
           APP_BASE_URL: appBaseUrl,
+          SANDBOX_PREVIEW_HOST: `localhost:${port}`,
           COMPOSIO_USER_NAMESPACE: "e2e",
           COMPOSIO_API_KEY: "e2e-composio-api-key",
           ENV: "development",
@@ -881,6 +932,8 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
           GOOGLE_STUDIO_API_KEY: "e2e-google-key",
           GITHUB_CLIENT_ID: "e2e-github-client",
           GITHUB_CLIENT_SECRET: "e2e-github-secret",
+          GITHUB_APP_ID: "987654",
+          GITHUB_APP_PRIVATE_KEY: sandboxGitHubPrivateKey,
           JWT_SECRET: "polychat-e2e-jwt-secret-at-least-thirty-two-characters",
           LOG_LEVEL: "error",
           MEMORY_SYNTHESIS_ENABLED: "false",
@@ -894,7 +947,10 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
         },
         d1Databases: { DB: "polychat-e2e" },
         kvNamespaces: ["CACHE"],
-        r2Buckets: ["ASSETS_BUCKET", "PRIVATE_ASSETS_BUCKET"],
+        r2Buckets: {
+          ASSETS_BUCKET: "ASSETS_BUCKET",
+          PRIVATE_ASSETS_BUCKET: "PRIVATE_ASSETS_BUCKET",
+        },
         queueProducers: {
           TASK_QUEUE: { queueName: "polychat-task-queue" },
         },
@@ -917,6 +973,10 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
           },
         },
         durableObjects: {
+          CONVERSATION_COORDINATOR: {
+            className: "ConversationCoordinator",
+            useSQLite: true,
+          },
           SANDBOX_RUN_COORDINATOR: {
             className: "SandboxRunCoordinator",
             useSQLite: true,
@@ -926,9 +986,17 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
           AI: { name: "external-services", entrypoint: "MockAi" },
           SEND_EMAIL: { name: "external-services", entrypoint: "MockEmail" },
           TRAINING_WORKER: { name: "training" },
+          SANDBOX_WORKER: { name: "sandbox" },
         },
         outboundService: mockExternalRequest,
       },
+      createSandboxWorkerOptions(
+        sandboxBundle,
+        appBaseUrl,
+        apiBaseUrl,
+        "polychat-e2e-jwt-secret-at-least-thirty-two-characters",
+        mockExternalRequest,
+      ),
       {
         name: "training",
         modules: [
@@ -1389,8 +1457,15 @@ async function start() {
     trainingBuildDirectory,
   );
   const seedMaterial = await createPersonaSeedMaterial();
+  const sandboxBundle = buildWorkerBundle(
+    "@assistant/sandbox-worker",
+    path.join(runtimeDirectory, "sandbox-wrangler.jsonc"),
+    sandboxBuildDirectory,
+  );
 
-  runtime = new Miniflare(createRuntimeOptions(apiBundle, trainingBundle, apiPort, seedMaterial));
+  runtime = new Miniflare(
+    createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, apiPort, seedMaterial),
+  );
   await runtime.ready;
   const database = await runtime.getD1Database("DB", "api");
 

@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 30, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The inception/mercury edit 2 family includes models that produce text.",
+  "models": {
+    "mercury-edit-2": {
+      "defaults": {
+        "name": "Mercury Edit 2",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+      }
+    }
+  }
+}

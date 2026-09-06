@@ -29,6 +29,7 @@ export const toolSchema = z.object({
   description: z.string(),
   category: toolCategorySchema,
   isDefault: z.boolean().optional(),
+  type: toolFunctionTypeSchema.optional(),
 });
 
 export const toolSelectionModeSchema = z.enum(["managed", "explicit"]);

@@ -3,7 +3,7 @@ export * from "./ModelIcon/ProviderGlyph";
 export { getProviderColor } from "./ModelIcon/providerColor";
 export type { IconType } from "./ModelIcon/icon-type";
 export * from "./Selector/ArtificialAnalysisScorePanel";
-export * from "./Selector/AutoModePicker";
+export * from "./Selector/ModelTierPicker";
 export * from "./Selector/ConversationModelOption";
 export * from "./Selector/hoverPreviewPosition";
 export * from "./Selector/ModelHoverPreview";

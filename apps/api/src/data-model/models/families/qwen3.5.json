@@ -1,0 +1,87 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The qwen3.5 family includes models that produce text.",
+  "models": {
+    "qwen3-5-2b": {
+      "defaults": {
+        "name": "qwen3.5-2b",
+        "description": "Qwen3.5-2B is a compact yet capable model from Alibaba's Qwen3.5 series. It features a 262K token context window, support for 201 languages, thinking/reasoning mode, and tool calling for agentic workflows. A strong choice for prototyping, fine-tuning, and efficient multilingual deployments.",
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "March 10, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 8.8,
+          "codingIndex": 17.4,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "qwen3-5-plus": {
+      "defaults": {
+        "name": "Qwen3.5 Plus",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "February 16, 2026"
+      }
+    },
+    "qwen3-5-plus-2026-04-20": {
+      "defaults": {
+        "name": "Qwen3.5 Plus 2026-04-20",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 1000000,
+        "releaseDate": "April 27, 2026"
+      }
+    }
+  }
+}

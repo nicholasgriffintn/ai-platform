@@ -5,9 +5,17 @@ const DEFAULT_MAX_ATTACHMENT_COUNT = 10;
 const DEFAULT_MAX_ATTACHMENT_TOTAL_SIZE = 1024 * 1024;
 
 type AttachmentContentPart =
-  | { type: "image_url"; image_url: { url: string; detail?: "auto" | "low" | "high" } }
-  | { type: "document_url"; document_url: { url: string; name?: string } }
-  | { type: "markdown_document"; markdown_document: { markdown: string; name?: string } }
+  | {
+      type: "image_url";
+      source_id?: string;
+      image_url: { url: string; detail?: "auto" | "low" | "high" };
+    }
+  | { type: "document_url"; source_id?: string; document_url: { url: string; name?: string } }
+  | {
+      type: "markdown_document";
+      source_id?: string;
+      markdown_document: { markdown: string; name?: string };
+    }
   | { type: string; [key: string]: unknown };
 
 export interface ParsedAttachments {
@@ -45,21 +53,45 @@ export function parseAttachments(contents: readonly unknown[]): ParsedAttachment
   const parts = contents as readonly AttachmentContentPart[];
 
   return {
-    imageAttachments: parts.filter(isImagePart).map((part) => ({
-      type: "image",
-      url: part.image_url.url,
-      detail: part.image_url.detail === "auto" ? undefined : part.image_url.detail,
-    })),
-    documentAttachments: parts.filter(isDocumentPart).map((part) => ({
-      type: "document",
-      url: part.document_url.url,
-      name: part.document_url.name,
-    })),
-    markdownAttachments: parts.filter(isMarkdownPart).map((part) => ({
-      type: "markdown_document",
-      markdown: part.markdown_document.markdown,
-      name: part.markdown_document.name,
-    })),
+    imageAttachments: parts.filter(isImagePart).map((part): Attachment => {
+      const attachment: Attachment = {
+        type: "image",
+        url: part.image_url.url,
+        detail: part.image_url.detail === "auto" ? undefined : part.image_url.detail,
+      };
+
+      if (part.source_id) {
+        attachment.sourceId = part.source_id;
+      }
+
+      return attachment;
+    }),
+    documentAttachments: parts.filter(isDocumentPart).map((part): Attachment => {
+      const attachment: Attachment = {
+        type: "document",
+        url: part.document_url.url,
+        name: part.document_url.name,
+      };
+
+      if (part.source_id) {
+        attachment.sourceId = part.source_id;
+      }
+
+      return attachment;
+    }),
+    markdownAttachments: parts.filter(isMarkdownPart).map((part): Attachment => {
+      const attachment: Attachment = {
+        type: "markdown_document",
+        markdown: part.markdown_document.markdown,
+        name: part.markdown_document.name,
+      };
+
+      if (part.source_id) {
+        attachment.sourceId = part.source_id;
+      }
+
+      return attachment;
+    }),
   };
 }
 

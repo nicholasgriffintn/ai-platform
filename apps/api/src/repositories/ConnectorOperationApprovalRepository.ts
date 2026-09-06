@@ -41,6 +41,23 @@ function parseApproval(record: ConnectorOperationApproval): ConnectorOperationAp
 }
 
 export class ConnectorOperationApprovalRepository extends BaseRepository {
+  async listConsumedRunIds(runIds: readonly string[]): Promise<Set<string>> {
+    const uniqueRunIds = [...new Set(runIds)];
+
+    if (uniqueRunIds.length === 0) {
+      return new Set();
+    }
+
+    const placeholders = uniqueRunIds.map(() => "?").join(", ");
+    const rows = await this.runQuery<Pick<ConnectorOperationApproval, "run_id">>(
+      `SELECT DISTINCT run_id FROM connector_operation_approval
+       WHERE state = 'consumed' AND run_id IN (${placeholders})`,
+      uniqueRunIds,
+    );
+
+    return new Set(rows.map((row) => row.run_id));
+  }
+
   async getByIdsForUser(
     ids: readonly string[],
     userId: number,

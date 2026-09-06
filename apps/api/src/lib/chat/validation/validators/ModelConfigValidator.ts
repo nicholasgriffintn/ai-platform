@@ -1,6 +1,6 @@
 import { getAllAttachments } from "~/lib/chat/messages/attachments";
 import { selectModels } from "~/lib/chat/policy/model-access";
-import { resolveProjectRouterMode } from "~/lib/chat/policy/project-routing";
+import { resolveProjectModelTier } from "~/lib/chat/policy/project-model-tier";
 import type {
   ValidationContext,
   Validator,
@@ -23,9 +23,7 @@ export class ModelConfigValidator implements Validator {
       model: requestedModel,
       models: requestedModels,
       provider: requestedProvider,
-      completion_id,
       use_multi_model = false,
-      budget_constraint,
     } = options;
     const user = resolveRequestUser(options);
 
@@ -49,30 +47,25 @@ export class ModelConfigValidator implements Validator {
           },
         ];
 
-    const lastMessageContentText = lastMessageContent.find((c) => c.type === "text")?.text || "";
-
     const { allAttachments } = getAllAttachments(lastMessageContent);
 
-    const routerMode = await resolveProjectRouterMode(options);
+    const tier = await resolveProjectModelTier(options);
 
     try {
-      const selectedModels = await selectModels(
+      const selection = await selectModels({
         env,
-        lastMessageContentText,
-        allAttachments,
-        budget_constraint,
         user,
-        completion_id,
+        attachments: allAttachments,
+        tier,
         requestedModel,
-        use_multi_model,
         requestedModels,
         requestedProvider,
-        routerMode,
-      );
+        useMultiModel: use_multi_model,
+      });
 
-      logger.info("Selected models", { selectedModels });
+      logger.info("Selected models", { selectedModels: selection.models, tier });
 
-      if (!selectedModels || selectedModels.length === 0) {
+      if (selection.models.length === 0) {
         return {
           validation: {
             isValid: false,
@@ -83,7 +76,7 @@ export class ModelConfigValidator implements Validator {
         };
       }
 
-      const primaryModelName = selectedModels[0];
+      const primaryModelName = selection.models[0];
       const primaryModelConfig = await findModelConfig(
         primaryModelName,
         env,
@@ -106,7 +99,8 @@ export class ModelConfigValidator implements Validator {
         validation: { isValid: true },
         context: {
           modelConfig: primaryModelConfig,
-          selectedModels: selectedModels,
+          selectedModels: selection.models,
+          reasoningEffort: selection.reasoningEffort,
         },
       };
     } catch (error: any) {

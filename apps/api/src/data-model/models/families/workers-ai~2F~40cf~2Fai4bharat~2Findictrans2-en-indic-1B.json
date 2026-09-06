@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 25, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/ai4bharat/indictrans2 en indic 1B family includes models that produce text.",
+  "models": {
+    "indictrans2-en-indic-1b": {
+      "defaults": {
+        "name": "IndicTrans2 EN-Indic 1B",
+        "description": "IndicTrans2 EN-Indic 1B accepts text and produces text."
+      }
+    }
+  }
+}

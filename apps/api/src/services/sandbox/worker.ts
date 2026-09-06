@@ -9,12 +9,12 @@ import type {
   SandboxModelSettings,
   SandboxWorkerExecuteRequest,
 } from "@ngriffin_uk/polychat-schemas";
-import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 
+import { resolveProjectDefaultModelTier } from "~/lib/chat/policy/project-model-tier";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getGitHubAppInstallationToken } from "~/lib/github";
 import { filterModelsForUserAccess, getModels } from "~/lib/providers/models";
-import { getExecutableModelsForAccount, resolvePolicyModel } from "~/lib/providers/models/policy";
+import { getExecutableModelsForAccount, resolveTierModel } from "~/lib/providers/models/policy";
 import { generateJwtToken } from "~/services/auth/jwt";
 import {
   getGitHubAppConnectionForUserInstallation,
@@ -98,8 +98,9 @@ export async function resolveSandboxModel(params: {
   context: ServiceContext;
   user: IUser;
   model?: string;
+  projectId?: string;
 }): Promise<string> {
-  const { context, user, model } = params;
+  const { context, user, model, projectId } = params;
   const settings = await context.repositories.userSettings.getUserSettings(user.id);
   const requestedModel = model?.trim() || settings?.sandbox_model?.trim();
   const visibleModels = await filterModelsForUserAccess(getModels(), context.env, user.id, {
@@ -123,7 +124,8 @@ export async function resolveSandboxModel(params: {
     return enforceSandboxModelPolicy(context.env, selected[0]);
   }
 
-  const selected = resolvePolicyModel(executableModels, MODEL_DEFAULTS.sandbox, user);
+  const tier = await resolveProjectDefaultModelTier(context, projectId);
+  const selected = resolveTierModel(executableModels, user, tier, "coding");
 
   if (!selected) {
     throw new AssistantError(
@@ -193,6 +195,7 @@ export async function executeSandboxWorker(
     context,
     user,
     model: options.model,
+    projectId,
   });
   const sandboxToken = await generateJwtToken(
     user,

@@ -1,0 +1,51 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "maxTokens": 256000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "knowledgeCutoffDate": "March 1, 2026",
+    "releaseDate": "May 29, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 29.7,
+      "codingIndex": 37.3,
+      "agenticIndex": 21.5,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The huggingface/stepfun ai/Step 3.7 Flash family includes models that produce text.",
+  "models": {
+    "step-3-7-flash": {
+      "defaults": {
+        "name": "Step 3.7 Flash",
+        "description": "Newer StepFun flash model for faster agents, coding, and multimodal prompts"
+      }
+    }
+  }
+}

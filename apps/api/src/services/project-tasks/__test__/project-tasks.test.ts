@@ -14,6 +14,7 @@ import { buildStageInstructions, resolveTaskRuntime } from "../flow";
 import {
   acceptProjectTask,
   createProjectTask,
+  deleteProjectTask,
   setProjectFlow,
   startProjectTask,
   respondToProjectTaskToolApproval,
@@ -44,6 +45,7 @@ const baseTask = {
   blockedReason: null,
   blockedDetail: null,
   stageId: null,
+  flowSnapshot: null,
   runner: null,
   createdByUserId: 7,
   assigneeUserId: null,
@@ -51,6 +53,7 @@ const baseTask = {
   conversationId: null,
   goalId: null,
   dispatchTaskId: null,
+  runId: null,
   completions: [],
   position: 1000,
   tokenBudget: null,
@@ -143,6 +146,9 @@ function createContext(
         },
         activities: {
           cancelActiveActivitiesByGroup,
+        },
+        connectorOperationApprovals: {
+          listConsumedRunIds: vi.fn().mockResolvedValue(new Set()),
         },
       },
     } as unknown as ServiceContext,
@@ -304,6 +310,30 @@ describe("createProjectTask", () => {
       }),
     ).rejects.toMatchObject({ statusCode: 400 });
   });
+
+  it("snapshots the saved flow for later execution evidence", async () => {
+    const flow: ProjectFlow = {
+      stages: [
+        {
+          id: "build",
+          name: "Build",
+          instructions: null,
+          agentId: null,
+          skillIds: [],
+          mode: "build",
+          requiresApprovalFor: [],
+          advance: "on_human_accept",
+        },
+      ],
+    };
+    const { context } = createContext({ flow: JSON.stringify(flow) });
+
+    await createProjectTask(context, "project-1", { objective: "Ship the pricing note" });
+
+    expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
+      expect.objectContaining({ flowSnapshot: flow, stageId: "build" }),
+    );
+  });
 });
 
 describe("updateProjectTask", () => {
@@ -340,6 +370,37 @@ describe("updateProjectTask", () => {
       { expectedStatus: "active" },
     );
     expect(runtime.cancelActiveActivitiesByGroup).toHaveBeenCalledWith("project_task", "task-1");
+  });
+
+  it("does not rewrite plan inputs after execution has started", async () => {
+    const { context, updateTask } = createContext({ task: { status: "blocked" } });
+
+    await expect(
+      updateProjectTask(context, "project-1", "task-1", { objective: "Changed objective" }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(updateTask).not.toHaveBeenCalled();
+  });
+
+  it("does not reopen an abandoned plan that already has execution evidence", async () => {
+    const { context, updateTask } = createContext({
+      task: { status: "cancelled", runId: "run-1" },
+    });
+
+    await expect(
+      updateProjectTask(context, "project-1", "task-1", { status: "backlog" }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(updateTask).not.toHaveBeenCalled();
+  });
+
+  it("does not reopen a completed plan that already has execution evidence", async () => {
+    const { context, updateTask } = createContext({
+      task: { status: "done", runId: "run-1" },
+    });
+
+    await expect(
+      updateProjectTask(context, "project-1", "task-1", { status: "backlog" }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(updateTask).not.toHaveBeenCalled();
   });
 });
 
@@ -417,6 +478,48 @@ describe("startProjectTask", () => {
     expect(queueProjectTaskRun).toHaveBeenCalledWith(
       expect.objectContaining({ approvedTools: ["use_recipe_connector"] }),
     );
+  });
+
+  it("checks current workspace membership before resolving an approval", async () => {
+    const { context } = createContext({
+      task: { status: "blocked", blockedReason: "awaiting_approval" },
+      memberships: { 7: false },
+    });
+
+    await expect(
+      respondToProjectTaskToolApproval(context, "project-1", "task-1", {
+        interactionId: "approval-1",
+        resolution: "approved",
+      }),
+    ).rejects.toMatchObject({ statusCode: 404 });
+    expect(resolveProjectTaskToolApproval).not.toHaveBeenCalled();
+    expect(queueProjectTaskRun).not.toHaveBeenCalled();
+  });
+
+  it("refuses a blind retry after an external operation approval was consumed", async () => {
+    const { context } = createContext({
+      task: { status: "blocked", blockedReason: "run_failed", runId: "run-1" },
+    });
+
+    vi.mocked(
+      context.repositories.connectorOperationApprovals.listConsumedRunIds,
+    ).mockResolvedValue(new Set(["run-1"]));
+
+    await expect(startProjectTask(context, "project-1", "task-1")).rejects.toMatchObject({
+      statusCode: 409,
+      message: expect.stringContaining("Reconcile the provider"),
+    });
+    expect(queueProjectTaskRun).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteProjectTask", () => {
+  it("retains a task once it has execution evidence", async () => {
+    const { context } = createContext({ task: { status: "blocked", runId: "run-1" } });
+
+    await expect(deleteProjectTask(context, "project-1", "task-1")).rejects.toMatchObject({
+      statusCode: 409,
+    });
   });
 });
 

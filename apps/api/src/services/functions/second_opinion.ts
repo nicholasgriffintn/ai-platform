@@ -130,6 +130,8 @@ export const second_opinion: ApiToolDefinition = {
       env: request.env,
       completionId: context.completionId,
       usageScopeId: context.toolCallId ?? context.completionId,
+      runId: request.request?.run_id,
+      runAttempt: request.request?.run_attempt,
       user: request.user,
       model: request.request?.model,
       provider: request.request?.provider,

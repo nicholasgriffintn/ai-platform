@@ -1,0 +1,123 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 4,
+    "reliability": 1,
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
+  "models": {
+    "mistral-large": {
+      "defaults": {
+        "name": "Mistral Large",
+        "openWeights": false,
+        "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
+        "contextWindow": 128000,
+        "maxTokens": 102400,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "November 30, 2024",
+        "releaseDate": "February 26, 2024",
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mistral-large-24-11": {
+      "defaults": {
+        "name": "Mistral Large 24.11",
+        "openWeights": false,
+        "description": "Latest Mistral model with enhanced reasoning and multilingual capabilities.",
+        "contextWindow": 128000,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "September 2024",
+        "releaseDate": "November 1, 2024",
+        "supportsAttachments": false
+      }
+    },
+    "mistral-large-3": {
+      "defaults": {
+        "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
+        "artificialAnalysis": {
+          "intelligenceIndex": 15.9,
+          "codingIndex": 20.1,
+          "agenticIndex": 5.5,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mistral-large-3-675b": {
+      "defaults": {
+        "name": "mistral-large-3:675b",
+        "openWeights": true,
+        "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "releaseDate": "December 2, 2025"
+      }
+    },
+    "mistral-large-latest": {
+      "defaults": {
+        "name": "Mistral Large",
+        "openWeights": true,
+        "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "card": "https://www.prompthub.us/models/mistral-large",
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "reasoning",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "November 2024",
+        "releaseDate": "November 1, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    }
+  }
+}

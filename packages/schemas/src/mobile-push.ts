@@ -19,6 +19,7 @@ export const unregisterMobilePushDeviceSchema = z.object({
 });
 
 export const mobileWorkNotificationKindSchema = z.enum([
+  "assigned",
   "input",
   "approval",
   "review",

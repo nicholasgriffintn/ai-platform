@@ -36,11 +36,12 @@ export function ModelSection({ value, models, disabled, onChange }: ModelSection
           label="Temperature"
           type="number"
           min="0"
-          max="1"
+          max="2"
           step="0.1"
           value={getNumberInputValue(value.temperature)}
           disabled={disabled}
-          description="Lower is steadier, higher is more inventive."
+          placeholder="Automatic"
+          description="Leave blank to use automatic sampling."
           onChange={(event) => onChange({ temperature: parseNumberInputValue(event.target.value) })}
         />
         <FormInput

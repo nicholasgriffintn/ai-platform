@@ -1,0 +1,73 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The mai family includes models that produce text.",
+  "models": {
+    "mai-code-1-1-flash": {
+      "defaults": {
+        "name": "MAI-Code-1.1-Flash",
+        "description": "Microsoft coding model with native vision support, optimized for fast and efficient software development",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 11, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "mai-code-1-flash": {
+      "defaults": {
+        "name": "MAI-Code-1-Flash",
+        "description": "Microsoft coding model built for fast, efficient assistance in everyday developer workflows",
+        "knowledgeCutoffDate": "December 2025",
+        "releaseDate": "June 2, 2026"
+      }
+    },
+    "mai-ds-r1": {
+      "defaults": {
+        "name": "MAI-DS-R1",
+        "description": "MAI-DS-R1 accepts text and produces text.",
+        "contextWindow": 65536,
+        "maxTokens": 8192,
+        "knowledgeCutoffDate": "June 2024",
+        "releaseDate": "January 20, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

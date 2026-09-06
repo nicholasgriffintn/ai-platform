@@ -1,0 +1,48 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "audio"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "video",
+      "vision",
+      "audio"
+    ],
+    "contextComplexity": 4,
+    "reliability": 3,
+    "supportsAttachments": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 1072,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 9
+        }
+      ]
+    }
+  },
+  "description": "The replicate/prunaai/p video family includes models that produce video.",
+  "models": {
+    "p-video": {
+      "defaults": {
+        "name": "P-Video",
+        "description": "PrunaAI video generation model for text-to-video, image-to-video, last-frame control, and audio-conditioned generation."
+      }
+    }
+  }
+}

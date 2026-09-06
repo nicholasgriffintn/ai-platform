@@ -1,0 +1,113 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "nova-2-lite-v1": {
+      "model": "nova-lite/nova-2-lite",
+      "matchingModel": "nova-2-lite-v1",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 1, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "costPer1kReasoningTokens": 0,
+        "supportsDocuments": true
+      }
+    },
+    "nova-2-pro-v1": {
+      "model": "nova-pro/nova-2-pro",
+      "matchingModel": "nova-2-pro-v1",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "January 3, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "costPer1kReasoningTokens": 0,
+        "supportsDocuments": true
+      }
+    },
+    "nova-2-sonic-v1": {
+      "model": "nova/nova-2-sonic",
+      "matchingModel": "nova-2-sonic-v1",
+      "overrides": {
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAudio": true
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
+    },
+    "nova-micro-v1": {
+      "model": "nova/nova-micro",
+      "matchingModel": "nova-micro-v1",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.00014,
+        "supportsAttachments": false
+      }
+    },
+    "nova-lite-v1": {
+      "model": "nova/nova-lite",
+      "matchingModel": "nova-lite-v1",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024
+      }
+    },
+    "nova-pro-v1": {
+      "model": "nova/nova-pro",
+      "matchingModel": "nova-pro-v1",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.0032
+      }
+    },
+    "nova-sonic-v1": {
+      "model": "nova/nova-sonic",
+      "matchingModel": "nova-sonic-v1",
+      "overrides": {
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024,
+        "supportsAudio": true
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
+    },
+    "nova-premier-v1": {
+      "model": "nova/nova-premier",
+      "matchingModel": "nova-premier-v1",
+      "overrides": {
+        "maxTokens": 10000,
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "coding",
+          "vision",
+          "creative",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 2,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.013
+      }
+    }
+  }
+}

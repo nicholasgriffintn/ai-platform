@@ -1,0 +1,766 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The gemini family includes models that produce audio, embedding, image, text.",
+  "models": {
+    "gemini-1-5-flash": {
+      "defaults": {
+        "name": "Gemini 1.5 Flash",
+        "description": "Gemini 1.5 Flash accepts text, image, audio, video and produces text.",
+        "contextWindow": 1000000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "May 14, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-1-5-flash-8b": {
+      "defaults": {
+        "name": "Gemini 1.5 Flash-8B",
+        "description": "Gemini 1.5 Flash-8B accepts text, image, audio, video and produces text.",
+        "contextWindow": 1000000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "October 3, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 5.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-1-5-pro": {
+      "defaults": {
+        "name": "Gemini 1.5 Pro",
+        "description": "Gemini 1.5 Pro accepts text, image, audio, video and produces text.",
+        "contextWindow": 1000000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "February 15, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.3,
+          "codingIndex": 19.8,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-2-0-flash": {
+      "defaults": {
+        "name": "Gemini 2.0 Flash",
+        "description": "Gemini 2.0 Flash accepts text, image, pdf, audio, video and produces text.",
+        "maxTokens": 8192,
+        "contextComplexity": 4,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-2-0-flash-001": {
+      "defaults": {
+        "name": "Gemini 2.0 Flash 001",
+        "description": "Gemini 2.0 Flash 001 accepts text, image, audio and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "16 March 2025"
+      }
+    },
+    "gemini-2-0-flash-experimental-free": {
+      "defaults": {
+        "name": "Gemini 2.0 Flash Experimental (free)",
+        "description": "Gemini 2.0 Flash Experimental (free) accepts text, image and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "knowledgeCutoffDate": "December 2024",
+        "releaseDate": "December 11, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 10.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-2-0-flash-lite": {
+      "defaults": {
+        "name": "Gemini 2.0 Flash Lite",
+        "description": "Gemini 2.0 Flash Lite accepts text, image, pdf, audio, video and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "August 31, 2024",
+        "releaseDate": "February 25, 2025",
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 8.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-2-0-flash-lite-001": {
+      "defaults": {
+        "name": "Gemini 2.0 Flash Lite 001",
+        "description": "Gemini 2.0 Flash Lite 001 accepts text, image, audio and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "releaseDate": "16 March 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 8.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-2-5-flash-image-preview": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash Image (Preview)",
+        "description": "Gemini 2.5 Flash Image (Preview) accepts text, image and produces text, image.",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "August 26, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "gemini-2-5-flash-lite-preview-06-17": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash Lite Preview 06-17",
+        "description": "Gemini 2.5 Flash Lite Preview 06-17 accepts text, image, audio, video, pdf and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "June 17, 2025"
+      }
+    },
+    "gemini-2-5-flash-lite-preview-09-25": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash Lite Preview 09-25",
+        "description": "Gemini 2.5 Flash Lite Preview 09-25 accepts text, image, audio, video, pdf and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "September 25, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-2-5-flash-preview-04-17": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash Preview 04-17",
+        "description": "Gemini 2.5 Flash Preview 04-17 accepts text, image, audio, video, pdf and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "April 17, 2025"
+      }
+    },
+    "gemini-2-5-flash-preview-05-20": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash Preview 05-20",
+        "description": "Gemini 2.5 Flash Preview 05-20 accepts text, image, audio, video, pdf and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "May 20, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "gemini-2-5-flash-preview-09-25": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash Preview 09-25",
+        "description": "Gemini 2.5 Flash Preview 09-25 accepts text, image, audio, video, pdf and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "September 25, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 18.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-2-5-pro-preview-05-06": {
+      "defaults": {
+        "name": "Gemini 2.5 Pro Preview 05-06",
+        "description": "Gemini 2.5 Pro Preview 05-06 accepts text, image, audio, video, pdf and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "May 6, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "gemini-2-5-pro-preview-06-05": {
+      "defaults": {
+        "name": "Gemini 2.5 Pro Preview 06-05",
+        "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "June 5, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "gemini-3-1-flash-lite-preview": {
+      "defaults": {
+        "name": "Gemini 3.1 Flash Lite Preview",
+        "openWeights": false,
+        "description": "Gemini 3.1 Flash Lite Preview accepts text, image, pdf and produces text.",
+        "contextWindow": 1000000,
+        "maxTokens": 65000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "March 3, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25,
+          "codingIndex": 34.7,
+          "agenticIndex": 6.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-3-5-transcribe": {
+      "defaults": {
+        "name": "Gemini 3.5 Transcribe",
+        "openWeights": false,
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 26, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-3-5-transcribe-live": {
+      "defaults": {
+        "name": "Gemini 3.5 Transcribe Live",
+        "openWeights": false,
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 26, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-3-flash": {
+      "defaults": {
+        "name": "Gemini 3 Flash",
+        "openWeights": false,
+        "description": "Gemini 3 Flash accepts text, image, audio, video, pdf and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "December 17, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 27.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-3-flash-preview": {
+      "defaults": {
+        "name": "gemini-3-flash-preview",
+        "description": "gemini-3-flash-preview accepts text, image and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "December 17, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3-pro-preview": {
+      "defaults": {
+        "description": "gemini-3-pro-preview accepts text, image and produces text.",
+        "releaseDate": "November 18, 2025"
+      }
+    },
+    "gemini-embedding-001": {
+      "defaults": {
+        "name": "Gemini Embedding 001",
+        "openWeights": false,
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 2048,
+        "maxTokens": 1,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "embedding"
+          ]
+        },
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "May 20, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "gemini-embedding-2": {
+      "defaults": {
+        "name": "Gemini Embedding 2",
+        "openWeights": false,
+        "description": "Multimodal embedding model mapping text, images, video, audio, and PDFs into a unified embedding space",
+        "knowledgeCutoffDate": "November 2025",
+        "releaseDate": "April 22, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "gemini-live-2-5-flash": {
+      "defaults": {
+        "name": "Gemini Live 2.5 Flash",
+        "description": "Gemini Live 2.5 Flash accepts text, image, audio, video and produces text, audio.",
+        "contextWindow": 128000,
+        "maxTokens": 8000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "September 1, 2025"
+      }
+    },
+    "gemini-live-2-5-flash-preview-native-audio": {
+      "defaults": {
+        "name": "Gemini Live 2.5 Flash Preview Native Audio",
+        "description": "Gemini Live 2.5 Flash Preview Native Audio accepts text, audio, video and produces text, audio.",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "June 17, 2025",
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "gemini-omni-flash-preview": {
+      "defaults": {
+        "name": "Gemini Omni Flash Preview",
+        "openWeights": false,
+        "description": "Video generation and editing model for fast, conversational text- and image-to-video workflows",
+        "releaseDate": "June 30, 2026",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-robotics-er-1-6-preview": {
+      "defaults": {
+        "name": "Gemini Robotics-ER 1.6 Preview",
+        "openWeights": false,
+        "description": "Gemini Robotics-ER 1.6 Preview accepts text, image, video, audio and produces text.",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "April 14, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nano-banana-preview-gemini-2-5-flash-image-preview": {
+      "defaults": {
+        "name": "Nano Banana Preview (Gemini 2.5 Flash Image Preview)",
+        "description": "Nano Banana Preview (Gemini 2.5 Flash Image Preview) accepts text and produces text, image.",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "March 20, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    }
+  }
+}

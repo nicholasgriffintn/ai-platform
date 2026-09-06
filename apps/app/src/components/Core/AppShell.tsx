@@ -9,14 +9,20 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   name: "Polychat",
-  description: "Chat with multiple AI models from one place",
+  description:
+    "Ask any model, keep every conversation, and bring your team into Work when a question becomes a project.",
   url: "https://polychat.app",
   applicationCategory: "AIApplication",
 };
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <html lang="en" className="dark bg-background" data-polychat-theme="dark">
+    <html
+      lang="en"
+      className="dark bg-background"
+      data-polychat-theme="dark"
+      suppressHydrationWarning
+    >
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />

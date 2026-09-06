@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 8192,
+    "maxTokens": 2048,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "March 2023",
+    "releaseDate": "August 30, 2023",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The jais family includes models that produce text.",
+  "models": {
+    "jais-30b-chat": {
+      "defaults": {
+        "name": "JAIS 30b Chat",
+        "description": "JAIS 30b Chat accepts text and produces text."
+      }
+    }
+  }
+}

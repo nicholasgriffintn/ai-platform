@@ -13,6 +13,8 @@ function event(overrides: Partial<UsageEventInsert> = {}): UsageEventInsert {
     message_id: "message-1",
     activity_id: null,
     completion_id: "conversation-1",
+    run_id: "run-1",
+    run_attempt: 1,
     occurred_at: "2026-09-01T12:00:00.000Z",
     period: "2026-09",
     source: "model",

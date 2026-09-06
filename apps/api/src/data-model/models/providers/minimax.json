@@ -1,0 +1,108 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "MiniMax-M2": {
+      "model": "minimax/minimax-m2",
+      "matchingModel": "MiniMax-M2",
+      "overrides": {
+        "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "strengths": [
+          "coding",
+          "agents",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "October 27, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsResponseFormat": true
+      }
+    },
+    "MiniMax-M2.7": {
+      "model": "minimax/minimax-m2-7",
+      "matchingModel": "MiniMax-M2.7",
+      "overrides": {
+        "name": "MiniMax M2.7",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "strengths": [
+          "coding",
+          "agents",
+          "reasoning",
+          "tool_use"
+        ],
+        "speed": 2,
+        "lastUpdated": "March 18, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsResponseFormat": true
+      }
+    },
+    "MiniMax-M2.1": {
+      "model": "minimax/minimax-m2-1",
+      "matchingModel": "MiniMax-M2.1",
+      "overrides": {
+        "name": "MiniMax-M2.1",
+        "description": "Earlier MiniMax agent model for practical coding and productivity tasks",
+        "speed": 4,
+        "lastUpdated": "December 23, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
+      }
+    },
+    "MiniMax-M2.5": {
+      "model": "minimax/minimax-m2-5",
+      "matchingModel": "MiniMax-M2.5",
+      "overrides": {
+        "name": "MiniMax-M2.5",
+        "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
+        "speed": 4,
+        "lastUpdated": "February 12, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
+      }
+    },
+    "MiniMax-M2.5-highspeed": {
+      "model": "minimax/minimax-m2-5-highspeed",
+      "matchingModel": "MiniMax-M2.5-highspeed",
+      "overrides": {
+        "lastUpdated": "February 13, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024
+      }
+    },
+    "MiniMax-M2.7-highspeed": {
+      "model": "minimax/minimax-m2-7-highspeed",
+      "matchingModel": "MiniMax-M2.7-highspeed",
+      "overrides": {
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "lastUpdated": "March 18, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024
+      }
+    },
+    "MiniMax-M3": {
+      "model": "minimax/minimax-m3",
+      "matchingModel": "MiniMax-M3",
+      "overrides": {
+        "contextWindow": 1048576,
+        "contextComplexity": 5,
+        "speed": 3,
+        "lastUpdated": "June 25, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    }
+  }
+}

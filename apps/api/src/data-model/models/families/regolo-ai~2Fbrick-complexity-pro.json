@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 100000,
+    "maxTokens": 15000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "February 6, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The regolo ai/brick complexity pro family includes models that produce text.",
+  "models": {
+    "brick-complexity-pro": {
+      "defaults": {
+        "name": "Brick Complexity Pro",
+        "description": "Complexity classifier that powers the Brick semantic router by extracting query difficulty"
+      }
+    }
+  }
+}

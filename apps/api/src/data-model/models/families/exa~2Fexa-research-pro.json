@@ -1,0 +1,32 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "chat",
+      "search",
+      "general_knowledge",
+      "research"
+    ],
+    "contextComplexity": 5,
+    "reliability": 4,
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The exa/exa research pro family includes models that produce text.",
+  "models": {
+    "exa-research-pro": {
+      "defaults": {
+        "name": "Exa Research Pro",
+        "description": "Exa is the first meaning-based web search API powered by embeddings. It unlocks data no other search can, making your AI more relevant, factual, and reducing hallucinations."
+      }
+    }
+  }
+}

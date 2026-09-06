@@ -44,7 +44,7 @@ export function SourceCollectionList({
           onClick={onCreateCollection}
         />
       }
-      contentClassName="grid gap-1"
+      contentClassName="flex min-w-0 flex-col gap-1"
     >
       <button
         type="button"
@@ -58,12 +58,12 @@ export function SourceCollectionList({
         <span className="min-w-0 flex-1 truncate">All sources</span>
       </button>
       {collections?.map((collection) => (
-        <div key={collection.id} className="group flex items-center gap-1">
+        <div key={collection.id} className="group relative min-w-0">
           <button
             type="button"
             className={collectionButtonClass(
               selectedCollectionId === collection.id,
-              "min-w-0 flex-1",
+              "w-full min-w-0 pr-11",
             )}
             onClick={() => onSelectCollection(collection.id)}
           >
@@ -77,7 +77,7 @@ export function SourceCollectionList({
             size="icon"
             icon={<Trash2 size={14} />}
             aria-label={`Delete ${collection.title}`}
-            className="shrink-0 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+            className="absolute top-1/2 right-1 -translate-y-1/2 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
             onClick={() => onDeleteCollection(collection.id)}
           />
         </div>

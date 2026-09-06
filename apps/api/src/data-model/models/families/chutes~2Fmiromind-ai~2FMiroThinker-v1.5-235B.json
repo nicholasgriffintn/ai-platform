@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "January 10, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The chutes/miromind ai/MiroThinker v1.5 235B family includes models that produce text.",
+  "models": {
+    "mirothinker-v1-5-235b": {
+      "defaults": {
+        "name": "MiroThinker V1.5 235B",
+        "description": "MiroThinker V1.5 235B accepts text and produces text."
+      }
+    }
+  }
+}

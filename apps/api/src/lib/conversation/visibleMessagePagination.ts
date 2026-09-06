@@ -2,6 +2,7 @@ export interface VisibleConversationMessagePagination<RawMessage, Message> {
   conversationId: string;
   limit: number;
   after?: string;
+  direction?: "after" | "before";
   includeArchived: boolean;
   loadMessages: (
     conversationId: string,
@@ -21,6 +22,7 @@ export async function loadVisibleConversationMessagePage<
     conversationId,
     limit,
     after,
+    direction = "after",
     includeArchived,
     loadMessages,
     formatMessage,
@@ -47,15 +49,17 @@ export async function loadVisibleConversationMessagePage<
       break;
     }
 
-    for (const rawMessage of rawMessages) {
-      const message = formatMessage(rawMessage);
+    const pageMessages = rawMessages
+      .map(formatMessage)
+      .filter((message) => !isHiddenMessage(message));
 
-      if (!isHiddenMessage(message)) {
-        visibleMessages.push(message);
-      }
+    if (direction === "before") {
+      visibleMessages.unshift(...pageMessages);
+    } else {
+      visibleMessages.push(...pageMessages);
     }
 
-    const nextCursor = rawMessages.at(-1)?.id;
+    const nextCursor = direction === "before" ? rawMessages[0]?.id : rawMessages.at(-1)?.id;
 
     if (typeof nextCursor !== "string" || seenCursors.has(nextCursor)) {
       break;

@@ -1,0 +1,51 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The longcat family includes models that produce text.",
+  "models": {
+    "longcat-2-0": {
+      "defaults": {
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+      }
+    },
+    "longcat-flash-chat": {
+      "defaults": {
+        "name": "LongCat Flash Chat",
+        "description": "LongCat Flash Chat accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 100000,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "September 1, 2025"
+      }
+    },
+    "longcat-flash-thinking-2601": {
+      "defaults": {
+        "name": "LongCat Flash Thinking 2601",
+        "description": "LongCat Flash Thinking 2601 accepts text and produces text.",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "releaseDate": "January 15, 2026",
+        "supportsToolCalls": false
+      }
+    }
+  }
+}

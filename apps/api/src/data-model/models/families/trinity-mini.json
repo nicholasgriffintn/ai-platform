@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131072,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 1, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The trinity mini family includes models that produce text.",
+  "models": {
+    "trinity-mini": {
+      "defaults": {
+        "name": "Trinity Mini",
+        "description": "Trinity Mini accepts text and produces text."
+      }
+    }
+  }
+}

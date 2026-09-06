@@ -1,0 +1,34 @@
+{
+  "defaults": {
+    "supportsStreaming": false,
+    "supportsAttachments": false
+  },
+  "models": {
+    "fal-ai/qwen-image": {
+      "model": "qwen/qwen-image",
+      "matchingModel": "fal-ai/qwen-image",
+      "overrides": {
+        "name": "Qwen Image",
+        "strengths": [
+          "creative",
+          "image"
+        ],
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt describing the desired image.",
+              "required": true
+            }
+          ],
+          "reference": "https://fal.ai/models/fal-ai/qwen-image"
+        }
+      },
+      "unset": [
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    }
+  }
+}

@@ -17,6 +17,7 @@ import {
   type SandboxProcessInstance,
 } from "./commands";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
+import { listeningPortsFromProcNet, READ_LISTENING_SOCKETS_COMMAND } from "./network-ports";
 import { redactSandboxOutput } from "./output-redaction";
 import type { RunControlClient } from "./run-control-client";
 
@@ -299,24 +300,13 @@ export class ProjectServiceSupervisor {
   }
 
   private async listeningPorts(): Promise<Set<number>> {
-    const result = await this.options.sandbox.exec("ss -ltnH");
+    const result = await this.options.sandbox.exec(READ_LISTENING_SOCKETS_COMMAND);
 
     if (!result.success) {
       throw new Error("Declared service ports could not be checked for collisions");
     }
 
-    const ports = new Set<number>();
-
-    for (const line of result.stdout.split("\n")) {
-      const localAddress = line.trim().split(/\s+/)[3];
-      const port = localAddress ? /:(\d+)$/.exec(localAddress)?.[1] : undefined;
-
-      if (port) {
-        ports.add(Number(port));
-      }
-    }
-
-    return ports;
+    return listeningPortsFromProcNet(result.stdout);
   }
 
   private async waitForPortRelease(port: number): Promise<void> {

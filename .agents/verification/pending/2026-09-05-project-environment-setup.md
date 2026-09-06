@@ -8,7 +8,7 @@
 
 ## Verify
 
-- [ ] Configure Polychat setup with one runtime, package manager, setup command, resume command and timeout. Save, reload and confirm the exact editable values return; select **No setup commands** and confirm the setup is removed without disconnecting the repository.
+- [x] Configure Polychat setup with one runtime, package manager, setup command, resume command and timeout. Save, reload and confirm the exact editable values return; select **No setup commands** and confirm the setup is removed without disconnecting the repository.
 - [ ] Run the project and confirm Activity shows configuration resolution, setup commands, bounded output and a completed terminal setup state before planning begins. Confirm Proof shows the Polychat configuration revision, requirements, setup mode and duration.
 - [ ] Edit the project setup after the run is queued and confirm the existing run retains its queued configuration while a later run uses a different revision.
 - [ ] Select repository configuration and confirm the run reads only `.polychat/environment.json` from the cloned revision. Change that file in a later commit and confirm Proof reports a different blob revision.
@@ -18,3 +18,5 @@
 - [ ] Try to save a recognisable inline token or secret assignment and confirm validation refuses it. Produce secret-shaped command output and confirm persisted Activity and logs contain redaction rather than the value.
 
 **Stop and report if:** repository configuration bypasses command policy, a changed project definition rewrites an existing run, an inline credential persists, setup continues after timeout or failure, or Proof cannot identify the valid configuration revision used.
+
+**Automated evidence:** `features/sandbox-environment.spec.ts` confirms editable project setup and removal through the real local app, API and container. Extend the journey for the remaining execution and policy outcomes.

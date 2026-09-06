@@ -20,6 +20,7 @@ import {
   listArtificialAnalysisModels,
   listStrengths,
   listModalities,
+  listModelCatalogue,
   listModels,
   listModelsByStrength,
   listModelsByModality,
@@ -49,6 +50,21 @@ addRoute(app, "get", "/", {
     500: { description: "Server error", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext, user }) => listModels(serviceContext.env, user),
+});
+
+addRoute(app, "get", "/catalogue", {
+  tags: ["models"],
+  summary: "List the model catalogue",
+  description:
+    "Lists every model the platform knows about, with the same details as the models list but without filtering by the caller's access. Intended for public catalogue surfaces.",
+  responses: {
+    200: {
+      description: "Every model in the catalogue with its details",
+      schema: modelsResponseSchema,
+    },
+    500: { description: "Server error", schema: errorResponseSchema },
+  },
+  handler: async () => listModelCatalogue(),
 });
 
 addRoute(app, "get", "/capabilities", {

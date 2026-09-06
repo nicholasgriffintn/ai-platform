@@ -1,0 +1,25 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "transcription"
+    ],
+    "releaseDate": "May 22, 2026"
+  },
+  "description": "The cartesia/ink 2 family includes models that produce text.",
+  "models": {
+    "ink-2": {
+      "defaults": {
+        "name": "Ink 2",
+        "description": "Cartesia's English realtime speech-to-text model with semantic turn detection."
+      }
+    }
+  }
+}

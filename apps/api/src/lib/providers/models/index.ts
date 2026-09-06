@@ -1,78 +1,21 @@
-import { MODEL_DEFAULTS, isActiveRouterModel } from "@ngriffin_uk/polychat-schemas";
-import type {
-  ModelConfig,
-  ModelConfigItem,
-  ModelModalities,
-  ModelModality,
+import {
+  getSystemModelLineup,
+  isLineupEligibleModel,
+  type ModelConfigItem,
+  type ModelModalities,
+  type ModelModality,
+  type SystemModelRole,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { availableModalities } from "~/constants/models";
-import { alibabaModelConfig } from "~/data-model/models/alibaba";
-import { anthropicModelConfig } from "~/data-model/models/anthropic";
-import { azureModelConfig } from "~/data-model/models/azure";
-import { bedrockModelConfig } from "~/data-model/models/bedrock";
-import { cartesiaModelConfig } from "~/data-model/models/cartesia";
-import { cerebrasModelConfig } from "~/data-model/models/cerebras";
-import { chutesModelConfig } from "~/data-model/models/chutes";
-import { cohereModelConfig } from "~/data-model/models/cohere";
-import { cortecsModelConfig } from "~/data-model/models/cortecs";
-import { deepinfraModelConfig } from "~/data-model/models/deepinfra";
-import { deepseekModelConfig } from "~/data-model/models/deepseek";
-import { elevenLabsModelConfig } from "~/data-model/models/elevenlabs";
-import { exaModelConfig } from "~/data-model/models/exa";
-import { falModelConfig } from "~/data-model/models/fal";
-import { fireworksModelConfig } from "~/data-model/models/fireworks";
-import { githubCopilotModelConfig } from "~/data-model/models/githubcopilot";
-import { githubModelsConfig } from "~/data-model/models/githubmodels";
-import { googleAiStudioModelConfig } from "~/data-model/models/google-ai-studio";
-import { googleVertexModelConfig } from "~/data-model/models/google-vertex";
-import { greenPtModelConfig } from "~/data-model/models/greenpt";
-import { groqModelConfig } from "~/data-model/models/groq";
-import { hetznerModelConfig } from "~/data-model/models/hetzner";
-import { huggingfaceModelConfig } from "~/data-model/models/huggingface";
-import { hyperbolicModelConfig } from "~/data-model/models/hyperbolic";
-import { ideogramModelConfig } from "~/data-model/models/ideogram";
-import { inceptionModelConfig } from "~/data-model/models/inception";
-import { inferenceModelConfig } from "~/data-model/models/inference";
-import { kimiForCodingModelConfig } from "~/data-model/models/kimi-for-coding";
-import { lmstudioModelConfig } from "~/data-model/models/lmstudio";
-import { lucidQueryModelConfig } from "~/data-model/models/lucidquery";
-import { metaModelConfig } from "~/data-model/models/meta";
-import { minimaxModelConfig } from "~/data-model/models/minimax";
-import { mistralModelConfig } from "~/data-model/models/mistral";
-import { moonshotModelConfig } from "~/data-model/models/moonshot";
-import { morphModelConfig } from "~/data-model/models/morph";
-import { novaModelConfig } from "~/data-model/models/nova";
-import { ollamaModelConfig } from "~/data-model/models/ollama";
-import { ollamaCloudModelConfig } from "~/data-model/models/ollama-cloud";
-import { openaiModelConfig } from "~/data-model/models/openai";
-import { opencodeModelConfig } from "~/data-model/models/opencode";
-import { opencodeGoModelConfig } from "~/data-model/models/opencode-go";
-import { openrouterModelConfig } from "~/data-model/models/openrouter";
-import { ovhCloudModelConfig } from "~/data-model/models/ovhcloud";
-import { parallelModelConfig } from "~/data-model/models/parallel";
-import { perplexityModelConfig } from "~/data-model/models/perplexity";
-import { poolsideModelConfig } from "~/data-model/models/poolside";
-import { regoloModelConfig } from "~/data-model/models/regolo-ai";
-import { replicateModelConfig } from "~/data-model/models/replicate";
-import { requestyModelConfig } from "~/data-model/models/requesty";
-import { sakanaModelConfig } from "~/data-model/models/sakana";
-import { standardComputeModelConfig } from "~/data-model/models/standardcompute";
-import { theGridModelConfig } from "~/data-model/models/the-grid-ai";
-import { thinkingMachinesModelConfig } from "~/data-model/models/thinkingmachines";
-import { togetherAiModelConfig } from "~/data-model/models/together-ai";
-import { upstageModelConfig } from "~/data-model/models/upstage";
-import { v0ModelConfig } from "~/data-model/models/v0";
-import { vercelModelConfig } from "~/data-model/models/vercel";
-import { workersAiModelConfig } from "~/data-model/models/workersai";
-import { xaiModelConfig } from "~/data-model/models/xai";
-import { zaiModelConfig } from "~/data-model/models/zai";
 import { KVCache } from "~/lib/cache";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv, IUser, IUserSettings, ResearchProviderName, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
+import { modelConfig } from "./catalogue";
+import { isChatSurfaceModel } from "./chatSurface";
 import {
   getExecutableModelsForAccount,
   resolveDefaultChatModel,
@@ -82,19 +25,19 @@ import {
   findTrainingDeploymentModelConfig,
   getTrainingDeploymentModelConfigs,
 } from "./trainingDeployments";
-import { mergeModelConfigs } from "./utils";
 
 const logger = getLogger({ prefix: "lib/models" });
 
 let cachedModels: typeof modelConfig | null = null;
 let cachedFreeModels: typeof modelConfig | null = null;
 let cachedFeaturedModels: typeof modelConfig | null = null;
-let cachedRouterModels: typeof modelConfig | null = null;
+let cachedLineupModels: typeof modelConfig | null = null;
 let cachedCapabilities: string[] | null = null;
 
 export interface ModelsOptions {
   shouldUseCache?: boolean;
   excludeModalities?: ModelModality[];
+  chatSurfaceOnly?: boolean;
   includeTrainingDeployments?: boolean;
 }
 
@@ -104,69 +47,6 @@ export interface ResolveModelProviderOptions {
   defaultProvider: string;
   env?: IEnv;
 }
-
-const modelConfig: ModelConfig = mergeModelConfigs(
-  openaiModelConfig,
-  anthropicModelConfig,
-  mistralModelConfig,
-  morphModelConfig,
-  bedrockModelConfig,
-  deepinfraModelConfig,
-  deepseekModelConfig,
-  ollamaModelConfig,
-  azureModelConfig,
-  githubModelsConfig,
-  xaiModelConfig,
-  groqModelConfig,
-  huggingfaceModelConfig,
-  openrouterModelConfig,
-  parallelModelConfig,
-  perplexityModelConfig,
-  requestyModelConfig,
-  workersAiModelConfig,
-  togetherAiModelConfig,
-  googleAiStudioModelConfig,
-  elevenLabsModelConfig,
-  cartesiaModelConfig,
-  fireworksModelConfig,
-  hyperbolicModelConfig,
-  inferenceModelConfig,
-  chutesModelConfig,
-  vercelModelConfig,
-  upstageModelConfig,
-  githubCopilotModelConfig,
-  inceptionModelConfig,
-  v0ModelConfig,
-  replicateModelConfig,
-  exaModelConfig,
-  falModelConfig,
-  ideogramModelConfig,
-  cerebrasModelConfig,
-  cohereModelConfig,
-  opencodeModelConfig,
-  opencodeGoModelConfig,
-  cortecsModelConfig,
-  novaModelConfig,
-  poolsideModelConfig,
-  hetznerModelConfig,
-  alibabaModelConfig,
-  zaiModelConfig,
-  moonshotModelConfig,
-  minimaxModelConfig,
-  googleVertexModelConfig,
-  ollamaCloudModelConfig,
-  lmstudioModelConfig,
-  metaModelConfig,
-  greenPtModelConfig,
-  lucidQueryModelConfig,
-  ovhCloudModelConfig,
-  regoloModelConfig,
-  sakanaModelConfig,
-  standardComputeModelConfig,
-  theGridModelConfig,
-  kimiForCodingModelConfig,
-  thinkingMachinesModelConfig,
-);
 
 const MODEL_CACHE_TTL = 14400;
 let modelCache: KVCache | null = null;
@@ -391,7 +271,8 @@ export function getModels(
   cachedModels = Object.entries(modelConfig).reduce((acc, [key, model]) => {
     if (
       !model.beta &&
-      !options.excludeModalities?.some((excluded) => modelSupportsModality(model, excluded))
+      !options.excludeModalities?.some((excluded) => modelSupportsModality(model, excluded)) &&
+      (!options.chatSurfaceOnly || isChatSurfaceModel(model))
     ) {
       acc[key] = model;
     }
@@ -466,18 +347,18 @@ export function getFeaturedModels(
   return cachedFeaturedModels;
 }
 
-export function getIncludedInRouterModels(
+export function getLineupModels(
   options: ModelsOptions = {
     shouldUseCache: true,
   },
 ) {
-  if (cachedRouterModels && options.shouldUseCache) {
-    return cachedRouterModels;
+  if (cachedLineupModels && options.shouldUseCache) {
+    return cachedLineupModels;
   }
 
-  cachedRouterModels = Object.entries(modelConfig).reduce(
+  cachedLineupModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
-      if (isActiveRouterModel(model)) {
+      if (isLineupEligibleModel(model)) {
         acc[key] = model;
       }
 
@@ -486,15 +367,15 @@ export function getIncludedInRouterModels(
     {} as typeof modelConfig,
   );
 
-  return cachedRouterModels;
+  return cachedLineupModels;
 }
 
-export function getIncludedInRouterFreeModels(
+export function getLineupFreeModels(
   options: ModelsOptions = {
     shouldUseCache: true,
   },
 ) {
-  return Object.entries(getIncludedInRouterModels(options)).reduce(
+  return Object.entries(getLineupModels(options)).reduce(
     (acc, [key, model]) => {
       if (model.isFree) {
         acc[key] = model;
@@ -506,7 +387,7 @@ export function getIncludedInRouterFreeModels(
   );
 }
 
-export async function getIncludedInRouterModelsForUser(
+export async function getLineupModelsForUser(
   env: IEnv,
   user?: IUser,
   options: ModelsOptions = {
@@ -514,14 +395,14 @@ export async function getIncludedInRouterModelsForUser(
   },
 ): Promise<Record<string, ModelConfigItem>> {
   if (!user?.id) {
-    const freeModels = getIncludedInRouterFreeModels(options);
+    const freeModels = getLineupFreeModels(options);
     const visibleModels = await filterModelsForUserAccess(freeModels, env, undefined, options);
 
     return getExecutableModelsForAccount(visibleModels, user);
   }
 
-  const allRouterModels = getIncludedInRouterModels(options);
-  const visibleModels = await filterModelsForUserAccess(allRouterModels, env, user.id, options);
+  const lineupModels = getLineupModels(options);
+  const visibleModels = await filterModelsForUserAccess(lineupModels, env, user.id, options);
 
   return getExecutableModelsForAccount(visibleModels, user);
 }
@@ -530,7 +411,7 @@ export async function getDefaultChatModel(
   env: IEnv,
   user?: IUser,
 ): Promise<{ model: string; provider: string }> {
-  const availableModels = await getIncludedInRouterModelsForUser(env, user, {
+  const availableModels = await getLineupModelsForUser(env, user, {
     shouldUseCache: false,
   });
   const selected = resolveDefaultChatModel(availableModels, user);
@@ -657,39 +538,41 @@ export async function filterModelsForUserAccess(
   }
 }
 
-/**
- * Get the appropriate model to use for auxiliary tasks like summarization,
- * classification, etc., based on which models are available.
- * @param env The environment object
- * @param user Optional user for model access check
- * @returns Object containing model ID and provider
- */
-export async function getAuxiliaryModel(
-  env: IEnv,
-  user?: IUser,
-): Promise<{ model: string; provider: string }> {
-  const availableModels = await getIncludedInRouterModelsForUser(env, user);
+async function resolveSystemModel(env: IEnv, user: IUser | undefined, role: SystemModelRole) {
+  const availableModels = await getLineupModelsForUser(env, user);
+  const lineup = getSystemModelLineup(role);
   const selected =
-    resolvePolicyModel(availableModels, MODEL_DEFAULTS.auxiliary, user) ??
+    resolvePolicyModel(availableModels, lineup.candidates, user) ??
     resolveDefaultChatModel(availableModels, user);
 
   return { model: selected.config.matchingModel, provider: selected.config.provider };
 }
 
-export const getAuxiliaryModelForRetrieval = async (env: IEnv, user?: IUser) => {
-  const availableModels = await getIncludedInRouterModelsForUser(env, user);
-  const selected =
-    resolvePolicyModel(availableModels, MODEL_DEFAULTS.retrieval, user) ??
-    resolveDefaultChatModel(availableModels, user);
+export async function getAuxiliaryModel(
+  env: IEnv,
+  user?: IUser,
+): Promise<{ model: string; provider: string }> {
+  return resolveSystemModel(env, user, "housekeeping");
+}
 
-  return { model: selected.config.matchingModel, provider: selected.config.provider };
-};
+export const getTitlingModel = async (env: IEnv, user?: IUser) =>
+  resolveSystemModel(env, user, "titling");
+
+export const getCompactionModel = async (env: IEnv, user?: IUser) =>
+  resolveSystemModel(env, user, "compaction");
+
+export const getAuxiliaryModelForRetrieval = async (env: IEnv, user?: IUser) =>
+  resolveSystemModel(env, user, "retrieval");
 
 export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
   const visibleModels = await filterModelsForUserAccess(getModels(), env, user?.id, {
     shouldUseCache: false,
   });
-  const selected = resolvePolicyModel(visibleModels, MODEL_DEFAULTS.guardrails, user);
+  const selected = resolvePolicyModel(
+    visibleModels,
+    getSystemModelLineup("guardrails").candidates,
+    user,
+  );
 
   if (!selected) {
     throw new AssistantError(

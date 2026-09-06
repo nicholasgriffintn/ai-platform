@@ -1,0 +1,44 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "July 21, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The laguna s family includes models that produce text.",
+  "models": {
+    "laguna-s-2-1": {
+      "defaults": {
+        "name": "Laguna S 2.1",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 1048576,
+        "maxTokens": 131072
+      }
+    },
+    "laguna-s-2-1-free": {
+      "defaults": {
+        "name": "Laguna S 2.1 (free)",
+        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
+        "contextWindow": 262144,
+        "maxTokens": 32768
+      }
+    }
+  }
+}

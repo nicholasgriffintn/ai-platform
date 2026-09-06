@@ -5,7 +5,8 @@ export function meta() {
     { title: "Polychat" },
     {
       name: "description",
-      content: "Chat with multiple AI models from one place",
+      content:
+        "Ask any model, keep every conversation, and bring your team into Work when a question becomes a project. One perch for chat, agents and shared projects.",
     },
   ];
 }

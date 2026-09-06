@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { resolveProjectRouterMode } from "~/lib/chat/policy/project-routing";
+import { resolveProjectModelTier } from "~/lib/chat/policy/project-model-tier";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getConversationBranches } from "~/services/completions/conversationBranches";
 import { ErrorType } from "~/utils/errors";
@@ -28,7 +28,7 @@ function createContext({
         id: "project-1",
         workspace_id: "workspace-1",
         instructions: "Use the approved launch brief.",
-        default_router_mode: "lite",
+        default_model_tier: "low",
       }),
       getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
       getMembership: vi.fn().mockResolvedValue(membership),
@@ -52,78 +52,71 @@ function createContext({
 }
 
 describe("project chat context", () => {
-  it("applies the saved routing tier to new and resumed project conversations", async () => {
+  it("applies the saved project tier to new and resumed project conversations", async () => {
     const fresh = createContext();
 
     await expect(
-      resolveProjectRouterMode({
+      resolveProjectModelTier({
         context: fresh.context,
         metadata: { project_id: "project-1" },
-        model_router_mode: "auto",
       }),
-    ).resolves.toBe("lite");
+    ).resolves.toBe("low");
     const resumed = createContext({ conversation: { project_id: "project-1" } });
 
     await expect(
-      resolveProjectRouterMode({
+      resolveProjectModelTier({
         context: resumed.context,
         completion_id: "conversation-1",
       }),
-    ).resolves.toBe("lite");
+    ).resolves.toBe("low");
     await expect(
-      resolveProjectRouterMode({
+      resolveProjectModelTier({
         context: resumed.context,
         completion_id: "conversation-1",
-        model_router_mode: "max",
+        model_tier: "ultra",
       }),
-    ).resolves.toBe("max");
+    ).resolves.toBe("ultra");
     resumed.repositories.workspaces.getProject.mockResolvedValue({
       id: "project-1",
       workspace_id: "workspace-1",
       instructions: "",
-      default_router_mode: "auto",
+      default_model_tier: null,
     });
     await expect(
-      resolveProjectRouterMode({
+      resolveProjectModelTier({
         context: resumed.context,
         completion_id: "conversation-1",
-        model_router_mode: "auto",
       }),
-    ).resolves.toBe("auto");
+    ).resolves.toBe("medium");
   });
 
-  it("leaves personal routing and explicit project model choices alone", async () => {
+  it("leaves personal tiers and explicit project model choices alone", async () => {
     const { context, repositories } = createContext();
 
-    await expect(resolveProjectRouterMode({ context, model_router_mode: "auto" })).resolves.toBe(
-      "auto",
-    );
-    await expect(resolveProjectRouterMode({ context, model_router_mode: "pro" })).resolves.toBe(
-      "pro",
-    );
+    await expect(resolveProjectModelTier({ context })).resolves.toBe("medium");
+    await expect(resolveProjectModelTier({ context, model_tier: "high" })).resolves.toBe("high");
     for (const selection of [{ model: "chosen-model" }, { models: ["first", "second"] }]) {
       await expect(
-        resolveProjectRouterMode({ context, metadata: { project_id: "project-1" }, ...selection }),
-      ).resolves.toBe("auto");
+        resolveProjectModelTier({ context, metadata: { project_id: "project-1" }, ...selection }),
+      ).resolves.toBe("medium");
     }
 
     expect(repositories.workspaces.getProject).not.toHaveBeenCalled();
   });
 
-  it("rejects unauthorised and conflicting project scope before automatic routing", async () => {
+  it("rejects unauthorised and conflicting project scope before resolving a tier", async () => {
     const outsider = createContext({ membership: null });
 
     await expect(
-      resolveProjectRouterMode({
+      resolveProjectModelTier({
         context: outsider.context,
         metadata: { project_id: "project-1" },
-        model_router_mode: "auto",
       }),
     ).rejects.toMatchObject({ type: ErrorType.NOT_FOUND, statusCode: 404 });
     const conflicting = createContext({ conversation: { project_id: "project-1" } });
 
     await expect(
-      resolveProjectRouterMode({
+      resolveProjectModelTier({
         context: conflicting.context,
         completion_id: "conversation-1",
         metadata: { project_id: "project-2" },

@@ -1,0 +1,885 @@
+{
+  "defaults": {
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "whisper-tiny": {
+      "model": "whisper/openai-whisper",
+      "matchingModel": "@cf/openai/whisper-tiny-en",
+      "overrides": {
+        "contextComplexity": 2,
+        "reliability": 2,
+        "speed": 3
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "whisper": {
+      "model": "whisper/openai-whisper",
+      "matchingModel": "@cf/openai/whisper",
+      "overrides": {
+        "contextComplexity": 3,
+        "reliability": 4,
+        "speed": 3
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "whisper-large-v3-turbo": {
+      "model": "whisper/openai-whisper-large-v3-turbo",
+      "matchingModel": "@cf/openai/whisper-large-v3-turbo",
+      "overrides": {
+        "speed": 4
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "melotts": {
+      "model": "workers-ai/@cf/myshell-ai/melotts/myshell-melotts",
+      "matchingModel": "@cf/myshell-ai/melotts",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "November 14, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "@cf/moonshotai/kimi-k2.6": {
+      "model": "kimi-k2/kimi-k2-6",
+      "matchingModel": "@cf/moonshotai/kimi-k2.6",
+      "overrides": {
+        "name": "Moonshot Kimi K2.6",
+        "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
+        "maxTokens": 256000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "April 21, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "llama-3.3-70b-instruct": {
+      "model": "llama/llama-3-3-70b-instruct-fp8-fast",
+      "matchingModel": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 6, 2024",
+        "costPer1kInputTokens": 0.000293,
+        "costPer1kOutputTokens": 0.002253
+      }
+    },
+    "llama-3.2-1b-instruct": {
+      "model": "llama/llama-3-2-1b-instruct",
+      "matchingModel": "@cf/meta/llama-3.2-1b-instruct",
+      "overrides": {
+        "contextWindow": 60000,
+        "maxTokens": 60000,
+        "strengths": [
+          "instruction",
+          "summarization",
+          "multilingual"
+        ],
+        "contextComplexity": 2,
+        "reliability": 3,
+        "speed": 5,
+        "lastUpdated": "September 25, 2024",
+        "costPer1kInputTokens": 0.000027,
+        "costPer1kOutputTokens": 0.000201,
+        "supportsResponseFormat": false
+      }
+    },
+    "llama-3.2-3b-instruct": {
+      "model": "llama/llama-3-2-3b-instruct",
+      "matchingModel": "@cf/meta/llama-3.2-3b-instruct",
+      "overrides": {
+        "contextWindow": 80000,
+        "maxTokens": 80000,
+        "strengths": [
+          "instruction",
+          "summarization",
+          "multilingual"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
+        "speed": 4,
+        "lastUpdated": "September 25, 2024",
+        "costPer1kInputTokens": 0.0000509,
+        "costPer1kOutputTokens": 0.000335,
+        "supportsResponseFormat": false
+      }
+    },
+    "llama-4-scout-17b": {
+      "model": "llama/llama-4-scout-17b-16e-instruct",
+      "matchingModel": "@cf/meta/llama-4-scout-17b-16e-instruct",
+      "overrides": {
+        "description": "Open Llama with long-context vision for efficient multimodal agents",
+        "contextWindow": 131000,
+        "maxTokens": 16384,
+        "strengths": [
+          "vision",
+          "reasoning",
+          "instruction",
+          "general_knowledge",
+          "chat"
+        ],
+        "contextComplexity": 5,
+        "reliability": 5,
+        "speed": 4,
+        "multimodal": true,
+        "lastUpdated": "April 5, 2025",
+        "costPer1kInputTokens": 0.00027,
+        "costPer1kOutputTokens": 0.00085,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true
+      }
+    },
+    "llava": {
+      "model": "workers-ai/@cf/llava-hf/llava-1.5-7b-hf/huggingface-llava-1-5-7b",
+      "matchingModel": "@cf/llava-hf/llava-1.5-7b-hf",
+      "overrides": {
+        "speed": 3
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "flux": {
+      "model": "flux/black-forest-labs-flux-1-schnell",
+      "matchingModel": "@cf/black-forest-labs/flux-1-schnell",
+      "overrides": {
+        "speed": 4
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "flux-2-dev": {
+      "model": "flux/black-forest-labs-flux-2-dev",
+      "matchingModel": "@cf/black-forest-labs/flux-2-dev",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": true,
+        "inputFormat": "multipart"
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "@cf/black-forest-labs/flux-2-klein-4b": {
+      "model": "flux/black-forest-labs-flux-2-klein-4b",
+      "matchingModel": "@cf/black-forest-labs/flux-2-klein-4b",
+      "overrides": {
+        "speed": 4,
+        "inputFormat": "multipart"
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "@cf/black-forest-labs/flux-2-klein-9b": {
+      "model": "flux/black-forest-labs-flux-2-klein-9b",
+      "matchingModel": "@cf/black-forest-labs/flux-2-klein-9b",
+      "overrides": {
+        "speed": 4,
+        "inputFormat": "multipart"
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "stable-diffusion-1.5-img2img": {
+      "model": "stable-diffusion/stable-diffusion-1-5-img2img",
+      "matchingModel": "@cf/runwayml/stable-diffusion-v1-5-img2img",
+      "overrides": {
+        "speed": 3
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "stable-diffusion-1.5-inpainting": {
+      "model": "stable-diffusion/stable-diffusion-1-5-inpainting",
+      "matchingModel": "@cf/runwayml/stable-diffusion-v1-5-inpainting",
+      "overrides": {
+        "speed": 3
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "stable-diffusion-xl-base-1.0": {
+      "model": "stable-diffusion/stable-diffusion-xl-base-1-0",
+      "matchingModel": "@cf/stabilityai/stable-diffusion-xl-base-1.0",
+      "overrides": {
+        "speed": 3
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "dreamshaper-8-lcm": {
+      "model": "workers-ai/@cf/lykon/dreamshaper-8-lcm/dreamshaper-8-lcm",
+      "matchingModel": "@cf/lykon/dreamshaper-8-lcm",
+      "overrides": {
+        "speed": 5
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "stable-diffusion-xl-lightning": {
+      "model": "stable-diffusion/stable-diffusion-xl-lightning",
+      "matchingModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "overrides": {
+        "speed": 5
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "bge-base-en-v1.5": {
+      "model": "workers-ai/@cf/baai/bge-base-en-v1.5/bge-base-en-v1-5",
+      "matchingModel": "@cf/baai/bge-base-en-v1.5",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "April 3, 2025",
+        "costPer1kInputTokens": 0.000067,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "bge-large-en-v1.5": {
+      "model": "workers-ai/@cf/baai/bge-large-en-v1.5/bge-large-en-v1-5",
+      "matchingModel": "@cf/baai/bge-large-en-v1.5",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "April 3, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "bge-m3": {
+      "model": "workers-ai/@cf/baai/bge-m3/bge-m3",
+      "matchingModel": "@cf/baai/bge-m3",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "April 3, 2025",
+        "costPer1kInputTokens": 0.000012,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "bge-reranker-base": {
+      "model": "workers-ai/@cf/baai/bge-reranker-base/bge-reranker-base",
+      "matchingModel": "@cf/baai/bge-reranker-base",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "April 9, 2025",
+        "costPer1kInputTokens": 0.0000031,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "gemma-4-26b-a4b-it": {
+      "model": "gemma/gemma-4-26b-a4b-it",
+      "matchingModel": "@cf/google/gemma-4-26b-a4b-it",
+      "overrides": {
+        "contextWindow": 256000,
+        "maxTokens": 16384,
+        "strengths": [
+          "instruction",
+          "reasoning",
+          "multilingual",
+          "summarization",
+          "vision"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "speed": 4,
+        "multimodal": true,
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0003,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "qwq-32b": {
+      "model": "qwen/qwq-32b",
+      "matchingModel": "@cf/qwen/qwq-32b",
+      "overrides": {
+        "speed": 2,
+        "isFeatured": false,
+        "lastUpdated": "March 5, 2025",
+        "costPer1kInputTokens": 0.00066,
+        "costPer1kOutputTokens": 0.001
+      }
+    },
+    "qwen2.5-coder-32b": {
+      "model": "qwen/qwen2-5-coder-32b-instruct",
+      "matchingModel": "@cf/qwen/qwen2.5-coder-32b-instruct",
+      "overrides": {
+        "name": "Qwen 2.5 Coder 32B Instruct",
+        "maxTokens": 32768,
+        "strengths": [
+          "coding"
+        ],
+        "speed": 3,
+        "releaseDate": "November 12, 2024",
+        "lastUpdated": "November 12, 2024",
+        "costPer1kInputTokens": 0.00066,
+        "costPer1kOutputTokens": 0.001,
+        "supportsResponseFormat": false
+      }
+    },
+    "@cf/meta/llama-guard-3-8b": {
+      "model": "llama/llama-guard-3-8b",
+      "matchingModel": "@cf/meta/llama-guard-3-8b",
+      "overrides": {
+        "isFree": true,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024",
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0.000484,
+        "costPer1kOutputTokens": 0.00003
+      }
+    },
+    "lucid-origin": {
+      "model": "workers-ai/@cf/leonardo/lucid-origin/leonardo-lucid-origin",
+      "matchingModel": "@cf/leonardo/lucid-origin",
+      "overrides": {
+        "speed": 4
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "phoenix-1.0": {
+      "model": "workers-ai/@cf/leonardo/phoenix-1.0/leonardo-phoenix-1-0",
+      "matchingModel": "@cf/leonardo/phoenix-1.0",
+      "overrides": {
+        "speed": 4
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "aura-1": {
+      "model": "workers-ai/@cf/deepgram/aura-1/deepgram-aura-1",
+      "matchingModel": "@cf/deepgram/aura-1",
+      "overrides": {
+        "speed": 4
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "nova-3": {
+      "model": "nova/deepgram-nova-3",
+      "matchingModel": "@cf/deepgram/nova-3",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "November 14, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "smart-turn-v2": {
+      "model": "workers-ai/@cf/pipecat-ai/smart-turn-v2/pipecat-smart-turn-v2",
+      "matchingModel": "@cf/pipecat-ai/smart-turn-v2",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "November 14, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "embeddinggemma-300m": {
+      "model": "gemma/embeddinggemma-300m",
+      "matchingModel": "@cf/google/embeddinggemma-300m",
+      "overrides": {
+        "speed": 4
+      },
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
+    },
+    "@cf/ai4bharat/indictrans2-en-indic-1B": {
+      "model": "workers-ai/@cf/ai4bharat/indictrans2-en-indic-1B/indictrans2-en-indic-1b",
+      "matchingModel": "@cf/ai4bharat/indictrans2-en-indic-1B",
+      "overrides": {
+        "lastUpdated": "September 25, 2025",
+        "costPer1kInputTokens": 0.00034,
+        "costPer1kOutputTokens": 0.00034
+      }
+    },
+    "@cf/aisingapore/gemma-sea-lion-v4-27b-it": {
+      "model": "gemma/gemma-sea-lion-v4-27b-it",
+      "matchingModel": "@cf/aisingapore/gemma-sea-lion-v4-27b-it",
+      "overrides": {
+        "lastUpdated": "September 23, 2025",
+        "costPer1kInputTokens": 0.000351,
+        "costPer1kOutputTokens": 0.000555
+      }
+    },
+    "@cf/baai/bge-small-en-v1.5": {
+      "model": "workers-ai/@cf/baai/bge-small-en-v1.5/bge-small-en-v1-5",
+      "matchingModel": "@cf/baai/bge-small-en-v1.5",
+      "overrides": {
+        "lastUpdated": "April 3, 2025",
+        "costPer1kInputTokens": 0.00002,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "@cf/deepgram/aura-2-en": {
+      "model": "workers-ai/@cf/deepgram/aura-2-en/deepgram-aura-2-en",
+      "matchingModel": "@cf/deepgram/aura-2-en",
+      "overrides": {
+        "lastUpdated": "November 14, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "@cf/deepgram/aura-2-es": {
+      "model": "workers-ai/@cf/deepgram/aura-2-es/deepgram-aura-2-es",
+      "matchingModel": "@cf/deepgram/aura-2-es",
+      "overrides": {
+        "lastUpdated": "November 14, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b": {
+      "model": "deepseek-thinking/deepseek-r1-distill-qwen-32b",
+      "matchingModel": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+      "overrides": {
+        "lastUpdated": "May 29, 2025",
+        "costPer1kInputTokens": 0.000497,
+        "costPer1kOutputTokens": 0.004881
+      },
+      "unset": [
+        "strengths"
+      ]
+    },
+    "@cf/huggingface/distilbert-sst-2-int8": {
+      "model": "workers-ai/@cf/huggingface/distilbert-sst-2-int8/distilbert-sst-2-int8",
+      "matchingModel": "@cf/huggingface/distilbert-sst-2-int8",
+      "overrides": {
+        "lastUpdated": "April 3, 2025",
+        "costPer1kInputTokens": 0.000026,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "@cf/ibm-granite/granite-4.0-h-micro": {
+      "model": "granite/granite-4-0-h-micro",
+      "matchingModel": "@cf/ibm-granite/granite-4.0-h-micro",
+      "overrides": {
+        "lastUpdated": "October 7, 2025",
+        "costPer1kInputTokens": 0.000017,
+        "costPer1kOutputTokens": 0.000112
+      }
+    },
+    "@cf/meta/llama-3.1-8b-instruct-fp8": {
+      "model": "llama/llama-3-1-8b-instruct-fp8",
+      "matchingModel": "@cf/meta/llama-3.1-8b-instruct-fp8",
+      "overrides": {
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0.000152,
+        "costPer1kOutputTokens": 0.000287
+      }
+    },
+    "@cf/meta/llama-3.2-11b-vision-instruct": {
+      "model": "llama/llama-3-2-11b-vision-instruct",
+      "matchingModel": "@cf/meta/llama-3.2-11b-vision-instruct",
+      "overrides": {
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 25, 2024",
+        "costPer1kInputTokens": 0.0000485,
+        "costPer1kOutputTokens": 0.000676,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true
+      }
+    },
+    "@cf/meta/m2m100-1.2b": {
+      "model": "workers-ai/@cf/meta/m2m100-1.2b/m2m100-1-2b",
+      "matchingModel": "@cf/meta/m2m100-1.2b",
+      "overrides": {
+        "lastUpdated": "April 3, 2025",
+        "costPer1kInputTokens": 0.00034,
+        "costPer1kOutputTokens": 0.00034
+      }
+    },
+    "@cf/mistralai/mistral-small-3.1-24b-instruct": {
+      "model": "mistral-small/mistral-small-3-1-24b-instruct",
+      "matchingModel": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+      "overrides": {
+        "lastUpdated": "March 18, 2025",
+        "costPer1kInputTokens": 0.000351,
+        "costPer1kOutputTokens": 0.000555
+      }
+    },
+    "@cf/nvidia/nemotron-3-120b-a12b": {
+      "model": "nemotron/nemotron-3-super-120b",
+      "matchingModel": "@cf/nvidia/nemotron-3-120b-a12b",
+      "overrides": {
+        "lastUpdated": "March 11, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0015
+      }
+    },
+    "@cf/zai-org/glm-4.7-flash": {
+      "model": "glm-flash/glm-4-7-flash",
+      "matchingModel": "@cf/zai-org/glm-4.7-flash",
+      "overrides": {
+        "name": "GLM 4.7 Flash",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "strengths": [
+          "chat",
+          "instruction",
+          "analysis",
+          "multilingual",
+          "coding",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "January 19, 2026",
+        "costPer1kInputTokens": 0.0000605,
+        "costPer1kOutputTokens": 0.0004,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "@cf/openai/gpt-oss-120b": {
+      "model": "gpt-oss/gpt-oss-120b",
+      "matchingModel": "@cf/openai/gpt-oss-120b",
+      "overrides": {
+        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "math",
+          "tool_use"
+        ],
+        "speed": 5,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.00035,
+        "costPer1kOutputTokens": 0.00075
+      }
+    },
+    "@cf/openai/gpt-oss-20b": {
+      "model": "gpt-oss/gpt-oss-20b",
+      "matchingModel": "@cf/openai/gpt-oss-20b",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "tool_use"
+        ],
+        "speed": 5,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0003,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "@cf/pfnet/plamo-embedding-1b": {
+      "model": "workers-ai/@cf/pfnet/plamo-embedding-1b/plamo-embedding-1b",
+      "matchingModel": "@cf/pfnet/plamo-embedding-1b",
+      "overrides": {
+        "lastUpdated": "September 25, 2025",
+        "costPer1kInputTokens": 0.000019,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "@cf/qwen/qwen3-30b-a3b-fp8": {
+      "model": "qwen/qwen3-30b-a3b-fp8",
+      "matchingModel": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "overrides": {
+        "lastUpdated": "April 28, 2025",
+        "costPer1kInputTokens": 0.0000509,
+        "costPer1kOutputTokens": 0.000335
+      }
+    },
+    "@cf/qwen/qwen3-embedding-0.6b": {
+      "model": "qwen/qwen3-embedding-0-6b",
+      "matchingModel": "@cf/qwen/qwen3-embedding-0.6b",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "lastUpdated": "November 14, 2025",
+        "costPer1kInputTokens": 0.000012,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "@cf/moonshotai/kimi-k2.7-code": {
+      "model": "kimi-k2/kimi-k2-7-code",
+      "matchingModel": "@cf/moonshotai/kimi-k2.7-code",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "agents",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "isFeatured": true,
+        "lastUpdated": "June 12, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "@cf/zai-org/glm-5.2": {
+      "model": "glm/glm-5-2",
+      "matchingModel": "@cf/zai-org/glm-5.2",
+      "overrides": {
+        "name": "Glm 5.2",
+        "contextWindow": 262144,
+        "maxTokens": 256000,
+        "contextComplexity": 4,
+        "speed": 4,
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "@cf/deepseek-ai/deepseek-v4-flash-0731": {
+      "model": "deepseek-flash/deepseek-v4-flash-0731",
+      "matchingModel": "@cf/deepseek-ai/deepseek-v4-flash-0731",
+      "overrides": {
+        "contextWindow": 1310720,
+        "maxTokens": 1048576,
+        "lastUpdated": "July 31, 2026",
+        "costPer1kInputTokens": 0.00044,
+        "costPer1kOutputTokens": 0.00132,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "@cf/deepseek-ai/deepseek-v4-pro-0813": {
+      "model": "deepseek-thinking/deepseek-v4-pro-0813",
+      "matchingModel": "@cf/deepseek-ai/deepseek-v4-pro-0813",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "lastUpdated": "August 22, 2026",
+        "costPer1kInputTokens": 0.00132,
+        "costPer1kOutputTokens": 0.00396
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
+    },
+    "@cf/qwen/qwen3.8-27b": {
+      "model": "qwen/qwen3-8-27b",
+      "matchingModel": "@cf/qwen/qwen3.8-27b",
+      "overrides": {
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 262144,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.00045,
+        "costPer1kOutputTokens": 0.0032,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "@cf/zai-org/glm-5.3": {
+      "model": "glm/glm-5-3",
+      "matchingModel": "@cf/zai-org/glm-5.3",
+      "overrides": {
+        "name": "Glm 5.3",
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 1310720,
+        "maxTokens": 1310720,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "@cf/zai-org/glm-5.3-flash": {
+      "model": "glm/glm-5-3-flash",
+      "matchingModel": "@cf/zai-org/glm-5.3-flash",
+      "overrides": {
+        "name": "Glm 5.3 Flash",
+        "openWeights": true,
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 1310720,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "isFeatured": true,
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "workers-ai-google-veo-3-1-fast": {
+      "model": "veo/google-veo-3-1-fast",
+      "matchingModel": "google/veo-3.1-fast",
+      "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "creative"
+        ],
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "workers-ai-minimax-music-2-6": {
+      "model": "minimax-music/minimax-music-2-6",
+      "matchingModel": "minimax/music-2.6",
+      "overrides": {
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    }
+  }
+}

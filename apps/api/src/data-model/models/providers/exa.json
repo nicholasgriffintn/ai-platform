@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "models": {
+    "exa": {
+      "model": "exa/exa/exa",
+      "matchingModel": "exa",
+      "overrides": {
+        "speed": 4
+      }
+    },
+    "exa-research": {
+      "model": "exa/exa-research/exa-research",
+      "matchingModel": "exa-research",
+      "overrides": {
+        "speed": 4
+      }
+    },
+    "exa-research-pro": {
+      "model": "exa/exa-research-pro/exa-research-pro",
+      "matchingModel": "exa-research-pro",
+      "overrides": {
+        "speed": 3
+      }
+    }
+  }
+}

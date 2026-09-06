@@ -4,7 +4,9 @@ import { useParams } from "react-router";
 import { ConversationThread } from "~/components/ConversationThread";
 import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
 import { useConversationLaunchModeConfig } from "~/components/ConversationThread/useConversationLaunchModeConfig";
+import { HomeDiscover } from "~/components/Discover/HomeDiscover";
 import { useChats } from "~/hooks/useChat";
+import { useConversationRoute } from "~/hooks/useConversationRoute";
 import { createChatWelcome } from "~/lib/chat-welcome";
 import { useChatStore } from "~/state/stores/chatStore";
 
@@ -15,8 +17,12 @@ interface HomeConversationThreadProps {
 export function HomeConversationThread({ urlModeConfig }: HomeConversationThreadProps) {
   const { completionId } = useParams<"completionId">();
   const modeConfig = useConversationLaunchModeConfig(urlModeConfig, completionId);
+
+  useConversationRoute({ surface: { kind: "personal" }, pathConversationId: completionId });
+
   const user = useChatStore((state) => state.user);
   const userSettings = useChatStore((state) => state.userSettings);
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const { data: conversations, isLoading: areConversationsLoading } = useChats();
   const [welcomeSeed, setWelcomeSeed] = useState<number | null>(null);
@@ -47,6 +53,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
   const hasModeWelcome = Boolean(modeConfig?.welcomeTitle || modeConfig?.welcomeDescription);
   const isWelcomeLoading =
     !hasModeWelcome && (welcomeSeed === null || isAuthenticationLoading || areConversationsLoading);
+  const showDiscover = !hasModeWelcome && !isAuthenticated && !isAuthenticationLoading;
 
   return (
     <ConversationThread
@@ -55,6 +62,8 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
         welcomeTitle: hasModeWelcome ? modeConfig?.welcomeTitle : welcome.title,
         welcomeDescription: hasModeWelcome ? modeConfig?.welcomeDescription : welcome.description,
         welcomeLoading: isWelcomeLoading,
+        welcomeFooter: showDiscover ? <HomeDiscover /> : undefined,
+        welcomeFooterHint: showDiscover ? "Keep scrolling for the tour" : undefined,
       }}
     />
   );

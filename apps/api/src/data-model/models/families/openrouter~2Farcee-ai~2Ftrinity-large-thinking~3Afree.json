@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "contextWindow": 262144,
+    "maxTokens": 80000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "releaseDate": "April 1, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 24.5,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The openrouter/arcee ai/trinity large thinking:free family includes models that produce text.",
+  "models": {
+    "trinity-large-thinking-free": {
+      "defaults": {
+        "name": "Trinity Large Thinking (free)",
+        "description": "Trinity Large Thinking (free) accepts text and produces text."
+      }
+    }
+  }
+}

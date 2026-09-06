@@ -1,0 +1,126 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsAttachments": false
+  },
+  "description": "The whisper family includes models that produce speech, text.",
+  "models": {
+    "faster-whisper-large-v3": {
+      "defaults": {
+        "name": "Faster Whisper Large v3",
+        "openWeights": true,
+        "description": "Open Whisper checkpoint for robust multilingual transcription and captioning",
+        "contextWindow": 448,
+        "maxTokens": 4096,
+        "releaseDate": "October 1, 2024",
+        "supportsToolCalls": false
+      }
+    },
+    "gpt-realtime-whisper": {
+      "defaults": {
+        "name": "gpt-realtime-whisper",
+        "openWeights": false,
+        "description": "Streaming speech-to-text model for low-latency transcript deltas from live audio",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "releaseDate": "May 7, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": true
+      }
+    },
+    "ink-whisper": {
+      "defaults": {
+        "name": "Ink Whisper",
+        "description": "Cartesia streaming speech-to-text model for realtime voice transcription.",
+        "strengths": [
+          "transcription"
+        ]
+      }
+    },
+    "insanely-fast-whisper-with-video-transcription": {
+      "defaults": {
+        "name": "Insanely Fast Whisper, with video transcription",
+        "description": "TL;DR - Transcribe 150 minutes (2.5 hours) of audio in less than 98 seconds - with OpenAI’s Whisper Large v3. Blazingly fast transcription is now a reality! ⚡️",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "audio",
+          "transcription"
+        ]
+      }
+    },
+    "openai-whisper": {
+      "defaults": {
+        "name": "OpenAI Whisper",
+        "description": "OpenAI Whisper accepts text and produces speech.",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ]
+      }
+    },
+    "openai-whisper-large-v3-turbo": {
+      "defaults": {
+        "name": "OpenAI Whisper Large v3 Turbo",
+        "description": "A faster, more accurate speech-to-text model when compared to the base Whisper model.",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5
+      }
+    },
+    "whisper": {
+      "defaults": {
+        "name": "Whisper",
+        "description": "OpenAI Whisper transcription model for existing speech-to-text integrations.",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": true
+      }
+    },
+    "whisper-large-v3-turbo": {
+      "defaults": {
+        "name": "Whisper Large v3 Turbo",
+        "openWeights": true,
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "October 1, 2024",
+        "supportsToolCalls": false,
+        "supportsTemperature": true
+      }
+    }
+  }
+}

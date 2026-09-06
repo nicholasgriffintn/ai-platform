@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "January 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The greenpt/green s family includes models that produce text.",
+  "models": {
+    "green-s": {
+      "defaults": {
+        "name": "Green S",
+        "description": "GreenPT speech-to-text model for pre-recorded and live transcription"
+      }
+    }
+  }
+}

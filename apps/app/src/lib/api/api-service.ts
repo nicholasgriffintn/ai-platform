@@ -87,6 +87,9 @@ class ApiService {
     return this.chatService.getChat(completion_id, options);
   };
 
+  getEarlierChatMessages = (completionId: string, beforeMessageId: string, limit?: number) =>
+    this.chatService.getEarlierChatMessages(completionId, beforeMessageId, limit);
+
   generateTitle = (completion_id: string, messages: Message[]): Promise<string> => {
     return this.chatService.generateTitle(completion_id, messages);
   };
@@ -98,6 +101,19 @@ class ApiService {
   async cancelChatCompletion(completion_id: string): Promise<void> {
     return this.chatService.cancelChatCompletion(completion_id);
   }
+
+  getChatRun = (runId: string, signal?: AbortSignal) => this.chatService.getChatRun(runId, signal);
+
+  getChatRunSnapshot = (runId: string, signal?: AbortSignal) =>
+    this.chatService.getChatRunSnapshot(runId, signal);
+
+  getChatRunEvents = (runId: string, after: number, limit?: number, signal?: AbortSignal) =>
+    this.chatService.getChatRunEvents(runId, after, limit, signal);
+
+  getChatRunCommand = (commandId: string) => this.chatService.getChatRunCommand(commandId);
+
+  cancelChatRun = (runId: string, expectedAttempt: number, commandId?: string) =>
+    this.chatService.cancelChatRun(runId, expectedAttempt, commandId);
 
   getConversationGoal = (completion_id: string) => {
     return this.chatService.getConversationGoal(completion_id);
@@ -276,6 +292,10 @@ class ApiService {
 
   fetchModels = (): Promise<ModelConfig> => {
     return this.userService.fetchModels();
+  };
+
+  fetchModelCatalogue = (): Promise<ModelConfig> => {
+    return this.userService.fetchModelCatalogue();
   };
 
   fetchTools = (): Promise<Tool[]> => {

@@ -11,6 +11,55 @@ self.addEventListener("message", (event) => {
   }
 });
 
+self.addEventListener("push", (event) => {
+  let payload = {};
+
+  try {
+    payload = event.data?.json() ?? {};
+  } catch {
+    payload = {};
+  }
+
+  const notification = payload.notification ?? payload;
+  const data = notification.data ?? {};
+
+  event.waitUntil(
+    self.registration.showNotification(notification.title ?? "Polychat task update", {
+      body: notification.body ?? "A task has changed.",
+      tag: data.itemId ?? "polychat-task-update",
+      data: { itemId: data.itemId, deepLink: data.deepLink },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  let target = new URL("/work", self.location.origin);
+
+  try {
+    const candidate = new URL(event.notification.data?.deepLink ?? "/work", self.location.origin);
+
+    if (candidate.origin === self.location.origin) {
+      target = candidate;
+    }
+  } catch {
+    target = new URL("/work", self.location.origin);
+  }
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const existing = windows.find((client) => new URL(client.url).origin === target.origin);
+
+      if (existing) {
+        return existing.navigate(target.href).then(() => existing.focus());
+      }
+
+      return clients.openWindow(target.href);
+    }),
+  );
+});
+
 const CACHE_NAME = "polychat-pwa-v1";
 
 self.addEventListener("activate", (event) => {

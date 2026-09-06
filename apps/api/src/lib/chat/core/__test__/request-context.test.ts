@@ -41,6 +41,8 @@ describe("chat request context helpers", () => {
       mode: "build",
       model: "model-1",
       provider: "provider-1",
+      runId: "run-1",
+      runAttempt: 2,
       memoryScope: { type: "personal" },
     });
 
@@ -65,6 +67,8 @@ describe("chat request context helpers", () => {
       },
     });
     expect(context.request.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(context.context?.executionRunId).toBe("run-1");
+    expect(context.context?.executionRunAttempt).toBe(2);
   });
 
   it("passes only the prepared memory scope to tool execution", () => {

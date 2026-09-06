@@ -2,7 +2,20 @@ import SwiftUI
 struct MessageListView: View {
     let messages: [ChatMessage]
     let conversationModelId: String?
+    let run: ChatRun?
+    let taskActivity: ProjectTaskActivityTimeline?
+    let taskInteraction: ProjectTaskInteractionControl?
+    let connectorApproval: ConnectorApprovalControl?
     let isLoadingConversation: Bool
+    let hasMoreMessages: Bool
+    let isLoadingEarlierMessages: Bool
+    let onLoadEarlierMessages: () -> Void
+    let onAnswerTaskQuestions: ([UserQuestionAnswer]) -> Void
+    let onResolveTaskApproval: (String) -> Void
+    let onRefreshTaskInteraction: () -> Void
+    let onResolveConnectorApproval: (String) -> Void
+    let onContinueConnectorApproval: () -> Void
+    let onRefreshConnectorApproval: () -> Void
     let onSuggestionSelected: (String) -> Void
     let onDismissKeyboard: () -> Void
     
@@ -10,6 +23,39 @@ struct MessageListView: View {
         ScrollView {
             ScrollViewReader { proxy in
                 LazyVStack(spacing: 22) {
+                    if hasMoreMessages {
+                        Button(action: onLoadEarlierMessages) {
+                            if isLoadingEarlierMessages {
+                                ProgressView()
+                            } else {
+                                Text("Load earlier messages")
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(isLoadingEarlierMessages)
+                    }
+                    if let taskActivity {
+                        ProjectTaskActivityTimelineView(timeline: taskActivity)
+                    }
+                    if let run, run.status != "succeeded" {
+                        ChatRunStatusRow(run: run)
+                    }
+                    if let taskInteraction {
+                        ProjectTaskInteractionCard(
+                            control: taskInteraction,
+                            onAnswerQuestions: onAnswerTaskQuestions,
+                            onResolveApproval: onResolveTaskApproval,
+                            onRefresh: onRefreshTaskInteraction
+                        )
+                    }
+                    if let connectorApproval {
+                        ConnectorApprovalCard(
+                            control: connectorApproval,
+                            onResolve: onResolveConnectorApproval,
+                            onContinue: onContinueConnectorApproval,
+                            onRefresh: onRefreshConnectorApproval
+                        )
+                    }
                     if isLoadingConversation {
                         LoadingConversationMessagesView()
                             .padding(.top, 150)
@@ -37,6 +83,10 @@ struct MessageListView: View {
                 .padding(.top, messages.isEmpty ? 28 : 72)
                 .padding(.bottom, 28)
                 .onChange(of: messages.count) {
+                    guard !isLoadingEarlierMessages else {
+                        return
+                    }
+
                     if let lastMessageId = messages.last?.id {
                         withAnimation {
                             proxy.scrollTo(lastMessageId, anchor: .bottom)
@@ -58,6 +108,63 @@ struct MessageListView: View {
         #if os(iOS)
         .scrollDismissesKeyboard(.interactively)
         #endif
+    }
+}
+
+private struct ChatRunStatusRow: View {
+    let run: ChatRun
+
+    private var presentation: ChatRunPresentation {
+        ChatRunPresentation.resolve(run)
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: icon)
+                .foregroundStyle(colour)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(presentation.label)
+                    .font(.subheadline.weight(.semibold))
+                Text(presentation.detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+        .padding(12)
+        .background(colour.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
+    private var colour: Color {
+        switch presentation.tone {
+        case .active:
+            return .blue
+        case .attention:
+            return .orange
+        case .danger:
+            return .red
+        case .neutral:
+            return .secondary
+        case .success:
+            return .green
+        }
+    }
+
+    private var icon: String {
+        switch presentation.tone {
+        case .active:
+            return "bolt.horizontal.circle"
+        case .attention:
+            return "exclamationmark.circle"
+        case .danger:
+            return "xmark.circle"
+        case .neutral:
+            return "stop.circle"
+        case .success:
+            return "checkmark.circle"
+        }
     }
 }
 

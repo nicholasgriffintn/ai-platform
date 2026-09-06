@@ -1,7 +1,8 @@
 import { withRetry } from "@ngriffin_uk/polychat-library-client/retry";
 import type { SandboxRunUsageReport } from "@ngriffin_uk/polychat-schemas";
 
-const USAGE_REPORT_USER_AGENT = "Polychat-Sandbox-Worker/1.0 (+https://polychat.app)";
+import { createPolychatRequest } from "./polychat-request";
+
 const USAGE_REPORT_MAX_ATTEMPTS = 3;
 const USAGE_REPORT_BASE_DELAY_MS = 400;
 const USAGE_REPORT_MAX_DELAY_MS = 3000;
@@ -35,13 +36,12 @@ export async function reportSandboxRunUsage(params: {
     await withRetry(
       async () => {
         const response = await params.polychatApi.fetch(
-          new Request(
-            `http://polychat-api/apps/sandbox/runs/${encodeURIComponent(params.report.runId)}/usage`,
+          createPolychatRequest(
+            `/apps/sandbox/runs/${encodeURIComponent(params.report.runId)}/usage`,
             {
               method: "POST",
               headers: {
                 Authorization: `Bearer ${params.userToken}`,
-                "User-Agent": USAGE_REPORT_USER_AGENT,
                 "Content-Type": "application/json",
               },
               body: JSON.stringify(params.report),

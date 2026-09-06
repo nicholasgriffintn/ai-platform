@@ -1,0 +1,52 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131072,
+    "maxTokens": 117964,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "August 31, 2024",
+    "releaseDate": "August 26, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+  "models": {
+    "hermes-3-405b-instruct-free": {
+      "defaults": {
+        "name": "Hermes 3 405B Instruct (free)",
+        "description": "Hermes 3 405B Instruct (free) accepts text and produces text.",
+        "maxTokens": 131072,
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "August 16, 2024"
+      }
+    },
+    "hermes-4-405b": {
+      "defaults": {
+        "name": "Hermes 4 405B",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+      }
+    },
+    "hermes-4-70b": {
+      "defaults": {
+        "name": "Hermes 4 70B",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+      }
+    }
+  }
+}

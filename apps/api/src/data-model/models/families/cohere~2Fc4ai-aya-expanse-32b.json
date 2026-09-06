@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 4000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 24, 2024",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The cohere/c4ai aya expanse 32b family includes models that produce text.",
+  "models": {
+    "aya-expanse-32b": {
+      "defaults": {
+        "name": "Aya Expanse 32B",
+        "description": "Open multilingual model optimized for generation across 23 languages"
+      }
+    }
+  }
+}

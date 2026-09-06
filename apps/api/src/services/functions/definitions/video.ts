@@ -1,5 +1,4 @@
-import { replicateModelConfig } from "~/data-model/models/replicate";
-import { workersAiModelConfig } from "~/data-model/models/workersai";
+import { getProviderModels } from "~/lib/providers/models/catalogue";
 import { getModelIdsByOutput } from "~/utils/models";
 
 import { jsonSchemaToZod } from "../../../utils/jsonSchema";
@@ -16,8 +15,8 @@ export const MIN_INFER_STEPS = 1;
 export const DEFAULT_FLOW_SHIFT = 7;
 export const VIDEO_PROVIDERS = ["workers-ai", "replicate"] as const;
 export const VIDEO_MODELS = [
-  ...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "video"),
-  ...getModelIdsByOutput(replicateModelConfig, "replicate", "video"),
+  ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "video"),
+  ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "video"),
 ].sort();
 
 export const create_video: FunctionToolDescriptor = {

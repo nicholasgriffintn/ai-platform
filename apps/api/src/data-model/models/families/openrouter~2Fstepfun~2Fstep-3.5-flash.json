@@ -1,0 +1,48 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "January 29, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 25.5,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The openrouter/stepfun/step 3.5 flash family includes models that produce text.",
+  "models": {
+    "step-3-5-flash": {
+      "defaults": {
+        "name": "Step 3.5 Flash",
+        "description": "StepFun flash lane for quick multimodal reasoning and coding assistance"
+      }
+    }
+  }
+}

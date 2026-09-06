@@ -1,0 +1,33 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 13, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The cogito family includes models that produce text.",
+  "models": {
+    "cogito-v2-1-671b": {
+      "defaults": {
+        "name": "Cogito v2.1 671B",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+      }
+    }
+  }
+}

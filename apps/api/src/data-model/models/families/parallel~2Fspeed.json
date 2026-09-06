@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "research",
+      "search",
+      "analysis"
+    ]
+  },
+  "description": "The parallel/speed family includes models that produce text.",
+  "models": {
+    "parallel-speed": {
+      "defaults": {
+        "name": "Parallel Speed",
+        "description": "Parallel's speed-optimized model for fast, comprehensive research and analysis tasks. Uses OpenAI-compatible chat completions by default."
+      }
+    }
+  }
+}

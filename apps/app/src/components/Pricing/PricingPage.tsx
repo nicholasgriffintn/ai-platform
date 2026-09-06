@@ -6,13 +6,10 @@ import { Check, Loader2 } from "lucide-react";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useCreateCheckoutSession, usePlans } from "~/hooks/useBilling";
+import { formatPlanPrice } from "~/lib/plan-format";
 import { useUIStore } from "~/state/stores/uiStore";
 
-const CREDIT_EXAMPLES = [
-  "a quick question ≈ 0.1 credits",
-  "a couple of hours of sandboxed coding ≈ 6 credits",
-  "a long agent task ≈ 100 credits",
-];
+import { CreditLadder } from "./CreditLadder";
 
 const PLAN_FEATURES: Record<string, string[]> = {
   free: [
@@ -52,14 +49,6 @@ const HOW_IT_WORKS = [
     body: "Off by default. Leave it off and new turns simply pause until the month resets; switch it on and extra credits are billed at period end.",
   },
 ];
-
-function formatPlanPrice(price: number): string {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    minimumFractionDigits: Number.isInteger(price) ? 0 : 2,
-  }).format(price);
-}
 
 function comparePlansByPrice(a: Plan, b: Plan): number {
   return (a.price ?? 0) - (b.price ?? 0);
@@ -176,8 +165,11 @@ export function PricingPage() {
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
       <header className="text-center">
-        <h1 className="text-3xl font-bold text-foreground">Pricing</h1>
-        <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
+        <p className="polychat-eyebrow">Plans</p>
+        <h1 className="font-display text-foreground mt-2 text-4xl font-medium tracking-tight text-balance md:text-5xl">
+          Pricing
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
           One pot of credits per month, spent on whatever you actually run. No meters spinning
           behind your back, and nothing cut off mid-thought.
         </p>
@@ -212,7 +204,9 @@ export function PricingPage() {
       )}
 
       <section className="mt-10">
-        <h2 className="text-xl font-semibold text-foreground">How credits work</h2>
+        <h2 className="font-display text-2xl font-medium tracking-tight text-foreground">
+          How credits work
+        </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {HOW_IT_WORKS.map((item) => (
             <Card key={item.title} className="p-5">
@@ -220,14 +214,9 @@ export function PricingPage() {
               <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
             </Card>
           ))}
-          <Card className="p-5">
-            <h3 className="font-medium text-foreground">What a credit buys</h3>
-            <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-              {CREDIT_EXAMPLES.map((example) => (
-                <li key={example}>{example}</li>
-              ))}
-            </ul>
-          </Card>
+          <div className="sm:col-span-2">
+            <CreditLadder />
+          </div>
         </div>
       </section>
     </div>

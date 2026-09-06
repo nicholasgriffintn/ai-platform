@@ -1,6 +1,7 @@
 import type { TaskType } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { createExecutionOutputProvenance } from "~/lib/provenance/output";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
@@ -179,6 +180,10 @@ export const executeModelGeneration = async (
     title: `${modelConfig.name || params.modelId} generation`,
     status: status === "processing" ? "pending" : status === "failed" ? "failed" : "ready",
     content: outputContent,
+    provenance: await createExecutionOutputProvenance(serviceContext, {
+      modelId: modelConfig.matchingModel,
+      provider: modelConfig.provider,
+    }),
   });
 
   if (!stored?.id) {

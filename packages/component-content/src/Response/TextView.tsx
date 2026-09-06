@@ -1,4 +1,4 @@
-import { MemoizedMarkdown } from "../markdown";
+import { BoundedMarkdown } from "./BoundedMarkdown";
 
 interface TextViewProps {
   data: {
@@ -22,7 +22,7 @@ export const TextView = ({ data }: TextViewProps) => {
 
   return (
     <div data-responsetype="text">
-      <MemoizedMarkdown className="max-w-none">{content}</MemoizedMarkdown>
+      <BoundedMarkdown content={content} />
     </div>
   );
 };

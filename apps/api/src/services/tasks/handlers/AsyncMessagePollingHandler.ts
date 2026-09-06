@@ -86,9 +86,15 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 
       const result = await withThreadLockIfFree(
         { env, conversationId: data.conversationId, kind: "async_result" },
-        () =>
+        (lease) =>
           handleAsyncInvocation(data.asyncInvocation, targetMessage, {
-            conversationManager,
+            conversationManager: ConversationManager.getInstance({
+              database,
+              user,
+              store: true,
+              env,
+              writeFence: lease,
+            }),
             conversationId: data.conversationId,
             env,
             user,

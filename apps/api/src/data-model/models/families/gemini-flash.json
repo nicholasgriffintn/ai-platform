@@ -1,0 +1,693 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "knowledgeCutoffDate": "January 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The gemini flash family includes models that produce audio, image, text.",
+  "models": {
+    "gemini-2-5-flash": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash",
+        "description": "Fast Gemini workhorse for multimodal apps where latency and price matter",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "releaseDate": "June 17, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-2-5-flash-eu": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash (EU)",
+        "description": "Fast Gemini workhorse for multimodal apps where latency and price matter",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "June 17, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 14.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-2-5-flash-preview-tts": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash Preview TTS",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 8192,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "May 1, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-2-5-flash-tts": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash TTS",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 32768,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
+        "contextComplexity": 2,
+        "reliability": 2,
+        "releaseDate": "September 30, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1036,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
+        }
+      }
+    },
+    "gemini-2-5-pro-preview-tts": {
+      "defaults": {
+        "name": "Gemini 2.5 Pro Preview TTS",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 8192,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "May 1, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-3-1-flash-image-preview-nano-banana-2": {
+      "defaults": {
+        "name": "Gemini 3.1 Flash Image Preview (Nano Banana 2)",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "releaseDate": "February 26, 2026",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "gemini-3-1-flash-live-preview": {
+      "defaults": {
+        "name": "Gemini 3.1 Flash Live Preview",
+        "description": "High-quality, low-latency Live API model for real-time dialogue and voice-first AI applications",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "releaseDate": "March 26, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gemini-3-1-flash-tts-preview": {
+      "defaults": {
+        "name": "Gemini 3.1 Flash TTS Preview",
+        "description": "Low-latency speech generation with steerable prompts and expressive audio tags",
+        "contextWindow": 8192,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "April 15, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3-5-flash": {
+      "defaults": {
+        "name": "Gemini 3.5 Flash",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "contextComplexity": 4,
+        "reliability": 3,
+        "releaseDate": "May 19, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 50.2,
+          "codingIndex": 70.1,
+          "agenticIndex": 37.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-3-5-flash-eu": {
+      "defaults": {
+        "name": "Gemini 3.5 Flash (EU)",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "releaseDate": "May 19, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 50.2,
+          "codingIndex": 70.1,
+          "agenticIndex": 37.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-3-6-flash": {
+      "defaults": {
+        "name": "Gemini 3.6 Flash",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "July 21, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "gemini-3-7-flash": {
+      "defaults": {
+        "name": "Gemini 3.7 Flash",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "August 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gemini-3-7-flash-eu": {
+      "defaults": {
+        "name": "Gemini 3.7 Flash (EU)",
+        "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "August 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3-8-flash": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 2, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gemini-3-8-flash-eu": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash (EU)",
+        "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 2, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3-flash": {
+      "defaults": {
+        "name": "Gemini 3 Flash",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "December 17, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 27.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-3-flash-preview": {
+      "defaults": {
+        "name": "Gemini 3 Flash Preview",
+        "description": "New Gemini flash lane bringing frontier-style multimodal reasoning to cheaper runs",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "December 17, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 27.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-flash-latest": {
+      "defaults": {
+        "name": "Gemini Flash Latest",
+        "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "maxTokens": 65536,
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "August 13, 2026"
+      }
+    },
+    "google-gemini-flash-latest": {
+      "defaults": {
+        "name": "Google Gemini Flash Latest",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "January 1, 2025",
+        "releaseDate": "April 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "nano-banana": {
+      "defaults": {
+        "description": "Nano Banana image model for fast generation, edits, and character-consistent assets",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
+        "knowledgeCutoffDate": "June 2024",
+        "releaseDate": "August 26, 2025",
+        "supportsToolCalls": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1159,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
+        }
+      }
+    },
+    "nano-banana-2": {
+      "defaults": {
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "contextComplexity": 3,
+        "reliability": 5,
+        "releaseDate": "May 28, 2026",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1254,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
+      }
+    },
+    "nano-banana-gemini-2-5-flash-image": {
+      "defaults": {
+        "name": "Nano Banana (Gemini 2.5 Flash Image)",
+        "description": "Nano Banana image model for fast generation, edits, and character-consistent assets",
+        "contextWindow": 32768,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "strengths": [
+          "image",
+          "creative"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
+        "releaseDate": "August 26, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1159,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
+        }
+      }
+    }
+  }
+}

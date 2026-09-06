@@ -66,7 +66,7 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
   return (
     <>
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <aside>
+        <aside className="min-w-0">
           <SourceCollectionList
             collections={collections}
             selectedCollectionId={collectionId}

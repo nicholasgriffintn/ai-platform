@@ -1,0 +1,43 @@
+{
+  "defaults": {
+    "contextWindow": 127000,
+    "maxTokens": 8000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 2,
+    "reliability": 1,
+    "knowledgeCutoffDate": "September 2025",
+    "releaseDate": "February 19, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 11.7,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The vercel/perplexity/sonar reasoning family includes models that produce text.",
+  "models": {
+    "sonar-reasoning": {
+      "defaults": {
+        "name": "Sonar Reasoning",
+        "description": "Sonar Reasoning accepts text and produces text."
+      }
+    }
+  }
+}

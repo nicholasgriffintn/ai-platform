@@ -1,4 +1,5 @@
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { createExecutionOutputProvenance } from "~/lib/provenance/output";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
@@ -172,6 +173,10 @@ export const handlePodcastTranscribe = async (
       title: `Transcript: ${title || "Untitled podcast"}`,
       status: isAsync ? "pending" : "ready",
       content: appData,
+      provenance: await createExecutionOutputProvenance(serviceContext, {
+        modelId: modelConfig.matchingModel,
+        provider: modelConfig.provider || "replicate",
+      }),
     });
 
     if (isAsync) {

@@ -6,6 +6,8 @@ import {
   type SandboxRunInstructionEnvelope,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { createPolychatRequest } from "./polychat-request";
+
 const DEFAULT_CONTROL_REQUEST_TIMEOUT_MS = 8000;
 
 async function fetchWithTimeout(
@@ -109,12 +111,8 @@ export class RunControlClient {
     this.apiService = options.apiService;
   }
 
-  private resolveApiRequestUrl(path: string): string {
-    return `http://polychat-api${path}`;
-  }
-
   private async fetchApi(path: string, init: RequestInit, signal: AbortSignal): Promise<Response> {
-    const request = new Request(this.resolveApiRequestUrl(path), {
+    const request = createPolychatRequest(path, {
       ...init,
       signal,
     });
@@ -158,7 +156,7 @@ export class RunControlClient {
         };
       }
 
-      return null;
+      throw new Error("Run control could not be read");
     }
 
     if (!response.ok) {
@@ -171,7 +169,7 @@ export class RunControlClient {
         };
       }
 
-      return null;
+      throw new Error(`Run control request failed (${response.status})`);
     }
 
     let payload: unknown;
@@ -179,13 +177,13 @@ export class RunControlClient {
     try {
       payload = await response.json();
     } catch {
-      return null;
+      throw new Error("Run control returned invalid JSON");
     }
 
     const parsed = sandboxRunControlSchema.safeParse(payload);
 
     if (!parsed.success) {
-      return null;
+      throw new Error("Run control returned invalid state");
     }
 
     return parsed.data;

@@ -1,0 +1,68 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The alpha family includes models that produce text.",
+  "models": {
+    "owl-alpha": {
+      "defaults": {
+        "name": "Owl Alpha",
+        "description": "Owl Alpha accepts text and produces text.",
+        "contextWindow": 1048756,
+        "maxTokens": 262144,
+        "releaseDate": "April 28, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "ox-alpha": {
+      "defaults": {
+        "name": "Ox Alpha",
+        "description": "Ox Alpha accepts text, image, video and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 20, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "weaver-alpha": {
+      "defaults": {
+        "name": "Weaver (alpha)",
+        "description": "General-purpose chat model for instruction following, writing, and analysis",
+        "contextWindow": 8000,
+        "maxTokens": 6000,
+        "knowledgeCutoffDate": "June 30, 2023",
+        "releaseDate": "August 2, 2023",
+        "supportsToolCalls": false
+      }
+    }
+  }
+}

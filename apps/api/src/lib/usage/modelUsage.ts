@@ -12,7 +12,12 @@ import { getLogger } from "~/utils/logger";
 
 import { isByokTurn } from "./byok";
 import { creditActorUserId, type CreditActor } from "./creditActor";
-import { emitUsageEvents, resolveUsageAttribution, type UsageEventDraft } from "./ledger";
+import {
+  emitUsageEvents,
+  resolveUsageAttribution,
+  type UsageEmissionOutcome,
+  type UsageEventDraft,
+} from "./ledger";
 import { extractProviderBillableUsage } from "./providerBillableUnits";
 import type { NormalisedTokenUsage } from "./tokenUsage";
 
@@ -31,15 +36,19 @@ export interface RecordModelTurnUsageParams {
   completionId: string;
   messageId?: string | null;
   conversationId?: string | null;
+  runId?: string | null;
+  runAttempt?: number | null;
   occurredAt?: string;
   tier?: string;
 }
 
-export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): Promise<void> {
+export async function recordModelTurnUsage(
+  params: RecordModelTurnUsageParams,
+): Promise<UsageEmissionOutcome> {
   const { env, usage, actor } = params;
 
   if (!actor || !env?.DB || (!usage && params.rawUsage === undefined)) {
-    return;
+    return "skipped";
   }
 
   const userId = creditActorUserId(actor);
@@ -72,7 +81,7 @@ export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): 
     );
 
     if (extraction.units.length === 0) {
-      return;
+      return "skipped";
     }
 
     const [byok, attribution] = await Promise.all([
@@ -93,6 +102,8 @@ export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): 
       completionId: params.completionId,
       projectId: attribution.projectId,
       workspaceId: attribution.workspaceId,
+      runId: params.runId ?? null,
+      runAttempt: params.runAttempt ?? null,
       rates,
       raw: params.rawUsage ?? usage,
       ...(extraction.tier ? { tier: extraction.tier } : {}),
@@ -101,17 +112,16 @@ export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): 
     const drafts: UsageEventDraft[] = extraction.units.map((unit) => {
       const unitResource = unit.resource ?? resource;
 
-      return {
-        ...shared,
+      return Object.assign({}, shared, {
         idempotencyKey: `${unit.source}:${eventScope}:${unitResource}:${unit.unit}`,
         source: unit.source,
         resource: unitResource,
         unit: unit.unit,
         quantity: unit.quantity,
-      };
+      });
     });
 
-    await emitUsageEvents({ env, repositories, drafts });
+    return await emitUsageEvents({ env, repositories, drafts });
   } catch (error) {
     logger.error("Failed to record model turn usage", {
       error,
@@ -119,5 +129,7 @@ export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): 
       provider: params.provider,
       completionId: params.completionId,
     });
+
+    return "failed";
   }
 }

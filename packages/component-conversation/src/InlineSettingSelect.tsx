@@ -56,7 +56,10 @@ export function InlineSettingSelect<T extends string>({
             >
               {icon}
             </span>
-            <span className="hidden max-w-[130px] truncate lg:inline" title={displayLabel}>
+            <span
+              className="hidden max-w-[130px] truncate @2xl/composer-footer:inline"
+              title={displayLabel}
+            >
               {displayLabel}
             </span>
             {isOpen ? (

@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "contextWindow": 131072,
+    "maxTokens": 32000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "March 31, 2025",
+    "releaseDate": "May 5, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/arcee ai/maestro reasoning family includes models that produce text.",
+  "models": {
+    "maestro-reasoning": {
+      "defaults": {
+        "name": "Maestro Reasoning",
+        "description": "Maestro Reasoning accepts text and produces text."
+      }
+    }
+  }
+}

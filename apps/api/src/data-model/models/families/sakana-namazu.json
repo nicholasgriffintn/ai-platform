@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "August 3, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true
+  },
+  "description": "The sakana namazu family includes models that produce text.",
+  "models": {
+    "sakana-namazu": {
+      "defaults": {
+        "name": "Sakana Namazu",
+        "description": "Multi-agent model for routing expert agents across complex analytical tasks"
+      }
+    }
+  }
+}

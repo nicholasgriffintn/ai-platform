@@ -1,0 +1,54 @@
+{
+  "defaults": {
+    "contextWindow": 262144,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text",
+        "audio",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "audio",
+      "video",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 2,
+    "knowledgeCutoffDate": "December 2024",
+    "releaseDate": "March 18, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 35,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The openrouter/xiaomi/mimo v2 omni family includes models that produce text.",
+  "models": {
+    "mimo-v2-omni": {
+      "defaults": {
+        "name": "MiMo-V2-Omni",
+        "description": "MiMo-V2-Omni accepts text, audio, image, video and produces text."
+      }
+    }
+  }
+}

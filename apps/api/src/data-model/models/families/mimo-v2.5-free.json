@@ -1,0 +1,39 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 200000,
+    "maxTokens": 32000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "audio",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "December 2024",
+    "releaseDate": "April 24, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The mimo v2.5 free family includes models that produce text.",
+  "models": {
+    "mimo-v2-5-free": {
+      "defaults": {
+        "name": "MiMo V2.5 Free",
+        "description": "MiMo omni model for text, image, video, audio, and agents"
+      }
+    }
+  }
+}

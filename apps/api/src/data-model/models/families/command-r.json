@@ -1,0 +1,70 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 4000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 1, 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The command r family includes models that produce text.",
+  "models": {
+    "cohere-command-r": {
+      "defaults": {
+        "openWeights": false,
+        "description": "Cohere's conversational model optimized for RAG and tool use.",
+        "maxTokens": 4096,
+        "reliability": 4,
+        "knowledgeCutoffDate": "March 2024"
+      }
+    },
+    "cohere-command-r-08-2024": {
+      "defaults": {
+        "openWeights": false,
+        "description": "Cohere Command R 08-2024 accepts text and produces text.",
+        "maxTokens": 4096,
+        "knowledgeCutoffDate": "March 2024",
+        "releaseDate": "August 1, 2024"
+      }
+    },
+    "command-r": {
+      "defaults": {
+        "description": "Cohere retrieval model for long-context chat and enterprise RAG workflows",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "August 30, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 2.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "command-r7b": {
+      "defaults": {
+        "description": "Cohere retrieval model for long-context chat and enterprise RAG workflows",
+        "releaseDate": "December 2, 2024"
+      }
+    },
+    "command-r7b-arabic": {
+      "defaults": {
+        "name": "Command R7B Arabic",
+        "description": "Open Command R model optimized for Arabic enterprise chat, RAG, and cultural knowledge",
+        "releaseDate": "February 27, 2025"
+      }
+    }
+  }
+}

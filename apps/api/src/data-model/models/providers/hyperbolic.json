@@ -1,0 +1,21 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "nousresearch/hermes-3-llama-3.1-70b": {
+      "model": "llama/hermes-3-llama-3-1-70b",
+      "matchingModel": "NousResearch/Hermes-3-Llama-3.1-70B",
+      "overrides": {
+        "isFree": false,
+        "isFeatured": false
+      },
+      "unset": [
+        "supportsAttachments",
+        "openWeights"
+      ]
+    }
+  }
+}

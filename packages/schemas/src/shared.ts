@@ -39,6 +39,7 @@ export const messageSchema = z
     status: z.string().optional(),
     data: z.record(z.string(), z.any()).optional(),
     completion_id: z.string().optional(),
+    run_id: z.string().optional(),
     created: z.number().optional(),
     model: z.string().optional(),
     provider: z.string().optional(),

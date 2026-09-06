@@ -6,6 +6,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { trackTokenUsage } from "~/lib/monitoring";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
+import type { UsageEmissionOutcome } from "~/lib/usage/ledger";
 import { recordModelTurnUsage } from "~/lib/usage/modelUsage";
 import type { NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import type {
@@ -56,12 +57,18 @@ export interface FinaliseAssistantTurnParams {
   requestOptions?: ChatRequestOptions;
   guardrailPrompt?: string;
   deferOutputUntilValidated?: boolean;
+  runId?: string;
+  runAttempt?: number;
 }
 
 export interface FinalisedAssistantTurn {
   message: Message;
   guardrailsPassed: boolean;
   guardrailViolations: unknown[];
+}
+
+export function usageReservationOutcome(outcome: UsageEmissionOutcome): "settled" | "released" {
+  return outcome === "queued" || outcome === "written" ? "settled" : "released";
 }
 
 export async function finaliseAssistantTurn(
@@ -157,7 +164,7 @@ export async function finaliseAssistantTurn(
 
   await params.conversationManager.add(completionId, message);
 
-  await recordModelTurnUsage({
+  const usageOutcome = await recordModelTurnUsage({
     env,
     repositories: context?.repositories,
     actor: params.conversationManager.creditActor(),
@@ -171,8 +178,11 @@ export async function finaliseAssistantTurn(
     completionId,
     messageId: message.id,
     conversationId: completionId,
+    runId: params.runId ?? null,
+    runAttempt: params.runAttempt ?? null,
   });
-  await params.conversationManager.releaseTurnReservation();
+
+  await params.conversationManager.releaseTurnReservation(usageReservationOutcome(usageOutcome));
 
   await sink.writeEvent("message_delta", {
     id: completionId,

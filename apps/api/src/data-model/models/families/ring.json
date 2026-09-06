@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "releaseDate": "May 8, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": 30.6,
+      "codingIndex": 42.8,
+      "agenticIndex": 18.9,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The ring family includes models that produce text.",
+  "models": {
+    "ring-2-6-1t": {
+      "defaults": {
+        "description": "Inclusion AI ring-2.6-1t"
+      }
+    }
+  }
+}

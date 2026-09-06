@@ -190,6 +190,41 @@
       "when": 1788615219308,
       "tag": "0026_wild_rawhide_kid",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "6",
+      "when": 1788628612152,
+      "tag": "0027_clean_nightcrawler",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "6",
+      "when": 1788639077730,
+      "tag": "0028_free_toro",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "6",
+      "when": 1788653786935,
+      "tag": "0029_add_project_default_model_tier",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "6",
+      "when": 1788653787453,
+      "tag": "0030_map_project_default_model_tier",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "6",
+      "when": 1788653788216,
+      "tag": "0031_drop_project_default_router_mode",
+      "breakpoints": true
     }
   ]
 }

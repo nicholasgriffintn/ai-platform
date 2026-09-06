@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "audio"
+    ],
+    "supportsAttachments": true
+  },
+  "description": "The replicate/671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb family includes models that produce text.",
+  "models": {
+    "musicgen": {
+      "defaults": {
+        "name": "MusicGen",
+        "description": "Meta's MusicGen model for prompt-based music composition supporting conditioning on input audio clips."
+      }
+    }
+  }
+}

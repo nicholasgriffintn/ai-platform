@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 8, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/relace/relace search family includes models that produce text.",
+  "models": {
+    "relace-search": {
+      "defaults": {
+        "name": "Relace Search",
+        "description": "Tool-capable chat model for instruction following and agentic application workflows"
+      }
+    }
+  }
+}

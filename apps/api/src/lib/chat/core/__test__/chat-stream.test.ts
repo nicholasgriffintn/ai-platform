@@ -65,9 +65,12 @@ describe("createChatTurnStream", () => {
     });
 
     mocks.runAgentLoop.mockImplementation(
-      () =>
+      ({ sink }) =>
         new Promise<void>((resolve) => {
-          finishTurn = () => resolve();
+          finishTurn = () => {
+            void sink.writeEvent("state", { state: "content", content: "finished" }).then(resolve);
+          };
+
           startTurn();
         }),
     );

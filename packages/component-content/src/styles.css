@@ -1,4 +1,39 @@
 @layer polychat-content {
+  .markdown.prose {
+    --tw-prose-body: var(--polychat-text);
+    --tw-prose-headings: var(--polychat-text);
+    --tw-prose-lead: var(--polychat-text-muted);
+    --tw-prose-links: var(--polychat-active-work);
+    --tw-prose-bold: var(--polychat-text);
+    --tw-prose-counters: var(--polychat-text-muted);
+    --tw-prose-bullets: var(--polychat-border-strong);
+    --tw-prose-hr: var(--polychat-border);
+    --tw-prose-quotes: var(--polychat-text);
+    --tw-prose-quote-borders: var(--polychat-border-strong);
+    --tw-prose-captions: var(--polychat-text-muted);
+    --tw-prose-code: var(--polychat-text);
+    --tw-prose-th-borders: var(--polychat-border-strong);
+    --tw-prose-td-borders: var(--polychat-border);
+    --tw-prose-invert-body: var(--polychat-text);
+    --tw-prose-invert-headings: var(--polychat-text);
+    --tw-prose-invert-lead: var(--polychat-text-muted);
+    --tw-prose-invert-links: var(--polychat-active-work);
+    --tw-prose-invert-bold: var(--polychat-text);
+    --tw-prose-invert-counters: var(--polychat-text-muted);
+    --tw-prose-invert-bullets: var(--polychat-border-strong);
+    --tw-prose-invert-hr: var(--polychat-border);
+    --tw-prose-invert-quotes: var(--polychat-text);
+    --tw-prose-invert-quote-borders: var(--polychat-border-strong);
+    --tw-prose-invert-captions: var(--polychat-text-muted);
+    --tw-prose-invert-code: var(--polychat-text);
+    --tw-prose-invert-th-borders: var(--polychat-border-strong);
+    --tw-prose-invert-td-borders: var(--polychat-border);
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  .markdown.prose :where(p, li):not(:where([class~="not-prose"] *)) {
+    line-height: 1.6;
+  }
   .polychat-content-image {
     max-width: 100%;
     object-fit: contain;

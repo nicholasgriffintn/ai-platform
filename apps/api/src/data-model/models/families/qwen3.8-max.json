@@ -1,0 +1,39 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "August 3, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "xhigh"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The qwen3.8 max family includes models that produce text.",
+  "models": {
+    "qwen3-8-max": {
+      "defaults": {
+        "name": "Qwen3.8 Max",
+        "description": "2.4-trillion-parameter multimodal flagship for coding, professional work, and long-horizon agentic workflows"
+      }
+    }
+  }
+}

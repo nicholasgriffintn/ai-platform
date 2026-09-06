@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import { AssistantError, ErrorType } from "../errors";
 import {
   buildProviderResponseErrorDetails,
+  classifyProviderRetryError,
   getProviderResponseErrorMessage,
+  isProviderRateLimitError,
+  parseProviderRetryAfterMs,
 } from "../providerErrors";
 
 describe("provider response error details", () => {
@@ -50,5 +54,44 @@ describe("provider response error details", () => {
     expect(getProviderResponseErrorMessage(details)).not.toContain(
       "sk-live-abcdefghijklmnopqrstuvwxyz",
     );
+  });
+});
+
+describe("provider retry classification", () => {
+  it.each([
+    [new AssistantError("busy", ErrorType.RATE_LIMIT_ERROR, 429), "rate_limited"],
+    [new AssistantError("offline", ErrorType.NETWORK_ERROR, 502), "network"],
+    [new DOMException("aborted", "AbortError"), "timeout"],
+    [new AssistantError("unavailable", ErrorType.PROVIDER_ERROR, 503), "provider_unavailable"],
+    [Object.assign(new Error("reset"), { code: "ECONNRESET" }), "network"],
+  ])("classifies an eligible transient failure", (error, classification) => {
+    expect(classifyProviderRetryError(error)).toMatchObject({
+      retryable: true,
+      classification,
+    });
+  });
+
+  it.each([
+    new AssistantError("credentials", ErrorType.AUTHENTICATION_ERROR, 401),
+    new AssistantError("forbidden", ErrorType.FORBIDDEN, 403),
+    new AssistantError("invalid", ErrorType.PARAMS_ERROR, 400),
+    new AssistantError("conflict", ErrorType.CONFLICT_ERROR, 409),
+    new AssistantError("limit", ErrorType.USAGE_LIMIT_ERROR, 429),
+  ])("keeps a permanent or policy failure terminal", (error) => {
+    expect(classifyProviderRetryError(error).retryable).toBe(false);
+  });
+
+  it("does not reinterpret a usage-limit 429 as provider rate limiting", () => {
+    expect(
+      isProviderRateLimitError(new AssistantError("limit", ErrorType.USAGE_LIMIT_ERROR, 429)),
+    ).toBe(false);
+  });
+
+  it("parses Retry-After seconds and dates", () => {
+    const now = Date.parse("2026-09-05T12:00:00.000Z");
+
+    expect(parseProviderRetryAfterMs("2.5", now)).toBe(2500);
+    expect(parseProviderRetryAfterMs("Sat, 05 Sep 2026 12:00:03 GMT", now)).toBe(3000);
+    expect(parseProviderRetryAfterMs("invalid", now)).toBeUndefined();
   });
 });

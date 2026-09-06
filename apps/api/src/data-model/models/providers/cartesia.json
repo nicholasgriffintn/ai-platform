@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "hiddenFromDefaultList": true,
+    "supportsStreaming": true
+  },
+  "models": {
+    "ink-2": {
+      "model": "cartesia/ink-2/ink-2",
+      "matchingModel": "ink-2",
+      "overrides": {
+        "supportsRealtimeSession": true
+      }
+    },
+    "ink-whisper": {
+      "model": "whisper/ink-whisper",
+      "matchingModel": "ink-whisper",
+      "overrides": {
+        "deprecated": true,
+        "supportsRealtimeSession": false
+      },
+      "unset": [
+        "supportsAttachments"
+      ]
+    }
+  }
+}

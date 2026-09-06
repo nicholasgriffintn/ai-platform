@@ -1,0 +1,10 @@
+The typefaces in this directory are self-hosted subsets served from Google Fonts and are licensed under the SIL Open Font License, Version 1.1.
+
+Fraunces
+Copyright 2020 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)
+
+IBM Plex Sans and IBM Plex Mono
+Copyright 2017 IBM Corp. (https://github.com/IBM/plex)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+The licence is available with a FAQ at https://openfontlicense.org

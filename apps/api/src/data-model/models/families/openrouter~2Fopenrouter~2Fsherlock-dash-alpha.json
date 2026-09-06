@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "contextWindow": 1840000,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "November 2025",
+    "releaseDate": "November 15, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/openrouter/sherlock dash alpha family includes models that produce text.",
+  "models": {
+    "sherlock-dash-alpha": {
+      "defaults": {
+        "name": "Sherlock Dash Alpha",
+        "description": "Sherlock Dash Alpha accepts text, image and produces text."
+      }
+    }
+  }
+}

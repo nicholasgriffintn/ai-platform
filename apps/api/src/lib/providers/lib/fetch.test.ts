@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { IEnv } from "~/types";
+
 import { fetchAIResponse } from "./fetch";
 
 const OPTIONS = {
@@ -71,5 +73,38 @@ describe("fetchAIResponse", () => {
     await vi.advanceTimersByTimeAsync(5000);
 
     expect(capturedSignal?.aborted).toBe(false);
+  });
+
+  it("makes one gateway attempt and preserves Retry-After for the run retry owner", async () => {
+    const fetchMock = vi.fn(async (_url: string, init: RequestInit) => {
+      expect(new Headers(init.headers).get("cf-aig-max-attempts")).toBe("1");
+
+      return new Response('{"error":"busy"}', {
+        status: 429,
+        headers: { "Content-Type": "application/json", "Retry-After": "2.5" },
+      });
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+    const env = {
+      AI: {
+        gateway: vi.fn(() => ({ getUrl: vi.fn(async () => "https://gateway.example.com") })),
+      },
+    };
+
+    await expect(
+      fetchAIResponse(
+        false,
+        "openai",
+        "/chat/completions",
+        {},
+        { messages: [] },
+        env as unknown as IEnv,
+      ),
+    ).rejects.toMatchObject({
+      type: "RATE_LIMIT_ERROR",
+      context: { retryAfterMs: 2500 },
+    });
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });

@@ -95,7 +95,7 @@ export function CouncilMemberPickerView({
     const names = selected.map((id) => members.find((member) => member.id === id)?.name ?? id);
 
     setSubmittedSelection(selected);
-    onToolInteraction(TOOL_NAME, "submitPrompt", {
+    void onToolInteraction(TOOL_NAME, "submitPrompt", {
       input: `Convene the council with these members: ${names.join(", ")}.`,
       memberIds: selected,
     });

@@ -2,7 +2,7 @@ import {
   handleCreateEditCompletions,
   type HandleCreateEditCompletionsRequest,
 } from "~/lib/chat/edit-completions";
-import { ModelRouter } from "~/lib/modelRouter";
+import { resolveSystemModelId } from "~/lib/chat/policy/system-models";
 
 export const handleCreateNextEditCompletions = async ({
   env,
@@ -16,7 +16,7 @@ export const handleCreateNextEditCompletions = async ({
     { env, model, provider: requestedProvider, messages, stream, user },
     {
       capability: "supportsNextEdit",
-      defaultModel: ModelRouter.selectNextEditModel,
+      defaultModel: () => resolveSystemModelId("nextEdit"),
       missingMessagesMessage: "Messages are required for next edit completions",
       operation: "next",
       unsupportedMessage: (selectedModel) =>

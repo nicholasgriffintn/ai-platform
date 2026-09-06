@@ -2,11 +2,17 @@ import { StandardSidebarContent as ControlledStandardSidebarContent } from "@ngr
 
 import { useUIStore } from "~/state/stores/uiStore";
 
+import { DiscoverSidebarSection } from "./DiscoverSidebarSection";
 import { SidebarFooter } from "./SidebarFooter";
 import { SidebarHeader } from "./SidebarHeader";
 
 export function StandardSidebarContent() {
   const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();
+  const closeOnMobile = () => {
+    if (isMobile) {
+      setSidebarVisible(false);
+    }
+  };
 
   return (
     <ControlledStandardSidebarContent
@@ -16,6 +22,8 @@ export function StandardSidebarContent() {
       isMobile={isMobile}
       sidebarVisible={sidebarVisible}
       onClose={() => setSidebarVisible(false)}
-    />
+    >
+      <DiscoverSidebarSection onNavigate={closeOnMobile} />
+    </ControlledStandardSidebarContent>
   );
 }

@@ -18,6 +18,8 @@ import { RepositoryManager } from "~/repositories";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { resolveModelReadiness } from "./readiness";
+
 function includeModelIds(models: ModelConfig): ModelConfig {
   const modelsWithIds: ModelConfig = {};
 
@@ -31,19 +33,32 @@ function includeModelIds(models: ModelConfig): ModelConfig {
   return modelsWithIds;
 }
 
+const CATALOGUE_EXCLUDED_MODALITIES = [
+  "guardrails",
+  "voice-activity-detection",
+  "reranking",
+  "embedding",
+  "speech",
+] as const;
+
+export function listModelCatalogue() {
+  return includeModelIds(
+    getModels({
+      shouldUseCache: false,
+      excludeModalities: [...CATALOGUE_EXCLUDED_MODALITIES],
+      chatSurfaceOnly: true,
+    }),
+  );
+}
+
 /**
  * List all models available to the user.
  */
-export async function listModels(env: IEnv, user?: IUser) {
+export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> {
   const allModels = getModels({
     shouldUseCache: false,
-    excludeModalities: [
-      "guardrails",
-      "voice-activity-detection",
-      "reranking",
-      "embedding",
-      "speech",
-    ],
+    excludeModalities: [...CATALOGUE_EXCLUDED_MODALITIES],
+    chatSurfaceOnly: true,
   });
   const filteredModels = await filterModelsForUserAccess(allModels, env, user?.id, {
     shouldUseCache: false,
@@ -54,14 +69,21 @@ export async function listModels(env: IEnv, user?: IUser) {
   const defaultModel = tryResolveDefaultChatModel(filteredModels, user)?.id;
 
   return Object.fromEntries(
-    Object.entries(includeModelIds(filteredModels)).map(([id, model]) => [
-      id,
-      {
+    Object.entries(includeModelIds(filteredModels)).map(([id, model]) => {
+      const enrichedModel = {
         ...model,
         isDefault: id === defaultModel,
         isExecutable: executableModelIds.has(id),
-      },
-    ]),
+      };
+
+      return [
+        id,
+        {
+          ...enrichedModel,
+          readiness: resolveModelReadiness(enrichedModel, user),
+        },
+      ];
+    }),
   );
 }
 

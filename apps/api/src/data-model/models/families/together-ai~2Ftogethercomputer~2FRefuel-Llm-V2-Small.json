@@ -1,0 +1,24 @@
+{
+  "defaults": {
+    "contextWindow": 8000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 3,
+    "reliability": 3
+  },
+  "description": "The together ai/togethercomputer/Refuel Llm V2 Small family includes models that produce text.",
+  "models": {
+    "refuel-llm-v2-small": {
+      "defaults": {
+        "name": "Refuel LLM V2 Small",
+        "description": "8B model optimized for data tasks such as classification, structured data extraction, and more."
+      }
+    }
+  }
+}

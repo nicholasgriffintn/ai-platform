@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "vision",
+      "image"
+    ],
+    "contextComplexity": 4,
+    "reliability": 5,
+    "supportsAttachments": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 1254,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 9
+        }
+      ]
+    }
+  },
+  "description": "The replicate/google/nano banana 2 family includes models that produce image.",
+  "models": {
+    "google-nano-banana-2": {
+      "defaults": {
+        "name": "Google Nano Banana 2",
+        "description": "Google image generation and editing model with higher resolution output and optional search grounding."
+      }
+    }
+  }
+}

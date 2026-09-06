@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "video",
+      "vision"
+    ],
+    "contextComplexity": 4,
+    "reliability": 5,
+    "supportsAttachments": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 1291,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 10
+        }
+      ]
+    }
+  },
+  "description": "The replicate/alibaba/happyhorse 1.0 family includes models that produce video.",
+  "models": {
+    "happyhorse-1-0": {
+      "defaults": {
+        "name": "HappyHorse 1.0",
+        "description": "Alibaba text-to-video and image-to-video generation model with configurable duration and resolution."
+      }
+    }
+  }
+}

@@ -72,36 +72,3 @@ export const SUPPORTED_REASONING_EFFORT_LEVELS = new Set([
   "xhigh",
   "max",
 ]);
-
-export const UPDATE_FIELD_ORDER = [
-  "name",
-  "matchingModel",
-  "provider",
-  "family",
-  "status",
-  "openWeights",
-  "knowledgeCutoffDate",
-  "releaseDate",
-  "lastUpdated",
-  "modalities",
-  "supportsAttachments",
-  "supportsTemperature",
-  "supportsTopP",
-  "supportsToolCalls",
-  "supportsToolChoice",
-  "supportsResponseFormat",
-  "contextWindow",
-  "maxTokens",
-  "costPer1kInputTokens",
-  "costPer1kOutputTokens",
-  "costPer1kReasoningTokens",
-  "strengths",
-  "contextComplexity",
-  "reliability",
-  "speed",
-  "isFree",
-  "reasoningConfig",
-  "artificialAnalysis",
-];
-
-export const UNPARSEABLE = Symbol("unparseable");

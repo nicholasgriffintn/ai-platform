@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "contextWindow": 262144,
+    "maxTokens": 262144,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 9, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false
+  },
+  "description": "The ollama/devstral 2:123b family includes models that produce text.",
+  "models": {
+    "devstral-2-123b": {
+      "defaults": {
+        "name": "devstral-2:123b",
+        "description": "devstral-2:123b accepts text and produces text."
+      }
+    }
+  }
+}

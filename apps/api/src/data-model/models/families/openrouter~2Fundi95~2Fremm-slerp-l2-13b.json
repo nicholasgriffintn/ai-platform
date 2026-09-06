@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 6144,
+    "maxTokens": 5529,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 30, 2023",
+    "releaseDate": "July 22, 2023",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/undi95/remm slerp l2 13b family includes models that produce text.",
+  "models": {
+    "remm-slerp-13b": {
+      "defaults": {
+        "name": "ReMM SLERP 13B",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads"
+      }
+    }
+  }
+}

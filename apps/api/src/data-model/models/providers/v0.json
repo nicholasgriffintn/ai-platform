@@ -1,0 +1,42 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "v0-1.0-md": {
+      "model": "v0/v0-1-0-md",
+      "matchingModel": "v0-1.0-md",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "v0-1.5-md": {
+      "model": "v0/v0-1-5-md",
+      "matchingModel": "v0-1.5-md",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": false,
+        "lastUpdated": "June 9, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "v0-1.5-lg": {
+      "model": "v0/v0-1-5-lg",
+      "matchingModel": "v0-1.5-lg",
+      "overrides": {
+        "speed": 3,
+        "isFeatured": false,
+        "lastUpdated": "June 9, 2025",
+        "costPer1kInputTokens": 0.015,
+        "costPer1kOutputTokens": 0.075
+      }
+    }
+  }
+}

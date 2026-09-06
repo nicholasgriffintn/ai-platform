@@ -1,0 +1,43 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32768,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "chat",
+      "general_knowledge",
+      "analysis",
+      "tool_use"
+    ],
+    "contextComplexity": 2,
+    "reliability": 1,
+    "knowledgeCutoffDate": "September 2024",
+    "releaseDate": "June 12, 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 6.2,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The solar mini family includes models that produce text.",
+  "models": {
+    "solar-mini": {
+      "defaults": {
+        "name": "solar-mini",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+      }
+    }
+  }
+}

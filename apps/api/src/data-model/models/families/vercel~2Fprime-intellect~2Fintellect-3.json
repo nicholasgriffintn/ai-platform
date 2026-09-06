@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "contextWindow": 131072,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "knowledgeCutoffDate": "October 2024",
+    "releaseDate": "November 26, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 15.6,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The vercel/prime intellect/intellect 3 family includes models that produce text.",
+  "models": {
+    "intellect-3": {
+      "defaults": {
+        "name": "INTELLECT 3",
+        "description": "INTELLECT 3 accepts text and produces text."
+      }
+    }
+  }
+}

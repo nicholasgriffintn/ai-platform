@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 2024",
+    "releaseDate": "January 20, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The azure openai/mai ds r1 family includes models that produce text.",
+  "models": {
+    "mai-ds-r1": {
+      "defaults": {
+        "name": "MAI-DS-R1",
+        "description": "MAI-DS-R1 accepts text and produces text."
+      }
+    }
+  }
+}

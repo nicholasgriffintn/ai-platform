@@ -24,8 +24,12 @@ import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
+import { getProjectTaskActivity } from "./activity";
 import { getPendingProjectTaskToolApproval, resolveProjectTaskToolApproval } from "./approvals";
+import { reconcileTaskNotifications } from "./attention";
 import { approveLatestProjectTaskCompletion } from "./completions";
+import { getProjectTaskInteraction } from "./interactions";
+import { getProjectTaskPlanEvidence, getProjectTaskResumeCapability } from "./plan-evidence";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
 import { queueProjectTaskRun } from "./runner";
 import { assertProjectTaskTransition } from "./transitions";
@@ -201,15 +205,18 @@ export async function listProjectTasks(
 }
 
 export async function getProjectTask(context: ServiceContext, projectId: string, taskId: string) {
-  await requireProjectAccess(context, projectId);
+  const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
-  const [goal, pendingQuestions, pendingApproval] = await Promise.all([
+  const [goal, pendingQuestions, pendingApproval, interaction] = await Promise.all([
     task.goalId ? context.repositories.goals.getGoalById(task.goalId) : null,
     getPendingProjectTaskQuestions(context, task),
     getPendingProjectTaskToolApproval(context, task),
+    getProjectTaskInteraction(context, task),
   ]);
+  const activity = await getProjectTaskActivity(context, task, goal, interaction);
+  const plan = await getProjectTaskPlanEvidence(context, task, parseProjectFlow(project.flow));
 
-  return { task, goal, pendingQuestions, pendingApproval };
+  return { task, goal, pendingQuestions, pendingApproval, interaction, activity, plan };
 }
 
 export async function respondToProjectTaskQuestions(
@@ -226,7 +233,7 @@ export async function respondToProjectTaskQuestions(
   try {
     return await startProjectTask(context, projectId, taskId);
   } catch (error) {
-    await context.repositories.projectTasks.updateTask(taskId, {
+    const blocked = await context.repositories.projectTasks.updateTask(taskId, {
       status: "blocked",
       blockedReason: "dispatch_failed",
       blockedDetail:
@@ -235,6 +242,10 @@ export async function respondToProjectTaskQuestions(
           500,
         ),
     });
+
+    if (blocked) {
+      await reconcileTaskNotifications(context, blocked);
+    }
 
     throw error;
   }
@@ -272,7 +283,7 @@ export async function respondToProjectTaskToolApproval(
 
     return resumed;
   } catch (error) {
-    await context.repositories.projectTasks.updateTask(taskId, {
+    const blocked = await context.repositories.projectTasks.updateTask(taskId, {
       status: "blocked",
       blockedReason: "dispatch_failed",
       blockedDetail:
@@ -281,6 +292,10 @@ export async function respondToProjectTaskToolApproval(
           500,
         ),
     });
+
+    if (blocked) {
+      await reconcileTaskNotifications(context, blocked);
+    }
 
     throw error;
   }
@@ -316,6 +331,7 @@ export async function createProjectTask(
     assigneeUserId: input.assigneeUserId ?? null,
     runner: input.runner ?? null,
     stageId: input.stageId ?? flow?.stages[0]?.id ?? null,
+    flowSnapshot: flow,
     tokenBudget: input.tokenBudget ?? null,
     position: maxPosition + POSITION_STEP,
   });
@@ -328,6 +344,8 @@ export async function createProjectTask(
     targetId: task.id,
     metadata: { projectId, source: task.source },
   });
+
+  await reconcileTaskNotifications(context, task);
 
   return { task };
 }
@@ -342,8 +360,41 @@ export async function updateProjectTask(
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
-  const flow = parseProjectFlow(project.flow);
+  const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);
   const actor = options.actor ?? "user";
+
+  const planFields = [
+    "objective",
+    "acceptanceCriteria",
+    "expectedOutput",
+    "context",
+    "constraints",
+    "dependsOnTaskIds",
+    "requireApprovalFor",
+    "runner",
+    "stageId",
+  ] as const;
+  const changesPlan = planFields.some((field) => input[field] !== undefined);
+
+  if (changesPlan && task.status !== "backlog") {
+    throw new AssistantError(
+      "Only a pending plan can be edited. Cancel this task and create a new task to change executed work.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (
+    input.status === "backlog" &&
+    task.status !== "backlog" &&
+    (task.status === "done" || task.runId || task.completions.length > 0)
+  ) {
+    throw new AssistantError(
+      "This plan has execution evidence. Create a new task instead of rewriting its history.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
 
   if (input.status !== undefined) {
     assertProjectTaskTransition({ actor, from: task.status, to: input.status });
@@ -383,6 +434,8 @@ export async function updateProjectTask(
     await settleCancelledTaskResources(context, task);
   }
 
+  await reconcileTaskNotifications(context, updated);
+
   return { task: updated };
 }
 
@@ -395,7 +448,7 @@ export async function startProjectTask(
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
-  const flow = parseProjectFlow(project.flow);
+  const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);
 
   if (task.status === "running" || (task.status === "queued" && task.dispatchTaskId)) {
     return { task };
@@ -409,6 +462,21 @@ export async function startProjectTask(
     );
   }
 
+  if (task.status === "blocked" && task.blockedReason === "run_failed") {
+    const unsafeRunIds = await context.repositories.connectorOperationApprovals.listConsumedRunIds(
+      task.runId ? [task.runId] : [],
+    );
+    const resume = getProjectTaskResumeCapability(task, unsafeRunIds);
+
+    if (!resume.supported) {
+      throw new AssistantError(
+        resume.reason ?? "This stage cannot be retried safely",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
+  }
+
   if (task.blockedReason === "awaiting_approval" && !options.approvalResolved) {
     throw new AssistantError(
       "Respond to the pending tool approval before continuing this task.",
@@ -420,12 +488,16 @@ export async function startProjectTask(
   const unmet = await resolveUnmetDependencies(context, task);
 
   if (unmet.length > 0) {
-    await context.repositories.projectTasks.updateTask(taskId, {
+    const blocked = await context.repositories.projectTasks.updateTask(taskId, {
       status: "blocked",
       blockedReason: "dependencies_unmet",
       blockedDetail:
         `Waiting on: ${unmet.map((dependency) => dependency.objective).join("; ")}`.slice(0, 500),
     });
+
+    if (blocked) {
+      await reconcileTaskNotifications(context, blocked);
+    }
 
     throw new AssistantError(
       `This task depends on work that is not done yet: ${unmet
@@ -479,7 +551,7 @@ export async function acceptProjectTask(
     throw new AssistantError("Only a task in review can be accepted", ErrorType.PARAMS_ERROR, 400);
   }
 
-  const flow = parseProjectFlow(project.flow);
+  const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);
   const nextStage = nextFlowStageId(flow, task.stageId);
   let updated: ProjectTask | null;
 
@@ -520,6 +592,8 @@ export async function acceptProjectTask(
     metadata: { projectId, stageId: nextStage ?? task.stageId },
   });
 
+  await reconcileTaskNotifications(context, updated);
+
   return { task: updated };
 }
 
@@ -534,6 +608,14 @@ export async function deleteProjectTask(
 
   if (task.status === "running") {
     throw new AssistantError("Stop this task before deleting it", ErrorType.CONFLICT_ERROR, 409);
+  }
+
+  if (task.runId || task.completions.length > 0) {
+    throw new AssistantError(
+      "Cancel this task to retain its execution evidence. Only an unstarted plan can be deleted.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
   }
 
   await context.repositories.projectTasks.deleteTask(taskId);

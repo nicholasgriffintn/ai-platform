@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "analysis"
+    ],
+    "supportsAttachments": true
+  },
+  "description": "The replicate/nightmareai/real esrgan family includes models that produce image.",
+  "models": {
+    "real-esrgan": {
+      "defaults": {
+        "name": "Real-ESRGAN",
+        "description": "Real-ESRGAN with optional face correction and adjustable upscale"
+      }
+    }
+  }
+}

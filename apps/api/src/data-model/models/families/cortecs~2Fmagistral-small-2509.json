@@ -1,0 +1,48 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "releaseDate": "18 September 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 11.9,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The cortecs/magistral small 2509 family includes models that produce text.",
+  "models": {
+    "magistral-small-2509": {
+      "defaults": {
+        "name": "Magistral Small 2509",
+        "description": "Magistral Small 2509 accepts text, image and produces text."
+      }
+    }
+  }
+}

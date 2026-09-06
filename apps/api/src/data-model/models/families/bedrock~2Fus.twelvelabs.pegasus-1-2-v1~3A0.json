@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 16384,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "analysis",
+      "summarization"
+    ],
+    "contextComplexity": 4,
+    "reliability": 4,
+    "multimodal": true,
+    "knowledgeCutoffDate": "2024",
+    "releaseDate": "2024",
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The bedrock/us.twelvelabs.pegasus 1 2 v1:0 family includes models that produce text.",
+  "models": {
+    "twelve-labs-pegasus-bedrock-us": {
+      "defaults": {
+        "name": "Twelve Labs Pegasus (Bedrock US)",
+        "description": "Advanced video understanding model that analyzes video content and generates detailed text responses, perfect for video summarization, content analysis, and multimodal question answering."
+      }
+    }
+  }
+}

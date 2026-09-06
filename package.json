@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build:e2e": "pnpm build:packages && pnpm --filter @assistant/app build:e2e",
+    "build:e2e": "pnpm build:packages && pnpm --filter @assistant/app build:e2e && pnpm build:e2e:sandbox",
+    "build:e2e:sandbox": "node apps/app/tests/e2e/runtime/build-sandbox.mjs",
     "build:mobile": "sh scripts/xcodebuild-mobile.sh release",
     "build:packages": "pnpm -r --filter './packages/**' --if-present build",
     "changeset": "changeset",
@@ -53,5 +54,5 @@
     "sherif": "^1.11.1",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@11.25.0"
+  "packageManager": "pnpm@12.3.4"
 }

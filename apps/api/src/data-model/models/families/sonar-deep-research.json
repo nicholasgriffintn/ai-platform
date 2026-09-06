@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 115200,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 7, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The sonar deep research family includes models that produce text.",
+  "models": {
+    "sonar-deep-research": {
+      "defaults": {
+        "name": "Sonar Deep Research",
+        "description": "Sonar search model for current answers, retrieval, and citation-backed chat"
+      }
+    }
+  }
+}

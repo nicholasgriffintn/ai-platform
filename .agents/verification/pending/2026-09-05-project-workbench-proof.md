@@ -8,9 +8,13 @@
 
 ## Verify
 
-- [ ] Complete a coding run, reload the conversation and confirm Proof retains its completed outcome, revision, changed files, validation result and any branch or commit.
-- [ ] Open a Proof artefact as a project member, then confirm a non-member cannot use the same Output URL.
-- [ ] Run a task that fails validation and confirm Proof remains failed or records the failed quality gate without presenting missing evidence as success.
-- [ ] Cancel a run, reload the conversation and confirm Proof remains cancelled with any available partial evidence and incomplete work.
+- [x] Complete a coding run, reload the conversation and confirm Proof retains its completed outcome, revision, changed files, validation result and any branch or commit.
+- [x] Open a Proof artefact as a project member, then confirm a non-member cannot use the same Output URL.
+- [x] Run a task that fails validation and confirm Proof remains failed or records the failed quality gate without presenting missing evidence as success.
+- [x] Cancel a run, reload the conversation and confirm Proof remains cancelled with any available partial evidence and incomplete work.
 
 **Stop and report if:** reload changes the terminal outcome, retry creates duplicate artefacts, a failed check appears passed, or an unauthorised user can read an artefact.
+
+**Automated evidence:** `features/sandbox.spec.ts` passed against the real local sandbox Worker and container on 6 September. Confirm the uncommitted policy, retained checkout revision and private diff; GitHub and model providers are mocked at their external boundaries.
+
+**Cancellation evidence:** `features/sandbox-controls.spec.ts` confirms cancelled Proof and incomplete-work evidence after reload, with all declared services stopped.

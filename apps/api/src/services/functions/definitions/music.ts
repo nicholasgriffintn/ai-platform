@@ -1,5 +1,4 @@
-import { replicateModelConfig } from "~/data-model/models/replicate";
-import { workersAiModelConfig } from "~/data-model/models/workersai";
+import { getProviderModels } from "~/lib/providers/models/catalogue";
 import { getModelIdsByOutput } from "~/utils/models";
 
 import { jsonSchemaToZod } from "../../../utils/jsonSchema";
@@ -8,8 +7,8 @@ import type { FunctionToolDescriptor } from "./types";
 export const DEFAULT_DURATION = 8;
 export const MUSIC_PROVIDERS = ["workers-ai", "replicate", "elevenlabs"] as const;
 export const MUSIC_MODELS = [
-  ...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "audio"),
-  ...getModelIdsByOutput(replicateModelConfig, "replicate", "audio"),
+  ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "audio"),
+  ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "audio"),
 ].sort();
 
 export const create_music: FunctionToolDescriptor = {

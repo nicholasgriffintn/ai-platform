@@ -1,0 +1,79 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 200000,
+    "maxTokens": 100000,
+    "contextComplexity": 4,
+    "reliability": 1,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The o pro family includes models that produce text.",
+  "models": {
+    "o1-pro": {
+      "defaults": {
+        "name": "o1-pro",
+        "description": "O-series reasoning model for hard analysis, math, coding, and planning",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document"
+        ],
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "March 19, 2025",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 18.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "o3-pro": {
+      "defaults": {
+        "name": "o3 Pro",
+        "description": "High-effort o3 tier for difficult technical reasoning and careful answers",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "May 2024",
+        "releaseDate": "June 10, 2025",
+        "supportsToolCalls": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 32.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    }
+  }
+}

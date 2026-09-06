@@ -1,0 +1,21 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    }
+  },
+  "description": "The bedrock/cohere.embed multilingual v3 family includes models that produce embedding.",
+  "models": {
+    "cohere-embed-multilingual": {
+      "defaults": {
+        "name": "Cohere Embed Multilingual",
+        "description": "Cohere Embed Multilingual accepts text and produces embedding."
+      }
+    }
+  }
+}

@@ -15,6 +15,9 @@ const mockTaskRepository = {
   createTaskExecution: vi.fn(),
   updateTaskExecution: vi.fn(),
   getTaskById: vi.fn(),
+  renewTaskExecutionLease: vi.fn(),
+  isTaskExecutionOwner: vi.fn(),
+  updateOwnedTask: vi.fn(),
 };
 
 vi.mock("~/repositories/TaskRepository", () => ({
@@ -25,6 +28,9 @@ vi.mock("~/repositories/TaskRepository", () => ({
     public createTaskExecution = mockTaskRepository.createTaskExecution;
     public updateTaskExecution = mockTaskRepository.updateTaskExecution;
     public getTaskById = mockTaskRepository.getTaskById;
+    public renewTaskExecutionLease = mockTaskRepository.renewTaskExecutionLease;
+    public isTaskExecutionOwner = mockTaskRepository.isTaskExecutionOwner;
+    public updateOwnedTask = mockTaskRepository.updateOwnedTask;
   },
 }));
 
@@ -48,6 +54,12 @@ describe("TaskExecutor", () => {
     mockTaskRepository.createTaskExecution.mockResolvedValue({ id: "exec-1" });
     mockTaskRepository.failRunningTaskExecutions.mockResolvedValue(undefined);
     mockTaskRepository.updateTaskExecution.mockResolvedValue(undefined);
+    mockTaskRepository.renewTaskExecutionLease.mockResolvedValue("2026-09-05T12:05:00.000Z");
+    mockTaskRepository.isTaskExecutionOwner.mockResolvedValue(true);
+    mockTaskRepository.updateOwnedTask.mockResolvedValue({
+      id: "task-1",
+      status: "completed",
+    });
     mockTaskRepository.getTaskById.mockResolvedValue({
       id: "task-1",
       attempts: 0,
@@ -88,12 +100,17 @@ describe("TaskExecutor", () => {
     await executor.execute(createTaskMessage(SANDBOX_RUN_DISPATCH_TASK_TYPE));
 
     expect(handler.handle).toHaveBeenCalledTimes(1);
-    expect(mockTaskRepository.claimTaskForExecution).toHaveBeenCalledWith("task-1", {
-      resumeInterrupted: false,
-    });
-    expect(mockTaskRepository.updateTask).toHaveBeenNthCalledWith(
-      1,
+    expect(mockTaskRepository.claimTaskForExecution).toHaveBeenCalledWith(
       "task-1",
+      expect.objectContaining({
+        ownerToken: expect.any(String),
+        leaseExpiresAt: expect.any(String),
+        resumeInterrupted: false,
+      }),
+    );
+    expect(mockTaskRepository.updateOwnedTask).toHaveBeenCalledWith(
+      "task-1",
+      expect.any(String),
       expect.objectContaining({ status: "completed" }),
     );
   });
@@ -106,17 +123,23 @@ describe("TaskExecutor", () => {
 
     await executor.execute(createTaskMessage(PROJECT_TASK_RUN_TASK_TYPE), 2);
 
-    expect(mockTaskRepository.claimTaskForExecution).toHaveBeenCalledWith("task-1", {
-      resumeInterrupted: true,
-    });
+    expect(mockTaskRepository.claimTaskForExecution).toHaveBeenCalledWith(
+      "task-1",
+      expect.objectContaining({ resumeInterrupted: true }),
+    );
     expect(mockTaskRepository.failRunningTaskExecutions).toHaveBeenCalledWith(
       "task-1",
       "The previous queue delivery ended before recording an outcome.",
     );
-    expect(handler.handle).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
-      deliveryAttempt: 2,
-      isRedelivery: true,
-    });
+    expect(handler.handle).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        deliveryAttempt: 2,
+        isRedelivery: true,
+        lease: expect.objectContaining({ assertOwned: expect.any(Function) }),
+      }),
+    );
   });
 
   it("executes project task runs without a separate feature-flag allowlist", async () => {
@@ -146,6 +169,42 @@ describe("TaskExecutor", () => {
     expect(handler.handle).not.toHaveBeenCalled();
     expect(mockTaskRepository.createTaskExecution).not.toHaveBeenCalled();
     expect(mockTaskRepository.updateTask).not.toHaveBeenCalled();
+  });
+
+  it("retries instead of acknowledging while another execution lease is live", async () => {
+    const handler: TaskHandler = {
+      handle: vi.fn().mockResolvedValue({ status: "success" }),
+    };
+
+    mockTaskRepository.claimTaskForExecution.mockResolvedValue(null);
+    mockTaskRepository.getTaskById.mockResolvedValue({
+      id: "task-1",
+      status: "running",
+      execution_lease_expires_at: new Date(Date.now() + 60_000).toISOString(),
+    });
+    const executor = new TaskExecutor({} as any, new Map([[PROJECT_TASK_RUN_TASK_TYPE, handler]]));
+
+    await expect(
+      executor.execute(createTaskMessage(PROJECT_TASK_RUN_TASK_TYPE), 2),
+    ).rejects.toThrow("live execution owner");
+
+    expect(handler.handle).not.toHaveBeenCalled();
+    expect(mockTaskRepository.updateOwnedTask).not.toHaveBeenCalled();
+  });
+
+  it("does not let a stale execution owner settle the durable task", async () => {
+    const handler: TaskHandler = {
+      handle: vi.fn().mockResolvedValue({ status: "success" }),
+    };
+
+    mockTaskRepository.isTaskExecutionOwner.mockResolvedValue(false);
+    const executor = new TaskExecutor({} as any, new Map([[PROJECT_TASK_RUN_TASK_TYPE, handler]]));
+
+    await expect(executor.execute(createTaskMessage(PROJECT_TASK_RUN_TASK_TYPE))).rejects.toThrow(
+      "owned by another delivery",
+    );
+
+    expect(mockTaskRepository.updateOwnedTask).not.toHaveBeenCalled();
   });
 
   it("cancels unknown task types explicitly", async () => {
@@ -191,8 +250,9 @@ describe("TaskExecutor", () => {
     ).rejects.toThrow("reconciliation failed");
 
     expect(handler.onFinalFailure).toHaveBeenCalledOnce();
-    expect(mockTaskRepository.updateTask).not.toHaveBeenCalledWith(
+    expect(mockTaskRepository.updateOwnedTask).not.toHaveBeenCalledWith(
       "task-1",
+      expect.any(String),
       expect.objectContaining({ status: "failed" }),
     );
   });

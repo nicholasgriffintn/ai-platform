@@ -6,6 +6,8 @@
 
 Use the Worker's example variables and Wrangler manifest. Match `JWT_SECRET` to the API, keep the `POLYCHAT_API` service binding, and configure the Sandbox Durable Object/container. `SANDBOX_TRANSPORT=rpc` selects the persistent SDK transport. Keep `SANDBOX_INSTANCE_TYPE` consistent with the manifest's container instance type for usage reporting.
 
+Keep the SDK and Docker image versions aligned and use the Python-enabled image for the advertised Python script tool. The script runner explicitly sets each interpreter's working directory before executing repository code. The local E2E image inherits this production Dockerfile and adds only the isolated repository fixture.
+
 For service previews, set the same `SANDBOX_PREVIEW_HOST` on the API and Worker, route `*.<host>/*` to the sandbox Worker and set `APP_BASE_URL` to the exact trusted embedding origin. The host must be a custom domain with wildcard DNS and TLS; `.workers.dev` cannot provide the Sandbox SDK's required wildcard routing. Keep preview routes, signing secrets and service bindings separate between local, preview and production deployments.
 
 Bind `BACKUP_BUCKET` to the same private R2 bucket used by the API. Apply an R2 lifecycle rule to remove objects under `backups/` after the environment-cache retention period; the Sandbox SDK records expiry but does not delete expired R2 objects itself.

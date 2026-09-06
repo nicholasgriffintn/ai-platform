@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { AssistantError, ErrorType } from "~/utils/errors";
+
 const mocks = vi.hoisted(() => ({
   getRecipeConnectorAccessToken: vi.fn(),
   listComposioConnectedAccounts: vi.fn(),
@@ -118,6 +120,43 @@ describe("recipe connector operations", () => {
         arguments: expect.objectContaining({ time_zone: "Europe/London" }),
       }),
     );
+  });
+
+  it("surfaces an unknown non-idempotent write without exposing provider details", async () => {
+    mocks.executeComposioRunTool.mockRejectedValueOnce(new TypeError("socket secret closed"));
+    const context = {
+      env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
+    } as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
+
+    await expect(
+      executeRecipeConnectorOperation({
+        context,
+        userId: 42,
+        request: { provider: "gmail", operation: "GMAIL_CREATE_EMAIL_DRAFT", params: {} },
+      }),
+    ).rejects.toMatchObject({
+      message: "The Gmail write may have completed. Check Gmail before trying it again.",
+      context: { outcome: "unknown", retryable: false },
+    });
+  });
+
+  it("marks an unknown idempotent write as eligible for one exact repeat", async () => {
+    mocks.executeComposioRunTool.mockRejectedValueOnce(
+      new AssistantError("gateway timed out", ErrorType.EXTERNAL_API_ERROR, 504),
+    );
+    const context = {
+      env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
+    } as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
+
+    await expect(
+      executeRecipeConnectorOperation({
+        context,
+        userId: 42,
+        request: { provider: "gmail", operation: "GMAIL_DELETE_DRAFT", params: {} },
+      }),
+    ).rejects.toMatchObject({
+      context: { outcome: "unknown", retryable: true },
+    });
   });
 
   it("rejects unsupported provider operations before reading OAuth tokens", async () => {

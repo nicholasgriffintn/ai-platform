@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 65535,
+    "maxTokens": 8000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 30, 2024",
+    "releaseDate": "April 16, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/microsoft/wizardlm 2 8x22b family includes models that produce text.",
+  "models": {
+    "wizardlm-2-8x22b": {
+      "defaults": {
+        "name": "WizardLM-2 8x22B",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads"
+      }
+    }
+  }
+}

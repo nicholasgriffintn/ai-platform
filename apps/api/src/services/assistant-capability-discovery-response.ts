@@ -12,6 +12,7 @@ const STATE_LABELS: Record<CapabilityDiscoveryItem["state"], string> = {
   ready: "Ready",
   setup_required: "Setup required",
   unavailable: "Unavailable",
+  unknown: "Unknown",
 };
 
 function formatCapability(item: CapabilityDiscoveryItem): string {
@@ -25,6 +26,10 @@ function createModelInstructions(
   requiresSetup: boolean,
 ): string {
   if (result.items.length === 0) {
+    if (result.readiness?.state === "unknown") {
+      return `${result.readiness.reason} Ask the user to retry the request; do not infer availability or invent a tool name.`;
+    }
+
     return `No capabilities matched “${result.query}”. Explain that no matching capability was found and do not invent a tool name.`;
   }
 
@@ -46,16 +51,17 @@ export function createCapabilityDiscoveryResponse(
   const hasReadyCapability = result.items.some((item) => item.invocation.availableNow);
   const requiresSetup =
     !hasReadyCapability && result.items.some((item) => item.state === "setup_required");
+  const needsUserAction = requiresSetup || result.readiness?.state === "unknown";
 
   return {
     name: CAPABILITY_DISCOVERY_TOOL_NAME,
-    status: requiresSetup ? "pending" : "success",
-    content: createModelInstructions(result, requiresSetup),
+    status: needsUserAction ? "pending" : "success",
+    content: createModelInstructions(result, needsUserAction),
     data: {
       formattedName: "Capability discovery",
       renderer: "capability_discovery",
       icon: "sparkles",
-      responseType: requiresSetup ? ToolResponseType.CUSTOM : ToolResponseType.HIDDEN,
+      responseType: needsUserAction ? ToolResponseType.CUSTOM : ToolResponseType.HIDDEN,
       [CAPABILITY_DISCOVERY_DATA_KEY]: result,
     },
   };

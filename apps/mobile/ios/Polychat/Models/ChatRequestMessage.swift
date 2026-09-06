@@ -5,6 +5,7 @@ struct ChatRequestMessage: Encodable {
     let role: String
     let content: ChatRequestContent
     let data: ChatMessageData?
+    let runId: String?
     let name: String?
     let parts: [ChatMessagePart]?
     let model: String?
@@ -19,6 +20,7 @@ struct ChatRequestMessage: Encodable {
         self.role = message.role
         self.content = requestContent
         self.data = message.data
+        self.runId = message.runId
         self.name = message.name
         self.parts = Self.shouldSendParts(message: message, content: requestContent) ? message.parts : nil
         self.model = message.model
@@ -31,6 +33,7 @@ struct ChatRequestMessage: Encodable {
     enum CodingKeys: String, CodingKey {
         case id, role, content, data, name, parts, model, citations, status, timestamp
         case logId = "log_id"
+        case runId = "run_id"
     }
 
     private static func shouldSendParts(message: ChatMessage, content: ChatRequestContent) -> Bool {
@@ -49,6 +52,7 @@ struct ChatRequestMessage: Encodable {
 struct ConversationUpdateMessage: Encodable {
     let id: String?
     let completionId: String?
+    let runId: String?
     let role: String
     let content: ChatRequestContent
     let data: ChatMessageData?
@@ -64,6 +68,7 @@ struct ConversationUpdateMessage: Encodable {
     init(message: ChatMessage) {
         self.id = message.id
         self.completionId = message.completionId
+        self.runId = message.runId
         self.role = message.role
         self.content = ChatRequestContent(message: message)
         self.data = message.data
@@ -80,6 +85,7 @@ struct ConversationUpdateMessage: Encodable {
     enum CodingKeys: String, CodingKey {
         case id, role, content, data, name, parts, model, citations, status, created, timestamp
         case completionId = "completion_id"
+        case runId = "run_id"
         case logId = "log_id"
     }
 }

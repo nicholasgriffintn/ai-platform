@@ -6,12 +6,23 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { resolveProjectTaskToolApproval } from "../approvals";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "../questions";
 
-const mocks = vi.hoisted(() => ({ add: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  add: vi.fn(),
+  getInstance: vi.fn(),
+  lease: {
+    assertOwned: vi.fn(async () => undefined),
+    release: vi.fn(async () => undefined),
+  },
+}));
 
 vi.mock("~/lib/conversationManager", () => ({
   ConversationManager: {
-    getInstance: vi.fn(() => ({ add: mocks.add })),
+    getInstance: mocks.getInstance,
   },
+}));
+
+vi.mock("~/services/conversations/coordinator/client", () => ({
+  withThreadLock: vi.fn(async (_params, run) => run(mocks.lease)),
 }));
 
 const questionData = {
@@ -63,11 +74,13 @@ const task = {
   status: "blocked",
   blockedReason: "awaiting_input",
   conversationId: "conversation-1",
+  runId: "run-1",
 } as ProjectTask;
 
 describe("project task questions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.getInstance.mockReturnValue({ add: mocks.add });
   });
 
   it("reads the durable pending question set from the task conversation", async () => {
@@ -106,6 +119,9 @@ describe("project task questions", () => {
         content: expect.stringContaining("Who is the audience?: Existing customers"),
       }),
     );
+    expect(mocks.getInstance).toHaveBeenCalledWith(
+      expect.objectContaining({ runId: "run-1", writeFence: mocks.lease }),
+    );
   });
 
   it("refuses a partial answer set", async () => {
@@ -123,11 +139,42 @@ describe("project task questions", () => {
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(updateMessage).not.toHaveBeenCalled();
   });
+
+  it("loses a simultaneous answer race before writing another response", async () => {
+    const { context, getLatestPendingToolMessage, updateMessage } = createContext();
+
+    getLatestPendingToolMessage.mockResolvedValueOnce({
+      id: "message-1",
+      name: "ask_user",
+      status: "pending",
+      data: JSON.stringify(questionData),
+      tool_call_id: "tool-call-1",
+      timestamp: 1_777_000_000_000,
+    });
+    getLatestPendingToolMessage.mockResolvedValueOnce(null);
+
+    await expect(
+      answerProjectTaskQuestions({
+        context,
+        task,
+        input: {
+          interactionId: "interaction-1",
+          answers: [
+            { questionId: "tone", answer: "Friendly" },
+            { questionId: "audience", answer: "Existing customers" },
+          ],
+        },
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(updateMessage).not.toHaveBeenCalled();
+    expect(mocks.add).not.toHaveBeenCalled();
+  });
 });
 
 describe("project task tool approvals", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.getInstance.mockReturnValue({ add: mocks.add });
   });
 
   it("resolves the exact pending tool approval and records the decision", async () => {
@@ -184,6 +231,9 @@ describe("project task tool approvals", () => {
           },
         }),
       }),
+    );
+    expect(mocks.getInstance).toHaveBeenCalledWith(
+      expect.objectContaining({ runId: "run-1", writeFence: mocks.lease }),
     );
   });
 });

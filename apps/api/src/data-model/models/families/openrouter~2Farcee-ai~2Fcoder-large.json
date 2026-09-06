@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32768,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "March 31, 2025",
+    "releaseDate": "May 5, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/arcee ai/coder large family includes models that produce text.",
+  "models": {
+    "coder-large": {
+      "defaults": {
+        "name": "Coder Large",
+        "description": "Coder Large accepts text and produces text."
+      }
+    }
+  }
+}

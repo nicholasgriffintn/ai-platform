@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "contextWindow": 262000,
+    "maxTokens": 262000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "December 2025",
+    "releaseDate": "December 9, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The cortecs/devstral small 2512 family includes models that produce text.",
+  "models": {
+    "devstral-small-2-2512": {
+      "defaults": {
+        "name": "Devstral Small 2 2512",
+        "description": "Devstral Small 2 2512 accepts text, image and produces text."
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment",
+  "models": {
+    "mistral-nemo": {
+      "defaults": {
+        "name": "Mistral Nemo",
+        "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment",
+        "contextWindow": 128000,
+        "releaseDate": "July 18, 2024"
+      }
+    },
+    "mistral-nemo-12b-instruct": {
+      "defaults": {
+        "name": "Mistral Nemo 12B Instruct",
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "contextWindow": 16000,
+        "maxTokens": 4096,
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "multilingual"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "knowledgeCutoffDate": "December 2024",
+        "releaseDate": "January 1, 2025"
+      }
+    },
+    "mistral-nemo-instruct-2407-tee": {
+      "defaults": {
+        "name": "Mistral Nemo Instruct 2407 TEE",
+        "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "July 1, 2024",
+        "supportsToolCalls": false
+      }
+    }
+  }
+}

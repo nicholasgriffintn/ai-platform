@@ -12,6 +12,24 @@ export function clampPercentage(value: number): number {
   return clampNumber(value, 0, 100);
 }
 
+export function formatCompactCount(value: number): string {
+  if (!Number.isFinite(value) || value < 0) {
+    return "0";
+  }
+
+  if (value >= 1_000_000) {
+    const millions = value / 1_000_000;
+
+    return `${Number.isInteger(millions) ? millions : millions.toFixed(1)}M`;
+  }
+
+  if (value >= 1_000) {
+    return `${Math.round(value / 1_000)}k`;
+  }
+
+  return String(Math.round(value));
+}
+
 export function getBoundedPercentage(value: number, total: number): number {
   if (!Number.isFinite(value) || !Number.isFinite(total) || total <= 0) {
     return 0;

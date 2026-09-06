@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131072,
+    "maxTokens": 117964,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 30, 2024",
+    "releaseDate": "September 27, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/thedrummer/cydonia 24b v4.1 family includes models that produce text.",
+  "models": {
+    "cydonia-24b-v4-1": {
+      "defaults": {
+        "name": "Cydonia 24B V4.1",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads"
+      }
+    }
+  }
+}

@@ -16,6 +16,35 @@ export interface ToolResultDisplay {
   responseType?: string;
   renderer?: string;
   result?: Record<string, unknown>;
+  streamPreview?: ToolStreamPreview;
+}
+
+export interface ToolStreamPreview {
+  truncated: true;
+  fullMessageId?: string;
+  originalCharacters?: number;
+  previewCharacters?: number;
+}
+
+export function readToolStreamPreview(
+  data: Record<string, unknown> | undefined,
+): ToolStreamPreview | undefined {
+  const preview = data && isRecord(data.streamPreview) ? data.streamPreview : undefined;
+
+  if (!preview || preview.truncated !== true) {
+    return undefined;
+  }
+
+  return {
+    truncated: true,
+    ...(typeof preview.fullMessageId === "string" ? { fullMessageId: preview.fullMessageId } : {}),
+    ...(typeof preview.originalCharacters === "number"
+      ? { originalCharacters: preview.originalCharacters }
+      : {}),
+    ...(typeof preview.previewCharacters === "number"
+      ? { previewCharacters: preview.previewCharacters }
+      : {}),
+  };
 }
 
 export function isHiddenToolResponse(message: Message): boolean {
@@ -96,6 +125,7 @@ const buildDisplay = ({
     status,
     responseType: readOptionalString(data?.responseType),
     renderer: readOptionalString(data?.renderer),
+    streamPreview: readToolStreamPreview(data),
     result: {
       status: status ?? "success",
       name: toolName,

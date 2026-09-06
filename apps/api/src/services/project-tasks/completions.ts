@@ -1,4 +1,5 @@
 import type {
+  ChatRun,
   Goal,
   ProjectFlowStage,
   ProjectTaskCompletion,
@@ -11,6 +12,9 @@ export function createProjectTaskCompletion(params: {
   stage: ProjectFlowStage | null;
   conversationId: string;
   goal: Goal;
+  run?: ChatRun | null;
+  dispatchTaskId?: string;
+  outputIds?: string[];
   output: string;
   createdAt?: string;
 }): ProjectTaskCompletion {
@@ -21,6 +25,10 @@ export function createProjectTaskCompletion(params: {
     stageId: params.stage?.id ?? null,
     conversationId: params.conversationId,
     goalId: params.goal.id,
+    runId: params.run?.id ?? null,
+    runAttempt: params.run?.attempt ?? null,
+    dispatchTaskId: params.dispatchTaskId ?? null,
+    outputIds: params.outputIds ?? [],
     output: params.output,
     evidence: params.goal.evidence ?? [],
     approval: {

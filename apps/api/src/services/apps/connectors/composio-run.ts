@@ -448,6 +448,16 @@ export async function closeComposioConnectorRun(context: ServiceContext): Promis
   }
 }
 
+export async function scheduleComposioConnectorRunCleanup(
+  context: ServiceContext,
+  runId: string,
+): Promise<void> {
+  await context.repositories.composioConnectorSessions.markRunCleanupPending({
+    runId,
+    cleanupAfter: new Date().toISOString(),
+  });
+}
+
 export function retainComposioConnectorSession(
   context: ServiceContext,
   sessionHandle: string,

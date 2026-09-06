@@ -93,7 +93,7 @@ export function buildGlobalSearchResults({
                 conversation.id,
               )
             : getPersonalConversationPath(conversation.id),
-          searchText: `${conversation.title ?? ""} ${conversation.project?.name ?? ""} ${conversation.project?.workspaceName ?? ""} ${conversation.labels.map((label) => label.name).join(" ")}`,
+          searchText: `${conversation.title ?? ""} ${conversation.project?.name ?? ""} ${conversation.project?.workspaceName ?? ""} ${conversation.group?.name ?? ""}`,
           updatedAt: conversation.updatedAt,
         })),
         ...remote.projects.map((project) => ({

@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "contextWindow": 8192,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "December 31, 2023",
+    "releaseDate": "June 18, 2024",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/sao10k/l3 euryale 70b family includes models that produce text.",
+  "models": {
+    "llama-3-euryale-70b-v2-1": {
+      "defaults": {
+        "name": "Llama 3 Euryale 70B v2.1",
+        "description": "Llama 3 Euryale 70B v2.1 accepts text and produces text."
+      }
+    }
+  }
+}

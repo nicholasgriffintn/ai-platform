@@ -1,4 +1,4 @@
-import { MemoizedMarkdown } from "../markdown";
+import { BoundedMarkdown } from "./BoundedMarkdown";
 import { DefinitionListView } from "./DefinitionListView";
 import { GeneratedAudioView } from "./GeneratedAudioView";
 import { GeneratedImageView } from "./GeneratedImageView";
@@ -73,7 +73,7 @@ export function CustomView({
       );
 
     case "markdown":
-      return <MemoizedMarkdown className="max-w-none">{presentation.content}</MemoizedMarkdown>;
+      return <BoundedMarkdown content={presentation.content} />;
 
     case "definitions":
       return (
@@ -106,5 +106,5 @@ function ToolNarrative({ content }: { content?: string }) {
     return null;
   }
 
-  return <MemoizedMarkdown className="max-w-none">{content}</MemoizedMarkdown>;
+  return <BoundedMarkdown content={content} />;
 }

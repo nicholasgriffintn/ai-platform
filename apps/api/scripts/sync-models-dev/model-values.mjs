@@ -1,6 +1,6 @@
 import { SUPPORTED_MODALITIES, SUPPORTED_REASONING_EFFORT_LEVELS } from "./constants.mjs";
 import { applyModelContractOverrides } from "./model-contract-overrides.mjs";
-import { hasOwn } from "./value-utils.mjs";
+import { formatHumanDate, hasOwn, toPer1k } from "./value-utils.mjs";
 
 export function getReasoningEffortLevels(remoteModel) {
   const reasoningOptions = Array.isArray(remoteModel.reasoning_options)
@@ -89,52 +89,6 @@ function buildReasoningConfig(remoteModel, existingReasoningConfig, isNewEntry) 
   };
 }
 
-export function formatMonth(year, month) {
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  return months[month - 1] ?? `${year}-${String(month).padStart(2, "0")}`;
-}
-
-export function formatHumanDate(value) {
-  if (!value || typeof value !== "string") {
-    return undefined;
-  }
-
-  const fullDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-
-  if (fullDate) {
-    const year = Number(fullDate[1]);
-    const month = Number(fullDate[2]);
-    const day = Number(fullDate[3]);
-
-    return `${formatMonth(year, month)} ${day}, ${year}`;
-  }
-
-  const yearMonth = /^(\d{4})-(\d{2})$/.exec(value);
-
-  if (yearMonth) {
-    const year = Number(yearMonth[1]);
-    const month = Number(yearMonth[2]);
-
-    return `${formatMonth(year, month)} ${year}`;
-  }
-
-  return value;
-}
-
 export function normalizeModalityList(values) {
   if (!Array.isArray(values)) {
     return [];
@@ -190,17 +144,6 @@ export function normalizeModalities(modalities, { defaultToText } = { defaultToT
   return output.length > 0 ? { input, output } : { input };
 }
 
-export function toPer1k(value) {
-  if (typeof value !== "number" || Number.isNaN(value)) {
-    return undefined;
-  }
-
-  const converted = value / 1000;
-  const normalized = Number.parseFloat(converted.toFixed(10));
-
-  return Number.isFinite(normalized) ? normalized : undefined;
-}
-
 function isOpenRouterFreeModel(remoteModel, provider) {
   return (
     provider === "openrouter" &&
@@ -226,6 +169,10 @@ export function buildUpdateValues(
 
   if (isNewEntry && typeof remoteModel.name === "string" && remoteModel.name.length > 0) {
     values.name = remoteModel.name;
+  }
+
+  if (typeof remoteModel.description === "string" && remoteModel.description.trim()) {
+    values.description = remoteModel.description.trim();
   }
 
   if (allowMatchingModelUpdate || isNewEntry) {

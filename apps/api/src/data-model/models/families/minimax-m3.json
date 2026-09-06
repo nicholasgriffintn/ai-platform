@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "reliability": 2,
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "May 31, 2026",
+    "supportsToolCalls": true,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 44.4,
+      "codingIndex": 58.6,
+      "agenticIndex": 35.4,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The minimax m3 family includes models that produce text.",
+  "models": {
+    "minimax-m3": {
+      "defaults": {
+        "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks"
+      }
+    }
+  }
+}

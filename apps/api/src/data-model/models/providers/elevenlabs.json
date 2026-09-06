@@ -1,0 +1,14 @@
+{
+  "defaults": {
+    "hiddenFromDefaultList": true,
+    "supportsStreaming": true,
+    "supportsRealtimeSession": true
+  },
+  "models": {
+    "scribe_v2_realtime": {
+      "model": "elevenlabs/scribe_v2_realtime/scribe-v2-realtime",
+      "matchingModel": "scribe_v2_realtime",
+      "overrides": {}
+    }
+  }
+}

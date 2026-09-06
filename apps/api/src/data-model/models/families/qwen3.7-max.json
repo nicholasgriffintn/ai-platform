@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "coding",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 2,
+    "releaseDate": "May 21, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 46,
+      "codingIndex": 66,
+      "agenticIndex": 30.6,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The qwen3.7 max family includes models that produce text.",
+  "models": {
+    "qwen3-7-max": {
+      "defaults": {
+        "name": "Qwen3.7 Max",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows"
+      }
+    }
+  }
+}

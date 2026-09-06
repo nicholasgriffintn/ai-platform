@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "audio"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "strengths": [
+      "audio",
+      "document"
+    ],
+    "contextComplexity": 4,
+    "reliability": 3,
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "music_with_vocalsElo",
+          "label": "Music with vocals arena",
+          "value": 1089,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 8
+        }
+      ]
+    }
+  },
+  "description": "The minimax music family includes models that produce audio.",
+  "models": {
+    "minimax-music-2-6": {
+      "defaults": {
+        "name": "MiniMax Music 2.6",
+        "description": "MiniMax's music model for full-length vocal or instrumental tracks from prompts and lyrics."
+      }
+    }
+  }
+}

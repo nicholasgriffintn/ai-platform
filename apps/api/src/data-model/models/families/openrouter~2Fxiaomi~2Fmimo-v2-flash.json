@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "contextWindow": 262144,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "knowledgeCutoffDate": "December 1, 2024",
+    "releaseDate": "December 16, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 33.2,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The openrouter/xiaomi/mimo v2 flash family includes models that produce text.",
+  "models": {
+    "mimo-v2-flash": {
+      "defaults": {
+        "name": "MiMo-V2-Flash",
+        "description": "MiMo-V2-Flash accepts text and produces text."
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 16000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "February 26, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The the grid ai/text standard family includes models that produce text.",
+  "models": {
+    "text-standard": {
+      "defaults": {
+        "name": "Text Standard",
+        "description": "Price-optimized models with low-latency, high-throughput and shorter maximum outputs. Any model that meets the contract spec can serve your request."
+      }
+    }
+  }
+}

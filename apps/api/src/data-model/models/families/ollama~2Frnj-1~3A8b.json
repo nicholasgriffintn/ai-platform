@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 6, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false
+  },
+  "description": "The ollama/rnj 1:8b family includes models that produce text.",
+  "models": {
+    "rnj-1-8b": {
+      "defaults": {
+        "name": "rnj-1:8b",
+        "description": "rnj-1:8b accepts text and produces text."
+      }
+    }
+  }
+}

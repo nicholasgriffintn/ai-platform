@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 131072,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 2025",
+    "releaseDate": "January 28, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/arcee ai/trinity mini:free family includes models that produce text.",
+  "models": {
+    "trinity-mini": {
+      "defaults": {
+        "name": "Trinity Mini",
+        "description": "Trinity Mini accepts text and produces text."
+      }
+    }
+  }
+}

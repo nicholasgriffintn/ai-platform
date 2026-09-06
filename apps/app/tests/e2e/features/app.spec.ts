@@ -30,11 +30,13 @@ test.describe("Application experience", () => {
     test("moves keyboard focus from the skip link to main content", async ({
       appPage,
       homePage,
+      page,
     }) => {
       await homePage.navigate("/chat");
       await appPage.followSkipLink();
 
       await expect(appPage.mainContent).toBeFocused();
+      await expect(page.getByRole("complementary", { name: "Discover Polychat" })).toHaveCount(0);
     });
   });
 
@@ -46,6 +48,7 @@ test.describe("Application experience", () => {
       homePage,
       page,
     }) => {
+      test.slow();
       await homePage.navigate("/chat");
       await expect(homePage.chatInput).toBeEditable();
       await captureVisualSnapshots(page, "release-app-logged-out-chat", {
@@ -53,6 +56,31 @@ test.describe("Application experience", () => {
         viewports: [{ name: "desktop", width: 1280, height: 720 }],
       });
 
+      const discoverTour = page.getByRole("complementary", { name: "Discover Polychat" });
+
+      await discoverTour.getByRole("heading", { name: "Chat, then Work" }).scrollIntoViewIfNeeded();
+      await expect(discoverTour.getByRole("heading", { name: "Chat, then Work" })).toBeVisible();
+      await expect(discoverTour.getByRole("heading", { name: "Meet the flock" })).toBeVisible();
+      await captureVisualSnapshots(page, "release-app-logged-out-discover", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        viewports: [{ name: "desktop", width: 1280, height: 720 }],
+      });
+
+      await appPage.followLink("Tour");
+      await expect(page).toHaveURL(/\/discover$/);
+      await expect(page.getByRole("heading", { name: "What Polychat is for" })).toBeVisible();
+      await captureVisualSnapshots(page, "release-app-discover", DEFAULT_VISUAL_CHECKPOINTS);
+
+      await appPage.followPrimaryLink("Models");
+      await expect(page).toHaveURL(/\/models$/);
+      await expect(page.getByRole("heading", { name: "Every model, one perch" })).toBeVisible();
+      await expect(page.getByRole("group", { name: "Filter by provider" })).toBeVisible();
+      await captureVisualSnapshots(page, "release-app-models", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        viewports: [{ name: "desktop", width: 1280, height: 720 }],
+      });
+
+      await homePage.navigate("/chat");
       await appPage.switchProduct("Work");
       await expect(page).toHaveURL(/\/work$/);
       await expect(
@@ -68,6 +96,7 @@ test.describe("Application experience", () => {
 
       await appPage.openSettings("Guest");
       await appPage.selectTheme("Dark");
+      await expect(page.locator("html")).toHaveAttribute("data-polychat-theme", "dark");
       await expect(page.locator("html")).toHaveClass(/dark/);
       await captureVisualSnapshots(page, "release-app-settings-dark", DEFAULT_VISUAL_CHECKPOINTS);
 

@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "ocr",
+      "audio",
+      "analysis",
+      "document",
+      "transcription"
+    ],
+    "contextComplexity": 4,
+    "supportsAttachments": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null
+    }
+  },
+  "description": "The replicate/826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9 family includes models that produce text.",
+  "models": {
+    "whisperx": {
+      "defaults": {
+        "name": "WhisperX",
+        "description": "Fast speech transcription with word-level timestamps and speaker diarization using Whisper large-v3."
+      }
+    }
+  }
+}

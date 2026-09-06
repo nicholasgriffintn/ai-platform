@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "April 3, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/huggingface/distilbert sst 2 int8 family includes models that produce text.",
+  "models": {
+    "distilbert-sst-2-int8": {
+      "defaults": {
+        "name": "DistilBERT SST-2 INT8",
+        "description": "DistilBERT SST-2 INT8 accepts text and produces text."
+      }
+    }
+  }
+}

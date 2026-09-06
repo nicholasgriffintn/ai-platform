@@ -1,0 +1,152 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The mistral medium family includes models that produce text.",
+  "models": {
+    "mistral-medium-3": {
+      "defaults": {
+        "name": "Mistral Medium 3",
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "releaseDate": "May 7, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mistral-medium-3-1": {
+      "defaults": {
+        "name": "Mistral Medium 3.1",
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows"
+      }
+    },
+    "mistral-medium-3-25-05": {
+      "defaults": {
+        "name": "Mistral Medium 3 (25.05)",
+        "description": "Mistral Medium 3 (25.05) accepts text, image and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 32768,
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "September 2024",
+        "releaseDate": "May 1, 2025",
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mistral-medium-3-5": {
+      "defaults": {
+        "name": "Mistral Medium 3.5",
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "contextWindow": 262144,
+        "reliability": 2,
+        "releaseDate": "April 30, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 29.9,
+          "codingIndex": 46.9,
+          "agenticIndex": 19,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mistral-medium-3-5-eu": {
+      "defaults": {
+        "name": "mistral-medium-3-5@eu",
+        "description": "Mistral Medium 3.5 is a dense 128B instruction following model from Mistral AI. It supports text and image inputs with text output, and is designed for agentic workflows, coding, and complex multi step reasoning. It is particularly strong at reliable multi tool calling and long horizon tasks, with a 256K context window, configurable reasoning effort per request, and a custom vision encoder that handles variable image sizes and aspect ratios. Self hostable on as few as four GPUs and available under open weights.",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "releaseDate": "April 30, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "mistral-medium-latest": {
+      "defaults": {
+        "openWeights": true,
+        "description": "Balanced Mistral model for enterprise assistants, multilingual work, and tools",
+        "releaseDate": "April 29, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 3.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mistral-medium-latest-eu": {
+      "defaults": {
+        "name": "Mistral Medium (latest) (EU)",
+        "openWeights": true,
+        "description": "Balanced Mistral model for enterprise assistants, multilingual work, and tools",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "releaseDate": "April 29, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 3.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    }
+  }
+}

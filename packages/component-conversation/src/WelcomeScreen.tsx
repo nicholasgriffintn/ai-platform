@@ -24,7 +24,7 @@ export const WelcomeScreen = ({
   return (
     <div className="w-full px-4 pt-4 pb-2 text-center" aria-busy={isLoading} aria-live="polite">
       <div className="mx-auto flex h-32 w-32 items-end justify-center">{pet}</div>
-      <h2 className="text-foreground flex min-h-16 items-end justify-center text-2xl font-semibold md:min-h-12 md:text-4xl">
+      <h2 className="text-foreground font-display flex min-h-16 items-end justify-center text-3xl font-medium tracking-tight text-balance md:min-h-12 md:text-5xl">
         <span
           key={resolvedTitle}
           aria-hidden={isLoading}

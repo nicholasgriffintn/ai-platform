@@ -1,0 +1,138 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "supportsToolCalls": true
+  },
+  "description": "The qwen3.6 family includes models that produce text.",
+  "models": {
+    "qwen3-6-flash": {
+      "defaults": {
+        "name": "Qwen3.6 Flash",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 27, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-6-plus": {
+      "defaults": {
+        "name": "Qwen3.6 Plus",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "April 2, 2026",
+        "supportsAttachments": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.6,
+          "codingIndex": 54.5,
+          "agenticIndex": 27.6,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "thinkingcap-qwen3-6-27b": {
+      "defaults": {
+        "name": "thinkingcap-qwen3.6-27b",
+        "description": "ThinkingCap-Qwen3.6-27B is a reasoning tuned model from BottlecapAI built on Qwen3.6 27B. It supports extended thinking with tool calling and a 256K context window. Served via Sference.",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 13, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "thinkingcap-qwen3-6-27b-eu": {
+      "defaults": {
+        "name": "thinkingcap-qwen3.6-27b@eu",
+        "description": "ThinkingCap-Qwen3.6-27B is a reasoning tuned model from BottlecapAI built on Qwen3.6 27B. It supports extended thinking with tool calling and a 256K context window. Served via Sference.",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 13, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

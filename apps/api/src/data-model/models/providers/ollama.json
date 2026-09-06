@@ -1,0 +1,570 @@
+{
+  "defaults": {
+    "hiddenFromDefaultList": true,
+    "supportsToolCalls": true,
+    "supportsAttachments": false
+  },
+  "models": {
+    "ollama-gemma3-1b": {
+      "model": "gemma/ollama-gemma-3-1b",
+      "matchingModel": "gemma3:1b",
+      "overrides": {},
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature",
+        "supportsToolCalls"
+      ]
+    },
+    "ollama-gemma3-4b": {
+      "model": "gemma/gemma3-4b",
+      "matchingModel": "gemma3:4b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "ollama-gemma3-12b": {
+      "model": "gemma/gemma3-12b",
+      "matchingModel": "gemma3:12b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "ollama-gemma3-27b": {
+      "model": "gemma/gemma3-27b",
+      "matchingModel": "gemma3:27b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "cogito-2.1:671b": {
+      "model": "ollama/cogito-2.1:671b/cogito-2-1-671b",
+      "matchingModel": "cogito-2.1:671b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026"
+      }
+    },
+    "deepseek-v3.1:671b": {
+      "model": "deepseek/deepseek-v3-1-671b",
+      "matchingModel": "deepseek-v3.1:671b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "deepseek-v3.2": {
+      "model": "deepseek/deepseek-v3-2",
+      "matchingModel": "deepseek-v3.2",
+      "overrides": {
+        "name": "deepseek-v3.2",
+        "maxTokens": 65536,
+        "releaseDate": "June 15, 2025",
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "knowledgeCutoffDate",
+        "supportsResponseFormat",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis",
+        "openWeights"
+      ]
+    },
+    "devstral-2:123b": {
+      "model": "ollama/devstral-2:123b/devstral-2-123b",
+      "matchingModel": "devstral-2:123b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026"
+      }
+    },
+    "devstral-small-2:24b": {
+      "model": "ollama/devstral-small-2:24b/devstral-small-2-24b",
+      "matchingModel": "devstral-small-2:24b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "gemini-3-flash-preview": {
+      "model": "gemini/gemini-3-flash-preview",
+      "matchingModel": "gemini-3-flash-preview",
+      "overrides": {
+        "lastUpdated": "April 8, 2026",
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "gemini-3-pro-preview": {
+      "model": "gemini/gemini-3-pro-preview",
+      "matchingModel": "gemini-3-pro-preview",
+      "overrides": {
+        "name": "gemini-3-pro-preview",
+        "contextWindow": 1048576,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "January 19, 2026",
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "glm-4.6": {
+      "model": "glm/glm-4-6",
+      "matchingModel": "glm-4.6",
+      "overrides": {
+        "name": "glm-4.6",
+        "contextWindow": 202752,
+        "releaseDate": "September 29, 2025",
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "supportsResponseFormat",
+        "openWeights",
+        "knowledgeCutoffDate",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "glm-4.7": {
+      "model": "glm/glm-4-7",
+      "matchingModel": "glm-4.7",
+      "overrides": {
+        "name": "glm-4.7",
+        "contextWindow": 202752,
+        "maxTokens": 131072,
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "supportsResponseFormat",
+        "openWeights",
+        "knowledgeCutoffDate",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "glm-5": {
+      "model": "glm/glm-5",
+      "matchingModel": "glm-5",
+      "overrides": {
+        "name": "glm-5",
+        "maxTokens": 131072,
+        "releaseDate": "February 11, 2026",
+        "lastUpdated": "February 11, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "supportsResponseFormat",
+        "openWeights",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "gpt-oss:120b": {
+      "model": "gpt/gpt-oss-120b",
+      "matchingModel": "gpt-oss:120b",
+      "overrides": {
+        "name": "gpt-oss:120b",
+        "lastUpdated": "January 19, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTemperature",
+        "openWeights",
+        "supportsResponseFormat",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "gpt-oss:20b": {
+      "model": "gpt/gpt-oss-20b",
+      "matchingModel": "gpt-oss:20b",
+      "overrides": {
+        "name": "gpt-oss:20b",
+        "maxTokens": 32768,
+        "releaseDate": "August 5, 2025",
+        "lastUpdated": "January 19, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTemperature",
+        "openWeights",
+        "supportsResponseFormat",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "kimi-k2-thinking": {
+      "model": "kimi/kimi-k2-thinking",
+      "matchingModel": "kimi-k2-thinking",
+      "overrides": {
+        "name": "kimi-k2-thinking",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "knowledgeCutoffDate": "August 2024",
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "kimi-k2:1t": {
+      "model": "kimi/kimi-k2-1t",
+      "matchingModel": "kimi-k2:1t",
+      "overrides": {
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "kimi-k2.5": {
+      "model": "kimi/kimi-k2-5",
+      "matchingModel": "kimi-k2.5",
+      "overrides": {
+        "name": "kimi-k2.5",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "lastUpdated": "January 27, 2026",
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "minimax-m2": {
+      "model": "minimax/minimax-m2",
+      "matchingModel": "minimax-m2",
+      "overrides": {
+        "name": "minimax-m2",
+        "contextWindow": 204800,
+        "maxTokens": 128000,
+        "releaseDate": "October 23, 2025",
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "openWeights",
+        "reasoningConfig",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "minimax-m2.1": {
+      "model": "minimax/minimax-m2-1",
+      "matchingModel": "minimax-m2.1",
+      "overrides": {
+        "name": "minimax-m2.1",
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "openWeights",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "ministral-3:14b": {
+      "model": "ollama/ministral-3:14b/ministral-3-14b",
+      "matchingModel": "ministral-3:14b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "ministral-3:3b": {
+      "model": "ollama/ministral-3:3b/ministral-3-3b",
+      "matchingModel": "ministral-3:3b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "ministral-3:8b": {
+      "model": "ollama/ministral-3:8b/ministral-3-8b",
+      "matchingModel": "ministral-3:8b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "mistral-large-3:675b": {
+      "model": "mistral/mistral-large-3-675b",
+      "matchingModel": "mistral-large-3:675b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026",
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "nemotron-3-nano:30b": {
+      "model": "nemotron/nemotron-3-nano-30b",
+      "matchingModel": "nemotron-3-nano:30b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "openWeights"
+      ]
+    },
+    "qwen3-coder-next": {
+      "model": "qwen/qwen3-coder-next",
+      "matchingModel": "qwen3-coder-next",
+      "overrides": {
+        "name": "qwen3-coder-next",
+        "maxTokens": 65536,
+        "releaseDate": "February 2, 2026",
+        "lastUpdated": "February 8, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "supportsResponseFormat",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis",
+        "openWeights"
+      ]
+    },
+    "qwen3-coder:480b": {
+      "model": "qwen/qwen3-coder-480b",
+      "matchingModel": "qwen3-coder:480b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "qwen3-next:80b": {
+      "model": "qwen/qwen3-next-80b",
+      "matchingModel": "qwen3-next:80b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026"
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "qwen3-vl:235b": {
+      "model": "qwen/qwen3-vl-235b",
+      "matchingModel": "qwen3-vl:235b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026",
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "qwen3-vl:235b-instruct": {
+      "model": "qwen/qwen3-vl-235b-instruct",
+      "matchingModel": "qwen3-vl:235b-instruct",
+      "overrides": {
+        "lastUpdated": "January 19, 2026",
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "rnj-1:8b": {
+      "model": "ollama/rnj-1:8b/rnj-1-8b",
+      "matchingModel": "rnj-1:8b",
+      "overrides": {
+        "lastUpdated": "January 19, 2026"
+      }
+    },
+    "deepseek-v4-flash": {
+      "model": "deepseek/deepseek-v4-flash",
+      "matchingModel": "deepseek-v4-flash",
+      "overrides": {
+        "lastUpdated": "April 24, 2026"
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "deepseek-v4-pro": {
+      "model": "deepseek/deepseek-v4-pro",
+      "matchingModel": "deepseek-v4-pro",
+      "overrides": {
+        "name": "deepseek-v4-pro",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "lastUpdated": "April 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "gemma4:31b": {
+      "model": "gemma/gemma4-31b",
+      "matchingModel": "gemma4:31b",
+      "overrides": {
+        "lastUpdated": "April 8, 2026",
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "glm-5.1": {
+      "model": "glm/glm-5-1",
+      "matchingModel": "glm-5.1",
+      "overrides": {
+        "name": "glm-5.1",
+        "contextWindow": 202752,
+        "maxTokens": 131072,
+        "releaseDate": "March 27, 2026",
+        "lastUpdated": "April 7, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "supportsResponseFormat",
+        "openWeights",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "kimi-k2.6": {
+      "model": "kimi/kimi-k2-6",
+      "matchingModel": "kimi-k2.6",
+      "overrides": {
+        "lastUpdated": "April 20, 2026",
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "minimax-m2.5": {
+      "model": "minimax/minimax-m2-5",
+      "matchingModel": "minimax-m2.5",
+      "overrides": {
+        "name": "minimax-m2.5",
+        "knowledgeCutoffDate": "January 2025",
+        "lastUpdated": "February 12, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "openWeights",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "minimax-m2.7": {
+      "model": "minimax/minimax-m2-7",
+      "matchingModel": "minimax-m2.7",
+      "overrides": {
+        "name": "minimax-m2.7",
+        "contextWindow": 196608,
+        "maxTokens": 196608,
+        "lastUpdated": "March 18, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "openWeights",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
+    },
+    "nemotron-3-super": {
+      "model": "nemotron/nemotron-3-super",
+      "matchingModel": "nemotron-3-super",
+      "overrides": {
+        "lastUpdated": "March 12, 2026"
+      },
+      "unset": [
+        "supportsTemperature",
+        "openWeights"
+      ]
+    },
+    "qwen3.5:397b": {
+      "model": "qwen/qwen3-5-397b",
+      "matchingModel": "qwen3.5:397b",
+      "overrides": {
+        "lastUpdated": "February 17, 2026",
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Mistral coding model for code completion, generation, and developer workflows",
+  "models": {
+    "codestral-25-01": {
+      "defaults": {
+        "name": "Codestral 25.01",
+        "description": "Mistral coding model for code completion, generation, and developer workflows",
+        "knowledgeCutoffDate": "March 2024",
+        "releaseDate": "January 1, 2025"
+      }
+    },
+    "codestral-2508": {
+      "defaults": {
+        "name": "Codestral 2508",
+        "description": "Mistral coding model for code completion, generation, and developer workflows",
+        "maxTokens": 204800,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "August 1, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
+      }
+    },
+    "codestral-latest": {
+      "defaults": {
+        "name": "Codestral",
+        "openWeights": true,
+        "description": "Mistral code model for completions, refactors, and developer IDE workflows",
+        "maxTokens": 4096,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "May 29, 2024"
+      }
+    }
+  }
+}

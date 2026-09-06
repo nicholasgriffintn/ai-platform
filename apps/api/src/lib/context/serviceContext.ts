@@ -22,6 +22,8 @@ export interface ServiceContext {
   user?: IUser | null;
   requestId?: string;
   connectorRunId: string;
+  executionRunId?: string;
+  executionRunAttempt?: number;
   database: Database;
   repositories: RepositoryManager;
   requestCache: RequestCache;
@@ -39,14 +41,34 @@ export function optionalRepositories(
   return context.env?.DB ? context.repositories : null;
 }
 
+export function withExecutionRunContext(
+  context: ServiceContext,
+  runId: string,
+  runAttempt?: number,
+): ServiceContext {
+  return new Proxy(context, {
+    get(target, property, receiver) {
+      if (property === "executionRunId") {
+        return runId;
+      }
+
+      if (property === "executionRunAttempt") {
+        return runAttempt;
+      }
+
+      return Reflect.get(target, property, receiver);
+    },
+  });
+}
+
 export const createServiceContext = ({
   env,
   user = null,
   requestId,
   connectorRunId = `connector_run_${generateId()}`,
 }: ServiceContextOptions): ServiceContext => {
-  let _database: Database | null = null;
-  let _repositories: RepositoryManager | null = null;
+  let databaseInstance: Database | null = null;
+  let repositoriesInstance: RepositoryManager | null = null;
   const requestCache = createRequestCache();
   let cachedUserSettings: IUserSettings | null | undefined = undefined;
   let userSettingsPromise: Promise<IUserSettings | null> | null = null;
@@ -78,13 +100,13 @@ export const createServiceContext = ({
       return cachedUserSettings;
     }
 
-    if (!userSettingsPromise) {
+    if (userSettingsPromise === null) {
       userSettingsPromise = memoizeRequest(requestCache, `user-settings:${user.id}`, async () => {
-        if (!_repositories) {
-          _repositories = new RepositoryManager(env);
+        if (!repositoriesInstance) {
+          repositoriesInstance = new RepositoryManager(env);
         }
 
-        const settings = await _repositories.userSettings.getUserSettings(user.id);
+        const settings = await repositoriesInstance.userSettings.getUserSettings(user.id);
 
         return settings;
       });
@@ -117,18 +139,18 @@ export const createServiceContext = ({
       return cachedUserSettings ?? null;
     },
     get database() {
-      if (!_database) {
-        _database = new Database(env);
+      if (!databaseInstance) {
+        databaseInstance = new Database(env);
       }
 
-      return _database;
+      return databaseInstance;
     },
     get repositories() {
-      if (!_repositories) {
-        _repositories = new RepositoryManager(env);
+      if (!repositoriesInstance) {
+        repositoriesInstance = new RepositoryManager(env);
       }
 
-      return _repositories;
+      return repositoriesInstance;
     },
     requireUser,
     ensureDatabase,

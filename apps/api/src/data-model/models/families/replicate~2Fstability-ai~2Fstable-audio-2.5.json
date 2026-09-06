@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "audio"
+    ],
+    "supportsAttachments": false
+  },
+  "description": "The replicate/stability ai/stable audio 2.5 family includes models that produce audio.",
+  "models": {
+    "stable-audio-2-5": {
+      "defaults": {
+        "name": "Stable Audio 2.5",
+        "description": "Stability AI's text-to-audio model for generating high-quality music and sound effects."
+      }
+    }
+  }
+}

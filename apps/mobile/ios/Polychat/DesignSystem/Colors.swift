@@ -59,6 +59,14 @@ struct PolychatColors {
     var elevatedBackground: Color {
         Color(light: .white, dark: zinc800)
     }
+
+    var prominentControlBackground: Color {
+        Color(light: zinc900, dark: offWhite)
+    }
+
+    var prominentControlForeground: Color {
+        Color(light: offWhite, dark: zinc900)
+    }
 }
 
 extension Color {

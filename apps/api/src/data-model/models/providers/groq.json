@@ -1,0 +1,383 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "deepseek-r1-distill-qwen-32b": {
+      "model": "deepseek/groq-deepseek-r1-distill-qwen-32b",
+      "matchingModel": "deepseek-r1-distill-qwen-32b",
+      "overrides": {
+        "speed": 4,
+        "deprecated": true,
+        "lastUpdated": "January 20, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0003
+      }
+    },
+    "deepseek-r1-distill-llama-70b-specdec": {
+      "model": "deepseek/groq-deepseek-r1-distill-llama-70b-specdec",
+      "matchingModel": "deepseek-r1-distill-llama-70b-specdec",
+      "overrides": {
+        "speed": 4,
+        "deprecated": true,
+        "lastUpdated": "January 20, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0004
+      }
+    },
+    "llama3-70b": {
+      "model": "llama/groq-llama-3-70b",
+      "matchingModel": "llama3-70b-8192-tool-use-preview",
+      "overrides": {
+        "speed": 5,
+        "deprecated": true,
+        "lastUpdated": "April 18, 2024",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0006
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "llama3-8b": {
+      "model": "llama/groq-llama-3-8b",
+      "matchingModel": "llama3-8b-8192-tool-use-preview",
+      "overrides": {
+        "speed": 5,
+        "deprecated": true,
+        "lastUpdated": "April 18, 2024",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0003
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "llama-3.3-70b-versatile": {
+      "model": "llama/llama-3-3-70b",
+      "matchingModel": "llama-3.3-70b-versatile",
+      "overrides": {
+        "name": "Llama 3.3 70B Versatile",
+        "status": "deprecated",
+        "maxTokens": 32768,
+        "card": "https://www.prompthub.us/models/llama-3-3-70b",
+        "speed": 5,
+        "lastUpdated": "December 6, 2024",
+        "costPer1kInputTokens": 0.00059,
+        "costPer1kOutputTokens": 0.00079
+      }
+    },
+    "groq-llama-4-scout-17b": {
+      "model": "llama/llama-4-scout-17b",
+      "matchingModel": "meta-llama/llama-4-scout-17b-16e-instruct",
+      "overrides": {
+        "status": "deprecated",
+        "contextWindow": 131072,
+        "maxTokens": 8192,
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual",
+          "coding",
+          "vision"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "speed": 5,
+        "multimodal": true,
+        "isFeatured": false,
+        "knowledgeCutoffDate": "August 2024",
+        "lastUpdated": "April 5, 2025",
+        "costPer1kInputTokens": 0.00011,
+        "costPer1kOutputTokens": 0.00034,
+        "supportsAttachments": true
+      }
+    },
+    "llama-3.1-8b-instant": {
+      "model": "llama/llama-3-1-8b",
+      "matchingModel": "llama-3.1-8b-instant",
+      "overrides": {
+        "name": "Llama 3.1 8B Instant",
+        "status": "deprecated",
+        "maxTokens": 131072,
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "multilingual"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "speed": 5,
+        "knowledgeCutoffDate": "December 2023",
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00008
+      }
+    },
+    "mixtral-8x7b-32768": {
+      "model": "mixtral/mixtral-8x7b-instruct",
+      "matchingModel": "mixtral-8x7b-32768",
+      "overrides": {
+        "speed": 4,
+        "deprecated": true,
+        "lastUpdated": "December 11, 2023",
+        "costPer1kInputTokens": 0.00024,
+        "costPer1kOutputTokens": 0.00024
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
+    "gemma-2-2b-it": {
+      "model": "gemma/gemma-2-2b-it",
+      "matchingModel": "gemma-2-2b-it",
+      "overrides": {
+        "speed": 5,
+        "deprecated": true,
+        "lastUpdated": "June 27, 2024",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0001
+      }
+    },
+    "gemma-2-27b-it": {
+      "model": "gemma/gemma-2-27b-it",
+      "matchingModel": "gemma-2-27b-it",
+      "overrides": {
+        "speed": 4,
+        "deprecated": true,
+        "lastUpdated": "June 27, 2024",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0002
+      }
+    },
+    "groq-openai-gpt-oss-20b": {
+      "model": "gpt-oss/gpt-oss-20b",
+      "matchingModel": "openai/gpt-oss-20b",
+      "overrides": {
+        "maxTokens": 65536,
+        "isFree": true,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "speed": 5,
+        "lastUpdated": "September 25, 2025",
+        "costPer1kInputTokens": 0.000075,
+        "costPer1kOutputTokens": 0.0003
+      }
+    },
+    "groq-openai-gpt-oss-120b": {
+      "model": "gpt-oss/gpt-oss-120b",
+      "matchingModel": "openai/gpt-oss-120b",
+      "overrides": {
+        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
+        "maxTokens": 65536,
+        "isFree": true,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "multilingual",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "speed": 5,
+        "isFeatured": true,
+        "lastUpdated": "October 21, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006
+      }
+    },
+    "qwen/qwen3-32b": {
+      "model": "qwen/qwen3-32b",
+      "matchingModel": "qwen/qwen3-32b",
+      "overrides": {
+        "status": "deprecated",
+        "contextWindow": 131072,
+        "maxTokens": 40960,
+        "speed": 3,
+        "knowledgeCutoffDate": "November 8, 2024",
+        "releaseDate": "June 11, 2025",
+        "lastUpdated": "June 12, 2025",
+        "costPer1kInputTokens": 0.00029,
+        "costPer1kOutputTokens": 0.00059
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "allam-2-7b": {
+      "model": "groq/allam-2-7b/allam-2-7b",
+      "matchingModel": "allam-2-7b",
+      "overrides": {
+        "lastUpdated": "January 23, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
+      }
+    },
+    "canopylabs/orpheus-arabic-saudi": {
+      "model": "canopylabs/canopy-labs-orpheus-arabic-saudi",
+      "matchingModel": "canopylabs/orpheus-arabic-saudi",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "December 16, 2025",
+        "costPer1kInputTokens": 0.04,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "canopylabs/orpheus-v1-english": {
+      "model": "canopylabs/canopy-labs-orpheus-v1-english",
+      "matchingModel": "canopylabs/orpheus-v1-english",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "December 19, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "groq/compound": {
+      "model": "groq/compound",
+      "matchingModel": "groq/compound",
+      "overrides": {
+        "isFree": true,
+        "isFeatured": true,
+        "deprecated": true,
+        "deprecationMessage": "Groq Compound is being retired. Use GPT OSS 120B instead.",
+        "replacementModel": "groq-openai-gpt-oss-120b",
+        "lastUpdated": "September 4, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
+      }
+    },
+    "groq/compound-mini": {
+      "model": "groq/compound-mini",
+      "matchingModel": "groq/compound-mini",
+      "overrides": {
+        "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Groq Compound Mini is being retired. Use GPT OSS 20B instead.",
+        "replacementModel": "groq-openai-gpt-oss-20b",
+        "lastUpdated": "September 4, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
+      }
+    },
+    "meta-llama/llama-prompt-guard-2-22m": {
+      "model": "llama/llama-prompt-guard-2-22m",
+      "matchingModel": "meta-llama/llama-prompt-guard-2-22m",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "May 29, 2025",
+        "costPer1kInputTokens": 0.00003,
+        "costPer1kOutputTokens": 0.00003,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "meta-llama/llama-prompt-guard-2-86m": {
+      "model": "llama/prompt-guard-2-86m",
+      "matchingModel": "meta-llama/llama-prompt-guard-2-86m",
+      "overrides": {
+        "status": "beta",
+        "lastUpdated": "May 29, 2025",
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.00004,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-oss-safeguard-20b": {
+      "model": "gpt-oss/safety-gpt-oss-20b",
+      "matchingModel": "openai/gpt-oss-safeguard-20b",
+      "overrides": {
+        "status": "beta",
+        "isFree": true,
+        "lastUpdated": "June 29, 2026",
+        "costPer1kInputTokens": 0.000075,
+        "costPer1kOutputTokens": 0.0003
+      }
+    },
+    "whisper-large-v3": {
+      "model": "whisper/whisper",
+      "matchingModel": "whisper-large-v3",
+      "overrides": {
+        "name": "Whisper Large V3",
+        "openWeights": true,
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "September 1, 2023",
+        "lastUpdated": "September 5, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
+      }
+    },
+    "whisper-large-v3-turbo": {
+      "model": "whisper/whisper-large-v3-turbo",
+      "matchingModel": "whisper-large-v3-turbo",
+      "overrides": {
+        "lastUpdated": "October 1, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
+      }
+    },
+    "qwen/qwen3.6-27b": {
+      "model": "qwen/qwen3-6-27b",
+      "matchingModel": "qwen/qwen3.6-27b",
+      "overrides": {
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "contextComplexity": 3,
+        "speed": 3,
+        "lastUpdated": "April 22, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.003,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "default"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen/qwen3.8-27b": {
+      "model": "qwen/qwen3-8-27b",
+      "matchingModel": "qwen/qwen3.8-27b",
+      "overrides": {
+        "contextWindow": 131042,
+        "maxTokens": 16384,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.004,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "default",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

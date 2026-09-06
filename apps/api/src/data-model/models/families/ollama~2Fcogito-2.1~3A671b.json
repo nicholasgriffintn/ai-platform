@@ -1,0 +1,33 @@
+{
+  "defaults": {
+    "contextWindow": 163840,
+    "maxTokens": 32000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 19, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The ollama/cogito 2.1:671b family includes models that produce text.",
+  "models": {
+    "cogito-2-1-671b": {
+      "defaults": {
+        "name": "cogito-2.1:671b",
+        "description": "cogito-2.1:671b accepts text and produces text."
+      }
+    }
+  }
+}

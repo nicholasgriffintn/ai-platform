@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131072,
+    "maxTokens": 117964,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "March 31, 2025",
+    "releaseDate": "July 8, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The hunyuan family includes models that produce text.",
+  "models": {
+    "hunyuan-a13b-instruct": {
+      "defaults": {
+        "name": "Hunyuan A13B Instruct",
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks"
+      }
+    }
+  }
+}

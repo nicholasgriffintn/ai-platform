@@ -22,67 +22,6 @@ struct WorkAttentionItem: Decodable, Identifiable {
     let occurredAt: String
 }
 
-struct MobileProjectTaskDetail: Decodable {
-    let task: MobileProjectTask
-    let pendingQuestions: MobileUserQuestionSet?
-    let pendingApproval: MobileProjectTaskApproval?
-}
-
-struct MobileProjectTask: Decodable {
-    let id: String
-    let projectId: String
-    let workspaceId: String
-    let objective: String
-    let status: String
-    let blockedReason: String?
-    let blockedDetail: String?
-    let conversationId: String?
-}
-
-struct MobileUserQuestionSet: Decodable {
-    let interactionId: String
-    let questions: [MobileUserQuestion]
-}
-
-struct MobileUserQuestion: Decodable, Identifiable {
-    let id: String
-    let prompt: String
-    let options: [MobileUserQuestionOption]
-    let allowOther: Bool
-}
-
-struct MobileUserQuestionOption: Decodable, Identifiable {
-    let label: String
-    let description: String?
-
-    var id: String { label }
-}
-
-struct MobileProjectTaskApproval: Decodable {
-    let interactionId: String
-    let toolName: String
-    let reason: String
-}
-
-struct MobileProjectTaskResponse: Decodable {
-    let task: MobileProjectTask
-}
-
-struct MobileUserQuestionAnswer: Encodable {
-    let questionId: String
-    let answer: String
-}
-
-struct AnswerMobileProjectTaskQuestionsRequest: Encodable {
-    let interactionId: String
-    let answers: [MobileUserQuestionAnswer]
-}
-
-struct ResolveMobileProjectTaskApprovalRequest: Encodable {
-    let interactionId: String
-    let resolution: String
-}
-
 struct MobileWorkTarget: Codable, Hashable, Identifiable {
     let workspaceId: String
     let projectId: String

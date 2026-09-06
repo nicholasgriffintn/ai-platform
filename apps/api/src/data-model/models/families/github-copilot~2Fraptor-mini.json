@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "contextWindow": 400000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "May 30, 2024",
+    "releaseDate": "August 7, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The github copilot/raptor mini family includes models that produce text.",
+  "models": {
+    "raptor-mini": {
+      "defaults": {
+        "name": "Raptor mini",
+        "description": "Raptor mini accepts text, image and produces text."
+      }
+    }
+  }
+}

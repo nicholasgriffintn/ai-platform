@@ -6,6 +6,14 @@ import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
+import {
+  createTaskExecutionLease,
+  isTaskExecutionOwnershipLostError,
+  taskExecutionLeaseExpiry,
+  taskExecutionLeaseRetryDelay,
+  TaskExecutionLeaseBusyError,
+  TaskExecutionOwnershipLostError,
+} from "./task-execution-lease";
 import type { TaskExecutionContext, TaskHandler, TaskResult } from "./TaskHandler";
 import type { TaskMessage } from "./TaskService";
 
@@ -28,10 +36,7 @@ export class TaskExecutor {
 
   public async execute(message: TaskMessage, deliveryAttempt = 1): Promise<void> {
     const startTime = Date.now();
-    const executionContext: TaskExecutionContext = {
-      deliveryAttempt,
-      isRedelivery: deliveryAttempt > 1,
-    };
+    const isRedelivery = deliveryAttempt > 1;
 
     try {
       if (hasFeatureFlag(message.task_type)) {
@@ -64,17 +69,45 @@ export class TaskExecutor {
         return;
       }
 
+      const ownerToken = generateId();
+      const leaseExpiresAt = taskExecutionLeaseExpiry();
       const claimedTask = await this.taskRepository.claimTaskForExecution(message.taskId, {
-        resumeInterrupted: executionContext.isRedelivery,
+        ownerToken,
+        leaseExpiresAt,
+        resumeInterrupted: isRedelivery,
       });
 
       if (!claimedTask) {
+        const currentTask = await this.taskRepository.getTaskById(message.taskId);
+
+        if (
+          currentTask?.status === "running" &&
+          currentTask.execution_lease_expires_at &&
+          Date.parse(currentTask.execution_lease_expires_at) > Date.now()
+        ) {
+          throw new TaskExecutionLeaseBusyError(
+            taskExecutionLeaseRetryDelay(currentTask.execution_lease_expires_at),
+          );
+        }
+
         logger.info(`Task ${message.taskId} is not claimable, skipping duplicate delivery`);
 
         return;
       }
 
-      if (executionContext.isRedelivery) {
+      const lease = createTaskExecutionLease({
+        repository: this.taskRepository,
+        taskId: message.taskId,
+        ownerToken,
+        initialExpiresAt: leaseExpiresAt,
+      });
+      const executionContext: TaskExecutionContext = {
+        deliveryAttempt,
+        isRedelivery,
+        lease,
+      };
+
+      if (isRedelivery) {
         await this.taskRepository.failRunningTaskExecutions(
           message.taskId,
           "The previous queue delivery ended before recording an outcome.",
@@ -92,18 +125,42 @@ export class TaskExecutor {
 
         const executionTime = Date.now() - startTime;
 
+        await lease.assertOwned();
         await this.recordExecutionSuccess(executionId, executionTime, result);
 
-        await this.taskRepository.updateTask(message.taskId, {
+        const settled = await this.taskRepository.updateOwnedTask(message.taskId, ownerToken, {
           status: "completed",
           completed_at: new Date().toISOString(),
         });
+
+        if (!settled) {
+          throw new TaskExecutionOwnershipLostError();
+        }
 
         logger.info(`Task ${message.taskId} completed successfully in ${executionTime}ms`);
       } catch (error) {
         const executionTime = Date.now() - startTime;
 
         await this.recordExecutionFailure(executionId, executionTime, error as Error);
+
+        if (error instanceof TaskExecutionLeaseBusyError) {
+          await lease.assertOwned();
+          const released = await this.taskRepository.updateOwnedTask(message.taskId, ownerToken, {
+            status: "queued",
+          });
+
+          if (!released) {
+            throw new TaskExecutionOwnershipLostError();
+          }
+
+          throw error;
+        }
+
+        if (isTaskExecutionOwnershipLostError(error)) {
+          throw error;
+        }
+
+        await lease.assertOwned();
 
         const task = await this.taskRepository.getTaskById(message.taskId);
 
@@ -112,20 +169,30 @@ export class TaskExecutor {
 
           if (newAttempts >= (task.max_attempts || 3)) {
             // Keep the task claim retryable until its handler has durably reconciled external state.
-            await handler.onFinalFailure?.(message, this.env, error as Error);
+            await handler.onFinalFailure?.(message, this.env, error as Error, executionContext);
 
-            await this.taskRepository.updateTask(message.taskId, {
+            const settled = await this.taskRepository.updateOwnedTask(message.taskId, ownerToken, {
               status: "failed",
               attempts: newAttempts,
               error_message: (error as Error).message,
             });
+
+            if (!settled) {
+              throw new TaskExecutionOwnershipLostError();
+            }
+
             logger.error(`Task ${message.taskId} failed after ${newAttempts} attempts`);
           } else {
-            await this.taskRepository.updateTask(message.taskId, {
+            const settled = await this.taskRepository.updateOwnedTask(message.taskId, ownerToken, {
               status: "queued",
               attempts: newAttempts,
               error_message: (error as Error).message,
             });
+
+            if (!settled) {
+              throw new TaskExecutionOwnershipLostError();
+            }
+
             logger.warn(
               `Task ${message.taskId} failed, attempt ${newAttempts}/${task.max_attempts}`,
             );
@@ -133,6 +200,8 @@ export class TaskExecutor {
         }
 
         throw error;
+      } finally {
+        await lease.stop();
       }
     } catch (error) {
       logger.error(`Task execution error for ${message.taskId}:`, error);

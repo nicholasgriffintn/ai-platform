@@ -41,6 +41,7 @@ export interface ReasoningControls {
 
 export type MessageContent = {
   type: ContentType;
+  source_id?: string;
   text?: string;
   image_url?: {
     url: string;
@@ -96,6 +97,7 @@ export type Attachment = {
   detail?: "low" | "high";
   name?: string;
   markdown?: string;
+  sourceId?: string;
 };
 
 export type AsyncInvocationStatus = "in_progress" | "completed" | "failed";
@@ -157,6 +159,7 @@ export interface Message {
   status?: string;
   data?: MessageDataPayload | null;
   completion_id?: string;
+  run_id?: string;
   created?: number;
   model?: string;
   provider?: string;
@@ -207,6 +210,8 @@ export interface IBody {
   require_approval_for?: ToolPermission[];
   verbosity?: VerbosityLevel;
   role?: ChatRole;
+  run_id?: string;
+  run_attempt?: number;
   [other: string]: any;
 }
 
@@ -254,6 +259,7 @@ type InternalExecutionParams = {
   min_tokens?: number;
   // Current orchestration step for streamed multi-step responses.
   current_step?: number;
+  command_payload?: Record<string, unknown>;
   // The URL of the app.
   app_url?: string;
   // The environment variables to use for the response.
@@ -306,6 +312,11 @@ type InternalExecutionParams = {
   tool_policy_mode?: AgentMode;
   // Internal Work-task runs use the stage policy instead of the interactive mode defaults.
   enforce_mode_tool_policy?: boolean;
+  durable_execution?: {
+    kind: "project_task";
+    dispatchTaskId: string;
+    executionOwnerToken: string;
+  };
 };
 
 export type ChatRequestOptions = SchemaChatRequestOptions;

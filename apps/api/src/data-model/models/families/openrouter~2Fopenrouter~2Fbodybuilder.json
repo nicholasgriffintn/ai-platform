@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 5, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The openrouter/openrouter/bodybuilder family includes models that produce text.",
+  "models": {
+    "body-builder-beta": {
+      "defaults": {
+        "name": "Body Builder (beta)",
+        "description": "Preview model for early access evaluation, prototyping, and compatibility testing"
+      }
+    }
+  }
+}

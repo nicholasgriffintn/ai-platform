@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "coding",
+      "analysis",
+      "instruction",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 4,
+    "knowledgeCutoffDate": "October 2023",
+    "releaseDate": "February 26, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The inception/mercury coder family includes models that produce text.",
+  "models": {
+    "mercury-coder": {
+      "defaults": {
+        "name": "Mercury Coder",
+        "description": "Mercury Coder is a specialized model optimized for coding tasks with tool calling support and extensive context window."
+      }
+    }
+  }
+}

@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-library-client/retry";
 import type { SandboxModelSettings } from "@ngriffin_uk/polychat-schemas";
 
-const POLYCHAT_SANDBOX_USER_AGENT = "Polychat-Sandbox-Worker/1.0 (+https://polychat.app)";
+import { createPolychatRequest } from "./polychat-request";
 
 const RETRYABLE_HTTP_STATUS_CODES = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 const DEFAULT_MAX_ATTEMPTS = 3;
@@ -64,7 +64,7 @@ export class PolychatClient {
   }
 
   private async fetchPolychat(path: string, init: RequestInit): Promise<Response> {
-    return this.polychatApi.fetch(new Request(`http://polychat-api${path}`, init));
+    return this.polychatApi.fetch(createPolychatRequest(path, init));
   }
 
   private isRetryableError(error: unknown): boolean {
@@ -92,7 +92,6 @@ export class PolychatClient {
       method: "POST",
       headers: {
         Authorization: `Bearer ${this.userToken}`,
-        "User-Agent": POLYCHAT_SANDBOX_USER_AGENT,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

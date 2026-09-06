@@ -447,7 +447,7 @@ export class BedrockProvider extends BaseProvider {
       messages: bedrockMessages,
       inferenceConfig: {
         temperature: reasoning.allowsSampling ? commonParams.temperature : undefined,
-        maxTokens: commonParams.max_tokens,
+        maxTokens: reasoning.maxTokens ?? commonParams.max_tokens,
         topP: reasoning.allowsSampling ? commonParams.top_p : undefined,
       },
       ...toolConfig,

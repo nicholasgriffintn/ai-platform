@@ -173,4 +173,19 @@ export class ActivityRepository extends BaseRepository {
       [capabilityId, groupId],
     );
   }
+
+  async failActiveActivitiesByGroup(
+    capabilityId: string,
+    groupId: string,
+    summary: string,
+  ): Promise<void> {
+    await this.executeRun(
+      `UPDATE activity_record
+       SET status = 'failed', summary = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE capability_id = ?
+         AND group_id = ?
+         AND status IN ('queued', 'running')`,
+      [summary.slice(0, 200), capabilityId, groupId],
+    );
+  }
 }

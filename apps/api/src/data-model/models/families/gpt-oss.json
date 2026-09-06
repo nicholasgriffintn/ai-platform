@@ -1,0 +1,246 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131072,
+    "releaseDate": "August 5, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The gpt oss family includes models that produce guardrails, text.",
+  "models": {
+    "gpt-oss-120b": {
+      "defaults": {
+        "name": "GPT OSS 120B",
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 23.8,
+          "codingIndex": 30.4,
+          "agenticIndex": 13.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-oss-120b-free": {
+      "defaults": {
+        "name": "gpt-oss-120b (free)",
+        "description": "gpt-oss-120b (free) accepts text and produces text.",
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "June 30, 2024",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 23.8,
+          "codingIndex": 30.4,
+          "agenticIndex": 13.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-oss-120b-tee": {
+      "defaults": {
+        "name": "gpt oss 120b TEE",
+        "description": "gpt oss 120b TEE accepts text and produces text.",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 29, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-oss-20b": {
+      "defaults": {
+        "name": "GPT OSS 20B",
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 14.9,
+          "codingIndex": 20.7,
+          "agenticIndex": 3.1,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-oss-20b-free": {
+      "defaults": {
+        "name": "gpt-oss-20b (free)",
+        "description": "gpt-oss-20b (free) accepts text and produces text.",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "knowledgeCutoffDate": "June 30, 2024",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 14.9,
+          "codingIndex": 20.7,
+          "agenticIndex": 3.1,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-oss-safeguard-120b": {
+      "defaults": {
+        "name": "GPT OSS Safeguard 120B",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 128000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
+        },
+        "releaseDate": "October 29, 2025"
+      }
+    },
+    "gpt-oss-safeguard-20b": {
+      "defaults": {
+        "name": "gpt-oss-safeguard-20b",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 128000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
+        },
+        "releaseDate": "October 29, 2025"
+      }
+    },
+    "green-r": {
+      "defaults": {
+        "name": "Green R",
+        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "supportsAttachments": true
+      }
+    },
+    "green-r-raw": {
+      "defaults": {
+        "name": "Green R Raw",
+        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "supportsAttachments": true
+      }
+    },
+    "safety-gpt-oss-20b": {
+      "defaults": {
+        "name": "Safety GPT OSS 20B",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
+        },
+        "releaseDate": "October 29, 2025"
+      }
+    }
+  }
+}

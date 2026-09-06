@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 2000000,
+    "maxTokens": 200000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "April 21, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The openrouter/openrouter/pareto code family includes models that produce text.",
+  "models": {
+    "pareto-code-router": {
+      "defaults": {
+        "name": "Pareto Code Router",
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks"
+      }
+    }
+  }
+}

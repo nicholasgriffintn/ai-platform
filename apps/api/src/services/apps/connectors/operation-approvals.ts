@@ -27,6 +27,40 @@ export interface ConnectorOperationApprovalView {
   consumedAt: string | null;
 }
 
+export interface ConnectorOperationApprovalStatusView {
+  id: string;
+  runId: string;
+  completionId: string;
+  provider: string;
+  operation: string;
+  state: "pending" | "approved" | "rejected" | "consumed" | "expired";
+  createdAt: string;
+  expiresAt: string;
+  resolvedAt: string | null;
+  consumedAt: string | null;
+}
+
+function toConnectorOperationApprovalStatusView(
+  approval: ConnectorOperationApprovalRecord,
+  now: string,
+): ConnectorOperationApprovalStatusView {
+  return {
+    id: approval.id,
+    runId: approval.runId,
+    completionId: approval.completionId,
+    provider: approval.provider,
+    operation: approval.operation,
+    state:
+      (approval.state === "pending" || approval.state === "approved") && approval.expiresAt <= now
+        ? "expired"
+        : approval.state,
+    createdAt: approval.createdAt,
+    expiresAt: approval.expiresAt,
+    resolvedAt: approval.resolvedAt,
+    consumedAt: approval.consumedAt,
+  };
+}
+
 function toConnectorOperationApprovalView(
   approval: ConnectorOperationApprovalRecord,
 ): ConnectorOperationApprovalView {
@@ -182,4 +216,22 @@ export async function resolveConnectorOperationApproval(params: {
   }
 
   throw new AssistantError("Connector approval is invalid or expired", ErrorType.NOT_FOUND, 404);
+}
+
+export async function getConnectorOperationApproval(params: {
+  context: ServiceContext;
+  userId: number;
+  approvalId: string;
+  now?: string;
+}): Promise<ConnectorOperationApprovalStatusView> {
+  const approval = await params.context.repositories.connectorOperationApprovals.getByIdForUser(
+    params.approvalId,
+    params.userId,
+  );
+
+  if (!approval) {
+    throw new AssistantError("Connector approval not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  return toConnectorOperationApprovalStatusView(approval, params.now ?? new Date().toISOString());
 }

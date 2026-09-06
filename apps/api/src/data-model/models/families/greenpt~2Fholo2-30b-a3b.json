@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 22016,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The greenpt/holo2 30b a3b family includes models that produce text.",
+  "models": {
+    "holo2-30b-a3b": {
+      "defaults": {
+        "name": "Holo2 30B A3B",
+        "description": "H Company Holo2 vision model for GUI navigation and computer-use agents"
+      }
+    }
+  }
+}

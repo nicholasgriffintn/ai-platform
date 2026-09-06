@@ -1,8 +1,5 @@
-import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
-
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import { restoreStoredAttachmentContent } from "~/lib/chat/messages/stored-attachments";
-import { pruneMessagesToFitContext } from "~/lib/chat/policy/context-window";
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -16,35 +13,28 @@ export interface BuildProviderContextParams {
   shouldStoreMessages: boolean;
   fallbackMessages: Message[];
   messageWithContext: string;
-  primaryModelConfig: ModelConfigItem;
 }
 
 export function buildFinalMessages(
   sanitisedMessages: Message[],
   messageWithContext: string,
-  modelConfig: ModelConfigItem,
 ): Message[] {
   const messagesWithAttachments = restoreStoredAttachmentContent(sanitisedMessages);
-  const prunedWithAttachments =
-    messagesWithAttachments.length > 0
-      ? pruneMessagesToFitContext(messagesWithAttachments, messageWithContext, modelConfig)
-      : [];
 
-  const chatMessages = prunedWithAttachments.map((msg, index) => {
-    if (index !== prunedWithAttachments.length - 1) {
+  const chatMessages = messagesWithAttachments.map((msg, index) => {
+    if (index !== messagesWithAttachments.length - 1) {
       return msg;
     }
 
     if (Array.isArray(msg.content)) {
-      return {
-        ...msg,
+      return Object.assign({}, msg, {
         content: msg.content.map((part) =>
-          part.type === "text" ? { ...part, text: messageWithContext } : part,
+          part.type === "text" ? Object.assign({}, part, { text: messageWithContext }) : part,
         ),
-      };
+      });
     }
 
-    return { ...msg, content: messageWithContext };
+    return Object.assign({}, msg, { content: messageWithContext });
   });
 
   return toProviderMessages(chatMessages).filter((msg) => msg.role !== "system");
@@ -56,21 +46,16 @@ export async function buildProviderContext({
   shouldStoreMessages,
   fallbackMessages,
   messageWithContext,
-  primaryModelConfig,
 }: BuildProviderContextParams): Promise<Message[]> {
   if (!shouldStoreMessages || !completionId) {
-    return buildFinalMessages(fallbackMessages, messageWithContext, primaryModelConfig);
+    return buildFinalMessages(fallbackMessages, messageWithContext);
   }
 
   try {
     const activeMessages = await conversationManager.get(completionId);
 
     if (Array.isArray(activeMessages) && activeMessages.length > 0) {
-      const providerMessages = buildFinalMessages(
-        activeMessages,
-        messageWithContext,
-        primaryModelConfig,
-      );
+      const providerMessages = buildFinalMessages(activeMessages, messageWithContext);
 
       if (providerMessages.length > 0) {
         return providerMessages;

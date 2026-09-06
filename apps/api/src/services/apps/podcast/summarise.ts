@@ -1,5 +1,6 @@
 import { gatewayId } from "~/constants/app";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { createExecutionOutputProvenance } from "~/lib/provenance/output";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -185,6 +186,10 @@ export const handlePodcastSummarise = async (
       kind: "summary",
       title: `Summary: ${title || "Untitled podcast"}`,
       content: appData,
+      provenance: await createExecutionOutputProvenance(serviceContext, {
+        modelId: "@cf/facebook/bart-large-cnn",
+        provider: "cloudflare",
+      }),
     });
 
     return {

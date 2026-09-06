@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 16000,
+    "maxTokens": 4000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 4, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The cohere/c4ai aya vision 8b family includes models that produce text.",
+  "models": {
+    "aya-vision-8b": {
+      "defaults": {
+        "name": "Aya Vision 8B",
+        "description": "Compact open multilingual vision model for OCR and visual question answering"
+      }
+    }
+  }
+}

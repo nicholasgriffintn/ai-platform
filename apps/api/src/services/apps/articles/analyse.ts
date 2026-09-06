@@ -1,4 +1,5 @@
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { createExecutionOutputProvenance } from "~/lib/provenance/output";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
@@ -129,6 +130,10 @@ export async function analyseArticle({
       kind: "analysis",
       title: outputContent.title,
       content: outputContent,
+      provenance: await createExecutionOutputProvenance(serviceContext, {
+        modelId: modelToUse,
+        provider: providerToUse,
+      }),
     });
 
     return {

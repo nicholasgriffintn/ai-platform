@@ -1,0 +1,85 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 480,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "contextComplexity": 1,
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The imagen family includes models that produce image.",
+  "models": {
+    "imagen-4": {
+      "defaults": {
+        "name": "Imagen 4",
+        "description": "Imagen 4 accepts text and produces image.",
+        "releaseDate": "May 20, 2025"
+      }
+    },
+    "imagen-4-fast": {
+      "defaults": {
+        "name": "Imagen 4 Fast",
+        "description": "Imagen 4 Fast accepts text and produces image.",
+        "strengths": [
+          "image"
+        ],
+        "reliability": 3,
+        "releaseDate": "June 1, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1078,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
+      }
+    },
+    "imagen-4-ultra": {
+      "defaults": {
+        "name": "Imagen 4 Ultra",
+        "description": "Imagen 4 Ultra accepts text and produces image.",
+        "strengths": [
+          "image",
+          "creative"
+        ],
+        "reliability": 4,
+        "releaseDate": "May 24, 2025",
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1172,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
+      }
+    }
+  }
+}

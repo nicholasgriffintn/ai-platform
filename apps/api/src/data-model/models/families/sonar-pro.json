@@ -1,0 +1,51 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 200000,
+    "maxTokens": 8000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Advanced Sonar search model for deeper research and cited synthesis",
+  "models": {
+    "sonar-pro": {
+      "defaults": {
+        "name": "Sonar Pro",
+        "description": "Advanced Sonar search model for deeper research and cited synthesis",
+        "contextComplexity": 3,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "sonar-pro-search": {
+      "defaults": {
+        "name": "Sonar Pro Search",
+        "description": "Advanced Sonar search model for deeper research and cited synthesis",
+        "releaseDate": "October 30, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

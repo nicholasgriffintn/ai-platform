@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ResponseFormatter } from "~/lib/formatter/responses";
+import type { ChatCompletionParameters, IEnv } from "~/types";
+import { resolveEffectiveMaxTokens } from "~/utils/parameters";
+
 import { extractPanelRouting, runPanel, type PanelMember } from "../panel";
 
 const mocks = vi.hoisted(() => ({
@@ -26,10 +30,14 @@ function routingTag(payload: Record<string, unknown>): string {
 }
 
 function baseParams() {
+  const env: IEnv = Object.create(null);
+
   return {
-    env: {} as never,
+    env,
     completionId: "conversation-1",
     usageScopeId: "tool-call-1",
+    runId: "run-1",
+    runAttempt: 2,
     question: "Should we migrate?",
     members: MEMBERS,
     turnBrief: "Turn brief.",
@@ -107,6 +115,9 @@ describe("runPanel", () => {
       "panel:tool-call-1:1",
       "panel:tool-call-1:2",
     ]);
+    expect(mocks.recordModelTurnUsage).toHaveBeenCalledWith(
+      expect.objectContaining({ runId: "run-1", runAttempt: 2 }),
+    );
   });
 
   it("stops at the turn budget when members keep routing onward", async () => {
@@ -141,5 +152,70 @@ describe("runPanel", () => {
 
     expect(result.turns).toHaveLength(1);
     expect(result.conclusion).toBe("Conclusion despite the gap.");
+  });
+
+  it("leaves room for reasoning before a member's answer and conclusion", async () => {
+    mocks.getAIResponse.mockImplementation(async (payload: ChatCompletionParameters) => {
+      const maxTokens = resolveEffectiveMaxTokens(payload, undefined);
+      const exhausted = maxTokens !== undefined && maxTokens <= 900;
+
+      return ResponseFormatter.formatResponse(
+        {
+          choices: [
+            {
+              message: {
+                content: exhausted ? "" : "A considered answer.",
+                reasoning_content: "Consider the competing perspectives.",
+              },
+              finish_reason: exhausted ? "length" : "stop",
+            },
+          ],
+          usage: { prompt_tokens: 482, completion_tokens: exhausted ? 900 : 1200 },
+        },
+        "workers-ai",
+      );
+    });
+
+    const result = await runPanel({
+      ...baseParams(),
+      model: "@cf/zai-org/glm-4.7-flash",
+      provider: "workers-ai",
+    });
+
+    expect(result.turns[0].content).toBe("A considered answer.");
+    expect(result.conclusion).toBe("A considered answer.");
+    expect(mocks.recordModelTurnUsage).toHaveBeenCalledTimes(2);
+  });
+
+  it("tries another member when the opening completion fails", async () => {
+    mocks.getAIResponse
+      .mockRejectedValueOnce(new Error("Opening completion failed"))
+      .mockResolvedValueOnce({ response: "Sceptic opens instead." })
+      .mockResolvedValueOnce({ response: "The panel decides." });
+
+    const result = await runPanel({ ...baseParams(), model: "m" });
+
+    expect(result.turns).toMatchObject([
+      { memberId: "sceptic", content: "Sceptic opens instead." },
+    ]);
+    expect(result.conclusion).toBe("The panel decides.");
+  });
+
+  it("preserves the failure after every member has been attempted", async () => {
+    const error = new Error("Provider unavailable");
+
+    mocks.getAIResponse.mockRejectedValue(error);
+
+    await expect(runPanel({ ...baseParams(), model: "m" })).rejects.toBe(error);
+    expect(mocks.getAIResponse).toHaveBeenCalledTimes(2);
+  });
+
+  it("counts failed attempts towards the panel's turn budget", async () => {
+    const error = new Error("Provider unavailable");
+
+    mocks.getAIResponse.mockRejectedValue(error);
+
+    await expect(runPanel({ ...baseParams(), model: "m", maxTurns: 1 })).rejects.toBe(error);
+    expect(mocks.getAIResponse).toHaveBeenCalledTimes(1);
   });
 });

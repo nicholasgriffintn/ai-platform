@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "December 2023",
+    "releaseDate": "August 26, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The cortecs/hermes 4 70b family includes models that produce text.",
+  "models": {
+    "hermes-4-70b": {
+      "defaults": {
+        "name": "Hermes 4 70B",
+        "description": "Hermes 4 70B accepts text and produces text."
+      }
+    }
+  }
+}

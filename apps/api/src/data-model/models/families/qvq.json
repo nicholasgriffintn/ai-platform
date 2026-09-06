@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 131072,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 2024",
+    "releaseDate": "March 25, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The qvq family includes models that produce text.",
+  "models": {
+    "qvq-max": {
+      "defaults": {
+        "name": "QVQ Max",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks"
+      }
+    }
+  }
+}

@@ -31,14 +31,25 @@ export async function handleLogout({
   context,
   env,
   sessionId,
+  userId,
+  notificationInstallationId,
 }: {
   context?: ServiceContext;
   env?: IEnv;
   sessionId: string | null;
+  userId?: number;
+  notificationInstallationId?: string | null;
 }): Promise<{ success: boolean }> {
-  if (sessionId) {
-    const serviceContext = resolveServiceContext({ context, env });
+  const serviceContext = resolveServiceContext({ context, env });
 
+  if (userId && notificationInstallationId) {
+    await serviceContext.repositories.taskNotifications.removeRegistration(
+      userId,
+      notificationInstallationId,
+    );
+  }
+
+  if (sessionId) {
     await createAssistantAuth(serviceContext).revokeSession(sessionId);
   }
 

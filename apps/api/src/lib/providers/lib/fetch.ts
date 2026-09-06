@@ -16,6 +16,7 @@ import {
   getProviderErrorMessage,
   getProviderResponseErrorMessage,
   isProviderRateLimit,
+  parseProviderRetryAfterMs,
 } from "~/utils/providerErrors";
 import { redactSensitiveTokens } from "~/utils/redaction";
 import { detectStreaming } from "~/utils/streaming";
@@ -73,7 +74,7 @@ export async function fetchAIResponse<
   options: FetchAIResponseOptions = {
     requestTimeout: 100000,
     retryDelay: 500,
-    maxAttempts: 2,
+    maxAttempts: 1,
     backoff: "exponential",
     responseType: "json",
   },
@@ -139,6 +140,7 @@ export async function fetchAIResponse<
     response.headers.get("request-id") ??
     response.headers.get("cf-aig-event-id") ??
     undefined;
+  const retryAfterMs = parseProviderRetryAfterMs(response.headers.get("retry-after"));
 
   if (!response.ok) {
     let responseText: string;
@@ -182,6 +184,7 @@ export async function fetchAIResponse<
         {
           ...errorDetails,
           upstreamStatus: errorDetails.responseJson?.raw_status_code ?? response.status,
+          ...(retryAfterMs === undefined ? {} : { retryAfterMs }),
         },
       );
     }
@@ -190,7 +193,7 @@ export async function fetchAIResponse<
       getProviderResponseErrorMessage(errorDetails),
       ErrorType.PROVIDER_ERROR,
       response.status,
-      errorDetails,
+      { ...errorDetails, ...(retryAfterMs === undefined ? {} : { retryAfterMs }) },
     );
   }
 

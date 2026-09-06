@@ -43,59 +43,70 @@ function canCaptureVisualSnapshot(): boolean {
   return true;
 }
 
+const THEME_STORAGE_KEY = "polychat-theme";
+
 type ThemeState = {
-  hasDarkThemeClass: boolean;
-  hasLightThemeClass: boolean;
+  themeId: string | null;
   storedTheme: string | null;
 };
 
 async function getThemeState(page: Page): Promise<ThemeState> {
-  return page.evaluate(() => ({
-    hasDarkThemeClass: document.documentElement.classList.contains("dark"),
-    hasLightThemeClass: document.documentElement.classList.contains("light"),
-    storedTheme: window.localStorage.getItem("theme"),
-  }));
+  return page.evaluate((storageKey) => {
+    const root = document.documentElement;
+
+    return {
+      themeId: root.dataset.polychatTheme ?? null,
+      storedTheme: window.localStorage.getItem(storageKey),
+    };
+  }, THEME_STORAGE_KEY);
+}
+
+async function applyThemeId(page: Page, themeId: string | null): Promise<void> {
+  await page.evaluate((nextThemeId) => {
+    const root = document.documentElement;
+
+    if (nextThemeId === null) {
+      delete root.dataset.polychatTheme;
+      root.classList.remove("light", "dark");
+
+      return;
+    }
+
+    root.dataset.polychatTheme = nextThemeId;
+    root.classList.toggle("dark", nextThemeId !== "light");
+    root.classList.toggle("light", nextThemeId === "light");
+  }, themeId);
 }
 
 async function setThemeAndMediaForScheme(page: Page, scheme: ColourScheme): Promise<void> {
-  await page.evaluate((nextScheme) => {
-    const root = document.documentElement;
-
-    root.classList.remove("light", "dark");
-    root.classList.add(nextScheme);
-    window.localStorage.setItem("theme", nextScheme);
-  }, scheme);
+  await page.evaluate(
+    ({ nextScheme, storageKey }) => {
+      window.localStorage.setItem(storageKey, nextScheme);
+    },
+    { nextScheme: scheme, storageKey: THEME_STORAGE_KEY },
+  );
+  await applyThemeId(page, scheme);
   await page.emulateMedia({ colorScheme: scheme });
   await page.waitForFunction(
-    (nextScheme: ColourScheme) => document.documentElement.classList.contains(nextScheme),
+    (nextScheme: ColourScheme) => document.documentElement.dataset.polychatTheme === nextScheme,
     scheme,
   );
 }
 
 async function restoreThemeState(page: Page, state: ThemeState): Promise<void> {
-  await page.evaluate((previousState) => {
-    const root = document.documentElement;
+  await applyThemeId(page, state.themeId);
+  await page.evaluate(
+    ({ previousState, storageKey }) => {
+      if (previousState.storedTheme === null) {
+        window.localStorage.removeItem(storageKey);
 
-    if (previousState.hasDarkThemeClass) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+        return;
+      }
 
-    if (previousState.hasLightThemeClass) {
-      root.classList.add("light");
-    } else {
-      root.classList.remove("light");
-    }
-
-    if (previousState.storedTheme === null) {
-      window.localStorage.removeItem("theme");
-
-      return;
-    }
-
-    window.localStorage.setItem("theme", previousState.storedTheme);
-  }, state);
+      window.localStorage.setItem(storageKey, previousState.storedTheme);
+    },
+    { previousState: state, storageKey: THEME_STORAGE_KEY },
+  );
 }
 
 export async function captureVisualSnapshot(

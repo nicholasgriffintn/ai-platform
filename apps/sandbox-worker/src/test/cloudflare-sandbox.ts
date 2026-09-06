@@ -49,6 +49,11 @@ export async function* parseSSEStream<T>(
   const reader = stream.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  const onAbort = () => {
+    void reader.cancel().catch(() => {});
+  };
+
+  signal?.addEventListener("abort", onAbort);
 
   try {
     while (true) {
@@ -57,6 +62,8 @@ export async function* parseSSEStream<T>(
       }
 
       const { done, value } = await reader.read();
+
+      signal?.throwIfAborted();
 
       if (done) {
         break;
@@ -92,6 +99,8 @@ export async function* parseSSEStream<T>(
       }
     }
   } finally {
+    signal?.removeEventListener("abort", onAbort);
+    await reader.cancel();
     reader.releaseLock();
   }
 }

@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 250000,
+    "maxTokens": 60000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "August 1, 2025",
+    "releaseDate": "September 1, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The lucid family includes models that produce text.",
+  "models": {
+    "lucidquery-nexus-coder": {
+      "defaults": {
+        "name": "LucidQuery Nexus Coder",
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks"
+      }
+    }
+  }
+}

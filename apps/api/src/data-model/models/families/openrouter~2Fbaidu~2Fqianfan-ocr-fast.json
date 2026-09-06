@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 65536,
+    "maxTokens": 28672,
+    "modalities": {
+      "input": [
+        "image",
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "April 20, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/baidu/qianfan ocr fast family includes models that produce text.",
+  "models": {
+    "qianfan-ocr-fast": {
+      "defaults": {
+        "name": "Qianfan-OCR-Fast",
+        "description": "Qianfan-OCR-Fast accepts image, text and produces text."
+      }
+    }
+  }
+}

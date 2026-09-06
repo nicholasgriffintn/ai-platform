@@ -1,15 +1,16 @@
-import type {
-  AssistantRecipe,
-  AssistantRecipeConnection,
-  RecipeConfigurationField,
-  RecipeConfiguration,
-  RecipeConnectionStatus,
-  RecipeInstallation,
-  RecipeInstallationTrigger,
-  RecipeInstallationUpdateRequest,
-  RecipeConnectorManifest,
+import {
+  type AssistantRecipe,
+  type AssistantRecipeConnection,
+  type RecipeConfigurationField,
+  type RecipeConfiguration,
+  type RecipeConnectionStatus,
+  type RecipeInstallation,
+  type RecipeInstallationTrigger,
+  type RecipeInstallationUpdateRequest,
+  type RecipeConnectorManifest,
+  recipeConfigurationSchema,
+  type RecipeCatalogueSummary,
 } from "@ngriffin_uk/polychat-schemas";
-import { recipeConfigurationSchema } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { TemplateRecord } from "~/repositories/TemplateRepository";
@@ -44,6 +45,22 @@ import { buildRecipeScheduleState, type RecipeScheduleState } from "./scheduleSt
 
 export const RECIPE_INSTALLATION_APP_ID = "assistant_recipe_installation";
 export const RECIPE_INSTALLATION_ITEM_TYPE = "recipe_installation";
+
+export function listRecipeCatalogueSummaries(): RecipeCatalogueSummary[] {
+  return assistantRecipes.map((recipe) => ({
+    id: recipe.id,
+    title: recipe.title,
+    summary: recipe.summary,
+    kind: recipe.kind,
+    category: recipe.category,
+    featured: recipe.featured,
+    integrations: recipe.integrations.map((integration) => ({
+      id: integration.id,
+      providerId: integration.providerId,
+      name: integration.name,
+    })),
+  }));
+}
 
 interface RecipeListOptions {
   context?: ServiceContext;

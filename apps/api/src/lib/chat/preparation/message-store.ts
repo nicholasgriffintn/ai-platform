@@ -40,7 +40,7 @@ function buildMessagesToStore({
       ...base,
       content: finalMessage,
       data: buildUserMessageData(options.options),
-      id: generateId(),
+      id: lastMessage.id ?? generateId(),
       timestamp: Date.now(),
     },
   ];

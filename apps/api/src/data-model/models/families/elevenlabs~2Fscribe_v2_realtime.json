@@ -1,0 +1,24 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "transcription"
+    ]
+  },
+  "description": "The elevenlabs/scribe_v2_realtime family includes models that produce text.",
+  "models": {
+    "scribe-v2-realtime": {
+      "defaults": {
+        "name": "Scribe v2 Realtime",
+        "description": "ElevenLabs realtime speech-to-text model for low-latency transcription."
+      }
+    }
+  }
+}

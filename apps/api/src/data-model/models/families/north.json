@@ -1,0 +1,63 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 256000,
+    "maxTokens": 64000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 20.6,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "Cohere coding model for practical software engineering and agentic edits",
+  "models": {
+    "north-mini-code": {
+      "defaults": {
+        "name": "North Mini Code",
+        "description": "Cohere coding model for practical software engineering and agentic edits",
+        "knowledgeCutoffDate": "September 23, 2025",
+        "releaseDate": "June 9, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "north-mini-code-free": {
+      "defaults": {
+        "name": "North Mini Code (free)",
+        "description": "Cohere coding model for practical software engineering and agentic edits",
+        "releaseDate": "June 17, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

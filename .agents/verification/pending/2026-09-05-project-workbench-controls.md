@@ -10,9 +10,11 @@
 
 - [ ] During a run, add an instruction and confirm its presentation moves from submitted or accepted to queued, then processed after the worker receives it. Reload and confirm the instruction and matching Activity entries remain.
 - [ ] Pause a running job and confirm the request appears immediately, execution stops only at a safe boundary, and Resume continues the same run. Confirm invalid controls explain why they are disabled.
-- [ ] Submit the same instruction request twice with the same idempotency key and confirm only one queued instruction exists. Reuse the key with different content and confirm it is rejected.
+- [x] Submit the same instruction request twice with the same idempotency key and confirm only one queued instruction exists. Reuse the key with different content and confirm it is rejected.
 - [ ] Approve or reject a pending command, then repeat the response and confirm it cannot resolve twice. Let another approval expire and confirm it cannot be resolved.
 - [ ] Open the same run as another project member and confirm evidence is readable but steering and approval controls remain unavailable.
 - [ ] Race Cancel with terminal completion, reload and confirm the terminal run outcome is authoritative. Try a stale control update and an instruction against the terminal run and confirm both conflict.
 
 **Stop and report if:** a duplicate instruction appears, a non-runner can control the run, an expired approval resolves, execution pauses mid-command, or reload changes the final outcome.
+
+**Automated evidence:** `features/sandbox-controls.spec.ts` confirms pause at a checkpoint, resume of the same run, persisted steering, instruction idempotency and conflicts for terminal mutations. Repeated cancellation is an acknowledged no-op that preserves its original state. Leave combined checks open until every listed presentation or race outcome is covered.

@@ -80,6 +80,20 @@ describe("chat schemas", () => {
     expect(result.success).toBe(true);
   });
 
+  it("keeps backward-page state alongside the authorised message window", () => {
+    expect(
+      getChatCompletionMessagesResponseSchema.parse({
+        conversation_id: "conversation-1",
+        messages: [{ id: "message-101", role: "assistant", content: "Newest page" }],
+        has_more: true,
+        oldest_message_id: "message-101",
+      }),
+    ).toMatchObject({
+      has_more: true,
+      oldest_message_id: "message-101",
+    });
+  });
+
   it("accepts stored message rows with nullable database metadata", () => {
     const message = {
       id: "snapshot-1-compaction",

@@ -97,4 +97,32 @@ describe("loadVisibleConversationMessagePage", () => {
     expect(loadMessages).toHaveBeenCalledTimes(2);
     expect(result).toEqual([]);
   });
+
+  it("fills a newest-first window while returning messages in transcript order", async () => {
+    const loadMessages = vi
+      .fn()
+      .mockResolvedValueOnce([
+        { id: "snapshot-2", content: "Hidden snapshot", hidden: true },
+        { id: "message-4", content: "Visible four" },
+      ])
+      .mockResolvedValueOnce([{ id: "message-3", content: "Visible three" }]);
+
+    const result = await loadVisibleConversationMessagePage({
+      conversationId: "conversation-1",
+      limit: 2,
+      direction: "before",
+      includeArchived: true,
+      loadMessages,
+      formatMessage,
+      isHiddenMessage,
+    });
+
+    expect(loadMessages).toHaveBeenNthCalledWith(2, "conversation-1", 1, "snapshot-2", {
+      includeArchived: true,
+    });
+    expect(result).toEqual([
+      { id: "message-3", content: "Visible three" },
+      { id: "message-4", content: "Visible four" },
+    ]);
+  });
 });

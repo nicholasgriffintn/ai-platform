@@ -1,0 +1,25 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "creative"
+    ],
+    "supportsAttachments": false
+  },
+  "description": "The replicate/5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637 family includes models that produce text.",
+  "models": {
+    "sdxl-lightning-4-step": {
+      "defaults": {
+        "name": "SDXL Lightning 4-Step",
+        "description": "Bytedance's SDXL Lightning model tuned for ultra-fast 4-step diffusion image generation with high fidelity outputs."
+      }
+    }
+  }
+}

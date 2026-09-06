@@ -62,7 +62,7 @@ export function buildAssistantMetadataSection({
     .addLine(`<output_modalities>${asList(modelConfig?.modalities?.output)}</output_modalities>`)
     .addLine(`<context_window>${modelConfig?.contextWindow ?? "unspecified"}</context_window>`)
     .addLine(
-      `<effective_max_output_tokens>${effectiveMaxOutputTokens}</effective_max_output_tokens>`,
+      `<effective_max_output_tokens>${effectiveMaxOutputTokens ?? "provider_default"}</effective_max_output_tokens>`,
     )
     .addLine(
       `<knowledge_cutoff>${modelConfig?.knowledgeCutoffDate ?? "unspecified"}</knowledge_cutoff>`,

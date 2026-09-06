@@ -1,0 +1,273 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "reliability": 1,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The deepseek thinking family includes models that produce text.",
+  "models": {
+    "deepseek-r1": {
+      "defaults": {
+        "name": "DeepSeek-R1",
+        "description": "DeepSeek reasoning model for multi-step analysis, math, coding, and tools",
+        "maxTokens": 32768,
+        "contextComplexity": 3,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "January 20, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-r1-0528": {
+      "defaults": {
+        "name": "DeepSeek R1 0528",
+        "description": "DeepSeek reasoning model for multi-step analysis, math, coding, and tools",
+        "contextWindow": 164000,
+        "maxTokens": 164000,
+        "contextComplexity": 4,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "May 28, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 20.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-r1-0528-tee": {
+      "defaults": {
+        "name": "DeepSeek R1 0528 TEE",
+        "description": "DeepSeek R1 0528 TEE accepts text and produces text.",
+        "contextWindow": 163840,
+        "maxTokens": 65536,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "January 20, 2025"
+      }
+    },
+    "deepseek-r1-distill-llama-70b": {
+      "defaults": {
+        "name": "DeepSeek R1 Distill Llama 70B",
+        "description": "Reasoning-capable distilled Llama 70B model.",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "contextComplexity": 4,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "December 29, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-r1-distill-qwen-32b": {
+      "defaults": {
+        "name": "DeepSeek R1 Distill Qwen 32B",
+        "description": "Classic open reasoning model for transparent math, coding, and deliberate problem solving",
+        "contextWindow": 80000,
+        "maxTokens": 80000,
+        "contextComplexity": 3,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "January 20, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 11,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-r1-us": {
+      "defaults": {
+        "name": "DeepSeek-R1 (US)",
+        "description": "Classic open reasoning model for transparent math, coding, and deliberate problem solving",
+        "contextWindow": 128000,
+        "maxTokens": 32768,
+        "contextComplexity": 3,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "January 20, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-reasoner": {
+      "defaults": {
+        "name": "DeepSeek Reasoner",
+        "description": "Before delivering the final answer, the model first generates a Chain of Thought (CoT) to enhance the accuracy of its responses.",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "card": "https://www.prompthub.us/models/deepseek-reasoner-r1",
+        "strengths": [
+          "reasoning",
+          "multilingual",
+          "coding",
+          "analysis"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5,
+        "knowledgeCutoffDate": "September 2025",
+        "releaseDate": "December 1, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "deepseek-v4-pro": {
+      "defaults": {
+        "name": "DeepSeek V4 Pro",
+        "description": "Open MoE flagship with million-token context for coding and long agent runs",
+        "contextComplexity": 5,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "April 24, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 31.2,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v4-pro-0813": {
+      "defaults": {
+        "name": "DeepSeek V4 Pro 0813",
+        "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
+        "releaseDate": "August 12, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "deepseek-v4-pro-0813-eu": {
+      "defaults": {
+        "name": "DeepSeek V4 Pro 0813 (EU)",
+        "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "releaseDate": "August 12, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4-pro-eu": {
+      "defaults": {
+        "name": "DeepSeek V4 Pro (EU)",
+        "description": "Open MoE flagship with million-token context for coding and long agent runs",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "contextComplexity": 5,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "April 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 31.2,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "deepseek-v4-pro-new": {
+      "defaults": {
+        "name": "DeepSeek V4 Pro",
+        "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "contextComplexity": 5,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "April 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 31.2,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "r1-distill-llama-70b": {
+      "defaults": {
+        "name": "R1 Distill Llama 70B",
+        "description": "DeepSeek reasoning model for multi-step analysis, math, coding, and tools",
+        "contextWindow": 8192,
+        "maxTokens": 7372,
+        "contextComplexity": 1,
+        "knowledgeCutoffDate": "July 31, 2024",
+        "releaseDate": "January 23, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "models": {
+    "kimi-for-coding": {
+      "model": "kimi-k2/kimi-k2-7-code",
+      "matchingModel": "kimi-for-coding",
+      "overrides": {
+        "name": "Kimi For Coding",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
+        "lastUpdated": "June 12, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "k3": {
+      "model": "kimi-k3/kimi-k3",
+      "matchingModel": "k3",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "k3-256k": {
+      "model": "kimi-k3/kimi-k3-256k",
+      "matchingModel": "k3-256k",
+      "overrides": {
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "kimi-for-coding-highspeed": {
+      "model": "kimi-k2/kimi-for-coding-highspeed",
+      "matchingModel": "kimi-for-coding-highspeed",
+      "overrides": {
+        "lastUpdated": "June 12, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    }
+  }
+}

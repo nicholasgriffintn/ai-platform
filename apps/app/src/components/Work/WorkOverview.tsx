@@ -14,6 +14,7 @@ import { isAuthenticationError } from "~/lib/errors";
 import { useChatStore } from "~/state/stores/chatStore";
 
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
+import { TaskNotificationSettings } from "./TaskNotificationSettings";
 import { useWorkData } from "./WorkDataContext";
 
 export function WorkOverview() {
@@ -24,7 +25,7 @@ export function WorkOverview() {
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const isPro = useChatStore((state) => state.isPro);
   const canAccessWork = isAuthenticated && isPro;
-  const { items: attentionItems } = useTaskAttention();
+  const { items: attentionItems, unread, markRead, dismiss } = useTaskAttention();
 
   return (
     <>
@@ -100,17 +101,21 @@ export function WorkOverview() {
           />
         ) : null}
 
-        {canAccessWork && attentionItems.length > 0 && (
+        {canAccessWork && (
           <section className="mt-10">
-            <h2 className="text-foreground mb-3 text-sm font-semibold">Waiting on you</h2>
+            <h2 className="text-foreground mb-3 text-sm font-semibold">
+              Notification inbox{unread > 0 ? ` · ${unread} unread` : ""}
+            </h2>
             <TaskAttentionList
               items={attentionItems}
-              itemHref={(item) =>
-                `/work/${item.workspaceId}/projects/${item.projectId}/tasks/${item.taskId}`
-              }
+              itemHref={(item) => item.deepLink}
+              onRead={(item) => void markRead([item.id])}
+              onDismiss={(item) => void dismiss([item.id])}
             />
           </section>
         )}
+
+        {canAccessWork && <TaskNotificationSettings />}
       </PageShell.Content>
       <CreateWorkspaceDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </>

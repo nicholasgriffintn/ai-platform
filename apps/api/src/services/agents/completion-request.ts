@@ -55,7 +55,7 @@ class AgentCompletionRequestPreparer {
       max_steps: this.input.agent.max_steps || this.input.body.max_steps || 20,
       temperature: this.input.agent.temperature
         ? Number.parseFloat(this.input.agent.temperature)
-        : this.input.body.temperature || 0.8,
+        : this.input.body.temperature,
       top_p: this.input.body.top_p,
       platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
       stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,

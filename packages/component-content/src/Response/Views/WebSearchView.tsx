@@ -149,7 +149,7 @@ export function WebSearchView({
                       aria-label={`Use question "${question}" as a prompt`}
                       title="Use this question as a prompt"
                       onClick={() => {
-                        onToolInteraction?.(toolName, "useAsPrompt", {
+                        void onToolInteraction?.(toolName, "useAsPrompt", {
                           question,
                         });
                       }}

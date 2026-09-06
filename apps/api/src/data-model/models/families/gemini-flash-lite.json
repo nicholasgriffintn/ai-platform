@@ -1,0 +1,387 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "contextComplexity": 4,
+    "knowledgeCutoffDate": "January 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The gemini flash lite family includes models that produce image, text.",
+  "models": {
+    "gemini-2-5-flash-lite": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash Lite",
+        "description": "Lean Gemini 2.5 lane for cheap multimodal traffic and quick agents",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "reliability": 3,
+        "releaseDate": "June 17, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1088,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
+        }
+      }
+    },
+    "gemini-2-5-flash-lite-eu": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash-Lite (EU)",
+        "description": "Lean Gemini 2.5 lane for cheap multimodal traffic and quick agents",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "vision",
+          "document",
+          "video",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "releaseDate": "June 17, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1088,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
+        }
+      }
+    },
+    "gemini-2-5-flash-lite-preview-09-2025": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash Lite Preview 09-2025",
+        "description": "Gemini 2.5 Flash Lite Preview 09-2025 accepts text, image, pdf, audio, video and produces text.",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "reliability": 1,
+        "knowledgeCutoffDate": "January 31, 2025",
+        "releaseDate": "September 25, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-3-1-flash-lite": {
+      "defaults": {
+        "name": "Gemini 3.1 Flash Lite",
+        "description": "Low-latency Gemini model for high-volume multimodal and agent workloads",
+        "reliability": 1,
+        "releaseDate": "May 7, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25,
+          "codingIndex": 34.7,
+          "agenticIndex": 6.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-3-1-flash-lite-eu": {
+      "defaults": {
+        "name": "Gemini 3.1 Flash Lite (EU)",
+        "description": "Low-latency Gemini model for high-volume multimodal and agent workloads",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "reliability": 1,
+        "releaseDate": "May 7, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25,
+          "codingIndex": 34.7,
+          "agenticIndex": 6.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-3-1-flash-lite-image-nano-banana-2-lite": {
+      "defaults": {
+        "name": "Gemini 3.1 Flash Lite Image (Nano Banana 2 Lite)",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 65536,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "releaseDate": "June 30, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3-1-flash-lite-preview": {
+      "defaults": {
+        "name": "Gemini 3.1 Flash Lite Preview",
+        "description": "Low-latency Gemini model for high-volume multimodal and agent workloads",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "reliability": 1,
+        "releaseDate": "March 3, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25,
+          "codingIndex": 34.7,
+          "agenticIndex": 6.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gemini-3-5-flash-lite": {
+      "defaults": {
+        "name": "Gemini 3.5 Flash Lite",
+        "description": "Low-latency Gemini model for high-volume multimodal and agent workloads",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "July 21, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "gemini-3-5-flash-lite-eu": {
+      "defaults": {
+        "name": "Gemini 3.5 Flash Lite (EU)",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "July 21, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-flash-lite-latest": {
+      "defaults": {
+        "name": "Gemini Flash-Lite Latest",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "maxTokens": 65536,
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "July 21, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "nano-banana-2-lite": {
+      "defaults": {
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 65536,
+        "releaseDate": "June 30, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    }
+  }
+}

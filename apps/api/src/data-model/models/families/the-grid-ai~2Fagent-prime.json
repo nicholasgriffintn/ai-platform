@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 196608,
+    "maxTokens": 30000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "May 4, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The the grid ai/agent prime family includes models that produce text.",
+  "models": {
+    "agent-prime": {
+      "defaults": {
+        "name": "Agent Prime",
+        "description": "Reliable models for dependable agentic applications, multi-step tool use, and reasoning workflows. Any model that meets the contract spec can serve your request."
+      }
+    }
+  }
+}

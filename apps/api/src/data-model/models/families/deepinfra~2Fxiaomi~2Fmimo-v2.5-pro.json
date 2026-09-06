@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "contextWindow": 1048576,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use",
+      "coding"
+    ],
+    "contextComplexity": 4,
+    "reliability": 2,
+    "knowledgeCutoffDate": "December 2024",
+    "releaseDate": "April 22, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 42.2,
+      "codingIndex": 60.2,
+      "agenticIndex": 29.1,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The deepinfra/xiaomi/mimo v2.5 pro family includes models that produce text.",
+  "models": {
+    "mimo-v2-5-pro": {
+      "defaults": {
+        "name": "MiMo-V2.5-Pro",
+        "description": "MiMo-V2.5-Pro accepts text and produces text."
+      }
+    }
+  }
+}

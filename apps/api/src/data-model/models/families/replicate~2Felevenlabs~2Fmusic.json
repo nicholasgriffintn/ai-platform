@@ -1,0 +1,21 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    }
+  },
+  "description": "The replicate/elevenlabs/music family includes models that produce audio.",
+  "models": {
+    "elevenlabs-music": {
+      "defaults": {
+        "name": "ElevenLabs Music",
+        "description": "Compose a song from a prompt or a composition plan"
+      }
+    }
+  }
+}

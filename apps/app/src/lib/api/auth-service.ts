@@ -2,6 +2,7 @@ import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 
 import { API_BASE_URL } from "~/constants";
 import { apiKeyService } from "~/lib/api/api-key";
+import { getNotificationInstallationId } from "~/lib/notifications/installation";
 import type { AnonymousUser, User, UserSettings } from "~/types";
 
 import { fetchApi } from "./fetch-wrapper";
@@ -187,6 +188,7 @@ class AuthService {
       const response = await fetchApi("/auth/logout", {
         method: "POST",
         timeoutMs: 10000,
+        headers: { "X-Notification-Installation": getNotificationInstallationId() },
       });
 
       if (response.ok) {

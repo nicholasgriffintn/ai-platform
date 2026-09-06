@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ModelSelectorView: View {
     var onSelectModel: ((String) -> Void)?
+    var validateSelection: ((ModelConfigItem) -> String?)?
 
     @EnvironmentObject var modelsStore: ModelsStore
     @Environment(\.dismiss) private var dismiss
@@ -11,6 +12,7 @@ struct ModelSelectorView: View {
     @State private var showingDeprecated = false
     @State private var selectedProvider: String?
     @State private var showingError = false
+    @State private var selectionError: String?
     
     private var modelFilter: ModelSelectionFilter {
         ModelSelectionFilter(
@@ -83,6 +85,10 @@ struct ModelSelectorView: View {
                                                 isSelected: model.id == modelsStore.selectedModelId
                                             ) {
                                                 guard model.isAvailableForSelection else { return }
+                                                if let issue = validateSelection?(model) {
+                                                    selectionError = issue
+                                                    return
+                                                }
                                                 modelsStore.selectModel(model.id)
                                                 onSelectModel?(model.id)
                                                 dismiss()
@@ -127,6 +133,14 @@ struct ModelSelectorView: View {
             Button("OK") { }
         } message: {
             Text(modelsStore.error ?? "Unknown error occurred")
+        }
+        .alert("Model cannot be changed", isPresented: Binding(
+            get: { selectionError != nil },
+            set: { if !$0 { selectionError = nil } }
+        )) {
+            Button("OK") { selectionError = nil }
+        } message: {
+            Text(selectionError ?? "Choose another model.")
         }
         .onAppear {
             if modelsStore.models.isEmpty {
@@ -205,6 +219,17 @@ struct ModelRow: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .lineLimit(2)
+                    }
+
+                    if let readiness = model.readiness, !readiness.isReady {
+                        Text(readiness.reason)
+                            .font(.caption)
+                            .foregroundColor(readiness.state == "unknown" ? .orange : .red)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else if model.isExecutable == false {
+                        Text("Unavailable under the current account and provider policy.")
+                            .font(.caption)
+                            .foregroundColor(.red)
                     }
 
                     if let strengths = model.strengths, !strengths.isEmpty {

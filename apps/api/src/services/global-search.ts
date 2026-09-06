@@ -53,10 +53,11 @@ export async function searchPolychat(
             : conversation.snoozed_next_response_at && conversation.next_response_arrived !== 1
               ? { kind: "next_response" as const }
               : null,
-        labels:
-          safeParseJson<GlobalSearchResponse["conversations"][number]["labels"]>(
-            conversation.labels,
-          ) ?? [],
+        group: conversation.group
+          ? safeParseJson<GlobalSearchResponse["conversations"][number]["group"]>(
+              conversation.group,
+            )
+          : null,
         project:
           conversation.project_id &&
           conversation.project_name &&

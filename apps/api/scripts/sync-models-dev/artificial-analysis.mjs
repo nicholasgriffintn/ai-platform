@@ -1,9 +1,4 @@
-import { SUPPORTED_MODALITIES, UNPARSEABLE } from "./constants.mjs";
-import {
-  getPropertyAssignment,
-  getStringPropertyValue,
-  parseLiteralValue,
-} from "./source-model-config.mjs";
+import { SUPPORTED_MODALITIES } from "./constants.mjs";
 import {
   averageDefined,
   clampRouterScore,
@@ -11,6 +6,7 @@ import {
   readRecord,
   scoreHigherIsBetter,
   scoreLowerIsBetter,
+  toPer1k,
 } from "./value-utils.mjs";
 
 export function normaliseLookupKey(value) {
@@ -72,13 +68,7 @@ export function buildArtificialAnalysisLookup(models) {
   return lookup;
 }
 
-export function findArtificialAnalysisModel({
-  lookup,
-  entry,
-  remoteModel,
-  remoteModelId,
-  sourceFile,
-}) {
+export function findArtificialAnalysisModel({ lookup, entry, remoteModel, remoteModelId }) {
   if (!lookup || lookup.size === 0) {
     return null;
   }
@@ -87,8 +77,8 @@ export function findArtificialAnalysisModel({
 
   addModelLookupKeys(keys, entry.modelKey);
   addModelLookupKeys(keys, remoteModelId);
-  addModelLookupKeys(keys, getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile));
-  addModelLookupKeys(keys, getStringPropertyValue(entry.objectNode, "name", sourceFile));
+  addModelLookupKeys(keys, entry.config.matchingModel);
+  addModelLookupKeys(keys, entry.config.name);
   if (remoteModel && typeof remoteModel === "object") {
     addModelLookupKeys(keys, remoteModel.id);
     addModelLookupKeys(keys, remoteModel.name);
@@ -248,57 +238,6 @@ export function pushStrength(strengths, value, enabled) {
   }
 }
 
-export function getExistingFieldValue(objectNode, propertyName, sourceFile) {
-  if (!objectNode || !sourceFile) {
-    return undefined;
-  }
-
-  const property = getPropertyAssignment(objectNode, propertyName, sourceFile);
-
-  if (!property) {
-    return undefined;
-  }
-
-  const parsed = parseLiteralValue(property.initializer, sourceFile);
-
-  return parsed === UNPARSEABLE ? undefined : parsed;
-}
-
-export function buildEffectiveModelProfile(objectNode, sourceFile, baseValues = {}) {
-  const profile = {};
-
-  for (const fieldName of [
-    "modalities",
-    "supportsAttachments",
-    "supportsToolCalls",
-    "supportsToolChoice",
-    "supportsResponseFormat",
-    "supportsSearchGrounding",
-    "supportsCodeExecution",
-    "supportsWebFetch",
-    "supportsDocuments",
-    "supportsAudio",
-    "contextWindow",
-    "maxTokens",
-    "costPer1kInputTokens",
-    "costPer1kOutputTokens",
-    "reasoningConfig",
-    "strengths",
-  ]) {
-    const existingValue = getExistingFieldValue(objectNode, fieldName, sourceFile);
-
-    if (existingValue !== undefined) {
-      profile[fieldName] = existingValue;
-    }
-
-    if (baseValues[fieldName] !== undefined) {
-      profile[fieldName] = baseValues[fieldName];
-    }
-  }
-
-  return profile;
-}
-
 export function modalityListIncludes(modalities, sectionName, value) {
   const values = modalities?.[sectionName];
 
@@ -390,27 +329,14 @@ export function deriveArtificialAnalysisStrengths(model, scores, profile) {
   return strengths;
 }
 
-export function per1kFromPer1m(value) {
-  const numberValue = readNumber(value);
-
-  return numberValue === undefined
-    ? undefined
-    : Number.parseFloat((numberValue / 1000).toFixed(10));
-}
-
-export function buildArtificialAnalysisUpdateValues(
-  model,
-  objectNode,
-  sourceFile,
-  baseValues = {},
-) {
+export function buildArtificialAnalysisUpdateValues(model, baseValues = {}) {
   if (!model) {
     return {};
   }
 
   const evaluations = readRecord(model.evaluations);
   const scores = deriveArtificialAnalysisScores(model);
-  const profile = buildEffectiveModelProfile(objectNode, sourceFile, baseValues);
+  const profile = baseValues;
   const capabilityScores = deriveCapabilityScores(profile);
   const values = {
     artificialAnalysis: {
@@ -482,13 +408,13 @@ export function buildArtificialAnalysisUpdateValues(
     values.speed = speed;
   }
 
-  const inputCost = per1kFromPer1m(model.price_1m_input_tokens);
+  const inputCost = toPer1k(model.price_1m_input_tokens);
 
   if (inputCost !== undefined && readNumber(profile.costPer1kInputTokens) === undefined) {
     values.costPer1kInputTokens = inputCost;
   }
 
-  const outputCost = per1kFromPer1m(model.price_1m_output_tokens);
+  const outputCost = toPer1k(model.price_1m_output_tokens);
 
   if (outputCost !== undefined && readNumber(profile.costPer1kOutputTokens) === undefined) {
     values.costPer1kOutputTokens = outputCost;

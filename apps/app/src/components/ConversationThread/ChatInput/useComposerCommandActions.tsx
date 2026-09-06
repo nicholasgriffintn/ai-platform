@@ -30,6 +30,7 @@ import {
   getReasoningOptions,
   isActiveModel,
   isModelSelectableForAccount,
+  MODEL_TIER_DEFINITIONS,
 } from "@ngriffin_uk/polychat-schemas";
 import type {
   AssistantActionItem,
@@ -116,11 +117,13 @@ export function useComposerCommandActions({
     chatSettings,
     isPro,
     model,
+    modelTier,
     selectedAssistantAction,
     selectedAgentId,
     setChatMode,
     setChatSettings,
     setModel,
+    setModelTier,
     setSelectedAssistantAction,
     setSelectedAgentId,
     setSelectedAgentTokenPosition,
@@ -218,17 +221,33 @@ export function useComposerCommandActions({
 
   const modelCommands = useMemo<ComposerCommandAction[]>(
     () => [
-      {
-        id: "model-auto",
-        label: "Model: Automatic",
-        description: "Let Polychat choose the model for each response.",
-        command: "model auto",
+      ...[
+        {
+          id: null,
+          label: "Default",
+          description: "The project's default tier in Work, otherwise Medium.",
+          command: "default",
+        },
+        ...MODEL_TIER_DEFINITIONS.map((tier) => ({
+          id: tier.id,
+          label: tier.label,
+          description: tier.description,
+          command: tier.id,
+        })),
+      ].map((tier) => ({
+        id: `tier-${tier.command}`,
+        label: `Tier: ${tier.label}`,
+        description: tier.description,
+        command: `tier ${tier.command}`,
         icon: <Cpu className="h-4 w-4" aria-hidden="true" />,
-        isActive: model === null,
+        isActive: model === null && modelTier === tier.id,
         disabled: selectedAgentId !== null,
         disabledReason: "The selected agent controls the model.",
-        onSelect: () => selectModelWithDefaults(null),
-      },
+        onSelect: () => {
+          setModelTier(tier.id);
+          selectModelWithDefaults(null);
+        },
+      })),
       ...Object.entries(availableModels)
         .filter(
           ([modelId, modelConfig]) =>
@@ -248,7 +267,15 @@ export function useComposerCommandActions({
           onSelect: () => selectModelWithDefaults(modelId),
         })),
     ],
-    [availableModels, isPro, model, selectModelWithDefaults, selectedAgentId],
+    [
+      availableModels,
+      isPro,
+      model,
+      modelTier,
+      selectModelWithDefaults,
+      selectedAgentId,
+      setModelTier,
+    ],
   );
   const modelCommand = useMemo<ComposerCommandAction>(
     () => ({

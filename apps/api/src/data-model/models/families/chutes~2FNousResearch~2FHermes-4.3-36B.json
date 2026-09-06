@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 29, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The chutes/NousResearch/Hermes 4.3 36B family includes models that produce text.",
+  "models": {
+    "hermes-4-3-36b": {
+      "defaults": {
+        "name": "Hermes 4.3 36B",
+        "description": "Hermes 4.3 36B accepts text and produces text."
+      }
+    }
+  }
+}

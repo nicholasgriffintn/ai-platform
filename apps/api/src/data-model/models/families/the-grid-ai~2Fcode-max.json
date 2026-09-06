@@ -1,0 +1,40 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "May 4, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The the grid ai/code max family includes models that produce text.",
+  "models": {
+    "code-max": {
+      "defaults": {
+        "name": "Code Max",
+        "description": "Frontier models for complex research, architectural decisions, debugging, and multi-file development. Any model that meets the contract spec can serve your request."
+      }
+    }
+  }
+}

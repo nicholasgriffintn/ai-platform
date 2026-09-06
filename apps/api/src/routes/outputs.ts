@@ -4,11 +4,12 @@ import {
   errorResponseSchema,
   outputListQuerySchema,
   outputListResponseSchema,
-  outputRevisionSchema,
+  outputHistoryResponseSchema,
   outputSchema,
   outputShareDeliverySchema,
   outputShareListResponseSchema,
   sharedOutputSchema,
+  restoreOutputRevisionSchema,
   updateOutputSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -28,12 +29,16 @@ import {
   listOutputRevisions,
   listOutputs,
   revokeOutputShare,
+  restoreOutputRevision,
   updateOutput,
 } from "~/services/outputs";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 const outputParams = z.object({ outputId: z.string().min(1) });
+const outputRevisionParams = outputParams.extend({
+  revision: z.coerce.number().int().positive(),
+});
 const shareParams = outputParams.extend({ shareId: z.string().min(1) });
 const sharedOutputParams = z.object({ token: z.string().min(32) });
 const createOutputRequestSchema = createOutputSchema.omit({ file: true });
@@ -133,11 +138,21 @@ addRoute(app, "get", "/:outputId/revisions", {
   responses: {
     200: {
       description: "Output revisions",
-      schema: z.object({ revisions: z.array(outputRevisionSchema) }),
+      schema: outputHistoryResponseSchema,
     },
   },
   handler: ({ params, serviceContext, user }) =>
     listOutputRevisions(serviceContext, user.id, params.outputId),
+});
+
+addRoute(app, "post", "/:outputId/revisions/:revision/restore", {
+  tags: ["outputs"],
+  auth: true,
+  paramSchema: outputRevisionParams,
+  bodySchema: restoreOutputRevisionSchema,
+  responses: { 200: { description: "Restored output", schema: outputSchema } },
+  handler: ({ body, params, serviceContext, user }) =>
+    restoreOutputRevision(serviceContext, user.id, params.outputId, params.revision, body),
 });
 
 addRoute(app, "post", "/:outputId/shares", {

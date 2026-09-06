@@ -9,6 +9,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useUsageStore } from "~/state/stores/usageStore";
 
 import { isDismissed, useComposerBannerDismissals } from "./dismissal";
+import { buildModelReadinessBanner } from "./model-readiness-banner";
 import { buildUsageBanner } from "./usage-banner";
 
 export const STEALTH_MODEL_WARNING =
@@ -26,10 +27,17 @@ export type { ComposerBannerDescriptor, ComposerBannerTone };
 
 interface ComposerBannerOptions {
   model?: ModelConfigItem;
+  requestedModelId?: string | null;
+  isModelsLoading?: boolean;
   hideSuggestions?: boolean;
 }
 
-export function useComposerBanner({ model, hideSuggestions }: ComposerBannerOptions) {
+export function useComposerBanner({
+  model,
+  requestedModelId = null,
+  isModelsLoading = false,
+  hideSuggestions,
+}: ComposerBannerOptions) {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isPro = useChatStore((state) => state.isPro);
   const user = useChatStore((state) => state.user);
@@ -44,6 +52,7 @@ export function useComposerBanner({ model, hideSuggestions }: ComposerBannerOpti
 
   const banner = useMemo(() => {
     const candidates: Array<ComposerBannerDescriptor | null> = [
+      buildModelReadinessBanner(requestedModelId, model, isModelsLoading),
       buildUsageBanner(usageLimits),
       isStealthModel(model)
         ? { id: "stealth-model", tone: "warning", message: STEALTH_MODEL_WARNING }
@@ -134,6 +143,8 @@ export function useComposerBanner({ model, hideSuggestions }: ComposerBannerOpti
     usageLimits,
     isPro,
     model,
+    requestedModelId,
+    isModelsLoading,
     hideSuggestions,
     isAuthenticated,
     hasHydratedUserConfiguration,

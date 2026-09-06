@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "speech"
+      ]
+    },
+    "strengths": [
+      "audio"
+    ],
+    "contextComplexity": 3,
+    "reliability": 4
+  },
+  "description": "The workers ai/@cf/deepgram/aura 1 family includes models that produce speech.",
+  "models": {
+    "deepgram-aura-1": {
+      "defaults": {
+        "name": "Deepgram Aura 1",
+        "description": "Aura is a context-aware text-to-speech (TTS) model that applies natural pacing, expressiveness, and fillers based on the context of the provided text. The quality of your text input directly impacts the naturalness of the audio output."
+      }
+    }
+  }
+}

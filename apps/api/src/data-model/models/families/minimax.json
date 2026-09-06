@@ -1,0 +1,449 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The minimax family includes models that produce audio, text, video.",
+  "models": {
+    "hailuo-2-3": {
+      "defaults": {
+        "name": "Hailuo 2.3",
+        "description": "A high-fidelity video generation model optimized for realistic human motion, cinematic VFX, expressive characters, and strong prompt and style adherence across both text-to-video and image-to-video workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "video"
+        ],
+        "reliability": 4,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1179,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
+        }
+      }
+    },
+    "minimax-01": {
+      "defaults": {
+        "name": "MiniMax-01",
+        "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
+        "contextWindow": 1000192,
+        "maxTokens": 900172,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 31, 2024",
+        "releaseDate": "January 15, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true
+      }
+    },
+    "minimax-h3": {
+      "defaults": {
+        "name": "MiniMax H3",
+        "openWeights": false,
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "July 30, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "minimax-h3-max": {
+      "defaults": {
+        "name": "MiniMax H3 Max",
+        "openWeights": false,
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "minimax-m1": {
+      "defaults": {
+        "name": "MiniMax M1",
+        "openWeights": false,
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 40000,
+        "knowledgeCutoffDate": "June 30, 2024",
+        "releaseDate": "June 17, 2025",
+        "supportsResponseFormat": false
+      }
+    },
+    "minimax-m2": {
+      "defaults": {
+        "name": "MiniMax M2",
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "October 27, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 28.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "minimax-m2-1": {
+      "defaults": {
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "December 23, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 31.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "minimax-m2-1-lightning": {
+      "defaults": {
+        "name": "MiniMax M2.1 Lightning",
+        "openWeights": false,
+        "description": "High-speed MiniMax model for low-latency coding and agent workflows",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "December 23, 2025"
+      }
+    },
+    "minimax-m2-1-tee": {
+      "defaults": {
+        "name": "MiniMax M2.1 TEE",
+        "description": "MiniMax M2.1 TEE accepts text and produces text.",
+        "contextWindow": 196608,
+        "maxTokens": 65536,
+        "releaseDate": "December 29, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "minimax-m2-5": {
+      "defaults": {
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "February 12, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 33.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "minimax-m2-5-free": {
+      "defaults": {
+        "name": "MiniMax M2.5 (free)",
+        "description": "MiniMax M2.5 (free) accepts text and produces text.",
+        "contextWindow": 196608,
+        "maxTokens": 8192,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "February 12, 2026",
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 33.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "minimax-m2-5-high-speed": {
+      "defaults": {
+        "name": "MiniMax M2.5 High Speed",
+        "description": "High-speed MiniMax model for low-latency coding and agent workflows",
+        "contextWindow": 204800,
+        "maxTokens": 131000,
+        "releaseDate": "February 13, 2026"
+      }
+    },
+    "minimax-m2-5-highspeed": {
+      "defaults": {
+        "name": "MiniMax-M2.5-highspeed",
+        "description": "High-speed MiniMax model for low-latency coding and agent workflows",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "releaseDate": "February 13, 2026"
+      }
+    },
+    "minimax-m2-5-tee": {
+      "defaults": {
+        "name": "MiniMax M2.5 TEE",
+        "description": "MiniMax M2.5 TEE accepts text and produces text.",
+        "contextWindow": 196608,
+        "maxTokens": 65536,
+        "releaseDate": "February 12, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "minimax-m2-7": {
+      "defaults": {
+        "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "March 18, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.1,
+          "codingIndex": 52.6,
+          "agenticIndex": 25.6,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "minimax-m2-7-free": {
+      "defaults": {
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 196608,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "March 18, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.1,
+          "codingIndex": 52.6,
+          "agenticIndex": 25.6,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "minimax-m2-7-high-speed": {
+      "defaults": {
+        "name": "MiniMax M2.7 High Speed",
+        "description": "Low-latency M2.7 variant for interactive coding plans and agent loops",
+        "contextWindow": 204800,
+        "maxTokens": 131100,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 18, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "minimax-m2-7-highspeed": {
+      "defaults": {
+        "name": "MiniMax-M2.7-highspeed",
+        "description": "Low-latency M2.7 variant for interactive coding plans and agent loops",
+        "releaseDate": "March 18, 2026"
+      }
+    },
+    "minimax-m2-her": {
+      "defaults": {
+        "name": "MiniMax M2-her",
+        "openWeights": false,
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 65536,
+        "maxTokens": 2048,
+        "releaseDate": "January 23, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "minimax-m3": {
+      "defaults": {
+        "name": "MiniMax-M3",
+        "description": "MiniMax multimodal model for long-context coding, perception, and agent planning",
+        "maxTokens": 512000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "June 1, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.4,
+          "codingIndex": 58.6,
+          "agenticIndex": 35.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "minimax-m3-eu": {
+      "defaults": {
+        "name": "MiniMax-M3 (EU)",
+        "description": "MiniMax multimodal model for long-context coding, perception, and agent planning",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "releaseDate": "June 1, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.4,
+          "codingIndex": 58.6,
+          "agenticIndex": 35.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "minimax-m3-free": {
+      "defaults": {
+        "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
+        "contextWindow": 1048576,
+        "contextComplexity": 5,
+        "reliability": 2,
+        "releaseDate": "June 1, 2026",
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.4,
+          "codingIndex": 58.6,
+          "agenticIndex": 35.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "music-1-5": {
+      "defaults": {
+        "name": "Music-1.5",
+        "description": "Full-length songs (up to 4 mins) with natural vocals & rich instrumentation",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "audio"
+        ]
+      }
+    }
+  }
+}

@@ -2,7 +2,7 @@ import {
   handleCreateEditCompletions,
   type HandleCreateEditCompletionsRequest,
 } from "~/lib/chat/edit-completions";
-import { ModelRouter } from "~/lib/modelRouter";
+import { resolveSystemModelId } from "~/lib/chat/policy/system-models";
 
 export const handleCreateApplyEditCompletions = async ({
   env,
@@ -16,7 +16,7 @@ export const handleCreateApplyEditCompletions = async ({
     { env, model, provider: requestedProvider, messages, stream, user },
     {
       capability: "supportsApplyEdit",
-      defaultModel: ModelRouter.selectApplyEditModel,
+      defaultModel: () => resolveSystemModelId("applyEdit"),
       missingMessagesMessage: "Messages are required for apply edit completions",
       operation: "apply",
       unsupportedMessage: (selectedModel) =>

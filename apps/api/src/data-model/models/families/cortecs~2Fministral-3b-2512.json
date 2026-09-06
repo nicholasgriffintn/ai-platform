@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 256000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 3, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The cortecs/ministral 3b 2512 family includes models that produce text.",
+  "models": {
+    "ministral-3b-2512": {
+      "defaults": {
+        "name": "Ministral 3B 2512",
+        "description": "Ministral 3 3B is a compact, efficient multimodal model with strong language, vision capabilities, and ideal for custom fine-tuning."
+      }
+    }
+  }
+}

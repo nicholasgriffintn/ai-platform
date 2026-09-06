@@ -14,6 +14,10 @@ describe("shouldRetryApiQuery", () => {
     expect(shouldRetryApiQuery(2, new ApiError("Server error", 500))).toBe(false);
   });
 
+  it("does not treat an application conflict as a transient query failure", () => {
+    expect(shouldRetryApiQuery(0, new ApiError("Conflict", 409))).toBe(false);
+  });
+
   it("does not retry statusless application errors", () => {
     expect(shouldRetryApiQuery(0, new Error("Failed to list agents: Unauthorized"))).toBe(false);
   });

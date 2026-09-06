@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 4,
+    "reliability": 1,
+    "knowledgeCutoffDate": "October 2024",
+    "releaseDate": "April 16, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": 25.6,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "The github copilot/o4 mini family includes models that produce text.",
+  "models": {
+    "o4-mini-preview": {
+      "defaults": {
+        "name": "o4-mini (Preview)",
+        "description": "o4-mini (Preview) accepts text and produces text."
+      }
+    }
+  }
+}

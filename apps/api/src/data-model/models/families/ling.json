@@ -1,0 +1,520 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The ling family includes models that produce text, video.",
+  "models": {
+    "inkling": {
+      "defaults": {
+        "name": "Inkling",
+        "openWeights": true,
+        "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 15, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "inkling-256k": {
+      "defaults": {
+        "name": "Inkling (256K)",
+        "openWeights": true,
+        "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 15, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "inkling-free": {
+      "defaults": {
+        "name": "Inkling (free)",
+        "openWeights": true,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 15, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "inkling-small": {
+      "defaults": {
+        "name": "Inkling Small",
+        "openWeights": true,
+        "description": "Multimodal MoE reasoning model (276B total, 12B active) for text, image, and audio",
+        "releaseDate": "July 30, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "inkling-small-free": {
+      "defaults": {
+        "name": "Inkling Small (free)",
+        "openWeights": true,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 30, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kling-v2-5-turbo-image-to-video": {
+      "defaults": {
+        "name": "Kling v2.5 Turbo Image-to-Video",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "September 23, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "kling-v2-5-turbo-text-to-video": {
+      "defaults": {
+        "name": "Kling v2.5 Turbo Text-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "September 23, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "kling-v2-6-image-to-video": {
+      "defaults": {
+        "name": "Kling v2.6 Image-to-Video",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "December 3, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "kling-v2-6-motion-control": {
+      "defaults": {
+        "name": "Kling v2.6 Motion Control",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "December 18, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "kling-v2-6-text-to-video": {
+      "defaults": {
+        "name": "Kling v2.6 Text-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "December 3, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "kling-v3-0-image-to-video": {
+      "defaults": {
+        "name": "Kling v3.0 Image-to-Video",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "February 5, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "kling-v3-0-motion-control": {
+      "defaults": {
+        "name": "Kling v3.0 Motion Control",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "March 4, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "kling-v3-0-text-to-video": {
+      "defaults": {
+        "name": "Kling v3.0 Text-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "February 5, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "ling-2-6-1t": {
+      "defaults": {
+        "description": "Inclusion AI ling-2.6-1t",
+        "contextWindow": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "April 23, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 26.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "ling-2-6-flash": {
+      "defaults": {
+        "description": "Inclusion AI ling-2.6-flash",
+        "contextWindow": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "April 21, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 19.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "ling-3-0-flash": {
+      "defaults": {
+        "name": "Ling 3.0 Flash",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 256000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ling-3-0-flash-fin": {
+      "defaults": {
+        "name": "Ling 3.0 Flash Fin",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ling-3-0-flash-fin-free": {
+      "defaults": {
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ling-3-0-flash-free": {
+      "defaults": {
+        "name": "Ling-3.0-flash (free)",
+        "openWeights": true,
+        "description": "Ling-3.0-flash (free) accepts text and produces text.",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 23, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ling-3-0-flash-sante": {
+      "defaults": {
+        "name": "Ling 3.0 Flash Sante",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 256000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 4, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ling-3-0-flash-sante-free": {
+      "defaults": {
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 4, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ling-3-0-tiny": {
+      "defaults": {
+        "name": "ling-3.0-tiny",
+        "description": "Ling-3.0-tiny is an efficient 7.9B parameter MoE model from inclusionAI with only 1.3B active parameters per token. Built for responsive agents, reliable instruction following and multi turn conversation, with a 256K context window, native function calling, prompt caching and switchable Thinking and Instant modes.",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 5, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ling-3-0-tiny-free": {
+      "defaults": {
+        "description": "Ling 3.0 Tiny (free) accepts text and produces text.",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 6, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

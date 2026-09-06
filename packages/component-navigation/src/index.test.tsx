@@ -7,6 +7,7 @@ import {
   ConversationList,
   ConversationListActions,
   ConversationListControls,
+  ConversationListItemActions,
   DEFAULT_CONVERSATION_LIST_FILTERS,
   ProductRail,
   SidebarSettingsPopover,
@@ -65,6 +66,42 @@ describe("SidebarSettingsPopover", () => {
     expect(await screen.findByText("0.1706 credits used this month")).toBeTruthy();
     expect(screen.queryByText(/unlimited usage/i)).toBeNull();
   });
+
+  it("opens without landing focus on the theme control", async () => {
+    render(
+      <SidebarSettingsPopover
+        {...sidebarSettingsProps}
+        theme={{ value: "dark", onChange: vi.fn() }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Open settings and configuration" }));
+
+    const dialog = await screen.findByRole("dialog");
+
+    expect(document.activeElement).toBe(dialog);
+    expect(screen.getByRole("button", { name: /^Theme/ })).not.toBe(document.activeElement);
+  });
+
+  it("changes the theme from a submenu while the popover stays open", async () => {
+    const onChange = vi.fn();
+
+    render(
+      <SidebarSettingsPopover {...sidebarSettingsProps} theme={{ value: "dark", onChange }} />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Open settings and configuration" }));
+    fireEvent.pointerDown(await screen.findByRole("button", { name: /^Theme/ }));
+
+    const current = await screen.findByRole("menuitemradio", { name: "Dark" });
+
+    expect(current.getAttribute("aria-checked")).toBe("true");
+
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Fern" }));
+
+    expect(onChange).toHaveBeenCalledWith("fern");
+    expect(screen.getByRole("dialog")).toBeTruthy();
+  });
 });
 
 describe("ProductRail", () => {
@@ -106,7 +143,7 @@ describe("ProductRail", () => {
 });
 
 describe("ConversationList", () => {
-  const groups = [
+  const sections = [
     {
       id: "today",
       title: "Today",
@@ -118,19 +155,17 @@ describe("ConversationList", () => {
     { id: "older", title: "Older", conversations: [] },
   ];
 
-  it("emits selection, edit, and delete intents without owning the data", async () => {
+  it("emits selection and hands each conversation to the host for its actions", () => {
     const onSelect = vi.fn();
-    const onEditTitle = vi.fn();
-    const onDelete = vi.fn();
+    const renderItemActions = vi.fn(() => null);
 
     render(
       <ConversationList
-        groups={groups}
+        sections={sections}
         activeConversationId="one"
         isConversationRoute
         onSelect={onSelect}
-        onEditTitle={onEditTitle}
-        onDelete={onDelete}
+        renderItemActions={renderItemActions}
       />,
     );
 
@@ -138,28 +173,15 @@ describe("ConversationList", () => {
 
     fireEvent.click(screen.getByText("Ideas"));
     expect(onSelect).toHaveBeenCalledWith("two");
-
-    fireEvent.pointerDown(screen.getAllByRole("button", { name: "Conversation actions" })[0]);
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Rename" }));
-    expect(onEditTitle).toHaveBeenCalledWith("one", "Roadmap");
-
-    fireEvent.pointerDown(screen.getAllByRole("button", { name: "Conversation actions" })[0]);
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
-    expect(onDelete).toHaveBeenCalledWith("one");
+    expect(renderItemActions).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "one", title: "Roadmap" }),
+    );
   });
 
   it("routes the branch badge back to the parent conversation", () => {
     const onSelect = vi.fn();
 
-    render(
-      <ConversationList
-        groups={groups}
-        isConversationRoute
-        onSelect={onSelect}
-        onEditTitle={vi.fn()}
-        onDelete={vi.fn()}
-      />,
-    );
+    render(<ConversationList sections={sections} isConversationRoute onSelect={onSelect} />);
 
     fireEvent.click(screen.getByLabelText("Go to original conversation"));
     expect(onSelect).toHaveBeenCalledWith("root");
@@ -168,7 +190,7 @@ describe("ConversationList", () => {
   it("shows conversation-scoped running and action-required states", () => {
     render(
       <ConversationList
-        groups={[
+        sections={[
           {
             id: "today",
             conversations: [
@@ -179,13 +201,113 @@ describe("ConversationList", () => {
         ]}
         isConversationRoute
         onSelect={vi.fn()}
-        onEditTitle={vi.fn()}
-        onDelete={vi.fn()}
       />,
     );
 
     expect(screen.getByLabelText("Response in progress")).toBeTruthy();
     expect(screen.getByLabelText("Action required")).toBeTruthy();
+  });
+});
+
+describe("ConversationListItemActions", () => {
+  const organisation = {
+    isPinned: false,
+    isUnread: true,
+    snooze: null,
+    group: null,
+    availableGroups: [
+      { id: "g1", name: "Platform", scope: { kind: "personal" as const } },
+      { id: "g2", name: "Design", scope: { kind: "personal" as const } },
+    ],
+    canManageGroups: true,
+    onTogglePinned: vi.fn(),
+    onToggleUnread: vi.fn(),
+    onSnooze: vi.fn(),
+    onMoveToGroup: vi.fn(),
+    onManageGroups: vi.fn(),
+  };
+
+  const openMenu = async () => {
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Conversation actions" }));
+
+    return screen.findByRole("menu");
+  };
+
+  it("emits rename and delete intents without owning the data", async () => {
+    const onEditTitle = vi.fn();
+    const onDelete = vi.fn();
+
+    render(
+      <ConversationListItemActions
+        conversationId="one"
+        title="Roadmap"
+        onEditTitle={onEditTitle}
+        onDelete={onDelete}
+      />,
+    );
+
+    await openMenu();
+    expect(screen.queryByRole("menuitem", { name: /Pin/ })).toBeNull();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Rename" }));
+    expect(onEditTitle).toHaveBeenCalledWith("one", "Roadmap");
+
+    await openMenu();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+    expect(onDelete).toHaveBeenCalledWith("one");
+  });
+
+  it("offers each organisation intent as its own item with a single-key shortcut", async () => {
+    render(
+      <ConversationListItemActions
+        conversationId="one"
+        title="Roadmap"
+        organisation={organisation}
+        onEditTitle={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    const menu = await openMenu();
+
+    expect(screen.getByRole("menuitem", { name: "Pin" })).toBeTruthy();
+    fireEvent.keyDown(menu, { key: "u" });
+    expect(organisation.onToggleUnread).toHaveBeenCalledTimes(1);
+
+    await openMenu();
+    fireEvent.keyDown(screen.getByRole("menuitem", { name: "Mark as read" }), {
+      key: "p",
+      metaKey: true,
+    });
+    expect(organisation.onTogglePinned).not.toHaveBeenCalled();
+    fireEvent.keyDown(screen.getByRole("menu"), { key: "P" });
+    expect(organisation.onTogglePinned).toHaveBeenCalledTimes(1);
+  });
+
+  it("moves the conversation between the available groups from a submenu", async () => {
+    render(
+      <ConversationListItemActions
+        conversationId="one"
+        title="Roadmap"
+        organisation={{ ...organisation, group: organisation.availableGroups[0] }}
+        onEditTitle={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    await openMenu();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Move to group" }));
+    fireEvent.click(await screen.findByRole("menuitemradio", { name: "Design" }));
+    expect(organisation.onMoveToGroup).toHaveBeenCalledWith("g2");
+
+    await openMenu();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Move to group" }));
+    fireEvent.click(await screen.findByRole("menuitemradio", { name: "No group" }));
+    expect(organisation.onMoveToGroup).toHaveBeenCalledWith(null);
+
+    await openMenu();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Move to group" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Manage groups…" }));
+    expect(organisation.onManageGroups).toHaveBeenCalledTimes(1);
   });
 });
 

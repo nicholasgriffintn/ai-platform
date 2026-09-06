@@ -16,6 +16,7 @@ import {
   GoalStatusCard,
   WelcomeScreen,
 } from "@ngriffin_uk/polychat-component-conversation";
+import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { isCompactConversationCommand } from "@ngriffin_uk/polychat-library-chat/compaction-command";
 import { resolveGoalSubmission } from "@ngriffin_uk/polychat-library-chat/goal-command";
@@ -29,8 +30,10 @@ import {
   EMPTY_MODEL_CONFIG,
   getModelByReference,
   isImageGenerationOutputModel,
+  isReadinessFresh,
 } from "@ngriffin_uk/polychat-schemas";
 import type { ConversationModeMetadata, UserQuestionSet } from "@ngriffin_uk/polychat-schemas";
+import { ChevronDown } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -42,12 +45,15 @@ import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useArtifactPanel } from "~/hooks/useArtifactPanel";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
+import { useChatRunReplay } from "~/hooks/useChatRunReplay";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { useModels } from "~/hooks/useModels";
 import { usePetNudgeSources } from "~/hooks/usePetNudgeSources";
 import { usePetFollowEnabled } from "~/hooks/usePetTravel";
+import { useRemoteConversationActivity } from "~/hooks/useRemoteConversationActivity";
 import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
 import type { ChatSuggestion } from "~/lib/chat-suggestions";
+import { isModelSubmissionBlocked } from "~/lib/chat/model-readiness";
 import { openExternalUrl } from "~/lib/external-navigation";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -55,6 +61,7 @@ import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
+import { ChatRunStatusBanner } from "./ChatRunStatusBanner";
 import { ChatSuggestions } from "./ChatSuggestions";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
@@ -76,6 +83,8 @@ export interface ConversationThreadModeConfig {
   welcomeLoading?: boolean;
   welcomeSuggestions?: ChatSuggestion[] | null;
   welcomeCapabilitySuggestions?: boolean;
+  welcomeFooter?: ReactNode;
+  welcomeFooterHint?: string;
   inputPlaceholder?: {
     newConversation: string;
     followUp: string;
@@ -111,7 +120,7 @@ export interface ConversationThreadModeConfig {
     toolName: string,
     action: Parameters<ToolInteractionHandler>[1],
     data: Parameters<ToolInteractionHandler>[2],
-  ) => boolean;
+  ) => boolean | Promise<boolean>;
 }
 
 interface ConversationThreadProps {
@@ -128,15 +137,36 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const {
     currentConversationId,
     model,
+    chatMode,
     chatInput,
     setChatInput,
     selectedAssistantAction,
     setSelectedAssistantAction,
+    isAuthenticated,
+    isPro,
+    localOnlyMode,
   } = useChatStore();
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const startNewConversation = useChatStore((state) => state.startNewConversation);
-  const { data: currentConversation } = useChat(currentConversationId);
+  const { data: currentConversation, isLoading: isConversationLoading } = useChat(
+    currentConversationId,
+    { monitorRemoteActivity: true },
+  );
+  const streamSource = useStreamActivityStore((state) =>
+    currentConversationId ? state.streams[currentConversationId]?.source : undefined,
+  );
+
+  useChatRunReplay(
+    currentConversationId,
+    currentConversation?.latest_run,
+    isAuthenticated && isPro && !localOnlyMode && streamSource !== "local",
+  );
+  useRemoteConversationActivity(
+    currentConversationId,
+    currentConversation?.active_operation,
+    currentConversation?.latest_run,
+  );
   const {
     goalView,
     canUseGoals,
@@ -157,7 +187,11 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     requestSecondOpinion,
     isRequestingSecondOpinion,
   } = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
-  const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading: isModelsLoading } = useModels();
+  const {
+    data: apiModels = EMPTY_MODEL_CONFIG,
+    isLoading: isModelsLoading,
+    refetch: refetchModels,
+  } = useModels();
   const modelReferences = useMemo(() => createModelReferenceMap(apiModels), [apiModels]);
   const selectedModelConfig = useMemo(
     () => getModelByReference(modelReferences, model),
@@ -387,6 +421,46 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
 
       // For text-to-image models, only allow the first message unless they support image edits
+      if (model && chatMode !== "local") {
+        let currentModel = selectedModelConfig;
+
+        if (currentModel?.readiness && !isReadinessFresh(currentModel.readiness)) {
+          const refreshResult = await refetchModels();
+          const refreshedModels = refreshResult.data ?? EMPTY_MODEL_CONFIG;
+
+          currentModel = getModelByReference(createModelReferenceMap(refreshedModels), model);
+
+          if (
+            refreshResult.isError ||
+            (currentModel?.readiness && !isReadinessFresh(currentModel.readiness))
+          ) {
+            toast.error("Model readiness could not be refreshed. Retry before sending.");
+
+            return false;
+          }
+        }
+
+        if (!currentModel) {
+          toast.error(
+            "Your selected model is no longer available. Choose another model before sending.",
+          );
+
+          return false;
+        }
+
+        if (currentModel.readiness?.state && currentModel.readiness.state !== "ready") {
+          toast.error(currentModel.readiness.reason);
+
+          return false;
+        }
+
+        if (currentModel.isExecutable === false) {
+          toast.error("This model cannot run under the current account and provider policy.");
+
+          return false;
+        }
+      }
+
       if (selectedModelConfig) {
         if (
           isImageGenerationOutputModel(selectedModelConfig) &&
@@ -452,7 +526,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         if (result?.status === "error") {
           setChatInput(originalInput);
           setSelectedAssistantAction(originalAssistantAction);
-          if (result.response) {
+          if (
+            result.response &&
+            (!("errorPresentation" in result) || result.errorPresentation !== "run")
+          ) {
             toast.error(result.response);
           }
         } else {
@@ -478,6 +555,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [
       chatInput,
       model,
+      chatMode,
       messages,
       compactConversation,
       sendMessage,
@@ -490,6 +568,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       selectedAssistantAction,
       selectedAssistantAction?.item,
       selectedModelConfig,
+      refetchModels,
       modeConfig?.analyticsSource,
       navigate,
     ],
@@ -592,14 +671,14 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   );
 
   const handleToolInteraction = useCallback<ToolInteractionHandler>(
-    (toolName, action, data) => {
+    async (toolName, action, data) => {
       trackFeatureUsage("tool_interaction", {
         tool_name: toolName,
         action: action,
         conversation_id: currentConversationId || "new",
       });
 
-      if (modeToolInteraction?.(toolName, action, data)) {
+      if (await modeToolInteraction?.(toolName, action, data)) {
         return;
       }
 
@@ -622,7 +701,11 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               }
             : interactionRequestOptions;
 
-          void sendMessage(data.input, undefined, requestOptions);
+          const response = await sendMessage(data.input, undefined, requestOptions);
+
+          if (response.status === "error") {
+            throw new Error(response.response || "The approval could not be submitted");
+          }
         }
 
         return;
@@ -673,9 +756,28 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       {showWelcomeScreen ? (
         <div
           data-header-scroll-source
-          className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-0 py-6 sm:py-8"
+          className={cn(
+            "flex min-h-0 flex-1 overflow-y-auto px-0",
+            modeConfig?.welcomeFooter ? "flex-col" : "items-start justify-center py-6 sm:py-8",
+          )}
         >
-          <div className="my-auto w-full">
+          <div
+            className={cn(
+              "w-full",
+              modeConfig?.welcomeFooter
+                ? "relative flex min-h-full shrink-0 flex-col justify-center pt-6 pb-12 sm:pt-8"
+                : "my-auto",
+            )}
+          >
+            {modeConfig?.welcomeFooter && modeConfig.welcomeFooterHint && (
+              <p
+                aria-hidden
+                className="polychat-eyebrow absolute inset-x-0 bottom-3 flex items-center justify-center gap-1.5"
+              >
+                <span>{modeConfig.welcomeFooterHint}</span>
+                <ChevronDown size={12} className="motion-safe:animate-bounce" />
+              </p>
+            )}
             <WelcomeScreen
               title={modeConfig?.welcomeTitle}
               description={modeConfig?.welcomeDescription}
@@ -700,6 +802,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               }
             />
           </div>
+          {modeConfig?.welcomeFooter}
         </div>
       ) : (
         <ConversationMessageColumn>
@@ -734,6 +837,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         )}
         <ComposerBanner
           model={selectedModelConfig}
+          requestedModelId={model}
+          isModelsLoading={isModelsLoading}
           hideSuggestions={modeConfig?.hideComposerSuggestions}
         />
         {modeConfig?.pendingUserQuestions ? (
@@ -756,11 +861,21 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
             onClear={() => void handleGoalCommand({ kind: "clear" })}
           />
         ) : null}
+        {currentConversation?.latest_run &&
+        (currentConversation.latest_run.status === "failed" ||
+          currentConversation.latest_run.status === "cancelled" ||
+          currentConversation.latest_run.status === "interrupted") ? (
+          <ChatRunStatusBanner run={currentConversation.latest_run} />
+        ) : null}
         <ChatInput
           goalState={goalState}
           ref={chatInputRef}
           handleSubmit={handleSubmit}
-          isLoading={isStreamLoading || isModelInitializing}
+          isLoading={isStreamLoading || isModelInitializing || isConversationLoading}
+          isSubmissionBlocked={
+            chatMode !== "local" &&
+            isModelSubmissionBlocked(model, selectedModelConfig, isModelsLoading)
+          }
           streamStarted={streamStarted}
           controller={controller}
           onStopResponse={abortStream}
@@ -771,6 +886,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           modelProviderFilter={modeConfig?.modelProviderFilter}
           modelScope={modeConfig?.modelScope}
           onModelChange={modeConfig?.onModelChange}
+          activeRunStatus={currentConversation?.latest_run?.status}
+          hasConversationHistory={messages.length > 0}
           hideDefaultControls={modeConfig?.hideDefaultControls}
           hideComposerActionMenu={modeConfig?.hideComposerActionMenu}
           allowedAssistantActionCapabilities={modeConfig?.allowedAssistantActionCapabilities}

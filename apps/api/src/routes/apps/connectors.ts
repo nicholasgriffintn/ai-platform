@@ -1,6 +1,7 @@
 import {
   errorResponseSchema,
   connectorApprovalIdSchema,
+  connectorOperationApprovalResponseSchema,
   recipeConnectorApiKeyRequestSchema,
   recipeConnectorAccountSchema,
   recipeConnectorAccountsResponseSchema,
@@ -25,7 +26,10 @@ import {
   listRecipeConnectorAccounts,
   updateRecipeConnectorAccount,
 } from "~/services/apps/connectors/accounts";
-import { resolveConnectorOperationApproval } from "~/services/apps/connectors/operation-approvals";
+import {
+  getConnectorOperationApproval,
+  resolveConnectorOperationApproval,
+} from "~/services/apps/connectors/operation-approvals";
 
 const app = new Hono();
 
@@ -115,6 +119,27 @@ addRoute(app, "get", "/composio/verify", {
 
     return raw.redirect(redirectUrl);
   },
+});
+
+addRoute(app, "get", "/approvals/:approvalId", {
+  auth: true,
+  tags: ["apps"],
+  summary: "Get an exact connector operation approval",
+  paramSchema: approvalParamSchema,
+  responses: {
+    200: {
+      description: "Connector approval state",
+      schema: connectorOperationApprovalResponseSchema,
+    },
+    404: { description: "Connector approval missing", schema: errorResponseSchema },
+  },
+  handler: async ({ params, serviceContext, user }) => ({
+    approval: await getConnectorOperationApproval({
+      context: serviceContext,
+      userId: user.id,
+      approvalId: params.approvalId,
+    }),
+  }),
 });
 
 addRoute(app, "put", "/approvals/:approvalId", {

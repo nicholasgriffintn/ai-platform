@@ -14,9 +14,11 @@ const TASK_OPTIONS: Array<{ value: SandboxTaskType; label: string }> = [
 
 export function ProjectCodingTaskControl({
   taskType,
+  isDisabled = false,
   onChange,
 }: {
   taskType: SandboxTaskType;
+  isDisabled?: boolean;
   onChange: (taskType: SandboxTaskType) => void;
 }) {
   const selectedOption = TASK_OPTIONS.find((option) => option.value === taskType);
@@ -29,6 +31,7 @@ export function ProjectCodingTaskControl({
       value={taskType}
       displayLabel={selectedOption?.label ?? "Build a feature"}
       options={TASK_OPTIONS}
+      isDisabled={isDisabled}
       onChange={(value) => {
         if (value) {
           onChange(value);

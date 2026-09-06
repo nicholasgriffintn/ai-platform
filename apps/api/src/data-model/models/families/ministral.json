@@ -1,0 +1,223 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+  "models": {
+    "ministral-14b": {
+      "defaults": {
+        "name": "Ministral 14B",
+        "openWeights": false,
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "December 2, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "ministral-14b-3-0": {
+      "defaults": {
+        "name": "Ministral 14B 3.0",
+        "openWeights": false,
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 1, 2024"
+      }
+    },
+    "ministral-3-14b-2512": {
+      "defaults": {
+        "name": "Ministral 3 14B 2512",
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 262144,
+        "maxTokens": 209715,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 2, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "ministral-3-3b": {
+      "defaults": {
+        "name": "Ministral 3 3B",
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 256000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "December 2, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 5.6,
+          "codingIndex": 4.8,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "ministral-3-3b-2512": {
+      "defaults": {
+        "name": "Ministral 3 3B 2512",
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 131072,
+        "maxTokens": 104857,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 2, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "ministral-3-8b": {
+      "defaults": {
+        "name": "Ministral 3 8B",
+        "openWeights": false,
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "December 1, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 8.9,
+          "codingIndex": 11.4,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "ministral-3-8b-2512": {
+      "defaults": {
+        "name": "Ministral 3 8B 2512",
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 262144,
+        "maxTokens": 209715,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 2, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "ministral-3b": {
+      "defaults": {
+        "name": "Ministral 3B",
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 2024",
+        "releaseDate": "October 22, 2024"
+      }
+    },
+    "ministral-3b-latest": {
+      "defaults": {
+        "name": "Ministral 3B",
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 128000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "October 1, 2024"
+      }
+    },
+    "ministral-8b-latest": {
+      "defaults": {
+        "name": "Ministral 8B",
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 128000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "October 1, 2024"
+      }
+    }
+  }
+}

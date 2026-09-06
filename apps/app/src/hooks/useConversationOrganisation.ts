@@ -1,16 +1,16 @@
 import type {
-  ConversationLabel,
-  ConversationLabelScope,
+  ConversationGroup,
+  ConversationGroupScope,
   UpdateConversationOrganisation,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import {
-  createConversationLabel,
-  deleteConversationLabel,
+  createConversationGroup,
+  deleteConversationGroup,
   getConversationOrganisation,
-  setConversationLabel,
+  moveConversationToGroup,
   updateConversationOrganisation,
 } from "~/lib/api/conversation-organisation";
 
@@ -23,11 +23,11 @@ const organisationQueryKey = (conversationId: string) => [
 
 export function useConversationOrganisation(conversationId: string | null, projectId?: string) {
   const queryClient = useQueryClient();
-  const query = useQuery({
+  const queryOptions = {
     queryKey: organisationQueryKey(conversationId ?? ""),
     queryFn: () => getConversationOrganisation(conversationId ?? ""),
-    enabled: Boolean(conversationId),
-  });
+  };
+  const query = useQuery({ ...queryOptions, enabled: Boolean(conversationId) });
 
   const invalidateLists = async () => {
     await Promise.all([
@@ -41,14 +41,16 @@ export function useConversationOrganisation(conversationId: string | null, proje
   };
 
   const update = useMutation({
-    mutationFn: (change: Omit<UpdateConversationOrganisation, "expectedRevision">) => {
-      if (!conversationId || !query.data) {
+    mutationFn: async (change: Omit<UpdateConversationOrganisation, "expectedRevision">) => {
+      if (!conversationId) {
         throw new Error("Conversation organisation is unavailable");
       }
 
+      const current = await queryClient.ensureQueryData(queryOptions);
+
       return updateConversationOrganisation(conversationId, {
         ...change,
-        expectedRevision: query.data.revision,
+        expectedRevision: current.revision,
       });
     },
     onSuccess: async (organisation) => {
@@ -57,13 +59,13 @@ export function useConversationOrganisation(conversationId: string | null, proje
     },
   });
 
-  const assignment = useMutation({
-    mutationFn: ({ labelId, assigned }: { labelId: string; assigned: boolean }) => {
+  const move = useMutation({
+    mutationFn: (groupId: string | null) => {
       if (!conversationId) {
         throw new Error("Conversation organisation is unavailable");
       }
 
-      return setConversationLabel(conversationId, labelId, assigned);
+      return moveConversationToGroup(conversationId, groupId);
     },
     onSuccess: async (organisation) => {
       queryClient.setQueryData(organisationQueryKey(organisation.conversationId), organisation);
@@ -71,17 +73,17 @@ export function useConversationOrganisation(conversationId: string | null, proje
     },
   });
 
-  const createLabel = useMutation({
-    mutationFn: ({ name, scope }: { name: string; scope: ConversationLabelScope }) =>
-      createConversationLabel(name, scope),
+  const createGroup = useMutation({
+    mutationFn: ({ name, scope }: { name: string; scope: ConversationGroupScope }) =>
+      createConversationGroup(name, scope),
     onSuccess: async () => {
       await query.refetch();
       await invalidateLists();
     },
   });
 
-  const deleteLabel = useMutation({
-    mutationFn: (label: ConversationLabel) => deleteConversationLabel(label.id),
+  const deleteGroup = useMutation({
+    mutationFn: (group: ConversationGroup) => deleteConversationGroup(group.id),
     onSuccess: async () => {
       await query.refetch();
       await invalidateLists();
@@ -91,10 +93,9 @@ export function useConversationOrganisation(conversationId: string | null, proje
   return {
     query,
     update,
-    assignment,
-    createLabel,
-    deleteLabel,
-    isSaving:
-      update.isPending || assignment.isPending || createLabel.isPending || deleteLabel.isPending,
+    move,
+    createGroup,
+    deleteGroup,
+    isSaving: update.isPending || move.isPending || createGroup.isPending || deleteGroup.isPending,
   };
 }

@@ -1,0 +1,788 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "supportsToolCalls": false,
+    "supportsAttachments": false
+  },
+  "description": "The o family includes models that produce audio, image, text, video.",
+  "models": {
+    "arrow-1-1": {
+      "defaults": {
+        "name": "Arrow 1.1",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "releaseDate": "April 16, 2026",
+        "supportsTemperature": true
+      }
+    },
+    "cohere-rerank-3-5": {
+      "defaults": {
+        "name": "Cohere Rerank 3.5",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "contextWindow": 4096,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 2, 2024",
+        "supportsTemperature": true
+      }
+    },
+    "cohere-rerank-4-fast": {
+      "defaults": {
+        "name": "Cohere Rerank 4 Fast",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "contextWindow": 32000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 11, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "cohere-rerank-4-pro": {
+      "defaults": {
+        "name": "Cohere Rerank 4 Pro",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "contextWindow": 32000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 11, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "o1": {
+      "defaults": {
+        "name": "o1",
+        "description": "O-series reasoning model for hard analysis, math, coding, and planning",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "December 5, 2024",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 23.4,
+          "codingIndex": 39.7,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "o3": {
+      "defaults": {
+        "name": "o3",
+        "description": "Deliberate o-series reasoner for hard math, coding, and multi-step analysis",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "May 2024",
+        "releaseDate": "April 16, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 30.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "o3-deep-research": {
+      "defaults": {
+        "name": "o3-deep-research",
+        "description": "o3-deep-research accepts text, image and produces text.",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "knowledgeCutoffDate": "May 2024",
+        "releaseDate": "June 26, 2024",
+        "supportsToolCalls": true,
+        "supportsAttachments": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "o3-fast": {
+      "defaults": {
+        "name": "o3 (Fast)",
+        "description": "Deliberate o-series reasoner for hard math, coding, and multi-step analysis",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "May 2024",
+        "releaseDate": "April 16, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 30.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "o3-mini-high": {
+      "defaults": {
+        "name": "o3 Mini High",
+        "description": "O-series reasoning model for hard analysis, math, coding, and planning",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "knowledgeCutoffDate": "October 31, 2023",
+        "releaseDate": "February 12, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 18.4,
+          "codingIndex": 42.1,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "o4-mini-high": {
+      "defaults": {
+        "name": "o4 Mini High",
+        "description": "O-series reasoning model for hard analysis, math, coding, and planning",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "June 30, 2024",
+        "releaseDate": "April 16, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "openai-o1": {
+      "defaults": {
+        "name": "OpenAI o1",
+        "description": "Advanced reasoning model with multimodal capabilities and enhanced logical thinking.",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding",
+          "vision"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "multimodal": true,
+        "knowledgeCutoffDate": "October 2023",
+        "releaseDate": "September 12, 2024",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 23.4,
+          "codingIndex": 39.7,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "openai-o1-preview": {
+      "defaults": {
+        "name": "OpenAI o1-preview",
+        "description": "OpenAI o1-preview accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 3,
+        "reliability": 2,
+        "knowledgeCutoffDate": "October 2023",
+        "releaseDate": "September 12, 2024",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 17,
+          "codingIndex": 34,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "openai-o3": {
+      "defaults": {
+        "name": "OpenAI o3",
+        "description": "OpenAI o3 accepts text, image and produces text.",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "January 31, 2025",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 30.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "s1": {
+      "defaults": {
+        "name": "S1",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "October 20, 2025"
+      }
+    },
+    "s1-free": {
+      "defaults": {
+        "name": "S1 (Free)",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "October 20, 2025"
+      }
+    },
+    "s2-1-pro": {
+      "defaults": {
+        "name": "S2.1 Pro",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "July 28, 2026"
+      }
+    },
+    "s2-1-pro-free": {
+      "defaults": {
+        "name": "S2.1 Pro (Free)",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "July 28, 2026"
+      }
+    },
+    "s2-pro": {
+      "defaults": {
+        "name": "S2 Pro",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
+        "reliability": 3,
+        "releaseDate": "March 9, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1117,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 14
+            }
+          ]
+        }
+      }
+    },
+    "s2-pro-free": {
+      "defaults": {
+        "name": "S2 Pro (Free)",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "March 9, 2026"
+      }
+    },
+    "transcribe-1": {
+      "defaults": {
+        "name": "Transcribe-1",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 1, 2026"
+      }
+    },
+    "transcribe-1-free": {
+      "defaults": {
+        "name": "Transcribe-1 (Free)",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 1, 2026"
+      }
+    },
+    "tts-1": {
+      "defaults": {
+        "name": "TTS-1",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
+        "reliability": 3,
+        "releaseDate": "November 6, 2023",
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1091,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 10
+            }
+          ]
+        }
+      }
+    },
+    "tts-1-hd": {
+      "defaults": {
+        "name": "TTS-1 HD",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
+        "reliability": 3,
+        "releaseDate": "November 6, 2023",
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1099,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
+        }
+      }
+    },
+    "wan-v2-5-text-to-video-preview": {
+      "defaults": {
+        "name": "Wan v2.5 Text-to-Video Preview",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "September 24, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "wan-v2-6-image-to-video": {
+      "defaults": {
+        "name": "Wan v2.6 Image-to-Video",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "December 16, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "wan-v2-6-image-to-video-flash": {
+      "defaults": {
+        "name": "Wan v2.6 Image-to-Video Flash",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "December 16, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "wan-v2-6-reference-to-video": {
+      "defaults": {
+        "name": "Wan v2.6 Reference-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "December 16, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "wan-v2-6-reference-to-video-flash": {
+      "defaults": {
+        "name": "Wan v2.6 Reference-to-Video Flash",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "December 16, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "wan-v2-6-text-to-video": {
+      "defaults": {
+        "name": "Wan v2.6 Text-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "December 16, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "wan-v2-7-reference-to-video": {
+      "defaults": {
+        "name": "Wan v2.7 Reference-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "April 7, 2026",
+        "supportsTemperature": true
+      }
+    },
+    "wan-v2-7-text-to-video": {
+      "defaults": {
+        "name": "Wan v2.7 Text-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "April 7, 2026",
+        "supportsTemperature": true
+      }
+    },
+    "wan-v3-0-video": {
+      "defaults": {
+        "name": "Wan v3.0 Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "August 23, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "wan-v3-0-video-prime": {
+      "defaults": {
+        "name": "Wan v3.0 Video Prime",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "August 28, 2026",
+        "supportsAttachments": true
+      }
+    }
+  }
+}

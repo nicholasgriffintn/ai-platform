@@ -1,0 +1,32 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "embedding"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "strengths": [
+      "search"
+    ],
+    "contextComplexity": 3,
+    "reliability": 5,
+    "releaseDate": "April 3, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/baai/bge base en v1.5 family includes models that produce embedding.",
+  "models": {
+    "bge-base-en-v1-5": {
+      "defaults": {
+        "name": "BGE Base EN v1.5",
+        "description": "BGE Base EN v1.5 accepts embedding and produces embedding."
+      }
+    }
+  }
+}

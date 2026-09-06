@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "April 28, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/poolside/laguna xs.2:free family includes models that produce text.",
+  "models": {
+    "laguna-xs-2-free": {
+      "defaults": {
+        "name": "Laguna XS.2 (free)",
+        "description": "Laguna XS.2 (free) accepts text and produces text."
+      }
+    }
+  }
+}

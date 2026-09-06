@@ -1,0 +1,1054 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "ghcopilot/openai/o4-mini": {
+      "model": "github-copilot/o4-mini/o4-mini-preview",
+      "matchingModel": "o4-mini",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 16, 2025",
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0044,
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/anthropic/claude-3.5-sonnet": {
+      "model": "claude/claude-sonnet-3-5",
+      "matchingModel": "claude-3.5-sonnet",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "October 22, 2024",
+        "lastUpdated": "October 22, 2024",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "artificialAnalysis": {
+          "intelligenceIndex": 8.3,
+          "codingIndex": 26,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/google/gemini-2.0-flash-001": {
+      "model": "gemini/gemini-2-0-flash",
+      "matchingModel": "gemini-2.0-flash-001",
+      "overrides": {
+        "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "June 2024",
+        "releaseDate": "December 11, 2024",
+        "lastUpdated": "December 11, 2024",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/anthropic/claude-opus-4.1": {
+      "model": "claude-opus/claude-opus-4-1",
+      "matchingModel": "claude-opus-4.1",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 2025",
+        "lastUpdated": "August 5, 2025"
+      },
+      "unset": [
+        "openWeights",
+        "contextComplexity",
+        "supportsTopP",
+        "reasoningConfig",
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/anthropic/claude-3.7-sonnet-thought": {
+      "model": "claude/claude-sonnet-3-7-thinking",
+      "matchingModel": "claude-3.7-sonnet-thought",
+      "overrides": {
+        "lastUpdated": "February 19, 2025"
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/anthropic/claude-3.7-sonnet": {
+      "model": "claude/claude-sonnet-3-7",
+      "matchingModel": "claude-3.7-sonnet",
+      "overrides": {
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2024",
+        "lastUpdated": "February 19, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "artificialAnalysis": {
+          "intelligenceIndex": 23.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/google/gemini-2.5-pro": {
+      "model": "gemini-pro/gemini-2-5-pro",
+      "matchingModel": "gemini-2.5-pro",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "June 17, 2025",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "ghcopilot/anthropic/claude-opus-4": {
+      "model": "claude-opus/claude-opus-4",
+      "matchingModel": "claude-opus-4",
+      "overrides": {
+        "contextWindow": 80000,
+        "maxTokens": 16000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 2025",
+        "lastUpdated": "May 22, 2025",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "openWeights",
+        "contextComplexity",
+        "supportsTopP",
+        "reasoningConfig",
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/openai/o3-mini": {
+      "model": "github-copilot/o3-mini/o3-mini",
+      "matchingModel": "o3-mini",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "January 29, 2025",
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0044,
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/openai/gpt-4.1": {
+      "model": "gpt/gpt-4-1",
+      "matchingModel": "gpt-4.1",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "speed": 4,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.008
+      }
+    },
+    "ghcopilot/openai/gpt-4o": {
+      "model": "gpt/gpt-4o",
+      "matchingModel": "gpt-4o",
+      "overrides": {
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 4,
+        "lastUpdated": "May 13, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/openai/o3": {
+      "model": "github-copilot/o3/o3-preview",
+      "matchingModel": "o3",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 16, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.008,
+        "supportsParallelToolCalls": false,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/anthropic/claude-haiku-4.5": {
+      "model": "claude-haiku/claude-haiku-4-5-latest",
+      "matchingModel": "claude-haiku-4.5",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/anthropic/claude-opus-4.5": {
+      "model": "claude-opus/claude-opus-4-5",
+      "matchingModel": "claude-opus-4.5",
+      "overrides": {
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 3,
+        "knowledgeCutoffDate": "May 2025",
+        "lastUpdated": "November 24, 2025",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsTopP",
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/anthropic/claude-opus-4.6": {
+      "model": "claude-opus/claude-opus-4-6",
+      "matchingModel": "claude-opus-4.6",
+      "overrides": {
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      },
+      "unset": [
+        "supportsTopP",
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/anthropic/claude-sonnet-4.5": {
+      "model": "claude-sonnet/claude-sonnet-4-5",
+      "matchingModel": "claude-sonnet-4.5",
+      "overrides": {
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 29, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "ghcopilot/google/gemini-3-flash-preview": {
+      "model": "gemini-flash/gemini-3-flash",
+      "matchingModel": "gemini-3-flash-preview",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 5,
+        "lastUpdated": "December 17, 2025",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.003,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ghcopilot/openai/gpt-5-mini": {
+      "model": "gpt-mini/gpt-5-mini",
+      "matchingModel": "gpt-5-mini",
+      "overrides": {
+        "name": "GPT-5-mini",
+        "contextWindow": 264000,
+        "maxTokens": 64000,
+        "speed": 2,
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.002,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "ghcopilot/openai/gpt-5.2": {
+      "model": "gpt/gpt-5-2",
+      "matchingModel": "gpt-5.2",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "December 11, 2025",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ghcopilot/openai/gpt-5.2-codex": {
+      "model": "gpt-codex/gpt-5-2-codex",
+      "matchingModel": "gpt-5.2-codex",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "December 11, 2025",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ghcopilot/xai/grok-code-fast-1": {
+      "model": "grok/grok-code-fast-1",
+      "matchingModel": "grok-code-fast-1",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 64000,
+        "contextComplexity": 4,
+        "knowledgeCutoffDate": "August 2025",
+        "releaseDate": "August 27, 2025",
+        "lastUpdated": "August 27, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "claude-opus-4.7": {
+      "model": "claude-opus/claude-opus-4-7",
+      "matchingModel": "claude-opus-4.7",
+      "overrides": {
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "speed": 2,
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "claude-sonnet-4.6": {
+      "model": "claude-sonnet/claude-sonnet-4-6",
+      "matchingModel": "claude-sonnet-4.6",
+      "overrides": {
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "gemini-3.1-pro-preview": {
+      "model": "gemini-pro/gemini-3-1-pro-preview",
+      "matchingModel": "gemini-3.1-pro-preview",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "February 19, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012
+      }
+    },
+    "gpt-5.3-codex": {
+      "model": "gpt-codex/gpt-5-3-codex",
+      "matchingModel": "gpt-5.3-codex",
+      "overrides": {
+        "name": "GPT-5.3-Codex",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
+        "lastUpdated": "February 5, 2026",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.014,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-5.4": {
+      "model": "gpt/gpt-5-4",
+      "matchingModel": "gpt-5.4",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 4,
+        "lastUpdated": "March 5, 2026",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.015
+      }
+    },
+    "gpt-5.4-mini": {
+      "model": "gpt-mini/gpt-5-4-mini",
+      "matchingModel": "gpt-5.4-mini",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 4,
+        "lastUpdated": "March 17, 2026",
+        "costPer1kInputTokens": 0.00075,
+        "costPer1kOutputTokens": 0.0045
+      }
+    },
+    "gpt-5.5": {
+      "model": "gpt/gpt-5-5",
+      "matchingModel": "gpt-5.5",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 3,
+        "lastUpdated": "April 23, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsTemperature": false
+      }
+    },
+    "gemini-3.5-flash": {
+      "model": "gemini-flash/gemini-3-5-flash",
+      "matchingModel": "gemini-3.5-flash",
+      "overrides": {
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "May 19, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.009
+      }
+    },
+    "claude-opus-4.8": {
+      "model": "claude-opus/claude-opus-4-8",
+      "matchingModel": "claude-opus-4.8",
+      "overrides": {
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "speed": 2,
+        "lastUpdated": "May 28, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "claude-sonnet-4": {
+      "model": "claude-sonnet/claude-sonnet-4-latest",
+      "matchingModel": "claude-sonnet-4",
+      "overrides": {
+        "name": "Claude Sonnet 4 (latest)",
+        "contextWindow": 216000,
+        "maxTokens": 16000,
+        "lastUpdated": "May 22, 2025",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-5.4-nano": {
+      "model": "gpt-nano/gpt-5-4-nano",
+      "matchingModel": "gpt-5.4-nano",
+      "overrides": {
+        "name": "GPT-5.4 nano",
+        "speed": 4,
+        "lastUpdated": "March 17, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.00125,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "raptor-mini": {
+      "model": "github-copilot/raptor-mini/raptor-mini",
+      "matchingModel": "raptor-mini",
+      "overrides": {
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.002,
+        "supportsTemperature": false
+      }
+    },
+    "claude-fable-5": {
+      "model": "claude-fable/claude-fable-5",
+      "matchingModel": "claude-fable-5",
+      "overrides": {
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "claude-sonnet-5": {
+      "model": "claude-sonnet/claude-sonnet-5",
+      "matchingModel": "claude-sonnet-5",
+      "overrides": {
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "kimi-k2.7-code": {
+      "model": "kimi-k2/kimi-k2-7-code",
+      "matchingModel": "kimi-k2.7-code",
+      "overrides": {
+        "contextWindow": 256000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
+        "lastUpdated": "June 12, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004,
+        "supportsTemperature": false
+      }
+    },
+    "mai-code-1-flash-picker": {
+      "model": "mai/mai-code-1-flash",
+      "matchingModel": "mai-code-1-flash-picker",
+      "overrides": {
+        "lastUpdated": "June 8, 2026",
+        "costPer1kInputTokens": 0.00075,
+        "costPer1kOutputTokens": 0.0045,
+        "supportsAttachments": false
+      }
+    },
+    "gpt-5.6-luna": {
+      "model": "gpt-luna/gpt-5-6-luna",
+      "matchingModel": "gpt-5.6-luna",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-5.6-sol": {
+      "model": "gpt-sol/gpt-5-6-sol",
+      "matchingModel": "gpt-5.6-sol",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-5.6-terra": {
+      "model": "gpt-terra/gpt-5-6-terra",
+      "matchingModel": "gpt-5.6-terra",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012,
+        "supportsTemperature": false
+      }
+    },
+    "claude-opus-5": {
+      "model": "claude-opus/claude-opus-5",
+      "matchingModel": "claude-opus-5",
+      "overrides": {
+        "maxTokens": 64000,
+        "lastUpdated": "July 24, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "gemini-3.6-flash": {
+      "model": "gemini-flash/gemini-3-6-flash",
+      "matchingModel": "gemini-3.6-flash",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "July 21, 2026",
+        "costPer1kInputTokens": 0.00075,
+        "costPer1kOutputTokens": 0.00375
+      }
+    },
+    "grok-4.5": {
+      "model": "grok/grok-4-5",
+      "matchingModel": "grok-4.5",
+      "overrides": {
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "July 8, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
+      }
+    },
+    "kimi-k3": {
+      "model": "kimi-k3/kimi-k3",
+      "matchingModel": "kimi-k3",
+      "overrides": {
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsTemperature": false
+      }
+    },
+    "mai-code-1.1-flash": {
+      "model": "mai/mai-code-1-1-flash",
+      "matchingModel": "mai-code-1.1-flash",
+      "overrides": {
+        "lastUpdated": "August 11, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0012
+      },
+      "unset": [
+        "supportsTemperature"
+      ]
+    },
+    "gemini-3.7-flash": {
+      "model": "gemini-flash/gemini-3-7-flash",
+      "matchingModel": "gemini-3.7-flash",
+      "overrides": {
+        "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "August 13, 2026",
+        "costPer1kInputTokens": 0.00075,
+        "costPer1kOutputTokens": 0.00375
+      }
+    },
+    "grok-4.6": {
+      "model": "grok/grok-4-6",
+      "matchingModel": "grok-4.6",
+      "overrides": {
+        "maxTokens": 128000,
+        "lastUpdated": "August 12, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
+      }
+    },
+    "claude-fable-5.1": {
+      "model": "claude-fable/claude-fable-5-1",
+      "matchingModel": "claude-fable-5.1",
+      "overrides": {
+        "lastUpdated": "September 1, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "gemini-3.8-flash": {
+      "model": "gemini-flash/gemini-3-8-flash",
+      "matchingModel": "gemini-3.8-flash",
+      "overrides": {
+        "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 2, 2026",
+        "costPer1kInputTokens": 0.00075,
+        "costPer1kOutputTokens": 0.00375
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    },
+    "gpt-6-astra": {
+      "model": "gpt-astra/gpt-6-astra",
+      "matchingModel": "gpt-6-astra",
+      "overrides": {
+        "lastUpdated": "September 4, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false
+      }
+    }
+  }
+}

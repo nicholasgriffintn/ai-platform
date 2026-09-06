@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "contextWindow": 128000,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 1, 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The bedrock/amazon.titan text express v1 family includes models that produce text.",
+  "models": {
+    "titan-text-g1-express": {
+      "defaults": {
+        "name": "Titan Text G1 - Express",
+        "description": "Titan Text G1 - Express accepts text and produces text."
+      }
+    }
+  }
+}

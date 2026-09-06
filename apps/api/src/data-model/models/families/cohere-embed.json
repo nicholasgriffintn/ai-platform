@@ -1,0 +1,67 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+  "models": {
+    "embed-v3-english": {
+      "defaults": {
+        "name": "Embed v3 English",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 512,
+        "maxTokens": 1024,
+        "releaseDate": "November 7, 2023"
+      }
+    },
+    "embed-v3-multilingual": {
+      "defaults": {
+        "name": "Embed v3 Multilingual",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 512,
+        "maxTokens": 1024,
+        "releaseDate": "November 7, 2023"
+      }
+    },
+    "embed-v4": {
+      "defaults": {
+        "name": "Embed v4",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 128000,
+        "maxTokens": 1536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "embedding"
+          ]
+        },
+        "releaseDate": "April 15, 2025",
+        "supportsAttachments": true
+      }
+    },
+    "embed-v4-0": {
+      "defaults": {
+        "name": "Embed v4.0",
+        "openWeights": false,
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 128000,
+        "maxTokens": 1536,
+        "releaseDate": "April 15, 2025",
+        "supportsTemperature": true
+      }
+    }
+  }
+}

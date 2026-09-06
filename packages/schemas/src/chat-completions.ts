@@ -7,8 +7,10 @@ import {
   type RecipeChatRequestOptions,
 } from "./apps";
 import { conversationChannelRequestOptionsSchema } from "./chat-mode";
+import { chatRunCommandIdSchema, chatRunCommandReceiptSchema, chatRunIdSchema } from "./chat-runs";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts";
 import { metaAssistantRequestSchema } from "./meta-assistant";
+import { modelTierSchema } from "./model-lineup";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { sandboxRequestOptionsSchema } from "./sandbox";
 import { messageSchema } from "./shared";
@@ -27,7 +29,6 @@ const promptCacheOptionsSchema = z
   })
   .strict();
 
-export const modelRouterModeSchema = z.enum(["auto", "lite", "standard", "pro", "max"]);
 export const chatCompactionModeSchema = z.enum(["auto", "off"]);
 export const connectorApprovalIdSchema = z.string().regex(/^coa_[A-Za-z0-9-]+$/);
 
@@ -104,6 +105,7 @@ export const chatMessageContentPartSchema = z
     tool_use_id: z.string().optional().describe("Tool use identifier."),
     id: z.string().optional().describe("Content part identifier."),
     name: z.string().optional().describe("Content part name."),
+    source_id: z.string().min(1).optional().describe("Durable source identifier."),
     content: z.string().optional().describe("Nested content payload."),
     input: z.union([z.string(), recordSchema]).optional().describe("Tool input payload."),
     cache_control: z
@@ -196,6 +198,7 @@ export const chatMessageContentPartSchema = z
 
 export const chatCompletionMessageSchema = z
   .object({
+    id: z.string().min(1).optional().describe("Stable application message identifier."),
     role: z
       .enum(["developer", "system", "user", "assistant", "tool"])
       .describe("Message author role."),
@@ -356,10 +359,10 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .string()
     .optional()
     .describe("The provider to use when the model name is shared by multiple providers."),
-  model_router_mode: modelRouterModeSchema
+  model_tier: modelTierSchema
     .optional()
     .describe(
-      "Automatic router mode used when no explicit model is requested. Auto uses the saved project default in project conversations.",
+      "Model tier used when no explicit model is requested. Omit it to use the project default tier in project conversations, otherwise Medium.",
     ),
   compaction: chatCompactionModeSchema
     .optional()
@@ -574,6 +577,10 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   safety_identifier: z.string().optional().describe("Provider safety identifier."),
   store: z.boolean().optional().describe("Whether to store the conversation and response."),
   completion_id: z.string().optional().describe("Existing or new completion ID."),
+  command_id: chatRunCommandIdSchema
+    .optional()
+    .describe("Idempotency key for accepting this user command."),
+  run_id: chatRunIdSchema.optional().describe("Existing waiting run resumed by this command."),
   platform: z.string().min(1).optional().describe("Client platform sending the request."),
   meta_assistant: metaAssistantRequestSchema
     .optional()
@@ -583,6 +590,12 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   options: chatRequestOptionsSchema
     .optional()
     .describe("Grouped feature settings that are not model generation controls."),
+});
+
+export const chatRunCommandInputSchema = chatCompletionsRequestFieldsSchema.omit({
+  command_id: true,
+  run_id: true,
+  stream: true,
 });
 
 const retiredChatRetrievalFields = {
@@ -609,14 +622,6 @@ export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchem
   .strict()
   .transform(stripRetiredChatRetrievalFields)
   .superRefine((request, ctx) => {
-    if (!request.model && !request.models?.length && !request.model_router_mode) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["model"],
-        message: "Either model or models must be provided",
-      });
-    }
-
     if (request.model && request.models?.length) {
       ctx.addIssue({
         code: "custom",
@@ -625,11 +630,11 @@ export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchem
       });
     }
 
-    if (request.model_router_mode && (request.model || request.models?.length)) {
+    if (request.model_tier && (request.model || request.models?.length)) {
       ctx.addIssue({
         code: "custom",
-        path: ["model_router_mode"],
-        message: "model_router_mode is only valid when no explicit model is provided",
+        path: ["model_tier"],
+        message: "model_tier is only valid when no explicit model is provided",
       });
     }
 
@@ -666,7 +671,6 @@ export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchem
 
 export type ChatCompletionRequestBody = z.input<typeof createChatCompletionsJsonSchema>;
 export type ParsedChatCompletionRequestBody = z.output<typeof createChatCompletionsJsonSchema>;
-export type ModelRouterMode = z.infer<typeof modelRouterModeSchema>;
 
 const chatCompactionPostProcessingMessageSchema = messageSchema.and(
   z.object({
@@ -766,6 +770,9 @@ export const createChatCompletionsResponseSchema = z
       .describe("Token usage for the response."),
     post_processing: chatPostProcessingSchema.optional().describe("Post-processing metadata."),
     usage_limits: recordSchema.optional().describe("Usage limit metadata."),
+    run: chatRunCommandReceiptSchema
+      .optional()
+      .describe("Persisted acknowledgement for the accepted run command."),
   })
   .describe("Chat completion response.");
 

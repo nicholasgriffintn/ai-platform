@@ -1,0 +1,42 @@
+# Verify local main with automated journeys
+
+Run the pending queue against isolated local data. Checked boxes record automated evidence authorised by the user; they do not certify a deployment. Keep items pending until their remaining outcomes are confirmed.
+
+## Results
+
+- **Checkout:** started clean on local `main`; no branch, worktree, push or PR.
+- **Build:** `pnpm build:e2e` passed.
+- **Baseline:** `pnpm test:e2e:release` ran 139 Chromium journeys: 136 passed, three failed, none skipped.
+- **API:** 124 tests passed across chat runs, project tasks, outputs, context budgeting and output provenance.
+- **Native:** `pnpm test:mobile` passed: 105 Swift tests and six launch UI tests. Native UI coverage exercises launch only; it does not confirm the interaction or physical-device queue.
+- **Theme:** both new `features/themes.spec.ts` journeys passed: day/night persistence and rejection of a reversed stored pair.
+- **Cancellation:** the focused cancellation E2E passed after correcting the conversation detail schema and serialising the archive flag as a boolean.
+- **Keyboard:** the focused conversation-menu E2E passed after updating navigation assertions for the current Pin-through-Delete menu.
+- **Failure recovery:** the baseline exposed a duplicate user bubble because completion request validation stripped its supplied ID, and newly created conversations lacked a recoverable URL. Both fixes passed the complete failure/reload/follow-up E2E. Message repository and preparation checks passed (23 tests), including protection against foreign message IDs; schema checks passed (24 tests).
+- **Model selection:** both new journeys passed, covering selected model and response-control persistence, deliberate Auto, and explicit replacement after sign-out. Fix Send remaining enabled for an unavailable selection. Leave the older automatic-fallback expectation flagged against ADR 0062.
+- **Drafts:** all three Chat/Work journeys passed. Fix the cursor before the submenu separator when `/model` precedes a draft. All 18 composer parser tests passed.
+- **Catalogue:** guest counts, all five section links, representative access badges and both curation destinations passed.
+- **Run protocol:** exact cancellation command replay returns the original receipt with the duplicate flag, and changed input returns 409. Ordered replay has stable identities, only later events, repeatable pages and an explicit snapshot reset for a future cursor.
+- **Approvals:** the new network-failure/retry journey exposed optimistic replies marking the card resolved before acknowledgement. Defer the reply's resolution metadata until success. The fixed journey passed, including disabled controls while submitting and a retryable inline failure.
+- **Provider parameters:** the full API run found one failure among 1,904 tests: a non-finite Bedrock thinking budget when the output allowance was omitted. Resolve the required allowance from the catalogue for budget thinking. The focused provider and parameter run passed all 46 tests; the full API rerun passed all 1,904 tests across 260 files.
+- **Package checks:** the web suite passed 284 tests, shared chat passed 99, schemas passed 188 and content components passed 10. API, web and E2E typechecks passed before the latest restoration fix; repeat affected checks afterwards.
+- **Questions:** the network-failure/retry journey passed with the written answer retained, retry available and submission acknowledged only after success.
+- **Organisation:** pin/unpin, unread/read, group assignment/removal and keyboard shortcut guards passed across reloads.
+- **Project tasks:** proposed pipeline stages survive later pipeline edits and reloads; cancelling, reopening and deleting an untouched task passed. A queued task continues after its initiating page closes and reopens the exact waiting run with its questions.
+- **Release rerun:** 156 of 157 browser journeys passed; model restoration passed, but council selection failed intermittently. Three focused council repeats passed; retain the full-run failure for investigation.
+- **Work resume:** the complete page-close, waiting-run recovery, offline answer failure, retry and review journey passed. Await the real answer acknowledgement and allow offline requests to fail explicitly. Reopen settled usage reservations with a fresh identity and fence late settlement against the previous identity.
+- **Sandbox:** the real Worker and container now clone an isolated fixture, execute a repository edit, validate it, persist private artefacts and restore Proof after reload. An unrelated signed-in account receives 404 for the same diff URL. The sandbox, task, model and recovery run passed all 18 journeys. Fix caller-owned tool calls being executed by the API, an unserialisable cancellation signal crossing Sandbox RPC, the interpreter ignoring its requested working directory and missing saved Work conversation URLs.
+- **Latest checks:** API, app and sandbox typechecks passed. Sandbox tests passed 76 tests across 14 files; the caller-owned tool regression passed alongside 27 existing agent-loop tests. Repeat broader checks after the remaining changes.
+- **Sandbox extensions:** JavaScript, Python and intentional failed-validation journeys passed, including reload and non-member artefact denial. Use the Python-enabled production image because the base image lacks the advertised interpreter. The environment settings journey passed save/reload, setup execution and removal without disconnecting the repository. Work resume also confirms credit reservations return to zero while waiting and after review.
+- **Latest full suites:** API passed 1,905 tests across 260 files; web passed 286 tests across 70 files. E2E typechecking passed using the app workspace's TypeScript executable.
+
+## Environment and remaining evidence
+
+- Run the documented test runtime with access to Wrangler's local registry. The sandboxed attempt failed during startup; the same command succeeded with sandbox approval. Native tests similarly required access to CoreSimulator.
+- One release run lost Wrangler's proxy connection after 96 journeys, causing downstream connection failures. The following full run remained stable; no alternate host, port or runtime workaround was used.
+- Visual capture runs only at declared checkpoints. A focused recovery run produced six changed snapshots at `https://pvc.pashi.app/builds/2f9a93aa-46b4-4be7-844a-1e82be0d23fa`; these still require review. Tests without checkpoints report no snapshots. Do not treat functional passes as contrast, typography, animation or first-paint evidence.
+- Physical iPhone checks require the device, accessibility tools and matching app/API releases. Simulator launch tests cannot establish APNs delivery, thermal behaviour or VoiceOver usability.
+- Use the real sandbox Worker and Cloudflare Sandbox container in the local E2E runtime. The first container journey passes with a local fixture repository and mocked GitHub/model-provider boundaries. Extend this harness for service, cache, delivery, controls and preview checks; live GitHub access is not a prerequisite.
+- Live notification delivery requires the configured notification gateway, VAPID/APNs material and suitable installations. Production telemetry requires the documented 28-day cohort and minimum sample counts.
+- Continue adding local browser coverage for the remaining Chat, Work, model selection, catalogue and theme outcomes. Leave combined web/iPhone checks unchecked when only the web portion is established.
+- Native select arrow-key changes could not be reliably driven through the macOS headless Chromium popup. Tab order, selection through the control API, radio preservation and persisted values pass; leave the complete native keyboard step open.

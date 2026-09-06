@@ -1,6 +1,8 @@
 import { creditMicrosFromCredits, type UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
+import type { UsageReservationRepository } from "~/repositories/UsageReservationRepository";
+
 import { userCreditActor } from "../creditActor";
 import {
   admitTurn,
@@ -22,6 +24,16 @@ function createRepositories(
 ) {
   const applyDeltas = vi.fn(async (_params: Record<string, unknown>) => {});
   const getBalance = vi.fn(async () => options.balance ?? null);
+  const createUserReservationWithBalance = vi.fn<
+    UsageReservationRepository["createUserReservationWithBalance"]
+  >(async () => true);
+  const finishUserReservationWithBalance = vi.fn(async () => ({ ref_id: "run-1" }));
+  const getReservation = vi.fn(async () => ({
+    kind: "chat_run",
+    ref_id: "run-1",
+    status: "held",
+    credit_micros: 10_000_000,
+  }));
 
   return {
     applyDeltas,
@@ -29,7 +41,14 @@ function createRepositories(
     repositories: {
       plans: { getPlanById: vi.fn(async () => options.plan ?? null) },
       usageBalances: { applyDeltas, getBalance },
+      usageReservations: {
+        createUserReservationWithBalance,
+        finishUserReservationWithBalance,
+        getReservation,
+      },
     } as any,
+    createUserReservationWithBalance,
+    finishUserReservationWithBalance,
   };
 }
 
@@ -225,6 +244,58 @@ describe("admitTurn", () => {
     );
 
     expect(releases).toHaveLength(1);
+  });
+
+  it("persists a project-task chat reservation under the exact run identity", async () => {
+    const {
+      applyDeltas,
+      createUserReservationWithBalance,
+      finishUserReservationWithBalance,
+      repositories,
+    } = createRepositories({
+      plan: configuredPlan,
+    });
+
+    const admission = await admitTurn({
+      repositories,
+      actor: userCreditActor(7),
+      planId: "pro",
+      estimatedCreditMicros: 10_000_000,
+      durableReservation: {
+        kind: "chat_run",
+        refId: "run-1",
+        userId: 7,
+        expiresAt: "2026-09-06T10:00:00.000Z",
+      },
+    });
+
+    expect(admission.admitted).toBe(true);
+    expect(createUserReservationWithBalance).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: expect.any(String),
+        kind: "chat_run",
+        refId: "run-1",
+        userId: 7,
+        creditMicros: 10_000_000,
+        expiresAt: "2026-09-06T10:00:00.000Z",
+      }),
+    );
+    expect(applyDeltas).not.toHaveBeenCalled();
+
+    if (!admission.admitted || !admission.reservation) {
+      throw new Error("Expected a durable reservation");
+    }
+
+    await admission.reservation.release("settled");
+    await admission.reservation.release("released");
+
+    expect(finishUserReservationWithBalance).toHaveBeenCalledOnce();
+    expect(finishUserReservationWithBalance).toHaveBeenCalledWith(
+      "chat_run",
+      "run-1",
+      "settled",
+      createUserReservationWithBalance.mock.calls[0]?.[0].id,
+    );
   });
 });
 

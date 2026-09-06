@@ -1,0 +1,109 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The devstral family includes models that produce text.",
+  "models": {
+    "devstral-2": {
+      "defaults": {
+        "name": "Devstral 2",
+        "openWeights": true,
+        "description": "Mistral coding agent model for repository tasks and software engineering workflows",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "December 2025",
+        "releaseDate": "December 9, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 15.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "devstral-2-123b": {
+      "defaults": {
+        "name": "Devstral 2 123B",
+        "openWeights": true,
+        "description": "Mistral coding agent model for repository tasks and software engineering workflows",
+        "maxTokens": 8192,
+        "releaseDate": "February 17, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "devstral-latest": {
+      "defaults": {
+        "name": "devstral-latest",
+        "description": "An enterprise grade text model, that excels at using tools to explore codebases, editing multiple files and power software engineering agents.",
+        "maxTokens": 256000,
+        "releaseDate": "May 27, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "devstral-latest-eu": {
+      "defaults": {
+        "name": "devstral-latest@eu",
+        "description": "An enterprise grade text model, that excels at using tools to explore codebases, editing multiple files and power software engineering agents.",
+        "maxTokens": 256000,
+        "releaseDate": "May 27, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "devstral-small-1-1": {
+      "defaults": {
+        "name": "Devstral Small 1.1",
+        "description": "Devstral Small 1.1 accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 64000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "May 21, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "devstral-small-2": {
+      "defaults": {
+        "name": "Devstral Small 2",
+        "description": "Mistral coding agent model for repository tasks and software engineering workflows",
+        "maxTokens": 256000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "December 9, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    }
+  }
+}

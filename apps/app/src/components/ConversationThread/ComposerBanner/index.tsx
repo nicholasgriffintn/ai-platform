@@ -5,11 +5,23 @@ import { useComposerBanner } from "./useComposerBanner";
 
 interface ComposerBannerProps {
   model?: ModelConfigItem;
+  requestedModelId?: string | null;
+  isModelsLoading?: boolean;
   hideSuggestions?: boolean;
 }
 
-export function ComposerBanner({ model, hideSuggestions }: ComposerBannerProps) {
-  const { banner, dismiss } = useComposerBanner({ model, hideSuggestions });
+export function ComposerBanner({
+  model,
+  requestedModelId,
+  isModelsLoading,
+  hideSuggestions,
+}: ComposerBannerProps) {
+  const { banner, dismiss } = useComposerBanner({
+    model,
+    requestedModelId,
+    isModelsLoading,
+    hideSuggestions,
+  });
 
   if (!banner) {
     return null;

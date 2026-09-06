@@ -5,6 +5,7 @@ import type {
   ProjectTaskConstraints,
   ProjectTaskContext,
   ProjectTaskCriterion,
+  ProjectFlow,
   ProjectTaskRunner,
   ProjectTaskSource,
   ProjectTaskStatus,
@@ -33,6 +34,7 @@ export interface CreateProjectTaskParams {
   assigneeUserId?: number | null;
   runner?: ProjectTaskRunner | null;
   stageId?: string | null;
+  flowSnapshot?: ProjectFlow | null;
   tokenBudget?: number | null;
   position: number;
 }
@@ -55,6 +57,7 @@ export interface UpdateProjectTaskParams {
   conversationId?: string | null;
   goalId?: string | null;
   dispatchTaskId?: string | null;
+  runId?: string | null;
   completions?: ProjectTaskCompletion[];
   position?: number;
   tokenBudget?: number | null;
@@ -69,9 +72,9 @@ export interface ListProjectTaskFilters {
   includeDone?: boolean;
 }
 
-function parseJsonColumn<T>(value: unknown): T | null {
+function parseJsonColumn<T>(value: unknown, fallback: T): T {
   if (value === null || value === undefined) {
-    return null;
+    return fallback;
   }
 
   return typeof value === "string" ? safeParseJson<T>(value) : (value as T);
@@ -88,20 +91,22 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     blockedReason: row.blocked_reason,
     blockedDetail: row.blocked_detail,
     stageId: row.stage_id,
-    runner: parseJsonColumn<ProjectTaskRunner>(row.runner),
-    acceptanceCriteria: parseJsonColumn<ProjectTaskCriterion[]>(row.acceptance_criteria) ?? [],
+    flowSnapshot: parseJsonColumn<ProjectFlow | null>(row.flow_snapshot, null),
+    runner: parseJsonColumn<ProjectTaskRunner | null>(row.runner, null),
+    acceptanceCriteria: parseJsonColumn<ProjectTaskCriterion[]>(row.acceptance_criteria, []),
     expectedOutput: row.expected_output,
-    context: parseJsonColumn<ProjectTaskContext>(row.context),
-    constraints: parseJsonColumn<ProjectTaskConstraints>(row.constraints),
-    dependsOnTaskIds: parseJsonColumn<string[]>(row.depends_on_task_ids) ?? [],
-    requireApprovalFor: parseJsonColumn<ToolPermission[]>(row.require_approval_for) ?? [],
+    context: parseJsonColumn<ProjectTaskContext | null>(row.context, null),
+    constraints: parseJsonColumn<ProjectTaskConstraints | null>(row.constraints, null),
+    dependsOnTaskIds: parseJsonColumn<string[]>(row.depends_on_task_ids, []),
+    requireApprovalFor: parseJsonColumn<ToolPermission[]>(row.require_approval_for, []),
     createdByUserId: row.created_by_user_id,
     assigneeUserId: row.assignee_user_id,
     runnerIdentityUserId: row.runner_identity_user_id,
     conversationId: row.conversation_id,
     goalId: row.goal_id,
     dispatchTaskId: row.dispatch_task_id,
-    completions: parseJsonColumn<ProjectTaskCompletion[]>(row.completions) ?? [],
+    runId: row.run_id,
+    completions: parseJsonColumn<ProjectTaskCompletion[]>(row.completions, []),
     position: row.position,
     tokenBudget: row.token_budget,
     tokensSpent: row.tokens_spent,
@@ -109,6 +114,7 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     updatedAt: row.updated_at,
     startedAt: row.started_at,
     completedAt: row.completed_at,
+    attentionVersion: row.attention_version,
   };
 }
 
@@ -134,6 +140,7 @@ export class ProjectTaskRepository extends BaseRepository {
         assignee_user_id: params.assigneeUserId ?? null,
         runner: params.runner ?? null,
         stage_id: params.stageId ?? null,
+        flow_snapshot: params.flowSnapshot ?? null,
         token_budget: params.tokenBudget ?? null,
         position: params.position,
       },
@@ -146,6 +153,7 @@ export class ProjectTaskRepository extends BaseRepository {
           "require_approval_for",
           "completions",
           "runner",
+          "flow_snapshot",
         ],
         returning: "*",
       },
@@ -259,7 +267,11 @@ export class ProjectTaskRepository extends BaseRepository {
     return row?.max_position ?? 0;
   }
 
-  async updateTask(taskId: string, updates: UpdateProjectTaskParams): Promise<ProjectTask | null> {
+  async updateTask(
+    taskId: string,
+    updates: UpdateProjectTaskParams,
+    executionOwner?: { dispatchTaskId: string; ownerToken: string; now?: string },
+  ): Promise<ProjectTask | null> {
     const columns: string[] = [];
     const values: unknown[] = [];
 
@@ -336,6 +348,10 @@ export class ProjectTaskRepository extends BaseRepository {
       set("dispatch_task_id", updates.dispatchTaskId);
     }
 
+    if (updates.runId !== undefined) {
+      set("run_id", updates.runId);
+    }
+
     if (updates.completions !== undefined) {
       set("completions", JSON.stringify(updates.completions));
     }
@@ -360,6 +376,37 @@ export class ProjectTaskRepository extends BaseRepository {
       set("completed_at", updates.completedAt);
     }
 
+    const attentionChanges: Array<[string, unknown]> = [];
+
+    if (updates.status !== undefined) {
+      attentionChanges.push(["status", updates.status]);
+    }
+
+    if (updates.blockedReason !== undefined) {
+      attentionChanges.push(["blocked_reason", updates.blockedReason]);
+    }
+
+    if (updates.blockedDetail !== undefined) {
+      attentionChanges.push(["blocked_detail", updates.blockedDetail]);
+    }
+
+    if (updates.assigneeUserId !== undefined) {
+      attentionChanges.push(["assignee_user_id", updates.assigneeUserId]);
+    }
+
+    if (updates.completedAt !== undefined) {
+      attentionChanges.push(["completed_at", updates.completedAt]);
+    }
+
+    if (attentionChanges.length > 0) {
+      columns.push(
+        `attention_version = attention_version + CASE WHEN ${attentionChanges
+          .map(([column]) => `${column} IS NOT ?`)
+          .join(" OR ")} THEN 1 ELSE 0 END`,
+      );
+      values.push(...attentionChanges.map(([, value]) => value));
+    }
+
     if (columns.length === 0) {
       return this.getTaskById(taskId);
     }
@@ -367,8 +414,28 @@ export class ProjectTaskRepository extends BaseRepository {
     columns.push("updated_at = CURRENT_TIMESTAMP");
     values.push(taskId);
 
+    let ownershipClause = "";
+
+    if (executionOwner) {
+      ownershipClause = `
+        AND dispatch_task_id = ?
+        AND EXISTS (
+          SELECT 1 FROM tasks
+          WHERE tasks.id = ?
+            AND tasks.status = 'running'
+            AND tasks.execution_owner_token = ?
+            AND datetime(tasks.execution_lease_expires_at) > datetime(?)
+        )`;
+      values.push(
+        executionOwner.dispatchTaskId,
+        executionOwner.dispatchTaskId,
+        executionOwner.ownerToken,
+        executionOwner.now ?? new Date().toISOString(),
+      );
+    }
+
     const row = await this.runQuery<ProjectTaskRow>(
-      `UPDATE project_task SET ${columns.join(", ")} WHERE id = ? RETURNING *`,
+      `UPDATE project_task SET ${columns.join(", ")} WHERE id = ?${ownershipClause} RETURNING *`,
       values,
       true,
     );
@@ -421,8 +488,11 @@ export class ProjectTaskRepository extends BaseRepository {
     projectId: string;
     runnerIdentityUserId: number;
     dispatchTaskId: string;
+    executionOwnerToken: string;
     resumeInterrupted?: boolean;
+    now?: string;
   }): Promise<ProjectTask | null> {
+    const now = params.now ?? new Date().toISOString();
     const row = await this.runQuery<ProjectTaskRow>(
       `UPDATE project_task
        SET status = 'running',
@@ -435,6 +505,13 @@ export class ProjectTaskRepository extends BaseRepository {
          AND runner_identity_user_id = ?
          AND dispatch_task_id = ?
          AND (status = 'queued' OR (? = 1 AND status = 'running'))
+         AND EXISTS (
+           SELECT 1 FROM tasks
+           WHERE tasks.id = ?
+             AND tasks.status = 'running'
+             AND tasks.execution_owner_token = ?
+             AND datetime(tasks.execution_lease_expires_at) > datetime(?)
+         )
        RETURNING *`,
       [
         params.taskId,
@@ -442,6 +519,9 @@ export class ProjectTaskRepository extends BaseRepository {
         params.runnerIdentityUserId,
         params.dispatchTaskId,
         params.resumeInterrupted ? 1 : 0,
+        params.dispatchTaskId,
+        params.executionOwnerToken,
+        now,
       ],
       true,
     );

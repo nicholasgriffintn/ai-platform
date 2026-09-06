@@ -1,0 +1,977 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "models": {
+    "jamba-1-5-mini-gh": {
+      "model": "jamba/ai21-jamba-1-5-mini",
+      "matchingModel": "ai21-labs/ai21-jamba-1.5-mini",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "August 29, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "jamba-1-5-large-gh": {
+      "model": "jamba/ai21-jamba-1-5-large",
+      "matchingModel": "ai21-labs/ai21-jamba-1.5-large",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "August 29, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "gpt-4-1-mini-gh": {
+      "model": "gpt-mini/gpt-4-1-mini",
+      "matchingModel": "openai/gpt-4.1-mini",
+      "overrides": {
+        "name": "GPT-4.1-mini",
+        "description": "Advanced GPT model with improved instruction following and 1M context window.",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "analysis",
+          "chat",
+          "multilingual",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "speed": 3,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "o4-mini-gh": {
+      "model": "o-mini/openai-o4-mini",
+      "matchingModel": "openai/o4-mini",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "January 31, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "o1-mini-gh": {
+      "model": "o-mini/openai-o1-mini",
+      "matchingModel": "openai/o1-mini",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 17, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-4o-mini-gh": {
+      "model": "gpt-mini/gpt-4o-mini",
+      "matchingModel": "openai/gpt-4o-mini",
+      "overrides": {
+        "name": "GPT-4o mini",
+        "description": "Efficient multimodal model with support for text, image, and audio inputs.",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "chat",
+          "analysis",
+          "vision",
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "multimodal": true,
+        "knowledgeCutoffDate": "October 2023",
+        "lastUpdated": "July 18, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "gpt-4o-gh": {
+      "model": "gpt/gpt-4o",
+      "matchingModel": "openai/gpt-4o",
+      "overrides": {
+        "description": "Advanced multimodal GPT model with enhanced vision and audio capabilities.",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "chat",
+          "analysis",
+          "vision",
+          "audio",
+          "coding",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "multimodal": true,
+        "knowledgeCutoffDate": "October 2023",
+        "lastUpdated": "May 13, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "o3-mini-gh": {
+      "model": "o-mini/openai-o3-mini",
+      "matchingModel": "openai/o3-mini",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "January 31, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "o1-gh": {
+      "model": "o/openai-o1",
+      "matchingModel": "openai/o1",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "December 17, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "phi-4-gh": {
+      "model": "phi/phi-4",
+      "matchingModel": "microsoft/phi-4",
+      "overrides": {
+        "description": "Microsoft's latest small language model optimized for reasoning and code generation.",
+        "contextWindow": 16000,
+        "strengths": [
+          "reasoning",
+          "coding",
+          "analysis",
+          "math",
+          "tool_use"
+        ],
+        "speed": 2,
+        "lastUpdated": "December 11, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "phi-4-multimodal-gh": {
+      "model": "phi/phi-4-multimodal-instruct",
+      "matchingModel": "microsoft/phi-4-multimodal-instruct",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "December 11, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "phi-4-reasoning-gh": {
+      "model": "phi/phi-4-reasoning",
+      "matchingModel": "microsoft/phi-4-reasoning",
+      "overrides": {
+        "name": "Phi-4-Reasoning",
+        "description": "Specialized version of Phi-4 optimized for complex reasoning tasks.",
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 4,
+        "speed": 3,
+        "lastUpdated": "December 11, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "phi-3-5-vision-gh": {
+      "model": "phi/phi-3-5-vision-instruct-128k",
+      "matchingModel": "microsoft/phi-3.5-vision-instruct",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "August 20, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "llama-3-2-90b-vision-gh": {
+      "model": "llama/llama-3-2-90b-vision-instruct",
+      "matchingModel": "meta/llama-3.2-90b-vision-instruct",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "reasoning",
+          "vision",
+          "audio",
+          "multilingual"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "speed": 3,
+        "multimodal": true,
+        "lastUpdated": "September 25, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "llama-3-1-405b-gh": {
+      "model": "llama/meta-llama-3-1-405b-instruct",
+      "matchingModel": "meta/meta-llama-3.1-405b-instruct",
+      "overrides": {
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "multilingual"
+        ],
+        "contextComplexity": 5,
+        "reliability": 5,
+        "speed": 1,
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-r1-gh": {
+      "model": "deepseek-thinking/deepseek-r1",
+      "matchingModel": "deepseek/deepseek-r1",
+      "overrides": {
+        "description": "Advanced reasoning model with strong mathematical and logical capabilities.",
+        "contextWindow": 65536,
+        "maxTokens": 8192,
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding",
+          "tool_use"
+        ],
+        "speed": 3,
+        "knowledgeCutoffDate": "June 2024",
+        "lastUpdated": "January 20, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "mistral-large-2411-gh": {
+      "model": "mistral-large/mistral-large-24-11",
+      "matchingModel": "mistral-ai/mistral-large-2411",
+      "overrides": {
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "coding"
+        ],
+        "reliability": 4,
+        "speed": 3,
+        "lastUpdated": "November 1, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "codestral-2501-gh": {
+      "model": "codestral/codestral-25-01",
+      "matchingModel": "mistral-ai/codestral-2501",
+      "overrides": {
+        "description": "Specialized Mistral model optimized for code generation and programming tasks.",
+        "contextWindow": 32000,
+        "maxTokens": 8192,
+        "strengths": [
+          "coding",
+          "analysis",
+          "reasoning"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "speed": 3,
+        "lastUpdated": "January 1, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "grok-3-gh": {
+      "model": "grok/grok-3",
+      "matchingModel": "xai/grok-3",
+      "overrides": {
+        "openWeights": false,
+        "contextWindow": 128000,
+        "speed": 3,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "December 9, 2024",
+        "lastUpdated": "December 9, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "grok-3-mini-gh": {
+      "model": "grok/grok-3-mini",
+      "matchingModel": "xai/grok-3-mini",
+      "overrides": {
+        "openWeights": false,
+        "contextWindow": 128000,
+        "speed": 4,
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "December 9, 2024",
+        "lastUpdated": "December 9, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "command-r-gh": {
+      "model": "command-r/cohere-command-r",
+      "matchingModel": "cohere/cohere-command-r",
+      "overrides": {
+        "name": "Cohere Command R",
+        "strengths": [
+          "analysis",
+          "summarization",
+          "reasoning"
+        ],
+        "contextComplexity": 3,
+        "speed": 3,
+        "releaseDate": "March 11, 2024",
+        "lastUpdated": "August 1, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "command-r-plus-gh": {
+      "model": "command-r/cohere-command-r",
+      "matchingModel": "cohere/cohere-command-r-plus",
+      "overrides": {
+        "name": "Cohere Command R+",
+        "description": "Enhanced version of Command R with improved capabilities for complex workflows.",
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "summarization"
+        ],
+        "contextComplexity": 4,
+        "speed": 2,
+        "releaseDate": "April 4, 2024",
+        "lastUpdated": "August 1, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "cohere/cohere-command-a": {
+      "model": "command-a/cohere-command-a",
+      "matchingModel": "cohere/cohere-command-a",
+      "overrides": {
+        "lastUpdated": "November 1, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "cohere/cohere-command-r-08-2024": {
+      "model": "command-r/cohere-command-r-08-2024",
+      "matchingModel": "cohere/cohere-command-r-08-2024",
+      "overrides": {
+        "name": "Cohere Command R 08-2024",
+        "lastUpdated": "August 1, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "cohere/cohere-command-r-plus-08-2024": {
+      "model": "command-r/cohere-command-r-08-2024",
+      "matchingModel": "cohere/cohere-command-r-plus-08-2024",
+      "overrides": {
+        "name": "Cohere Command R+ 08-2024",
+        "lastUpdated": "August 1, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "core42/jais-30b-chat": {
+      "model": "jais/jais-30b-chat",
+      "matchingModel": "core42/jais-30b-chat",
+      "overrides": {
+        "lastUpdated": "August 30, 2023",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "deepseek/deepseek-v3-0324": {
+      "model": "deepseek/deepseek-v3-0324",
+      "matchingModel": "deepseek/deepseek-v3-0324",
+      "overrides": {
+        "name": "DeepSeek-V3-0324",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "contextComplexity": 3,
+        "knowledgeCutoffDate": "June 2024",
+        "lastUpdated": "March 24, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "meta/llama-3.2-11b-vision-instruct": {
+      "model": "llama/llama-3-2-11b-vision-instruct",
+      "matchingModel": "meta/llama-3.2-11b-vision-instruct",
+      "overrides": {
+        "name": "Llama-3.2-11B-Vision-Instruct",
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 25, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "meta/llama-3.3-70b-instruct": {
+      "model": "llama/llama-3-3-70b-instruct",
+      "matchingModel": "meta/llama-3.3-70b-instruct",
+      "overrides": {
+        "maxTokens": 32768,
+        "lastUpdated": "December 6, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "meta/llama-4-maverick-17b-128e-instruct-fp8": {
+      "model": "llama/llama-4-maverick-17b-128e-instruct-fp8",
+      "matchingModel": "meta/llama-4-maverick-17b-128e-instruct-fp8",
+      "overrides": {
+        "maxTokens": 8192,
+        "knowledgeCutoffDate": "December 2024",
+        "releaseDate": "January 31, 2025",
+        "lastUpdated": "January 31, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "meta/llama-4-scout-17b-16e-instruct": {
+      "model": "llama/llama-4-scout-17b-16e-instruct",
+      "matchingModel": "meta/llama-4-scout-17b-16e-instruct",
+      "overrides": {
+        "knowledgeCutoffDate": "December 2024",
+        "releaseDate": "January 31, 2025",
+        "lastUpdated": "January 31, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "meta/meta-llama-3-70b-instruct": {
+      "model": "llama/meta-llama-3-70b-instruct",
+      "matchingModel": "meta/meta-llama-3-70b-instruct",
+      "overrides": {
+        "lastUpdated": "April 18, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "meta/meta-llama-3-8b-instruct": {
+      "model": "llama/meta-llama-3-8b-instruct",
+      "matchingModel": "meta/meta-llama-3-8b-instruct",
+      "overrides": {
+        "lastUpdated": "April 18, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "meta/meta-llama-3.1-70b-instruct": {
+      "model": "llama/meta-llama-3-1-70b-instruct",
+      "matchingModel": "meta/meta-llama-3.1-70b-instruct",
+      "overrides": {
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "meta/meta-llama-3.1-8b-instruct": {
+      "model": "llama/meta-llama-3-1-8b-instruct",
+      "matchingModel": "meta/meta-llama-3.1-8b-instruct",
+      "overrides": {
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "microsoft/mai-ds-r1": {
+      "model": "mai/mai-ds-r1",
+      "matchingModel": "microsoft/mai-ds-r1",
+      "overrides": {
+        "lastUpdated": "January 20, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "microsoft/phi-3-medium-128k-instruct": {
+      "model": "phi/phi-3-medium-instruct-128k",
+      "matchingModel": "microsoft/phi-3-medium-128k-instruct",
+      "overrides": {
+        "name": "Phi-3-medium instruct (128k)",
+        "lastUpdated": "April 23, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "microsoft/phi-3-medium-4k-instruct": {
+      "model": "phi/phi-3-medium-instruct-4k",
+      "matchingModel": "microsoft/phi-3-medium-4k-instruct",
+      "overrides": {
+        "name": "Phi-3-medium instruct (4k)",
+        "lastUpdated": "April 23, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "microsoft/phi-3-mini-128k-instruct": {
+      "model": "phi/phi-3-mini-instruct-128k",
+      "matchingModel": "microsoft/phi-3-mini-128k-instruct",
+      "overrides": {
+        "name": "Phi-3-mini instruct (128k)",
+        "lastUpdated": "April 23, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "microsoft/phi-3-mini-4k-instruct": {
+      "model": "phi/phi-3-mini-instruct-4k",
+      "matchingModel": "microsoft/phi-3-mini-4k-instruct",
+      "overrides": {
+        "name": "Phi-3-mini instruct (4k)",
+        "lastUpdated": "April 23, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "microsoft/phi-3-small-128k-instruct": {
+      "model": "phi/phi-3-small-instruct-128k",
+      "matchingModel": "microsoft/phi-3-small-128k-instruct",
+      "overrides": {
+        "name": "Phi-3-small instruct (128k)",
+        "lastUpdated": "April 23, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "microsoft/phi-3-small-8k-instruct": {
+      "model": "phi/phi-3-small-instruct-8k",
+      "matchingModel": "microsoft/phi-3-small-8k-instruct",
+      "overrides": {
+        "name": "Phi-3-small instruct (8k)",
+        "lastUpdated": "April 23, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "microsoft/phi-3.5-mini-instruct": {
+      "model": "phi/phi-3-5-mini-instruct-128k",
+      "matchingModel": "microsoft/phi-3.5-mini-instruct",
+      "overrides": {
+        "lastUpdated": "August 20, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "microsoft/phi-3.5-moe-instruct": {
+      "model": "phi/phi-3-5-moe-instruct-128k",
+      "matchingModel": "microsoft/phi-3.5-moe-instruct",
+      "overrides": {
+        "lastUpdated": "August 20, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "microsoft/phi-4-mini-instruct": {
+      "model": "phi/phi-4-mini-instruct",
+      "matchingModel": "microsoft/phi-4-mini-instruct",
+      "overrides": {
+        "name": "Phi-4-mini-instruct",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "speed": 2,
+        "releaseDate": "December 11, 2024",
+        "lastUpdated": "December 11, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "microsoft/phi-4-mini-reasoning": {
+      "model": "phi/phi-4-mini-reasoning",
+      "matchingModel": "microsoft/phi-4-mini-reasoning",
+      "overrides": {
+        "lastUpdated": "December 11, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "mistral-ai/ministral-3b": {
+      "model": "ministral/ministral-3b",
+      "matchingModel": "mistral-ai/ministral-3b",
+      "overrides": {
+        "lastUpdated": "October 22, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "mistral-ai/mistral-medium-2505": {
+      "model": "mistral-medium/mistral-medium-3-25-05",
+      "matchingModel": "mistral-ai/mistral-medium-2505",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "May 1, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "mistral-ai/mistral-nemo": {
+      "model": "mistral-nemo/mistral-nemo",
+      "matchingModel": "mistral-ai/mistral-nemo",
+      "overrides": {
+        "maxTokens": 8192,
+        "knowledgeCutoffDate": "March 2024",
+        "lastUpdated": "July 18, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "mistral-ai/mistral-small-2503": {
+      "model": "mistral-small/mistral-small-3-1",
+      "matchingModel": "mistral-ai/mistral-small-2503",
+      "overrides": {
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "March 1, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai/gpt-4.1": {
+      "model": "gpt/gpt-4-1",
+      "matchingModel": "openai/gpt-4.1",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "speed": 4,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "openai/gpt-4.1-nano": {
+      "model": "gpt-nano/gpt-4-1-nano",
+      "matchingModel": "openai/gpt-4.1-nano",
+      "overrides": {
+        "name": "GPT-4.1-nano",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "contextComplexity": 3,
+        "speed": 5,
+        "lastUpdated": "April 14, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "openai/o1-preview": {
+      "model": "o/openai-o1-preview",
+      "matchingModel": "openai/o1-preview",
+      "overrides": {
+        "lastUpdated": "September 12, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "openai/o3": {
+      "model": "o/openai-o3",
+      "matchingModel": "openai/o3",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "January 31, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    }
+  }
+}

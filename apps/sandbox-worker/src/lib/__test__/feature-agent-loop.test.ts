@@ -484,9 +484,10 @@ describe("executeAgentLoop", () => {
       language: "python",
       cwd: "/workspace/repo",
     });
-    expect(runCode).toHaveBeenCalledTimes(1);
-    expect(runCode.mock.calls[0]?.[0]).toContain("from pathlib import Path");
-    expect(runCode.mock.calls[0]?.[1]).toEqual({
+    expect(runCode).toHaveBeenCalledTimes(2);
+    expect(runCode.mock.calls[0]?.[0]).toBe('__import__("os").chdir("/workspace/repo")');
+    expect(runCode.mock.calls[1]?.[0]).toContain("from pathlib import Path");
+    expect(runCode.mock.calls[1]?.[1]).toEqual({
       context: expect.objectContaining({
         id: "ctx-1",
       }),

@@ -1,21 +1,18 @@
 import {
   getModelInteractionCapabilities,
-  answerUserQuestionsSchema,
-  resolveProjectTaskToolApprovalSchema,
   type SandboxTaskType,
   sandboxTaskTypeSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
 import { ConversationPage } from "~/components/ConversationThread/ConversationPage";
-import { CHATS_QUERY_KEY } from "~/constants";
 import { useChat } from "~/hooks/useChat";
+import { useConversationRoute } from "~/hooks/useConversationRoute";
 import { useModels } from "~/hooks/useModels";
 import { useProjectConversationSources } from "~/hooks/useProjectConversationSources";
-import { useProjectTask, useProjectTasks } from "~/hooks/useProjectTasks";
+import { useProjectTaskInteractions } from "~/hooks/useProjectTaskInteractions";
 import { projectQueryKey } from "~/hooks/useWorkspaces";
 import { getCapabilityLibraryPath, getProjectSurface } from "~/lib/capability-surfaces";
 import { getErrorMessage } from "~/lib/errors";
@@ -36,6 +33,10 @@ export function ProjectConversationPage({
   projectId: string;
   conversationId?: string;
 }) {
+  useConversationRoute({
+    surface: { kind: "project", workspaceId, projectId },
+    pathConversationId: conversationId,
+  });
   const { projectQuery } = useWorkData();
   const { data: project } = projectQuery;
   const queryClient = useQueryClient();
@@ -52,20 +53,9 @@ export function ProjectConversationPage({
     };
   }, [model, models]);
   const { data: currentConversation } = useChat(currentConversationId);
-  const { tasks, answer, approval } = useProjectTasks(projectId);
-  const conversationTask = tasks.find((task) => task.conversationId === currentConversationId);
-  const pendingTask = tasks.find(
-    (task) =>
-      task.conversationId === currentConversationId &&
-      task.status === "blocked" &&
-      task.blockedReason === "awaiting_input",
-  );
-  const pendingTaskQuery = useProjectTask(projectId, pendingTask?.id ?? "");
-  const pendingApprovalTask = tasks.find(
-    (task) =>
-      task.conversationId === currentConversationId &&
-      task.status === "blocked" &&
-      task.blockedReason === "awaiting_approval",
+  const { conversationTask, pendingQuestions, onToolInteraction } = useProjectTaskInteractions(
+    projectId,
+    currentConversationId,
   );
   const isNewConversation = !currentConversationId;
   const projectSources = useProjectConversationSources(projectId, sourceCapabilities, {
@@ -77,10 +67,8 @@ export function ProjectConversationPage({
     (state) => state.setSelectedAgentTokenPosition,
   );
   const setSelectedAssistantAction = useChatStore((state) => state.setSelectedAssistantAction);
-  const isStreamLoading = useStreamActivityStore(
-    (state) =>
-      Boolean(currentConversationId) &&
-      state.streams[currentConversationId as string]?.status === "streaming",
+  const isStreamLoading = useStreamActivityStore((state) =>
+    currentConversationId ? state.streams[currentConversationId]?.status === "streaming" : false,
   );
   const refreshedConversationIdRef = useRef<string | null>(null);
   const capabilities =
@@ -96,71 +84,6 @@ export function ProjectConversationPage({
     : draftTaskType;
   const codingPresentation = getProjectCodingPresentation(taskType);
   const recipeManagementPath = getCapabilityLibraryPath(getProjectSurface(workspaceId, projectId));
-  const handleTaskQuestionInteraction = useCallback<
-    NonNullable<ConversationThreadModeConfig["onToolInteraction"]>
-  >(
-    (toolName, action, data) => {
-      if (action !== "submitPrompt") {
-        return false;
-      }
-
-      if (pendingApprovalTask) {
-        const parsedApproval = resolveProjectTaskToolApprovalSchema.safeParse(data);
-
-        if (!parsedApproval.success) {
-          return false;
-        }
-
-        void (async () => {
-          try {
-            await approval.mutateAsync({
-              taskId: pendingApprovalTask.id,
-              input: parsedApproval.data,
-            });
-            await queryClient.invalidateQueries({
-              queryKey: [CHATS_QUERY_KEY, currentConversationId],
-            });
-            toast.success(
-              parsedApproval.data.resolution === "approved"
-                ? "Approved. The task is continuing."
-                : "Rejected. The task is continuing without that tool.",
-            );
-          } catch (mutationError) {
-            toast.error(getErrorMessage(mutationError, "Unable to continue this task"));
-          }
-        })();
-
-        return true;
-      }
-
-      if (toolName !== "ask_user" || !pendingTask) {
-        return false;
-      }
-
-      const parsed = answerUserQuestionsSchema.safeParse(data);
-
-      if (!parsed.success) {
-        toast.error("The answers could not be read. Refresh the conversation and try again.");
-
-        return true;
-      }
-
-      void (async () => {
-        try {
-          await answer.mutateAsync({ taskId: pendingTask.id, input: parsed.data });
-          await queryClient.invalidateQueries({
-            queryKey: [CHATS_QUERY_KEY, currentConversationId],
-          });
-          toast.success("Answers sent. The task is continuing.");
-        } catch (mutationError) {
-          toast.error(getErrorMessage(mutationError, "Unable to continue this task"));
-        }
-      })();
-
-      return true;
-    },
-    [answer, approval, currentConversationId, pendingApprovalTask, pendingTask, queryClient],
-  );
 
   useEffect(() => {
     setDraftTaskType("feature-implementation");
@@ -293,7 +216,11 @@ export function ProjectConversationPage({
             followUp: codingEnvironment ? codingPresentation.placeholder : "Reply…",
           },
           inputControls: codingEnvironment ? (
-            <ProjectCodingTaskControl taskType={taskType} onChange={handleTaskTypeChange} />
+            <ProjectCodingTaskControl
+              taskType={taskType}
+              isDisabled={isStreamLoading}
+              onChange={handleTaskTypeChange}
+            />
           ) : undefined,
           requestOptions: {
             metadata: { project_id: projectId },
@@ -316,8 +243,8 @@ export function ProjectConversationPage({
           },
           analyticsSource: "project",
           hideComposerSuggestions: true,
-          pendingUserQuestions: pendingTaskQuery.data?.pendingQuestions ?? null,
-          onToolInteraction: handleTaskQuestionInteraction,
+          pendingUserQuestions: pendingQuestions,
+          onToolInteraction,
         }}
       />
     </ProjectWorkbenchConversation>
