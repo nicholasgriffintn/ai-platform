@@ -19,7 +19,6 @@ import { listReplicatePredictions } from "~/services/apps/replicate/list";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,
-  requireProjectCapabilityAccess,
 } from "~/services/workspaces/access";
 import { AssistantError } from "~/utils/errors";
 

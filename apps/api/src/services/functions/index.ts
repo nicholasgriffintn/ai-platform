@@ -25,6 +25,7 @@ import { create_image } from "./image";
 import { load_skill } from "./load_skill";
 import { handleMCPTool } from "./mcp";
 import { search_memories, store_memory } from "./memory";
+import { metaTools } from "./meta";
 import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
@@ -95,6 +96,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   request_approval,
   ask_user,
   run_sandbox_task,
+  ...metaTools,
 ];
 
 export type RegisteredFunctionTool = ApiToolDefinition;

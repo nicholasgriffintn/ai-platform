@@ -58,7 +58,9 @@ export class WorkbenchPage extends BasePage {
     await overlay.scrollIntoViewIfNeeded();
     const box = await overlay.boundingBox();
 
-    if (!box) throw new Error("The preview region overlay is not visible");
+    if (!box) {
+      throw new Error("The preview region overlay is not visible");
+    }
 
     await this.page.mouse.move(box.x + 20, box.y + 20);
     await this.page.mouse.down();

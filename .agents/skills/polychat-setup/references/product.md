@@ -4,6 +4,14 @@ Polychat combines personal **Chat** with collaborative **Work**. Start with the 
 
 Chat is conversation-first, with personal capabilities and rich experiences below `/chat`. Work organises projects inside workspaces, with shared conversations, instructions, sources, outputs and selected capabilities. Work access requires the appropriate plan and current workspace membership. There is no third global Apps or Recipes mode.
 
+## Move around
+
+The rail on the left is the same everywhere: Chat, Work, Attention, Files, Teammates and tools, then Poly and You. On a phone it sits along the bottom. Chat and Work keep their own sidebars for conversations and projects; a project's sidebar offers a new conversation, Tasks, Files, Activity and Teammates and tools. Apps open from the library, from deep links or from the composer rather than from a sidebar item.
+
+**Files** holds everything you have given Polychat (sources, memories, links, repositories, connected records) under Given and everything it has made under Made, personally or per project. **Attention** collects project work that needs you across every workspace together with your own background tasks. Settings groups into Account, Appearance and pet, Models and keys and Advanced.
+
+**Poly** opens from the rail or with the ⌘J shortcut over whatever you are looking at. It is your own assistant for operating Polychat: ask it to find a conversation, open a project, archive, pin, snooze or rename a conversation, or summarise the thread you have open. It knows what you are looking at, re-checks your access before every action and cannot approve tool requests, run connectors or act for anyone else. It needs a signed-in account with cloud storage.
+
 ## Choose how work runs
 
 - Use a conversation for interactive work, an experience for a richer workflow, a recipe for reusable configured work, and a project task/flow for durable agent execution and hand-offs.

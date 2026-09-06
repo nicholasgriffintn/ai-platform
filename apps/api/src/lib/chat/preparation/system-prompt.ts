@@ -146,6 +146,7 @@ export async function buildSystemPrompt({
       reasoning_effort,
       max_tokens,
       options: options.options,
+      meta_assistant: options.meta_assistant,
     },
     model: primaryModel,
     user: user || undefined,

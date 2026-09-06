@@ -25,7 +25,6 @@ import { extractContent } from "~/services/apps/retrieval/content-extract";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,
-  requireProjectCapabilityAccess,
 } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";

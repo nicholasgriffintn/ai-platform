@@ -30,6 +30,7 @@ import { getErrorMessage } from "~/lib/errors";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
+import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUsageStore } from "~/state/stores/usageStore";
@@ -89,7 +90,7 @@ export function useStreamingResponse(
   const updateStreamLoadingMessage = useStreamActivityStore(
     (state) => state.updateStreamLoadingMessage,
   );
-  const currentConversationId = useChatStore((state) => state.currentConversationId);
+  const { currentConversationId } = useConversationScope();
   const currentStream = useStreamActivityStore((state) =>
     currentConversationId ? state.streams[currentConversationId] : undefined,
   );

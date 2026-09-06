@@ -17,6 +17,7 @@ import { ask_user, request_approval } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { load_skill } from "./load_skill";
 import { search_memories, store_memory } from "./memory";
+import { metaToolDescriptors } from "./meta";
 import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
@@ -94,6 +95,7 @@ const descriptors: FunctionToolDescriptor[] = [
   request_approval,
   ask_user,
   run_sandbox_task,
+  ...metaToolDescriptors,
 ];
 
 export function requireToolPermissions(name: string, permissions?: string[]): ToolPermission[] {

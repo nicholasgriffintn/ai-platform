@@ -174,6 +174,7 @@ export class ConversationRepository extends BaseRepository {
     const whereClauses = [
       "c.user_id = ?",
       "c.project_id IS NULL",
+      "c.type != 'meta'",
       `NOT (
         COALESCE(datetime(state.snoozed_until) > datetime('now'), 0)
         OR (
@@ -322,7 +323,7 @@ export class ConversationRepository extends BaseRepository {
     options: SetConversationsArchivedOptions,
   ): Promise<number> {
     const { archived, query, updatedAfter } = options;
-    const whereClauses = ["user_id = ?", "project_id IS NULL", "is_archived = ?"];
+    const whereClauses = ["user_id = ?", "project_id IS NULL", "type != 'meta'", "is_archived = ?"];
     const values: unknown[] = [archived ? 1 : 0, userId, archived ? 0 : 1];
 
     const trimmedQuery = query?.trim();
@@ -466,6 +467,7 @@ export class ConversationRepository extends BaseRepository {
 			 LEFT JOIN conversation_user_state state
          ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.is_archived = 0
+			   AND c.type != 'meta'
 			   AND (
 			     (c.project_id IS NULL AND c.user_id = ?)
 			     OR (

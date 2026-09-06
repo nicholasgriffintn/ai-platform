@@ -12,6 +12,7 @@ import { apiService } from "~/lib/api/api-service";
 import { getComposerDraftAfterRetry } from "~/lib/chat/retry-composer";
 import { createConversationId } from "~/lib/conversations";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
+import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";
 
@@ -39,15 +40,8 @@ export function useConversationActions(
   requestOptions?: ChatRequestOptions,
 ) {
   const queryClient = useQueryClient();
-  const {
-    chatInput,
-    currentConversationId,
-    model,
-    isAuthenticated,
-    isPro,
-    setChatInput,
-    setCurrentConversationId,
-  } = useChatStore();
+  const { chatInput, model, isAuthenticated, isPro, setChatInput } = useChatStore();
+  const { currentConversationId, setCurrentConversationId } = useConversationScope();
 
   const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
   const { startLoading, stopLoading } = useLoadingActions();

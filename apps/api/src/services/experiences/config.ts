@@ -175,7 +175,7 @@ export const getExperienceCatalog = (): ExperienceDefinition[] => EXPERIENCES;
 
 export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
   EXPERIENCES.map(
-    ({
+    ({ id, runtime, name, description, icon, category, theme, tags, type, capabilityId }) => ({
       id,
       runtime,
       name,
@@ -185,19 +185,6 @@ export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
       theme,
       tags,
       type,
-      href,
-      capabilityId,
-    }) => ({
-      id,
-      runtime,
-      name,
-      description,
-      icon,
-      category,
-      theme,
-      tags,
-      type,
-      href,
       requirement: capabilityId
         ? { kind: "capability" as const, capabilityKind: "app" as const, capabilityId }
         : { kind: "capability_kind" as const, capabilityKind: "app" as const },

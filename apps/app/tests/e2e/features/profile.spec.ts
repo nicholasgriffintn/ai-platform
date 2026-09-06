@@ -9,13 +9,11 @@ const PROFILE_TABS = [
   ["passkeys", "Passkeys"],
   ["customisation", "Customise Chat"],
   ["pets", "Your pet"],
-  ["history", "Chat History"],
+  ["history", "Chat history"],
   ["providers", "Available Providers"],
   ["sandbox", "Sandbox"],
   ["billing", "Billing"],
-  ["api-keys", "API Keys"],
-  ["tasks", "Tasks"],
-  ["sources", "Sources"],
+  ["api-keys", "API keys"],
 ] as const;
 
 test.describe("Profile experience", () => {

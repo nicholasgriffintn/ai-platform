@@ -1,7 +1,7 @@
 import { ConversationFooterInfo } from "@ngriffin_uk/polychat-component-conversation";
 
 import { useAuthStatus } from "~/hooks/useAuth";
-import { useChatStore } from "~/state/stores/chatStore";
+import { useConversationScope } from "~/state/conversation-scope";
 import { useUIStore } from "~/state/stores/uiStore";
 
 interface FooterInfoProps {
@@ -9,7 +9,7 @@ interface FooterInfoProps {
 }
 
 export const FooterInfo = ({ isPanelVisible }: FooterInfoProps) => {
-  const { currentConversationId } = useChatStore();
+  const { currentConversationId } = useConversationScope();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuthStatus();
   const { isMobile } = useUIStore();
 

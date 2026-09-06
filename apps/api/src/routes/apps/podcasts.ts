@@ -21,7 +21,6 @@ import { handlePodcastUpload } from "~/services/apps/podcast/upload";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,
-  requireProjectCapabilityAccess,
 } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 

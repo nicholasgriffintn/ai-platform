@@ -87,7 +87,7 @@ test.describe("Work experience", () => {
       workPage,
     }) => {
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-      await workPage.openProjectSurface("Capabilities");
+      await workPage.openProjectSurface("Teammates & tools");
       await capabilitiesPage.openAddMenuWithKeyboard();
 
       await expect(capabilitiesPage.addMenuItem("New agent")).toContainText(
@@ -191,13 +191,7 @@ test.describe("Work experience", () => {
         ],
       });
 
-      for (const surface of [
-        "Experiences",
-        "Outputs",
-        "Sources",
-        "Activity",
-        "Capabilities",
-      ] as const) {
+      for (const surface of ["Files", "Activity", "Teammates & tools"] as const) {
         await test.step(surface, async () => {
           await workPage.openProjectSurface(surface);
           await captureVisualSnapshots(
@@ -265,7 +259,7 @@ test.describe("Work experience", () => {
       await homePage.waitForChatResponse(0);
       await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
       await homePage.hoverConversation(/Use the project instructions|Release validation chat/);
-      await workPage.openProjectSurface("Sources");
+      await workPage.openProjectSurface("Files");
       await expect(page.getByText("release-work-context.md", { exact: true })).toBeVisible();
       await captureVisualSnapshots(page, "release-work-project-conversation", {
         ...DEFAULT_VISUAL_CHECKPOINTS,

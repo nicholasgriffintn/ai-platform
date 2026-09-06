@@ -9,6 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { clampNumber } from "@ngriffin_uk/polychat-utility-core";
 
+import { filterToolsForConversationType } from "~/lib/chat/policy/meta-assistant";
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
@@ -393,10 +394,13 @@ export function getToolsForProvider(
     const toolPolicyMode = params.tool_policy_mode ?? params.mode;
     const enabledTools = resolveEnabledFunctionToolNames(params.enabled_tools, user);
     let tools: any[] = [];
-    const availableTools = listFunctionToolDefinitions({
-      connectedConnectorProviders: params.connectedConnectorProviders,
-      selectedConnectorProvider: params.options?.connector?.provider,
-    });
+    const availableTools = filterToolsForConversationType(
+      listFunctionToolDefinitions({
+        connectedConnectorProviders: params.connectedConnectorProviders,
+        selectedConnectorProvider: params.options?.connector?.provider,
+      }),
+      params.conversation_type,
+    );
 
     if (params.tools) {
       const providedTools = params.tools;

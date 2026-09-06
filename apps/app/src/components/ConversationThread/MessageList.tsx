@@ -43,6 +43,7 @@ import {
   useLoadingMessage,
   useLoadingProgress,
 } from "~/state/contexts/LoadingContext";
+import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { Message } from "~/types";
@@ -93,7 +94,8 @@ export const MessageList = ({
   isRequestingSecondOpinion = false,
   hideInlineUserQuestions = false,
 }: MessageListProps) => {
-  const { chatMode, currentConversationId } = useChatStore();
+  const chatMode = useChatStore((state) => state.chatMode);
+  const { currentConversationId } = useConversationScope();
 
   const { data: conversation, isLoading: isLoadingConversation } = useChat(
     !isSharedView ? currentConversationId : undefined,

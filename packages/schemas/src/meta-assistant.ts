@@ -31,7 +31,7 @@ export const META_TOOL_NAMES = [
   "find_places",
   "open_place",
   "organise_conversation",
-  "summarise_conversation",
+  "read_conversation",
 ] as const;
 
 const metaToolNameSet: ReadonlySet<string> = new Set(META_TOOL_NAMES);

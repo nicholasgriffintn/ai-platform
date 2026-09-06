@@ -56,6 +56,7 @@ import type { ChatSuggestion } from "~/lib/chat-suggestions";
 import { isModelSubmissionBlocked } from "~/lib/chat/model-readiness";
 import { openExternalUrl } from "~/lib/external-navigation";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
+import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
@@ -135,7 +136,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const { trackEvent, trackFeatureUsage, trackError } = useTrackEvent();
 
   const {
-    currentConversationId,
     model,
     chatMode,
     chatInput,
@@ -146,9 +146,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     isPro,
     localOnlyMode,
   } = useChatStore();
+  const { currentConversationId, startNewConversation } = useConversationScope();
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
-  const startNewConversation = useChatStore((state) => state.startNewConversation);
   const { data: currentConversation, isLoading: isConversationLoading } = useChat(
     currentConversationId,
     { monitorRemoteActivity: true },

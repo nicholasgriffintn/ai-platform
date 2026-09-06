@@ -7,6 +7,7 @@ import type {
   ConversationType,
   MessageRole as SchemaMessageRole,
   MessagePart as SchemaMessagePart,
+  MetaAssistantRequest,
   RecipeConnectorProvider,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
@@ -192,6 +193,7 @@ export interface AssistantPersona {
 export interface IBody {
   completion_id: string;
   conversation_type?: ConversationType;
+  meta_assistant?: MetaAssistantRequest;
   input: ChatInput;
   attachments?: Attachment[];
   date: string;

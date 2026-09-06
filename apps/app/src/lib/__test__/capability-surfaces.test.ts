@@ -23,10 +23,10 @@ const notes: ProjectExperienceDefinition = {
 };
 
 const savedOutputs: ProjectExperienceDefinition = {
-  id: "responses",
-  runtime: "responses",
-  name: "Saved outputs",
-  description: "Review outputs",
+  id: "strudel",
+  runtime: "strudel",
+  name: "Strudel",
+  description: "Music patterns",
   requirement: { kind: "capability_kind", capabilityKind: "app" },
 };
 
@@ -69,7 +69,7 @@ describe("capability surfaces", () => {
   it("steps back one level rather than jumping to the hub", () => {
     expect(getExperienceBackLink(PERSONAL_SURFACE, "strudel", "", "Strudel")).toEqual({
       to: "/chat/experiences",
-      label: "Back to experiences",
+      label: "Back to apps",
     });
     expect(getExperienceBackLink(PERSONAL_SURFACE, "strudel", "pattern-1", "Strudel")).toEqual({
       to: "/chat/experiences/strudel",
@@ -82,15 +82,10 @@ describe("capability surfaces", () => {
 
   it("steps back within a project the same way", () => {
     expect(
-      getExperienceBackLink(
-        getProjectSurface("w1", "p1"),
-        "responses",
-        "output-1",
-        "Saved outputs",
-      ),
+      getExperienceBackLink(getProjectSurface("w1", "p1"), "strudel", "pattern-1", "Strudel"),
     ).toEqual({
-      to: "/work/w1/projects/p1/experiences/responses",
-      label: "Back to Saved outputs",
+      to: "/work/w1/projects/p1/experiences/strudel",
+      label: "Back to Strudel",
     });
   });
 

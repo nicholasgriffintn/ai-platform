@@ -45,6 +45,7 @@ import { toast } from "sonner";
 import { useModels } from "~/hooks/useModels";
 import { SOURCE_QUERY_KEYS } from "~/hooks/useSources";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
+import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
@@ -222,7 +223,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       setSelectedAgentTokenPosition,
       setSelectedAssistantAction,
     } = useChatStore();
-    const { isPro, currentConversationId } = useChatStore();
+    const isPro = useChatStore((state) => state.isPro);
+    const { currentConversationId } = useConversationScope();
     const isComposingGoal = useChatStore((state) => state.isComposingGoal);
     const setComposingGoal = useChatStore((state) => state.setComposingGoal);
     const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecorder({

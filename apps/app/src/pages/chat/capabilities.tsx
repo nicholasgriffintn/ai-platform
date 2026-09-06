@@ -11,8 +11,8 @@ export default function PersonalCapabilitiesPage() {
   return (
     <CapabilityLibrary
       scope={scope}
-      title="Capabilities"
-      subtitle="Apps, Recipes and Tools that can be used alongside the chat experience."
+      title="Teammates &amp; tools"
+      subtitle="Teammates, automations, apps and tools that work alongside your conversations."
     />
   );
 }

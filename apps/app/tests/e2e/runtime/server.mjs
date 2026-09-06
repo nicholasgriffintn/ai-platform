@@ -577,6 +577,7 @@ async function mockExternalRequest(request) {
   if (githubResponse) {
     return githubResponse;
   }
+
   const url = new URL(request.url);
 
   if (url.hostname === "backend.composio.dev") {

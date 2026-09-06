@@ -27,7 +27,6 @@ function toEnableableApp(experience: ProjectExperienceDefinition) {
     theme: experience.theme,
     tags: experience.tags,
     type: experience.type,
-    href: experience.href,
     kind: "frontend" as const,
     featured: true,
   };

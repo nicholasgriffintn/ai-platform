@@ -61,17 +61,15 @@ export class WorkPage extends BasePage {
   }
 
   async openProjectSurface(
-    name:
-      | "People"
-      | "Governance"
-      | "Experiences"
-      | "Outputs"
-      | "Sources"
-      | "Activity"
-      | "Capabilities",
+    name: "People" | "Governance" | "Files" | "Activity" | "Teammates & tools",
   ) {
     await this.clickElement(this.page.getByRole("link", { name, exact: true }));
-    const heading = name === "People" ? "People & access" : name;
+    const heading =
+      name === "People"
+        ? "People & access"
+        : name === "Teammates & tools"
+          ? "Teammates & tools"
+          : name;
 
     await this.page.getByRole("heading", { name: heading, exact: true }).first().waitFor();
   }
@@ -316,7 +314,7 @@ export class WorkPage extends BasePage {
   }
 
   private async openCapability(name: string) {
-    await this.openProjectSurface("Capabilities");
+    await this.openProjectSurface("Teammates & tools");
     await this.capabilitySearch().fill(name);
 
     return this.capabilityCard(name);
@@ -390,7 +388,7 @@ export class WorkPage extends BasePage {
   }
 
   async configureMcpTool(label: string, serverUrl: string) {
-    await this.openProjectSurface("Capabilities");
+    await this.openProjectSurface("Teammates & tools");
     await this.capabilitySearch().fill("MCP");
     const card = this.page
       .getByRole("heading", { name: "MCP", exact: true })
@@ -421,7 +419,7 @@ export class WorkPage extends BasePage {
   }
 
   async configureFileSearchTool(vectorStoreIds: string[]) {
-    await this.openProjectSurface("Capabilities");
+    await this.openProjectSurface("Teammates & tools");
     await this.capabilitySearch().fill("File search");
     const card = this.page
       .getByRole("heading", { name: "File search", exact: true })
@@ -797,7 +795,7 @@ export class WorkPage extends BasePage {
   }
 
   async executeQrToolAndOpenSavedOutput(payload: string) {
-    await this.openProjectSurface("Capabilities");
+    await this.openProjectSurface("Teammates & tools");
     await this.capabilitySearch().fill("Create Qr Code");
     const card = this.capabilityCard("Create Qr Code");
 

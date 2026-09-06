@@ -28,6 +28,7 @@ export interface ChatStore {
   isComposingGoal: boolean;
   setCurrentConversationId: (id: string | undefined) => void;
   startNewConversation: (id?: string) => string;
+  markConversationLocallyCreated: (id: string) => void;
   markConversationRemoteAvailable: (id: string) => void;
   clearCurrentConversation: () => void;
   setComposingGoal: (composing: boolean) => void;
@@ -102,6 +103,10 @@ export const useChatStore = create<ChatStore>()(
 
         return conversationId;
       },
+      markConversationLocallyCreated: (id: string) =>
+        set((state) => ({
+          locallyCreatedConversationIds: { ...state.locallyCreatedConversationIds, [id]: true },
+        })),
       markConversationRemoteAvailable: (id: string) =>
         set((state) => {
           if (!state.locallyCreatedConversationIds[id]) {

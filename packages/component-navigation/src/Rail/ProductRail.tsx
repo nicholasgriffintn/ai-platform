@@ -20,14 +20,15 @@ export interface ProductRailProps {
   orientation?: ProductRailOrientation;
   label?: string;
   className?: string;
+  onSelect?: (item: ProductRailItem) => void;
 }
 
 function ProductRailControl({
   item,
-  onNavigate,
+  onSelect,
 }: {
   item: ProductRailItem;
-  onNavigate?: () => void;
+  onSelect?: (item: ProductRailItem) => void;
 }) {
   const content = (
     <>
@@ -56,7 +57,7 @@ function ProductRailControl({
         aria-label={item.label}
         aria-current={item.isActive ? "page" : undefined}
         className="polychat-rail-item no-underline"
-        onClick={onNavigate}
+        onClick={() => onSelect?.(item)}
       >
         {content}
       </Link>
@@ -72,7 +73,7 @@ function ProductRailControl({
       className="polychat-rail-item"
       onClick={() => {
         item.onClick?.();
-        onNavigate?.();
+        onSelect?.(item);
       }}
     >
       {content}
@@ -86,6 +87,7 @@ export function ProductRail({
   orientation = "vertical",
   label = "Places",
   className,
+  onSelect,
 }: ProductRailProps) {
   return (
     <nav
@@ -96,7 +98,7 @@ export function ProductRail({
       <ul className="polychat-rail-group">
         {items.map((item) => (
           <li key={item.id}>
-            <ProductRailControl item={item} />
+            <ProductRailControl item={item} onSelect={onSelect} />
           </li>
         ))}
       </ul>
@@ -104,7 +106,7 @@ export function ProductRail({
         <ul className="polychat-rail-group polychat-rail-group-footer">
           {footerItems.map((item) => (
             <li key={item.id}>
-              <ProductRailControl item={item} />
+              <ProductRailControl item={item} onSelect={onSelect} />
             </li>
           ))}
         </ul>

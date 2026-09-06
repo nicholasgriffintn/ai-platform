@@ -76,15 +76,7 @@ export function AppRail({ orientation }: { orientation: ProductRailOrientation }
       icon: <Feather size={iconSize} />,
       shortcut: "⌘J",
       isActive: showMetaAssistant,
-      onClick: () => {
-        trackEvent({
-          name: "open_meta_assistant",
-          category: "navigation",
-          label: "rail",
-          value: 1,
-        });
-        setShowMetaAssistant(true);
-      },
+      onClick: () => setShowMetaAssistant(true),
     },
     {
       id: "you",
@@ -101,6 +93,14 @@ export function AppRail({ orientation }: { orientation: ProductRailOrientation }
       footerItems={footerItems}
       orientation={orientation}
       className={orientation === "vertical" ? "h-full" : undefined}
+      onSelect={(item) =>
+        trackEvent({
+          name: item.id === "poly" ? "open_meta_assistant" : "navigate_place",
+          category: "navigation",
+          label: item.id,
+          value: 1,
+        })
+      }
     />
   );
 }
