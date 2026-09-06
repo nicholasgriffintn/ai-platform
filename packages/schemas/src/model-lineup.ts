@@ -83,7 +83,8 @@ export const MODEL_LINEUP_RUNTIME_DEFINITIONS: Record<
   },
   "local-server": {
     label: "Local server",
-    description: "Models served by Ollama or LM Studio on your own machine or network.",
+    description:
+      "Models Ollama or LM Studio already has on this machine. The desktop app asks the runtime what it holds; the list is whatever you have pulled.",
   },
 };
 
@@ -701,8 +702,8 @@ export function getLineupModelsByRuntime(models: ModelConfig, runtime: ModelLine
       runtime === "browser"
         ? model.provider === BROWSER_PROVIDER
         : runtime === "local-server"
-          ? model.provider === "ollama" || model.provider === "lmstudio"
-          : model.provider !== BROWSER_PROVIDER,
+          ? model.runsOn === "device"
+          : model.provider !== BROWSER_PROVIDER && model.runsOn !== "device",
     ),
   );
 }

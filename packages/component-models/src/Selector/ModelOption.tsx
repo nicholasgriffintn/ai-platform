@@ -1,6 +1,7 @@
 import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import {
   getModelDisplayName,
+  requiresPaidPlan,
   hasProviderReasoningOptions,
   isStealthModel,
   type ModelRegionOption,
@@ -120,7 +121,7 @@ export const ModelOption = ({
               <span className="block min-w-0 font-medium break-words whitespace-normal text-foreground">
                 {getModelDisplayName(model)}
               </span>
-              {!model.isFree && !model.isByokEnabled && (
+              {requiresPaidPlan(model) && (
                 <div className="rounded-full bg-creative/12 p-0.5" title="Pro">
                   <Crown size={12} className="text-creative" />
                 </div>

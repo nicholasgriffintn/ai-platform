@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "./constants";
 import { createPolychatClient, type FetchApiOptions } from "./http";
+import { getHeaders } from "./utils/headers";
 
 function getCookie(name: string): string | null {
   if (typeof document === "undefined") {
@@ -16,6 +17,7 @@ const webClient = createPolychatClient({
   baseUrl: API_BASE_URL,
   fetch: (input, init) => globalThis.fetch(input, init),
   credentials: "include",
+  getHeaders,
   getCsrfToken: () => getCookie("_csrf"),
 });
 

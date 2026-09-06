@@ -5,7 +5,6 @@ import {
   artificialAnalysisModelsResponseSchema,
   modelParamsSchema,
   modelResponseSchema,
-  modelsQuerySchema,
   modelsResponseSchema,
   modalityParamsSchema,
   errorResponseSchema,
@@ -50,9 +49,7 @@ addRoute(app, "get", "/", {
     },
     500: { description: "Server error", schema: errorResponseSchema },
   },
-  querySchema: modelsQuerySchema,
-  handler: async ({ serviceContext, user, query }) =>
-    listModels(serviceContext.env, user, query?.surface ?? "web"),
+  handler: async ({ serviceContext, user }) => listModels(serviceContext.env, user),
 });
 
 addRoute(app, "get", "/catalogue", {

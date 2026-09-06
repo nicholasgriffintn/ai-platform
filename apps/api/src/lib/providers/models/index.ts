@@ -4,7 +4,6 @@ import {
   type ModelConfigItem,
   type ModelModalities,
   type ModelModality,
-  runsOnDevice,
   type SystemModelRole,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -487,11 +486,7 @@ export async function filterModelsForUserAccess(
 
   if (!userId) {
     for (const modelId in allModels) {
-      if (
-        freeModelIds.has(modelId) ||
-        runsOnDevice(allModels[modelId]) ||
-        alwaysEnabledProviders.has(allModels[modelId].provider)
-      ) {
+      if (freeModelIds.has(modelId) || alwaysEnabledProviders.has(allModels[modelId].provider)) {
         filteredModels[modelId] = {
           ...allModels[modelId],
           isPlatformEnabled: true,
@@ -519,8 +514,7 @@ export async function filterModelsForUserAccess(
       const model = allModels[modelId];
       const isFree = freeModelIds.has(modelId);
       const userProvider = enabledProviders.get(model.provider);
-      const runsHere = runsOnDevice(model);
-      const isPlatformEnabled = runsHere || alwaysEnabledProviders.has(model.provider);
+      const isPlatformEnabled = alwaysEnabledProviders.has(model.provider);
       const isEnabled = isPlatformEnabled || Boolean(userProvider);
 
       if (isFree || isEnabled) {

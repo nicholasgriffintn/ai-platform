@@ -49,4 +49,15 @@ describe("resolveConversationStorageMode", () => {
   it("does not let where a model runs decide where the conversation is kept", () => {
     expect(resolveConversationStorageMode(signedInPro).shouldSyncRemote).toBe(true);
   });
+
+  it("keeps a conversation answered on this machine off the service", () => {
+    const onDevice = { ...signedInPro, runsOnDevice: true };
+
+    expect(resolveConversationStorageMode(onDevice).isTemporary).toBe(true);
+    expect(resolveConversationStorageMode(onDevice).shouldSyncRemote).toBe(false);
+    expect(
+      resolveConversationStorageMode(onDevice, { metadata: { project_id: "project-1" } })
+        .shouldSyncRemote,
+    ).toBe(false);
+  });
 });

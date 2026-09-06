@@ -8,7 +8,7 @@ export interface DeviceModelRunOptions {
   conversationId: string;
   messages: Message[];
   model: ModelConfigItem;
-  onText: (delta: string) => void;
+  onContent: (content: string) => void;
   signal: AbortSignal;
 }
 
@@ -30,7 +30,7 @@ export async function streamDeviceModelRun({
   conversationId,
   messages,
   model,
-  onText,
+  onContent,
   signal,
 }: DeviceModelRunOptions): Promise<string> {
   const endpoints = await backend.listEndpoints();
@@ -66,7 +66,7 @@ export async function streamDeviceModelRun({
     for await (const event of run.events) {
       if (event.type === "text") {
         text += event.delta;
-        onText(event.delta);
+        onContent(text);
 
         continue;
       }

@@ -3,7 +3,7 @@ import type { ModelCatalogItem, ModelConfig, ModelConfigItem, ModelModality } fr
 import type { ReasoningEffort } from "./reasoning";
 
 export const EMPTY_MODEL_CONFIG: ModelConfig = {};
-const LOCAL_MODEL_PROVIDER = "web-llm";
+export const BROWSER_MODEL_PROVIDER = "web-llm";
 const DEFAULT_MODALITIES: ModelModality[] = ["text"];
 
 export interface ModelInteractionCapabilities {
@@ -42,19 +42,16 @@ export function getAvailableModels(
   return { ...webLLMModels, ...apiModels };
 }
 
-export const MODEL_SURFACES = ["web", "desktop"] as const;
-export type ModelSurface = (typeof MODEL_SURFACES)[number];
-
 export function runsOnDevice(model: Pick<ModelConfigItem, "runsOn">): boolean {
   return model.runsOn === "device";
 }
 
-export function selectModelsForSurface(models: ModelConfig, surface: ModelSurface): ModelConfig {
-  if (surface === "desktop") {
-    return models;
-  }
+export function isBrowserModel(model?: Pick<ModelConfigItem, "provider">): boolean {
+  return model?.provider === BROWSER_MODEL_PROVIDER;
+}
 
-  return Object.fromEntries(Object.entries(models).filter(([, model]) => !runsOnDevice(model)));
+export function runsOffPlatform(model?: Pick<ModelConfigItem, "provider" | "runsOn">): boolean {
+  return Boolean(model && (runsOnDevice(model) || isBrowserModel(model)));
 }
 
 export function getFeaturedModelIds(models: ModelConfig) {
@@ -176,11 +173,17 @@ export function modelHasOutputModality(
   return getModelOutputModalities(model).includes(modality);
 }
 
+export function requiresPaidPlan(
+  model: Pick<ModelConfigItem, "isByokEnabled" | "isFree" | "runsOn">,
+): boolean {
+  return !runsOnDevice(model) && !model.isFree && !model.isByokEnabled;
+}
+
 export function isModelSelectableForAccount(
   model: Pick<ModelConfigItem, "isByokEnabled" | "isFree" | "runsOn">,
   isPro: boolean,
 ) {
-  return runsOnDevice(model) || isPro || Boolean(model.isFree) || Boolean(model.isByokEnabled);
+  return isPro || !requiresPaidPlan(model);
 }
 
 export function isActiveModel(model: Pick<ModelConfigItem, "deprecated" | "status">): boolean {
@@ -332,7 +335,7 @@ export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
     const isHidden = model.hiddenFromDefaultList;
     const isIncompatible =
       !isTextInputChatModel(model) || isAudioOnly || isVideoOnly || isEmbeddingOnly || isHidden;
-    const isLocalModel = model.provider === LOCAL_MODEL_PROVIDER;
+    const isLocalModel = runsOffPlatform(model);
 
     if (!isHidden && !isIncompatible && (mode === "local" ? isLocalModel : !isLocalModel)) {
       acc[key] = {

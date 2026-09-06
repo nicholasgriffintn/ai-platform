@@ -1,5 +1,5 @@
+export * from "./device-models";
 export * from "./desktop-execution";
-export * from "./model-surface";
 export * from "./conversation-list-filters";
 export * from "./theme";
 export * from "./local-chat-scope";

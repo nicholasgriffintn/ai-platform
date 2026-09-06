@@ -10,6 +10,7 @@ import { useCallback } from "react";
 
 import { upsertConversationInChatCaches } from "../conversation-cache";
 import { localChatService } from "../index";
+import { useSelectedModelRunsOnDevice } from "./useSelectedModelRunsOnDevice";
 
 /**
  * Hook for managing conversation storage across local and remote storage.
@@ -18,6 +19,7 @@ import { localChatService } from "../index";
 export function useConversationStorage(requestOptions?: ChatRequestOptions) {
   const queryClient = useQueryClient();
   const { isAuthenticated, isPro, localOnlyMode, temporaryChatsDefault, user } = useChatStore();
+  const answersOnDevice = useSelectedModelRunsOnDevice();
 
   const determineStorageMode = useCallback(
     () =>
@@ -27,10 +29,11 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
           isPro,
           temporaryChat: localOnlyMode,
           temporaryChatsDefault,
+          runsOnDevice: answersOnDevice,
         },
         requestOptions,
       ),
-    [isAuthenticated, isPro, localOnlyMode, temporaryChatsDefault, requestOptions],
+    [answersOnDevice, isAuthenticated, isPro, localOnlyMode, temporaryChatsDefault, requestOptions],
   );
 
   const updateConversation = useCallback(

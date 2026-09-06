@@ -39,18 +39,18 @@ describe("streamDeviceModelRun", () => {
         { type: "finished", runId: "run-1", reason: "complete", at: "2026-01-01T00:00:00Z" },
       ],
     });
-    const deltas: string[] = [];
+    const renders: string[] = [];
 
     const text = await streamDeviceModelRun({
       backend,
       conversationId: "conversation-1",
       messages,
       model,
-      onText: (delta) => deltas.push(delta),
+      onContent: (content: string) => renders.push(content),
       signal: new AbortController().signal,
     });
 
-    expect(deltas).toEqual(["Feathers ", "drop in stages."]);
+    expect(renders).toEqual(["Feathers ", "Feathers drop in stages."]);
     expect(text).toBe("Feathers drop in stages.");
   });
 
@@ -63,7 +63,7 @@ describe("streamDeviceModelRun", () => {
         conversationId: "conversation-1",
         messages,
         model,
-        onText: () => undefined,
+        onContent: () => undefined,
         signal: new AbortController().signal,
       }),
     ).rejects.toThrow(/No ollama runtime is connected/);
@@ -89,7 +89,7 @@ describe("streamDeviceModelRun", () => {
         conversationId: "conversation-1",
         messages,
         model,
-        onText: () => undefined,
+        onContent: () => undefined,
         signal: new AbortController().signal,
       }),
     ).rejects.toThrow("gemma3:4b is not pulled");

@@ -362,7 +362,3 @@ export type PromptRequirements = {
   benefitsFromMultipleModels?: boolean;
   modelComparisonReason?: string;
 };
-
-export const modelsQuerySchema = z.object({
-  surface: z.enum(["web", "desktop"]).optional(),
-});

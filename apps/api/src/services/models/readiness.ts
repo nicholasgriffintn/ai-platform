@@ -1,4 +1,9 @@
-import { isActiveModel, type ModelConfigItem, type Readiness } from "@ngriffin_uk/polychat-schemas";
+import {
+  isActiveModel,
+  type ModelConfigItem,
+  type Readiness,
+  requiresPaidPlan,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { IUser } from "~/types";
 
@@ -70,7 +75,7 @@ export function resolveModelReadiness(
     );
   }
 
-  if (user.plan_id !== "pro" && !model.isFree && !model.isByokEnabled) {
+  if (user.plan_id !== "pro" && requiresPaidPlan(model)) {
     return readiness(
       "setup_required",
       "plan_required",

@@ -347,7 +347,6 @@ import provider3 from "./providers/morph.json";
 import provider4 from "./providers/bedrock.json";
 import provider5 from "./providers/deepinfra.json";
 import provider6 from "./providers/deepseek.json";
-import provider7 from "./providers/ollama.json";
 import provider8 from "./providers/azure-openai.json";
 import provider9 from "./providers/github-models.json";
 import provider10 from "./providers/grok.json";
@@ -389,7 +388,6 @@ import provider45 from "./providers/moonshot.json";
 import provider46 from "./providers/minimax.json";
 import provider47 from "./providers/google-vertex.json";
 import provider48 from "./providers/ollama-cloud.json";
-import provider49 from "./providers/lmstudio.json";
 import provider50 from "./providers/meta.json";
 import provider51 from "./providers/greenpt.json";
 import provider52 from "./providers/lucidquery.json";
@@ -754,7 +752,6 @@ export default {
     "bedrock": provider4,
     "deepinfra": provider5,
     "deepseek": provider6,
-    "ollama": provider7,
     "azure-openai": provider8,
     "github-models": provider9,
     "grok": provider10,
@@ -796,7 +793,6 @@ export default {
     "minimax": provider46,
     "google-vertex": provider47,
     "ollama-cloud": provider48,
-    "lmstudio": provider49,
     "meta": provider50,
     "greenpt": provider51,
     "lucidquery": provider52,

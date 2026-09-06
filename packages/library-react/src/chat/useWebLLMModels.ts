@@ -1,3 +1,4 @@
+import { deviceModelSource } from "@ngriffin_uk/polychat-library-chat";
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useState } from "react";
 
@@ -7,11 +8,17 @@ interface UseWebLLMModelsOptions {
   enabled?: boolean;
 }
 
+/**
+ * A host with its own model runtimes runs them instead: the browser engine is the fallback for
+ * surfaces that have no other way to keep a conversation on the machine.
+ */
 export function useWebLLMModels({ enabled = true }: UseWebLLMModelsOptions = {}) {
-  const [models, setModels] = useState<ModelConfig>(() => getCachedWebLLMModels());
+  const [models, setModels] = useState<ModelConfig>(() =>
+    deviceModelSource() ? {} : getCachedWebLLMModels(),
+  );
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || deviceModelSource()) {
       return;
     }
 

@@ -8,7 +8,6 @@ import {
   PageTitle,
   usePageShellHeaderRegistry,
 } from "@ngriffin_uk/polychat-component-ui";
-import { useResponsiveSidebar } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
@@ -41,7 +40,6 @@ function PageShellRoot({
   bgClassName,
   projectColour,
 }: PageShellProps) {
-  useResponsiveSidebar();
   const { headerContext, registeredHeader } = usePageShellHeaderRegistry();
 
   const effectiveTitle = registeredHeader?.title ?? title;

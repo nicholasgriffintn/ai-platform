@@ -22,6 +22,7 @@ import {
   chatTurnActivityEventSchema,
   EMPTY_MODEL_CONFIG,
   getModelProvider,
+  isBrowserModel,
   isTerminalChatRunStatus,
   runsOnDevice,
   type ChatRun,
@@ -175,23 +176,25 @@ export function useStreamingResponse(
         useStreamActivityStore.getState().streams[conversationId]?.controller?.signal ??
         new AbortController().signal;
       const effectiveRequestOptions = overrideRequestOptions ?? requestOptions;
-      const storageMode = resolveConversationStorageMode(
-        {
-          isAuthenticated,
-          isPro,
-          temporaryChat: localOnlyMode,
-          temporaryChatsDefault,
-        },
-        effectiveRequestOptions,
-      );
-      const runsInBrowser = chatMode === "local";
       const requestedModelId = normalizeSelectedModel(
         options?.models?.[0] ?? options?.model ?? model,
       );
       const requestedModel = requestedModelId ? apiModels[requestedModelId] : undefined;
       const deviceBackend = desktopExecutionBackend();
       const runsOnThisDevice = Boolean(
-        !runsInBrowser && requestedModel && runsOnDevice(requestedModel) && deviceBackend,
+        requestedModel && runsOnDevice(requestedModel) && deviceBackend,
+      );
+      const runsInBrowser =
+        !runsOnThisDevice && chatMode === "local" && isBrowserModel(requestedModel);
+      const storageMode = resolveConversationStorageMode(
+        {
+          isAuthenticated,
+          isPro,
+          temporaryChat: localOnlyMode,
+          temporaryChatsDefault,
+          runsOnDevice: runsOnThisDevice,
+        },
+        effectiveRequestOptions,
       );
       let response = "";
       let generatedMessage: Message | undefined;
@@ -391,7 +394,28 @@ export function useStreamingResponse(
       const streamProgress = createStreamProgressCoalescer(handleMessageUpdate);
 
       try {
-        if (runsInBrowser) {
+        if (runsOnThisDevice && deviceBackend && requestedModel) {
+          try {
+            response = await streamDeviceModelRun({
+              backend: deviceBackend,
+              conversationId,
+              messages,
+              model: requestedModel,
+              onContent: streamProgress.handleUpdate,
+              signal: requestSignal,
+            });
+          } finally {
+            streamProgress.stop();
+          }
+
+          assistantResponseRef.current = response;
+          await updateAssistantMessage(conversationId, response, undefined, undefined, {
+            messageId: placeholderMessage.id,
+          });
+
+          generatedMessage = { ...placeholderMessage, content: response, status: "completed" };
+          generatedMessages.push(generatedMessage);
+        } else if (runsInBrowser) {
           const currentModel = normalizeSelectedModel(options?.model ?? model);
 
           if (!currentModel) {
@@ -426,27 +450,6 @@ export function useStreamingResponse(
           } finally {
             streamProgress.stop();
           }
-        } else if (runsOnThisDevice && deviceBackend && requestedModel) {
-          try {
-            response = await streamDeviceModelRun({
-              backend: deviceBackend,
-              conversationId,
-              messages,
-              model: requestedModel,
-              onText: streamProgress.handleUpdate,
-              signal: requestSignal,
-            });
-          } finally {
-            streamProgress.stop();
-          }
-
-          assistantResponseRef.current = response;
-          await updateAssistantMessage(conversationId, response, undefined, undefined, {
-            messageId: placeholderMessage.id,
-          });
-
-          generatedMessage = { ...placeholderMessage, content: response, status: "completed" };
-          generatedMessages.push(generatedMessage);
         } else {
           const shouldStore = storageMode.shouldSyncRemote;
 

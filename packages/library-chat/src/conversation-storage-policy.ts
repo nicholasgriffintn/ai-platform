@@ -7,6 +7,8 @@ export interface ConversationStorageState {
   isPro: boolean;
   temporaryChat: boolean;
   temporaryChatsDefault: boolean;
+  /** The answer is being produced on this machine, so its content never reaches the service. */
+  runsOnDevice?: boolean;
 }
 
 export interface ConversationStorageMode {
@@ -19,14 +21,18 @@ export function resolveConversationStorageMode(
   state: ConversationStorageState,
   requestOptions?: ChatRequestOptions,
 ): ConversationStorageMode {
-  const isProjectScoped = Boolean(requestOptions?.metadata?.project_id);
+  const isProjectScoped = Boolean(requestOptions?.metadata?.project_id) && !state.runsOnDevice;
 
   if (isProjectScoped) {
     return { isTemporary: false, isProjectScoped, shouldSyncRemote: true };
   }
 
   const isTemporary =
-    !state.isAuthenticated || !state.isPro || state.temporaryChat || state.temporaryChatsDefault;
+    Boolean(state.runsOnDevice) ||
+    !state.isAuthenticated ||
+    !state.isPro ||
+    state.temporaryChat ||
+    state.temporaryChatsDefault;
 
   return { isTemporary, isProjectScoped, shouldSyncRemote: !isTemporary };
 }

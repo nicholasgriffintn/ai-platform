@@ -12,7 +12,6 @@ export function useResponsiveSidebar() {
   const setSidebarVisible = useUIStore((state) => state.setSidebarVisible);
 
   useIsomorphicLayoutEffect(() => {
-    const mediaQuery = window.matchMedia(mobileMediaQuery);
     const updateResponsiveState = (isMobile: boolean) => {
       const previousIsMobile = useUIStore.getState().isMobile;
 
@@ -27,6 +26,14 @@ export function useResponsiveSidebar() {
     const handleBreakpointChange = (event: MediaQueryListEvent) => {
       updateResponsiveState(event.matches);
     };
+
+    if (typeof window.matchMedia !== "function") {
+      updateResponsiveState(false);
+
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia(mobileMediaQuery);
 
     updateResponsiveState(mediaQuery.matches);
     mediaQuery.addEventListener("change", handleBreakpointChange);
