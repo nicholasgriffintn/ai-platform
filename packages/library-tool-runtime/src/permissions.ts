@@ -27,6 +27,7 @@ export interface PermissionCheckInput {
   toolType?: "normal" | "premium" | "byok";
   toolPermissions?: string[];
   requireApprovalFor?: readonly ToolPermission[];
+  deniedTools?: readonly string[];
 }
 
 export interface RequestPermissionCheckInput extends PermissionCheckInput {
@@ -122,6 +123,16 @@ export class PermissionChecker {
         allowed: false,
         requiresApproval: false,
         reason: "This tool requires a signed-in user",
+        mode: resolvedMode,
+        permissions,
+      };
+    }
+
+    if (input.deniedTools?.includes(toolName)) {
+      return {
+        allowed: false,
+        requiresApproval: false,
+        reason: `Tool "${toolName}" is not available to this teammate`,
         mode: resolvedMode,
         permissions,
       };

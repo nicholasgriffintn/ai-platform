@@ -12,6 +12,7 @@ const agent: AgentResponse = {
   owner_scope_type: "user",
   owner_scope_id: "7",
   derived_from_agent_id: null,
+  kind: "colleague",
   name: "Researcher",
   description: "",
   avatar_url: null,

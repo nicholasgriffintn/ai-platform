@@ -3,8 +3,10 @@ import {
   agentResponseSchema,
   fewShotExampleSchema,
   mcpServerSchema,
+  DEFAULT_TEAMMATE_KIND,
   readToolIds,
   skillIdSchema,
+  teammateKindSchema,
   type AgentResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -29,6 +31,7 @@ export function normaliseAgentResponse(agent: StoredAgentRow): AgentResponse {
     enabled_tools: readToolIds(agent.enabled_tools),
     skill_ids: readAgentSkillIds(agent.skill_ids),
     mode: agentModeSchema.safeParse(agent.mode).data ?? null,
+    kind: teammateKindSchema.safeParse(agent.kind).data ?? DEFAULT_TEAMMATE_KIND,
     temperature: Number.isFinite(temperature) ? temperature : null,
   });
 }

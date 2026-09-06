@@ -35,6 +35,7 @@ vi.mock("~/state/stores/chatStore", () => ({
 function agentSummary(overrides: Partial<AgentSummary> & { id: string }): AgentSummary {
   return {
     name: `Agent ${overrides.id}`,
+    kind: "colleague",
     description: "",
     avatarUrl: null,
     model: null,

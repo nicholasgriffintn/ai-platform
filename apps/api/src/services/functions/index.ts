@@ -261,6 +261,7 @@ export const handleFunctions = async ({
     toolPermissions: foundFunction.permissions,
     approvedTools: request.request?.approved_tools,
     requireApprovalFor: request.request?.require_approval_for,
+    deniedTools: request.request?.denied_tools,
     enforceModePolicy: request.request?.enforce_mode_tool_policy,
   });
 

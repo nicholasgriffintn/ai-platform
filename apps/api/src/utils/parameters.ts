@@ -374,6 +374,7 @@ export function getToolsForProvider(
     | "tool_policy_mode"
     | "conversation_type"
     | "require_approval_for"
+    | "denied_tools"
     | "enforce_mode_tool_policy"
   >,
   modelConfig: any,
@@ -421,6 +422,7 @@ export function getToolsForProvider(
               toolType: func.type,
               toolPermissions: func.permissions,
               requireApprovalFor: params.require_approval_for,
+              deniedTools: params.denied_tools,
               enforceModePolicy: params.enforce_mode_tool_policy,
             }).allowed,
         );
@@ -439,6 +441,7 @@ export function getToolsForProvider(
               toolType: func.type,
               toolPermissions: func.permissions,
               requireApprovalFor: params.require_approval_for,
+              deniedTools: params.denied_tools,
               enforceModePolicy: params.enforce_mode_tool_policy,
             }).allowed,
         );

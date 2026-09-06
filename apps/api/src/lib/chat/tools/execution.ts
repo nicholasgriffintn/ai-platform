@@ -169,6 +169,7 @@ export const handleToolCalls = async (
         toolPermissions: toolPermissionsMap[functionName],
         approvedTools: req.request?.approved_tools,
         requireApprovalFor: req.request?.require_approval_for,
+        deniedTools: req.request?.denied_tools,
         enforceModePolicy: req.request?.enforce_mode_tool_policy,
       });
 

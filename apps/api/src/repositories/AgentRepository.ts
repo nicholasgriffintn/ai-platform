@@ -3,6 +3,7 @@ import type {
   AgentMcpServer,
   AgentMode,
   AgentOwnerScopeType,
+  TeammateKind,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { Agent } from "~/lib/database/schema";
@@ -16,6 +17,7 @@ export interface CreateAgentRecord {
   ownerScopeType: AgentOwnerScopeType;
   ownerScopeId: string;
   derivedFromAgentId?: string | null;
+  kind?: TeammateKind;
   name: string;
   description: string;
   avatarUrl: string | null;
@@ -41,6 +43,7 @@ export class AgentRepository extends BaseRepository {
         owner_scope_type: record.ownerScopeType,
         owner_scope_id: record.ownerScopeId,
         derived_from_agent_id: record.derivedFromAgentId ?? null,
+        kind: record.kind ?? "colleague",
         name: record.name,
         description: record.description,
         avatar_url: record.avatarUrl ?? null,
@@ -128,6 +131,7 @@ export class AgentRepository extends BaseRepository {
       enabled_tools: string[];
       skill_ids: string[];
       mode: AgentMode | null;
+      kind: TeammateKind;
     }>,
   ): Promise<void> {
     const allowedFields = [
@@ -143,6 +147,7 @@ export class AgentRepository extends BaseRepository {
       "enabled_tools",
       "skill_ids",
       "mode",
+      "kind",
     ];
 
     const result = this.buildUpdateQuery("agents", data, allowedFields, "id = ?", [agentId], {

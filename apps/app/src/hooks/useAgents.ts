@@ -1,5 +1,9 @@
 import type { AgentFormData } from "@ngriffin_uk/polychat-component-account";
-import type { AgentResponse, UpdateAgentInput } from "@ngriffin_uk/polychat-schemas";
+import type {
+  AgentResponse,
+  HireTeammateInput,
+  UpdateAgentInput,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -57,6 +61,13 @@ export function useAgents({ enabled = true }: { enabled?: boolean } = {}) {
     },
   });
 
+  const hireMutation = useMutation<AgentResponse, Error, HireTeammateInput>({
+    mutationFn: (data) => apiService.hireTeammate(data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
+    },
+  });
+
   const updateMutation = useMutation<AgentResponse, Error, { id: string; data: UpdateAgentInput }>({
     mutationFn: ({ id, data }) => apiService.updateAgent(id, data),
     onSuccess: () => {
@@ -77,6 +88,10 @@ export function useAgents({ enabled = true }: { enabled?: boolean } = {}) {
     errorAgents: canAccessProFeatures && enabled ? agentsQuery.error : null,
     createAgent: createMutation.mutateAsync,
     isCreatingAgent: createMutation.isPending,
+    hireTeammate: hireMutation.mutateAsync,
+    isHiringTeammate: hireMutation.isPending,
+    hireTeammateError: hireMutation.error,
+    resetHireTeammate: hireMutation.reset,
     updateAgent: updateMutation.mutateAsync,
     isUpdatingAgent: updateMutation.isPending,
     deleteAgent: deleteMutation.mutate,

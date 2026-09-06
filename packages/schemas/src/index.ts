@@ -130,6 +130,7 @@ export * from "./sandbox-services";
 export * from "./sandbox-preview";
 export * from "./search";
 export * from "./shared-agents";
+export * from "./teammates";
 export * from "./shared";
 export * from "./sources";
 export * from "./stripe";

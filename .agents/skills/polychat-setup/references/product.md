@@ -15,7 +15,8 @@ Switch between Chat and Work with the toggle at the top of the page. Every sideb
 ## Choose how work runs
 
 - Use a conversation for interactive work, an experience for a richer workflow, a recipe for reusable configured work, and a project task/flow for durable agent execution and hand-offs.
-- Configure skills and saved agents in the capability library. Skills supply instructions; agents supply personas and capability requests. Their runner still needs access to everything they use.
+- Configure skills and teammates in the library. Skills supply instructions; teammates supply a brief and capability requests. Their runner still needs access to everything they use.
+- Hire a teammate from a built-in role, describe the job in your own words, or do both: the role fills in the brief, the suggested tools and the mode, and you can change any of it afterwards. Every teammate is a **colleague** or a **bot**. A colleague can file tasks and add to your memory; a bot answers and reports, and the server refuses those writes whatever its tool list says. Reads run on their own, and anything that writes to another system waits for your approval.
 - Keep connector installations and credentials attributable to the person running the work. Project membership does not grant another member's external account.
 - Use the project's **Default model tier** for project conversations and coding runs. Explicit request tiers or models override it; it is not a spending cap.
 - Treat **sources** as durable inputs and **outputs** as durable results. Project scope adds collaboration; conversation links add provenance.

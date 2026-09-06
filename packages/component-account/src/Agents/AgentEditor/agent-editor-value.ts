@@ -1,5 +1,9 @@
 import type { AgentResponse, ModelConfig } from "@ngriffin_uk/polychat-schemas";
-import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas";
+import {
+  DEFAULT_TEAMMATE_KIND,
+  filterToolIdsForTeammateKind,
+  normaliseToolIds,
+} from "@ngriffin_uk/polychat-schemas";
 import {
   generateId,
   getFiniteNumberOrFallback,
@@ -22,6 +26,7 @@ export function createAgentEditorValue(
   if (!agent) {
     return {
       name: "",
+      kind: DEFAULT_TEAMMATE_KIND,
       description: "",
       avatarUrl: "",
       systemPrompt: "",
@@ -41,6 +46,7 @@ export function createAgentEditorValue(
 
   return {
     name: agent.name,
+    kind: agent.kind,
     description: agent.description,
     avatarUrl: agent.avatar_url ?? "",
     systemPrompt: agent.system_prompt ?? "",
@@ -66,6 +72,7 @@ export function createAgentEditorValue(
 export function toAgentFormData(value: AgentEditorValue): AgentFormData {
   return {
     name: value.name.trim(),
+    kind: value.kind,
     description: value.description.trim(),
     avatar_url: value.avatarUrl.trim(),
     servers: value.servers.map((server) => ({ url: server.url.trim(), type: server.type })),
@@ -77,7 +84,7 @@ export function toAgentFormData(value: AgentEditorValue): AgentFormData {
       input: input.trim(),
       output: output.trim(),
     })),
-    enabled_tools: normaliseToolIds(value.toolIds),
+    enabled_tools: filterToolIdsForTeammateKind(value.kind, normaliseToolIds(value.toolIds)) ?? [],
     skill_ids: value.skillIds,
     mode: value.mode,
   };

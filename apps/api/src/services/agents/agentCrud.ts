@@ -48,6 +48,7 @@ export async function createAgent(context: ServiceContext, params: CreateAgentIn
   const agent = await context.repositories.agents.createAgent({
     userId: currentUser.id,
     ...(await resolveNewAgentOwnerScope(context, currentUser.id, params.workspace_id)),
+    kind: params.kind ?? "colleague",
     name: params.name,
     description: params.description ?? "",
     avatarUrl: params.avatar_url || null,

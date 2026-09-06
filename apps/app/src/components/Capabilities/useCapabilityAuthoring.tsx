@@ -1,5 +1,9 @@
-import type { AgentResponse, ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
-import { Bot, Link2, Plus, Store } from "lucide-react";
+import type {
+  AgentResponse,
+  HireTeammateInput,
+  ProjectCapabilityKind,
+} from "@ngriffin_uk/polychat-schemas";
+import { Bot, Link2, Plus, Store, UserRoundPlus } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -46,8 +50,17 @@ export interface SharedAgentAuthoring {
   close: () => void;
 }
 
+export interface HireTeammateAuthoring {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  hire: (input: HireTeammateInput) => Promise<unknown>;
+  isHiring: boolean;
+  error: Error | null;
+}
+
 export interface CapabilityAuthoring {
   addSkill: { open: boolean; setOpen: (open: boolean) => void };
+  hireTeammate: HireTeammateAuthoring;
   agentActions: AgentCardActions;
   browseSharedAgents: { open: boolean; setOpen: (open: boolean) => void };
   shareAgent: SharedAgentAuthoring;
@@ -81,6 +94,7 @@ export function useCapabilityAuthoring({
 }: CapabilityAuthoringInput): CapabilityAuthoring {
   const navigate = useNavigate();
   const [addSkillOpen, setAddSkillOpen] = useState(false);
+  const [hireTeammateOpen, setHireTeammateOpen] = useState(false);
   const [attachAgentOpen, setAttachAgentOpen] = useState(false);
   const [browseSharedOpen, setBrowseSharedOpen] = useState(false);
   const [sharingAgentId, setSharingAgentId] = useState<string | null>(null);
@@ -102,8 +116,14 @@ export function useCapabilityAuthoring({
 
     return [
       {
-        label: "New agent",
-        description: "Configure a persona, its model, tools and skills",
+        label: "Hire a teammate",
+        description: "Start from a role, or describe the job in your own words",
+        icon: <UserRoundPlus className="h-4 w-4" />,
+        onSelect: () => setHireTeammateOpen(true),
+      },
+      {
+        label: "Build one from scratch",
+        description: "Configure a brief, its model, tools and skills yourself",
         icon: <Bot className="h-4 w-4" />,
         onSelect: () => {
           void navigate(agents.createPath);
@@ -111,14 +131,14 @@ export function useCapabilityAuthoring({
       },
       projectId
         ? {
-            label: "Attach an agent",
-            description: "Bring in an agent this workspace already owns",
+            label: "Attach a teammate",
+            description: "Bring in a teammate this workspace already owns",
             icon: <Link2 className="h-4 w-4" />,
             onSelect: () => setAttachAgentOpen(true),
           }
         : {
-            label: "Browse shared agents",
-            description: "Install an agent someone has published",
+            label: "Browse shared teammates",
+            description: "Install a teammate someone has published",
             icon: <Store className="h-4 w-4" />,
             onSelect: () => setBrowseSharedOpen(true),
           },
@@ -156,6 +176,20 @@ export function useCapabilityAuthoring({
     await agents.refreshCatalogue();
   };
 
+  const hireTeammate = async (input: HireTeammateInput) => {
+    const hired = await agents.hireTeammate(input);
+
+    if (projectId && projectActions) {
+      await projectActions.addCapability("agent", hired.id);
+      await agents.refreshCatalogue();
+    }
+
+    setHireTeammateOpen(false);
+    void navigate(agents.editPath(hired.id));
+
+    return hired;
+  };
+
   const requestDeletion = (deletion: PendingCapabilityDeletion) => {
     agents.resetDeletion();
     skillDeletion.reset();
@@ -166,6 +200,13 @@ export function useCapabilityAuthoring({
 
   return {
     addSkill: { open: addSkillOpen, setOpen: setAddSkillOpen },
+    hireTeammate: {
+      open: hireTeammateOpen,
+      setOpen: setHireTeammateOpen,
+      hire: hireTeammate,
+      isHiring: agents.isHiring,
+      error: agents.hireError,
+    },
     agentActions: {
       canManage: agents.canManageAgent,
       canShare: agents.canShareAgent,
