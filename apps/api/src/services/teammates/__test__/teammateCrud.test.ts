@@ -108,6 +108,9 @@ function createContext(
       listProjectsWithCapability: vi.fn(async () => overrides.attachedProjects ?? []),
       listProjectsWithFlowStageTeammate: vi.fn(async () => overrides.flowProjects ?? []),
     },
+    teammateFeedback: {
+      scorecardsFor: vi.fn(async () => new Map()),
+    },
     sharedTeammates: {
       getSharedTeammateByTeammateId: vi.fn(async () => overrides.listing ?? null),
       deleteSharedTeammate: vi.fn(async () => undefined),

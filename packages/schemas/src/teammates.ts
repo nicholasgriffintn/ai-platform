@@ -158,6 +158,23 @@ export const teammateResponseSchema = z.object({
 
 export const teammateListResponseSchema = z.array(teammateResponseSchema);
 
+export const teammateVerdictSchema = z.enum(["good", "bad"]);
+
+export const teammateScorecardSchema = z.object({
+  good: z.number().int().nonnegative(),
+  bad: z.number().int().nonnegative(),
+});
+
+export const recordTeammateFeedbackSchema = z.object({
+  verdict: teammateVerdictSchema,
+  conversationId: z.string().min(1).optional(),
+  note: z.string().trim().min(1).max(500).optional(),
+});
+
+export type TeammateVerdict = z.infer<typeof teammateVerdictSchema>;
+export type TeammateScorecard = z.infer<typeof teammateScorecardSchema>;
+export type RecordTeammateFeedbackInput = z.infer<typeof recordTeammateFeedbackSchema>;
+
 export const teammateSummarySchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -172,6 +189,7 @@ export const teammateSummarySchema = z.object({
   toolIds: toolIdsSchema,
   unavailableSkillIds: teammateSkillIdsSchema,
   unavailableToolIds: toolIdsSchema,
+  scorecard: teammateScorecardSchema,
 });
 
 export const teammateSummaryListResponseSchema = z.array(teammateSummarySchema);

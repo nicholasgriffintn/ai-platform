@@ -3,7 +3,7 @@ import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
-import { TEAMMATE_CAPABILITY_KIND } from "./access";
+import { requireTeammateAccess, TEAMMATE_CAPABILITY_KIND } from "./access";
 
 /**
  * A workspace default reaches every project, so removing one from a single project is recorded
@@ -89,5 +89,23 @@ export async function restoreInheritedTeammateToProject(
     targetType: "project_capability",
     targetId: teammateId,
     metadata: { projectId, teammateId },
+  });
+}
+
+export async function recordTeammateFeedback(
+  context: ServiceContext,
+  teammateId: string,
+  input: { verdict: "good" | "bad"; conversationId?: string; note?: string },
+): Promise<void> {
+  context.ensureDatabase();
+  const user = context.requireUser();
+
+  await requireTeammateAccess(context, teammateId, "read", user.id);
+  await context.repositories.teammateFeedback.record({
+    teammateId,
+    userId: user.id,
+    conversationId: input.conversationId ?? null,
+    verdict: input.verdict,
+    ...(input.note ? { note: input.note } : {}),
   });
 }

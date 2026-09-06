@@ -35,6 +35,7 @@ import { SharedTeammateRepository } from "./SharedTeammateRepository";
 import { SourceRepository } from "./SourceRepository";
 import { TaskNotificationRepository } from "./TaskNotificationRepository";
 import { TaskRepository } from "./TaskRepository";
+import { TeammateFeedbackRepository } from "./TeammateFeedbackRepository";
 import { TeammateRepository } from "./TeammateRepository";
 import { TemplateRepository } from "./TemplateRepository";
 import { TrainingExampleRepository } from "./TrainingExampleRepository";
@@ -124,6 +125,7 @@ export class RepositoryManager {
   private authChallengeRepo: AuthChallengeRepository;
   private authoredSkillRepo: AuthoredSkillRepository;
   private channelBindingRepo: ChannelBindingRepository;
+  private teammateFeedbackRepo: TeammateFeedbackRepository;
   private memoryDocumentRepo: MemoryDocumentRepository;
   private savedMessageRepo: SavedMessageRepository;
   private auditRepo: AuditRepository;
@@ -171,6 +173,7 @@ export class RepositoryManager {
     this.authChallengeRepo = new AuthChallengeRepository(env);
     this.authoredSkillRepo = new AuthoredSkillRepository(env);
     this.channelBindingRepo = new ChannelBindingRepository(env);
+    this.teammateFeedbackRepo = new TeammateFeedbackRepository(env);
     this.memoryDocumentRepo = new MemoryDocumentRepository(env);
     this.savedMessageRepo = new SavedMessageRepository(env);
     this.auditRepo = new AuditRepository(env);
@@ -230,6 +233,10 @@ export class RepositoryManager {
 
   public get authoredSkills(): AuthoredSkillRepository {
     return this.authoredSkillRepo;
+  }
+
+  public get teammateFeedback(): TeammateFeedbackRepository {
+    return this.teammateFeedbackRepo;
   }
 
   public get channelBindings(): ChannelBindingRepository {

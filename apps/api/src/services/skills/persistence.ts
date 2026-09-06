@@ -286,6 +286,16 @@ export async function getStoredSkill(
   return skill ? readRevision(context, skill, pointer) : null;
 }
 
+export async function getStoredSkillState(
+  context: ServiceContext,
+  scope: AuthoredSkillScope,
+  name: string,
+): Promise<AuthoredSkillState | null> {
+  const skill = await repository(context).getByScopeAndName(scope, name);
+
+  return skill ? toState(skill) : null;
+}
+
 async function getStoredSkillRecord(
   context: ServiceContext,
   scope: AuthoredSkillScope,

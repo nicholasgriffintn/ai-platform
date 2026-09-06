@@ -3,6 +3,7 @@ import {
   teammateResponseSchema,
   createTeammateSchema,
   hireTeammateSchema,
+  recordTeammateFeedbackSchema,
   updateTeammateSchema,
   createChatCompletionsJsonSchema,
   publishTeammateToWorkspaceSchema,
@@ -21,6 +22,7 @@ import {
   getTeammateById,
   createTeammate,
   hireTeammate,
+  recordTeammateFeedback,
   removeInheritedTeammateFromProject,
   restoreInheritedTeammateToProject,
   updateTeammate,
@@ -77,6 +79,22 @@ addRoute(app, "post", "/hire", {
   responses: { 200: { description: "Hired teammate", schema: teammateResponseSchema } },
   handler: async ({ serviceContext, body }) => {
     return hireTeammate(serviceContext, body);
+  },
+});
+
+addRoute(app, "post", "/:teammateId/feedback", {
+  tags: ["teammates"],
+  summary: "Say whether a teammate got it right",
+  description:
+    "One verdict per person per conversation, which builds the teammate's scorecard. Saying it again replaces the earlier verdict.",
+  auth: true,
+  paramSchema: teammateIdParamSchema,
+  bodySchema: recordTeammateFeedbackSchema,
+  responses: { 200: { description: "Success", schema: apiResponseSchema } },
+  handler: async ({ serviceContext, params, body }) => {
+    await recordTeammateFeedback(serviceContext, params.teammateId, body);
+
+    return { success: true };
   },
 });
 

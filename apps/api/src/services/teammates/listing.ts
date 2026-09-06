@@ -77,6 +77,7 @@ function toTeammateSummary(
   teammate: TeammateResponse,
   availability: TeammateScopeAvailability,
   executableModels: ReadonlySet<string>,
+  scorecards: ReadonlyMap<string, { good: number; bad: number }>,
 ): TeammateSummary {
   const toolIds = filterToolIdsForTeammateKind(teammate.kind, teammate.enabled_tools) ?? [];
 
@@ -96,6 +97,7 @@ function toTeammateSummary(
       (skillId) => !availability.skillIds.has(skillId),
     ),
     unavailableToolIds: toolIds.filter((toolId) => !availability.toolIds.has(toolId)),
+    scorecard: scorecards.get(teammate.id) ?? { good: 0, bad: 0 },
   };
 }
 
@@ -104,9 +106,14 @@ async function summarise(
   teammates: readonly TeammateResponse[],
   availability: TeammateScopeAvailability,
 ): Promise<TeammateSummary[]> {
-  const executableModels = await resolveExecutableModels(context, teammates);
+  const [executableModels, scorecards] = await Promise.all([
+    resolveExecutableModels(context, teammates),
+    context.repositories.teammateFeedback.scorecardsFor(teammates.map((teammate) => teammate.id)),
+  ]);
 
-  return teammates.map((teammate) => toTeammateSummary(teammate, availability, executableModels));
+  return teammates.map((teammate) =>
+    toTeammateSummary(teammate, availability, executableModels, scorecards),
+  );
 }
 
 async function listProjectTeammates(

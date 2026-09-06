@@ -623,6 +623,35 @@ export const channelBinding = sqliteTable(
 
 export type ChannelBindingRow = typeof channelBinding.$inferSelect;
 
+export const teammateFeedback = sqliteTable(
+  "teammate_feedback",
+  {
+    id: text().primaryKey(),
+    teammate_id: text()
+      .notNull()
+      .references(() => teammates.id, { onDelete: "cascade" }),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    conversation_id: text(),
+    verdict: text({ enum: ["good", "bad"] }).notNull(),
+    note: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    teammateIdx: index("teammate_feedback_teammate_idx").on(table.teammate_id),
+    userConversationIdx: uniqueIndex("teammate_feedback_user_conversation_idx").on(
+      table.user_id,
+      table.teammate_id,
+      table.conversation_id,
+    ),
+  }),
+);
+
+export type TeammateFeedbackRow = typeof teammateFeedback.$inferSelect;
+
 export const authoredSkillRevision = sqliteTable(
   "authored_skill_revision",
   {

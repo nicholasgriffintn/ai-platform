@@ -37,6 +37,7 @@ export {
   deletePersonalSkill,
   getPersonalSkill,
   getPersonalSkillHistory,
+  getPersonalSkillState,
   getPersonalSkillVersion,
   getProjectSkill,
   getProjectSkillHistory,

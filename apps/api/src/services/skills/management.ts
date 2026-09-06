@@ -31,6 +31,7 @@ import { SKILL_CAPABILITY_KIND } from "./scope";
 
 export {
   getPersonalSkillHistory,
+  getPersonalSkillState,
   getPersonalSkillVersion,
   getProjectSkillHistory,
   getProjectSkillVersion,
