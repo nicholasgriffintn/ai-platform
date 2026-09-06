@@ -6,6 +6,7 @@ import type {
 import { formatBytes, formatCompactCount } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useEffect, useState } from "react";
 
+import { Composer } from "./Composer";
 import type { ConnectedDesktopBackend } from "./desktop-backend";
 
 const READINESS_LABELS: Record<DesktopRuntimeReadiness["status"], string> = {
@@ -27,7 +28,15 @@ function readinessLabel(readiness: DesktopRuntimeReadiness | undefined): string 
   return READINESS_LABELS[readiness.status];
 }
 
-function ModelList({ models }: { models: DiscoveredModel[] }) {
+function ModelList({
+  models,
+  backend,
+}: {
+  models: DiscoveredModel[];
+  backend: ConnectedDesktopBackend;
+}) {
+  const [selected, setSelected] = useState<string | null>(null);
+
   if (models.length === 0) {
     return <p>No models installed here.</p>;
   }
@@ -36,7 +45,9 @@ function ModelList({ models }: { models: DiscoveredModel[] }) {
     <ul>
       {models.map((model) => (
         <li key={model.nativeId}>
-          <span>{model.displayName}</span>
+          <button type="button" onClick={() => setSelected(model.nativeId)}>
+            {model.displayName}
+          </button>
           {model.parameterSizeBytes === null ? null : (
             <span>{formatBytes(model.parameterSizeBytes)}</span>
           )}
@@ -45,6 +56,7 @@ function ModelList({ models }: { models: DiscoveredModel[] }) {
           )}
           {model.capabilities.vision ? <span>Vision</span> : null}
           {model.loaded ? <span>Loaded</span> : null}
+          {selected === model.nativeId ? <Composer backend={backend} model={model} /> : null}
         </li>
       ))}
     </ul>
@@ -114,7 +126,7 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
               Check
             </button>
             {readiness[endpoint.id]?.status === "ready" ? (
-              <ModelList models={models[endpoint.id] ?? []} />
+              <ModelList models={models[endpoint.id] ?? []} backend={backend} />
             ) : null}
           </li>
         ))}

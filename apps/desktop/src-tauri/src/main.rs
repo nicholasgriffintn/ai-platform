@@ -1,18 +1,26 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod chat;
 mod discovery;
 mod egress;
+mod runs;
 
 use std::time::Duration;
 
+use chat::{ModelRunRequest, StreamChunk};
 use discovery::DiscoveredModel;
 use egress::{DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport};
+use futures_util::StreamExt;
+use runs::{RunRegistry, StreamEvent};
 use serde::Serialize;
+use tauri::ipc::Channel;
+use tauri::{Manager, State};
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 use url::Url;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(3);
 const DISCOVERY_TIMEOUT: Duration = Duration::from_secs(10);
+const RUN_TIMEOUT: Duration = Duration::from_secs(600);
 const BUILT_IN_APPROVED_AT: &str = "1970-01-01T00:00:00Z";
 
 #[derive(Serialize)]
@@ -186,12 +194,142 @@ async fn discover_models(endpoint_id: String) -> Result<Vec<DiscoveredModel>, St
     Ok(discovery::parse_models(&endpoint, &body, &timestamp()))
 }
 
+#[tauri::command]
+fn cancel_model_run(run_id: String, registry: State<'_, RunRegistry>) {
+    registry.cancel(&run_id);
+}
+
+#[tauri::command]
+async fn start_model_run(
+    run_id: String,
+    request: ModelRunRequest,
+    on_event: Channel<StreamEvent>,
+    registry: State<'_, RunRegistry>,
+) -> Result<(), String> {
+    let (endpoint, base) = authorised_endpoint(&request.endpoint_id)?;
+    let target = base
+        .join(chat::chat_path(&endpoint))
+        .map_err(|cause| cause.to_string())?;
+
+    let emit = |event: StreamEvent| {
+        let _ = on_event.send(event);
+    };
+
+    emit(StreamEvent::Started {
+        run_id: run_id.clone(),
+        endpoint_id: endpoint.id.clone(),
+        at: timestamp(),
+    });
+    emit(StreamEvent::Progress {
+        run_id: run_id.clone(),
+        state: "loading-model".to_string(),
+    });
+
+    let response = match http_client(RUN_TIMEOUT)?
+        .post(target)
+        .json(&chat::chat_body(&endpoint, &request))
+        .send()
+        .await
+    {
+        Ok(response) => response,
+        Err(cause) => {
+            registry.forget(&run_id);
+            emit(StreamEvent::Failed {
+                run_id: run_id.clone(),
+                failure: "not-running".to_string(),
+                message: cause.to_string(),
+            });
+
+            return Ok(());
+        }
+    };
+
+    if !response.status().is_success() {
+        let failure = match response.status().as_u16() {
+            404 => "model-not-found",
+            401 | 403 => "unauthorised",
+            _ => "unknown",
+        };
+        let status = response.status().as_u16();
+
+        registry.forget(&run_id);
+        emit(StreamEvent::Failed {
+            run_id: run_id.clone(),
+            failure: failure.to_string(),
+            message: format!("{} answered with status {status}", endpoint.label),
+        });
+
+        return Ok(());
+    }
+
+    emit(StreamEvent::Progress {
+        run_id: run_id.clone(),
+        state: "generating".to_string(),
+    });
+
+    let mut stream = response.bytes_stream();
+    let mut buffer = String::new();
+    let mut reason = "complete";
+
+    'outer: while let Some(piece) = stream.next().await {
+        if registry.is_cancelled(&run_id) {
+            reason = "cancelled";
+            break;
+        }
+
+        let piece = match piece {
+            Ok(piece) => piece,
+            Err(cause) => {
+                registry.forget(&run_id);
+                emit(StreamEvent::Failed {
+                    run_id: run_id.clone(),
+                    failure: "unknown".to_string(),
+                    message: cause.to_string(),
+                });
+
+                return Ok(());
+            }
+        };
+
+        buffer.push_str(&String::from_utf8_lossy(&piece));
+
+        while let Some(index) = buffer.find('\n') {
+            let line: String = buffer.drain(..=index).collect();
+
+            match chat::parse_stream_line(&endpoint, &line) {
+                StreamChunk::Text(delta) => emit(StreamEvent::Text {
+                    run_id: run_id.clone(),
+                    delta,
+                }),
+                StreamChunk::Done => break 'outer,
+                StreamChunk::Ignored => {}
+            }
+        }
+    }
+
+    registry.forget(&run_id);
+    emit(StreamEvent::Finished {
+        run_id,
+        reason: reason.to_string(),
+        at: timestamp(),
+    });
+
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
+        .setup(|app| {
+            app.manage(RunRegistry::default());
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             list_endpoints,
             probe_endpoint,
-            discover_models
+            discover_models,
+            start_model_run,
+            cancel_model_run
         ])
         .run(tauri::generate_context!())
         .expect("Polychat desktop failed to start");

@@ -1,4 +1,5 @@
 export * from "./arrays.js";
+export * from "./async-queue.js";
 export * from "./colors.js";
 export * from "./dates.js";
 export * from "./errors.js";
