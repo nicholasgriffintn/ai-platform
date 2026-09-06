@@ -36,6 +36,7 @@ Use this map to locate current responsibilities. Read the relevant [ADR](decisio
 | `apps/app`             | React Router web/PWA. Controllers bind server queries, local storage, UI preferences and presentation.          |
 | `apps/api`             | Hono Worker: public auth, request validation, persistence, providers, queues, schedules and webhooks.           |
 | `apps/mobile/ios`      | Swift client with its own wire and stream consumers.                                                            |
+| `apps/desktop`         | Tauri shell: webview renderer plus a Rust core owning allowlisted egress. Accepted design 0076.                 |
 | `apps/sandbox-worker`  | Isolated coding execution, approvals, cancellation and task events.                                             |
 | `apps/training`        | Internal provider training/deployment execution and persisted job events.                                       |
 | `packages/schemas`     | Shared Zod contracts, stream events and pricing primitives.                                                     |

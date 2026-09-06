@@ -1,0 +1,31 @@
+{
+  "name": "@assistant/desktop",
+  "version": "0.0.1",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "build:deps": "pnpm --filter \"@assistant/desktop^...\" --if-present build",
+    "dev": "tauri dev",
+    "dev:renderer": "vite",
+    "tauri": "tauri",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-library-chat": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@tauri-apps/api": "2.9.0",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@tauri-apps/cli": "2.9.5",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "6.1.1",
+    "typescript": "catalog:",
+    "vite": "8.2.2"
+  }
+}

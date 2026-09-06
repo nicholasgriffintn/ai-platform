@@ -1,0 +1,21 @@
+[package]
+name = "polychat-desktop"
+version = "0.0.1"
+description = "Polychat desktop shell"
+edition = "2021"
+rust-version = "1.85"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = [] }
+time = { version = "0.3", features = ["formatting"] }
+url = "2"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
