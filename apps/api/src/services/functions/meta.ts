@@ -1,5 +1,6 @@
 import {
   META_NAVIGATION_DATA_KEY,
+  TEAMMATE_PERMISSIONS_SENTENCE,
   type MetaFoundConversation,
   type MetaNavigationTarget,
 } from "@ngriffin_uk/polychat-schemas";
@@ -8,6 +9,7 @@ import type z from "zod/v4";
 import { isMetaConversationType } from "~/lib/chat/policy/meta-assistant";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ToolExecutionContext } from "~/lib/tools/ToolExecutionContext";
+import { listWorkAttention } from "~/services/attention";
 import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
 import {
   getConversationOrganisation,
@@ -15,16 +17,24 @@ import {
 } from "~/services/conversation-organisation";
 import { requireConversationAccess } from "~/services/conversations/access";
 import { searchPolychat } from "~/services/global-search";
+import { hireTeammate as hireTeammateService } from "~/services/teammates";
+import { requireTeammateAccess } from "~/services/teammates/access";
 import { requireProjectAccess, requireWorkspaceAccess } from "~/services/workspaces/access";
 import type { IFunctionResponse, IUser } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { isConversationUnread } from "~/utils/conversation-organisation";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
 
 import {
   find_places as findPlacesDescriptor,
   type findPlacesInputSchema,
+  hire_teammate as hireTeammateDescriptor,
+  type hireTeammateInputSchema,
+  list_attention as listAttentionDescriptor,
+  type listAttentionInputSchema,
+  MAX_META_ATTENTION_LIMIT,
   MAX_META_READ_MESSAGES,
   open_place as openPlaceDescriptor,
   type openPlaceInputSchema,
@@ -32,8 +42,11 @@ import {
   type organiseConversationInputSchema,
   read_conversation as readConversationDescriptor,
   type readConversationInputSchema,
+  start_conversation as startConversationDescriptor,
+  type startConversationInputSchema,
 } from "./definitions/meta";
 
+const DEFAULT_ATTENTION_LIMIT = 10;
 const DEFAULT_FIND_LIMIT = 8;
 const DEFAULT_READ_MESSAGES = 30;
 const MAX_TRANSCRIPT_CHARACTERS = 12_000;
@@ -372,9 +385,115 @@ export const read_conversation: ApiToolDefinition = {
   },
 };
 
+export const start_conversation: ApiToolDefinition = {
+  ...startConversationDescriptor,
+  execute: async (args: z.infer<typeof startConversationInputSchema>, toolContext) => {
+    const scope = requireMetaScope(toolContext, startConversationDescriptor.name);
+    const projectId = args.scope === "project" ? args.projectId : undefined;
+    const project = projectId
+      ? (await requireProjectAccess(scope.context, projectId)).project
+      : null;
+
+    if (args.teammateId) {
+      await requireTeammateAccess(scope.context, args.teammateId, "read", scope.user.id);
+    }
+
+    const conversationId = generateId();
+
+    await scope.context.repositories.conversations.createConversation(
+      conversationId,
+      scope.user.id,
+      args.title,
+      project ? { project_id: project.id } : {},
+    );
+
+    const target: MetaNavigationTarget = {
+      kind: "conversation",
+      conversationId,
+      ...(project ? { projectId: project.id, workspaceId: project.workspace_id } : {}),
+      ...(args.openingMessage ? { openingMessage: args.openingMessage } : {}),
+      ...(args.teammateId ? { teammateId: args.teammateId } : {}),
+    };
+    const place = project ? `${project.name}` : "your personal chat";
+
+    return {
+      status: "success",
+      name: startConversationDescriptor.name,
+      content: `Started a conversation in ${place}.${
+        args.openingMessage ? " The first message is waiting in the composer." : ""
+      }`,
+      data: { [META_NAVIGATION_DATA_KEY]: target, conversationId },
+    } satisfies IFunctionResponse;
+  },
+};
+
+export const hire_teammate: ApiToolDefinition = {
+  ...hireTeammateDescriptor,
+  execute: async (args: z.infer<typeof hireTeammateInputSchema>, toolContext) => {
+    const scope = requireMetaScope(toolContext, hireTeammateDescriptor.name);
+    const hired = await hireTeammateService(
+      scope.context,
+      {
+        ...(args.roleSlug ? { role_slug: args.roleSlug } : {}),
+        ...(args.jobDescription ? { job_description: args.jobDescription } : {}),
+        ...(args.name ? { name: args.name } : {}),
+        ...(args.workspaceId ? { workspace_id: args.workspaceId } : {}),
+      },
+      scope.user,
+    );
+
+    return {
+      status: "success",
+      name: hireTeammateDescriptor.name,
+      content: `Hired ${hired.name}. ${TEAMMATE_PERMISSIONS_SENTENCE}`,
+      data: { teammateId: hired.id, name: hired.name, kind: hired.kind },
+    } satisfies IFunctionResponse;
+  },
+};
+
+export const list_attention: ApiToolDefinition = {
+  ...listAttentionDescriptor,
+  execute: async (args: z.infer<typeof listAttentionInputSchema>, toolContext) => {
+    const scope = requireMetaScope(toolContext, listAttentionDescriptor.name);
+    const limit = Math.min(args.limit ?? DEFAULT_ATTENTION_LIMIT, MAX_META_ATTENTION_LIMIT);
+    const { items, total } = await listWorkAttention(scope.context, {
+      ...(args.kind ? { kind: args.kind } : {}),
+      ...(args.projectId ? { projectId: args.projectId } : {}),
+      limit,
+      offset: 0,
+    });
+
+    if (items.length === 0) {
+      return {
+        status: "success",
+        name: listAttentionDescriptor.name,
+        content: "Nothing is waiting on the user right now.",
+        data: { items, total },
+      } satisfies IFunctionResponse;
+    }
+
+    const lines = items.map(
+      (item) =>
+        `- ${item.title} (${item.kind}) · ${item.projectName} · ${item.workspaceName}${
+          item.detail ? ` · ${item.detail}` : ""
+        }`,
+    );
+
+    return {
+      status: "success",
+      name: listAttentionDescriptor.name,
+      content: `Waiting on the user (${total} in total):\n${lines.join("\n")}`,
+      data: { items, total },
+    } satisfies IFunctionResponse;
+  },
+};
+
 export const metaTools: ApiToolDefinition[] = [
   find_places,
   open_place,
   organise_conversation,
   read_conversation,
+  start_conversation,
+  hire_teammate,
+  list_attention,
 ];

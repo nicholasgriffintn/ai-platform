@@ -89,6 +89,26 @@ export function createTeammateConversationActionPath(
   return `${path}?${params.toString()}`;
 }
 
+export function createConversationLaunchPath(
+  conversationPath: string,
+  launch: { query?: string; teammateId?: string },
+): string {
+  const [path, search = ""] = conversationPath.split("?");
+  const params = new URLSearchParams(search);
+
+  if (launch.teammateId) {
+    params.set(TEAMMATE_ID_PARAM, launch.teammateId);
+  }
+
+  if (launch.query) {
+    params.set(QUERY_PARAM, launch.query);
+  }
+
+  const query = params.toString();
+
+  return query ? `${path}?${query}` : path;
+}
+
 export function readTeammateConversationLaunchIntent(search: string): string | undefined {
   return new URLSearchParams(search).get(TEAMMATE_ID_PARAM)?.trim() || undefined;
 }

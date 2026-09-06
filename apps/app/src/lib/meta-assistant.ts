@@ -6,6 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { matchPath } from "react-router";
 
+import { createConversationLaunchPath } from "./assistant-action-launch";
 import { getPersonalConversationPath, getProjectConversationPath } from "./conversation-route";
 import { getActivePlace, PLACE_PATHS } from "./navigation/places";
 
@@ -15,7 +16,7 @@ const PROJECT_TASK_PATTERN = "/work/:workspaceId/projects/:projectId/tasks/:task
 const WORKSPACE_PATTERN = "/work/:workspaceId/*";
 const PERSONAL_CONVERSATION_PATTERN = "/chat/:conversationId";
 
-const RESERVED_CHAT_SEGMENTS = new Set(["capabilities", "experiences", "tools", "agents"]);
+const RESERVED_CHAT_SEGMENTS = new Set(["capabilities", "experiences", "tools", "teammates"]);
 
 export function buildMetaAssistantUiContext(
   pathname: string,
@@ -76,10 +77,18 @@ export function buildMetaAssistantUiContext(
 
 export function getMetaNavigationHref(target: MetaNavigationTarget): string {
   switch (target.kind) {
-    case "conversation":
-      return target.workspaceId && target.projectId
-        ? getProjectConversationPath(target.workspaceId, target.projectId, target.conversationId)
-        : getPersonalConversationPath(target.conversationId);
+    case "conversation": {
+      const conversationPath =
+        target.workspaceId && target.projectId
+          ? getProjectConversationPath(target.workspaceId, target.projectId, target.conversationId)
+          : getPersonalConversationPath(target.conversationId);
+
+      return createConversationLaunchPath(conversationPath, {
+        ...(target.openingMessage ? { query: target.openingMessage } : {}),
+        ...(target.teammateId ? { teammateId: target.teammateId } : {}),
+      });
+    }
+
     case "project":
       return `/work/${encodeURIComponent(target.workspaceId)}/projects/${encodeURIComponent(target.projectId)}`;
     case "workspace":
