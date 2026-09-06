@@ -38,6 +38,7 @@ import {
   createUseRecipeConnectorInputSchema,
 } from "./recipes/use_recipe_connector";
 import { research } from "./research";
+import { run_prediction } from "./run_prediction";
 import { run_sandbox_task } from "./sandbox";
 import { save_skill } from "./save_skill";
 import { capture_screenshot } from "./screenshot";
@@ -111,6 +112,7 @@ const descriptors: FunctionToolDescriptor[] = [
   request_approval,
   ask_user,
   run_sandbox_task,
+  run_prediction,
   ...metaToolDescriptors,
 ];
 
