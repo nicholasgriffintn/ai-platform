@@ -114,6 +114,11 @@ export function ProjectTaskDetail({
               ? getProjectConversationPath(workspaceId, projectId, task.conversationId)
               : null
           }
+          originConversationHref={
+            task.originConversationId
+              ? getProjectConversationPath(workspaceId, projectId, task.originConversationId)
+              : null
+          }
           taskHref={(candidate) => `${basePath}/tasks/${candidate.id}`}
           runHref={(conversationId, runId) =>
             `${basePath}/chat?completion_id=${encodeURIComponent(conversationId)}&run_id=${encodeURIComponent(runId)}`

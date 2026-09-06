@@ -32,6 +32,9 @@ export const META_TOOL_NAMES = [
   "open_place",
   "organise_conversation",
   "read_conversation",
+  "start_conversation",
+  "hire_teammate",
+  "list_attention",
 ] as const;
 
 const metaToolNameSet: ReadonlySet<string> = new Set(META_TOOL_NAMES);
@@ -46,6 +49,8 @@ export const metaNavigationTargetSchema = z.discriminatedUnion("kind", [
     conversationId: z.string(),
     workspaceId: z.string().optional(),
     projectId: z.string().optional(),
+    openingMessage: z.string().optional(),
+    teammateId: z.string().optional(),
   }),
   z.object({
     kind: z.literal("project"),

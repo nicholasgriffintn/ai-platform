@@ -6,7 +6,7 @@ export * from "./ProjectEnvironmentSetupFields";
 export * from "./ProjectServiceManifestFields";
 export * from "./ProjectConversationStarter";
 export * from "./ProjectKnowledgeCard";
-export * from "./ProjectOverviewActions";
+export * from "./ProjectHomeActions";
 export * from "./WorkAccessEmptyState";
 export * from "./WorkAttentionView";
 export * from "./WorkLoadingSkeletons";

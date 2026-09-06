@@ -326,6 +326,7 @@ export async function createProjectTask(
     constraints: input.constraints ?? null,
     dependsOnTaskIds: input.dependsOnTaskIds ?? [],
     requireApprovalFor: input.requireApprovalFor ?? [],
+    originConversationId: input.originConversationId ?? null,
     source: options.source ?? "user",
     createdByUserId: user.id,
     assigneeUserId: input.assigneeUserId ?? null,

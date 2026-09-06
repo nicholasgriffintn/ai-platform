@@ -334,6 +334,29 @@ describe("createProjectTask", () => {
       expect.objectContaining({ flowSnapshot: flow, stageId: "build" }),
     );
   });
+
+  it("records the conversation a task was filed from", async () => {
+    const { context } = createContext({});
+
+    await createProjectTask(context, "project-1", {
+      objective: "Ship the pricing note",
+      originConversationId: "conversation-9",
+    });
+
+    expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
+      expect.objectContaining({ originConversationId: "conversation-9" }),
+    );
+  });
+
+  it("leaves the origin empty for a task filed from the board", async () => {
+    const { context } = createContext({});
+
+    await createProjectTask(context, "project-1", { objective: "Ship the pricing note" });
+
+    expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
+      expect.objectContaining({ originConversationId: null }),
+    );
+  });
 });
 
 describe("updateProjectTask", () => {

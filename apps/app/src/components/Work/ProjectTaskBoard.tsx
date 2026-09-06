@@ -20,6 +20,7 @@ import { getTeammateEditorPath, getProjectSurface } from "~/lib/capability-surfa
 import { getProjectConversationPath } from "~/lib/conversation-route";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
+import { ProjectHomeTabs } from "./ProjectHomeTabs";
 import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates";
 import { useWorkData } from "./WorkDataContext";
 
@@ -104,6 +105,7 @@ export function ProjectTaskBoard({
   return (
     <>
       <PageShell.Content className="max-w-6xl">
+        <ProjectHomeTabs workspaceId={workspaceId} projectId={projectId} />
         <PageShell.Header
           title="Tasks"
           actionContent={

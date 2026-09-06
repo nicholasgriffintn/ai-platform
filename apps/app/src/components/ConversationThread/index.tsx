@@ -120,6 +120,7 @@ export interface ConversationThreadModeConfig {
   onRemoveContextAttachment?: (index: number) => void;
   onClearContextAttachments?: () => void;
   pendingUserQuestions?: UserQuestionSet | null;
+  onFileAsTask?: (objective: string) => Promise<boolean>;
   onToolInteraction?: (
     toolName: string,
     action: Parameters<ToolInteractionHandler>[1],
@@ -361,10 +362,27 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [composerInput, isStreamLoading, isModelInitializing, selectedAssistantAction?.item],
   );
 
+  const fileAsTask = modeConfig?.onFileAsTask;
   const handleSubmit = useCallback(
     async (attachments?: AttachmentData[]) => {
       if (!composerInput.trim() && !attachments?.length && !selectedAssistantAction?.item) {
         return false;
+      }
+
+      if (fileAsTask) {
+        const objective = composerInput.trim();
+
+        if (!objective) {
+          return false;
+        }
+
+        const filed = await fileAsTask(objective);
+
+        if (filed) {
+          setComposerInput("");
+        }
+
+        return filed;
       }
 
       const goalSubmission = selectedAssistantAction?.item
@@ -556,6 +574,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     },
     [
       composerInput,
+      fileAsTask,
       model,
       chatMode,
       messages,

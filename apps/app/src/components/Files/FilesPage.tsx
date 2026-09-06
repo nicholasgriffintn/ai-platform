@@ -1,6 +1,6 @@
 import { ButtonLink } from "@ngriffin_uk/polychat-component-ui";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { type FilesTab, getFilesTabPath, parseFilesSubpath } from "~/lib/files-route";
@@ -25,10 +25,12 @@ export function FilesPage({
   basePath,
   projectId,
   subpath,
+  header,
 }: {
   basePath: string;
   projectId?: string;
   subpath: string;
+  header?: ReactNode;
 }) {
   const { tab, itemPath } = parseFilesSubpath(subpath);
   const [createRequestKey, setCreateRequestKey] = useState(0);
@@ -36,6 +38,7 @@ export function FilesPage({
 
   return (
     <PageShell.Content className="max-w-6xl">
+      {header}
       <PageShell.Header
         title="Files"
         actions={
