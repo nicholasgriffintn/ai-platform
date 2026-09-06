@@ -1,3 +1,4 @@
+export * from "./CataloguePrimitives";
 export * from "./AppCard";
 export * from "./CapabilityCard";
 export * from "./CapabilityFilters";
