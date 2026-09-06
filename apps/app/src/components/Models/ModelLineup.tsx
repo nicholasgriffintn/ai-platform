@@ -1,5 +1,6 @@
 import { getModelTierIcon, ModelIcon } from "@ngriffin_uk/polychat-component-models";
 import { Badge, cn, Skeleton } from "@ngriffin_uk/polychat-component-ui";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import {
   formatReasoningLabel,
   MODEL_LINEUP_RUNTIME_DEFINITIONS,
@@ -25,7 +26,6 @@ import {
   toModelRecordById,
   type LineupEntryView,
 } from "~/lib/model-lineup-view";
-import { useChatStore } from "~/state/stores/chatStore";
 
 const TIER_ACCENT: Record<ModelTier, string> = {
   low: "text-success bg-success/10 border-success/25",

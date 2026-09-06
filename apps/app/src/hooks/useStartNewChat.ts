@@ -1,9 +1,9 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useCallback } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 import { getProjectChatPath } from "~/lib/conversation-route";
 import { getProductMode, MODE_BASE_PATHS } from "~/lib/navigation/places";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 import { useTrackEvent } from "./use-track-event";

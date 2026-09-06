@@ -1,9 +1,9 @@
 import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useCallback } from "react";
 
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
-import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, Message } from "~/types";
 
 import { useConversationStorage } from "./useConversationStorage";

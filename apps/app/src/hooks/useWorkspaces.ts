@@ -1,3 +1,4 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import type {
   AddProjectCapabilityInput,
   CreateProjectInput,
@@ -31,7 +32,6 @@ import {
   updateWorkspace,
 } from "~/lib/api/workspaces";
 import { requireProjectRouteScope } from "~/lib/work/project-route-scope";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export const WORKSPACES_QUERY_KEY = ["workspaces"] as const;
 export const workspaceQueryKey = (workspaceId: string) => ["workspace", workspaceId] as const;

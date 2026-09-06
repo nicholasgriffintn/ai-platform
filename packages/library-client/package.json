@@ -43,6 +43,7 @@
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
     "@types/node": "catalog:",
+    "jsdom": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

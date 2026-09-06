@@ -1,9 +1,9 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { WebLLMService } from "~/lib/web-llm";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
-import { useChatStore } from "~/state/stores/chatStore";
 
 import { useWebLLMModels } from "./useWebLLMModels";
 

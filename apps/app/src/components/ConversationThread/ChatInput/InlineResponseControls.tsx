@@ -5,6 +5,7 @@ import {
   getDefaultVerbosity,
   getVerbosityOptions,
 } from "@ngriffin_uk/polychat-library-chat/verbosity";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import {
   EMPTY_MODEL_CONFIG,
   formatReasoningLabel,
@@ -17,7 +18,6 @@ import { useMemo } from "react";
 
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatSettings, ReasoningEffort, VerbosityLevel } from "~/types";
 
 interface InlineResponseControlsProps {

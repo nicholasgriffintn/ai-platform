@@ -1,10 +1,10 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 
 import { apiService } from "~/lib/api/api-service";
 import { localChatService } from "~/lib/local/local-chat-service";
-import { useChatStore } from "~/state/stores/chatStore";
 
 import { useChat } from "./useChat";
 

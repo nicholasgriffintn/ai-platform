@@ -1,10 +1,10 @@
 import { ConversationThreadsButton } from "@ngriffin_uk/polychat-component-conversation";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { useChat } from "~/hooks/useChat";
 import { getConversationBranches } from "~/lib/api/conversation-threads";
-import { useChatStore } from "~/state/stores/chatStore";
 
 function BranchPicker({
   conversationId,

@@ -1,3 +1,4 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { updateConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { isTerminalChatRunStatus, type ChatRun } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,7 +13,6 @@ import {
   type ChatRunReplayState,
 } from "~/lib/chat/run-replay";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
-import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation } from "~/types";
 
 const INITIAL_REPLAY_INTERVAL_MS = 2_000;

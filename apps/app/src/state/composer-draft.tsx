@@ -1,6 +1,5 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { createContext, type ReactNode, useContext, useMemo, useState } from "react";
-
-import { useChatStore } from "~/state/stores/chatStore";
 
 export interface ComposerDraft {
   composerInput: string;

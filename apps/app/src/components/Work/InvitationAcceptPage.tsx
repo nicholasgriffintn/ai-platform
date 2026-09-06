@@ -1,4 +1,5 @@
 import { InvitationAcceptView } from "@ngriffin_uk/polychat-component-workspaces";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -8,7 +9,6 @@ import {
   clearWorkspaceInvitationToken,
   consumeWorkspaceInvitationToken,
 } from "~/lib/work/invitation-token";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 export function InvitationAcceptPage() {

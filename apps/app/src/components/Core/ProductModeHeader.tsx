@@ -1,5 +1,6 @@
 import { ProductHeaderShell, ProductModeSwitch } from "@ngriffin_uk/polychat-component-navigation";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useHeaderScrollEdge } from "@ngriffin_uk/polychat-utility-react";
 import { Cloud, CloudOff, Menu, PanelLeftOpen } from "lucide-react";
 import { type ReactNode, useRef } from "react";
@@ -7,7 +8,6 @@ import { useLocation } from "react-router";
 
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { getProductMode, isProductModeRoute, MODE_BASE_PATHS } from "~/lib/navigation/places";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 interface ProductModeHeaderProps {

@@ -1,4 +1,5 @@
 import type { ComposerCommandAction } from "@ngriffin_uk/polychat-component-conversation";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
@@ -10,7 +11,6 @@ import type {
   ChatSuggestionRecipe,
 } from "~/lib/chat-suggestions";
 import { resolveFocusRole } from "~/lib/focus-role";
-import { useChatStore } from "~/state/stores/chatStore";
 
 import { useRecipeConnectors } from "./useConnectors";
 import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes";

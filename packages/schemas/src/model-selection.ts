@@ -42,6 +42,23 @@ export function getAvailableModels(
   return { ...webLLMModels, ...apiModels };
 }
 
+export const MODEL_SURFACES = ["web", "desktop"] as const;
+export type ModelSurface = (typeof MODEL_SURFACES)[number];
+
+export function runsOnDevice(model: Pick<ModelConfigItem, "runsOn">): boolean {
+  return model.runsOn === "device";
+}
+
+export function selectModelsForSurface(models: ModelConfig, surface: ModelSurface): ModelConfig {
+  if (surface === "desktop") {
+    return models;
+  }
+
+  return Object.fromEntries(
+    Object.entries(models).filter(([, model]) => !runsOnDevice(model)),
+  ) as ModelConfig;
+}
+
 export function getFeaturedModelIds(models: ModelConfig) {
   return Object.entries(models).reduce<Record<string, ModelCatalogItem>>((acc, [key, model]) => {
     if (model.isFeatured && isActiveModel(model)) {

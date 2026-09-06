@@ -1,26 +1,32 @@
 import type { ChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 
-export type ChatMode = "remote" | "local" | "tool" | "agent";
 export type ChatRequestOptions = Partial<ChatCompletionRequestBody>;
 
 export interface ConversationStorageState {
-  chatMode: ChatMode;
   isAuthenticated: boolean;
   isPro: boolean;
-  localOnlyMode: boolean;
-  settingsLocalOnly: boolean;
+  temporaryChat: boolean;
+  temporaryChatsDefault: boolean;
+}
+
+export interface ConversationStorageMode {
+  isTemporary: boolean;
+  isProjectScoped: boolean;
+  shouldSyncRemote: boolean;
 }
 
 export function resolveConversationStorageMode(
   state: ConversationStorageState,
   requestOptions?: ChatRequestOptions,
-) {
+): ConversationStorageMode {
   const isProjectScoped = Boolean(requestOptions?.metadata?.project_id);
-  const isLocalOnly =
-    !state.isAuthenticated ||
-    !state.isPro ||
-    (!isProjectScoped &&
-      (state.localOnlyMode || state.settingsLocalOnly || state.chatMode === "local"));
 
-  return { isLocalOnly, isProjectScoped, shouldSyncRemote: !isLocalOnly };
+  if (isProjectScoped) {
+    return { isTemporary: false, isProjectScoped, shouldSyncRemote: true };
+  }
+
+  const isTemporary =
+    !state.isAuthenticated || !state.isPro || state.temporaryChat || state.temporaryChatsDefault;
+
+  return { isTemporary, isProjectScoped, shouldSyncRemote: !isTemporary };
 }

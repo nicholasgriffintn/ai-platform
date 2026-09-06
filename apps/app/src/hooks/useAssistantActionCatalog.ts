@@ -1,11 +1,10 @@
 import type { ModelToolDefinition } from "@ngriffin_uk/polychat-library-chat/model-tools";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import {
   buildAssistantActionCatalog,
   type AssistantActionCatalog,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
-
-import { useChatStore } from "~/state/stores/chatStore";
 
 import { useCapabilityCatalog } from "./useCapabilityCatalog";
 import { useRecipeConnectors } from "./useConnectors";

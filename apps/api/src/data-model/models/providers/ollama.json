@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "hiddenFromDefaultList": true,
+    "runsOn": "device",
     "supportsToolCalls": true,
     "supportsAttachments": false
   },

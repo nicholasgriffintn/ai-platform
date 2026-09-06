@@ -5,6 +5,7 @@ import {
   type ComposerAssistantActionCapability,
   type ComposerCommandAction,
 } from "@ngriffin_uk/polychat-component-conversation";
+import { clearModelResponseSettings } from "@ngriffin_uk/polychat-library-chat";
 import { COMPACT_CONVERSATION_COMMAND } from "@ngriffin_uk/polychat-library-chat/compaction-command";
 import {
   appendComposerInlineTokenWithCursor,
@@ -21,6 +22,7 @@ import {
   getDefaultVerbosity,
   getVerbosityOptions,
 } from "@ngriffin_uk/polychat-library-chat/verbosity";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import {
   EMPTY_MODEL_CONFIG,
   getDefaultModelId,
@@ -61,8 +63,6 @@ import { useModels } from "~/hooks/useModels";
 import { useModelToolOptions } from "~/hooks/useModelTools";
 import { useTeammates } from "~/hooks/useTeammates";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { clearModelResponseSettings } from "~/lib/chat-settings";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatSettings, ReasoningEffort } from "~/types";
 

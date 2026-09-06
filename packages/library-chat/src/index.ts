@@ -1,3 +1,4 @@
+export * from "./chat-settings";
 export type { AttachmentData } from "./attachments";
 export { COMPACT_CONVERSATION_COMMAND, isCompactConversationCommand } from "./compaction-command";
 export {

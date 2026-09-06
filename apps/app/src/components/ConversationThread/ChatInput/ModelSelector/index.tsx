@@ -12,6 +12,8 @@ import {
   useHoverPreviewDismiss,
 } from "@ngriffin_uk/polychat-component-models";
 import { ShortcutTooltip } from "@ngriffin_uk/polychat-component-ui";
+import { clearModelResponseSettings } from "@ngriffin_uk/polychat-library-chat";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { getDefaultLiveModelId } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import {
   createModelReferenceMap,
@@ -37,13 +39,11 @@ import { useModels } from "~/hooks/useModels";
 import { useRealtimeProviders } from "~/hooks/useRealtimeProviders";
 import { useTeammates } from "~/hooks/useTeammates";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { clearModelResponseSettings } from "~/lib/chat-settings";
 import {
   useIsLoading,
   useLoadingMessage,
   useLoadingProgress,
 } from "~/state/contexts/LoadingContext";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type {
   ChatMode,

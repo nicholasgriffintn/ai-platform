@@ -72,6 +72,12 @@
       "types": "./dist/tool-ids.d.ts",
       "import": "./dist/tool-ids.mjs",
       "require": "./dist/tool-ids.js"
+    },
+    "./user-profile": {
+      "polychat-source": "./src/user-profile.ts",
+      "types": "./dist/user-profile.d.ts",
+      "import": "./dist/user-profile.mjs",
+      "require": "./dist/user-profile.js"
     }
   },
   "publishConfig": {

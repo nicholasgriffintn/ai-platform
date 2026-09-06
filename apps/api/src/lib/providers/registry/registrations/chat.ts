@@ -28,7 +28,6 @@ import { IdeogramProvider } from "../../capabilities/chat/providers/ideogram";
 import { InceptionProvider } from "../../capabilities/chat/providers/inception";
 import { InferenceProvider } from "../../capabilities/chat/providers/inference";
 import { KimiForCodingProvider } from "../../capabilities/chat/providers/kimi-for-coding";
-import { LMStudioProvider } from "../../capabilities/chat/providers/lmstudio";
 import { LucidQueryProvider } from "../../capabilities/chat/providers/lucidquery";
 import { MetaProvider } from "../../capabilities/chat/providers/meta";
 import { MiniMaxProvider } from "../../capabilities/chat/providers/minimax";
@@ -36,7 +35,6 @@ import { MistralProvider } from "../../capabilities/chat/providers/mistral";
 import { MoonshotProvider } from "../../capabilities/chat/providers/moonshot";
 import { MorphProvider } from "../../capabilities/chat/providers/morph";
 import { AmazonNovaProvider } from "../../capabilities/chat/providers/nova";
-import { OllamaProvider } from "../../capabilities/chat/providers/ollama";
 import { OllamaCloudProvider } from "../../capabilities/chat/providers/ollama-cloud";
 import { OpenAIProvider } from "../../capabilities/chat/providers/openai";
 import { OpencodeProvider } from "../../capabilities/chat/providers/opencode";
@@ -168,11 +166,6 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
     name: "morph",
     create: () => new MorphProvider(),
     metadata: { vendor: "Morph", categories: ["chat"] },
-  },
-  {
-    name: "ollama",
-    create: () => new OllamaProvider(),
-    metadata: { vendor: "Ollama", categories: ["chat"], tags: ["local"] },
   },
   {
     name: "openai",
@@ -339,12 +332,6 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
     name: "meta",
     create: () => new MetaProvider(),
     metadata: { vendor: "Meta", categories: ["chat"], tags: ["muse"] },
-  },
-  {
-    name: "lmstudio",
-    aliases: ["lm-studio"],
-    create: () => new LMStudioProvider(),
-    metadata: { vendor: "LM Studio", categories: ["chat"], tags: ["local"] },
   },
   {
     name: "greenpt",

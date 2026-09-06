@@ -12,6 +12,7 @@ export default defineConfig({
     "src/provider-messages.ts",
     "src/sandbox-constants.ts",
     "src/tool-ids.ts",
+    "src/user-profile.ts",
   ],
   format: ["cjs", "esm"],
   dts: true,

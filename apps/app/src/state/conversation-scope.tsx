@@ -1,7 +1,6 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { createContext, type ReactNode, useContext, useMemo, useRef, useState } from "react";
-
-import { createConversationId } from "~/lib/conversations";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export interface ConversationScope {
   currentConversationId: string | undefined;
@@ -72,7 +71,7 @@ export function useLocalConversationScope(
       currentConversationId: conversationId,
       setCurrentConversationId: update,
       startNewConversation: (id?: string) => {
-        const nextId = id || createConversationId();
+        const nextId = id || generateId();
 
         useChatStore.getState().markConversationLocallyCreated(nextId);
         update(nextId);

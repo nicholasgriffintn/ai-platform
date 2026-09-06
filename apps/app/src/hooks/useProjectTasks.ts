@@ -1,3 +1,4 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import type {
   AnswerUserQuestionsInput,
   CreateProjectTaskInput,
@@ -21,7 +22,6 @@ import {
   updateProjectTask,
 } from "~/lib/api/project-tasks";
 import { listTaskInbox, updateTaskInboxReceipts } from "~/lib/api/task-notifications";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export const projectTasksQueryKey = (projectId: string) => ["project-tasks", projectId] as const;
 export const TASK_ATTENTION_QUERY_KEY = ["task-attention"] as const;

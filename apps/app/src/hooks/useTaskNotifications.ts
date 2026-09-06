@@ -1,3 +1,4 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import type {
   TaskNotificationCategory,
   UpdateTaskNotificationPreferences,
@@ -13,7 +14,6 @@ import {
 } from "~/lib/api/task-notifications";
 import { getNotificationInstallationId } from "~/lib/notifications/installation";
 import { decodeWebPushPublicKey, notificationPermission } from "~/lib/notifications/web-push";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export const TASK_NOTIFICATION_SETTINGS_QUERY_KEY = ["task-notification-settings"] as const;
 

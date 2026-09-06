@@ -1,8 +1,8 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router";
 
 import { COMPOSER_PREFILL_PARAM, readComposerPrefill } from "~/lib/composer-prefill";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export function useComposerPrefill(): void {
   const [searchParams, setSearchParams] = useSearchParams();

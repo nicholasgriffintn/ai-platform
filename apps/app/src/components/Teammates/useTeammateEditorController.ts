@@ -2,6 +2,7 @@ import type {
   TeammateFormData,
   TeammatePublishState,
 } from "@ngriffin_uk/polychat-component-account";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import type {
   TeammateResponse,
   ModelConfig,
@@ -23,7 +24,6 @@ import {
   getTeammatePublishTargets,
   resolveTeammateManagePermission,
 } from "~/lib/teammates/teammate-permissions";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export const NEW_TEAMMATE_ID = "new";
 

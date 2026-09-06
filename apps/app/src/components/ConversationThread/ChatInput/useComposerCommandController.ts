@@ -11,13 +11,13 @@ import {
   getComposerInlineTokenText,
 } from "@ngriffin_uk/polychat-library-chat/composer-commands";
 import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useTeammates } from "~/hooks/useTeammates";
 import { useTeammateToolDefaults } from "~/hooks/useTeammateToolDefaults";
 import { useComposerDraft } from "~/state/composer-draft";
-import { useChatStore } from "~/state/stores/chatStore";
 
 import { useComposerCommandActions } from "./useComposerCommandActions";
 

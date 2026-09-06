@@ -3,13 +3,13 @@ import {
   SidebarSettingsPopover as ControlledSidebarSettingsPopover,
   type SidebarSettingsLinks,
 } from "@ngriffin_uk/polychat-component-navigation";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 
 import { SOURCE_CODE_URL } from "~/constants";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useSetThemePreference, useThemePreference } from "~/hooks/useTheme";
 import { useUsageBalance } from "~/hooks/useUsage";
 import { getSidebarUsageItems } from "~/lib/sidebar-usage";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import { useUsageStore } from "~/state/stores/usageStore";
 

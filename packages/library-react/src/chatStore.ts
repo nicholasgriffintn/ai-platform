@@ -1,15 +1,16 @@
+import { migrateChatStore } from "@ngriffin_uk/polychat-library-chat";
+import type { ChatSettings } from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import { apiKeyService } from "@ngriffin_uk/polychat-library-client";
 import type {
   AssistantActionSelection,
+  ChatMode,
   HomeChatModeId,
   ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
+import type { User, UserSettings } from "@ngriffin_uk/polychat-schemas/user-profile";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-import { apiKeyService } from "~/lib/api/api-key";
-import { migrateChatStore } from "~/lib/chat-settings";
-import { createConversationId } from "~/lib/conversations";
-import type { ChatMode, ChatSettings, User, UserSettings } from "~/types";
 
 const defaultSettings: ChatSettings = {
   enabled_tools: [],
@@ -91,7 +92,7 @@ export const useChatStore = create<ChatStore>()(
       setCurrentConversationId: (id) => set({ currentConversationId: id, isComposingGoal: false }),
       setComposingGoal: (composing) => set({ isComposingGoal: composing }),
       startNewConversation: (id?: string) => {
-        const conversationId = id || createConversationId();
+        const conversationId = id || generateId();
 
         set((state) => ({
           currentConversationId: conversationId,

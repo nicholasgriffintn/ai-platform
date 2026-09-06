@@ -1,4 +1,5 @@
-import type { GuardrailsProviderId, PetModelOverrides } from "@ngriffin_uk/polychat-schemas";
+import type { PetModelOverrides } from "./pets";
+import type { GuardrailsProviderId } from "./user/userSettings";
 
 export interface User {
   id: number;

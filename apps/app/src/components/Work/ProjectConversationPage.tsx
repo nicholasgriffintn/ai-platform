@@ -1,3 +1,4 @@
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import {
   getModelInteractionCapabilities,
   type SandboxTaskType,
@@ -17,8 +18,6 @@ import { projectQueryKey } from "~/hooks/useWorkspaces";
 import { getCapabilityLibraryPath, getProjectSurface } from "~/lib/capability-surfaces";
 import { getErrorMessage } from "~/lib/errors";
 import { getProjectCodingPresentation } from "~/lib/project-coding-presentation";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
 import { ProjectFileAsTaskControl } from "./ProjectFileAsTaskControl";

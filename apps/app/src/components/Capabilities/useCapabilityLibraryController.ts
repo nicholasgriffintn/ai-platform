@@ -1,4 +1,5 @@
 import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilities";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import {
   isRecipeConfigured,
   type ModelToolConfiguration,
@@ -32,7 +33,6 @@ import {
   getProjectCapabilityKind,
   groupProjectCapabilities,
 } from "~/lib/project-capability-catalog";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export interface PersonalSkillControls {
   byId: Map<string, SkillAvailability>;

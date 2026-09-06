@@ -12,9 +12,8 @@ import {
   type TurnActivityProjection,
 } from "@ngriffin_uk/polychat-library-chat/turn-activity";
 import type { ChatTurnActivityEvent } from "@ngriffin_uk/polychat-schemas/chat-stream";
+import { keepLatestRecordEntries } from "@ngriffin_uk/polychat-utility-core";
 import { create } from "zustand";
-
-import { keepLatestRecordEntries } from "~/lib/collections";
 
 const MAX_TRACKED_RESPONSE_DURATIONS = 100;
 

@@ -37,7 +37,9 @@
   "dependencies": {
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
     "@ngriffin_uk/polychat-library-client": "workspace:^",
-    "@ngriffin_uk/polychat-library-surface": "workspace:^"
+    "@ngriffin_uk/polychat-library-surface": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
@@ -45,6 +47,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "jsdom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsup": "catalog:",
@@ -54,6 +57,7 @@
   "peerDependencies": {
     "@tanstack/react-query": "^5.101.4",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "zustand": "*"
   }
 }

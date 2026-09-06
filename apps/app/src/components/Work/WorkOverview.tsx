@@ -4,6 +4,7 @@ import {
   WorkAccessEmptyState,
   WorkspaceCardGrid,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -11,7 +12,6 @@ import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useTaskAttention } from "~/hooks/useProjectTasks";
 import { isAuthenticationError } from "~/lib/errors";
-import { useChatStore } from "~/state/stores/chatStore";
 
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
 import { TaskNotificationSettings } from "./TaskNotificationSettings";

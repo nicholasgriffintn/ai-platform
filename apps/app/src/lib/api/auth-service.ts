@@ -1,7 +1,6 @@
-import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { returnFetchedData, apiKeyService } from "@ngriffin_uk/polychat-library-client";
 
 import { API_BASE_URL } from "~/constants";
-import { apiKeyService } from "~/lib/api/api-key";
 import { getNotificationInstallationId } from "~/lib/notifications/installation";
 import type { AnonymousUser, User, UserSettings } from "~/types";
 

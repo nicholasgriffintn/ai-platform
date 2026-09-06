@@ -1,7 +1,7 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { authService } from "~/lib/api/auth-service";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useUsageStore } from "~/state/stores/usageStore";
 import type { UserSettings } from "~/types";
 

@@ -1,4 +1,5 @@
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import type {
   TeammateResponse,
   CreateTeammateInput,
@@ -9,7 +10,6 @@ import type {
   UpdateTeammateInput,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type {
   Conversation,

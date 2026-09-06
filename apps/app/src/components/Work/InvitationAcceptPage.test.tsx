@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { InvitationAcceptPage } from "./InvitationAcceptPage";
 
-vi.mock("~/state/stores/chatStore", () => ({
+vi.mock("@ngriffin_uk/polychat-library-react", () => ({
   useChatStore: (selector: (state: { isAuthenticated: boolean }) => unknown) =>
     selector({ isAuthenticated: false }),
 }));

@@ -1,3 +1,4 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import {
   getComposedRealtimeReasoningModelId,
   getFirstReadyRealtimeLiveProviderOption,
@@ -32,7 +33,6 @@ import {
   getConversationModeMetadata,
 } from "~/lib/home-chat-modes/conversation-mode";
 import { getPlacePaths } from "~/lib/navigation/places";
-import { useChatStore } from "~/state/stores/chatStore";
 import type { ModelSelectionChangeHandler } from "~/types";
 
 import {

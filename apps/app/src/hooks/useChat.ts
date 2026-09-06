@@ -4,6 +4,7 @@ import {
   preserveOptimisticMessages,
 } from "@ngriffin_uk/polychat-library-chat/conversations";
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import {
   removeConversationFromChatCaches,
   updateConversationInChatCaches,
@@ -18,8 +19,6 @@ import { recoverUnacknowledgedConversation } from "~/lib/chat/pending-conversati
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { localChatService } from "~/lib/local/local-chat-service";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, Conversation, ConversationListOptions, Message } from "~/types";
 
 import { useConversationStorage } from "./useConversationStorage";

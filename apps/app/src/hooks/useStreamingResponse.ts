@@ -5,6 +5,7 @@ import {
   normalizeMessage,
 } from "@ngriffin_uk/polychat-library-chat/messages";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import { updateConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import {
   chatRunCommandReceiptSchema,
@@ -31,8 +32,6 @@ import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useConversationScope } from "~/state/conversation-scope";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUsageStore } from "~/state/stores/usageStore";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";
 
@@ -64,6 +63,7 @@ export function useStreamingResponse(
     isAuthenticated,
     isPro,
     localOnlyMode,
+    temporaryChatsDefault,
     useMultiModel,
     modelTier,
     selectedTeammateId,
@@ -169,15 +169,14 @@ export function useStreamingResponse(
       const effectiveRequestOptions = overrideRequestOptions ?? requestOptions;
       const storageMode = resolveConversationStorageMode(
         {
-          chatMode,
           isAuthenticated,
           isPro,
-          localOnlyMode,
-          settingsLocalOnly: chatSettings.localOnly === true,
+          temporaryChat: localOnlyMode,
+          temporaryChatsDefault,
         },
         effectiveRequestOptions,
       );
-      const isLocal = !storageMode.shouldSyncRemote && chatMode === "local";
+      const runsInBrowser = chatMode === "local";
       let response = "";
       let generatedMessage: Message | undefined;
       const generatedMessages: Message[] = [];
@@ -376,7 +375,7 @@ export function useStreamingResponse(
       const streamProgress = createStreamProgressCoalescer(handleMessageUpdate);
 
       try {
-        if (isLocal) {
+        if (runsInBrowser) {
           const currentModel = normalizeSelectedModel(options?.model ?? model);
 
           if (!currentModel) {
@@ -583,7 +582,7 @@ export function useStreamingResponse(
         }
 
         await queryClient.invalidateQueries({ queryKey: [GOAL_QUERY_KEY, conversationId] });
-        if (isAuthenticated && !isLocal) {
+        if (isAuthenticated && storageMode.shouldSyncRemote) {
           await queryClient.invalidateQueries({ queryKey: USAGE_QUERY_KEYS.balance });
         }
 

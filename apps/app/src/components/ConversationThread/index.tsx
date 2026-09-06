@@ -25,6 +25,7 @@ import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
 import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
@@ -59,8 +60,6 @@ import { openExternalUrl } from "~/lib/external-navigation";
 import { useComposerDraft } from "~/state/composer-draft";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useConversationScope } from "~/state/conversation-scope";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 
 import { ChatInput, type ChatInputHandle, type ConversationRunSteering } from "./ChatInput";

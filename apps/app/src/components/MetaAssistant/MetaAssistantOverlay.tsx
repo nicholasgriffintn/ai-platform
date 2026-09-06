@@ -5,6 +5,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@ngriffin_uk/polychat-component-ui";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Feather, SquarePen } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
@@ -27,7 +28,6 @@ import {
   ConversationScopeProvider,
   useLocalConversationScope,
 } from "~/state/conversation-scope";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 const POLY_PET_PRESET_SLUG = "pip";

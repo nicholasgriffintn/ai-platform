@@ -1,6 +1,6 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { Message } from "~/types";
 

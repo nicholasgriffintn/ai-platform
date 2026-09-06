@@ -1393,6 +1393,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.4.0
+      jsdom:
+        specifier: 'catalog:'
+        version: 30.0.1
       tsup:
         specifier: 'catalog:'
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.13)(typescript@6.0.3)(yaml@2.9.0)
@@ -1414,6 +1417,15 @@ importers:
       '@ngriffin_uk/polychat-library-surface':
         specifier: workspace:^
         version: link:../library-surface
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+      zustand:
+        specifier: '*'
+        version: 5.0.15(@types/react@19.2.18)(react@19.2.8)
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -1430,6 +1442,9 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 19.2.5(@types/react@19.2.18)
+      jsdom:
+        specifier: 'catalog:'
+        version: 30.0.1
       react:
         specifier: 'catalog:'
         version: 19.2.8

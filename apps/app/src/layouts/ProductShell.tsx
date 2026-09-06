@@ -1,11 +1,11 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import React, { Suspense, lazy } from "react";
 
 import { ChatNavbar } from "~/components/Navbar";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
 import { APP_KEYBOARD_SHORTCUT_SECTIONS } from "~/lib/keyboard-shortcuts";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 export const MAIN_CONTENT_ID = "main-content";

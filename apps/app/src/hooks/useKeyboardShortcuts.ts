@@ -1,7 +1,7 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useEffect } from "react";
 
 import { type AppKeyboardShortcutId, matchesAppKeyboardShortcut } from "~/lib/keyboard-shortcuts";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 type ShortcutHandler = (e: KeyboardEvent) => void;

@@ -12,6 +12,7 @@ import {
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { buildAgentTraceEntries } from "@ngriffin_uk/polychat-library-chat/agent-trace";
 import { buildRunActivityEntries } from "@ngriffin_uk/polychat-library-chat/run-activity";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { Activity } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
@@ -30,7 +31,6 @@ import {
   deriveProjectWorkbenchServices,
 } from "~/lib/project-workbench";
 import { formatProjectWorkbenchPreviewFeedback } from "~/lib/project-workbench-preview";
-import { useChatStore } from "~/state/stores/chatStore";
 import type { Message } from "~/types";
 
 export interface ProjectWorkbenchConversationSlots {

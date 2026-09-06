@@ -6,6 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-component-navigation";
 import { ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
@@ -24,8 +25,6 @@ import {
 } from "~/lib/conversation-route";
 import { buildConversationSections } from "~/lib/conversation-sections";
 import { getPlacePaths } from "~/lib/navigation/places";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 import { useProjectConversationActions } from "./useProjectConversationActions";

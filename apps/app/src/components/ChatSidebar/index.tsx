@@ -9,6 +9,7 @@ import {
   SidebarNavSection,
 } from "@ngriffin_uk/polychat-component-navigation";
 import { Button, ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import { Image as ImageIcon, Loader2, MessageCircle, Search, SquarePen } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -29,8 +30,6 @@ import {
   resolvePersonalConversationId,
 } from "~/lib/conversation-route";
 import { buildConversationSections } from "~/lib/conversation-sections";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection";

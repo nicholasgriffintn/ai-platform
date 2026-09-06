@@ -1,7 +1,7 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useEffect } from "react";
 
 import { syncAnalyticsIdentity } from "~/lib/analytics/client";
-import { useChatStore } from "~/state/stores/chatStore";
 
 import { usePostHogClient } from "./use-posthog-client";
 

@@ -1,4 +1,8 @@
-import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+import {
+  selectModelsForSurface,
+  type ModelConfig,
+  type ModelSurface,
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
   availableModalities,
@@ -54,12 +58,19 @@ export function listModelCatalogue() {
 /**
  * List all models available to the user.
  */
-export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> {
-  const allModels = getModels({
-    shouldUseCache: false,
-    excludeModalities: [...CATALOGUE_EXCLUDED_MODALITIES],
-    chatSurfaceOnly: true,
-  });
+export async function listModels(
+  env: IEnv,
+  user?: IUser,
+  surface: ModelSurface = "web",
+): Promise<ModelConfig> {
+  const allModels = selectModelsForSurface(
+    getModels({
+      shouldUseCache: false,
+      excludeModalities: [...CATALOGUE_EXCLUDED_MODALITIES],
+      chatSurfaceOnly: true,
+    }),
+    surface,
+  );
   const filteredModels = await filterModelsForUserAccess(allModels, env, user?.id, {
     shouldUseCache: false,
   });

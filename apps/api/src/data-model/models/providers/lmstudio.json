@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "runsOn": "device",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,

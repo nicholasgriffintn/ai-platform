@@ -1,10 +1,12 @@
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { createGoalMarkerMessage } from "@ngriffin_uk/polychat-library-chat/message-goal-status";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import { upsertConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { EMPTY_MODEL_CONFIG } from "@ngriffin_uk/polychat-schemas";
 import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 import { compactionStatusLabels } from "@ngriffin_uk/polychat-schemas/compaction-status";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
@@ -15,12 +17,9 @@ import {
   createTemporaryConversationTitle,
   isPlaceholderConversationTitle,
 } from "~/lib/chat/title-source";
-import { createConversationId } from "~/lib/conversations";
 import { getErrorMessage } from "~/lib/errors";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useConversationScope } from "~/state/conversation-scope";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";
 
 import { useGenerateTitle } from "./useChat";
@@ -170,7 +169,7 @@ export function useChatManager(
         let conversationId = getCurrentConversationId();
 
         if (!conversationId) {
-          conversationId = createConversationId();
+          conversationId = generateId();
           startNewConversation(conversationId);
         }
 

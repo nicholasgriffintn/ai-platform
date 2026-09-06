@@ -1,10 +1,9 @@
+import { apiKeyService } from "@ngriffin_uk/polychat-library-client";
 import { beforeEach, expect, it, vi } from "vitest";
-
-import { apiKeyService } from "~/lib/api/api-key";
 
 import { useChatStore } from "./chatStore";
 
-vi.mock("~/lib/api/api-key", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   apiKeyService: { getApiKey: vi.fn() },
 }));
 

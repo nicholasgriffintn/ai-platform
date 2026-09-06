@@ -23,6 +23,7 @@ import {
   applyToolInteractionResolutions,
   isHiddenToolResponse,
 } from "@ngriffin_uk/polychat-library-chat/tool-results";
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
@@ -45,8 +46,6 @@ import {
   useLoadingProgress,
 } from "~/state/contexts/LoadingContext";
 import { useConversationScope } from "~/state/conversation-scope";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { Message } from "~/types";
 
 import { ChatMessage } from "./ChatMessage";

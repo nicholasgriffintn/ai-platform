@@ -4,6 +4,7 @@ import {
   WorkAttentionView,
   type WorkAttentionFilters,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 
@@ -17,7 +18,6 @@ import {
   workAttentionItemHref,
   writeWorkAttentionFilters,
 } from "~/lib/work-attention";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export function AttentionPage() {
   const [searchParams, setSearchParams] = useSearchParams();

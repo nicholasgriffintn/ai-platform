@@ -1,3 +1,4 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import {
   doesModelMatchId,
   EMPTY_MODEL_CONFIG,
@@ -14,7 +15,6 @@ import { useCallback, useMemo } from "react";
 
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { useChatStore } from "~/state/stores/chatStore";
 
 interface UseConversationModelOptionsOptions {
   excludeCurrentModel?: boolean;

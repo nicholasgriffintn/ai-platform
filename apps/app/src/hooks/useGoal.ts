@@ -1,9 +1,9 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import type { Goal } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import { apiService } from "~/lib/api/api-service";
-import { useChatStore } from "~/state/stores/chatStore";
 
 export const GOAL_QUERY_KEY = "goal";
 const ACTIVE_GOAL_REFETCH_MS = 2_000;

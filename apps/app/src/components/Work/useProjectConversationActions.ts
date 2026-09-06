@@ -1,9 +1,9 @@
+import { useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { apiService } from "~/lib/api/api-service";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
 interface ProjectConversationActionsOptions {
   activeConversationId?: string;

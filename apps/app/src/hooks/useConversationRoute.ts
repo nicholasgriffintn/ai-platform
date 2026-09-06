@@ -1,3 +1,4 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -6,7 +7,6 @@ import {
   getProjectConversationPath,
   resolvePersonalConversationId,
 } from "~/lib/conversation-route";
-import { useChatStore } from "~/state/stores/chatStore";
 
 import { useChat } from "./useChat";
 

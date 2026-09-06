@@ -1,3 +1,4 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 
@@ -8,7 +9,6 @@ import { HomeDiscover } from "~/components/Discover/HomeDiscover";
 import { useChats } from "~/hooks/useChat";
 import { useConversationRoute } from "~/hooks/useConversationRoute";
 import { createChatWelcome } from "~/lib/chat-welcome";
-import { useChatStore } from "~/state/stores/chatStore";
 
 interface HomeConversationThreadProps {
   urlModeConfig?: ConversationThreadModeConfig;

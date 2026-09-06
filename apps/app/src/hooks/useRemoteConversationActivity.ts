@@ -1,3 +1,4 @@
+import { useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import {
   isTerminalChatRunStatus,
   type ChatRun,
@@ -6,7 +7,6 @@ import {
 import { useEffect } from "react";
 
 import { getChatRunLoadingMessage } from "~/lib/chat/run-presentation";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
 export function useRemoteConversationActivity(
   conversationId: string | undefined,

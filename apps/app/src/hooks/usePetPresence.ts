@@ -1,8 +1,7 @@
+import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useRef, useState } from "react";
 
 import { derivePetPresence, PET_CHEER_WINDOW_MS, type PetPresence } from "~/lib/pet/clip";
-import { useChatStore } from "~/state/stores/chatStore";
-import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
 const TICK_MS = 1000;
 

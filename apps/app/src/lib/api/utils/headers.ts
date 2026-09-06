@@ -1,4 +1,5 @@
-import { apiKeyService } from "~/lib/api/api-key";
+import { apiKeyService } from "@ngriffin_uk/polychat-library-client";
+
 import { useCaptchaStore } from "~/state/stores/captchaStore";
 
 export async function getHeaders(): Promise<Record<string, string>> {

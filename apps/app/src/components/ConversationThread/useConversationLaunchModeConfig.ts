@@ -1,4 +1,5 @@
 import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { toast } from "sonner";
@@ -13,7 +14,6 @@ import {
   removeConsumedAssistantActionLaunchParams,
 } from "~/lib/assistant-action-launch";
 import { resolvePersonalConversationId } from "~/lib/conversation-route";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatRequestOptions } from "~/types";
 

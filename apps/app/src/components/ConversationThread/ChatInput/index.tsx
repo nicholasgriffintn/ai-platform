@@ -17,6 +17,7 @@ import {
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
+import { useChatStore } from "@ngriffin_uk/polychat-library-react";
 import {
   evaluateModelContinuity,
   getModelInteractionCapabilities,
@@ -47,7 +48,6 @@ import { SOURCE_QUERY_KEYS } from "~/hooks/useSources";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
 import { useComposerDraft } from "~/state/composer-draft";
 import { useConversationScope } from "~/state/conversation-scope";
-import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 
