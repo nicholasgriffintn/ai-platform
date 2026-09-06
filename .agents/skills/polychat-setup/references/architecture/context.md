@@ -102,6 +102,8 @@ Model and capability catalogue responses carry short-lived, versioned readiness 
 
 Managed tool selection starts small and activates eligible tools after discovery or skill loading. Project grants constrain that activation. Saved agents layer personas into the generated prompt and request tools/skills within the runner's scope. Project tasks use the same engine, with exact dispatch and run identity plus durable question, approval and stage-completion records.
 
+Multi-model deliberation runs on one shared, linear context. `lib/chat/panel.ts` drives both the council and second opinions: members speak one at a time, each reads the transcript of everything said before it, and a concluding turn reads the whole transcript and writes the result. Members never share a mutable scratchpad and never observe one another except through that transcript, so a turn's inputs stay reconstructible from the record. Routing can queue a later speaker but cannot rewrite what an earlier one said. A member's failure is logged and skipped rather than retried in place, and every turn's usage is attributed to the runner. Extend multi-teammate work the same way: give each participant the same readable context and merge the results, rather than letting participants write to shared state.
+
 ## Project Workbench boundary
 
 ADR [0043](decisions/0043-project-workbench-presentation.md) defines the implemented presentation boundary. A Project Workbench has no server identity: it composes one project conversation with its attached sandbox runs and, when applicable, the project task that owns that conversation. A conversation can have many runs; a run need not belong to a task; Sources and Outputs retain their existing ownership and use conversation links only as provenance.
