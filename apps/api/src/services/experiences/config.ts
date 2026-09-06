@@ -1,5 +1,6 @@
 import type {
   AppIosDecision,
+  AppScope,
   AppTheme,
   ProjectExperienceDefinition,
   ProjectExperienceRuntime,
@@ -21,6 +22,8 @@ export interface ExperienceDefinition {
   uses: string;
   produces: string;
   ios: AppIosDecision;
+  scope?: AppScope;
+  scopeReason?: string;
   category: string;
   icon?: string;
   theme?: AppTheme;
@@ -90,6 +93,9 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     uses: "Examples you have gathered and a provider that supports training.",
     produces: "A trained model and its deployment, with the job visible in Attention.",
     ios: "web-only",
+    scope: "personal",
+    scopeReason:
+      "Training runs on your own provider credentials and deploys to your own account, so it stays with you rather than with a project.",
     description: "Train, inspect, and deploy provider-backed models from the API model catalogue",
     icon: "hammer",
     theme: "slate",
@@ -230,6 +236,8 @@ export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
       uses,
       produces,
       ios,
+      scope,
+      scopeReason,
       icon,
       category,
       theme,
@@ -245,6 +253,8 @@ export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
       uses,
       produces,
       ios,
+      scope: scope ?? "any",
+      scopeReason: scopeReason ?? null,
       icon,
       category,
       theme,

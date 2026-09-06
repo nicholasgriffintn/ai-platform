@@ -14,6 +14,7 @@ import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab";
 import { ProfilePetsTab } from "./Tabs/ProfilePetsTab";
 import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab";
 import { ProfileSandboxTab } from "./Tabs/ProfileSandboxTab";
+import { ProfileTrainingTab } from "./Tabs/ProfileTrainingTab";
 
 interface ProfileSidebarItem {
   id: string;
@@ -61,6 +62,7 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
   },
   { id: "api-keys", label: "API keys", group: MODELS_GROUP, component: ProfileApiKeysTab },
   { id: "sandbox", label: "Sandbox", group: ADVANCED_GROUP, component: ProfileSandboxTab },
+  { id: "training", label: "Training", group: ADVANCED_GROUP, component: ProfileTrainingTab },
 ];
 
 interface ProfileSidebarProps {

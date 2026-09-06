@@ -33,10 +33,20 @@ export async function validateCapabilityReference(
   }
 
   if (kind === "app") {
-    const experiences = getExperienceCatalog();
+    const experience = getExperienceCatalog().find(
+      (candidate) => candidate.capabilityId === capabilityId,
+    );
 
-    if (!experiences.some((experience) => experience.capabilityId === capabilityId)) {
+    if (!experience) {
       throw new AssistantError("Unknown experience", ErrorType.NOT_FOUND, 404);
+    }
+
+    if (experience.scope === "personal") {
+      throw new AssistantError(
+        experience.scopeReason ?? `${experience.name} can only be used in personal scope.`,
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
     }
 
     return;
