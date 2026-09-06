@@ -16,6 +16,7 @@ import { complete_goal, set_goal } from "./goal";
 import { get_hacker_news_stories } from "./hacker_news";
 import { ask_user, request_approval } from "./human_in_the_loop";
 import { create_image } from "./image";
+import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
 import { search_memories, store_memory } from "./memory";
 import { metaToolDescriptors } from "./meta";
@@ -91,6 +92,7 @@ const descriptors: FunctionToolDescriptor[] = [
   discover_capabilities,
   set_goal,
   complete_goal,
+  list_saved_messages,
   load_skill,
   process_recording,
   save_skill,

@@ -569,6 +569,31 @@ export const memoryDocumentRevision = sqliteTable(
 
 export type MemoryDocumentRevisionRow = typeof memoryDocumentRevision.$inferSelect;
 
+export const messageUserState = sqliteTable(
+  "message_user_state",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    conversation_id: text().notNull(),
+    message_id: text().notNull(),
+    note: text(),
+    saved_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    userMessageIdx: uniqueIndex("message_user_state_user_message_idx").on(
+      table.user_id,
+      table.message_id,
+    ),
+    userSavedIdx: index("message_user_state_user_saved_idx").on(table.user_id, table.saved_at),
+  }),
+);
+
+export type MessageUserStateRow = typeof messageUserState.$inferSelect;
+
 export const authoredSkillRevision = sqliteTable(
   "authored_skill_revision",
   {

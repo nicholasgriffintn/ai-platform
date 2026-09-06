@@ -113,6 +113,8 @@ export const ChatMessageView = ({
   onCancelEdit,
   onStartThread,
   isStartingThread = false,
+  isSaved = false,
+  onToggleSaved,
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
   isArchivedByCompaction = false,
@@ -144,6 +146,8 @@ export const ChatMessageView = ({
   onCancelEdit?: () => void;
   onStartThread?: (messageId: string, modelId?: string) => void;
   isStartingThread?: boolean;
+  isSaved?: boolean;
+  onToggleSaved?: (messageId: string, isSaved: boolean) => void;
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
   isArchivedByCompaction?: boolean;
@@ -286,6 +290,8 @@ export const ChatMessageView = ({
                 isEditing={isEditing}
                 onStartThread={onStartThread}
                 isStartingThread={isStartingThread}
+                isSaved={isSaved}
+                onToggleSaved={onToggleSaved}
                 onRequestSecondOpinion={onRequestSecondOpinion}
                 isRequestingSecondOpinion={isRequestingSecondOpinion}
                 isArchivedByCompaction={isArchivedByCompaction}

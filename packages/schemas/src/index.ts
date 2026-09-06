@@ -83,6 +83,7 @@ export * from "./cron";
 export * from "./goals";
 export * from "./internal-service-auth";
 export * from "./memory-documents";
+export * from "./saved-messages";
 export * from "./meta-assistant";
 export * from "./thread-operations";
 export * from "./edit";

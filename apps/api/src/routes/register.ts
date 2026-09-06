@@ -17,6 +17,7 @@ import outputs from "./outputs";
 import plans from "./plans";
 import projects from "./projects";
 import realtime from "./realtime";
+import savedMessages from "./saved-messages";
 import search from "./search";
 import skills from "./skills";
 import sources from "./sources";
@@ -57,6 +58,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/realtime", realtime);
   app.route("/search", search);
   app.route("/memory/documents", memoryDocuments);
+  app.route("/chat/saved-messages", savedMessages);
   app.route("/teammates", teammates);
   app.route("/admin", admin);
   app.route("/webhooks", webhook);

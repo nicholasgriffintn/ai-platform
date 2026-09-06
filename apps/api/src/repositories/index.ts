@@ -28,6 +28,7 @@ import { PlanRepository } from "./PlanRepository";
 import { ProjectTaskRepository } from "./ProjectTaskRepository";
 import { ProviderConnectionRepository } from "./ProviderConnectionRepository";
 import { RecipeComposioTriggerRepository } from "./RecipeComposioTriggerRepository";
+import { SavedMessageRepository } from "./SavedMessageRepository";
 import { SessionRepository } from "./SessionRepository";
 import { SharedTeammateRepository } from "./SharedTeammateRepository";
 import { SourceRepository } from "./SourceRepository";
@@ -122,6 +123,7 @@ export class RepositoryManager {
   private authChallengeRepo: AuthChallengeRepository;
   private authoredSkillRepo: AuthoredSkillRepository;
   private memoryDocumentRepo: MemoryDocumentRepository;
+  private savedMessageRepo: SavedMessageRepository;
   private auditRepo: AuditRepository;
   private oauthStateRepo: OAuthStateRepository;
   private outputRepo: OutputRepository;
@@ -167,6 +169,7 @@ export class RepositoryManager {
     this.authChallengeRepo = new AuthChallengeRepository(env);
     this.authoredSkillRepo = new AuthoredSkillRepository(env);
     this.memoryDocumentRepo = new MemoryDocumentRepository(env);
+    this.savedMessageRepo = new SavedMessageRepository(env);
     this.auditRepo = new AuditRepository(env);
     this.oauthStateRepo = new OAuthStateRepository(env);
     this.outputRepo = new OutputRepository(env);
@@ -228,6 +231,10 @@ export class RepositoryManager {
 
   public get memoryDocuments(): MemoryDocumentRepository {
     return this.memoryDocumentRepo;
+  }
+
+  public get savedMessages(): SavedMessageRepository {
+    return this.savedMessageRepo;
   }
 
   public get audit(): AuditRepository {

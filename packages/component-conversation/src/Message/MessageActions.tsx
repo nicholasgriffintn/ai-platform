@@ -15,6 +15,7 @@ import {
   Check,
   Copy,
   Edit,
+  Bookmark,
   GitBranch,
   MessageSquareQuote,
   Volume2,
@@ -45,6 +46,8 @@ export interface MessageActionsProps {
   isEditing?: boolean;
   onStartThread?: (messageId: string, modelId?: string) => void;
   isStartingThread?: boolean;
+  isSaved?: boolean;
+  onToggleSaved?: (messageId: string, isSaved: boolean) => void;
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
   isArchivedByCompaction?: boolean;
@@ -73,6 +76,8 @@ export const MessageActions = ({
   onEdit,
   isEditing = false,
   onStartThread,
+  isSaved = false,
+  onToggleSaved,
   isStartingThread = false,
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
@@ -315,6 +320,19 @@ export const MessageActions = ({
               </Button>
             )}
           </div>
+        )}
+        {onToggleSaved && !isSharedView && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => onToggleSaved(message.id, !isSaved)}
+            aria-pressed={isSaved}
+            className={cn(messageActionButtonClassName, isSaved && "text-active-work")}
+            title={isSaved ? "Stop keeping this" : "Keep this for later"}
+            aria-label={isSaved ? "Stop keeping this" : "Keep this for later"}
+          >
+            <Bookmark size={14} fill={isSaved ? "currentColor" : "none"} />
+          </Button>
         )}
         {message.role !== "user" && (message.created || message.timestamp) && (
           <MessageInfo
