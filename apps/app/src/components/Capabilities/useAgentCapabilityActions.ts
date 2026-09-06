@@ -1,4 +1,4 @@
-import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
+import type { AgentResponse, HireTeammateInput } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -17,6 +17,9 @@ export interface AgentCapabilityActions {
   createPath: string;
   deleteAgent: (agentId: string) => Promise<void>;
   deletionError: Error | null;
+  hireTeammate: (input: HireTeammateInput) => Promise<AgentResponse>;
+  hireError: Error | null;
+  isHiring: boolean;
   editPath: (agentId: string) => string;
   findAgent: (agentId: string) => AgentResponse | undefined;
   isDeleting: boolean;
@@ -41,6 +44,9 @@ export function useAgentCapabilityActions(
     deletingAgentId,
     isDeletingAgent,
     resetAgentDeletion,
+    hireTeammate: hireTeammateMutation,
+    isHiringTeammate,
+    hireTeammateError,
   } = useAgents();
   const workspaces = useMemo(
     () => workspacesQuery.data?.workspaces ?? [],
@@ -96,6 +102,15 @@ export function useAgentCapabilityActions(
     },
     deletionError: deleteAgentError,
     editPath: (agentId: string) => getAgentEditorPath(surface, agentId),
+    hireTeammate: async (input: HireTeammateInput) => {
+      const hired = await hireTeammateMutation(input);
+
+      await refreshCatalogue();
+
+      return hired;
+    },
+    hireError: hireTeammateError,
+    isHiring: isHiringTeammate,
     findAgent: (agentId: string) => agentById.get(agentId),
     isDeleting: isDeletingAgent,
     isLoadingAttachable: isLoadingAgents || workspacesQuery.isLoading,

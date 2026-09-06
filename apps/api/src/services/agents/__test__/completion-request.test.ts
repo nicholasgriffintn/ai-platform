@@ -17,6 +17,7 @@ describe("prepareAgentCompletionRequest", () => {
       const request = prepareAgentCompletionRequest({
         agent: {
           id: "agent-123",
+          kind: "colleague" as const,
           model: null,
           temperature: null,
           max_steps: null,
@@ -43,6 +44,7 @@ describe("prepareAgentCompletionRequest", () => {
     const request = prepareAgentCompletionRequest({
       agent: {
         id: "agent-123",
+        kind: "colleague" as const,
         model: null,
         temperature: null,
         max_steps: null,
@@ -81,6 +83,7 @@ describe("prepareAgentCompletionRequest", () => {
     const request = prepareAgentCompletionRequest({
       agent: {
         id: "agent-123",
+        kind: "colleague" as const,
         model: null,
         temperature: null,
         max_steps: null,
@@ -107,6 +110,7 @@ describe("prepareAgentCompletionRequest", () => {
     const request = prepareAgentCompletionRequest({
       agent: {
         id: "agent-123",
+        kind: "colleague" as const,
         model: null,
         temperature: null,
         max_steps: null,
@@ -133,6 +137,7 @@ describe("prepareAgentCompletionRequest", () => {
     const request = prepareAgentCompletionRequest({
       agent: {
         id: "agent-123",
+        kind: "colleague" as const,
         model: null,
         temperature: null,
         max_steps: null,
@@ -158,6 +163,7 @@ describe("prepareAgentCompletionRequest", () => {
     const request = prepareAgentCompletionRequest({
       agent: {
         id: "agent-123",
+        kind: "colleague" as const,
         model: null,
         temperature: null,
         max_steps: null,
@@ -183,6 +189,7 @@ describe("prepareAgentCompletionRequest", () => {
     const request = prepareAgentCompletionRequest({
       agent: {
         id: "agent-123",
+        kind: "colleague" as const,
         model: null,
         temperature: null,
         max_steps: null,
@@ -202,6 +209,7 @@ describe("prepareAgentCompletionRequest", () => {
   it("asks for the agent's saved skills through the persona and the skill loader", () => {
     const agent = {
       id: "agent-123",
+      kind: "colleague" as const,
       model: null,
       temperature: null,
       max_steps: null,
@@ -239,6 +247,7 @@ describe("prepareAgentCompletionRequest", () => {
     const request = prepareAgentCompletionRequest({
       agent: {
         id: "agent-123",
+        kind: "colleague" as const,
         model: null,
         temperature: null,
         max_steps: null,
@@ -253,5 +262,68 @@ describe("prepareAgentCompletionRequest", () => {
     });
 
     expect(request.enabled_tools).toEqual(["web_search"]);
+    expect(request.denied_tools).toBeUndefined();
+  });
+
+  it("keeps a bot teammate away from filing tasks and writing memory", () => {
+    const body = createChatCompletionsJsonSchema.parse({
+      model: "mistral-large-latest",
+      messages: [{ role: "user", content: "Brief me" }],
+    });
+
+    const request = prepareAgentCompletionRequest({
+      agent: {
+        id: "agent-123",
+        kind: "bot" as const,
+        model: null,
+        temperature: null,
+        max_steps: null,
+        enabled_tools: '["web_search","create_task","store_memory"]',
+        skill_ids: "[]",
+        mode: null,
+      },
+      body,
+      modelProvider: "mistral",
+      formattedTools: [],
+      persona: {},
+    });
+
+    expect(request.enabled_tools).toEqual(["web_search"]);
+    expect(request.denied_tools).toContain("create_task");
+    expect(request.denied_tools).toContain("store_memory");
+  });
+
+  it("refuses a denied tool even when the caller asks for it", () => {
+    const body = createChatCompletionsJsonSchema.parse({
+      model: "mistral-large-latest",
+      messages: [{ role: "user", content: "File a task" }],
+      enabled_tools: ["create_task"],
+    });
+
+    const request = prepareAgentCompletionRequest({
+      agent: {
+        id: "agent-123",
+        kind: "bot" as const,
+        model: null,
+        temperature: null,
+        max_steps: null,
+        enabled_tools: null,
+        skill_ids: "[]",
+        mode: null,
+      },
+      body,
+      modelProvider: "mistral",
+      formattedTools: [],
+      persona: {},
+    });
+
+    expect(request.enabled_tools).toEqual([]);
+    expect(
+      new PermissionChecker().checkToolAccess({
+        toolName: "create_task",
+        mode: request.mode,
+        deniedTools: request.denied_tools,
+      }).allowed,
+    ).toBe(false);
   });
 });

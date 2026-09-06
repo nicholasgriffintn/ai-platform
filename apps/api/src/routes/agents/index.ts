@@ -2,6 +2,7 @@ import {
   agentListResponseSchema,
   agentResponseSchema,
   createAgentSchema,
+  hireTeammateSchema,
   updateAgentSchema,
   createChatCompletionsJsonSchema,
   publishAgentToWorkspaceSchema,
@@ -19,6 +20,7 @@ import {
   getUserAgents,
   getAgentById,
   createAgent,
+  hireTeammate,
   updateAgent,
   deleteAgent,
   getAgentServers,
@@ -60,6 +62,19 @@ addRoute(app, "post", "/", {
   responses: { 200: { description: "Created agent", schema: agentResponseSchema } },
   handler: async ({ serviceContext, body }) => {
     return createAgent(serviceContext, body);
+  },
+});
+
+addRoute(app, "post", "/hire", {
+  tags: ["agents"],
+  summary: "Hire a teammate",
+  description:
+    "Create a teammate from a built-in role, a job description, or both. The role supplies the brief, suggested tools and kind.",
+  auth: true,
+  bodySchema: hireTeammateSchema,
+  responses: { 200: { description: "Hired teammate", schema: agentResponseSchema } },
+  handler: async ({ serviceContext, body }) => {
+    return hireTeammate(serviceContext, body);
   },
 });
 

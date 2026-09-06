@@ -1,4 +1,8 @@
-import type { AgentResponse, AgentSummary } from "@ngriffin_uk/polychat-schemas";
+import {
+  filterToolIdsForTeammateKind,
+  type AgentResponse,
+  type AgentSummary,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Agent } from "~/lib/database/schema";
@@ -72,11 +76,12 @@ function toAgentSummary(
   availability: AgentScopeAvailability,
   executableModels: ReadonlySet<string>,
 ): AgentSummary {
-  const toolIds = agent.enabled_tools ?? [];
+  const toolIds = filterToolIdsForTeammateKind(agent.kind, agent.enabled_tools) ?? [];
 
   return {
     id: agent.id,
     name: agent.name,
+    kind: agent.kind,
     description: agent.description,
     avatarUrl: agent.avatar_url,
     model: agent.model,

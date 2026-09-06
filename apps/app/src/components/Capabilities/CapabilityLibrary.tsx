@@ -15,6 +15,7 @@ import { AddSkillDialog } from "~/components/Capabilities/AddSkillDialog";
 import { AttachAgentDialog } from "~/components/Capabilities/AttachAgentDialog";
 import { CapabilityAddMenu } from "~/components/Capabilities/CapabilityAddMenu";
 import { CapabilityGroups } from "~/components/Capabilities/CapabilityGroups";
+import { HireTeammateDialog } from "~/components/Capabilities/HireTeammateDialog";
 import { ShareAgentDialog } from "~/components/Capabilities/ShareAgentDialog";
 import { SharedAgentsDialog } from "~/components/Capabilities/SharedAgentsDialog";
 import { useCapabilityAuthoring } from "~/components/Capabilities/useCapabilityAuthoring";
@@ -168,6 +169,14 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
         open={authoring.addSkill.open}
         onOpenChange={authoring.addSkill.setOpen}
         projectId={controller.surface.projectId}
+      />
+      <HireTeammateDialog
+        open={authoring.hireTeammate.open}
+        onOpenChange={authoring.hireTeammate.setOpen}
+        onHire={authoring.hireTeammate.hire}
+        isHiring={authoring.hireTeammate.isHiring}
+        error={authoring.hireTeammate.error}
+        workspaceId={controller.surface.workspaceId}
       />
       <SharedAgentsDialog
         open={authoring.browseSharedAgents.open}

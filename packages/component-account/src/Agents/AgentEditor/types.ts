@@ -4,6 +4,7 @@ import type {
   AgentResponse,
   ModelConfig,
   SkillSummary,
+  TeammateKind,
   Tool,
 } from "@ngriffin_uk/polychat-schemas";
 import type { ParsedNumberInput } from "@ngriffin_uk/polychat-utility-core";
@@ -24,6 +25,7 @@ export interface AgentEditorExample {
 
 export interface AgentEditorValue {
   name: string;
+  kind: TeammateKind;
   description: string;
   avatarUrl: string;
   systemPrompt: string;

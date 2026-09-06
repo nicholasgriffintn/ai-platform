@@ -2,6 +2,7 @@ import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/message
 import type {
   AgentResponse,
   CreateAgentInput,
+  HireTeammateInput,
   SharedAgentSummary,
   ModelConfig,
   Tool,
@@ -270,6 +271,10 @@ class ApiService {
 
   getSharedTags = (): Promise<string[]> => {
     return this.agentService.getSharedTags();
+  };
+
+  hireTeammate = (data: HireTeammateInput): Promise<AgentResponse> => {
+    return this.agentService.hireTeammate(data);
   };
 
   createAgent = (data: CreateAgentInput): Promise<AgentResponse> => {

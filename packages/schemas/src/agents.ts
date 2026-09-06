@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { agentModeSchema } from "./agent-modes";
 import { skillIdSchema } from "./skills";
+import { teammateKindSchema } from "./teammates";
 import { toolIdsSchema } from "./tool-ids";
 
 const agentSkillIdsSchema = z.array(skillIdSchema);
@@ -28,6 +29,9 @@ export const fewShotExampleSchema = z.object({
 
 export const createAgentSchema = z.object({
   name: z.string().meta({ description: "Name of the agent" }),
+  kind: teammateKindSchema.optional().meta({
+    description: "Whether this teammate works as a colleague or as a bot",
+  }),
   description: z.string().optional().meta({ description: "Optional agent description" }),
   avatar_url: z.url().nullable().optional().meta({ description: "Optional avatar image URL" }),
   servers: z
@@ -104,6 +108,9 @@ export const updateAgentSchema = z
     mode: agentModeSchema.nullable().optional().meta({
       description: "Updated agent mode; null lets the caller's mode win",
     }),
+    kind: teammateKindSchema.optional().meta({
+      description: "Updated teammate kind",
+    }),
   })
   .refine((data) => Object.keys(data).length > 0, {
     error: "At least one field must be provided",
@@ -124,6 +131,7 @@ export const agentResponseSchema = z.object({
   owner_scope_type: agentOwnerScopeTypeSchema,
   owner_scope_id: z.string(),
   derived_from_agent_id: z.string().nullable(),
+  kind: teammateKindSchema,
   name: z.string(),
   description: z.string(),
   avatar_url: z.string().nullable(),
@@ -145,6 +153,7 @@ export const agentListResponseSchema = z.array(agentResponseSchema);
 export const agentSummarySchema = z.object({
   id: z.string(),
   name: z.string(),
+  kind: teammateKindSchema,
   description: z.string(),
   avatarUrl: z.string().nullable(),
   model: z.string().nullable(),

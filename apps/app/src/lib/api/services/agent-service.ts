@@ -5,6 +5,7 @@ import {
 import type {
   AgentResponse,
   CreateAgentInput,
+  HireTeammateInput,
   SharedAgentSummary,
   UpdateAgentInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -25,6 +26,7 @@ function toAgentPayload(data: CreateAgentInput | UpdateAgentInput) {
     enabled_tools: data.enabled_tools,
     skill_ids: data.skill_ids,
     mode: data.mode,
+    kind: data.kind,
   };
 }
 
@@ -315,6 +317,20 @@ export class AgentService {
 
     if (!response.ok) {
       throw new Error(`Failed to create agent: ${response.statusText}`);
+    }
+
+    return returnFetchedData<AgentResponse>(response);
+  }
+
+  async hireTeammate(data: HireTeammateInput): Promise<AgentResponse> {
+    const headers = await this.authHeaders("hireTeammate");
+    const response = await fetchApi("/agents/hire", { method: "POST", headers, body: data });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(
+        response,
+        `Failed to hire teammate: ${response.statusText}`,
+      );
     }
 
     return returnFetchedData<AgentResponse>(response);

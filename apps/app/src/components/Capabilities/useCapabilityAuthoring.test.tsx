@@ -28,6 +28,8 @@ vi.mock("~/hooks/useWorkspaces", () => ({
   useRemoveProjectCapability: () => ({ isPending: false, error: null, mutate: vi.fn() }),
 }));
 
+const hireTeammateMock = vi.fn(async () => agent({ id: "teammate-hired" }));
+
 vi.mock("~/hooks/useAgents", () => ({
   AGENTS_QUERY_KEYS: { all: ["agents"], detail: (id: string) => ["agents", id] },
   useAgent: () => ({ data: undefined, isLoading: false, error: null }),
@@ -40,6 +42,10 @@ vi.mock("~/hooks/useAgents", () => ({
     deletingAgentId: undefined,
     isDeletingAgent: false,
     resetAgentDeletion: vi.fn(),
+    hireTeammate: hireTeammateMock,
+    isHiringTeammate: false,
+    hireTeammateError: null,
+    resetHireTeammate: vi.fn(),
   }),
 }));
 
@@ -50,6 +56,7 @@ function agent(overrides: Partial<AgentResponse>): AgentResponse {
     owner_scope_type: "user",
     owner_scope_id: "7",
     derived_from_agent_id: null,
+    kind: "colleague",
     name: "Researcher",
     description: "Digs through sources.",
     avatar_url: null,
@@ -119,6 +126,7 @@ function addChoice(
 
 beforeEach(() => {
   navigate.mockReset();
+  hireTeammateMock.mockClear();
   agentList.length = 0;
   workspaceList.length = 0;
 });
@@ -127,11 +135,11 @@ describe("capability library agent authoring", () => {
   it("opens the personal agent editor from the library's add-agent action", () => {
     const { result } = renderAuthoring();
 
-    addChoice(result, "New agent")?.();
+    addChoice(result, "Build one from scratch")?.();
 
     expect(navigate).toHaveBeenCalledWith("/chat/agents/new");
-    expect(addChoice(result, "Attach an agent")).toBeUndefined();
-    expect(addChoice(result, "Browse shared agents")).toBeDefined();
+    expect(addChoice(result, "Attach a teammate")).toBeUndefined();
+    expect(addChoice(result, "Browse shared teammates")).toBeDefined();
   });
 
   it("opens the project agent editor and offers attachment inside a project", () => {
@@ -140,11 +148,29 @@ describe("capability library agent authoring", () => {
       surface: getProjectSurface("workspace-1", "project-1"),
     });
 
-    addChoice(result, "New agent")?.();
+    addChoice(result, "Build one from scratch")?.();
 
     expect(navigate).toHaveBeenCalledWith("/work/workspace-1/projects/project-1/agents/new");
-    expect(addChoice(result, "Attach an agent")).toBeDefined();
-    expect(addChoice(result, "Browse shared agents")).toBeUndefined();
+    expect(addChoice(result, "Attach a teammate")).toBeDefined();
+    expect(addChoice(result, "Browse shared teammates")).toBeUndefined();
+  });
+
+  it("attaches a teammate hired inside a project and opens its editor", async () => {
+    const addCapability = vi.fn(async () => undefined);
+    const { result } = renderAuthoring({
+      projectActions: { addCapability, canManage: true },
+      surface: getProjectSurface("workspace-1", "project-1"),
+    });
+
+    await act(async () => {
+      await result.current.hireTeammate.hire({ role_slug: "research-analyst" });
+    });
+
+    expect(hireTeammateMock).toHaveBeenCalledWith({ role_slug: "research-analyst" });
+    expect(addCapability).toHaveBeenCalledWith("agent", "teammate-hired");
+    expect(navigate).toHaveBeenCalledWith(
+      "/work/workspace-1/projects/project-1/agents/teammate-hired",
+    );
   });
 
   it("withholds authoring actions from a project member who cannot manage capabilities", () => {
@@ -215,14 +241,14 @@ describe("capability library agent authoring", () => {
   it("offers shared-agent browsing personally but not inside a project", () => {
     const personal = renderAuthoring();
 
-    expect(addChoice(personal.result, "Browse shared agents")).toBeDefined();
+    expect(addChoice(personal.result, "Browse shared teammates")).toBeDefined();
 
     const project = renderAuthoring({
       projectActions: { addCapability: vi.fn(async () => undefined), canManage: true },
       surface: getProjectSurface("workspace-1", "project-1"),
     });
 
-    expect(addChoice(project.result, "Browse shared agents")).toBeUndefined();
+    expect(addChoice(project.result, "Browse shared teammates")).toBeUndefined();
   });
 
   it("offers only the workspace agents a project has not already attached", () => {

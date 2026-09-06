@@ -47,12 +47,13 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0071: Fix model tiers instead of scoring prompts](decisions/0071-fix-model-tiers-instead-of-scoring-prompts.md).
 - [0072: One shell and one user-facing vocabulary](decisions/0072-one-shell-and-one-user-facing-vocabulary.md).
 - [0073: Meta tools belong only to the meta scope](decisions/0073-meta-tools-belong-only-to-the-meta-scope.md).
+- [0074: Teammates are hired from roles and carry a kind](decisions/0074-teammates-are-hired-from-roles-and-carry-a-kind.md).
 
 ## Accepted designs awaiting implementation
 
 - [0038: Scope future model lifecycle to a provider surface](decisions/0038-provider-surface-model-lifecycle.md).
 - [0040: Resolve future provider governance before execution](decisions/0040-provider-execution-governance-policy.md).
 
-Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0074.
+Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0075.
 
 Add a record only for a durable trade-off that code alone cannot explain. State the problem, decision, implementation status and consequence; update this index. Keep rollout plans and copied schemas out of ADRs.

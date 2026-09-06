@@ -1,19 +1,30 @@
-import { FormInput } from "@ngriffin_uk/polychat-component-ui";
+import { FormInput, FormSelect } from "@ngriffin_uk/polychat-component-ui";
+import {
+  describeTeammateKind,
+  TEAMMATE_KINDS,
+  TEAMMATE_PERMISSIONS_SENTENCE,
+  teammateKindSchema,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { AgentEditorSection } from "./AgentEditorSection";
 import type { AgentEditorChange, AgentEditorValue } from "./types";
 
 export interface IdentitySectionProps {
-  value: Pick<AgentEditorValue, "name" | "description" | "avatarUrl">;
+  value: Pick<AgentEditorValue, "name" | "kind" | "description" | "avatarUrl">;
   disabled: boolean;
   onChange: AgentEditorChange;
 }
+
+const KIND_LABELS: Record<(typeof TEAMMATE_KINDS)[number], string> = {
+  colleague: "Colleague",
+  bot: "Bot",
+};
 
 export function IdentitySection({ value, disabled, onChange }: IdentitySectionProps) {
   return (
     <AgentEditorSection
       title="Identity"
-      description="How this agent introduces itself wherever someone picks it."
+      description="How this teammate introduces itself wherever someone picks it."
     >
       <FormInput
         label="Name"
@@ -23,12 +34,22 @@ export function IdentitySection({ value, disabled, onChange }: IdentitySectionPr
         placeholder="Research assistant"
         onChange={(event) => onChange({ name: event.target.value })}
       />
+      <FormSelect
+        label="Kind"
+        value={value.kind}
+        disabled={disabled}
+        options={TEAMMATE_KINDS.map((kind) => ({ value: kind, label: KIND_LABELS[kind] }))}
+        description={describeTeammateKind(value.kind)}
+        onChange={(event) =>
+          onChange({ kind: teammateKindSchema.safeParse(event.target.value).data ?? value.kind })
+        }
+      />
       <FormInput
         label="Description"
         value={value.description}
         disabled={disabled}
         placeholder="Digs through sources and comes back with citations"
-        description="Shown next to the agent in chat and in the capability library."
+        description="Shown next to the teammate in chat and in the library."
         onChange={(event) => onChange({ description: event.target.value })}
       />
       <FormInput
@@ -37,9 +58,10 @@ export function IdentitySection({ value, disabled, onChange }: IdentitySectionPr
         value={value.avatarUrl}
         disabled={disabled}
         placeholder="https://example.com/avatar.png"
-        description="Optional. Falls back to the agent's initial."
+        description="Optional. Falls back to the teammate's initial."
         onChange={(event) => onChange({ avatarUrl: event.target.value })}
       />
+      <p className="text-muted-foreground text-xs">{TEAMMATE_PERMISSIONS_SENTENCE}</p>
     </AgentEditorSection>
   );
 }

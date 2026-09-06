@@ -353,6 +353,7 @@ export class SharedAgentRepository extends BaseRepository {
       owner_scope_type: "user",
       owner_scope_id: String(userId),
       derived_from_agent_id: null,
+      kind: "colleague",
       name: templateData.name,
       description: templateData.description,
       avatar_url: templateData.avatar_url,

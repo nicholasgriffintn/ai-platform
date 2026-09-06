@@ -1,8 +1,12 @@
 import {
   agentModeSchema,
+  DEFAULT_TEAMMATE_KIND,
+  filterToolIdsForTeammateKind,
   mergeToolIds,
   readToolIds,
   SKILL_LOAD_TOOL_NAME,
+  TEAMMATE_BOT_DENIED_TOOLS,
+  teammateKindSchema,
   type ParsedChatCompletionRequestBody,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -13,7 +17,7 @@ import { readAgentSkillIds } from "./agentResponse";
 
 type CompletionAgent = Pick<
   Agent,
-  "id" | "model" | "temperature" | "max_steps" | "enabled_tools" | "skill_ids" | "mode"
+  "id" | "model" | "temperature" | "max_steps" | "enabled_tools" | "skill_ids" | "mode" | "kind"
 >;
 
 export interface AgentCompletionRequestInput {
@@ -60,6 +64,7 @@ class AgentCompletionRequestPreparer {
       platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
       stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
       enabled_tools: this.resolveEnabledTools(),
+      denied_tools: this.resolveDeniedTools(),
       approved_tools: this.input.body.approved_tools,
       use_multi_model: this.input.body.use_multi_model,
       models: this.input.body.models,
@@ -72,15 +77,25 @@ class AgentCompletionRequestPreparer {
     };
   }
 
+  private resolveTeammateKind() {
+    return teammateKindSchema.safeParse(this.input.agent.kind).data ?? DEFAULT_TEAMMATE_KIND;
+  }
+
+  private resolveDeniedTools(): string[] | undefined {
+    return this.resolveTeammateKind() === "bot" ? [...TEAMMATE_BOT_DENIED_TOOLS] : undefined;
+  }
+
   private resolveEnabledTools(): string[] | undefined {
     const requested =
       this.input.body.enabled_tools ?? readToolIds(this.input.agent.enabled_tools) ?? undefined;
+    const permitted =
+      filterToolIdsForTeammateKind(this.resolveTeammateKind(), requested) ?? undefined;
 
-    if (!requested || readAgentSkillIds(this.input.agent.skill_ids).length === 0) {
-      return requested;
+    if (!permitted || readAgentSkillIds(this.input.agent.skill_ids).length === 0) {
+      return permitted;
     }
 
-    return mergeToolIds(requested, SKILL_LOAD_TOOL_NAME);
+    return mergeToolIds(permitted, SKILL_LOAD_TOOL_NAME);
   }
 }
 

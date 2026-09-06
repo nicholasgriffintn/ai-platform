@@ -225,6 +225,13 @@
       "when": 1788653788216,
       "tag": "0031_drop_project_default_router_mode",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1788689087294,
+      "tag": "0032_light_the_enforcers",
+      "breakpoints": true
     }
   ]
 }

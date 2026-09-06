@@ -1669,6 +1669,9 @@ export const agents = sqliteTable(
       .notNull(),
     owner_scope_id: text().default("").notNull(),
     derived_from_agent_id: text(),
+    kind: text({ enum: ["colleague", "bot"] })
+      .default("colleague")
+      .notNull(),
     name: text().notNull(),
     description: text().default("").notNull(),
     avatar_url: text(),

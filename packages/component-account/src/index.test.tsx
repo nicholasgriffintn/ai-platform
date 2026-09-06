@@ -155,6 +155,7 @@ describe("agent editor", () => {
     owner_scope_type: "user",
     owner_scope_id: "7",
     derived_from_agent_id: null,
+    kind: "colleague",
     name: "Researcher",
     description: "Finds things",
     avatar_url: null,
