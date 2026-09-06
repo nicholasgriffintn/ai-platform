@@ -5,6 +5,7 @@ import type { FunctionToolDescriptor } from "./types";
 
 export const MAX_META_FIND_LIMIT = 20;
 export const MAX_META_READ_MESSAGES = 60;
+export const MAX_META_ATTENTION_LIMIT = 25;
 
 export const findPlacesInputSchema = z.object({
   query: z
@@ -99,9 +100,99 @@ export const read_conversation: FunctionToolDescriptor = {
   inputSchema: readConversationInputSchema,
 };
 
+export const startConversationInputSchema = z
+  .object({
+    scope: z
+      .enum(["personal", "project"])
+      .describe("Where the conversation belongs. Project scope needs a projectId."),
+    projectId: z.string().min(1).optional().describe("Project that will own the conversation."),
+    title: z.string().trim().min(1).max(200).optional().describe("Optional title to give it."),
+    openingMessage: z
+      .string()
+      .trim()
+      .min(1)
+      .max(4000)
+      .optional()
+      .describe("First message to put in the composer, ready for the user to send."),
+    teammateId: z
+      .string()
+      .min(1)
+      .optional()
+      .describe("Teammate to answer in this conversation, if the user named one."),
+  })
+  .superRefine((input, ctx) => {
+    if (input.scope === "project" && !input.projectId) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["projectId"],
+        message: "Project scope needs a project",
+      });
+    }
+  });
+
+export const hireTeammateInputSchema = z
+  .object({
+    roleSlug: z.string().min(1).optional().describe("Slug of a built-in role to hire from."),
+    jobDescription: z
+      .string()
+      .trim()
+      .min(1)
+      .max(2000)
+      .optional()
+      .describe("What the teammate should do, in the user's own words."),
+    name: z.string().trim().min(1).max(120).optional().describe("Name for the teammate."),
+    workspaceId: z
+      .string()
+      .min(1)
+      .optional()
+      .describe("Workspace that will own it. Omit to hire into the user's personal scope."),
+  })
+  .refine((input) => Boolean(input.roleSlug || input.jobDescription), {
+    error: "Choose a role or describe the job",
+  });
+
+export const listAttentionInputSchema = z.object({
+  kind: z
+    .enum(["approval", "input", "review", "failed", "running", "completed"])
+    .optional()
+    .describe("Narrow to one kind of waiting work."),
+  projectId: z.string().min(1).optional().describe("Narrow to one project."),
+  limit: z.number().int().min(1).max(MAX_META_ATTENTION_LIMIT).default(10).optional(),
+});
+
+export const start_conversation: FunctionToolDescriptor = {
+  name: "start_conversation",
+  description:
+    "Start a new conversation for the user, personally or in a project they belong to, and take them to it. Put the first message in the composer rather than sending it, so the user stays in control of what gets asked.",
+  type: "normal",
+  permissions: ["write"],
+  inputSchema: startConversationInputSchema,
+};
+
+export const hire_teammate: FunctionToolDescriptor = {
+  name: "hire_teammate",
+  description:
+    "Hire a teammate from a built-in role, from a description of the job, or both. Confirm the role and the name with the user before calling this; it creates a real teammate they will see in their library.",
+  type: "normal",
+  permissions: ["write"],
+  inputSchema: hireTeammateInputSchema,
+};
+
+export const list_attention: FunctionToolDescriptor = {
+  name: "list_attention",
+  description:
+    "List the project work waiting on the user across every workspace they belong to: approvals, questions, reviews and failures. Use it to answer what needs them now.",
+  type: "normal",
+  permissions: ["read"],
+  inputSchema: listAttentionInputSchema,
+};
+
 export const metaToolDescriptors: FunctionToolDescriptor[] = [
   find_places,
   open_place,
   organise_conversation,
   read_conversation,
+  start_conversation,
+  hire_teammate,
+  list_attention,
 ];
