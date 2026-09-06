@@ -215,7 +215,7 @@ describe("tier model selection", () => {
       selectModels({ env, user: proUser, attachments: [], tier: "ultra" }),
     ).resolves.toEqual({
       models: ["gpt-6-astra"],
-      reasoningEffort: "high",
+      reasoningEffort: "max",
     });
   });
 
@@ -238,7 +238,7 @@ describe("tier model selection", () => {
       selectModels({ env, user: proUser, attachments: [], tier: "ultra", useMultiModel: true }),
     ).resolves.toEqual({
       models: ["gpt-6-astra", "claude-fable-5-1"],
-      reasoningEffort: "high",
+      reasoningEffort: "max",
     });
   });
 

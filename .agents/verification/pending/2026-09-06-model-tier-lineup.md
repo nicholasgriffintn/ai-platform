@@ -9,7 +9,7 @@
 ## Verify
 
 - [ ] As a Free account, open the composer, choose the Tiers tab and pick Ultra; send a message and confirm the reply comes from a free model (Gemini 3.5 Flash, GLM 5.2 free or DeepSeek V4 Pro) and the request body carries `model_tier: "ultra"`.
-- [ ] As a Pro account with an OpenAI key, pick Ultra and confirm the reply comes from GPT-6 Astra with high reasoning, then pick Medium and confirm GPT-5.6 Luna at medium effort; remove the key and confirm both tiers fall back to the OpenRouter or Workers AI entries.
+- [ ] As a Pro account with an OpenAI key, pick Ultra and confirm the reply comes from GPT-6 Astra with max reasoning, then pick High and confirm GPT-5.6 Luna at xhigh, then pick Medium and confirm GPT-5.6 Luna at medium effort; remove the key and confirm both tiers fall back to the OpenRouter or Workers AI entries.
 - [ ] Attach an image with the Low tier and confirm a vision-capable model answers rather than a text-only one.
 - [ ] In a Work project, set the default tier to Low, start a conversation with the Default tier and confirm the request omits `model_tier` while the run uses the Low lineup; pick High in the composer and confirm it overrides the project default.
 - [ ] Start a sandbox coding run in that project and confirm the run record shows the Low coding model.
