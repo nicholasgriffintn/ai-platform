@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "setupCommands": ["node -e \"console.log('E2E_REPOSITORY_SETUP_V1')\""],
+  "resumeCommands": ["node -e \"console.log('E2E_REPOSITORY_RESUME_V1')\""],
+  "runtimes": [{ "name": "node", "version": "22" }],
+  "packageManager": { "name": "npm" },
+  "setupTimeoutSeconds": 60
+}

@@ -9,7 +9,7 @@
 ## Verify
 
 - [x] Configure Polychat setup with one runtime, package manager, setup command, resume command and timeout. Save, reload and confirm the exact editable values return; select **No setup commands** and confirm the setup is removed without disconnecting the repository.
-- [ ] Run the project and confirm Activity shows configuration resolution, setup commands, bounded output and a completed terminal setup state before planning begins. Confirm Proof shows the Polychat configuration revision, requirements, setup mode and duration.
+- [x] Run the project and confirm Activity shows configuration resolution, setup commands, bounded output and a completed terminal setup state before planning begins. Confirm Proof shows the Polychat configuration revision, requirements, setup mode and duration.
 - [ ] Edit the project setup after the run is queued and confirm the existing run retains its queued configuration while a later run uses a different revision.
 - [ ] Select repository configuration and confirm the run reads only `.polychat/environment.json` from the cloned revision. Change that file in a later commit and confirm Proof reports a different blob revision.
 - [ ] Request resume with configured resume commands and confirm only the lightweight commands run. Remove the resume commands, request resume again and confirm it falls back to full setup and records **setup** as the effective mode.
@@ -19,7 +19,7 @@
 
 **Stop and report if:** repository configuration bypasses command policy, a changed project definition rewrites an existing run, an inline credential persists, setup continues after timeout or failure, or Proof cannot identify the valid configuration revision used.
 
-**Automated evidence:** `features/sandbox-environment.spec.ts` confirms editable project setup and removal through the real local app, API and container. Extend the journey for the remaining execution and policy outcomes.
+**Automated evidence:** `features/sandbox-environment.spec.ts` confirms editable project setup and removal through the real local app, API and container. The complete setup journey confirms configuration resolution, 4,000-character output bounds, setup completion before planning and persisted Proof with the exact Polychat revision, runtime, package manager, setup mode and duration. Extend the journey for the remaining execution and policy outcomes.
 
 The extended suite confirms rejection of a recognisable fixture credential at both form and API boundaries, redaction of generated command output in persisted events and logs, and failure before planning for a mismatched runtime, failed command and expired setup timeout.
 

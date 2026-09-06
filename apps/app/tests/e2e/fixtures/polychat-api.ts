@@ -12,6 +12,7 @@ import {
   usageEventsResponseSchema,
   usageSummaryResponseSchema,
   workspaceUsageSummaryResponseSchema,
+  userSchema,
   type AuthoredSkillDocument,
   type AuthoredSkillHistoryResponse,
 } from "@ngriffin_uk/polychat-schemas";
@@ -45,6 +46,20 @@ export class PolychatApi {
     await requireSuccessfulResponse(response, "Load conversation");
 
     return getChatCompletionResponseSchema.parse(await response.json());
+  }
+
+  async currentUser() {
+    const response = await this.request.get(`${API_BASE_URL}/auth/me`);
+
+    await requireSuccessfulResponse(response, "Load current user");
+
+    const body: unknown = await response.json();
+
+    if (!body || typeof body !== "object") {
+      throw new Error("Current user response was not an object");
+    }
+
+    return userSchema.nullable().parse(Reflect.get(body, "user"));
   }
 
   async cancelChatRun(runId: string, expectedAttempt: number, commandId: string) {

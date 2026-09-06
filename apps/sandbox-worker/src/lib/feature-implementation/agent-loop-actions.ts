@@ -334,7 +334,6 @@ export async function handleRunCommandAction(
     },
   );
 
-  await context.guardExecution("Sandbox run cancelled after command execution");
   context.executionLogs.push(formatCommandResult(decision.command, result));
 
   if (!result.success) {
@@ -372,6 +371,8 @@ export async function handleRunCommandAction(
       );
     }
 
+    await context.guardExecution("Sandbox run cancelled after command execution");
+
     return;
   }
 
@@ -391,6 +392,7 @@ export async function handleRunCommandAction(
       result,
     }),
   );
+  await context.guardExecution("Sandbox run cancelled after command execution");
 }
 
 export async function handleRunParallelAction(
@@ -509,8 +511,6 @@ export async function handleRunParallelAction(
     ),
   );
 
-  await context.guardExecution("Sandbox run cancelled after parallel command execution");
-
   let failedCount = 0;
   const observationParts: string[] = [];
 
@@ -573,6 +573,8 @@ export async function handleRunParallelAction(
       );
     }
 
+    await context.guardExecution("Sandbox run cancelled after parallel command execution");
+
     return;
   }
 
@@ -592,6 +594,7 @@ export async function handleRunParallelAction(
       .filter(Boolean)
       .join("\n\n"),
   );
+  await context.guardExecution("Sandbox run cancelled after parallel command execution");
 }
 
 export async function handleRunScriptAction(
@@ -677,10 +680,10 @@ export async function handleRunScriptAction(
       );
     }
 
+    await context.guardExecution("Sandbox run cancelled after script execution");
+
     return;
   }
-
-  await context.guardExecution("Sandbox run cancelled after script execution");
 
   const scriptStdout = execution.logs?.stdout?.join("\n") ?? "";
   const scriptStderr = execution.logs?.stderr?.join("\n") ?? "";
@@ -732,6 +735,8 @@ export async function handleRunScriptAction(
       );
     }
 
+    await context.guardExecution("Sandbox run cancelled after script execution");
+
     return;
   }
 
@@ -753,4 +758,5 @@ export async function handleRunScriptAction(
       "```",
     ].join("\n"),
   );
+  await context.guardExecution("Sandbox run cancelled after script execution");
 }

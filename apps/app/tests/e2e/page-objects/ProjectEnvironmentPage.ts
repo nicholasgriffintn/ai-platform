@@ -2,7 +2,20 @@ import { requireSuccessfulResponse } from "../support/api-response";
 import { BasePage } from "./BasePage";
 
 export class ProjectEnvironmentPage extends BasePage {
+  async openSettings() {
+    const settings = this.page.getByRole("link", { name: "Project settings", exact: true });
+    const edit = this.page.getByRole("button", { name: "Edit coding repository", exact: true });
+
+    await edit.or(settings).first().waitFor();
+    if (await settings.isVisible()) {
+      await settings.click();
+    }
+
+    await edit.waitFor();
+  }
+
   async cacheAction(action: "Rebuild" | "Delete") {
+    await this.openSettings();
     const response = this.page.waitForResponse(
       (candidate) =>
         candidate.request().method() === "POST" &&
@@ -14,7 +27,10 @@ export class ProjectEnvironmentPage extends BasePage {
   }
 
   async edit() {
-    await this.page.getByRole("button", { name: "Edit coding repository", exact: true }).click();
+    const edit = this.page.getByRole("button", { name: "Edit coding repository", exact: true });
+
+    await this.openSettings();
+    await edit.click();
   }
 
   async configureSetup() {

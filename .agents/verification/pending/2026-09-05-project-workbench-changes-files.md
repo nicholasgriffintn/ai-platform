@@ -8,9 +8,9 @@
 
 ## Verify
 
-- [ ] Open a multi-file run and confirm Changes lists contracts or configuration before consumers and tests, supports file search and next/previous navigation, and renders additions and deletions in a unified diff.
-- [ ] Collapse and reopen a diff section using keyboard controls, then repeat at a narrow viewport.
-- [ ] Open text and binary entries in Files and confirm text is bounded, binary content is not decoded, and failed or unavailable content has an explicit state.
-- [ ] Remove project membership and confirm the same Output ID can no longer load diff or artefact content.
+- [x] Open a multi-file run and confirm Changes lists contracts or configuration before consumers and tests, supports file search and next/previous navigation, and renders additions and deletions in a unified diff.
+- [x] Collapse and reopen a diff section using keyboard controls, then repeat at a narrow viewport.
+- [x] Open text and binary entries in Files and confirm text is bounded, binary content is not decoded, and failed or unavailable content has an explicit state.
+- [x] Remove project membership and confirm the same Output ID can no longer load diff or artefact content.
 
 **Stop and report if:** the browser attempts to render an unbounded file, a storage key appears as authority, review navigation traps focus, or a non-member can fetch private evidence.

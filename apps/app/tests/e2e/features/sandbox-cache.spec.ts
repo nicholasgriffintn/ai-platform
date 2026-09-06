@@ -92,6 +92,55 @@ test.describe("Sandbox environment snapshots", () => {
     await expect(workbench.panel).toContainText("resume");
     await workbench.reload();
     await expect(workbench.panel).toContainText("resume");
+    const setupWithoutResume = await sandbox.saveEnvironment({
+      source: "polychat",
+      definition: {
+        version: 1,
+        setupCommands: [
+          "node -e \"require('node:fs').writeFileSync('prepared.txt', 'E2E_CACHE_READY')\"",
+        ],
+        resumeCommands: [],
+        runtimes: [{ name: "node", version: "22" }],
+        setupTimeoutSeconds: 30,
+      },
+    });
+
+    expect(setupWithoutResume.status()).toBe(200);
+    await workPage.reload();
+    await workPage.openNewProjectConversation();
+    await homePage.sendMessageAndRequireCompletion(
+      "Polychat sandbox E2E: update README after resume commands were removed.",
+    );
+    await expect
+      .poll(
+        async () => {
+          const current = await sandbox.latestRun();
+
+          return current?.runId !== second.runId ? current?.status : null;
+        },
+        { timeout: 90_000 },
+      )
+      .toBe("completed");
+    const fallback = await sandbox.latestRun();
+
+    expect(fallback?.manifest?.environment).toMatchObject({
+      preparationMode: "setup",
+      status: "completed",
+      cache: { status: "created" },
+    });
+    if (!fallback) {
+      throw new Error("The full setup fallback was not recorded");
+    }
+
+    const fallbackCommands = (await sandbox.events(fallback.runId)).filter(
+      ({ event }) => event.type === "environment_setup_command_started",
+    );
+
+    expect(fallbackCommands).toHaveLength(1);
+    expect(fallbackCommands[0]?.event.command).toContain("writeFileSync('prepared.txt'");
+    expect(JSON.stringify(fallbackCommands)).not.toContain("readFileSync('prepared.txt'");
+    await workbench.selectPane("Proof");
+    await expect(workbench.panel).toContainText("setup");
     for (const action of ["Rebuild", "Delete"] as const) {
       await environment.navigate(projectUrl);
       await environment.cacheAction(action);

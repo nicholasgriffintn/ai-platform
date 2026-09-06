@@ -49,7 +49,7 @@ test.describe("Sandbox service controls", () => {
       name: "unhealthy endpoint",
       environment: UNHEALTHY_SANDBOX_ENVIRONMENT,
       eventType: "service_start_timed_out",
-      error: /did not become ready within 5000ms/i,
+      error: /did not become ready within 15000ms/i,
     },
   ]) {
     test(`fails before agent work for an ${scenario.name}`, async ({
@@ -68,6 +68,26 @@ test.describe("Sandbox service controls", () => {
       await expect(workbench.dock).toBeVisible();
       await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessage("Polychat sandbox E2E: review a failed service startup.");
+      if (scenario.name === "unhealthy endpoint") {
+        await expect.poll(async () => (await sandbox.latestRun())?.runId).toBeTruthy();
+        const liveRun = await sandbox.latestRun();
+
+        if (!liveRun) {
+          throw new Error("The unhealthy service run was not created");
+        }
+
+        await expect
+          .poll(
+            async () =>
+              (await sandbox.events(liveRun.runId)).some(
+                ({ event }) => event.type === "service_starting",
+              ),
+            { timeout: 30_000 },
+          )
+          .toBe(true);
+        await workbench.selectPane("Preview");
+        await expect(workbench.panel).toContainText("Service starting");
+      }
       await expect
         .poll(async () => (await sandbox.latestRun())?.status, { timeout: 60_000 })
         .toBe("failed");
@@ -82,6 +102,8 @@ test.describe("Sandbox service controls", () => {
 
       expect(events.some(({ event }) => event.type === scenario.eventType)).toBe(true);
       expect(events.some(({ event }) => event.type === "planning_started")).toBe(false);
+      await workbench.selectPane("Preview");
+      await expect(workbench.panel).toContainText("Service unhealthy");
       await workbench.selectPane("Proof");
       await expect(workbench.panel).toContainText("failed");
       await workbench.reload();
@@ -289,6 +311,9 @@ test.describe("Sandbox service controls", () => {
     await workbench.controlService("fixture", "Stop");
     await expect(workbench.service("fixture")).toContainText("Stopped");
     expect((await sandbox.createPreview(run.runId, "fixture")).status()).toBe(409);
+    await workbench.selectPane("Preview");
+    await expect(workbench.panel).toContainText("Preview stopped");
+    await workbench.selectPane("Activity");
     await workbench.controlService("fixture", "Start");
     await expect(workbench.service("fixture")).toContainText("Healthy");
     const start = (await sandbox.instructions(run.runId)).find(

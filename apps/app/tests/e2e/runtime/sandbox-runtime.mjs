@@ -3,6 +3,12 @@ import { randomUUID } from "node:crypto";
 
 export const SANDBOX_IMAGE = "polychat-e2e-sandbox:0.12.9";
 export const SANDBOX_REPOSITORY = "nicholasgriffintn/polychat-e2e-fixture";
+export const SANDBOX_REPOSITORIES = [
+  SANDBOX_REPOSITORY,
+  "nicholasgriffintn/polychat-e2e-fixture-v2",
+  "nicholasgriffintn/polychat-e2e-fixture-malformed",
+  "nicholasgriffintn/polychat-e2e-fixture-oversized",
+];
 export const SANDBOX_INSTALLATION_ID = 987654;
 export const SANDBOX_WORKER_NAME = `polychat-e2e-sandbox-${randomUUID().slice(0, 8)}`;
 
@@ -75,17 +81,19 @@ export function mockSandboxGitHubRequest(request) {
 
   if (request.method === "GET" && url.pathname === "/installation/repositories") {
     return Response.json({
-      total_count: 1,
-      repositories: [
-        {
-          id: 987654,
-          name: "polychat-e2e-fixture",
-          full_name: SANDBOX_REPOSITORY,
+      total_count: SANDBOX_REPOSITORIES.length,
+      repositories: SANDBOX_REPOSITORIES.map((repository, index) => {
+        const name = repository.split("/").at(-1);
+
+        return {
+          id: 987654 + index,
+          name,
+          full_name: repository,
           private: true,
           default_branch: "main",
           permissions: { admin: true, push: true, pull: true },
-        },
-      ],
+        };
+      }),
     });
   }
 
@@ -96,13 +104,18 @@ export function resolveSandboxModelTool(body) {
   const latestContent = body.messages?.at(-1)?.content;
 
   if (typeof latestContent === "string" && latestContent.startsWith("Polychat sandbox E2E:")) {
+    const repository =
+      SANDBOX_REPOSITORIES.toSorted((left, right) => right.length - left.length).find((candidate) =>
+        latestContent.includes(candidate.split("/").at(-1)),
+      ) ?? SANDBOX_REPOSITORY;
+
     return {
       id: "e2e-sandbox-dispatch",
       type: "function",
       function: {
         name: "run_sandbox_task",
         arguments: JSON.stringify({
-          repo: SANDBOX_REPOSITORY,
+          repo: repository,
           task: latestContent,
           taskType: "documentation",
           shouldCommit: false,
@@ -125,6 +138,9 @@ export function resolveSandboxModelTool(body) {
   const failing = body.messages?.some(
     (message) => typeof message.content === "string" && message.content.includes("fail validation"),
   );
+  const multiFile = body.messages?.some(
+    (message) => typeof message.content === "string" && message.content.includes("multi-file"),
+  );
   const content = failing ? "Sandbox E2E invalid." : "Sandbox E2E verified.";
   const holdForControls = body.messages?.some(
     (message) =>
@@ -134,6 +150,17 @@ export function resolveSandboxModelTool(body) {
     (message) =>
       typeof message.content === "string" && message.content.includes("during service review"),
   );
+  const javascriptCode = multiFile
+    ? [
+        "const fs = require('node:fs')",
+        `fs.writeFileSync('config/schema.json', ${JSON.stringify('{\n  "version": 2,\n  "status": "verified"\n}\n')})`,
+        `fs.writeFileSync('src/consumer.js', ${JSON.stringify('export const releaseStatus = "verified";\n')})`,
+        `fs.writeFileSync('tests/consumer.test.js', ${JSON.stringify('import assert from "node:assert/strict";\n\nimport { releaseStatus } from "../src/consumer.js";\n\nassert.equal(releaseStatus, "verified");\n')})`,
+        "fs.writeFileSync('assets/logo.bin', Buffer.from([0, 80, 79, 76, 89, 67, 72, 65, 84]))",
+        `fs.appendFileSync('README.md', ${JSON.stringify(`\n${content}\n`)})`,
+        "console.log('E2E_SANDBOX_EDITED')",
+      ].join("; ")
+    : `${holdForControls ? `await new Promise(resolve => setTimeout(resolve, ${holdForServiceControls ? 40000 : 20000})); ` : ""}require('node:fs').appendFileSync('README.md', ${JSON.stringify(`\n${content}\n`)}); console.log('E2E_SANDBOX_EDITED');`;
 
   return {
     id: edited ? "e2e-sandbox-finish" : "e2e-sandbox-edit",
@@ -151,7 +178,7 @@ export function resolveSandboxModelTool(body) {
             language: python ? "python" : "javascript",
             code: python
               ? `from pathlib import Path\nwith Path('README.md').open('a') as report:\n    report.write(${JSON.stringify(`\n${content}\n`)})\nprint('E2E_SANDBOX_EDITED')`
-              : `${holdForControls ? `await new Promise(resolve => setTimeout(resolve, ${holdForServiceControls ? 40000 : 20000})); ` : ""}require('node:fs').appendFileSync('README.md', ${JSON.stringify(`\n${content}\n`)}); console.log('E2E_SANDBOX_EDITED');`,
+              : javascriptCode,
           }),
         },
   };

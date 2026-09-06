@@ -1,8 +1,8 @@
 import { Badge, Button, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { File, FileArchive, FileWarning } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
-import { parseUnifiedDiff } from "./parseUnifiedDiff";
+import { parseUnifiedDiff, type DiffFile } from "./parseUnifiedDiff";
 import type { RunEvidenceContent } from "./RunChangesView";
 import { useRunArtifactPreview, type RunArtifactItem } from "./useRunArtifactPreview";
 
@@ -83,6 +83,63 @@ function ArtifactPreview({
   );
 }
 
+function ChangedFilePreview({ file, truncated }: { file: DiffFile; truncated: boolean }) {
+  if (file.binary) {
+    return (
+      <EmptyState
+        icon={<FileWarning className="text-muted-foreground size-5" />}
+        title="Binary file"
+        message="This changed file is recorded but cannot be decoded safely as text."
+        className="min-h-52 border-0 bg-transparent"
+      />
+    );
+  }
+
+  const patch = file.hunks
+    .flatMap((hunk) => [hunk.header, ...hunk.lines])
+    .join("\n")
+    .trim();
+
+  if (!patch) {
+    return (
+      <EmptyState
+        icon={<FileWarning className="text-muted-foreground size-5" />}
+        title="File preview unavailable"
+        message="The run recorded this changed file without reviewable text."
+        className="min-h-52 border-0 bg-transparent"
+      />
+    );
+  }
+
+  return (
+    <section aria-label={`Preview of ${file.path}`} className="min-w-0 space-y-2">
+      <div className="flex items-center gap-2">
+        <h3 className="min-w-0 flex-1 truncate font-mono text-sm">{file.path}</h3>
+        <Badge variant="outline">{file.status}</Badge>
+      </div>
+      {truncated ? (
+        <output className="bg-attention/10 text-attention block rounded-lg px-3 py-2 text-sm">
+          This file is part of a bounded diff preview.
+        </output>
+      ) : null}
+      <pre className="border-border bg-canvas text-foreground max-h-[34rem] overflow-auto rounded-lg border p-3 text-xs leading-5 whitespace-pre-wrap">
+        <code>{patch}</code>
+      </pre>
+    </section>
+  );
+}
+
+function UnavailableFilePreview({ path }: { path: string }) {
+  return (
+    <EmptyState
+      icon={<FileWarning className="text-muted-foreground size-5" />}
+      title="File preview unavailable"
+      message={`${path} was recorded without reviewable content.`}
+      className="min-h-52 border-0 bg-transparent"
+    />
+  );
+}
+
 export function RunFilesView({
   diffContent,
   recordedFiles = EMPTY_RECORDED_FILES,
@@ -93,11 +150,13 @@ export function RunFilesView({
     () => parseUnifiedDiff(diffContent?.text ?? ""),
     [diffContent?.text],
   );
+  const [selectedFilePath, setSelectedFilePath] = useState<string>();
   const preview = useRunArtifactPreview(loadArtifact);
   const visibleFiles =
     changedFiles.length > 0
       ? changedFiles.map((file) => ({ path: file.path, status: file.status }))
       : recordedFiles.map((path) => ({ path, status: "recorded" }));
+  const selectedFile = changedFiles.find(({ path }) => path === selectedFilePath);
 
   if (visibleFiles.length === 0 && artifacts.length === 0) {
     return (
@@ -123,12 +182,21 @@ export function RunFilesView({
           {visibleFiles.length > 0 ? (
             <ul className="mt-1 space-y-1">
               {visibleFiles.map((file) => (
-                <li key={file.path} className="px-2 py-1.5 text-sm">
-                  <div className="flex items-center gap-2">
-                    <File className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
-                    <span className="min-w-0 flex-1 truncate font-mono text-xs">{file.path}</span>
+                <li key={file.path}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full justify-start"
+                    aria-label={`Open ${file.path}`}
+                    aria-pressed={selectedFilePath === file.path}
+                    onClick={() => setSelectedFilePath(file.path)}
+                    icon={<File className="size-4" />}
+                  >
+                    <span className="min-w-0 flex-1 truncate text-left font-mono text-xs">
+                      {file.path}
+                    </span>
                     <Badge variant="outline">{file.status}</Badge>
-                  </div>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -152,8 +220,13 @@ export function RunFilesView({
                     type="button"
                     variant="ghost"
                     className="w-full justify-start"
-                    aria-pressed={preview.artifact?.outputId === artifact.outputId}
-                    onClick={() => void preview.selectArtifact(artifact)}
+                    aria-pressed={
+                      !selectedFilePath && preview.artifact?.outputId === artifact.outputId
+                    }
+                    onClick={() => {
+                      setSelectedFilePath(undefined);
+                      void preview.selectArtifact(artifact);
+                    }}
                     icon={<FileArchive className="size-4" />}
                   >
                     <span className="min-w-0 flex-1 truncate text-left">{artifact.name}</span>
@@ -167,7 +240,13 @@ export function RunFilesView({
         </section>
       </div>
 
-      <ArtifactPreview {...preview} />
+      {selectedFilePath && !selectedFile ? (
+        <UnavailableFilePreview path={selectedFilePath} />
+      ) : selectedFile ? (
+        <ChangedFilePreview file={selectedFile} truncated={Boolean(diffContent?.truncated)} />
+      ) : (
+        <ArtifactPreview {...preview} />
+      )}
     </div>
   );
 }

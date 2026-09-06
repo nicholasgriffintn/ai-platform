@@ -134,6 +134,31 @@ test.describe("Sandbox command approval", () => {
       expect(events.some(({ event }) => event.type === "planning_started")).toBe(
         action === "Approve",
       );
+      await workbench.reload();
+      await workbench.selectPane("Activity");
+      const activityTitles = await workbench.activityTitles.allTextContents();
+      const approvalTitles =
+        action === "Expire"
+          ? [
+              "Command approval requested",
+              "Command approval escalated",
+              "Command approval timed out",
+            ]
+          : [
+              "Command approval requested",
+              action === "Approve" ? "Command approval approved" : "Command approval rejected",
+            ];
+
+      for (let index = 1; index < approvalTitles.length; index += 1) {
+        expect(activityTitles.indexOf(approvalTitles[index] ?? "")).toBeGreaterThan(
+          activityTitles.indexOf(approvalTitles[index - 1] ?? ""),
+        );
+      }
+
+      if (action !== "Approve") {
+        await expect(workbench.activityEntry("Run failed")).toContainText("Failed");
+      }
+
       await workbench.selectPane("Proof");
       await expect(workbench.panel).toContainText(action === "Approve" ? "completed" : "failed");
       await workbench.reload();
