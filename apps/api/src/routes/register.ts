@@ -10,6 +10,7 @@ import audio from "./audio";
 import auth from "./auth";
 import capabilities from "./capabilities";
 import chat from "./chat";
+import memoryDocuments from "./memory-documents";
 import models from "./models";
 import notifications from "./notifications";
 import outputs from "./outputs";
@@ -55,7 +56,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/sources", sources);
   app.route("/realtime", realtime);
   app.route("/search", search);
-  app.route("/teammates", teammates);
+  app.route("/memory/documents", memoryDocuments);
   app.route("/teammates", teammates);
   app.route("/admin", admin);
   app.route("/webhooks", webhook);

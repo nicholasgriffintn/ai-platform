@@ -1,7 +1,7 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser, IUserSettings } from "~/types";
 
-export type MemoryProviderId = "built-in" | "hindsight" | "honcho";
+export type MemoryProviderId = "built-in" | "documents" | "hindsight" | "honcho";
 
 export interface MemoryProviderContext {
   env: IEnv;

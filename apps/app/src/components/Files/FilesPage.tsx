@@ -5,6 +5,7 @@ import { type ReactNode, useState } from "react";
 import { PageShell } from "~/components/Core/PageShell";
 import { type FilesTab, getFilesTabPath, parseFilesSubpath } from "~/lib/files-route";
 
+import { MemoryLibrary } from "./MemoryLibrary";
 import { OutputsLibrary } from "./OutputsLibrary";
 import { SourcesLibrary } from "./SourcesLibrary";
 
@@ -17,7 +18,13 @@ const TABS: Array<{ id: FilesTab; label: string; description: string }> = [
   {
     id: "given",
     label: "Given",
-    description: "Files, memories, links, repositories and connected records you have supplied.",
+    description: "Files, links, repositories and connected records you have supplied.",
+  },
+  {
+    id: "memory",
+    label: "Memory",
+    description:
+      "What Polychat remembers, kept as documents you can read, edit and delete. Every save is a revision.",
   },
 ];
 
@@ -70,7 +77,9 @@ export function FilesPage({
           ))}
         </ul>
       </nav>
-      {tab === "given" ? (
+      {tab === "memory" ? (
+        <MemoryLibrary projectId={projectId} />
+      ) : tab === "given" ? (
         <SourcesLibrary projectId={projectId} createRequestKey={createRequestKey} />
       ) : (
         <OutputsLibrary

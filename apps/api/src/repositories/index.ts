@@ -18,6 +18,7 @@ import { ConversationRunRepository } from "./ConversationRunRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { GoalRepository } from "./GoalRepository";
 import { InfraCostDailyRepository } from "./InfraCostDailyRepository";
+import { MemoryDocumentRepository } from "./MemoryDocumentRepository";
 import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
 import { MobilePushRepository } from "./MobilePushRepository";
@@ -120,6 +121,7 @@ export class RepositoryManager {
   private artificialAnalysisRepo: ArtificialAnalysisRepository;
   private authChallengeRepo: AuthChallengeRepository;
   private authoredSkillRepo: AuthoredSkillRepository;
+  private memoryDocumentRepo: MemoryDocumentRepository;
   private auditRepo: AuditRepository;
   private oauthStateRepo: OAuthStateRepository;
   private outputRepo: OutputRepository;
@@ -164,6 +166,7 @@ export class RepositoryManager {
     this.artificialAnalysisRepo = new ArtificialAnalysisRepository(env);
     this.authChallengeRepo = new AuthChallengeRepository(env);
     this.authoredSkillRepo = new AuthoredSkillRepository(env);
+    this.memoryDocumentRepo = new MemoryDocumentRepository(env);
     this.auditRepo = new AuditRepository(env);
     this.oauthStateRepo = new OAuthStateRepository(env);
     this.outputRepo = new OutputRepository(env);
@@ -221,6 +224,10 @@ export class RepositoryManager {
 
   public get authoredSkills(): AuthoredSkillRepository {
     return this.authoredSkillRepo;
+  }
+
+  public get memoryDocuments(): MemoryDocumentRepository {
+    return this.memoryDocumentRepo;
   }
 
   public get audit(): AuditRepository {

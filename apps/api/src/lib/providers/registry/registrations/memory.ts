@@ -1,6 +1,7 @@
 import type { MemoryProvider } from "../../capabilities/memory";
 import {
   BuiltInMemoryProvider,
+  DocumentsMemoryProvider,
   HindsightMemoryProvider,
   HonchoMemoryProvider,
 } from "../../capabilities/memory/providers";
@@ -28,6 +29,25 @@ const memoryProviders: ProviderRegistration<MemoryProvider>[] = [
       vendor: "Polychat",
       categories: ["memory"],
       description: "Built-in D1 and Vectorize-backed assistant memories.",
+    },
+  },
+  {
+    name: "documents",
+    aliases: ["files"],
+    lifecycle: "transient",
+    create: (context) =>
+      new DocumentsMemoryProvider({
+        env: ensureEnv(context),
+        user: ensureUser(context, { optional: true }),
+        userSettings: context.userSettings,
+        serviceContext: context.serviceContext,
+        memoryScope: context.memoryScope,
+      }),
+    metadata: {
+      vendor: "Polychat",
+      categories: ["memory"],
+      description:
+        "Memories kept as plain documents you can read, edit and roll back, with every save a revision.",
     },
   },
   {

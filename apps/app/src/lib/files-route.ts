@@ -1,7 +1,7 @@
 import { getProjectBasePath } from "./conversation-route";
 import { PLACE_PATHS } from "./navigation/places";
 
-export type FilesTab = "given" | "made";
+export type FilesTab = "given" | "made" | "memory";
 
 export const DEFAULT_FILES_TAB: FilesTab = "made";
 
@@ -14,7 +14,7 @@ export function parseFilesSubpath(subpath: string): FilesLocation {
   const segments = subpath.split("/").filter(Boolean);
   const [first, ...rest] = segments;
 
-  if (first === "given" || first === "made") {
+  if (first === "given" || first === "made" || first === "memory") {
     return { tab: first, itemPath: rest.join("/") };
   }
 

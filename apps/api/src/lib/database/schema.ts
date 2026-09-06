@@ -507,6 +507,68 @@ export const authoredSkill = sqliteTable(
 
 export type AuthoredSkill = typeof authoredSkill.$inferSelect;
 
+export const memoryDocument = sqliteTable(
+  "memory_document",
+  {
+    id: text().primaryKey(),
+    scope_type: text({ enum: ["personal", "project"] }).notNull(),
+    scope_id: text().notNull(),
+    name: text().notNull(),
+    content: text().default("").notNull(),
+    revision: integer().default(1).notNull(),
+    created_by: integer()
+      .notNull()
+      .references(() => user.id),
+    deleted_at: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    scopeNameIdx: uniqueIndex("memory_document_scope_name_idx")
+      .on(table.scope_type, table.scope_id, table.name)
+      .where(sql`${table.deleted_at} IS NULL`),
+    scopeIdx: index("memory_document_scope_idx").on(table.scope_type, table.scope_id),
+    scopeTypeCheck: check(
+      "memory_document_scope_type_check",
+      sql`${table.scope_type} IN ('personal', 'project')`,
+    ),
+  }),
+);
+
+export type MemoryDocumentRow = typeof memoryDocument.$inferSelect;
+
+export const memoryDocumentRevision = sqliteTable(
+  "memory_document_revision",
+  {
+    id: text().primaryKey(),
+    document_id: text()
+      .notNull()
+      .references(() => memoryDocument.id, { onDelete: "cascade" }),
+    revision: integer().notNull(),
+    content: text().default("").notNull(),
+    change_note: text(),
+    created_by: integer()
+      .notNull()
+      .references(() => user.id),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    documentRevisionIdx: uniqueIndex("memory_document_revision_document_revision_idx").on(
+      table.document_id,
+      table.revision,
+    ),
+  }),
+);
+
+export type MemoryDocumentRevisionRow = typeof memoryDocumentRevision.$inferSelect;
+
 export const authoredSkillRevision = sqliteTable(
   "authored_skill_revision",
   {
@@ -966,7 +1028,7 @@ export const userSettings = sqliteTable(
     memories_chat_history_enabled: integer({ mode: "boolean" }).default(false),
     temporary_chats_default: integer({ mode: "boolean" }).default(false),
     memory_provider: text({
-      enum: ["built-in", "hindsight", "honcho"],
+      enum: ["built-in", "documents", "hindsight", "honcho"],
     }).default("built-in"),
     transcription_provider: text({
       enum: ["workers", "mistral", "replicate"],
