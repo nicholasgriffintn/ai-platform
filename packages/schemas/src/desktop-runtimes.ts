@@ -176,6 +176,29 @@ export const agentApprovalDecisionSchema = z.object({
 
 export type AgentApprovalDecision = z.infer<typeof agentApprovalDecisionSchema>;
 
+export const SIGNED_OUT_ACCOUNT = "device-only" as const;
+
+export const localConversationSchema = z.object({
+  id: z.string().min(1),
+  accountId: z.string().min(1),
+  endpointId: z.string().min(1),
+  nativeModelId: z.string().min(1),
+  title: z.string().min(1).max(200),
+  updatedAt: z.string(),
+});
+
+export type LocalConversation = z.infer<typeof localConversationSchema>;
+
+export const localMessageSchema = z.object({
+  id: z.string().min(1),
+  conversationId: z.string().min(1),
+  role: z.enum(["system", "user", "assistant"]),
+  content: z.string(),
+  createdAt: z.string(),
+});
+
+export type LocalMessage = z.infer<typeof localMessageSchema>;
+
 export const desktopModelRunRequestSchema = z.object({
   endpointId: z.string().min(1),
   nativeModelId: z.string().min(1),

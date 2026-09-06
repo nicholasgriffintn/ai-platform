@@ -18,7 +18,10 @@ export function Composer({
   model: DiscoveredModel;
 }) {
   const [prompt, setPrompt] = useState("");
-  const { reply, progress, failure, isRunning, send, cancel } = useModelRun(backend);
+  const { messages, reply, progress, failure, isRunning, send, cancel } = useModelRun(
+    backend,
+    model,
+  );
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -27,7 +30,7 @@ export function Composer({
       return;
     }
 
-    void send(model.endpointId, model.nativeId, prompt);
+    void send(prompt);
   }
 
   return (
@@ -49,6 +52,14 @@ export function Composer({
       ) : null}
       {progress ? <p>{PROGRESS_LABELS[progress] ?? progress}</p> : null}
       {failure ? <p role="alert">{failure}</p> : null}
+      <ol>
+        {messages.map((message) => (
+          <li key={message.id}>
+            <span>{message.role === "user" ? "You" : model.displayName}</span>
+            <p>{message.content}</p>
+          </li>
+        ))}
+      </ol>
       {reply ? <p>{reply}</p> : null}
     </form>
   );

@@ -8,6 +8,8 @@ import type {
   DesktopRuntimeReadiness,
   DesktopStreamEvent,
   DiscoveredModel,
+  LocalConversation,
+  LocalMessage,
 } from "@ngriffin_uk/polychat-schemas";
 
 export interface DesktopRun {
@@ -26,6 +28,10 @@ export interface DesktopBackend {
   listAgentSessions: (endpointId: string) => Promise<AgentRuntimeSession[]>;
   startAgentRun: (request: DesktopAgentRunRequest) => Promise<DesktopRun>;
   decideApproval: (endpointId: string, decision: AgentApprovalDecision) => Promise<void>;
+  listConversations: (accountId: string) => Promise<LocalConversation[]>;
+  saveConversation: (conversation: LocalConversation) => Promise<void>;
+  listMessages: (conversationId: string) => Promise<LocalMessage[]>;
+  appendMessage: (message: LocalMessage) => Promise<void>;
 }
 
 export interface FakeDesktopBackendSeed {
@@ -34,6 +40,8 @@ export interface FakeDesktopBackendSeed {
   models?: DiscoveredModel[];
   sessions?: AgentRuntimeSession[];
   script?: DesktopStreamEvent[];
+  conversations?: LocalConversation[];
+  messages?: LocalMessage[];
 }
 
 export interface FakeDesktopBackend extends DesktopBackend {
@@ -80,6 +88,8 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
   }
 
   const saved: DesktopEndpoint[] = [...(seed.endpoints ?? [])];
+  const conversations: LocalConversation[] = [...(seed.conversations ?? [])];
+  const messages: LocalMessage[] = [...(seed.messages ?? [])];
 
   return {
     decisions,
@@ -112,6 +122,24 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
     startAgentRun: async () => createRun(seed.script ?? []),
     decideApproval: async (endpointId, decision) => {
       decisions.push({ endpointId, decision });
+    },
+    listConversations: async (accountId) =>
+      conversations.filter((conversation) => conversation.accountId === accountId),
+    saveConversation: async (conversation) => {
+      const existing = conversations.findIndex((candidate) => candidate.id === conversation.id);
+
+      if (existing === -1) {
+        conversations.push(conversation);
+
+        return;
+      }
+
+      conversations[existing] = conversation;
+    },
+    listMessages: async (conversationId) =>
+      messages.filter((message) => message.conversationId === conversationId),
+    appendMessage: async (message) => {
+      messages.push(message);
     },
   };
 }

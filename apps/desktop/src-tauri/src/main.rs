@@ -15,7 +15,7 @@ use futures_util::StreamExt;
 use runs::{RunRegistry, StreamEvent};
 use rusqlite::Connection;
 use serde::Serialize;
-use store::Store;
+use store::{LocalConversation, LocalMessage, Store};
 use tauri::ipc::Channel;
 use tauri::{Manager, State};
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
@@ -214,6 +214,35 @@ async fn discover_models(
 }
 
 #[tauri::command]
+fn list_conversations(
+    account_id: String,
+    store: State<'_, Store>,
+) -> Result<Vec<LocalConversation>, String> {
+    store.list_conversations(&account_id)
+}
+
+#[tauri::command]
+fn save_conversation(
+    conversation: LocalConversation,
+    store: State<'_, Store>,
+) -> Result<(), String> {
+    store.save_conversation(&conversation)
+}
+
+#[tauri::command]
+fn list_messages(
+    conversation_id: String,
+    store: State<'_, Store>,
+) -> Result<Vec<LocalMessage>, String> {
+    store.list_messages(&conversation_id)
+}
+
+#[tauri::command]
+fn append_message(message: LocalMessage, store: State<'_, Store>) -> Result<(), String> {
+    store.append_message(&message)
+}
+
+#[tauri::command]
 fn cancel_model_run(run_id: String, registry: State<'_, RunRegistry>) {
     registry.cancel(&run_id);
 }
@@ -359,6 +388,10 @@ fn main() {
             discover_models,
             save_endpoint,
             forget_endpoint,
+            list_conversations,
+            save_conversation,
+            list_messages,
+            append_message,
             start_model_run,
             cancel_model_run
         ])

@@ -4,6 +4,8 @@ import {
   desktopRuntimeReadinessSchema,
   desktopStreamEventSchema,
   discoveredModelSchema,
+  localConversationSchema,
+  localMessageSchema,
   type DesktopModelRunRequest,
   type DesktopStreamEvent,
 } from "@ngriffin_uk/polychat-schemas";
@@ -18,6 +20,10 @@ export type ConnectedDesktopBackend = Pick<
   | "probeEndpoint"
   | "discoverModels"
   | "startModelRun"
+  | "listConversations"
+  | "saveConversation"
+  | "listMessages"
+  | "appendMessage"
 >;
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
@@ -27,6 +33,16 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
   },
   forgetEndpoint: async (endpointId) => {
     await invoke("forget_endpoint", { endpointId });
+  },
+  listConversations: async (accountId) =>
+    localConversationSchema.array().parse(await invoke("list_conversations", { accountId })),
+  saveConversation: async (conversation) => {
+    await invoke("save_conversation", { conversation });
+  },
+  listMessages: async (conversationId) =>
+    localMessageSchema.array().parse(await invoke("list_messages", { conversationId })),
+  appendMessage: async (message) => {
+    await invoke("append_message", { message });
   },
   probeEndpoint: async (endpointId) =>
     desktopRuntimeReadinessSchema.parse(await invoke("probe_endpoint", { endpointId })),

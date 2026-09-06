@@ -1,39 +1,113 @@
-import type { DesktopRunProgress } from "@ngriffin_uk/polychat-schemas";
-import { useCallback, useRef, useState } from "react";
+import {
+  SIGNED_OUT_ACCOUNT,
+  type DesktopRunProgress,
+  type DiscoveredModel,
+  type LocalMessage,
+} from "@ngriffin_uk/polychat-schemas";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { ConnectedDesktopBackend } from "./desktop-backend";
 
 export interface ModelRunState {
+  messages: LocalMessage[];
   reply: string;
   progress: DesktopRunProgress | null;
   failure: string | null;
   isRunning: boolean;
 }
 
-const IDLE: ModelRunState = { reply: "", progress: null, failure: null, isRunning: false };
+function conversationIdFor(model: DiscoveredModel): string {
+  return `${model.endpointId}:${model.nativeId}`;
+}
 
-export function useModelRun(backend: ConnectedDesktopBackend) {
-  const [state, setState] = useState<ModelRunState>(IDLE);
+function newMessage(
+  conversationId: string,
+  role: LocalMessage["role"],
+  content: string,
+): LocalMessage {
+  return {
+    id: globalThis.crypto.randomUUID(),
+    conversationId,
+    role,
+    content,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+export function useModelRun(backend: ConnectedDesktopBackend, model: DiscoveredModel) {
+  const conversationId = conversationIdFor(model);
+  const [state, setState] = useState<ModelRunState>({
+    messages: [],
+    reply: "",
+    progress: null,
+    failure: null,
+    isRunning: false,
+  });
   const cancelRef = useRef<(() => void) | null>(null);
 
+  useEffect(() => {
+    let active = true;
+
+    async function restore() {
+      try {
+        const messages = await backend.listMessages(conversationId);
+
+        if (active) {
+          setState((current) => ({ ...current, messages }));
+        }
+      } catch (cause) {
+        if (active) {
+          setState((current) => ({ ...current, failure: String(cause) }));
+        }
+      }
+    }
+
+    void restore();
+
+    return () => {
+      active = false;
+    };
+  }, [backend, conversationId]);
+
   const send = useCallback(
-    async (endpointId: string, nativeModelId: string, prompt: string) => {
-      setState({ reply: "", progress: null, failure: null, isRunning: true });
+    async (prompt: string) => {
+      const question = newMessage(conversationId, "user", prompt);
+
+      setState((current) => ({
+        ...current,
+        messages: [...current.messages, question],
+        reply: "",
+        progress: null,
+        failure: null,
+        isRunning: true,
+      }));
+
+      await backend.saveConversation({
+        id: conversationId,
+        accountId: SIGNED_OUT_ACCOUNT,
+        endpointId: model.endpointId,
+        nativeModelId: model.nativeId,
+        title: model.displayName,
+        updatedAt: question.createdAt,
+      });
+      await backend.appendMessage(question);
 
       const run = await backend.startModelRun({
-        endpointId,
-        nativeModelId,
-        conversationId: "desktop-scratch",
+        endpointId: model.endpointId,
+        nativeModelId: model.nativeId,
+        conversationId,
         messages: [{ role: "user", content: prompt }],
         maxOutputTokens: null,
       });
 
       cancelRef.current = run.cancel;
+      let answer = "";
 
       try {
         for await (const event of run.events) {
           if (event.type === "text") {
-            setState((current) => ({ ...current, reply: current.reply + event.delta }));
+            answer += event.delta;
+            setState((current) => ({ ...current, reply: answer }));
           }
 
           if (event.type === "progress") {
@@ -41,19 +115,27 @@ export function useModelRun(backend: ConnectedDesktopBackend) {
           }
 
           if (event.type === "failed") {
-            setState((current) => ({ ...current, failure: event.message, isRunning: false }));
-          }
-
-          if (event.type === "finished") {
-            setState((current) => ({ ...current, progress: null, isRunning: false }));
+            setState((current) => ({ ...current, failure: event.message }));
           }
         }
       } finally {
         cancelRef.current = null;
-        setState((current) => ({ ...current, isRunning: false }));
+
+        if (answer.length > 0) {
+          const reply = newMessage(conversationId, "assistant", answer);
+
+          await backend.appendMessage(reply);
+          setState((current) => ({
+            ...current,
+            messages: [...current.messages, reply],
+            reply: "",
+          }));
+        }
+
+        setState((current) => ({ ...current, progress: null, isRunning: false }));
       }
     },
-    [backend],
+    [backend, conversationId, model],
   );
 
   const cancel = useCallback(() => {

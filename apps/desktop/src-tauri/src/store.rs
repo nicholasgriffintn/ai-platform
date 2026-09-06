@@ -1,8 +1,32 @@
 use std::sync::Mutex;
 
 use rusqlite::{params, Connection};
+use serde::{Deserialize, Serialize};
 
 use crate::egress::{DesktopEndpoint, EndpointKind, EndpointTransport};
+
+pub const SIGNED_OUT_ACCOUNT: &str = "device-only";
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct LocalConversation {
+    pub id: String,
+    pub account_id: String,
+    pub endpoint_id: String,
+    pub native_model_id: String,
+    pub title: String,
+    pub updated_at: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct LocalMessage {
+    pub id: String,
+    pub conversation_id: String,
+    pub role: String,
+    pub content: String,
+    pub created_at: String,
+}
 
 pub struct Store {
     connection: Mutex<Connection>,
@@ -72,7 +96,27 @@ impl Store {
                     pairing_secret_stored INTEGER NOT NULL,
                     approved_at TEXT NOT NULL,
                     last_seen_at TEXT
-                );",
+                );
+                CREATE TABLE IF NOT EXISTS conversations (
+                    id TEXT PRIMARY KEY,
+                    account_id TEXT NOT NULL,
+                    endpoint_id TEXT NOT NULL,
+                    native_model_id TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS conversations_by_account
+                    ON conversations (account_id, updated_at DESC);
+                CREATE TABLE IF NOT EXISTS messages (
+                    id TEXT PRIMARY KEY,
+                    conversation_id TEXT NOT NULL
+                        REFERENCES conversations (id) ON DELETE CASCADE,
+                    role TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS messages_by_conversation
+                    ON messages (conversation_id, created_at);",
             )
         })
     }
@@ -140,6 +184,98 @@ impl Store {
             connection.execute("DELETE FROM endpoints WHERE id = ?1", params![endpoint_id])?;
 
             Ok(())
+        })
+    }
+
+    pub fn save_conversation(&self, conversation: &LocalConversation) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "INSERT INTO conversations (id, account_id, endpoint_id, native_model_id,
+                                            title, updated_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+                 ON CONFLICT(id) DO UPDATE SET
+                    title = excluded.title,
+                    updated_at = excluded.updated_at",
+                params![
+                    conversation.id,
+                    conversation.account_id,
+                    conversation.endpoint_id,
+                    conversation.native_model_id,
+                    conversation.title,
+                    conversation.updated_at,
+                ],
+            )?;
+
+            Ok(())
+        })
+    }
+
+    pub fn list_conversations(&self, account_id: &str) -> Result<Vec<LocalConversation>, String> {
+        self.with_connection(|connection| {
+            let mut statement = connection.prepare(
+                "SELECT id, account_id, endpoint_id, native_model_id, title, updated_at
+                 FROM conversations
+                 WHERE account_id = ?1
+                 ORDER BY updated_at DESC, id",
+            )?;
+
+            let rows = statement.query_map(params![account_id], |row| {
+                Ok(LocalConversation {
+                    id: row.get(0)?,
+                    account_id: row.get(1)?,
+                    endpoint_id: row.get(2)?,
+                    native_model_id: row.get(3)?,
+                    title: row.get(4)?,
+                    updated_at: row.get(5)?,
+                })
+            })?;
+
+            rows.collect()
+        })
+    }
+
+    pub fn append_message(&self, message: &LocalMessage) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "INSERT INTO messages (id, conversation_id, role, content, created_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5)",
+                params![
+                    message.id,
+                    message.conversation_id,
+                    message.role,
+                    message.content,
+                    message.created_at,
+                ],
+            )?;
+            connection.execute(
+                "UPDATE conversations SET updated_at = ?2 WHERE id = ?1",
+                params![message.conversation_id, message.created_at],
+            )?;
+
+            Ok(())
+        })
+    }
+
+    pub fn list_messages(&self, conversation_id: &str) -> Result<Vec<LocalMessage>, String> {
+        self.with_connection(|connection| {
+            let mut statement = connection.prepare(
+                "SELECT id, conversation_id, role, content, created_at
+                 FROM messages
+                 WHERE conversation_id = ?1
+                 ORDER BY created_at, id",
+            )?;
+
+            let rows = statement.query_map(params![conversation_id], |row| {
+                Ok(LocalMessage {
+                    id: row.get(0)?,
+                    conversation_id: row.get(1)?,
+                    role: row.get(2)?,
+                    content: row.get(3)?,
+                    created_at: row.get(4)?,
+                })
+            })?;
+
+            rows.collect()
         })
     }
 
@@ -242,6 +378,107 @@ mod tests {
 
         assert_eq!(saved.len(), 1);
         assert_eq!(saved[0].label, "Second");
+    }
+
+    fn conversation(id: &str, account_id: &str) -> LocalConversation {
+        LocalConversation {
+            id: id.to_string(),
+            account_id: account_id.to_string(),
+            endpoint_id: "ollama-loopback".to_string(),
+            native_model_id: "gpt-oss:20b".to_string(),
+            title: "Untitled".to_string(),
+            updated_at: "2026-09-06T09:00:00Z".to_string(),
+        }
+    }
+
+    fn message(id: &str, conversation_id: &str, role: &str, created_at: &str) -> LocalMessage {
+        LocalMessage {
+            id: id.to_string(),
+            conversation_id: conversation_id.to_string(),
+            role: role.to_string(),
+            content: format!("content of {id}"),
+            created_at: created_at.to_string(),
+        }
+    }
+
+    #[test]
+    fn never_shows_one_accounts_conversations_to_another() {
+        let store = store();
+
+        store
+            .save_conversation(&conversation("a", "account-1"))
+            .expect("saved");
+        store
+            .save_conversation(&conversation("b", "account-2"))
+            .expect("saved");
+        store
+            .save_conversation(&conversation("c", SIGNED_OUT_ACCOUNT))
+            .expect("saved");
+
+        let first = store.list_conversations("account-1").expect("listed");
+        let signed_out = store.list_conversations(SIGNED_OUT_ACCOUNT).expect("listed");
+
+        assert_eq!(first.len(), 1);
+        assert_eq!(first[0].id, "a");
+        assert_eq!(signed_out.len(), 1);
+        assert_eq!(signed_out[0].id, "c");
+    }
+
+    #[test]
+    fn returns_messages_in_the_order_they_were_written() {
+        let store = store();
+
+        store
+            .save_conversation(&conversation("a", "account-1"))
+            .expect("saved");
+        store
+            .append_message(&message("m1", "a", "user", "2026-09-06T09:00:00Z"))
+            .expect("appended");
+        store
+            .append_message(&message("m2", "a", "assistant", "2026-09-06T09:00:01Z"))
+            .expect("appended");
+
+        let messages = store.list_messages("a").expect("listed");
+
+        assert_eq!(messages.len(), 2);
+        assert_eq!(messages[0].role, "user");
+        assert_eq!(messages[1].role, "assistant");
+    }
+
+    #[test]
+    fn appending_a_message_moves_its_conversation_to_the_front() {
+        let store = store();
+
+        store
+            .save_conversation(&conversation("older", "account-1"))
+            .expect("saved");
+        store
+            .save_conversation(&conversation("newer", "account-1"))
+            .expect("saved");
+        store
+            .append_message(&message("m1", "older", "user", "2026-09-06T10:00:00Z"))
+            .expect("appended");
+
+        let listed = store.list_conversations("account-1").expect("listed");
+
+        assert_eq!(listed[0].id, "older");
+    }
+
+    #[test]
+    fn keeps_messages_out_of_conversations_that_did_not_produce_them() {
+        let store = store();
+
+        store
+            .save_conversation(&conversation("a", "account-1"))
+            .expect("saved");
+        store
+            .save_conversation(&conversation("b", "account-1"))
+            .expect("saved");
+        store
+            .append_message(&message("m1", "a", "user", "2026-09-06T09:00:00Z"))
+            .expect("appended");
+
+        assert_eq!(store.list_messages("b").expect("listed").len(), 0);
     }
 
     #[test]
