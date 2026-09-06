@@ -8,6 +8,8 @@ Chat is conversation-first, with personal capabilities and rich experiences belo
 
 Switch between Chat and Work with the toggle at the top of the page. Every sidebar starts with New chat and Search, then the same places: Attention, Files and Teammates. New chat follows the mode you are in: in Chat it opens a fresh personal conversation; inside a project it starts one there; elsewhere in Work it asks which workspace and project the conversation belongs to. Chat and Work keep their own sidebars for conversations and projects; a project's sidebar offers a new conversation, Tasks, Files, Activity and Teammates and tools. Apps open from the library, from deep links or from the composer rather than from a sidebar item.
 
+In a project conversation, the composer carries an **As task** toggle. Turn it on and what you type is filed as a project task rather than asked now, and the task remembers the conversation it came from so you can get back to the thinking behind it. Coding conversations keep their task-type control instead.
+
 A project opens on its conversations, with Chat, Tasks and Files as tabs across the top and a gear beside them. Everything that configures the project, the brief, the model tier, what it knows, what runs on a schedule, its coding environment and its attached teammates and tools, lives behind that gear rather than filling the page you land on.
 
 **Files** holds everything you have given Polychat (sources, memories, links, repositories, connected records) under Given and everything it has made under Made, personally or per project. **Attention** collects project work that needs you across every workspace together with your own background tasks. Settings groups into Account, Appearance and pet, Models and keys and Advanced.

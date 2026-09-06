@@ -78,6 +78,7 @@ const flow: ProjectFlow = {
 
 const task: ProjectTask = {
   id: "task-1",
+  originConversationId: null,
   projectId: "project-1",
   workspaceId: "workspace-1",
   objective: "Prepare the release note",
@@ -406,6 +407,7 @@ describe("TaskDetail", () => {
         teammates={[]}
         blockedBy={[]}
         conversationHref={null}
+        originConversationHref={null}
         taskHref={() => "/tasks/task-1"}
         runHref={() => "/chat?run_id=run-1"}
         outputHref={() => "/outputs/output-1"}
@@ -468,6 +470,7 @@ describe("TaskDetail", () => {
         teammates={[]}
         blockedBy={[]}
         conversationHref="/chat?completion_id=conversation-2"
+        originConversationHref={null}
         taskHref={() => "/tasks/task-1"}
         runHref={() => "/chat?run_id=run-1"}
         outputHref={() => "/outputs/output-1"}

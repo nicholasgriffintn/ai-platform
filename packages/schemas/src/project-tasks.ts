@@ -182,6 +182,7 @@ export const projectTaskSchema = z.object({
   assigneeUserId: z.number().int().positive().nullable(),
   runnerIdentityUserId: z.number().int().positive().nullable(),
   conversationId: z.string().nullable(),
+  originConversationId: z.string().nullable(),
   goalId: z.string().nullable(),
   dispatchTaskId: z.string().nullable(),
   runId: z.string().nullable().optional(),
@@ -332,6 +333,7 @@ const taskWorkItemFields = {
   runner: projectTaskRunnerSchema.nullable(),
   stageId: z.string().trim().min(1).max(40).nullable(),
   tokenBudget: z.number().int().positive().max(10_000_000).nullable(),
+  originConversationId: z.string().min(1).nullable(),
 };
 
 export const createProjectTaskSchema = z

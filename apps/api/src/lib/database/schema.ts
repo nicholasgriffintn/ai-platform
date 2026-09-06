@@ -2195,6 +2195,9 @@ export const projectTask = sqliteTable(
     conversation_id: text().references(() => conversation.id, {
       onDelete: "set null",
     }),
+    origin_conversation_id: text().references(() => conversation.id, {
+      onDelete: "set null",
+    }),
     goal_id: text(),
     dispatch_task_id: text(),
     run_id: text().references(() => conversationRun.id, { onDelete: "set null" }),
@@ -2227,6 +2230,9 @@ export const projectTask = sqliteTable(
       .on(table.conversation_id)
       .where(sql`${table.conversation_id} IS NOT NULL`),
     runIdx: index("project_task_run_idx").on(table.run_id),
+    originConversationIdx: index("project_task_origin_conversation_idx").on(
+      table.origin_conversation_id,
+    ),
   }),
 );
 
