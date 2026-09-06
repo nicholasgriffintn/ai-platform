@@ -1,7 +1,8 @@
 import { createServiceContext } from "~/lib/context/serviceContext";
 import {
   handleInboundChannelMessage,
-  type InboundChannelTaskData,
+  isInboundBindingTaskData,
+  parseInboundChannelTaskData,
 } from "~/services/channels/inbound";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
@@ -13,19 +14,13 @@ const logger = getLogger({ prefix: "services/tasks/handlers/InboundMessageHandle
 
 export class InboundMessageHandler implements TaskHandler {
   public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
-    const data = message.task_data as InboundChannelTaskData;
+    const data = parseInboundChannelTaskData(message.task_data);
 
-    if (!message.user_id || !data?.channel || !data.providerId || !data.providerSettingsId) {
+    if (!message.user_id || !data) {
       return {
         status: "error",
-        message: "user_id, channel, providerId, and providerSettingsId are required",
-      };
-    }
-
-    if (!data.message?.from || !data.message.messageId) {
-      return {
-        status: "error",
-        message: "Inbound message is missing a sender or message id",
+        message:
+          "user_id, channel, a sender, a message id, and either a messaging provider or a channel binding are required",
       };
     }
 
@@ -45,13 +40,25 @@ export class InboundMessageHandler implements TaskHandler {
     if (result.status === "unauthorised_sender") {
       logger.warn("Ignored queued inbound message from an unauthorised sender", {
         channel: data.channel,
-        providerId: data.providerId,
         userId: message.user_id,
       });
 
       return {
         status: "skipped",
         message: "Inbound message sender is not authorised",
+      };
+    }
+
+    if (result.status === "channel_unavailable") {
+      logger.warn("Ignored queued inbound message for a channel that is no longer connected", {
+        channel: data.channel,
+        userId: message.user_id,
+        ...(isInboundBindingTaskData(data) ? { bindingId: data.bindingId } : {}),
+      });
+
+      return {
+        status: "skipped",
+        message: "Inbound message channel is no longer connected",
       };
     }
 
