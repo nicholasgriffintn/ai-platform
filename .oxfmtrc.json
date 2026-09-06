@@ -27,6 +27,8 @@
     "**/coverage/**",
     "**/.wrangler/**",
     "**/generated/**",
-    "apps/api/src/data-model/models/**"
+    "**/target/**",
+    "apps/api/src/data-model/models/**",
+    "apps/desktop/index.html"
   ]
 }
