@@ -91,19 +91,19 @@ type TierLineup = Record<ModelTier, Record<ModelTierRole, readonly ModelLineupCa
 
 const hostedFreeAgent = {
   ultra: [
-    { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "max" },
-    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "max" },
+    { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "xhigh" },
+    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "max" },
   ],
   high: [
-    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "xhigh" },
+    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
     { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "xhigh" },
-    { model: "deepseek-v4-pro", provider: "deepseek", effort: "xhigh" },
+    { model: "deepseek-v4-pro", provider: "deepseek", effort: "max" },
   ],
   medium: [
     { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "medium" },
-    { model: "deepseek-v4-pro", provider: "deepseek", effort: "medium" },
-    { model: "minimax/minimax-m3:free", provider: "openrouter", effort: "medium" },
+    { model: "deepseek-v4-pro", provider: "deepseek", effort: "high" },
+    { model: "minimax/minimax-m3:free", provider: "openrouter", effort: "thinking" },
   ],
   low: [
     { model: "deepseek-v4-flash", provider: "deepseek", effort: "low" },
@@ -118,19 +118,19 @@ const hostedFreeAgent = {
 
 const hostedFreeCoding = {
   ultra: [
-    { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "max" },
+    { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "xhigh" },
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "max" },
-    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "max" },
+    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
   ],
   high: [
-    { model: "deepseek-v4-pro", provider: "deepseek", effort: "xhigh" },
+    { model: "deepseek-v4-pro", provider: "deepseek", effort: "max" },
     { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "xhigh" },
-    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "xhigh" },
+    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
   ],
   medium: [
-    { model: "deepseek-v4-pro", provider: "deepseek", effort: "medium" },
+    { model: "deepseek-v4-pro", provider: "deepseek", effort: "high" },
     { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "medium" },
-    { model: "minimax/minimax-m3:free", provider: "openrouter", effort: "medium" },
+    { model: "minimax/minimax-m3:free", provider: "openrouter", effort: "thinking" },
   ],
   low: [
     { model: "deepseek-v4-flash", provider: "deepseek", effort: "low" },
@@ -152,7 +152,7 @@ const HOSTED_LINEUP: TierLineup = {
       { model: "anthropic/claude-fable-5.1", provider: "openrouter", effort: "max" },
       { model: "moonshot/kimi-k3", provider: "moonshot", effort: "max" },
       { model: "moonshotai/kimi-k3", provider: "openrouter", effort: "max" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "max" },
+      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "high" },
       ...hostedFreeAgent.ultra,
     ],
     coding: [
@@ -162,7 +162,7 @@ const HOSTED_LINEUP: TierLineup = {
       { model: "anthropic/claude-fable-5.1", provider: "openrouter", effort: "max" },
       { model: "moonshot/kimi-k3", provider: "moonshot", effort: "max" },
       { model: "moonshotai/kimi-k3", provider: "openrouter", effort: "max" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "max" },
+      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "high" },
       ...hostedFreeCoding.ultra,
     ],
   },
@@ -172,16 +172,16 @@ const HOSTED_LINEUP: TierLineup = {
       { model: "openai/gpt-5.6-luna", provider: "openrouter", effort: "xhigh" },
       { model: "gpt-5.6-sol", provider: "openai", effort: "xhigh" },
       { model: "openai/gpt-5.6-sol", provider: "openrouter", effort: "xhigh" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "xhigh" },
-      { model: "z-ai/glm-5.3", provider: "openrouter", effort: "xhigh" },
-      { model: "google-ai-studio/gemini-3.8-flash", provider: "google-ai-studio", effort: "xhigh" },
+      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "high" },
+      { model: "z-ai/glm-5.3", provider: "openrouter", effort: "max" },
+      { model: "google-ai-studio/gemini-3.8-flash", provider: "google-ai-studio", effort: "high" },
       ...hostedFreeAgent.high,
     ],
     coding: [
       { model: "gpt-5.6-sol", provider: "openai", effort: "xhigh" },
       { model: "openai/gpt-5.6-sol", provider: "openrouter", effort: "xhigh" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "xhigh" },
-      { model: "z-ai/glm-5.3", provider: "openrouter", effort: "xhigh" },
+      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "high" },
+      { model: "z-ai/glm-5.3", provider: "openrouter", effort: "max" },
       ...hostedFreeCoding.high,
     ],
   },
@@ -210,7 +210,7 @@ const HOSTED_LINEUP: TierLineup = {
     agent: [
       { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
       { model: "openai/gpt-5.6-luna", provider: "openrouter", effort: "low" },
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "thinking" },
       { model: "glm-5.3-flash", provider: "zai", effort: "low" },
       { model: "z-ai/glm-5.3-flash", provider: "openrouter", effort: "low" },
       {
@@ -223,7 +223,7 @@ const HOSTED_LINEUP: TierLineup = {
     coding: [
       { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
       { model: "openai/gpt-5.6-luna", provider: "openrouter", effort: "low" },
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "thinking" },
       { model: "glm-5.3-flash", provider: "zai", effort: "low" },
       { model: "z-ai/glm-5.3-flash", provider: "openrouter", effort: "low" },
       ...hostedFreeCoding.low,

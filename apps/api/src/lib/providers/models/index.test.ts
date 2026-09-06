@@ -6,7 +6,6 @@ import {
   MODEL_TIERS,
   type ModelConfigItem,
   REALTIME_LIVE_PROVIDER_MANIFEST,
-  resolveLineupReasoningEffort,
   SYSTEM_MODEL_LINEUP,
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
@@ -117,35 +116,56 @@ describe("model response defaults", () => {
 });
 
 describe("central model policy catalogue", () => {
-  it("resolves every hosted and local-server lineup candidate to an active catalogue model", () => {
+  it("keeps every lineup candidate on an active catalogue model that supports its effort", () => {
     const models = getModels({ shouldUseCache: false });
     const candidates = [
       ...(["hosted", "local-server"] as const).flatMap((runtime) =>
         MODEL_TIERS.flatMap((tier) =>
-          MODEL_TIER_ROLES.flatMap((role) => [...MODEL_TIER_LINEUP[runtime][tier][role]]),
+          MODEL_TIER_ROLES.flatMap((role) =>
+            MODEL_TIER_LINEUP[runtime][tier][role].map((candidate) => ({
+              ...candidate,
+              location: `${runtime}/${tier}/${role}`,
+            })),
+          ),
         ),
       ),
-      ...SYSTEM_MODEL_LINEUP.flatMap((role) => [...role.candidates]),
+      ...SYSTEM_MODEL_LINEUP.flatMap((role) =>
+        role.candidates.map((candidate) => ({ ...candidate, location: `system/${role.id}` })),
+      ),
     ];
+    const problems: string[] = [];
 
     expect(candidates.length).toBeGreaterThan(0);
 
     for (const candidate of candidates) {
       const entry = findModelByReference(models, candidate);
+      const label = `${candidate.location}: ${candidate.provider}/${candidate.model}`;
 
       if (!entry) {
-        throw new Error(`${candidate.provider}:${candidate.model} is absent from the catalogue`);
+        problems.push(`${label} is absent from the catalogue`);
+        continue;
       }
 
-      expect(isActiveModel(entry.config), `${candidate.model} is inactive`).toBe(true);
+      if (!isActiveModel(entry.config)) {
+        problems.push(`${label} is inactive`);
+      }
 
-      if (candidate.effort) {
-        expect(
-          resolveLineupReasoningEffort(entry.config, candidate.effort),
-          `${candidate.model} cannot map effort ${candidate.effort}`,
-        ).toBeDefined();
+      if (!candidate.effort) {
+        continue;
+      }
+
+      const supported = entry.config.reasoningConfig?.supportedEffortLevels ?? [];
+
+      if (!supported.includes(candidate.effort)) {
+        problems.push(
+          `${label} prescribes effort ${candidate.effort} but supports ${
+            supported.length ? supported.join(", ") : "no effort levels"
+          }`,
+        );
       }
     }
+
+    expect(problems).toEqual([]);
   });
 
   it("resolves every realtime default to an active model from the expected provider", () => {
