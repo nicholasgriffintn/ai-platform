@@ -1,17 +1,14 @@
+import { ThemePicker } from "@ngriffin_uk/polychat-component-ui";
+import { DEFAULT_THEME_PAIR, DEFAULT_THEME_PREFERENCE } from "@ngriffin_uk/polychat-library-chat";
 import {
-  DEFAULT_THEME_PAIR,
-  DEFAULT_THEME_PREFERENCE,
-  ThemePicker,
-} from "@ngriffin_uk/polychat-component-ui";
-
-import { ProfileTabSection } from "~/components/Profile/ProfileTabLayout";
-import { useIsHydrated } from "~/hooks/useIsHydrated";
-import {
+  useIsHydrated,
   useSetThemePair,
   useSetThemePreference,
   useThemePair,
   useThemePreference,
-} from "~/hooks/useTheme";
+} from "@ngriffin_uk/polychat-library-react";
+
+import { ProfileTabSection } from "~/components/Profile/ProfileTabLayout";
 
 export function ThemeSettings() {
   const preference = useThemePreference();

@@ -1,19 +1,18 @@
 import { ArtifactPanel } from "@ngriffin_uk/polychat-component-content";
+import { MessageList } from "@ngriffin_uk/polychat-component-conversation";
 import { ButtonLink, LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
-import { ApiError, fetchSharedConversationHistory } from "@ngriffin_uk/polychat-library-client";
-import { PlusCircle } from "lucide-react";
+import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
+import { ApiError, fetchSharedConversationHistory } from "@ngriffin_uk/polychat-library-client";
+import { useArtifactPanel, useCopyToClipboard } from "@ngriffin_uk/polychat-library-react";
+import { PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
-import { MessageList } from "~/components/ConversationThread/MessageList";
 import { PageShell } from "~/components/Core/PageShell";
-import { useArtifactPanel } from "~/hooks/useArtifactPanel";
-import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
-import type { Message } from "~/types";
 
 export function meta({ params }: { params: { share_id: string } }) {
   return [

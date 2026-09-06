@@ -1,25 +1,28 @@
 import { CustomResponseViewProvider } from "@ngriffin_uk/polychat-component-content";
-import { LinkProvider, LoadingSpinner } from "@ngriffin_uk/polychat-component-ui";
+import { LinkProvider, LoadingSpinner, ThemedToaster } from "@ngriffin_uk/polychat-component-ui";
 import { shouldShowDevTools } from "@ngriffin_uk/polychat-library-client";
-import { AnalyticsProvider, PolychatProvider } from "@ngriffin_uk/polychat-library-react";
+import {
+  AnalyticsProvider,
+  AppInitializer,
+  PolychatProvider,
+  useTrackEvent,
+  useAnalyticsAdapter,
+  RouterLink,
+  RouterNavLink,
+  SurfaceControlsProvider,
+  webSurfaceControls,
+  LoadingProvider,
+} from "@ngriffin_uk/polychat-library-react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect } from "react";
 import { Outlet, isRouteErrorResponse, ScrollRestoration } from "react-router";
 
 import { customResponseViews } from "~/components/Apps/ResponseRenderer/customResponseViews";
 import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
-import { AppInitializer } from "~/components/Core/AppInitializer";
 import { AppShell } from "~/components/Core/AppShell";
 import { ServiceWorkerRegistration } from "~/components/Core/ServiceWorkerRegistration";
-import { ThemedToaster } from "~/components/Core/ThemedToaster";
 import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
-import { useTrackEvent } from "~/hooks/use-track-event";
-import { useAnalyticsAdapter } from "~/lib/analytics-adapter";
-import { RouterLink, RouterNavLink } from "~/lib/router-link";
-import { SurfaceControlsProvider } from "~/lib/surface-context";
-import { webSurfaceControls } from "~/lib/surface-controls";
 import ErrorRoute from "~/pages/error";
-import { LoadingProvider } from "~/state/contexts/LoadingContext";
 
 import type { Route } from "./+types/root";
 

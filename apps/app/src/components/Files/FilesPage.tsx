@@ -1,9 +1,13 @@
 import { ButtonLink } from "@ngriffin_uk/polychat-component-ui";
+import {
+  type FilesTab,
+  getFilesTabPath,
+  parseFilesSubpath,
+} from "@ngriffin_uk/polychat-library-react";
 import { Plus } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
 import { PageShell } from "~/components/Core/PageShell";
-import { type FilesTab, getFilesTabPath, parseFilesSubpath } from "~/lib/files-route";
 
 import { MemoryLibrary } from "./MemoryLibrary";
 import { OutputsLibrary } from "./OutputsLibrary";

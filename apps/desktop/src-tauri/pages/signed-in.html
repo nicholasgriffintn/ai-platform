@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Polychat</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --canvas: #f7f8fa;
+        --surface: #ffffff;
+        --border: #e3e6ec;
+        --text: #16181d;
+        --muted: #5c6270;
+        --accent: #2f6f4f;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --canvas: #101216;
+          --surface: #171a20;
+          --border: #262b34;
+          --text: #f1f3f7;
+          --muted: #a2a9b8;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: var(--canvas);
+        color: var(--text);
+        font:
+          400 16px/1.5 "IBM Plex Sans",
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          "Helvetica Neue",
+          Arial,
+          sans-serif;
+      }
+
+      main {
+        width: 100%;
+        max-width: 26rem;
+        padding: 2rem;
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        background: var(--surface);
+        text-align: center;
+        box-shadow:
+          0 1px 2px rgb(16 18 22 / 6%),
+          0 12px 32px rgb(16 18 22 / 6%);
+      }
+
+      .mark {
+        width: 2.75rem;
+        height: 2.75rem;
+        margin: 0 auto 1.25rem;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--accent) 14%, transparent);
+        color: var(--accent);
+      }
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.375rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+        text-wrap: pretty;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark" aria-hidden="true">
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.25"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m5 13 4 4L19 7" />
+        </svg>
+      </div>
+      <h1>You are signed in</h1>
+      <p>Close this tab and head back to Polychat. It is already waiting for you.</p>
+    </main>
+  </body>
+</html>

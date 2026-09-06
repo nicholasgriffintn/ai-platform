@@ -1,15 +1,14 @@
 import { RerunReportControl } from "@ngriffin_uk/polychat-component-experiences/content";
-import { getStringProperty, isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { useState } from "react";
-import { useNavigate } from "react-router";
-
 import {
   useAnalyseArticle,
   useFetchSourceArticlesByIds,
   useGenerateReport,
   usePrepareSessionForRerun,
   useSummariseArticle,
-} from "~/hooks/useArticles";
+} from "@ngriffin_uk/polychat-library-react";
+import { getStringProperty, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 
 interface RerunReportButtonProps {
   sourceIds: string[];

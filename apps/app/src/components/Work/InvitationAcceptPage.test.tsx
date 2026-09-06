@@ -10,7 +10,8 @@ vi.mock("@ngriffin_uk/polychat-library-client", async (importOriginal) => ({
     selector({ isAuthenticated: false }),
 }));
 
-vi.mock("~/hooks/useWorkspaces", () => ({
+vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-react")>()),
   useAcceptWorkspaceInvitation: () => ({
     data: undefined,
     error: null,

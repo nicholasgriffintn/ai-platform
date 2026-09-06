@@ -1,9 +1,7 @@
 import { ProviderGlyph } from "@ngriffin_uk/polychat-component-models";
 import { ButtonLink, Skeleton } from "@ngriffin_uk/polychat-component-ui";
+import { useModelCatalogue, summariseModelProviders } from "@ngriffin_uk/polychat-library-react";
 import { useMemo } from "react";
-
-import { useModelCatalogue } from "~/hooks/useModels";
-import { summariseModelProviders } from "~/lib/model-providers";
 
 import { DiscoverBand } from "../DiscoverBand";
 

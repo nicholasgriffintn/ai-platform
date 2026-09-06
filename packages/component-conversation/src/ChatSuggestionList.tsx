@@ -1,3 +1,4 @@
+import type { ChatSuggestion } from "@ngriffin_uk/polychat-utility-react";
 import {
   Brain,
   Code,
@@ -15,13 +16,7 @@ import {
   UsersRound,
 } from "lucide-react";
 
-export interface ChatSuggestion {
-  id: string;
-  label: string;
-  prompt?: string;
-  category: string;
-  hint?: string;
-}
+export type { ChatSuggestion } from "@ngriffin_uk/polychat-utility-react";
 
 export interface ChatSuggestionListProps {
   suggestions: ChatSuggestion[];

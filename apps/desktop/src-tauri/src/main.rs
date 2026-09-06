@@ -36,9 +36,9 @@ const CANCEL_POLL: Duration = Duration::from_millis(200);
 const MAX_JSON_BODY: usize = 8 * 1024 * 1024;
 const BUILT_IN_APPROVED_AT: &str = "1970-01-01T00:00:00Z";
 const SESSION_SECRET: &str = "session-token";
-const HOSTED_ENDPOINT_ID: &str = "polychat-cloud";
 const API_BASE_URL: &str = match option_env!("POLYCHAT_API_BASE_URL") {
     Some(value) => value,
+    None if cfg!(debug_assertions) => "http://localhost:8787",
     None => "https://api.polychat.app",
 };
 
@@ -384,6 +384,32 @@ fn append_message(message: LocalMessage, store: State<'_, Store>) -> Result<(), 
 }
 
 #[tauri::command]
+fn list_local_chats(scope: String, store: State<'_, Store>) -> Result<Vec<String>, String> {
+    store.list_local_chats(&scope)
+}
+
+#[tauri::command]
+fn save_local_chat(
+    scope: String,
+    id: String,
+    payload: String,
+    updated_at: String,
+    store: State<'_, Store>,
+) -> Result<(), String> {
+    store.save_local_chat(&scope, &id, &payload, &updated_at)
+}
+
+#[tauri::command]
+fn delete_local_chat(scope: String, id: String, store: State<'_, Store>) -> Result<(), String> {
+    store.delete_local_chat(&scope, &id)
+}
+
+#[tauri::command]
+fn delete_all_local_chats(scope: String, store: State<'_, Store>) -> Result<(), String> {
+    store.delete_all_local_chats(&scope)
+}
+
+#[tauri::command]
 fn is_signed_in() -> Result<bool, String> {
     Ok(secrets::read(SESSION_SECRET)?.is_some())
 }
@@ -413,17 +439,17 @@ async fn sign_in() -> Result<(), String> {
     .map_err(|cause| cause.to_string())??;
 
     let response = http_client(REQUEST_TIMEOUT)?
-        .post(format!("{API_BASE_URL}/auth/mobile/exchange"))
+        .post(format!("{API_BASE_URL}/auth/native/exchange"))
         .json(&serde_json::json!({ "code": code }))
         .send()
         .await
         .map_err(|cause| cause.to_string())?;
 
     if !response.status().is_success() {
-        return Err(format!(
-            "Sign-in could not be completed: the server answered with status {}",
-            response.status().as_u16()
-        ));
+        let status = response.status().as_u16();
+        let detail = response.text().await.unwrap_or_default();
+
+        return Err(sign_in_failure(status, &detail));
     }
 
     let body = response
@@ -438,6 +464,25 @@ async fn sign_in() -> Result<(), String> {
     secrets::store(SESSION_SECRET, token)
 }
 
+fn sign_in_failure(status: u16, body: &str) -> String {
+    let detail = serde_json::from_str::<serde_json::Value>(body)
+        .ok()
+        .and_then(|value| {
+            value
+                .get("error")
+                .or_else(|| value.get("message"))
+                .and_then(serde_json::Value::as_str)
+                .map(str::to_string)
+        })
+        .unwrap_or_default();
+
+    if detail.is_empty() {
+        format!("Sign-in could not be completed (status {status}).")
+    } else {
+        format!("Sign-in could not be completed: {detail}")
+    }
+}
+
 fn encode_query_value(value: &str) -> String {
     url::form_urlencoded::byte_serialize(value.as_bytes()).collect()
 }
@@ -448,95 +493,6 @@ fn new_client_state() -> String {
     getrandom::fill(&mut bytes).expect("the operating system random source");
 
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
-}
-
-#[tauri::command]
-async fn start_hosted_run(
-    run_id: String,
-    request: chat::HostedRunRequest,
-    on_event: Channel<StreamEvent>,
-    registry: State<'_, RunRegistry>,
-) -> Result<(), String> {
-    let Some(session) = secrets::read(SESSION_SECRET)? else {
-        return Err("Sign in before using a cloud model.".to_string());
-    };
-
-    let emit = |event: StreamEvent| {
-        let _ = on_event.send(event);
-    };
-
-    registry.begin(&run_id);
-
-    emit(StreamEvent::Started {
-        run_id: run_id.clone(),
-        endpoint_id: HOSTED_ENDPOINT_ID.to_string(),
-        at: timestamp(),
-    });
-    emit(StreamEvent::Progress {
-        run_id: run_id.clone(),
-        state: "queued".to_string(),
-    });
-
-    let response = match streaming_client()?
-        .post(format!("{API_BASE_URL}/chat/completions"))
-        .bearer_auth(session)
-        .json(&chat::hosted_body(&request))
-        .send()
-        .await
-    {
-        Ok(response) => response,
-        Err(cause) => {
-            registry.forget(&run_id);
-            emit(StreamEvent::Failed {
-                run_id: run_id.clone(),
-                failure: "unreachable".to_string(),
-                message: cause.to_string(),
-            });
-
-            return Ok(());
-        }
-    };
-
-    if !response.status().is_success() {
-        let failure = match response.status().as_u16() {
-            401 | 403 => "unauthorised",
-            404 => "model-not-found",
-            _ => "unknown",
-        };
-        let status = response.status().as_u16();
-
-        registry.forget(&run_id);
-        emit(StreamEvent::Failed {
-            run_id: run_id.clone(),
-            failure: failure.to_string(),
-            message: format!("Polychat answered with status {status}"),
-        });
-
-        return Ok(());
-    }
-
-    emit(StreamEvent::Progress {
-        run_id: run_id.clone(),
-        state: "generating".to_string(),
-    });
-
-    let reason = stream_lines(response, &run_id, &registry, chat::parse_hosted_line, &emit).await?;
-
-    registry.forget(&run_id);
-    emit(StreamEvent::Finished {
-        run_id,
-        reason: reason.to_string(),
-        at: timestamp(),
-    });
-
-    Ok(())
-}
-
-fn executing_host(endpoint: &DesktopEndpoint) -> String {
-    Url::parse(&endpoint.url)
-        .ok()
-        .and_then(|url| url.host_str().map(str::to_string))
-        .unwrap_or_else(|| endpoint.label.clone())
 }
 
 #[tauri::command]
@@ -773,6 +729,13 @@ fn cancel_model_run(run_id: String, registry: State<'_, RunRegistry>) {
     registry.cancel(&run_id);
 }
 
+fn executing_host(endpoint: &DesktopEndpoint) -> String {
+    Url::parse(&endpoint.url)
+        .ok()
+        .and_then(|url| url.host_str().map(str::to_string))
+        .unwrap_or_else(|| endpoint.label.clone())
+}
+
 #[tauri::command]
 async fn start_model_run(
     run_id: String,
@@ -892,8 +855,11 @@ fn main() {
             save_conversation,
             list_messages,
             append_message,
+            list_local_chats,
+            save_local_chat,
+            delete_local_chat,
+            delete_all_local_chats,
             start_model_run,
-            start_hosted_run,
             list_agent_sessions,
             start_agent_run,
             decide_approval,

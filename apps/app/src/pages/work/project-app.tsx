@@ -1,8 +1,8 @@
+import { getProjectSurface } from "@ngriffin_uk/polychat-library-react";
 import { useParams } from "react-router";
 
 import { AppRoute } from "~/components/Apps/AppRoute";
 import { useWorkData } from "~/components/Work/WorkDataContext";
-import { getProjectSurface } from "~/lib/capability-surfaces";
 
 export function meta() {
   return [{ title: "Project app - Polychat" }];

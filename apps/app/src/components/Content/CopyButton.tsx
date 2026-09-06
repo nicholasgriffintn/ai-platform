@@ -1,6 +1,5 @@
 import { CopyButton as ControlledCopyButton } from "@ngriffin_uk/polychat-component-content";
-
-import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
+import { useCopyToClipboard } from "@ngriffin_uk/polychat-library-react";
 
 interface CopyButtonProps {
   value: string;

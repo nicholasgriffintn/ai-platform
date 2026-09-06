@@ -3,7 +3,7 @@ import {
   githubCallbackSchema,
   githubLoginSchema,
   jwtTokenResponseSchema,
-  mobileAuthExchangeSchema,
+  nativeAuthExchangeSchema,
   userSchema,
   errorResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -20,8 +20,8 @@ import { handleAssistantAuthUiRequest } from "~/services/auth/authUi";
 import { buildNativeRedirectUri, requireNativeRedirectUri } from "~/services/auth/native";
 import {
   handleLogout,
-  exchangeMobileAuthCode,
-  generateMobileAuthExchangeCode,
+  exchangeNativeAuthCode,
+  generateNativeAuthExchangeCode,
   generateUserToken,
   extractSessionIdFromCookies,
   createLogoutCookie,
@@ -161,7 +161,7 @@ addRoute(app, "get", "/github/callback", {
           "/callback",
           user.continuation.nativePlatform ?? "mobile",
         );
-        const { code: mobileCode } = await generateMobileAuthExchangeCode({
+        const { code: nativeCode } = await generateNativeAuthExchangeCode({
           context: serviceContext,
           userId: user.record.id,
           sessionId,
@@ -169,7 +169,7 @@ addRoute(app, "get", "/github/callback", {
 
         return c.redirect(
           buildNativeRedirectUri(validatedRedirectUri, {
-            code: mobileCode,
+            code: nativeCode,
             ...(user.continuation.nativeClientState
               ? { state: user.continuation.nativeClientState }
               : {}),
@@ -370,17 +370,17 @@ addRoute(app, "get", "/token", {
     })(raw),
 });
 
-addRoute(app, "post", "/mobile/exchange", {
+addRoute(app, "post", "/native/exchange", {
   tags: ["auth"],
-  summary: "Exchange mobile auth code for a user token",
-  bodySchema: mobileAuthExchangeSchema,
+  summary: "Exchange a native sign-in code for a user token",
+  bodySchema: nativeAuthExchangeSchema,
   responses: {
     200: {
-      description: "Returns a JWT token for the authenticated mobile user",
+      description: "Returns a JWT token for the authenticated native user",
       schema: jwtTokenResponseSchema,
     },
     401: {
-      description: "Invalid or expired mobile auth code",
+      description: "Invalid or expired sign-in code",
       schema: errorResponseSchema,
     },
     500: {
@@ -392,7 +392,7 @@ addRoute(app, "post", "/mobile/exchange", {
     (async (c: Context) => {
       const { code } = c.req.valid("json" as never) as { code: string };
       const serviceContext = getServiceContext(c);
-      const { token, expires_in, sessionId } = await exchangeMobileAuthCode({
+      const { token, expires_in, sessionId } = await exchangeNativeAuthCode({
         context: serviceContext,
         code,
       });

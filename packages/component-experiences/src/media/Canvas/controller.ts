@@ -1,6 +1,11 @@
+import type {
+  CanvasInputField,
+  CanvasMode,
+  CanvasModel,
+} from "@ngriffin_uk/polychat-schemas/experiences";
+
 import type { DrawingStudioState } from "../Drawing/controller";
 import type { CanvasRun } from "./GenerationCard";
-import type { CanvasInputField, CanvasMode, CanvasModel } from "./types";
 
 export type CanvasStudioMode = CanvasMode | "drawing";
 

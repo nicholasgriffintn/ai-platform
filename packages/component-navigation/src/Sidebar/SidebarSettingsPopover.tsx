@@ -6,8 +6,8 @@ import {
   PopoverContent,
   PopoverTrigger,
   ThemeMenu,
-  type ThemePreference,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { ThemePreference } from "@ngriffin_uk/polychat-library-chat";
 import {
   ChevronDown,
   ChevronUp,

@@ -1,7 +1,7 @@
+import { getPlacePaths } from "@ngriffin_uk/polychat-library-react";
 import { useParams } from "react-router";
 
 import { FilesPage } from "~/components/Files/FilesPage";
-import { getPlacePaths } from "~/lib/navigation/places";
 
 export function meta() {
   return [

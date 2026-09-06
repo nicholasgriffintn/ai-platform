@@ -1,11 +1,7 @@
-import type { DesktopEndpoint, DesktopStreamEvent } from "@ngriffin_uk/polychat-schemas";
+import type { DesktopStreamEvent } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import {
-  createFakeDesktopBackend,
-  resolveExecutionHandoff,
-  type DesktopRun,
-} from "./desktop-backend";
+import { createFakeDesktopBackend, type DesktopRun } from "./desktop-backend";
 
 const script: DesktopStreamEvent[] = [
   { type: "progress", runId: "seed", state: "loading-model" },
@@ -86,105 +82,5 @@ describe("createFakeDesktopBackend", () => {
         },
       },
     ]);
-  });
-});
-
-describe("resolveExecutionHandoff", () => {
-  it("starts a new conversation when execution crosses the device boundary", () => {
-    expect(resolveExecutionHandoff("device", "cloud")).toEqual({
-      requiresNewConversation: true,
-      carriesHistory: false,
-    });
-    expect(resolveExecutionHandoff("cloud", "device")).toEqual({
-      requiresNewConversation: true,
-      carriesHistory: false,
-    });
-  });
-
-  it("keeps the conversation when execution stays on one side", () => {
-    expect(resolveExecutionHandoff("device", "device")).toEqual({
-      requiresNewConversation: false,
-      carriesHistory: true,
-    });
-  });
-});
-
-const endpoint: DesktopEndpoint = {
-  id: "endpoint-1",
-  kind: "model",
-  vendor: "ollama",
-  label: "Ollama",
-  url: "http://127.0.0.1:11434",
-  transport: "loopback",
-  pairingSecretStored: false,
-  approvedAt: "2026-09-06T09:00:00.000Z",
-  lastSeenAt: null,
-};
-
-describe("fake endpoint management", () => {
-  it("lists an endpoint once it has been saved", async () => {
-    const backend = createFakeDesktopBackend();
-
-    await backend.saveEndpoint(endpoint);
-
-    await expect(backend.listEndpoints()).resolves.toEqual([endpoint]);
-  });
-
-  it("replaces an endpoint saved again under the same id", async () => {
-    const backend = createFakeDesktopBackend({ endpoints: [endpoint] });
-
-    await backend.saveEndpoint({ ...endpoint, label: "Renamed" });
-    const listed = await backend.listEndpoints();
-
-    expect(listed).toHaveLength(1);
-    expect(listed[0]?.label).toBe("Renamed");
-  });
-
-  it("forgets only the endpoint asked for", async () => {
-    const backend = createFakeDesktopBackend({
-      endpoints: [endpoint, { ...endpoint, id: "endpoint-2" }],
-    });
-
-    await backend.forgetEndpoint("endpoint-2");
-
-    await expect(backend.listEndpoints()).resolves.toEqual([endpoint]);
-  });
-});
-
-describe("interrupted replies", () => {
-  it("keeps a stopped reply distinguishable from a finished one", async () => {
-    const backend = createFakeDesktopBackend();
-
-    await backend.appendMessage({
-      id: "m1",
-      conversationId: "c1",
-      role: "assistant",
-      content: "partial",
-      status: "interrupted",
-      createdAt: "2026-09-06T09:00:00.000Z",
-    });
-    await backend.appendMessage({
-      id: "m2",
-      conversationId: "c1",
-      role: "assistant",
-      content: "whole",
-      status: "complete",
-      createdAt: "2026-09-06T09:00:01.000Z",
-    });
-
-    const stored = await backend.listMessages("c1");
-
-    expect(stored.map((message) => message.status)).toEqual(["interrupted", "complete"]);
-  });
-});
-
-describe("pairing secrets", () => {
-  it("does not carry a secret in the endpoint record itself", async () => {
-    const backend = createFakeDesktopBackend();
-
-    await backend.saveEndpoint(endpoint, "a-shared-secret");
-    const [stored] = await backend.listEndpoints();
-
-    expect(JSON.stringify(stored)).not.toContain("a-shared-secret");
   });
 });

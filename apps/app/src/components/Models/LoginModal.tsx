@@ -10,11 +10,12 @@ import {
   APPLE_SIGN_IN_CLIENT_ID,
   APP_NAME,
 } from "@ngriffin_uk/polychat-library-client";
+import {
+  useTrackEvent,
+  useAuthStatus,
+  getLoginErrorMessage,
+} from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useMemo } from "react";
-
-import { useTrackEvent } from "~/hooks/use-track-event";
-import { useAuthStatus } from "~/hooks/useAuth";
-import { getLoginErrorMessage } from "~/lib/auth/login-error";
 
 interface LoginModalProps {
   open: boolean;

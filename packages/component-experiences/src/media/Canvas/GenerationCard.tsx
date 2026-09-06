@@ -1,8 +1,8 @@
 import { ImageModal } from "@ngriffin_uk/polychat-component-content";
 import { cn } from "@ngriffin_uk/polychat-component-ui";
+import type { CanvasMode } from "@ngriffin_uk/polychat-schemas/experiences";
 import { Clock3 } from "lucide-react";
 
-import type { CanvasMode } from "./types";
 import { getCardAspectClass, getMediaPreview, getPlaceholderPaletteClass } from "./utils";
 
 export interface CanvasRun {

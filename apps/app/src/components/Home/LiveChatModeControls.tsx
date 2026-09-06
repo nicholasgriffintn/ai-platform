@@ -8,14 +8,13 @@ import {
   LiveStatusHeader,
   getStatusCopy,
 } from "@ngriffin_uk/polychat-component-conversation";
+import type { RealtimeCameraDevice, RealtimeLiveStatus } from "@ngriffin_uk/polychat-library-react";
 import {
   type RealtimeLiveProviderId,
   type RealtimeLiveProviderOption,
   supportsRealtimeLiveVideoInput,
 } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import { useState } from "react";
-
-import type { RealtimeCameraDevice, RealtimeLiveStatus } from "~/hooks/useRealtimeLiveSession";
 
 interface LiveChatModeControlsProps {
   error?: string | null;

@@ -1,4 +1,20 @@
+import type { ThreadModeConfig } from "@ngriffin_uk/polychat-component-conversation";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useChat,
+  useChatManager,
+  useLiveConversationMessages,
+  type FinalLiveInputTranscript,
+  useModels,
+  useRealtimeLiveSession,
+  useRealtimeProviders,
+  buildConversationModeMetadata,
+  getConversationModeMetadata,
+  getPlacePaths,
+  HOME_CHAT_MODE_OPTIONS,
+  getHomeChatModeAvailability,
+  resolveHomeChatModeId,
+} from "@ngriffin_uk/polychat-library-react";
 import {
   getComposedRealtimeReasoningModelId,
   getFirstReadyRealtimeLiveProviderOption,
@@ -14,37 +30,15 @@ import {
   EMPTY_MODEL_CONFIG,
   getModelByReference,
 } from "@ngriffin_uk/polychat-schemas";
-import type { HomeChatModeId } from "@ngriffin_uk/polychat-schemas";
+import type { HomeChatModeId, ModelSelectionChangeHandler } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
-import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
-import { useChat } from "~/hooks/useChat";
-import { useChatManager } from "~/hooks/useChatManager";
-import {
-  useLiveConversationMessages,
-  type FinalLiveInputTranscript,
-} from "~/hooks/useLiveConversationMessages";
-import { useModels } from "~/hooks/useModels";
-import { useRealtimeLiveSession } from "~/hooks/useRealtimeLiveSession";
-import { useRealtimeProviders } from "~/hooks/useRealtimeProviders";
-import {
-  buildConversationModeMetadata,
-  getConversationModeMetadata,
-} from "~/lib/home-chat-modes/conversation-mode";
-import { getPlacePaths } from "~/lib/navigation/places";
-import type { ModelSelectionChangeHandler } from "~/types";
-
-import {
-  HOME_CHAT_MODE_OPTIONS,
-  getHomeChatModeAvailability,
-  resolveHomeChatModeId,
-} from "./chatModes";
 import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls";
 
 export function useHomeChatModeConfig(): {
   activeModeId: HomeChatModeId;
-  modeConfig: ConversationThreadModeConfig;
+  modeConfig: ThreadModeConfig;
 } {
   const [searchParams, setSearchParams] = useSearchParams();
   const {
@@ -370,7 +364,7 @@ export function useHomeChatModeConfig(): {
 
   return useMemo<{
     activeModeId: HomeChatModeId;
-    modeConfig: ConversationThreadModeConfig;
+    modeConfig: ThreadModeConfig;
   }>(() => {
     const liveControls = (
       <LiveChatModeControls

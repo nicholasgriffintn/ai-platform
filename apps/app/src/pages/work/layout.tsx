@@ -1,3 +1,4 @@
+import { isProjectConversationPath } from "@ngriffin_uk/polychat-library-react";
 import { Outlet, useLocation, useParams } from "react-router";
 
 import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
@@ -6,7 +7,6 @@ import { WorkAccessGate } from "~/components/Work/WorkAccessGate";
 import { useWorkData } from "~/components/Work/WorkDataContext";
 import { WorkDataProvider } from "~/components/Work/WorkDataProvider";
 import { WorkSidebar } from "~/components/Work/WorkSidebar";
-import { isProjectConversationPath } from "~/lib/conversation-route";
 
 function WorkShell({ projectId, workspaceId }: { projectId?: string; workspaceId?: string }) {
   const { pathname } = useLocation();

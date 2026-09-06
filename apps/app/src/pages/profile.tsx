@@ -1,12 +1,11 @@
 import { PageStatus } from "@ngriffin_uk/polychat-component-ui";
+import { useAuthStatus, getRetiredProfileTabPath } from "@ngriffin_uk/polychat-library-react";
 import { Loader2 } from "lucide-react";
 import { Navigate, useSearchParams } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { ProfileSidebar, profileSidebarItems } from "~/components/Profile/ProfileSidebar";
-import { useAuthStatus } from "~/hooks/useAuth";
-import { getRetiredProfileTabPath } from "~/lib/profile-tabs";
 
 export function meta() {
   return [

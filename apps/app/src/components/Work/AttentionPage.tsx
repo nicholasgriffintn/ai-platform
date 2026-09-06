@@ -5,19 +5,19 @@ import {
   type WorkAttentionFilters,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useTasks,
+  useWorkAttention,
+  getErrorMessage,
+  readWorkAttentionQuery,
+  workAttentionItemHref,
+  writeWorkAttentionFilters,
+} from "@ngriffin_uk/polychat-library-react";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useTasks } from "~/hooks/useTasks";
-import { useWorkAttention } from "~/hooks/useWorkAttention";
-import { getErrorMessage } from "~/lib/errors";
-import {
-  readWorkAttentionQuery,
-  workAttentionItemHref,
-  writeWorkAttentionFilters,
-} from "~/lib/work-attention";
 
 export function AttentionPage() {
   const [searchParams, setSearchParams] = useSearchParams();

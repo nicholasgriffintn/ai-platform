@@ -1,7 +1,6 @@
 import { FormDialog, Label, Textarea } from "@ngriffin_uk/polychat-component-ui";
+import { useAddSkill } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
-
-import { useAddSkill } from "~/hooks/useSkills";
 
 const INITIAL_SKILL = `---
 name: my-skill

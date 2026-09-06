@@ -1,7 +1,6 @@
 import { MemorySynthesisPanel as ControlledMemorySynthesisPanel } from "@ngriffin_uk/polychat-component-account";
+import { useMemorySynthesis, useTasks } from "@ngriffin_uk/polychat-library-react";
 import { toast } from "sonner";
-
-import { useMemorySynthesis, useTasks } from "~/hooks/useTasks";
 
 export function MemorySynthesisPanel() {
   const { synthesis, history, isLoadingSynthesis, isLoadingHistory } = useMemorySynthesis("global");

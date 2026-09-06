@@ -1,10 +1,10 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { ComposerDirectiveQuery } from "@ngriffin_uk/polychat-library-chat/composer-commands";
 import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
+import type { ComposerCommandAction } from "@ngriffin_uk/polychat-utility-react";
 import { AtSign, ChevronLeft, ChevronRight, Command, Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
-import type { ComposerCommandAction } from "../composerCommandTypes";
 import {
   ASSISTANT_ACTION_ITEM_EMPTY_LABEL,
   ASSISTANT_ACTION_ITEM_SCOPE_LABEL,

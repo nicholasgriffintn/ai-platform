@@ -1,7 +1,5 @@
-import { ButtonLink } from "@ngriffin_uk/polychat-component-ui";
-
-import { PetPreview } from "~/components/Core/PetPreview";
-import { PET_FLOCK } from "~/lib/pet/lore";
+import { ButtonLink, PetPreview } from "@ngriffin_uk/polychat-component-ui";
+import { PET_FLOCK } from "@ngriffin_uk/polychat-library-react";
 
 import { DiscoverBand } from "../DiscoverBand";
 

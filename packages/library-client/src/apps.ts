@@ -1,9 +1,4 @@
 import type {
-  ProcessRecordingParams,
-  UploadRecordingParams,
-  UploadResponse,
-} from "@ngriffin_uk/polychat-component-experiences/content";
-import type {
   AnalyseArticleParams,
   AnalyseArticleResponse,
   ArticleResponse,
@@ -26,6 +21,11 @@ import type {
   RecordingDetailResponse,
   RecordingListItem,
 } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ProcessRecordingParams,
+  UploadRecordingParams,
+  UploadResponse,
+} from "@ngriffin_uk/polychat-schemas/experiences";
 
 import { apiService } from "./api-service";
 import { fetchApi } from "./fetch-wrapper";

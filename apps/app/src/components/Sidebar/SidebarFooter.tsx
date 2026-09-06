@@ -1,9 +1,7 @@
 import { SidebarFooter as ControlledSidebarFooter } from "@ngriffin_uk/polychat-component-navigation";
 import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { useTrackEvent, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { Feather } from "lucide-react";
-
-import { useTrackEvent } from "~/hooks/use-track-event";
-import { useUIStore } from "~/state/stores/uiStore";
 
 import { SidebarSettingsPopover } from "./SidebarSettingsPopover";
 

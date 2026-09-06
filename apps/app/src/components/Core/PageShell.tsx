@@ -8,10 +8,10 @@ import {
   PageTitle,
   usePageShellHeaderRegistry,
 } from "@ngriffin_uk/polychat-component-ui";
+import { useResponsiveSidebar } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
-import { useResponsiveSidebar } from "~/hooks/useResponsiveSidebar";
 import { ProductShell } from "~/layouts/ProductShell";
 
 interface PageShellProps {

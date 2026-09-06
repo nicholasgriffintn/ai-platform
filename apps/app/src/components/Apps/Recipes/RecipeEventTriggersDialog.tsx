@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@ngriffin_uk/polychat-component-ui";
+import { useRecipeConnectorAccounts, getErrorMessage } from "@ngriffin_uk/polychat-library-react";
 import {
   type AssistantRecipe,
   type RecipeComposioTrigger,
@@ -23,9 +24,6 @@ import {
   type RecipeTriggerConfigurationValue,
 } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useMemo, useState } from "react";
-
-import { useRecipeConnectorAccounts } from "~/hooks/useConnectors";
-import { getErrorMessage } from "~/lib/errors";
 
 import { useRecipeComposioTriggers } from "./useRecipeComposioTriggers";
 

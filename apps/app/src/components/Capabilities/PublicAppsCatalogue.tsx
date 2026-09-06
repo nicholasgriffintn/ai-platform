@@ -7,6 +7,13 @@ import {
 import { ProviderGlyph } from "@ngriffin_uk/polychat-component-models";
 import { Badge, Button, ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
+  useAuthStatus,
+  usePublicCapabilityCatalogue,
+  buildComposerPrefillHref,
+  getPlacePaths,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
+import {
   listTeammateRolesByCategory,
   TEAMMATE_PERMISSIONS_SENTENCE,
   type ModelToolDefinition,
@@ -16,12 +23,6 @@ import {
   type Tool,
 } from "@ngriffin_uk/polychat-schemas";
 import { Bot, Sparkles, Terminal, Workflow, Wrench } from "lucide-react";
-
-import { useAuthStatus } from "~/hooks/useAuth";
-import { usePublicCapabilityCatalogue } from "~/hooks/useCapabilityCatalog";
-import { buildComposerPrefillHref } from "~/lib/composer-prefill";
-import { getPlacePaths } from "~/lib/navigation/places";
-import { useUIStore } from "~/state/stores/uiStore";
 
 const CATALOGUE_SECTIONS = [
   { id: "apps", label: "Apps" },

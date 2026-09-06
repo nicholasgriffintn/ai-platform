@@ -1,5 +1,10 @@
 import { Button, EmptyState, FormSelect, Textarea, cn } from "@ngriffin_uk/polychat-component-ui";
-import type { SandboxPreviewAccess, SandboxPreviewState } from "@ngriffin_uk/polychat-schemas";
+import type { SandboxPreviewAccess } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ProjectWorkbenchPreviewDisplayState,
+  ProjectWorkbenchPreviewFeedback,
+  ProjectWorkbenchPreviewViewport,
+} from "@ngriffin_uk/polychat-utility-react";
 import {
   ExternalLink,
   Focus,
@@ -21,23 +26,11 @@ import {
   usePreviewRegionSelection,
 } from "./usePreviewRegionSelection";
 
-export type ProjectWorkbenchPreviewDisplayState = SandboxPreviewState | "loading";
-
-export interface ProjectWorkbenchPreviewViewport {
-  id: "fit" | "mobile" | "tablet" | "desktop";
-  label: string;
-  width?: number;
-  height: number;
-}
-
-export interface ProjectWorkbenchPreviewFeedback {
-  annotation: string;
-  elementReference?: string;
-  region?: ProjectWorkbenchPreviewRegion;
-  route: string;
-  serviceName: string;
-  viewport: ProjectWorkbenchPreviewViewport;
-}
+export type {
+  ProjectWorkbenchPreviewDisplayState,
+  ProjectWorkbenchPreviewFeedback,
+  ProjectWorkbenchPreviewViewport,
+} from "@ngriffin_uk/polychat-utility-react";
 
 export interface ProjectWorkbenchPreviewProps {
   services: ProjectWorkbenchServiceItem[];

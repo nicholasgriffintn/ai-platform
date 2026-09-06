@@ -3,12 +3,10 @@ import type {
   AgentRuntimeSession,
   DesktopAgentRunRequest,
   DesktopEndpoint,
-  DesktopExecutionLocation,
   DesktopModelRunRequest,
   DesktopRuntimeReadiness,
   DesktopStreamEvent,
   DiscoveredModel,
-  HostedRunRequest,
   LocalConversation,
   LocalMessage,
 } from "@ngriffin_uk/polychat-schemas";
@@ -26,7 +24,6 @@ export interface DesktopBackend {
   probeEndpoint: (endpointId: string) => Promise<DesktopRuntimeReadiness>;
   discoverModels: (endpointId: string) => Promise<DiscoveredModel[]>;
   startModelRun: (request: DesktopModelRunRequest) => Promise<DesktopRun>;
-  startHostedRun: (request: HostedRunRequest) => Promise<DesktopRun>;
   listAgentSessions: (endpointId: string) => Promise<AgentRuntimeSession[]>;
   startAgentRun: (request: DesktopAgentRunRequest) => Promise<DesktopRun>;
   decideApproval: (endpointId: string, decision: AgentApprovalDecision) => Promise<void>;
@@ -121,7 +118,6 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
     listAgentSessions: async (endpointId) =>
       (seed.sessions ?? []).filter((session) => session.endpointId === endpointId),
     startModelRun: async () => createRun(seed.script ?? []),
-    startHostedRun: async () => createRun(seed.script ?? []),
     startAgentRun: async () => createRun(seed.script ?? []),
     decideApproval: async (endpointId, decision) => {
       decisions.push({ endpointId, decision });
@@ -145,18 +141,4 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
       messages.push(message);
     },
   };
-}
-
-export interface ExecutionHandoff {
-  requiresNewConversation: boolean;
-  carriesHistory: boolean;
-}
-
-export function resolveExecutionHandoff(
-  from: DesktopExecutionLocation,
-  to: DesktopExecutionLocation,
-): ExecutionHandoff {
-  const crossesBoundary = from !== to;
-
-  return { requiresNewConversation: crossesBoundary, carriesHistory: !crossesBoundary };
 }

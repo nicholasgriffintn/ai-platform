@@ -1,7 +1,3 @@
-import { Check } from "lucide-react";
-import { useId } from "react";
-
-import { FormSelect } from "./Form/Select";
 import {
   DEFAULT_THEME_PAIR,
   getThemeDefinition,
@@ -13,7 +9,11 @@ import {
   type ThemePair,
   type ThemePreference,
   type ThemePreferenceOption,
-} from "./theme";
+} from "@ngriffin_uk/polychat-library-chat";
+import { Check } from "lucide-react";
+import { useId } from "react";
+
+import { FormSelect } from "./Form/Select";
 import { cn } from "./utils";
 
 const OPTIONS = getThemePreferenceOptions();

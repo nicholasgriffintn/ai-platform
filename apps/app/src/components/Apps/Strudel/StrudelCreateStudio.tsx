@@ -4,15 +4,17 @@ import {
   examplePatterns,
   type PatternExample,
 } from "@ngriffin_uk/polychat-component-experiences/music";
+import {
+  useModels,
+  useGenerateStrudelPattern,
+  useSaveStrudelPattern,
+} from "@ngriffin_uk/polychat-library-react";
 import { EMPTY_MODEL_CONFIG, getAvailableModels } from "@ngriffin_uk/polychat-schemas";
 import type { StrudelComplexity, StrudelStyle } from "@ngriffin_uk/polychat-schemas";
 import { parseCommaSeparatedTags } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-
-import { useModels } from "~/hooks/useModels";
-import { useGenerateStrudelPattern, useSaveStrudelPattern } from "~/hooks/useStrudel";
 
 interface StrudelCreateStudioProps {
   basePath: string;

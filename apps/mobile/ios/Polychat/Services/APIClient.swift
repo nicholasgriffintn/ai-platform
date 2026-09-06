@@ -36,11 +36,11 @@ final class APIClient: ObservableObject {
         try await send(path: "/auth/token", method: "GET")
     }
 
-    func exchangeMobileAuthCode(_ code: String) async throws -> TokenResponse {
+    func exchangeNativeAuthCode(_ code: String) async throws -> TokenResponse {
         try await send(
-            path: "/auth/mobile/exchange",
+            path: "/auth/native/exchange",
             method: "POST",
-            body: MobileAuthExchangeRequest(code: code)
+            body: NativeAuthExchangeRequest(code: code)
         )
     }
 

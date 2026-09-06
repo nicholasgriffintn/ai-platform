@@ -1,10 +1,13 @@
 import { ChatHistoryControls } from "@ngriffin_uk/polychat-component-account";
 import { apiService } from "@ngriffin_uk/polychat-library-client";
+import {
+  useTrackEvent,
+  useDeleteAllLocalChats,
+  useDeleteAllRemoteChats,
+} from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 
 import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
-import { useTrackEvent } from "~/hooks/use-track-event";
-import { useDeleteAllLocalChats, useDeleteAllRemoteChats } from "~/hooks/useChat";
 
 export function ProfileHistoryTab() {
   const { trackEvent } = useTrackEvent();

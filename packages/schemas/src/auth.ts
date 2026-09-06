@@ -11,7 +11,7 @@ export const githubCallbackSchema = z.object({
   state: z.string().min(1),
 });
 
-export const mobileAuthExchangeSchema = z.object({
+export const nativeAuthExchangeSchema = z.object({
   code: z.string().min(1),
 });
 

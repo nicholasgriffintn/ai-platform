@@ -1,9 +1,7 @@
 import { ButtonLink, Skeleton } from "@ngriffin_uk/polychat-component-ui";
+import { usePlans, formatPlanPrice } from "@ngriffin_uk/polychat-library-react";
 import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo } from "react";
-
-import { usePlans } from "~/hooks/useBilling";
-import { formatPlanPrice } from "~/lib/plan-format";
 
 import { DiscoverBand } from "../DiscoverBand";
 

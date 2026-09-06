@@ -1,8 +1,8 @@
+import { getProjectBasePath } from "@ngriffin_uk/polychat-library-react";
 import { useParams } from "react-router";
 
 import { FilesPage } from "~/components/Files/FilesPage";
 import { ProjectHomeHeader } from "~/components/Work/ProjectHomeHeader";
-import { getProjectBasePath } from "~/lib/conversation-route";
 
 export function meta() {
   return [{ title: "Project files - Polychat" }];

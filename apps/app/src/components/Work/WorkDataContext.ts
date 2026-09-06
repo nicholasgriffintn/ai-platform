@@ -1,6 +1,5 @@
+import type { useProject, useWorkspace, useWorkspaces } from "@ngriffin_uk/polychat-library-react";
 import { createContext, type Context, useContext } from "react";
-
-import type { useProject, useWorkspace, useWorkspaces } from "~/hooks/useWorkspaces";
 
 export interface WorkContextValue {
   projectId?: string;

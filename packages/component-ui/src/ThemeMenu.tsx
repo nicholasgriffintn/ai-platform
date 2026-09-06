@@ -1,7 +1,10 @@
+import {
+  getThemePreferenceOptions,
+  type ThemePreference,
+} from "@ngriffin_uk/polychat-library-chat";
 import { ChevronRight, Palette } from "lucide-react";
 
 import { OptionsMenu, OptionsMenuRadioGroup } from "./OptionsMenu";
-import { getThemePreferenceOptions, type ThemePreference } from "./theme";
 import { cn } from "./utils";
 
 const OPTIONS = getThemePreferenceOptions().map((option) => ({

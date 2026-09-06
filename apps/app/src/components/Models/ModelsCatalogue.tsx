@@ -1,11 +1,14 @@
+import {
+  useModelCatalogue,
+  groupModelsByProvider,
+  isCatalogueModel,
+} from "@ngriffin_uk/polychat-library-react";
 import { useMemo } from "react";
 
 import { SectionNav } from "~/components/Core/SectionNav";
 import { ModelLineup } from "~/components/Models/ModelLineup";
 import { MODELS_SECTION_NAV } from "~/components/Models/models-sections";
 import { ProviderCatalogue } from "~/components/Models/ProviderCatalogue";
-import { useModelCatalogue } from "~/hooks/useModels";
-import { groupModelsByProvider, isCatalogueModel } from "~/lib/model-catalogue";
 
 export function ModelsCatalogue() {
   const { data, isLoading, error } = useModelCatalogue();

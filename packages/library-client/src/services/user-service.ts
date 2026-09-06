@@ -1,3 +1,4 @@
+import { modelSurface } from "@ngriffin_uk/polychat-library-chat";
 import type { ModelConfig, ProviderSyncStatus, Tool } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper";
@@ -68,7 +69,7 @@ export class UserService {
       console.error("Error fetching models:", error);
     }
 
-    const response = await fetchApi("/models", {
+    const response = await fetchApi(`/models?surface=${modelSurface()}`, {
       method: "GET",
       headers,
       timeoutMs: 10000,

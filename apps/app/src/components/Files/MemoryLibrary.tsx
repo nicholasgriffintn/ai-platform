@@ -6,12 +6,14 @@ import {
   Label,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
+import {
+  useMemoryDocument,
+  useMemoryDocuments,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-library-react";
 import { BookOpenText, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-import { useMemoryDocument, useMemoryDocuments } from "~/hooks/useMemoryDocuments";
-import { getErrorMessage } from "~/lib/errors";
 
 export function MemoryLibrary({ projectId }: { projectId?: string }) {
   const { documents, isLoading, error, create, update, remove } = useMemoryDocuments(projectId);

@@ -26,28 +26,13 @@ import { useWorkbenchDockResize } from "./useWorkbenchDockResize";
 
 const DOCK_MEDIA_QUERY = "(min-width: 1024px)";
 
-export const PROJECT_WORKBENCH_PANES = [
-  "activity",
-  "preview",
-  "changes",
-  "files",
-  "proof",
-] as const;
+import {
+  PROJECT_WORKBENCH_PANES,
+  type ProjectWorkbenchPane,
+  type ProjectWorkbenchStatus,
+} from "@ngriffin_uk/polychat-utility-react";
 
-export type ProjectWorkbenchPane = (typeof PROJECT_WORKBENCH_PANES)[number];
-
-export type ProjectWorkbenchStatus =
-  | "ready"
-  | "queued"
-  | "preparing"
-  | "running"
-  | "paused"
-  | "waiting_approval"
-  | "waiting_input"
-  | "review"
-  | "completed"
-  | "failed"
-  | "cancelled";
+export { PROJECT_WORKBENCH_PANES, type ProjectWorkbenchPane, type ProjectWorkbenchStatus };
 
 export interface ProjectWorkbenchShellProps {
   conversation: ReactNode;

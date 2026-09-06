@@ -1,13 +1,13 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
-import { AtSign, Target, X } from "lucide-react";
-import type { ReactNode } from "react";
-
 import type {
   ComposerActionCatalogConfig,
   ComposerAssistantActionCapability,
   ComposerCommandAction,
-} from "../composerCommandTypes";
+} from "@ngriffin_uk/polychat-utility-react";
+import { AtSign, Target, X } from "lucide-react";
+import type { ReactNode } from "react";
+
 import { useComposerCommandActions } from "./commandActions";
 
 interface ComposerCommandsState {

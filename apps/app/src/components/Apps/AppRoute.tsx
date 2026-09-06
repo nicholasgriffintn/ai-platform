@@ -4,6 +4,16 @@ import {
   ContentLoadingSkeleton,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import {
+  useCapabilityCatalog,
+  type AppProjectScope,
+  type CapabilitySurface,
+  getAppBackLink,
+  getAppPath,
+  getCapabilityLibraryPath,
+  isExperienceEnabled,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import { Puzzle } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -11,16 +21,6 @@ import { AppChromeProvider } from "~/components/Apps/AppChrome";
 import { AppRuntime } from "~/components/Apps/AppRuntime";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
-import {
-  type AppProjectScope,
-  type CapabilitySurface,
-  getAppBackLink,
-  getAppPath,
-  getCapabilityLibraryPath,
-  isExperienceEnabled,
-} from "~/lib/capability-surfaces";
-import { isAuthenticationError } from "~/lib/errors";
 
 export function AppRoute({
   appId,

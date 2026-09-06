@@ -7,17 +7,21 @@ import { createAssistantAuth } from "~/services/auth/sharedAuth";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
 
-const MOBILE_AUTH_CODE_EXPIRES_IN_SECONDS = 60;
-const MOBILE_AUTH_CODE_PURPOSE = "mobile_auth_exchange";
+const logger = getLogger({ prefix: "services/auth/sessions" });
 
-interface MobileAuthCodePayload extends JwtClaims {
-  purpose: typeof MOBILE_AUTH_CODE_PURPOSE;
+const NATIVE_AUTH_CODE_EXPIRES_IN_SECONDS = 120;
+const NATIVE_AUTH_CODE_CLOCK_TOLERANCE_SECONDS = 30;
+const NATIVE_AUTH_CODE_PURPOSE = "native_auth_exchange";
+
+interface NativeAuthCodePayload extends JwtClaims {
+  purpose: typeof NATIVE_AUTH_CODE_PURPOSE;
   jti: string;
   sub: string;
   session_id: string;
   iss: "assistant";
-  aud: "assistant-mobile";
+  aud: "assistant-native";
   iat: number;
   exp: number;
 }
@@ -118,7 +122,7 @@ export async function generateUserToken({
   };
 }
 
-export async function generateMobileAuthExchangeCode({
+export async function generateNativeAuthExchangeCode({
   context,
   env,
   userId,
@@ -136,15 +140,15 @@ export async function generateMobileAuthExchangeCode({
   }
 
   const now = Math.floor(Date.now() / 1000);
-  const payload: MobileAuthCodePayload = {
-    purpose: MOBILE_AUTH_CODE_PURPOSE,
+  const payload: NativeAuthCodePayload = {
+    purpose: NATIVE_AUTH_CODE_PURPOSE,
     jti: generateId(),
     sub: userId.toString(),
     session_id: sessionId,
     iss: "assistant",
-    aud: "assistant-mobile",
+    aud: "assistant-native",
     iat: now,
-    exp: now + MOBILE_AUTH_CODE_EXPIRES_IN_SECONDS,
+    exp: now + NATIVE_AUTH_CODE_EXPIRES_IN_SECONDS,
   };
 
   const code = await signJwt(payload, {
@@ -154,11 +158,11 @@ export async function generateMobileAuthExchangeCode({
 
   return {
     code,
-    expires_in: MOBILE_AUTH_CODE_EXPIRES_IN_SECONDS,
+    expires_in: NATIVE_AUTH_CODE_EXPIRES_IN_SECONDS,
   };
 }
 
-export async function exchangeMobileAuthCode({
+export async function exchangeNativeAuthCode({
   context,
   env,
   code,
@@ -180,12 +184,15 @@ export async function exchangeMobileAuthCode({
       algorithms: ["HS256"],
       key: await importHmacSecret(serviceContext.env.JWT_SECRET),
       issuer: "assistant",
-      audience: "assistant-mobile",
-      maxTokenAgeSeconds: MOBILE_AUTH_CODE_EXPIRES_IN_SECONDS,
+      audience: "assistant-native",
+      maxTokenAgeSeconds: NATIVE_AUTH_CODE_EXPIRES_IN_SECONDS,
+      clockToleranceSeconds: NATIVE_AUTH_CODE_CLOCK_TOLERANCE_SECONDS,
     });
   } catch (cause) {
+    logger.warn("native sign-in code rejected", { reason: "signature" });
+
     throw new AssistantError(
-      "Invalid or expired mobile auth code",
+      "Invalid or expired sign-in code",
       ErrorType.AUTHENTICATION_ERROR,
       401,
       { cause },
@@ -195,17 +202,19 @@ export async function exchangeMobileAuthCode({
   const now = Math.floor(Date.now() / 1000);
 
   if (
-    payload["purpose"] !== MOBILE_AUTH_CODE_PURPOSE ||
+    payload["purpose"] !== NATIVE_AUTH_CODE_PURPOSE ||
     payload.iss !== "assistant" ||
-    payload.aud !== "assistant-mobile" ||
+    payload.aud !== "assistant-native" ||
     typeof payload.jti !== "string" ||
     !payload.sub ||
     typeof payload["session_id"] !== "string" ||
     typeof payload.exp !== "number" ||
     payload.exp < now
   ) {
+    logger.warn("native sign-in code rejected", { reason: "claims" });
+
     throw new AssistantError(
-      "Invalid or expired mobile auth code",
+      "Invalid or expired sign-in code",
       ErrorType.AUTHENTICATION_ERROR,
       401,
     );
@@ -214,7 +223,7 @@ export async function exchangeMobileAuthCode({
   const userId = Number.parseInt(payload.sub, 10);
 
   if (Number.isNaN(userId)) {
-    throw new AssistantError("Invalid mobile auth user", ErrorType.AUTHENTICATION_ERROR, 401);
+    throw new AssistantError("Invalid sign-in user", ErrorType.AUTHENTICATION_ERROR, 401);
   }
 
   const sessionId = payload["session_id"];
@@ -222,14 +231,18 @@ export async function exchangeMobileAuthCode({
   const session = await serviceContext.repositories.sessions.getSessionWithJwt(sessionTokenHash);
 
   if (!session || session.user_id !== userId) {
+    logger.warn("native sign-in code rejected", {
+      reason: session ? "session-owner" : "session-missing",
+    });
+
     throw new AssistantError(
-      "Invalid or expired mobile session",
+      "Invalid or expired sign-in session",
       ErrorType.AUTHENTICATION_ERROR,
       401,
     );
   }
 
-  const consumed = await serviceContext.repositories.sessions.consumeMobileAuthCode({
+  const consumed = await serviceContext.repositories.sessions.consumeNativeAuthCode({
     jti: payload.jti,
     sessionId: sessionTokenHash,
     userId,
@@ -237,8 +250,10 @@ export async function exchangeMobileAuthCode({
   });
 
   if (!consumed) {
+    logger.warn("native sign-in code rejected", { reason: "already-used" });
+
     throw new AssistantError(
-      "Invalid or expired mobile auth code",
+      "Invalid or expired sign-in code",
       ErrorType.AUTHENTICATION_ERROR,
       401,
     );
@@ -247,8 +262,10 @@ export async function exchangeMobileAuthCode({
   const user = (await serviceContext.repositories.users.getUserById(userId)) as IUser | null;
 
   if (!user) {
+    logger.warn("native sign-in code rejected", { reason: "user-missing" });
+
     throw new AssistantError(
-      "User not found for mobile auth code",
+      "User not found for this sign-in code",
       ErrorType.AUTHENTICATION_ERROR,
       401,
     );

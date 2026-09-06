@@ -5,9 +5,8 @@ import {
   ProgressStepper,
   UploadStep,
 } from "@ngriffin_uk/polychat-component-experiences/content";
+import { useFileUploadAnalytics } from "@ngriffin_uk/polychat-library-react";
 import { useNavigate } from "react-router";
-
-import { useFileUploadAnalytics } from "~/hooks/useFileUploadAnalytics";
 
 import { useRecordingWorkflow } from "./useRecordingWorkflow";
 

@@ -4,10 +4,8 @@ import {
   SidebarNavSection,
 } from "@ngriffin_uk/polychat-component-navigation";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { useStartNewChat, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { Search, SquarePen } from "lucide-react";
-
-import { useStartNewChat } from "~/hooks/useStartNewChat";
-import { useUIStore } from "~/state/stores/uiStore";
 
 import { DiscoverSidebarSection } from "./DiscoverSidebarSection";
 import { PlacesNavLinks } from "./PlacesNavLinks";

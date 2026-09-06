@@ -2,10 +2,11 @@ import {
   ConversationListItemActions,
   type ConversationSummary,
 } from "@ngriffin_uk/polychat-component-navigation";
+import {
+  useConversationOrganisation,
+  resolveSnoozeChoice,
+} from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
-
-import { useConversationOrganisation } from "~/hooks/useConversationOrganisation";
-import { resolveSnoozeChoice } from "~/lib/conversation-organisation";
 
 interface ConversationItemActionsProps {
   conversation: ConversationSummary & { id: string };

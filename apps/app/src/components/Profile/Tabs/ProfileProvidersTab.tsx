@@ -15,6 +15,15 @@ import {
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ProviderSetting } from "@ngriffin_uk/polychat-library-client";
+import {
+  useTrackEvent,
+  RECIPE_CONNECTORS_QUERY_KEY,
+  useDisconnectRecipeConnector,
+  useRecipeConnectors,
+  useConnectorSetup,
+  useUser,
+  completeConnectorAuthPopup,
+} from "@ngriffin_uk/polychat-library-react";
 import { formatProviderLabel, recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 import type { RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,15 +34,6 @@ import { toast } from "sonner";
 
 import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
 import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
-import { useTrackEvent } from "~/hooks/use-track-event";
-import {
-  RECIPE_CONNECTORS_QUERY_KEY,
-  useDisconnectRecipeConnector,
-  useRecipeConnectors,
-} from "~/hooks/useConnectors";
-import { useConnectorSetup } from "~/hooks/useConnectorSetup";
-import { useUser } from "~/hooks/useUser";
-import { completeConnectorAuthPopup } from "~/lib/connector-auth-popup";
 
 import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";

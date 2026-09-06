@@ -48,7 +48,7 @@ export * from "./Canvas/CanvasModelOptionControls";
 export * from "./Canvas/CanvasSidebarControls";
 export * from "./Canvas/controller";
 export * from "./Canvas/GenerationCard";
-export * from "./Canvas/types";
+export * from "@ngriffin_uk/polychat-schemas/experiences";
 export * from "./Canvas/utils";
 export * from "./Drawing/constants";
 export * from "./Drawing/controller";
@@ -60,7 +60,7 @@ export * from "./Drawing/DrawingView";
 export * from "./Drawing/DrawingWorkspace";
 export * from "./Drawing/LineWidthPicker";
 export * from "./Drawing/ToolPicker";
-export * from "./Drawing/types";
+
 export * from "./ReplicateModelForm";
 export * from "./ReplicatePredictionView";
 export * from "./ReplicateModelFilters";

@@ -1,9 +1,6 @@
 import { UserMenuItem as ControlledUserMenuItem } from "@ngriffin_uk/polychat-component-navigation";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
-
-import { useAuthStatus } from "~/hooks/useAuth";
-import { useIsHydrated } from "~/hooks/useIsHydrated";
-import { useUIStore } from "~/state/stores/uiStore";
+import { useAuthStatus, useIsHydrated, useUIStore } from "@ngriffin_uk/polychat-library-react";
 
 export function UserMenuItem() {
   const { setShowLoginModal } = useUIStore();

@@ -1,3 +1,6 @@
+@import "./github.css";
+@import "./github-dark.css";
+
 @layer polychat-content {
   .markdown.prose {
     --tw-prose-body: var(--polychat-text);

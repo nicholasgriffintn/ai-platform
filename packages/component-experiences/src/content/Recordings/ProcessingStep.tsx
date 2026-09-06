@@ -1,7 +1,7 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import type { RecordingFormData } from "@ngriffin_uk/polychat-schemas/experiences";
 import { BookText, ImageIcon, Mic } from "lucide-react";
 
-import type { RecordingFormData } from "./types";
 import { RecordingWorkflowStep } from "./workflow";
 
 interface ProcessingStepProps {

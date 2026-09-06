@@ -1,6 +1,3 @@
-import { oklchToHex, parseOklch } from "@ngriffin_uk/polychat-utility-core";
-import { afterEach, describe, expect, it, vi } from "vitest";
-
 import {
   applyTheme,
   LEGACY_THEME_STORAGE_KEY,
@@ -11,7 +8,9 @@ import {
   THEME_STORAGE_KEY,
   THEMES,
   type ThemeId,
-} from "./theme";
+} from "@ngriffin_uk/polychat-library-chat";
+import { oklchToHex, parseOklch } from "@ngriffin_uk/polychat-utility-core";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import stylesheet from "./styles.css?raw";
 

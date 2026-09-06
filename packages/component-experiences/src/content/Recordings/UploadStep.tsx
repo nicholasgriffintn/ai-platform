@@ -5,9 +5,8 @@ import {
   SingleFileUploader,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { RecordingFormData } from "@ngriffin_uk/polychat-schemas/experiences";
 import { Link as LinkIcon } from "lucide-react";
-
-import type { RecordingFormData } from "./types";
 
 export interface UploadStepProps {
   formData: RecordingFormData;

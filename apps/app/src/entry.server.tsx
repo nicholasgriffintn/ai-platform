@@ -1,9 +1,8 @@
+import { applySecurityHeaders } from "@ngriffin_uk/polychat-library-react";
 import { isbot } from "isbot";
 import { renderToReadableStream } from "react-dom/server";
 import type { EntryContext, RouterContextProvider } from "react-router";
 import { ServerRouter } from "react-router";
-
-import { applySecurityHeaders } from "./lib/security-headers";
 
 export const streamTimeout = 5_000;
 

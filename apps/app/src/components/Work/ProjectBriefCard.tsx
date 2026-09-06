@@ -1,6 +1,5 @@
 import { ProjectBriefCard as ControlledProjectBriefCard } from "@ngriffin_uk/polychat-component-workspaces";
-
-import { useUpdateProject } from "~/hooks/useWorkspaces";
+import { useUpdateProject } from "@ngriffin_uk/polychat-library-react";
 
 interface ProjectBriefCardProps {
   canManage: boolean;

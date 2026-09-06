@@ -14,13 +14,19 @@ Reaching a device-local runtime needs an application on the device. The choice o
 
 Build the desktop application on Tauri with a Rust core, and make that core the only thing that talks to the network.
 
-The core owns four capabilities and no product logic: allowlisted HTTP egress, local storage, operating-system credential storage, and deep links with the loopback sign-in listener. Conversation state machines, prompt construction and policy stay in TypeScript in the webview, shared with the web application through the existing component and library packages behind a typed backend port that can be replaced with a fake.
+The core owns four capabilities and no product logic: allowlisted HTTP egress to device and network runtimes, local storage, operating-system credential storage, and deep links with the loopback sign-in listener. Conversation state machines, prompt construction and policy stay in TypeScript in the webview, shared with the web application through the existing component and library packages behind a typed backend port that can be replaced with a fake.
 
-Egress is allowlisted per destination. The hosted API, a loopback runtime and any endpoint the person has explicitly configured all pass through the same core commands, so the webview is served with no remote connection permitted to it at all and never holds an access token. A dependency compromised inside the renderer has no route out that the core does not already name. Reaching loopback from the core rather than the webview also avoids requiring people to reconfigure the cross-origin settings of their own runtime installation.
+The desktop application ships no interface of its own. It renders the same `ConversationThread` the web application renders, wraps it in the same providers, and adds only what a desktop needs: a sign-in gate, SQLite storage for chats the account keeps off the server, and the runtime backend. A component written for the desktop alone would be a defect.
+
+Runtime egress is allowlisted per destination. A loopback runtime and any endpoint the person has explicitly configured pass through the same core commands, and the core refuses an address it was not given. Reaching loopback from the core rather than the webview also avoids requiring people to reconfigure the cross-origin settings of their own runtime installation.
+
+The hosted API is the exception, and deliberately so. The webview calls it directly over HTTPS with the shared API client, because routing it through the core would mean a desktop-only transport underneath code both applications share, and the divergence costs more than the isolation buys. The content security policy names the API origin and nothing else.
 
 Generations stream over a per-request channel whose lifetime is the request, and cancelling a generation means aborting that request rather than calling a separate endpoint.
 
-Device-local conversations are stored on the device, partitioned by the signed-in Polychat account, and their content never reaches the API. Remote conversations stay server-authoritative. Moving between device and cloud execution starts a new conversation; local history is never uploaded to make a handoff work. Signing out hides local history rather than destroying it, so deleting it is an explicit and irreversible action.
+The desktop application cannot be used signed out: there is no offline mode and no anonymous mode, and the model catalogue is always the one the API returns for this account. Asking for it with `surface=desktop` is what adds the device runtimes; the web application never sees them.
+
+Storage follows the account's choice rather than where the model ran. Conversations sync with the service unless the person marks a chat temporary or has turned on temporary chats by default, and that policy is the same code the web application runs. A temporary chat is written to SQLite on the device, partitioned by the signed-in account, and its content never reaches the API. Signing out hides local history rather than destroying it, so deleting it is an explicit and irreversible action.
 
 Sign-in reuses the native client flow already serving iOS, with a loopback redirect and PKCE rather than a custom scheme as the primary path, and stores the session through operating-system credential protection.
 
@@ -30,6 +36,6 @@ The renderer becomes genuinely unprivileged, which is a stronger position than t
 
 Rust enters the monorepo. Keeping the core to those four capabilities keeps it small enough to read in one sitting; a feature that needs the core to grow a new concept is a signal that the logic belongs in TypeScript instead.
 
-The Worker's Ollama and LM Studio providers are not removed, because a self-hosted deployment on the same network can legitimately reach a runtime. They require an explicitly configured non-loopback address and are hidden from the hosted product. Removing WebLLM from the web application is likewise a staged deprecation with an export window rather than a cutover, because someone who cannot install a desktop application would otherwise lose their history.
+The Worker's Ollama and LM Studio chat providers are removed. A Worker cannot reach a customer's loopback interface, so they only ever worked for a self-hosted deployment, and keeping them meant two implementations of the same idea. Their model definitions stay in the catalogue, marked `runsOn: "device"`, and the desktop executes them through the core. Removing WebLLM from the web application is a staged deprecation with an export window rather than a cutover, because someone who cannot install a desktop application would otherwise lose their history.
 
 Installer signing, notarisation and update-signing keys gate release rather than code, so they are procured before implementation starts.

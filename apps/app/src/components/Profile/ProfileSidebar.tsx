@@ -1,7 +1,5 @@
 import { AccountSidebarShell } from "@ngriffin_uk/polychat-component-account";
-
-import { useAuthStatus } from "~/hooks/useAuth";
-import { useUIStore } from "~/state/stores/uiStore";
+import { useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
 
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";

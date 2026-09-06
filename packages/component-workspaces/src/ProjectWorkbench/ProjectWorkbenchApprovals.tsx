@@ -1,11 +1,8 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import type { ProjectWorkbenchApprovalItem } from "@ngriffin_uk/polychat-utility-react";
 import { ShieldQuestion } from "lucide-react";
 
-export interface ProjectWorkbenchApprovalItem {
-  id: string;
-  command?: string;
-  state: "escalated" | "pending";
-}
+export type { ProjectWorkbenchApprovalItem } from "@ngriffin_uk/polychat-utility-react";
 
 export interface ProjectWorkbenchApprovalsProps {
   approvals: ProjectWorkbenchApprovalItem[];

@@ -6,6 +6,15 @@ import {
   type CreateTaskInput,
   type CreateTaskIntent,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  useCapabilityCatalog,
+  useProjectTasks,
+  getTeammateEditorPath,
+  getProjectSurface,
+  getProjectConversationPath,
+  getErrorMessage,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -14,11 +23,6 @@ import { toast } from "sonner";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { NEW_TEAMMATE_ID } from "~/components/Teammates/useTeammateEditorController";
-import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
-import { useProjectTasks } from "~/hooks/useProjectTasks";
-import { getTeammateEditorPath, getProjectSurface } from "~/lib/capability-surfaces";
-import { getProjectConversationPath } from "~/lib/conversation-route";
-import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
 import { ProjectHomeHeader } from "./ProjectHomeHeader";
 import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates";

@@ -7,14 +7,18 @@ import {
   CardGridLoadingSkeleton,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import {
+  useFetchRecording,
+  useFetchRecordings,
+  useProcessRecording,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import type { Recording } from "@ngriffin_uk/polychat-schemas";
 import { Mic2, Plus } from "lucide-react";
 
 import { RecordingWorkflow } from "~/components/Apps/Recordings/RecordingWorkflow";
 import { RecordingView } from "~/components/Apps/Recordings/View";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useFetchRecording, useFetchRecordings, useProcessRecording } from "~/hooks/useRecordings";
-import { isAuthenticationError } from "~/lib/errors";
 
 export function RecordingsApp({ basePath, projectId, subpath }: ExperienceProps) {
   const segments = subpath.split("/").filter(Boolean);

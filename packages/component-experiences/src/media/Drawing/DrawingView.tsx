@@ -1,9 +1,8 @@
 import { ImageModal } from "@ngriffin_uk/polychat-component-content";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import type { Drawing } from "@ngriffin_uk/polychat-schemas/experiences";
 import { Download } from "lucide-react";
 import { useCallback, useState } from "react";
-
-import type { Drawing } from "./types";
 
 interface DrawingViewProps {
   drawing: Drawing;

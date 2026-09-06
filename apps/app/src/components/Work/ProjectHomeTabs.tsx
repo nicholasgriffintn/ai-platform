@@ -1,8 +1,7 @@
 import { cn, NavLink } from "@ngriffin_uk/polychat-component-ui";
+import { getProjectBasePath } from "@ngriffin_uk/polychat-library-react";
 import { FolderOpen, ListChecks, MessagesSquare } from "lucide-react";
 import type { ReactNode } from "react";
-
-import { getProjectBasePath } from "~/lib/conversation-route";
 
 export type ProjectHomeTab = "chat" | "tasks" | "files";
 

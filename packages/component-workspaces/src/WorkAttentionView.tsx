@@ -15,6 +15,7 @@ import type {
   WorkAttentionType,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatDate } from "@ngriffin_uk/polychat-utility-core";
+import type { WorkAttentionFilters } from "@ngriffin_uk/polychat-utility-react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -25,15 +26,7 @@ import {
   ShieldQuestion,
 } from "lucide-react";
 
-export interface WorkAttentionFilters {
-  kind?: WorkAttentionKind;
-  workspaceId?: string;
-  projectId?: string;
-  ownerUserId?: number;
-  type?: WorkAttentionType;
-  from?: string;
-  to?: string;
-}
+export type { WorkAttentionFilters } from "@ngriffin_uk/polychat-utility-react";
 
 export interface WorkAttentionViewProps {
   items: WorkAttentionItem[];

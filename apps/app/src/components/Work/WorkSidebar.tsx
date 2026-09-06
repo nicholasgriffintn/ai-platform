@@ -7,6 +7,18 @@ import {
 import { ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useTaskAttention,
+  useStartNewChat,
+  getProjectBasePath,
+  getProjectChatPath,
+  getProjectConversationPath,
+  isProjectConversationPath,
+  resolveProjectConversationId,
+  buildConversationSections,
+  getPlacePaths,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
@@ -14,18 +26,6 @@ import { ConversationGroupsDialog } from "~/components/ConversationGroupsDialog"
 import { ConversationItemActions } from "~/components/ConversationItemActions";
 import { SidebarFooter } from "~/components/Sidebar/SidebarFooter";
 import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
-import { useTaskAttention } from "~/hooks/useProjectTasks";
-import { useStartNewChat } from "~/hooks/useStartNewChat";
-import {
-  getProjectBasePath,
-  getProjectChatPath,
-  getProjectConversationPath,
-  isProjectConversationPath,
-  resolveProjectConversationId,
-} from "~/lib/conversation-route";
-import { buildConversationSections } from "~/lib/conversation-sections";
-import { getPlacePaths } from "~/lib/navigation/places";
-import { useUIStore } from "~/state/stores/uiStore";
 
 import { useProjectConversationActions } from "./useProjectConversationActions";
 import { useWorkData } from "./WorkDataContext";

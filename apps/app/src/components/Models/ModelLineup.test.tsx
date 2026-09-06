@@ -29,12 +29,14 @@ const catalogue: ModelConfig = {
   },
 };
 
-vi.mock("@ngriffin_uk/polychat-library-client", () => ({
+vi.mock("@ngriffin_uk/polychat-library-client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-client")>()),
   useChatStore: (selector: (value: { isAuthenticated: boolean }) => unknown) =>
     selector({ isAuthenticated: state.isAuthenticated }),
 }));
 
-vi.mock("~/hooks/useModels", () => ({
+vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-react")>()),
   useModelCatalogue: () => ({ data: catalogue, isLoading: false }),
   useModels: () => ({ data: state.account, isLoading: false }),
 }));

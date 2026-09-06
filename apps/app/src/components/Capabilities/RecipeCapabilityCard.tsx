@@ -1,11 +1,11 @@
 import { RecipeCard } from "@ngriffin_uk/polychat-component-capabilities";
 import { Button, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
+import type { EnabledCapability } from "@ngriffin_uk/polychat-library-react";
 import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
 import { Ellipsis, Plus, Trash2 } from "lucide-react";
 
 import { RecipeEventTriggersDialog } from "~/components/Apps/Recipes/RecipeEventTriggersDialog";
 import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
-import type { EnabledCapability } from "~/lib/capability-surfaces";
 
 interface RecipeCapabilityCardProps {
   capability?: EnabledCapability;

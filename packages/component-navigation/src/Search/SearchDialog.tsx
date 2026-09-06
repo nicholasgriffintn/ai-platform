@@ -6,6 +6,7 @@ import {
   DialogTitle,
   FormInput,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { SearchResult, SearchResultKind } from "@ngriffin_uk/polychat-utility-react";
 import {
   Blocks,
   Building2,
@@ -17,15 +18,7 @@ import {
 } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
-export type SearchResultKind = "conversation" | "project" | "workspace" | "capability";
-
-export interface SearchResult {
-  id: string;
-  kind: SearchResultKind;
-  title: string;
-  description: string;
-  href: string;
-}
+export type { SearchResult, SearchResultKind } from "@ngriffin_uk/polychat-utility-react";
 
 export type SearchSelectionMethod = "click" | "keyboard";
 

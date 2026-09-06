@@ -4,16 +4,18 @@ import {
   WorkspaceMemberList,
   WorkspaceMembersSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  useAuthStatus,
+  useWorkspaceMemberMutations,
+  useRevokeWorkspaceInvitation,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import { LogOut, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useAuthStatus } from "~/hooks/useAuth";
-import { useWorkspaceMemberMutations } from "~/hooks/useGovernance";
-import { useRevokeWorkspaceInvitation } from "~/hooks/useWorkspaces";
-import { isAuthenticationError } from "~/lib/errors";
 
 import { InviteMemberDialog } from "./InviteMemberDialog";
 import { useWorkData } from "./WorkDataContext";

@@ -1,12 +1,14 @@
 import { getLocalChatScope } from "@ngriffin_uk/polychat-library-chat";
 import { searchPolychat, useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { localChatService } from "@ngriffin_uk/polychat-library-react";
+import {
+  localChatService,
+  useProjectCapabilityCatalog,
+  buildGlobalSearchResults,
+  rankGlobalSearchResults,
+} from "@ngriffin_uk/polychat-library-react";
 import { useDebouncedValue } from "@ngriffin_uk/polychat-utility-react";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-
-import { useProjectCapabilityCatalog } from "~/hooks/useProjectCapabilityCatalog";
-import { buildGlobalSearchResults, rankGlobalSearchResults } from "~/lib/global-search";
 
 const GLOBAL_SEARCH_LIMIT = 8;
 

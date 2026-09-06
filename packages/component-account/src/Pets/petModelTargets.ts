@@ -1,15 +1,7 @@
 import type { PetModelOverrides, PetSelection, PetSource } from "@ngriffin_uk/polychat-schemas";
+import type { PetModelTargetKind, PetModelTargetOption } from "@ngriffin_uk/polychat-utility-react";
 
-export type PetModelTargetKind = "maker" | "provider" | "family";
-
-export interface PetModelTargetOption {
-  kind: PetModelTargetKind;
-  value: string;
-  label: string;
-  modelCount?: number;
-  iconModelName?: string;
-  iconProvider?: string;
-}
+export type { PetModelTargetKind, PetModelTargetOption } from "@ngriffin_uk/polychat-utility-react";
 
 const TARGET_GROUPS: Record<PetModelTargetKind, keyof PetModelOverrides> = {
   family: "families",

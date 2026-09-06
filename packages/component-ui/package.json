@@ -5,7 +5,9 @@
   "license": "Apache-2.0",
   "files": [
     "dist",
-    "src/styles.css"
+    "src/fonts.css",
+    "src/styles.css",
+    "src/tokens.css"
   ],
   "type": "module",
   "sideEffects": [
@@ -24,6 +26,16 @@
       "polychat-source": "./src/styles.css",
       "style": "./src/styles.css",
       "default": "./dist/styles.css"
+    },
+    "./tokens.css": {
+      "polychat-source": "./src/tokens.css",
+      "style": "./src/tokens.css",
+      "default": "./src/tokens.css"
+    },
+    "./fonts.css": {
+      "polychat-source": "./src/fonts.css",
+      "style": "./src/fonts.css",
+      "default": "./src/fonts.css"
     }
   },
   "publishConfig": {
@@ -40,6 +52,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ngriffin_uk/polychat-library-chat": "workspace:^",
+    "@ngriffin_uk/polychat-library-react": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-react": "workspace:^",
     "@radix-ui/react-checkbox": "1.3.11",
@@ -77,6 +92,7 @@
   },
   "peerDependencies": {
     "react": "catalog:react-peer",
-    "react-dom": "catalog:react-peer"
+    "react-dom": "catalog:react-peer",
+    "react-router": "*"
   }
 }

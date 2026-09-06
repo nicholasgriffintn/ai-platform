@@ -1,6 +1,5 @@
+import { useTeammates } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectCapability, SkillSummary } from "@ngriffin_uk/polychat-schemas";
-
-import { useTeammates } from "~/hooks/useTeammates";
 
 export function useProjectTaskTeammates(capabilities: ProjectCapability[] | undefined) {
   const { teammates } = useTeammates();

@@ -1,25 +1,9 @@
 import { ListItem } from "@ngriffin_uk/polychat-component-ui";
-import type { ConversationGroup } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationSection, ConversationSummary } from "@ngriffin_uk/polychat-utility-react";
 import { CircleQuestionMark, CloudOff, GitBranch, LoaderCircle, Mail, Pin } from "lucide-react";
 import type { ReactNode, Ref } from "react";
 
-export interface ConversationSummary {
-  id?: string;
-  title?: string | null;
-  isLocalOnly?: boolean;
-  parentConversationId?: string | null;
-  needsInput?: boolean;
-  isStreaming?: boolean;
-  isPinned?: boolean;
-  isUnread?: boolean;
-  group?: ConversationGroup | null;
-}
-
-export interface ConversationSection {
-  id: string;
-  title?: string;
-  conversations: ConversationSummary[];
-}
+export type { ConversationSection, ConversationSummary } from "@ngriffin_uk/polychat-utility-react";
 
 export interface ConversationListProps {
   sections: ConversationSection[];

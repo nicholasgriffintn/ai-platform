@@ -10,6 +10,20 @@ import {
   ShareLinkList,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import {
+  useCreateOutputShare,
+  useOutput,
+  useOutputHistory,
+  useOutputs,
+  useOutputShares,
+  useRevokeOutputShare,
+  useDescribeDocument,
+  useFormatDocument,
+  useRestoreOutputRevision,
+  useSaveDocumentRevision,
+  useRunnableTool,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
+import {
   DOCUMENT_OUTPUT_KIND,
   documentExportFilename,
   readDocumentBody,
@@ -21,20 +35,6 @@ import { useRef, useState } from "react";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import {
-  useCreateOutputShare,
-  useOutput,
-  useOutputHistory,
-  useOutputs,
-  useOutputShares,
-  useRevokeOutputShare,
-  useDescribeDocument,
-  useFormatDocument,
-  useRestoreOutputRevision,
-  useSaveDocumentRevision,
-} from "~/hooks/useOutputs";
-import { useRunnableTool } from "~/hooks/useRunnableTools";
-import { isAuthenticationError } from "~/lib/errors";
 
 export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryProps) {
   const [copiedOutputId, setCopiedOutputId] = useState<string | null>(null);

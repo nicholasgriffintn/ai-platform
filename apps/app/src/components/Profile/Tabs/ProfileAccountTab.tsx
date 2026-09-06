@@ -1,9 +1,7 @@
 import { AccountOverview } from "@ngriffin_uk/polychat-component-account";
+import { useAuthStatus, useUsageBalance, useUIStore } from "@ngriffin_uk/polychat-library-react";
 
 import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
-import { useAuthStatus } from "~/hooks/useAuth";
-import { useUsageBalance } from "~/hooks/useUsage";
-import { useUIStore } from "~/state/stores/uiStore";
 
 export function ProfileAccountTab() {
   const { user, isAuthenticated, isLoading } = useAuthStatus();

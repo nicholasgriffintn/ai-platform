@@ -1,6 +1,5 @@
+import { applySecurityHeaders } from "@ngriffin_uk/polychat-library-react";
 import { createRequestHandler, RouterContextProvider } from "react-router";
-
-import { applySecurityHeaders } from "~/lib/security-headers";
 
 declare global {
   interface CloudflareEnvironment extends Env {}

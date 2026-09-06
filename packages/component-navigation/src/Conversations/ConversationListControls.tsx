@@ -5,6 +5,12 @@ import {
   OptionsMenuSection,
   OptionsMenuSeparator,
 } from "@ngriffin_uk/polychat-component-ui";
+import {
+  type ConversationGroupBy,
+  type ConversationListFilters,
+  DEFAULT_CONVERSATION_LIST_FILTERS,
+  DEFAULT_WORK_CONVERSATION_LIST_FILTERS,
+} from "@ngriffin_uk/polychat-library-chat";
 import type {
   ConversationActivityWindow,
   ConversationArchiveFilter,
@@ -12,25 +18,11 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { RotateCcw, SlidersHorizontal } from "lucide-react";
 
-export type ConversationGroupBy = "date" | "type" | "none";
-
-export interface ConversationListFilters {
-  activity: ConversationActivityWindow;
-  archiveFilter: ConversationArchiveFilter;
-  groupBy: ConversationGroupBy;
-  sortBy: ConversationSortBy;
-}
-
-export const DEFAULT_CONVERSATION_LIST_FILTERS: ConversationListFilters = {
-  activity: "all",
-  archiveFilter: "active",
-  groupBy: "date",
-  sortBy: "updated",
-};
-
-export const DEFAULT_WORK_CONVERSATION_LIST_FILTERS: ConversationListFilters = {
-  ...DEFAULT_CONVERSATION_LIST_FILTERS,
-  groupBy: "type",
+export {
+  type ConversationGroupBy,
+  type ConversationListFilters,
+  DEFAULT_CONVERSATION_LIST_FILTERS,
+  DEFAULT_WORK_CONVERSATION_LIST_FILTERS,
 };
 
 const ARCHIVE_OPTIONS: readonly OptionsMenuOption<ConversationArchiveFilter>[] = [

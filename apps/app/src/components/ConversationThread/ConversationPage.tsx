@@ -1,18 +1,21 @@
+import {
+  ConversationThread,
+  type ThreadModeConfig,
+  useConversationLaunchModeConfig,
+} from "@ngriffin_uk/polychat-component-conversation";
 import { PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
 
 import { ChatSidebar } from "~/components/ChatSidebar";
 import { PageShell } from "~/components/Core/PageShell";
 
-import { ConversationThread, type ConversationThreadModeConfig } from ".";
 import { ConversationProductHeader } from "./ConversationProductHeader";
 import { ConversationThreadNavigation } from "./ConversationThreadNavigation";
-import { useConversationLaunchModeConfig } from "./useConversationLaunchModeConfig";
 
 interface ConversationPageProps {
   embedded?: boolean;
   title: string;
-  modeConfig?: ConversationThreadModeConfig;
+  modeConfig?: ThreadModeConfig;
   pathConversationId?: string;
   sidebarContent?: ReactNode;
 }

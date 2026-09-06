@@ -1,6 +1,5 @@
 import { NavbarSidebarToggle } from "@ngriffin_uk/polychat-component-navigation";
-
-import { useUIStore } from "~/state/stores/uiStore";
+import { useUIStore } from "@ngriffin_uk/polychat-library-react";
 
 interface ChatNavbarProps {
   showSidebarToggle?: boolean;

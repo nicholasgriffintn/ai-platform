@@ -6,10 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@ngriffin_uk/polychat-component-ui";
+import { useSharedTeammates, useTeammateFilters } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
-
-import { useSharedTeammates } from "~/hooks/useSharedTeammates";
-import { useTeammateFilters } from "~/hooks/useTeammateFilters";
 
 interface SharedTeammatesDialogProps {
   open: boolean;

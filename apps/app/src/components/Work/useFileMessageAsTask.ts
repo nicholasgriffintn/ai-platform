@@ -1,8 +1,6 @@
+import { useProjectTasks, getErrorMessage } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-import { useProjectTasks } from "~/hooks/useProjectTasks";
-import { getErrorMessage } from "~/lib/errors";
 
 export function useFileMessageAsTask({
   projectId,

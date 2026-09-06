@@ -3,12 +3,11 @@ import {
   ProjectTeammatesCard,
   ProjectOverviewSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import { getProjectBasePath, isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
 import { ChevronLeft } from "lucide-react";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { getProjectBasePath } from "~/lib/conversation-route";
-import { isAuthenticationError } from "~/lib/errors";
 
 import { ProjectBriefCard } from "./ProjectBriefCard";
 import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard";

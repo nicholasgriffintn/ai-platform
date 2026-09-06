@@ -1,3 +1,7 @@
+export * from "./desktop-execution";
+export * from "./model-surface";
+export * from "./conversation-list-filters";
+export * from "./theme";
 export * from "./local-chat-scope";
 export * from "./local-chat-export";
 export * from "./local-conversation-store";
@@ -16,10 +20,8 @@ export { getGoalMessageMarker, type GoalMessageMarker } from "./message-goal-sta
 export { resolveConversationStorageMode } from "./conversation-storage-policy";
 export {
   createFakeDesktopBackend,
-  resolveExecutionHandoff,
   type DesktopBackend,
   type DesktopRun,
-  type ExecutionHandoff,
   type FakeDesktopBackend,
   type FakeDesktopBackendSeed,
 } from "./desktop-backend";

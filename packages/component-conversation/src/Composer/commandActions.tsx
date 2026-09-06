@@ -1,7 +1,9 @@
 import type { AssistantActionItem, AssistantActionSelection } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ComposerTeammateOption,
+  ComposerCommandAction,
+} from "@ngriffin_uk/polychat-utility-react";
 import { createContext, type ReactNode, useContext } from "react";
-
-import type { ComposerTeammateOption, ComposerCommandAction } from "../composerCommandTypes";
 
 /**
  * Command resolution reads teammates, capability catalogues, and chat settings, so the host owns it

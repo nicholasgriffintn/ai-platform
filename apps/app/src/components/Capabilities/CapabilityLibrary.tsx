@@ -9,6 +9,7 @@ import {
   ConfirmationDialog,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
 import { SearchX } from "lucide-react";
 
 import { AddSkillDialog } from "~/components/Capabilities/AddSkillDialog";
@@ -26,7 +27,6 @@ import {
 import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { isAuthenticationError } from "~/lib/errors";
 
 export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryProps) {
   const controller = useCapabilityLibraryController(scope);

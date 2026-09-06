@@ -5,6 +5,7 @@ import {
   textLinkClassName,
 } from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL, getSharedOutput } from "@ngriffin_uk/polychat-library-client";
+import { useRunnableTool } from "@ngriffin_uk/polychat-library-react";
 import type { SharedOutput } from "@ngriffin_uk/polychat-schemas";
 import { FileQuestion, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -12,7 +13,6 @@ import { useParams } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { PageShell } from "~/components/Core/PageShell";
-import { useRunnableTool } from "~/hooks/useRunnableTools";
 
 export function meta() {
   return [

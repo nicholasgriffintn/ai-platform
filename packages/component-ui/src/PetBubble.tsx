@@ -1,14 +1,14 @@
 import { XIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { Button } from "./Button";
+import { Button, ButtonLink } from "./Button";
 import { cn } from "./utils";
 
 export interface PetBubbleProps {
   children: ReactNode;
   placement?: "left" | "top";
   actionLabel?: string;
-  onAction?: () => void;
+  actionHref?: string;
   onDismiss?: () => void;
   className?: string;
 }
@@ -22,7 +22,7 @@ export function PetBubble({
   children,
   placement = "left",
   actionLabel,
-  onAction,
+  actionHref,
   onDismiss,
   className,
 }: PetBubbleProps) {
@@ -48,11 +48,11 @@ export function PetBubble({
         </Button>
       ) : null}
       <p className={cn("m-0", onDismiss && "pl-5")}>{children}</p>
-      {actionLabel && onAction ? (
+      {actionLabel && actionHref ? (
         <div className="mt-1.5 flex items-center gap-1.5">
-          <Button type="button" variant="outline" size="sm" className="h-6 px-2" onClick={onAction}>
+          <ButtonLink href={actionHref} variant="outline" size="sm" className="h-6 px-2">
             {actionLabel}
-          </Button>
+          </ButtonLink>
         </div>
       ) : null}
     </div>

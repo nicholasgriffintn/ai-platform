@@ -6,6 +6,7 @@ import {
   OptionsMenuSubmenu,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ConversationGroup, ConversationSnooze } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationSnoozeChoice } from "@ngriffin_uk/polychat-utility-react";
 import {
   AlarmClock,
   Edit,
@@ -18,7 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-export type ConversationSnoozeChoice = "tomorrow" | "next_response";
+export type { ConversationSnoozeChoice } from "@ngriffin_uk/polychat-utility-react";
 
 export interface ConversationOrganisationActions {
   isPinned: boolean;

@@ -1,7 +1,6 @@
-import { ButtonLink, PageStatus } from "@ngriffin_uk/polychat-component-ui";
+import { ButtonLink, PageStatus, Pet } from "@ngriffin_uk/polychat-component-ui";
 
 import { PageShell } from "~/components/Core/PageShell";
-import { Pet } from "~/components/Core/Pet";
 import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 
 export function meta() {

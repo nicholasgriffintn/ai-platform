@@ -5,8 +5,7 @@ import {
   Textarea,
   FormCheckbox,
 } from "@ngriffin_uk/polychat-component-ui";
-
-import type { RecordingFormData } from "./types";
+import type { RecordingFormData } from "@ngriffin_uk/polychat-schemas/experiences";
 
 interface ProcessStepProps {
   formData: RecordingFormData;

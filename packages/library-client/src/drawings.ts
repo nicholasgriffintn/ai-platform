@@ -4,7 +4,7 @@ import type {
   DrawingsResponse,
   GenerateImageResponse,
   GuessResponse,
-} from "@ngriffin_uk/polychat-component-experiences/media";
+} from "@ngriffin_uk/polychat-schemas/experiences";
 
 import { apiService } from "./api-service";
 import { fetchApi } from "./fetch-wrapper";

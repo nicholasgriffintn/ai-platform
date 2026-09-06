@@ -19,94 +19,11 @@ pub struct ModelRunRequest {
     pub max_output_tokens: Option<u32>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct HostedRunRequest {
-    pub model: String,
-    pub messages: Vec<ChatMessage>,
-}
-
-pub fn hosted_body(request: &HostedRunRequest) -> Value {
-    json!({
-        "model": request.model,
-        "messages": request
-            .messages
-            .iter()
-            .map(|message| json!({ "role": message.role, "content": message.content }))
-            .collect::<Vec<Value>>(),
-        "stream": true,
-        "store": false,
-    })
-}
-
 #[derive(Debug, PartialEq, Eq)]
 pub enum StreamChunk {
     Text(String),
     Done,
     Ignored,
-}
-
-pub fn parse_hosted_line(line: &str) -> StreamChunk {
-    let trimmed = line.trim();
-    let Some(payload) = trimmed.strip_prefix("data:") else {
-        return StreamChunk::Ignored;
-    };
-
-    let payload = payload.trim();
-
-    if payload == "[DONE]" {
-        return StreamChunk::Done;
-    }
-
-    let Ok(value) = serde_json::from_str::<Value>(payload) else {
-        return StreamChunk::Ignored;
-    };
-
-    if value.get("type").and_then(Value::as_str) == Some("message_stop") {
-        return StreamChunk::Done;
-    }
-
-    let text = hosted_content_delta(&value);
-
-    if text.is_empty() {
-        StreamChunk::Ignored
-    } else {
-        StreamChunk::Text(text)
-    }
-}
-
-fn hosted_content_delta(event: &Value) -> String {
-    if event.get("type").and_then(Value::as_str) == Some("content_block_delta") {
-        if let Some(content) = event.get("content").and_then(Value::as_str) {
-            return content.to_string();
-        }
-
-        let delta = event.get("delta");
-
-        if delta
-            .and_then(|delta| delta.get("type"))
-            .and_then(Value::as_str)
-            == Some("text_delta")
-        {
-            if let Some(text) = delta
-                .and_then(|delta| delta.get("text"))
-                .and_then(Value::as_str)
-            {
-                return text.to_string();
-            }
-        }
-    }
-
-    event
-        .get("choices")
-        .and_then(Value::as_array)
-        .and_then(|choices| choices.first())
-        .and_then(|choice| choice.get("data"))
-        .and_then(|data| data.get("delta"))
-        .and_then(|delta| delta.get("content"))
-        .and_then(Value::as_str)
-        .unwrap_or_default()
-        .to_string()
 }
 
 pub fn chat_path(endpoint: &DesktopEndpoint) -> &'static str {
@@ -292,49 +209,7 @@ mod tests {
         );
     }
 
-    #[test]
-    fn reads_the_hosted_stream_in_both_shapes_it_emits() {
-        assert_eq!(
-            parse_hosted_line(r#"data: {"type":"content_block_delta","content":"Hel"}"#),
-            StreamChunk::Text("Hel".to_string())
-        );
-        assert_eq!(
-            parse_hosted_line(
-                r#"data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"lo"}}"#
-            ),
-            StreamChunk::Text("lo".to_string())
-        );
-        assert_eq!(
-            parse_hosted_line(r#"data: {"choices":[{"data":{"delta":{"content":"!"}}}]}"#),
-            StreamChunk::Text("!".to_string())
-        );
-    }
-
-    #[test]
-    fn treats_both_hosted_terminators_as_the_end() {
-        assert_eq!(parse_hosted_line("data: [DONE]"), StreamChunk::Done);
-        assert_eq!(
-            parse_hosted_line(r#"data: {"type":"message_stop"}"#),
-            StreamChunk::Done
-        );
-    }
-
-    #[test]
-    fn ignores_hosted_events_that_carry_no_answer_text() {
-        assert_eq!(
-            parse_hosted_line(r#"data: {"type":"turn_activity","kind":"turn_started"}"#),
-            StreamChunk::Ignored
-        );
-        assert_eq!(
-            parse_hosted_line(
-                r#"data: {"type":"content_block_delta","delta":{"type":"thinking_delta","thinking":"hmm"}}"#
-            ),
-            StreamChunk::Ignored
-        );
-        assert_eq!(parse_hosted_line(": keep-alive"), StreamChunk::Ignored);
-    }
-
-    #[test]
+                #[test]
     fn asks_each_vendor_at_its_own_path_with_its_own_output_limit() {
         let ollama = endpoint("ollama");
         let lmstudio = endpoint("lmstudio");

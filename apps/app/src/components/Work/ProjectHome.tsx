@@ -4,14 +4,17 @@ import {
   ProjectHomeActions,
   ProjectOverviewSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  useArchiveProject,
+  getProjectBasePath,
+  getProjectConversationPath,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useArchiveProject } from "~/hooks/useWorkspaces";
-import { getProjectBasePath, getProjectConversationPath } from "~/lib/conversation-route";
-import { isAuthenticationError } from "~/lib/errors";
 
 import { ProjectConversationStarter } from "./ProjectConversationStarter";
 import { ProjectHomeHeader } from "./ProjectHomeHeader";

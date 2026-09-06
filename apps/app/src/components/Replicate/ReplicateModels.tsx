@@ -5,6 +5,7 @@ import {
   ReplicateModelFilters,
 } from "@ngriffin_uk/polychat-component-experiences/media";
 import { Button, EmptyState, CardSkeleton } from "@ngriffin_uk/polychat-component-ui";
+import { useReplicateModels, isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
 import type { CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
 import { Sparkles } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -12,8 +13,6 @@ import { useNavigate } from "react-router";
 
 import { AppCard } from "~/components/Apps/AppCard";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useReplicateModels } from "~/hooks/useReplicate";
-import { isAuthenticationError } from "~/lib/errors";
 
 const DEFAULT_CATEGORY = "Creative Tools";
 

@@ -5,14 +5,16 @@ import {
   WorkspaceOverviewSkeleton,
   WorkspaceProjectsSection,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  useTaskAttention,
+  useDeleteWorkspace,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { useTaskAttention } from "~/hooks/useProjectTasks";
-import { useDeleteWorkspace } from "~/hooks/useWorkspaces";
-import { isAuthenticationError } from "~/lib/errors";
 
 import { CreateProjectDialog } from "./CreateProjectDialog";
 import { InviteMemberDialog } from "./InviteMemberDialog";

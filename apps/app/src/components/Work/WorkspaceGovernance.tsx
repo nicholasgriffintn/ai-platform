@@ -4,17 +4,17 @@ import {
   WorkspaceAuditList,
   WorkspaceTemplateList,
 } from "@ngriffin_uk/polychat-component-workspaces";
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { toast } from "sonner";
-
-import { PageShell } from "~/components/Core/PageShell";
 import {
   useProjectStarters,
   useTemplateMutations,
   useWorkspaceAudit,
   useWorkspaceTemplates,
-} from "~/hooks/useGovernance";
+} from "@ngriffin_uk/polychat-library-react";
+import { useState } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
+
+import { PageShell } from "~/components/Core/PageShell";
 
 import { useWorkData } from "./WorkDataContext";
 import { WorkspaceUsage } from "./WorkspaceUsage";

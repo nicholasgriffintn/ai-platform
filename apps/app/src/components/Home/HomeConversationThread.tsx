@@ -1,17 +1,21 @@
+import {
+  ConversationThread,
+  useConversationLaunchModeConfig,
+} from "@ngriffin_uk/polychat-component-conversation";
+import type { ThreadModeConfig } from "@ngriffin_uk/polychat-component-conversation";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useChats,
+  useConversationRoute,
+  createChatWelcome,
+} from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 
-import { ConversationThread } from "~/components/ConversationThread";
-import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
-import { useConversationLaunchModeConfig } from "~/components/ConversationThread/useConversationLaunchModeConfig";
 import { HomeDiscover } from "~/components/Discover/HomeDiscover";
-import { useChats } from "~/hooks/useChat";
-import { useConversationRoute } from "~/hooks/useConversationRoute";
-import { createChatWelcome } from "~/lib/chat-welcome";
 
 interface HomeConversationThreadProps {
-  urlModeConfig?: ConversationThreadModeConfig;
+  urlModeConfig?: ThreadModeConfig;
 }
 
 export function HomeConversationThread({ urlModeConfig }: HomeConversationThreadProps) {

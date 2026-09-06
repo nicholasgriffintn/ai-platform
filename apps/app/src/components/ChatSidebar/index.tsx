@@ -10,6 +10,17 @@ import {
 } from "@ngriffin_uk/polychat-component-navigation";
 import { Button, ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  useTrackEvent,
+  useChats,
+  useDeleteChat,
+  useSetAllChatsArchived,
+  useUpdateChatTitle,
+  getPersonalConversationPath,
+  resolvePersonalConversationId,
+  buildConversationSections,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import { Image as ImageIcon, Loader2, MessageCircle, Search, SquarePen } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -18,19 +29,6 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import type { CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
 import { ConversationGroupsDialog } from "~/components/ConversationGroupsDialog";
 import { ConversationItemActions } from "~/components/ConversationItemActions";
-import { useTrackEvent } from "~/hooks/use-track-event";
-import {
-  useChats,
-  useDeleteChat,
-  useSetAllChatsArchived,
-  useUpdateChatTitle,
-} from "~/hooks/useChat";
-import {
-  getPersonalConversationPath,
-  resolvePersonalConversationId,
-} from "~/lib/conversation-route";
-import { buildConversationSections } from "~/lib/conversation-sections";
-import { useUIStore } from "~/state/stores/uiStore";
 
 import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection";
 import { PlacesNavLinks } from "../Sidebar/PlacesNavLinks";

@@ -2,6 +2,14 @@ import { getModelTierIcon, ModelIcon } from "@ngriffin_uk/polychat-component-mod
 import { Badge, cn, Skeleton } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  useModelCatalogue,
+  useModels,
+  formatProviderLabel,
+  resolveLineupHeadline,
+  toModelRecordById,
+  type LineupEntryView,
+} from "@ngriffin_uk/polychat-library-react";
+import {
   formatReasoningLabel,
   MODEL_LINEUP_RUNTIME_DEFINITIONS,
   MODEL_TIER_DEFINITIONS,
@@ -19,13 +27,6 @@ import { useMemo } from "react";
 import { MODELS_SECTIONS } from "~/components/Models/models-sections";
 import { ModelsSection } from "~/components/Models/ModelsSection";
 import { ProviderMark } from "~/components/Models/ProviderMark";
-import { useModelCatalogue, useModels } from "~/hooks/useModels";
-import { formatProviderLabel } from "~/lib/model-catalogue";
-import {
-  resolveLineupHeadline,
-  toModelRecordById,
-  type LineupEntryView,
-} from "~/lib/model-lineup-view";
 
 const TIER_ACCENT: Record<ModelTier, string> = {
   low: "text-success bg-success/10 border-success/25",

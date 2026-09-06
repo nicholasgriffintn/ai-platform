@@ -118,7 +118,16 @@ impl Store {
                     created_at TEXT NOT NULL
                 );
                 CREATE INDEX IF NOT EXISTS messages_by_conversation
-                    ON messages (conversation_id, created_at);",
+                    ON messages (conversation_id, created_at);
+                CREATE TABLE IF NOT EXISTS local_chats (
+                    scope TEXT NOT NULL,
+                    id TEXT NOT NULL,
+                    payload TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (scope, id)
+                );
+                CREATE INDEX IF NOT EXISTS local_chats_by_scope
+                    ON local_chats (scope, updated_at DESC);",
             )
         })
     }
@@ -280,6 +289,57 @@ impl Store {
             })?;
 
             rows.collect()
+        })
+    }
+
+    pub fn save_local_chat(
+        &self,
+        scope: &str,
+        id: &str,
+        payload: &str,
+        updated_at: &str,
+    ) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "INSERT INTO local_chats (scope, id, payload, updated_at)
+                 VALUES (?1, ?2, ?3, ?4)
+                 ON CONFLICT (scope, id) DO UPDATE SET
+                    payload = excluded.payload,
+                    updated_at = excluded.updated_at",
+                params![scope, id, payload, updated_at],
+            )?;
+
+            Ok(())
+        })
+    }
+
+    pub fn list_local_chats(&self, scope: &str) -> Result<Vec<String>, String> {
+        self.with_connection(|connection| {
+            let mut statement = connection.prepare(
+                "SELECT payload FROM local_chats WHERE scope = ?1 ORDER BY updated_at DESC",
+            )?;
+            let rows = statement.query_map(params![scope], |row| row.get::<_, String>(0))?;
+
+            rows.collect()
+        })
+    }
+
+    pub fn delete_local_chat(&self, scope: &str, id: &str) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "DELETE FROM local_chats WHERE scope = ?1 AND id = ?2",
+                params![scope, id],
+            )?;
+
+            Ok(())
+        })
+    }
+
+    pub fn delete_all_local_chats(&self, scope: &str) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute("DELETE FROM local_chats WHERE scope = ?1", params![scope])?;
+
+            Ok(())
         })
     }
 
@@ -504,6 +564,49 @@ mod tests {
             .expect("appended");
 
         assert_eq!(store.list_messages("b").expect("listed").len(), 0);
+    }
+
+    #[test]
+    fn keeps_one_scopes_local_chats_away_from_another() {
+        let store = store();
+
+        store
+            .save_local_chat("user-1", "chat-1", "{\"id\":\"chat-1\"}", "2026-01-01T00:00:00Z")
+            .expect("saved");
+        store
+            .save_local_chat("user-2", "chat-2", "{\"id\":\"chat-2\"}", "2026-01-02T00:00:00Z")
+            .expect("saved");
+
+        assert_eq!(
+            store.list_local_chats("user-1").expect("listed"),
+            vec!["{\"id\":\"chat-1\"}".to_string()]
+        );
+
+        store.delete_all_local_chats("user-1").expect("cleared");
+
+        assert!(store.list_local_chats("user-1").expect("listed").is_empty());
+        assert_eq!(store.list_local_chats("user-2").expect("listed").len(), 1);
+    }
+
+    #[test]
+    fn saving_a_local_chat_again_replaces_its_payload() {
+        let store = store();
+
+        store
+            .save_local_chat("user-1", "chat-1", "{\"title\":\"first\"}", "2026-01-01T00:00:00Z")
+            .expect("saved");
+        store
+            .save_local_chat("user-1", "chat-1", "{\"title\":\"second\"}", "2026-01-03T00:00:00Z")
+            .expect("saved");
+
+        assert_eq!(
+            store.list_local_chats("user-1").expect("listed"),
+            vec!["{\"title\":\"second\"}".to_string()]
+        );
+
+        store.delete_local_chat("user-1", "chat-1").expect("deleted");
+
+        assert!(store.list_local_chats("user-1").expect("listed").is_empty());
     }
 
     #[test]

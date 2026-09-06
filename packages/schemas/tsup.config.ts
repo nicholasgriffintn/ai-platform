@@ -4,6 +4,7 @@ export default defineConfig({
   entry: [
     "src/index.ts",
     "src/analytics.ts",
+    "src/experiences.ts",
     "src/chat-stream.ts",
     "src/compaction-status.ts",
     "src/goals.ts",

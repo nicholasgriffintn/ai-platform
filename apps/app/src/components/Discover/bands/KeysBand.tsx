@@ -1,9 +1,7 @@
 import { Button, ButtonLink } from "@ngriffin_uk/polychat-component-ui";
+import { useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { KeyRound, Lock, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
-
-import { useAuthStatus } from "~/hooks/useAuth";
-import { useUIStore } from "~/state/stores/uiStore";
 
 import { DiscoverBand } from "../DiscoverBand";
 

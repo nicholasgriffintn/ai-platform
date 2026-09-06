@@ -6,9 +6,8 @@ const CALLBACK_PATH: &str = "/callback";
 const ACCEPT_POLL: Duration = Duration::from_millis(200);
 const READ_TIMEOUT: Duration = Duration::from_secs(5);
 const MAX_REQUEST_LINE: u64 = 8 * 1024;
-const SUCCESS_BODY: &str = "<!doctype html><meta charset=\"utf-8\"><title>Polychat</title><p>You are signed in. You can close this tab and return to Polychat.";
-const REFUSED_BODY: &str =
-    "<!doctype html><meta charset=\"utf-8\"><title>Polychat</title><p>This sign-in could not be matched to the one you started. Try again from Polychat.";
+const SUCCESS_BODY: &str = include_str!("../pages/signed-in.html");
+const REFUSED_BODY: &str = include_str!("../pages/refused.html");
 
 pub struct LoopbackListener {
     listener: TcpListener,

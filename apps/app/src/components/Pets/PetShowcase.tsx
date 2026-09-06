@@ -1,7 +1,5 @@
-import { ButtonLink } from "@ngriffin_uk/polychat-component-ui";
-
-import { PetPreview } from "~/components/Core/PetPreview";
-import { type PetLoreEntry, PET_FLOCK, PET_STRAYS } from "~/lib/pet/lore";
+import { ButtonLink, PetPreview } from "@ngriffin_uk/polychat-component-ui";
+import { type PetLoreEntry, PET_FLOCK, PET_STRAYS } from "@ngriffin_uk/polychat-library-react";
 
 function TraitList({ traits }: { traits: PetLoreEntry["traits"] }) {
   return (

@@ -1,6 +1,5 @@
+import { useProject, useWorkspace, useWorkspaces } from "@ngriffin_uk/polychat-library-react";
 import { useMemo, type ReactNode } from "react";
-
-import { useProject, useWorkspace, useWorkspaces } from "~/hooks/useWorkspaces";
 
 import { WorkContext } from "./WorkDataContext";
 

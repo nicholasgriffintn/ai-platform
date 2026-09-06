@@ -5,6 +5,14 @@ import {
   cn,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import {
+  useCreateNote,
+  useDeleteNote,
+  useFetchNote,
+  useFetchNotes,
+  useUpdateNote,
+  isAuthenticationError,
+} from "@ngriffin_uk/polychat-library-react";
 import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
 import { NotebookPen, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -14,14 +22,6 @@ import { useOwnAppChrome } from "~/components/Apps/AppChrome";
 import { createNoteSaver } from "~/components/Apps/Notes/note-saver";
 import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import {
-  useCreateNote,
-  useDeleteNote,
-  useFetchNote,
-  useFetchNotes,
-  useUpdateNote,
-} from "~/hooks/useNotes";
-import { isAuthenticationError } from "~/lib/errors";
 
 export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const navigate = useNavigate();

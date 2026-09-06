@@ -12,6 +12,7 @@ import {
   SearchInput,
   Skeleton,
 } from "@ngriffin_uk/polychat-component-ui";
+import { filterModelsByQuery, type ModelProviderGroup } from "@ngriffin_uk/polychat-library-react";
 import { getModelDisplayName, type ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { formatCompactCount } from "@ngriffin_uk/polychat-utility-core";
 import { useDeferredValue, useMemo, useState } from "react";
@@ -19,7 +20,6 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { MODELS_SECTIONS } from "~/components/Models/models-sections";
 import { ModelsSection } from "~/components/Models/ModelsSection";
 import { ProviderMark } from "~/components/Models/ProviderMark";
-import { filterModelsByQuery, type ModelProviderGroup } from "~/lib/model-catalogue";
 
 const PROVIDER_PREVIEW_LIMIT = 9;
 

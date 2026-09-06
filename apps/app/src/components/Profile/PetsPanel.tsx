@@ -6,6 +6,15 @@ import {
   PetUploadDialog,
   type PetUploadSubmission,
 } from "@ngriffin_uk/polychat-component-account";
+import { PetPreview } from "@ngriffin_uk/polychat-component-ui";
+import {
+  useAuthStatus,
+  useModels,
+  usePet,
+  usePets,
+  composePetSheet,
+  getPetModelTargetOptions,
+} from "@ngriffin_uk/polychat-library-react";
 import {
   DEFAULT_PET_PRESET_SLUG,
   EMPTY_PET_MODEL_OVERRIDES,
@@ -17,13 +26,6 @@ import {
   type PetModelOverrides,
 } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-import { PetPreview } from "~/components/Core/PetPreview";
-import { useAuthStatus } from "~/hooks/useAuth";
-import { useModels } from "~/hooks/useModels";
-import { usePet, usePets } from "~/hooks/usePets";
-import { composePetSheet } from "~/lib/pet/compose-sheet";
-import { getPetModelTargetOptions } from "~/lib/pet/model-targets";
 
 const MAX_MEBIBYTES = Math.round(PET_SHEET_MAX_BYTES / 1024 / 1024);
 

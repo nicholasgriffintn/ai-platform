@@ -2,8 +2,7 @@ import {
   matchesComposerCommand,
   matchesComposerSlashCommand,
 } from "@ngriffin_uk/polychat-library-chat/composer-commands";
-
-import type { ComposerCommandAction } from "../composerCommandTypes";
+import type { ComposerCommandAction } from "@ngriffin_uk/polychat-utility-react";
 
 export interface ComposerCommandMenuState {
   commands: ComposerCommandAction[];
