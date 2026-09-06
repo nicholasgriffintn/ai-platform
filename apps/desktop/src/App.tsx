@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Account } from "./Account";
 import { AddEndpoint } from "./AddEndpoint";
+import { AgentSessions } from "./AgentSessions";
 import { Composer } from "./Composer";
 import type { ConnectedDesktopBackend } from "./desktop-backend";
 
@@ -109,16 +110,20 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
           return;
         }
 
-        const discovered = await backend.discoverModels(endpointId);
+        const endpoint = endpoints.find((candidate) => candidate.id === endpointId);
 
-        setModels((current) => ({ ...current, [endpointId]: discovered }));
+        if (endpoint?.kind === "model") {
+          const discovered = await backend.discoverModels(endpointId);
+
+          setModels((current) => ({ ...current, [endpointId]: discovered }));
+        }
       } catch (cause) {
         setError(String(cause));
       } finally {
         setChecking(null);
       }
     },
-    [backend],
+    [backend, endpoints],
   );
 
   return (
@@ -145,8 +150,11 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
             <button type="button" onClick={() => void forget(endpoint.id)}>
               Forget
             </button>
-            {readiness[endpoint.id]?.status === "ready" ? (
+            {readiness[endpoint.id]?.status === "ready" && endpoint.kind === "model" ? (
               <ModelList models={models[endpoint.id] ?? []} backend={backend} />
+            ) : null}
+            {readiness[endpoint.id]?.status === "ready" && endpoint.kind === "agent" ? (
+              <AgentSessions backend={backend} endpoint={endpoint} />
             ) : null}
           </li>
         ))}

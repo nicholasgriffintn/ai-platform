@@ -3,6 +3,8 @@ use std::sync::Mutex;
 
 use serde::Serialize;
 
+use crate::agents::AgentApprovalRequest;
+
 #[derive(Serialize, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum StreamEvent {
@@ -16,6 +18,11 @@ pub enum StreamEvent {
     Progress { run_id: String, state: String },
     #[serde(rename_all = "camelCase")]
     Text { run_id: String, delta: String },
+    #[serde(rename_all = "camelCase")]
+    ApprovalRequired {
+        run_id: String,
+        request: AgentApprovalRequest,
+    },
     #[serde(rename_all = "camelCase")]
     Failed {
         run_id: String,

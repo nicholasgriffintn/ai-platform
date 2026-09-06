@@ -2,6 +2,7 @@ import type { DesktopBackend, DesktopRun } from "@ngriffin_uk/polychat-library-c
 import {
   desktopEndpointSchema,
   desktopRuntimeReadinessSchema,
+  agentRuntimeSessionSchema,
   desktopStreamEventSchema,
   discoveredModelSchema,
   localConversationSchema,
@@ -23,6 +24,9 @@ export type ConnectedDesktopBackend = Pick<
   | "discoverModels"
   | "startModelRun"
   | "startHostedRun"
+  | "startAgentRun"
+  | "listAgentSessions"
+  | "decideApproval"
   | "listConversations"
   | "saveConversation"
   | "listMessages"
@@ -62,6 +66,21 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
     desktopRuntimeReadinessSchema.parse(await invoke("probe_endpoint", { endpointId })),
   discoverModels: async (endpointId) =>
     discoveredModelSchema.array().parse(await invoke("discover_models", { endpointId })),
+  listAgentSessions: async (endpointId) =>
+    agentRuntimeSessionSchema.array().parse(await invoke("list_agent_sessions", { endpointId })),
+  decideApproval: async (endpointId, decision) => {
+    await invoke("decide_approval", {
+      endpointId,
+      requestId: decision.requestId,
+      approved: decision.approved,
+    });
+  },
+  startAgentRun: async (request) =>
+    startRun("start_agent_run", {
+      endpointId: request.endpointId,
+      sessionNativeId: request.sessionNativeId ?? "",
+      prompt: request.prompt,
+    }),
   startHostedRun: async (request: HostedRunRequest): Promise<DesktopRun> =>
     startRun("start_hosted_run", request),
   startModelRun: async (request: DesktopModelRunRequest): Promise<DesktopRun> =>
@@ -83,7 +102,12 @@ function startRun(command: string, request: unknown): Promise<DesktopRun> {
     }
   };
 
-  void invoke(command, { runId, request, onEvent: channel }).catch(() => queue.close());
+  const payload =
+    typeof request === "object" && request !== null && "sessionNativeId" in request
+      ? { runId, ...request, onEvent: channel }
+      : { runId, request, onEvent: channel };
+
+  void invoke(command, payload).catch(() => queue.close());
 
   return Promise.resolve({
     runId,

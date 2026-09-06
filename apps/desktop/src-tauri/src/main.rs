@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod agents;
 mod chat;
 mod discovery;
 mod egress;
@@ -10,6 +11,7 @@ mod store;
 
 use std::time::Duration;
 
+use agents::{AgentApprovalRequest, AgentChunk, AgentSession};
 use chat::{ModelRunRequest, StreamChunk};
 use discovery::DiscoveredModel;
 use egress::{DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport};
@@ -434,6 +436,214 @@ async fn start_hosted_run(
     Ok(())
 }
 
+fn executing_host(endpoint: &DesktopEndpoint) -> String {
+    Url::parse(&endpoint.url)
+        .ok()
+        .and_then(|url| url.host_str().map(str::to_string))
+        .unwrap_or_else(|| endpoint.label.clone())
+}
+
+#[tauri::command]
+async fn list_agent_sessions(
+    endpoint_id: String,
+    store: State<'_, Store>,
+) -> Result<Vec<AgentSession>, String> {
+    let (endpoint, base) = authorised_endpoint(&store, &endpoint_id)?;
+    let target = base
+        .join(agents::sessions_path(&endpoint))
+        .map_err(|cause| cause.to_string())?;
+
+    let response = http_client(DISCOVERY_TIMEOUT)?
+        .get(target)
+        .send()
+        .await
+        .map_err(|cause| cause.to_string())?;
+
+    if !response.status().is_success() {
+        return Err(format!(
+            "{} answered with status {}",
+            endpoint.label,
+            response.status().as_u16()
+        ));
+    }
+
+    let body = response
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|cause| cause.to_string())?;
+
+    Ok(agents::parse_sessions(
+        &endpoint,
+        &body,
+        &executing_host(&endpoint),
+    ))
+}
+
+#[tauri::command]
+async fn decide_approval(
+    endpoint_id: String,
+    request_id: String,
+    approved: bool,
+    store: State<'_, Store>,
+) -> Result<(), String> {
+    let (endpoint, base) = authorised_endpoint(&store, &endpoint_id)?;
+    let target = base
+        .join(&agents::decision_path(&endpoint, &request_id))
+        .map_err(|cause| cause.to_string())?;
+
+    let response = http_client(REQUEST_TIMEOUT)?
+        .post(target)
+        .json(&agents::decision_body(approved))
+        .send()
+        .await
+        .map_err(|cause| cause.to_string())?;
+
+    if response.status().is_success() {
+        return Ok(());
+    }
+
+    Err(format!(
+        "{} refused the decision with status {}",
+        endpoint.label,
+        response.status().as_u16()
+    ))
+}
+
+#[tauri::command]
+async fn start_agent_run(
+    run_id: String,
+    endpoint_id: String,
+    session_native_id: String,
+    prompt: String,
+    on_event: Channel<StreamEvent>,
+    registry: State<'_, RunRegistry>,
+    store: State<'_, Store>,
+) -> Result<(), String> {
+    let (endpoint, base) = authorised_endpoint(&store, &endpoint_id)?;
+    let target = base
+        .join(&agents::prompt_path(&endpoint, &session_native_id))
+        .map_err(|cause| cause.to_string())?;
+    let host = executing_host(&endpoint);
+
+    let emit = |event: StreamEvent| {
+        let _ = on_event.send(event);
+    };
+
+    emit(StreamEvent::Started {
+        run_id: run_id.clone(),
+        endpoint_id: endpoint.id.clone(),
+        at: timestamp(),
+    });
+
+    let response = match http_client(RUN_TIMEOUT)?
+        .post(target)
+        .json(&agents::prompt_body(&prompt))
+        .send()
+        .await
+    {
+        Ok(response) => response,
+        Err(cause) => {
+            registry.forget(&run_id);
+            emit(StreamEvent::Failed {
+                run_id: run_id.clone(),
+                failure: "unreachable".to_string(),
+                message: cause.to_string(),
+            });
+
+            return Ok(());
+        }
+    };
+
+    if !response.status().is_success() {
+        let failure = match response.status().as_u16() {
+            401 | 403 => "unauthorised",
+            404 => "session-gone",
+            _ => "agent-error",
+        };
+        let status = response.status().as_u16();
+
+        registry.forget(&run_id);
+        emit(StreamEvent::Failed {
+            run_id: run_id.clone(),
+            failure: failure.to_string(),
+            message: format!("{} answered with status {status}", endpoint.label),
+        });
+
+        return Ok(());
+    }
+
+    emit(StreamEvent::Progress {
+        run_id: run_id.clone(),
+        state: "generating".to_string(),
+    });
+
+    let reason = stream_agent(
+        response,
+        &run_id,
+        &registry,
+        &session_native_id,
+        &host,
+        &emit,
+    )
+    .await;
+
+    registry.forget(&run_id);
+    emit(StreamEvent::Finished {
+        run_id,
+        reason: reason.to_string(),
+        at: timestamp(),
+    });
+
+    Ok(())
+}
+
+async fn stream_agent(
+    response: reqwest::Response,
+    run_id: &str,
+    registry: &RunRegistry,
+    session_native_id: &str,
+    host: &str,
+    emit: &impl Fn(StreamEvent),
+) -> &'static str {
+    let mut stream = response.bytes_stream();
+    let mut buffer = String::new();
+
+    while let Some(piece) = stream.next().await {
+        if registry.is_cancelled(run_id) {
+            return "cancelled";
+        }
+
+        let Ok(piece) = piece else {
+            return "interrupted";
+        };
+
+        buffer.push_str(&String::from_utf8_lossy(&piece));
+
+        while let Some(index) = buffer.find('\n') {
+            let line: String = buffer.drain(..=index).collect();
+
+            match agents::parse_agent_line(&line, session_native_id, host) {
+                AgentChunk::Text(delta) => emit(StreamEvent::Text {
+                    run_id: run_id.to_string(),
+                    delta,
+                }),
+                AgentChunk::Approval(request) => emit(approval_event(run_id, request)),
+                AgentChunk::Done => return "complete",
+                AgentChunk::Ignored => {}
+            }
+        }
+    }
+
+    "complete"
+}
+
+fn approval_event(run_id: &str, request: AgentApprovalRequest) -> StreamEvent {
+    StreamEvent::ApprovalRequired {
+        run_id: run_id.to_string(),
+        request,
+    }
+}
+
 #[tauri::command]
 fn cancel_model_run(run_id: String, registry: State<'_, RunRegistry>) {
     registry.cancel(&run_id);
@@ -558,6 +768,9 @@ fn main() {
             append_message,
             start_model_run,
             start_hosted_run,
+            list_agent_sessions,
+            start_agent_run,
+            decide_approval,
             cancel_model_run
         ])
         .run(tauri::generate_context!())
