@@ -22,6 +22,12 @@ const KeyboardShortcutsHelp = lazy(() =>
   })),
 );
 
+const NewProjectConversationDialog = lazy(() =>
+  import("~/components/Work/NewProjectConversationDialog").then((mod) => ({
+    default: mod.NewProjectConversationDialog,
+  })),
+);
+
 const MetaAssistantOverlay = lazy(() =>
   import("~/components/MetaAssistant/MetaAssistantOverlay").then((mod) => ({
     default: mod.MetaAssistantOverlay,
@@ -51,6 +57,8 @@ export function ProductShell({
     setShowLoginModal,
     showMetaAssistant,
     setShowMetaAssistant,
+    showProjectPicker,
+    setShowProjectPicker,
   } = useUIStore();
   const showSearch = useChatStore((state) => state.showSearch);
   const setShowSearch = useChatStore((state) => state.setShowSearch);
@@ -124,6 +132,11 @@ export function ProductShell({
       {showMetaAssistant && (
         <Suspense fallback={null}>
           <MetaAssistantOverlay open onClose={() => setShowMetaAssistant(false)} />
+        </Suspense>
+      )}
+      {showProjectPicker && (
+        <Suspense fallback={null}>
+          <NewProjectConversationDialog open onOpenChange={setShowProjectPicker} />
         </Suspense>
       )}
     </>

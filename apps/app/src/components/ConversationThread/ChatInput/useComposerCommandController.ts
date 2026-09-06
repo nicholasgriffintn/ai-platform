@@ -16,6 +16,7 @@ import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useAgents } from "~/hooks/useAgents";
 import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
+import { useComposerDraft } from "~/state/composer-draft";
 import { useChatStore } from "~/state/stores/chatStore";
 
 import { useComposerCommandActions } from "./useComposerCommandActions";
@@ -47,14 +48,9 @@ export function useComposerCommandController({
   onCursorPositionRequest?: (position: number) => void;
   toolSelectionLocked?: boolean;
 }) {
-  const {
-    chatInput,
-    setChatInput,
-    chatMode,
-    selectedAgentId,
-    selectedAgentTokenPosition,
-    selectedAssistantAction,
-  } = useChatStore();
+  const { chatMode, selectedAgentId, selectedAgentTokenPosition, selectedAssistantAction } =
+    useChatStore();
+  const { composerInput, setComposerInput } = useComposerDraft();
   const includeAgents = assistantActionCatalog?.includeAgents !== false;
   const { agents } = useAgents({ enabled: includeAgents });
   const [textareaCursorPosition, setTextareaCursorPosition] = useState(0);
@@ -69,7 +65,11 @@ export function useComposerCommandController({
         getComposerInlineTokenText(selectedAssistantAction.item.label);
 
       ranges.push(
-        ...findComposerInlineTokenRanges(chatInput, selectedAssistantAction.item.label, tokenText),
+        ...findComposerInlineTokenRanges(
+          composerInput,
+          selectedAssistantAction.item.label,
+          tokenText,
+        ),
       );
       if (typeof selectedAssistantAction.tokenPosition === "number") {
         ranges.push(
@@ -83,27 +83,27 @@ export function useComposerCommandController({
     }
 
     if (selectedAgent) {
-      ranges.push(...findComposerInlineTokenRanges(chatInput, selectedAgent.name));
+      ranges.push(...findComposerInlineTokenRanges(composerInput, selectedAgent.name));
       if (typeof selectedAgentTokenPosition === "number") {
         ranges.push(getComposerInlineTokenRange(selectedAgentTokenPosition, selectedAgent.name));
       }
     }
 
     return ranges;
-  }, [chatInput, selectedAgent, selectedAgentTokenPosition, selectedAssistantAction]);
-  const directiveQuery = getComposerDirectiveQuery(chatInput, textareaCursorPosition, {
+  }, [composerInput, selectedAgent, selectedAgentTokenPosition, selectedAssistantAction]);
+  const directiveQuery = getComposerDirectiveQuery(composerInput, textareaCursorPosition, {
     ignoredRanges: ignoredDirectiveRanges,
   });
   const modeCommands = modeControls?.commands ?? [];
   const commandActions = useComposerCommandActions({
     allowedAssistantActionCapabilities,
     assistantActionCatalog,
-    chatInput,
+    chatInput: composerInput,
     directive: directiveQuery,
     goalState,
     includeSettingCommands: modeControls?.includeSettingCommands,
     modeCommands,
-    setChatInput,
+    setChatInput: setComposerInput,
     toolSelectionLocked,
   });
 
@@ -156,7 +156,7 @@ export function useComposerCommandController({
 
     const selectedText = command.selectionText.trim().toLowerCase();
 
-    return chatInput.trim().toLowerCase() === selectedText;
+    return composerInput.trim().toLowerCase() === selectedText;
   };
 
   const applyDirectiveSelection = () => {
@@ -211,13 +211,13 @@ export function useComposerCommandController({
     commandState: {
       allowedAssistantActionCapabilities,
       assistantActionCatalog,
-      chatInput,
+      chatInput: composerInput,
       directive: directiveQuery,
       activeModeControls: modeControls?.activeModeControls,
       includeSettingCommands: modeControls?.includeSettingCommands,
       isDisabled: isLoading,
       modeCommands,
-      setChatInput,
+      setChatInput: setComposerInput,
       activeSuggestionIndex,
       onActiveSuggestionIndexChange: setActiveSuggestionIndex,
       onActionItemSelect: applyActionItem,

@@ -61,6 +61,7 @@ export interface WorkSidebarNavProps {
   workspaceShortcuts?: Array<{ id: string; name: string; href: string }>;
   onSearch: () => void;
   onNavigate: () => void;
+  onNewChat: () => void;
   onNewConversation: () => void;
 }
 
@@ -75,6 +76,7 @@ export function WorkSidebarNav({
   workspaceShortcuts,
   onSearch,
   onNavigate,
+  onNewChat,
   onNewConversation,
 }: WorkSidebarNavProps) {
   const linkClass = sidebarNavLinkClass;
@@ -82,6 +84,9 @@ export function WorkSidebarNav({
   return (
     <nav className="space-y-5 p-2 pb-8">
       <div className="space-y-1">
+        <SidebarNavButton icon={<SquarePen size={17} />} onClick={onNewChat}>
+          New chat
+        </SidebarNavButton>
         <SidebarNavButton icon={<Search size={17} />} onClick={onSearch} shortcut="⌘K">
           Search
         </SidebarNavButton>

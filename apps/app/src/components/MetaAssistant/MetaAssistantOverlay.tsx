@@ -21,9 +21,16 @@ import {
   getMetaNavigationHref,
   readMetaNavigationTarget,
 } from "~/lib/meta-assistant";
-import { ConversationScopeProvider, useLocalConversationScope } from "~/state/conversation-scope";
+import { ComposerDraftProvider, useLocalComposerDraft } from "~/state/composer-draft";
+import {
+  type ConversationScope,
+  ConversationScopeProvider,
+  useLocalConversationScope,
+} from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
+
+const POLY_PET_PRESET_SLUG = "pip";
 
 const META_SUGGESTIONS: ChatSuggestion[] = [
   {
@@ -58,13 +65,17 @@ const META_SUGGESTIONS: ChatSuggestion[] = [
   },
 ];
 
-function MetaAssistantThread({ onNavigate }: { onNavigate: (href: string) => void }) {
+function MetaAssistantThread({
+  scope,
+  onNavigate,
+}: {
+  scope: ConversationScope;
+  onNavigate: (href: string) => void;
+}) {
   const queryClient = useQueryClient();
   const { pathname } = useLocation();
-  const metaConversationId = useUIStore((state) => state.metaAssistantConversationId);
-  const setMetaConversationId = useUIStore((state) => state.setMetaAssistantConversationId);
   const openConversationId = useChatStore((state) => state.currentConversationId);
-  const scope = useLocalConversationScope(metaConversationId, setMetaConversationId);
+  const draft = useLocalComposerDraft();
   const { data: conversation } = useChat(scope.currentConversationId);
   const handledMessageIdsRef = useRef(new Set<string>());
   const uiContext = useMemo(
@@ -96,19 +107,7 @@ function MetaAssistantThread({ onNavigate }: { onNavigate: (href: string) => voi
 
   return (
     <ConversationScopeProvider scope={scope}>
-      <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex items-center justify-end px-3 pt-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            icon={<SquarePen size={15} />}
-            disabled={!scope.currentConversationId}
-            onClick={() => scope.clearCurrentConversation()}
-          >
-            New conversation
-          </Button>
-        </div>
+      <ComposerDraftProvider draft={draft}>
         <div className="relative min-h-0 flex-1 overflow-hidden">
           <ConversationThread
             modeConfig={{
@@ -119,17 +118,19 @@ function MetaAssistantThread({ onNavigate }: { onNavigate: (href: string) => voi
               welcomeSuggestions: META_SUGGESTIONS,
               welcomeCapabilitySuggestions: false,
               inputPlaceholder: { newConversation: "Ask Poly…", followUp: "Ask Poly…" },
-              hideDefaultControls: true,
+              petPresetSlug: POLY_PET_PRESET_SLUG,
               hideComposerActionMenu: true,
               hideChatSettings: true,
               hideInlineResponseControls: true,
               hideComposerSuggestions: true,
+              hideModelSelector: true,
+              hideVoiceControls: true,
               toolSelectionLocked: true,
               analyticsSource: "meta-assistant",
             }}
           />
         </div>
-      </div>
+      </ComposerDraftProvider>
     </ConversationScopeProvider>
   );
 }
@@ -139,6 +140,10 @@ export function MetaAssistantOverlay({ open, onClose }: { open: boolean; onClose
   const { trackEvent } = useTrackEvent();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const localOnlyMode = useChatStore((state) => state.localOnlyMode);
+  const metaConversationId = useUIStore((state) => state.metaAssistantConversationId);
+  const setMetaConversationId = useUIStore((state) => state.setMetaAssistantConversationId);
+  const scope = useLocalConversationScope(metaConversationId, setMetaConversationId);
+  const canUsePoly = isAuthenticated && !localOnlyMode;
   const handleNavigate = (href: string) => {
     trackEvent({
       name: "meta_assistant_navigate",
@@ -154,12 +159,25 @@ export function MetaAssistantOverlay({ open, onClose }: { open: boolean; onClose
       <DialogContent className="flex h-[min(44rem,92dvh)] flex-col gap-0 overflow-hidden p-0">
         <div className="border-border flex items-center gap-3 border-b px-4 py-3 pr-14">
           <Feather size={18} aria-hidden="true" className="text-active-work shrink-0" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <DialogTitle className="text-sm font-semibold">Poly</DialogTitle>
             <DialogDescription className="truncate text-xs">
               Your home base for everything in Polychat.
             </DialogDescription>
           </div>
+          {canUsePoly ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="shrink-0"
+              icon={<SquarePen size={15} />}
+              disabled={!scope.currentConversationId}
+              onClick={() => scope.clearCurrentConversation()}
+            >
+              New conversation
+            </Button>
+          ) : null}
         </div>
         {!isAuthenticated ? (
           <div className="p-6">
@@ -173,7 +191,7 @@ export function MetaAssistantOverlay({ open, onClose }: { open: boolean; onClose
             Poly works on conversations stored in the cloud. Switch off local-only mode to use it.
           </div>
         ) : (
-          <MetaAssistantThread onNavigate={handleNavigate} />
+          <MetaAssistantThread scope={scope} onNavigate={handleNavigate} />
         )}
       </DialogContent>
     </Dialog>

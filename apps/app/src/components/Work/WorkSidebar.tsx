@@ -14,6 +14,7 @@ import { ConversationItemActions } from "~/components/ConversationItemActions";
 import { SidebarFooter } from "~/components/Sidebar/SidebarFooter";
 import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
 import { useTaskAttention } from "~/hooks/useProjectTasks";
+import { useStartNewChat } from "~/hooks/useStartNewChat";
 import {
   getProjectBasePath,
   getProjectChatPath,
@@ -53,6 +54,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const { pathname, search } = useLocation();
   const { conversationId: pathConversationId } = useParams<"conversationId">();
   const navigate = useNavigate();
+  const startNewChat = useStartNewChat();
   const {
     clearCurrentConversation,
     currentConversationId,
@@ -217,6 +219,10 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         }
         onSearch={() => setShowSearch(true)}
         onNavigate={closeOnMobile}
+        onNewChat={() => {
+          startNewChat();
+          closeOnMobile();
+        }}
         onNewConversation={clearCurrentConversation}
       />
 

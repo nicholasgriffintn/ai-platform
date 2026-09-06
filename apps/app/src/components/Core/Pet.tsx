@@ -3,13 +3,14 @@ import {
   PET_IDLE_FLOURISH_CLIPS,
   type ModelConfigItem,
   type PetClipName,
+  resolvePet,
   resolvePetClipIn,
 } from "@ngriffin_uk/polychat-schemas";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { usePetPresence } from "~/hooks/usePetPresence";
-import { useActivePet } from "~/hooks/usePets";
+import { type ActivePet, useActivePet } from "~/hooks/usePets";
 import { PET_SWAP_FADE_MS, usePetSwapTransition } from "~/hooks/usePetSwapTransition";
 import { usePetAnimationEnabled, usePetFollowEnabled, usePetTravel } from "~/hooks/usePetTravel";
 import { usePetStore } from "~/state/stores/petStore";
@@ -26,6 +27,7 @@ export interface PetProps {
   className?: string;
   model?: Pick<ModelConfigItem, "family" | "provider">;
   modelReady?: boolean;
+  presetSlug?: string;
 }
 
 export function Pet({
@@ -35,8 +37,17 @@ export function Pet({
   className,
   model,
   modelReady = true,
+  presetSlug,
 }: PetProps) {
-  const activePet = useActivePet(model, modelReady);
+  const selectedPet = useActivePet(model, modelReady);
+  const presetPet = useMemo<ActivePet | null>(
+    () =>
+      presetSlug
+        ? { ...resolvePet({ pet_source: "preset", pet_id: presetSlug }), isReady: true }
+        : null,
+    [presetSlug],
+  );
+  const activePet = presetPet ?? selectedPet;
   const presence = usePetPresence();
   const follows = usePetFollowEnabled();
   const animationEnabled = usePetAnimationEnabled();

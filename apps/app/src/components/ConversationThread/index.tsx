@@ -55,6 +55,7 @@ import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
 import type { ChatSuggestion } from "~/lib/chat-suggestions";
 import { isModelSubmissionBlocked } from "~/lib/chat/model-readiness";
 import { openExternalUrl } from "~/lib/external-navigation";
+import { useComposerDraft } from "~/state/composer-draft";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -100,7 +101,6 @@ export interface ConversationThreadModeConfig {
   modelProviderFilter?: string;
   modelScope?: ModelSelectorScope;
   onModelChange?: ModelSelectionChangeHandler;
-  hideDefaultControls?: boolean;
   hideComposerActionMenu?: boolean;
   allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];
   assistantActionCatalog?: ComposerActionCatalogConfig;
@@ -110,6 +110,9 @@ export interface ConversationThreadModeConfig {
   hideInlineResponseControls?: boolean;
   hideChatSettings?: boolean;
   hideComposerSuggestions?: boolean;
+  hideModelSelector?: boolean;
+  hideVoiceControls?: boolean;
+  petPresetSlug?: string;
   forceAutoPlayResponses?: boolean;
   analyticsSource?: string;
   contextAttachments?: AttachmentData[];
@@ -138,8 +141,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const {
     model,
     chatMode,
-    chatInput,
-    setChatInput,
     selectedAssistantAction,
     setSelectedAssistantAction,
     isAuthenticated,
@@ -147,6 +148,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     localOnlyMode,
   } = useChatStore();
   const { currentConversationId, startNewConversation } = useConversationScope();
+  const { composerInput, setComposerInput } = useComposerDraft();
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const { data: currentConversation, isLoading: isConversationLoading } = useChat(
@@ -353,22 +355,22 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   const canSubmit = useMemo(
     () =>
-      (chatInput.trim() || selectedAssistantAction?.item) &&
+      (composerInput.trim() || selectedAssistantAction?.item) &&
       !isStreamLoading &&
       !isModelInitializing,
-    [chatInput, isStreamLoading, isModelInitializing, selectedAssistantAction?.item],
+    [composerInput, isStreamLoading, isModelInitializing, selectedAssistantAction?.item],
   );
 
   const handleSubmit = useCallback(
     async (attachments?: AttachmentData[]) => {
-      if (!chatInput.trim() && !attachments?.length && !selectedAssistantAction?.item) {
+      if (!composerInput.trim() && !attachments?.length && !selectedAssistantAction?.item) {
         return false;
       }
 
       const goalSubmission = selectedAssistantAction?.item
         ? null
-        : resolveGoalSubmission({ input: chatInput, isComposingGoal });
-      const messageInput = goalSubmission?.messageInput ?? chatInput;
+        : resolveGoalSubmission({ input: composerInput, isComposingGoal });
+      const messageInput = goalSubmission?.messageInput ?? composerInput;
       const goalToSend =
         goalSubmission?.command?.kind === "set" ? goalSubmission.command.objective : null;
 
@@ -377,7 +379,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
         const handled = await handleGoalCommand(goalSubmission.command);
 
-        setChatInput("");
+        setComposerInput("");
 
         return handled;
       }
@@ -403,15 +405,15 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
 
       if (isCompactConversationCommand(messageInput) && !selectedAssistantAction?.item) {
-        const originalInput = chatInput;
+        const originalInput = composerInput;
 
-        setChatInput("");
+        setComposerInput("");
         setSelectedAssistantAction(null);
 
         const result = await compactConversation();
 
         if (result.status === "error") {
-          setChatInput(originalInput);
+          setComposerInput(originalInput);
           if (result.response) {
             toast.error(result.response);
           }
@@ -475,13 +477,13 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         }
       }
 
-      const originalInput = chatInput;
+      const originalInput = composerInput;
       const originalAssistantAction = selectedAssistantAction;
 
       try {
         const actionSubmit = await resolveAssistantActionSubmit(messageInput);
 
-        setChatInput("");
+        setComposerInput("");
         setSelectedAssistantAction(null);
 
         trackEvent({
@@ -524,7 +526,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         );
 
         if (result?.status === "error") {
-          setChatInput(originalInput);
+          setComposerInput(originalInput);
           setSelectedAssistantAction(originalAssistantAction);
           if (
             result.response &&
@@ -540,7 +542,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
         return result?.status !== "error";
       } catch (error) {
-        setChatInput(originalInput);
+        setComposerInput(originalInput);
         setSelectedAssistantAction(originalAssistantAction);
         toast.error(error instanceof Error ? error.message : "Failed to send message");
         console.error("Failed to send message:", error);
@@ -553,7 +555,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
     },
     [
-      chatInput,
+      composerInput,
       model,
       chatMode,
       messages,
@@ -563,7 +565,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       trackEvent,
       trackError,
       currentConversationId,
-      setChatInput,
+      setComposerInput,
       setSelectedAssistantAction,
       selectedAssistantAction,
       selectedAssistantAction?.item,
@@ -589,14 +591,14 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     }
 
     autoSubmittedKeyRef.current = initialAutoSubmit.key;
-    setChatInput("");
+    setComposerInput("");
     void sendMessage(
       initialAutoSubmit.input,
       contextAttachments.length > 0 ? contextAttachments : undefined,
       modeConfig?.requestOptions,
     ).then((result) => {
       if (result?.status === "error") {
-        setChatInput(initialAutoSubmit.input);
+        setComposerInput(initialAutoSubmit.input);
       }
     });
   }, [
@@ -607,7 +609,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     modeConfig?.initialAutoSubmit,
     modeConfig?.requestOptions,
     sendMessage,
-    setChatInput,
+    setComposerInput,
     streamStarted,
   ]);
 
@@ -661,13 +663,13 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         content: string;
       };
     }) => {
-      setChatInput(data.response.content);
+      setComposerInput(data.response.content);
       trackFeatureUsage("transcription_used", {
         conversation_id: currentConversationId || "new",
         content_length: data.response.content.length,
       });
     },
-    [currentConversationId, trackFeatureUsage, setChatInput],
+    [currentConversationId, trackFeatureUsage, setComposerInput],
   );
 
   const handleToolInteraction = useCallback<ToolInteractionHandler>(
@@ -713,7 +715,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
       switch (toolName) {
         case "web_search":
-          setChatInput(data.question);
+          setComposerInput(data.question);
 
           break;
         default:
@@ -723,7 +725,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [
       currentConversationId,
       trackFeatureUsage,
-      setChatInput,
+      setComposerInput,
       sendMessage,
       modeConfig?.requestOptions,
       modeToolInteraction,
@@ -788,11 +790,12 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
                   placement="top"
                   model={selectedModelConfig}
                   modelReady={!model || !isModelsLoading}
+                  presetSlug={modeConfig?.petPresetSlug}
                 />
               }
               suggestions={
                 <ChatSuggestions
-                  setInput={setChatInput}
+                  setInput={setComposerInput}
                   suggestionsOverride={modeConfig?.welcomeSuggestions}
                   isLoading={modeConfig?.welcomeLoading}
                   modeCommands={modeConfig?.modeControls?.commands}
@@ -830,6 +833,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
                 placement="left"
                 model={selectedModelConfig}
                 modelReady={!model || !isModelsLoading}
+                presetSlug={modeConfig?.petPresetSlug}
               />
             }
             status={petStatus}
@@ -888,7 +892,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           onModelChange={modeConfig?.onModelChange}
           activeRunStatus={currentConversation?.latest_run?.status}
           hasConversationHistory={messages.length > 0}
-          hideDefaultControls={modeConfig?.hideDefaultControls}
           hideComposerActionMenu={modeConfig?.hideComposerActionMenu}
           allowedAssistantActionCapabilities={modeConfig?.allowedAssistantActionCapabilities}
           assistantActionCatalog={modeConfig?.assistantActionCatalog}
@@ -897,6 +900,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           hideTextInput={modeConfig?.hideTextInput}
           hideInlineResponseControls={modeConfig?.hideInlineResponseControls}
           hideChatSettings={modeConfig?.hideChatSettings}
+          hideModelSelector={modeConfig?.hideModelSelector}
+          hideVoiceControls={modeConfig?.hideVoiceControls}
           contextAttachments={contextAttachments}
           readonlyContextAttachmentCount={modeContextAttachments.length}
           attachmentProjectId={modeConfig?.requestOptions?.metadata?.project_id ?? undefined}

@@ -27,6 +27,8 @@ export interface UIStore {
   setShowKeyboardShortcuts: (showKeyboardShortcuts: boolean) => void;
   showMetaAssistant: boolean;
   setShowMetaAssistant: (showMetaAssistant: boolean) => void;
+  showProjectPicker: boolean;
+  setShowProjectPicker: (showProjectPicker: boolean) => void;
   metaAssistantConversationId: string | undefined;
   setMetaAssistantConversationId: (conversationId: string | undefined) => void;
   chatConversationListFilters: ConversationListFilters;
@@ -52,6 +54,8 @@ export const useUIStore = create<UIStore>()(
       setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
       showMetaAssistant: false,
       setShowMetaAssistant: (showMetaAssistant) => set({ showMetaAssistant }),
+      showProjectPicker: false,
+      setShowProjectPicker: (showProjectPicker) => set({ showProjectPicker }),
       metaAssistantConversationId: undefined,
       setMetaAssistantConversationId: (metaAssistantConversationId) =>
         set({ metaAssistantConversationId }),
@@ -78,6 +82,7 @@ export const useUIStore = create<UIStore>()(
           isMobileLoading: _l,
           sidebarVisible: _s,
           showMetaAssistant: _a,
+          showProjectPicker: _p,
           chatConversationListFilters,
           workConversationListFilters,
           ...rest

@@ -12,7 +12,6 @@ export interface ComposerShellProps {
   isGeneratingAudio?: boolean;
   footerStart?: ReactNode;
   footerEnd?: ReactNode;
-  footerOverride?: ReactNode;
 }
 
 export function ComposerShell({
@@ -26,7 +25,6 @@ export function ComposerShell({
   isGeneratingAudio = false,
   footerStart,
   footerEnd,
-  footerOverride,
 }: ComposerShellProps) {
   return (
     <div
@@ -60,27 +58,28 @@ export function ComposerShell({
           </div>
         </div>
 
-        <div className="border-border mt-2 border-t px-3 pt-3 pb-3">
-          {isGeneratingAudio && (
-            <div
-              className="text-muted-foreground mb-3 flex items-center gap-2 text-xs"
-              aria-live="polite"
-              role="status"
-            >
-              <Loader2 className="text-active-work h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-              <span>Generating response audio...</span>
-            </div>
-          )}
-          {footerOverride}
-          {(footerStart || footerEnd) && (
-            <div className="@container/composer-footer flex items-center justify-between gap-1 sm:gap-2">
-              <div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
-                {footerStart}
+        {(isGeneratingAudio || footerStart || footerEnd) && (
+          <div className="border-border mt-2 border-t px-3 pt-3 pb-3">
+            {isGeneratingAudio && (
+              <div
+                className="text-muted-foreground mb-3 flex items-center gap-2 text-xs"
+                aria-live="polite"
+                role="status"
+              >
+                <Loader2 className="text-active-work h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                <span>Generating response audio...</span>
               </div>
-              <div className="flex-shrink-0 flex items-center gap-2">{footerEnd}</div>
-            </div>
-          )}
-        </div>
+            )}
+            {(footerStart || footerEnd) && (
+              <div className="@container/composer-footer flex items-center justify-between gap-1 sm:gap-2">
+                <div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
+                  {footerStart}
+                </div>
+                <div className="flex-shrink-0 flex items-center gap-2">{footerEnd}</div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

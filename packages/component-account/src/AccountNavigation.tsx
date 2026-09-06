@@ -40,9 +40,9 @@ export function AccountNavigation({
   return (
     <nav aria-label={ariaLabel} className="space-y-4">
       {groupSections(sections).map(([group, groupedSections], index) => (
-        <div key={group ?? `group-${index}`}>
+        <div key={group ?? `group-${index}`} className="space-y-1">
           {group ? (
-            <p className="text-muted-foreground px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.2em]">
+            <p className="text-muted-foreground px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em]">
               {group}
             </p>
           ) : null}

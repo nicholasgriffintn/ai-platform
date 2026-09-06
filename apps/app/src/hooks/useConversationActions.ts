@@ -11,6 +11,7 @@ import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { getComposerDraftAfterRetry } from "~/lib/chat/retry-composer";
 import { createConversationId } from "~/lib/conversations";
+import { useComposerDraft } from "~/state/composer-draft";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -40,8 +41,9 @@ export function useConversationActions(
   requestOptions?: ChatRequestOptions,
 ) {
   const queryClient = useQueryClient();
-  const { chatInput, model, isAuthenticated, isPro, setChatInput } = useChatStore();
+  const { model, isAuthenticated, isPro } = useChatStore();
   const { currentConversationId, setCurrentConversationId } = useConversationScope();
+  const { composerInput, setComposerInput } = useComposerDraft();
 
   const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
   const { startLoading, stopLoading } = useLoadingActions();
@@ -101,7 +103,7 @@ export function useConversationActions(
         messagesToRetry = conversation.messages.slice(0, messageIndex + 1);
       }
 
-      setChatInput(getComposerDraftAfterRetry(chatInput, messagesToRetry));
+      setComposerInput(getComposerDraftAfterRetry(composerInput, messagesToRetry));
 
       try {
         await updateConversation(currentConversationId, (prev) => ({
@@ -124,8 +126,8 @@ export function useConversationActions(
       currentConversationId,
       updateConversation,
       generateResponseWithLoading,
-      chatInput,
-      setChatInput,
+      composerInput,
+      setComposerInput,
     ],
   );
 

@@ -1,11 +1,11 @@
-import { SidebarNavLink, SidebarNavSection } from "@ngriffin_uk/polychat-component-navigation";
+import { SidebarNavLink } from "@ngriffin_uk/polychat-component-navigation";
 import { BellRing, FolderOpen, UsersRound } from "lucide-react";
 
 import { PLACE_PATHS } from "~/lib/navigation/places";
 
-export function PlacesSidebarSection({ onNavigate }: { onNavigate?: () => void }) {
+export function PlacesNavLinks({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <SidebarNavSection>
+    <>
       <SidebarNavLink
         href={PLACE_PATHS.attention}
         icon={<BellRing size={16} />}
@@ -23,6 +23,6 @@ export function PlacesSidebarSection({ onNavigate }: { onNavigate?: () => void }
       >
         Teammates
       </SidebarNavLink>
-    </SidebarNavSection>
+    </>
   );
 }

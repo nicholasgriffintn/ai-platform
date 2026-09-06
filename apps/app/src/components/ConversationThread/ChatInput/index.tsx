@@ -45,6 +45,7 @@ import { toast } from "sonner";
 import { useModels } from "~/hooks/useModels";
 import { SOURCE_QUERY_KEYS } from "~/hooks/useSources";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
+import { useComposerDraft } from "~/state/composer-draft";
 import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -149,7 +150,6 @@ interface ChatInputProps {
   activeRunStatus?: ChatRunStatus | null;
   hasConversationHistory?: boolean;
   disableAttachments?: boolean;
-  hideDefaultControls?: boolean;
   hideComposerActionMenu?: boolean;
   allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];
   assistantActionCatalog?: ComposerActionCatalogConfig;
@@ -158,6 +158,8 @@ interface ChatInputProps {
   hideTextInput?: boolean;
   hideInlineResponseControls?: boolean;
   hideChatSettings?: boolean;
+  hideModelSelector?: boolean;
+  hideVoiceControls?: boolean;
   autoPlayResponses?: {
     enabled: boolean;
     isGenerating: boolean;
@@ -191,7 +193,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       activeRunStatus,
       hasConversationHistory = false,
       disableAttachments = false,
-      hideDefaultControls = false,
       hideComposerActionMenu = false,
       allowedAssistantActionCapabilities,
       assistantActionCatalog,
@@ -200,6 +201,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       hideTextInput = false,
       hideInlineResponseControls = false,
       hideChatSettings = false,
+      hideModelSelector = false,
+      hideVoiceControls = false,
       autoPlayResponses,
       contextAttachments = EMPTY_ATTACHMENTS,
       readonlyContextAttachmentCount = 0,
@@ -213,8 +216,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const queryClient = useQueryClient();
     const {
       model,
-      chatInput,
-      setChatInput,
       chatMode,
       isAuthenticationLoading,
       selectedAgentId,
@@ -225,6 +226,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     } = useChatStore();
     const isPro = useChatStore((state) => state.isPro);
     const { currentConversationId } = useConversationScope();
+    const { composerInput, setComposerInput } = useComposerDraft();
     const isComposingGoal = useChatStore((state) => state.isComposingGoal);
     const setComposingGoal = useChatStore((state) => state.setComposingGoal);
     const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecorder({
@@ -449,11 +451,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
       if (e.key === "Enter" && e.shiftKey) {
         e.preventDefault();
-        const cursorPosition = composerInputRef.current?.getCursorPosition() ?? chatInput.length;
-        const textBeforeCursor = chatInput.substring(0, cursorPosition);
-        const textAfterCursor = chatInput.substring(cursorPosition);
+        const cursorPosition =
+          composerInputRef.current?.getCursorPosition() ?? composerInput.length;
+        const textBeforeCursor = composerInput.substring(0, cursorPosition);
+        const textAfterCursor = composerInput.substring(cursorPosition);
 
-        setChatInput(`${textBeforeCursor}\n${textAfterCursor}`);
+        setComposerInput(`${textBeforeCursor}\n${textAfterCursor}`);
 
         setTimeout(() => {
           composerInputRef.current?.setCursorPosition(cursorPosition + 1);
@@ -461,7 +464,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       }
     };
 
-    const handleComposerInput = (value: string) => setChatInput(value);
+    const handleComposerInput = (value: string) => setComposerInput(value);
 
     const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
@@ -696,8 +699,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     }, [chatModeCommand, commandActions, liveModeCommand]);
     const canUseDictation = canUseProComposerActions && !liveModeCommand?.isActive;
     const shouldRenderInputControls = hideTextInput && controls;
+    const isStoppable = isLoading && streamStarted && Boolean(onStopResponse || controller);
+    const showComposerActionMenu = !hideComposerActionMenu && canShowActionMenu;
+    const showVoiceControls = !hideVoiceControls && Boolean(canUseDictation || liveModeCommand);
+    const hasComposerActions =
+      isStoppable || showComposerActionMenu || showVoiceControls || !hideSubmitButton;
+    const showFooterControls = Boolean(!hideTextInput && controls);
+    const hasFooterStart = !hideModelSelector || !hideInlineResponseControls || showFooterControls;
     const isComposerSubmitDisabled =
-      (!chatInput?.trim() &&
+      (!composerInput?.trim() &&
         !selectedAssistantAction?.item &&
         selectedAttachments.length === 0 &&
         composerSources.attachments.length === 0) ||
@@ -779,7 +789,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               <TokenizedComposerInput
                 id="message-input"
                 ref={composerInputRef}
-                value={chatInput}
+                value={composerInput}
                 tokens={composerTokens}
                 onChange={handleComposerInput}
                 onCursorPositionChange={setTextareaCursorPosition}
@@ -803,9 +813,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             )
           }
           actions={
-            hideDefaultControls ? undefined : isLoading &&
-              streamStarted &&
-              (onStopResponse || controller) ? (
+            !hasComposerActions ? undefined : isStoppable ? (
               <Button
                 type="button"
                 onClick={() => (onStopResponse ? onStopResponse() : controller?.abort())}
@@ -818,7 +826,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               </Button>
             ) : (
               <>
-                {!hideComposerActionMenu && canShowActionMenu && (
+                {showComposerActionMenu && (
                   <ComposerActionMenu
                     autoPlayResponses={canUseProComposerActions ? autoPlayResponses : undefined}
                     attachingSourceId={composerSources.attachingSourceId}
@@ -844,29 +852,31 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                     uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
                   />
                 )}
-                <ComposerVoiceControls
-                  className={liveModeCommand?.isActive ? "-ml-2" : undefined}
-                  dictate={
-                    canUseDictation
-                      ? {
-                          disabled: isLoading || isAuthenticationLoading,
-                          isRecording,
-                          isTranscribing,
-                          onStart: startRecording,
-                          onStop: stopRecording,
-                        }
-                      : undefined
-                  }
-                  live={
-                    liveModeCommand
-                      ? {
-                          disabled: isLoading || Boolean(liveModeCommand.disabled),
-                          isActive: liveModeCommand.isActive,
-                          onToggle: handleLiveToggle,
-                        }
-                      : undefined
-                  }
-                />
+                {showVoiceControls && (
+                  <ComposerVoiceControls
+                    className={liveModeCommand?.isActive ? "-ml-2" : undefined}
+                    dictate={
+                      canUseDictation
+                        ? {
+                            disabled: isLoading || isAuthenticationLoading,
+                            isRecording,
+                            isTranscribing,
+                            onStart: startRecording,
+                            onStop: stopRecording,
+                          }
+                        : undefined
+                    }
+                    live={
+                      liveModeCommand
+                        ? {
+                            disabled: isLoading || Boolean(liveModeCommand.disabled),
+                            isActive: liveModeCommand.isActive,
+                            onToggle: handleLiveToggle,
+                          }
+                        : undefined
+                    }
+                  />
+                )}
                 {!hideSubmitButton && (
                   <Button
                     type="submit"
@@ -883,33 +893,28 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               </>
             )
           }
-          footerOverride={
-            hideDefaultControls && controls && !shouldRenderInputControls ? (
-              <div>{controls}</div>
+          footerStart={
+            hasFooterStart ? (
+              <>
+                {!hideModelSelector && (
+                  <div className="min-w-0 flex-shrink">
+                    <ModelSelector
+                      isDisabled={isLoading || modelSelectionBlocked}
+                      mono
+                      modelProviderFilter={modelProviderFilter}
+                      modelScope={modelScope}
+                      onModelChange={onModelChange}
+                      onBeforeModelChange={handleBeforeModelChange}
+                    />
+                  </div>
+                )}
+                {!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}
+                {showFooterControls && <div className="shrink-0">{controls}</div>}
+              </>
             ) : undefined
           }
-          footerStart={
-            hideDefaultControls ? undefined : (
-              <>
-                <div className="min-w-0 flex-shrink">
-                  <ModelSelector
-                    isDisabled={isLoading || modelSelectionBlocked}
-                    mono
-                    modelProviderFilter={modelProviderFilter}
-                    modelScope={modelScope}
-                    onModelChange={onModelChange}
-                    onBeforeModelChange={handleBeforeModelChange}
-                  />
-                </div>
-                {!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}
-                {!hideTextInput && controls && <div className="shrink-0">{controls}</div>}
-              </>
-            )
-          }
           footerEnd={
-            hideDefaultControls || hideChatSettings ? undefined : (
-              <ChatSettingsComponent isDisabled={isLoading} />
-            )
+            hideChatSettings ? undefined : <ChatSettingsComponent isDisabled={isLoading} />
           }
         />
       </ComposerCommandActionsProvider>
