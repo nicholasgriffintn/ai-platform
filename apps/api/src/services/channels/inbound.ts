@@ -1,4 +1,4 @@
-import type { InboundChannelId } from "@ngriffin_uk/polychat-schemas";
+import { INBOUND_CHANNEL_IDS, type InboundChannelId } from "@ngriffin_uk/polychat-schemas";
 
 import { getInboundChannelProfile } from "~/lib/chat/policy/channels";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -20,6 +20,9 @@ import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInboundMessageContent, extractChatCompletionNotification } from "~/utils/messages";
 
+import { getChannelAdapter, type ChannelIncomingMessage } from "./adapters";
+import { getChannelSecrets } from "./secrets";
+
 export interface InboundChannelMessage {
   messageId: string;
   from: string;
@@ -28,11 +31,66 @@ export interface InboundChannelMessage {
   media?: { url: string; mimeType?: string }[];
 }
 
-export interface InboundChannelTaskData {
+interface InboundChannelTaskBase {
   channel: InboundChannelId;
+  message: InboundChannelMessage;
+}
+
+export interface InboundProviderTaskData extends InboundChannelTaskBase {
   providerId: MessagingProviderId;
   providerSettingsId: string;
-  message: InboundChannelMessage;
+}
+
+export interface InboundBindingTaskData extends InboundChannelTaskBase {
+  bindingId: string;
+}
+
+export type InboundChannelTaskData = InboundProviderTaskData | InboundBindingTaskData;
+
+export function isInboundBindingTaskData(
+  data: InboundChannelTaskData,
+): data is InboundBindingTaskData {
+  return typeof (data as InboundBindingTaskData).bindingId === "string";
+}
+
+export function parseInboundChannelTaskData(value: unknown): InboundChannelTaskData | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const data = value as Partial<InboundProviderTaskData & InboundBindingTaskData>;
+
+  if (!data.channel || !INBOUND_CHANNEL_IDS.includes(data.channel)) {
+    return null;
+  }
+
+  if (!data.message?.from || !data.message.messageId) {
+    return null;
+  }
+
+  if (typeof data.bindingId === "string" && data.bindingId.length > 0) {
+    return { channel: data.channel, message: data.message, bindingId: data.bindingId };
+  }
+
+  if (data.providerId && data.providerSettingsId) {
+    return {
+      channel: data.channel,
+      message: data.message,
+      providerId: data.providerId,
+      providerSettingsId: data.providerSettingsId,
+    };
+  }
+
+  return null;
+}
+
+export function toChannelBindingMessage(incoming: ChannelIncomingMessage): InboundChannelMessage {
+  return {
+    messageId: incoming.messageId,
+    from: incoming.from,
+    body: incoming.body,
+    ...(incoming.media?.length ? { media: incoming.media } : {}),
+  };
 }
 
 export function toInboundChannelMessage(incoming: IncomingMessage): InboundChannelMessage {
@@ -45,6 +103,12 @@ export function toInboundChannelMessage(incoming: IncomingMessage): InboundChann
   };
 }
 
+async function buildChannelConversationId(prefix: string, parts: string[]): Promise<string> {
+  const digest = await sha256Hex([prefix, ...parts].join(":"));
+
+  return `${prefix}_${digest.slice(0, 40)}`;
+}
+
 export async function getInboundChannelConversationId(params: {
   channel: InboundChannelId;
   userId: number;
@@ -53,17 +117,26 @@ export async function getInboundChannelConversationId(params: {
   to?: string;
 }): Promise<string> {
   const profile = getInboundChannelProfile(params.channel);
-  const digest = await sha256Hex(
-    [
-      profile.conversationPrefix,
-      params.userId.toString(),
-      params.providerSettingsId,
-      normaliseMessagingAddress(params.from),
-      normaliseMessagingAddress(params.to ?? ""),
-    ].join(":"),
-  );
 
-  return `${profile.conversationPrefix}_${digest.slice(0, 40)}`;
+  return buildChannelConversationId(profile.conversationPrefix, [
+    params.userId.toString(),
+    params.providerSettingsId,
+    normaliseMessagingAddress(params.from),
+    normaliseMessagingAddress(params.to ?? ""),
+  ]);
+}
+
+export async function getChannelBindingConversationId(params: {
+  channel: InboundChannelId;
+  bindingId: string;
+  externalId: string;
+}): Promise<string> {
+  const profile = getInboundChannelProfile(params.channel);
+
+  return buildChannelConversationId(profile.conversationPrefix, [
+    params.bindingId,
+    normaliseMessagingAddress(params.externalId),
+  ]);
 }
 
 async function getActiveChannelMessages(params: {
@@ -168,24 +241,33 @@ async function resolveInboundChannelProvider(params: {
   });
 }
 
-export type InboundChannelResult =
-  | { status: "delivered"; conversationId: string; body: string }
-  | { status: "unauthorised_sender" };
+interface ChannelReplyPayload {
+  body: string;
+  mediaUrls: string[];
+}
 
-export async function handleInboundChannelMessage(params: {
+type ChannelDelivery =
+  | { status: "unauthorised_sender" }
+  | { status: "channel_unavailable" }
+  | {
+      status: "ready";
+      conversationId: string;
+      send(reply: ChannelReplyPayload): Promise<void>;
+    };
+
+async function resolveProviderDelivery(params: {
   env: IEnv;
   context: ServiceContext;
   user: IUser;
-  data: InboundChannelTaskData;
-}): Promise<InboundChannelResult> {
-  const profile = getInboundChannelProfile(params.data.channel);
-  const { message } = params.data;
+  data: InboundProviderTaskData;
+}): Promise<ChannelDelivery> {
+  const { message, providerId, providerSettingsId } = params.data;
   const { provider, allowedSenders } = await resolveInboundChannelProvider({
     env: params.env,
     context: params.context,
     user: params.user,
-    providerId: params.data.providerId,
-    providerSettingsId: params.data.providerSettingsId,
+    providerId,
+    providerSettingsId,
   });
 
   if (!isAuthorisedSender(allowedSenders, message.from)) {
@@ -195,10 +277,99 @@ export async function handleInboundChannelMessage(params: {
   const conversationId = await getInboundChannelConversationId({
     channel: params.data.channel,
     userId: params.user.id,
-    providerSettingsId: params.data.providerSettingsId,
+    providerSettingsId,
     from: message.from,
     to: message.to,
   });
+
+  return {
+    status: "ready",
+    conversationId,
+    send: async (reply) => {
+      const replyMediaUrls = await resolveProviderReplyMediaUrls({
+        context: params.context,
+        userId: params.user.id,
+        providerId,
+        providerSettingsId,
+        mediaUrls: reply.mediaUrls,
+      });
+
+      await provider.send({
+        to: message.from,
+        body: reply.body,
+        ...(replyMediaUrls?.length ? { mediaUrls: replyMediaUrls } : {}),
+      });
+    },
+  };
+}
+
+async function resolveBindingDelivery(params: {
+  env: IEnv;
+  context: ServiceContext;
+  user: IUser;
+  data: InboundBindingTaskData;
+}): Promise<ChannelDelivery> {
+  const binding = await params.context.repositories.channelBindings.getById(params.data.bindingId);
+
+  if (
+    !binding ||
+    !binding.enabled ||
+    binding.channel !== params.data.channel ||
+    binding.created_by !== params.user.id
+  ) {
+    return { status: "channel_unavailable" };
+  }
+
+  const adapter = getChannelAdapter(params.data.channel);
+  const { reply: replySecret } = getChannelSecrets(params.data.channel, params.env);
+
+  if (!adapter) {
+    return { status: "channel_unavailable" };
+  }
+
+  if (!replySecret) {
+    throw new AssistantError(
+      `${adapter.label} has no reply credential configured`,
+      ErrorType.CONFIGURATION_ERROR,
+    );
+  }
+
+  const conversationId = await getChannelBindingConversationId({
+    channel: params.data.channel,
+    bindingId: binding.id,
+    externalId: binding.external_id,
+  });
+
+  return {
+    status: "ready",
+    conversationId,
+    send: async (reply) =>
+      adapter.sendReply({ externalId: binding.external_id, body: reply.body }, replySecret),
+  };
+}
+
+export type InboundChannelResult =
+  | { status: "delivered"; conversationId: string; body: string }
+  | { status: "unauthorised_sender" }
+  | { status: "channel_unavailable" };
+
+export async function handleInboundChannelMessage(params: {
+  env: IEnv;
+  context: ServiceContext;
+  user: IUser;
+  data: InboundChannelTaskData;
+}): Promise<InboundChannelResult> {
+  const profile = getInboundChannelProfile(params.data.channel);
+  const { message } = params.data;
+  const delivery = isInboundBindingTaskData(params.data)
+    ? await resolveBindingDelivery({ ...params, data: params.data })
+    : await resolveProviderDelivery({ ...params, data: params.data });
+
+  if (delivery.status !== "ready") {
+    return delivery;
+  }
+
+  const { conversationId } = delivery;
   const activeMessages = await getActiveChannelMessages({
     context: params.context,
     user: params.user,
@@ -240,19 +411,8 @@ export async function handleInboundChannelMessage(params: {
   const notification = extractChatCompletionNotification(completion, {
     streamingMessage: `${profile.label} assistant responses cannot be streamed`,
   });
-  const replyMediaUrls = await resolveProviderReplyMediaUrls({
-    context: params.context,
-    userId: params.user.id,
-    providerId: params.data.providerId,
-    providerSettingsId: params.data.providerSettingsId,
-    mediaUrls: notification.mediaUrls,
-  });
 
-  await provider.send({
-    to: message.from,
-    body: notification.body,
-    ...(replyMediaUrls?.length ? { mediaUrls: replyMediaUrls } : {}),
-  });
+  await delivery.send({ body: notification.body, mediaUrls: notification.mediaUrls });
 
   return { status: "delivered", conversationId, body: notification.body };
 }
