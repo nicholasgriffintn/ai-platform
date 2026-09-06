@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { documentMetadataSchema } from "./documents";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json";
 import { externalHttpUrlSchema } from "./navigation";
 import { outputSchema } from "./outputs";
@@ -873,28 +874,7 @@ export type Recording = z.infer<typeof recordingSchema>;
 export type ListRecordingsResponse = z.infer<typeof listRecordingsResponseSchema>;
 export type RecordingDetailResponse = z.infer<typeof recordingDetailResponseSchema>;
 
-export const noteMetadataSchema = z
-  .object({
-    summary: z.string().optional(),
-    tags: z.array(z.string()).optional(),
-    keyTopics: z.array(z.string()).optional(),
-    wordCount: z.number().optional(),
-    readingTime: z.number().optional(),
-    contentType: z.string().optional(),
-    sentiment: z.string().optional(),
-    sourceType: z.string().optional(),
-    themeMode: z.string().optional(),
-    fontFamily: z.string().optional(),
-    fontSize: z.number().optional(),
-    tabSource: z
-      .object({
-        title: z.string().optional(),
-        url: z.string().optional(),
-        timestamp: z.string().optional(),
-      })
-      .optional(),
-  })
-  .catchall(z.unknown());
+export const noteMetadataSchema = documentMetadataSchema;
 
 export const noteSchema = z.object({
   id: z.string(),

@@ -1,5 +1,6 @@
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import type {
+  DocumentMetadata,
   Output,
   OutputHistoryResponse,
   OutputShare,
@@ -91,6 +92,30 @@ export async function updateOutput(
   });
 
   return returnFetchedData<Output>(response);
+}
+
+export async function formatOutputDocument(
+  outputId: string,
+  prompt?: string,
+): Promise<{ body: string }> {
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/format`, {
+    method: "POST",
+    headers: await getHeaders(),
+    body: prompt ? { prompt } : {},
+  });
+
+  return returnFetchedData<{ body: string }>(response);
+}
+
+export async function describeOutputDocument(
+  outputId: string,
+): Promise<{ metadata: DocumentMetadata }> {
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/describe`, {
+    method: "POST",
+    headers: await getHeaders(),
+  });
+
+  return returnFetchedData<{ metadata: DocumentMetadata }>(response);
 }
 
 export async function exportOutputDocument(outputId: string): Promise<{ body: string }> {

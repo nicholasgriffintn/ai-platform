@@ -1,8 +1,8 @@
+import { DocumentMetadataPanel } from "@ngriffin_uk/polychat-component-content";
 import {
   AIFormattingModal,
   NoteEditorSurface,
   NoteEditorToolbar,
-  NoteMetadata,
   TranscriptionOverlay,
   MediaGenerationModal,
 } from "@ngriffin_uk/polychat-component-experiences/content";
@@ -262,7 +262,7 @@ export function NoteEditor({
       hasMetadata={!!currentMetadata && Object.keys(currentMetadata).length > 0}
       metadataPanel={
         currentMetadata ? (
-          <NoteMetadata
+          <DocumentMetadataPanel
             metadata={currentMetadata}
             onMetadataUpdate={handleMetadataUpdate}
             isEditable={!!noteId}

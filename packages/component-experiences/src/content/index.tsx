@@ -43,7 +43,6 @@ export * from "./Articles/ArticleReportHeader";
 export * from "./Articles/ArticleReportMetadata";
 export * from "./Notes/AIFormattingModal";
 export * from "./Notes/NoteEditorToolbar";
-export * from "./Notes/NoteMetadata";
 export * from "./Notes/TranscriptionOverlay";
 export * from "./Recordings/ProcessingStep";
 export * from "./Recordings/ProcessStep";

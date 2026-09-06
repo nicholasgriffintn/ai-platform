@@ -1,4 +1,7 @@
-import { ArtifactDocumentEditor } from "@ngriffin_uk/polychat-component-content";
+import {
+  ArtifactDocumentEditor,
+  DocumentMetadataPanel,
+} from "@ngriffin_uk/polychat-component-content";
 import { Card, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   OutputCardGrid,
@@ -10,6 +13,7 @@ import {
   DOCUMENT_OUTPUT_KIND,
   documentExportFilename,
   readDocumentBody,
+  readDocumentMetadata,
 } from "@ngriffin_uk/polychat-schemas";
 import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
 import { Puzzle } from "lucide-react";
@@ -24,6 +28,8 @@ import {
   useOutputs,
   useOutputShares,
   useRevokeOutputShare,
+  useDescribeDocument,
+  useFormatDocument,
   useRestoreOutputRevision,
   useSaveDocumentRevision,
 } from "~/hooks/useOutputs";
@@ -38,6 +44,8 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
   const revokeShare = useRevokeOutputShare();
   const restoreRevision = useRestoreOutputRevision();
   const saveDocument = useSaveDocumentRevision();
+  const formatDocument = useFormatDocument();
+  const describeDocument = useDescribeDocument();
   const outputId = subpath.split("/").find(Boolean);
   const { data: shares } = useOutputShares(outputId ?? null);
   const {
@@ -57,6 +65,7 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
 
   const documentBody =
     output && output.kind === DOCUMENT_OUTPUT_KIND ? readDocumentBody(output.content) : null;
+  const documentMetadata = output ? readDocumentMetadata(output.content) : null;
 
   if (outputId) {
     if (isOutputLoading) {
@@ -135,6 +144,11 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
                   expectedRevision: output.revision,
                 });
               }}
+              isRewriting={formatDocument.isPending}
+              rewriteErrorMessage={formatDocument.error?.message}
+              onRewrite={async () =>
+                (await formatDocument.mutateAsync({ outputId: output.id })).body
+              }
               onDownload={() =>
                 downloadTextFile(
                   documentExportFilename(output.title),
@@ -145,6 +159,14 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
             />
           </div>
         )}
+        {documentBody !== null ? (
+          <DocumentMetadataPanel
+            metadata={documentMetadata ?? undefined}
+            canRegenerate
+            isRegeneratingMetadata={describeDocument.isPending}
+            onRegenerateMetadata={() => describeDocument.mutate(output.id)}
+          />
+        ) : null}
         {outputHistory ? (
           <OutputRevisionReview
             history={outputHistory}

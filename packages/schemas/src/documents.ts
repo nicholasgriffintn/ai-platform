@@ -40,6 +40,9 @@ export const documentMetadataSchema = z
     sentiment: documentSentimentSchema.optional(),
     sourceType: documentSourceTypeSchema.optional(),
     capturedFrom: documentCaptureSchema.optional(),
+    themeMode: z.string().optional(),
+    fontFamily: z.string().optional(),
+    fontSize: z.number().optional(),
   })
   .catchall(z.unknown());
 

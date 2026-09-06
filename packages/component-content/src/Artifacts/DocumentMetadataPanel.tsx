@@ -6,27 +6,27 @@ import {
   Textarea,
   textLinkClassName,
 } from "@ngriffin_uk/polychat-component-ui";
-import type { NoteMetadata as NoteMetadataType } from "@ngriffin_uk/polychat-schemas";
+import type { DocumentMetadata } from "@ngriffin_uk/polychat-schemas";
 import { Calendar, Clock, Edit3, FileText, Hash, Monitor, Tag, User } from "lucide-react";
 import { useState } from "react";
 
-interface NoteMetadataProps {
-  metadata?: NoteMetadataType;
-  onMetadataUpdate?: (metadata: NoteMetadataType) => void;
+export interface DocumentMetadataPanelProps {
+  metadata?: DocumentMetadata;
+  onMetadataUpdate?: (metadata: DocumentMetadata) => void;
   isEditable?: boolean;
   canRegenerate?: boolean;
   onRegenerateMetadata?: () => void;
   isRegeneratingMetadata?: boolean;
 }
 
-export function NoteMetadata({
+export function DocumentMetadataPanel({
   metadata,
   onMetadataUpdate,
   isEditable = false,
   canRegenerate = false,
   onRegenerateMetadata,
   isRegeneratingMetadata = false,
-}: NoteMetadataProps) {
+}: DocumentMetadataPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editingMetadata, setEditingMetadata] = useState(metadata || {});
 
@@ -171,7 +171,7 @@ export function NoteMetadata({
                 onChange={(e) =>
                   setEditingMetadata((prev) => ({
                     ...prev,
-                    contentType: e.target.value,
+                    contentType: e.target.value as DocumentMetadata["contentType"],
                   }))
                 }
                 className="border-border bg-surface text-foreground mt-1 w-full rounded-md border px-3 py-2"
@@ -196,7 +196,7 @@ export function NoteMetadata({
                 onChange={(e) =>
                   setEditingMetadata((prev) => ({
                     ...prev,
-                    sentiment: e.target.value,
+                    sentiment: e.target.value as DocumentMetadata["sentiment"],
                   }))
                 }
                 className="border-border bg-surface text-foreground mt-1 w-full rounded-md border px-3 py-2"
@@ -208,7 +208,7 @@ export function NoteMetadata({
             </div>
           </div>
 
-          {editingMetadata.tabSource && (
+          {editingMetadata.capturedFrom && (
             <div className="pt-4 border-t">
               <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
                 <Monitor size={14} className="text-muted-foreground" />
@@ -224,11 +224,11 @@ export function NoteMetadata({
                   </label>
                   <Input
                     id="tab-title-input"
-                    value={editingMetadata.tabSource?.title || ""}
+                    value={editingMetadata.capturedFrom?.title || ""}
                     onChange={(e) =>
                       setEditingMetadata((prev) => ({
                         ...prev,
-                        tabSource: { ...prev.tabSource, title: e.target.value },
+                        capturedFrom: { ...prev.capturedFrom, title: e.target.value },
                       }))
                     }
                     className="bg-surface text-foreground mt-1"
@@ -244,11 +244,11 @@ export function NoteMetadata({
                   </label>
                   <Input
                     id="tab-url-input"
-                    value={editingMetadata.tabSource?.url || ""}
+                    value={editingMetadata.capturedFrom?.url || ""}
                     onChange={(e) =>
                       setEditingMetadata((prev) => ({
                         ...prev,
-                        tabSource: { ...prev.tabSource, url: e.target.value },
+                        capturedFrom: { ...prev.capturedFrom, url: e.target.value },
                       }))
                     }
                     className="bg-surface text-foreground mt-1"
@@ -380,38 +380,38 @@ export function NoteMetadata({
           )}
         </div>
 
-        {metadata?.tabSource && (
+        {metadata?.capturedFrom && (
           <div className="pt-2 border-t">
             <div className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
               <Monitor size={12} className="text-muted-foreground" />
               Capture Source
             </div>
             <div className="text-xs space-y-1">
-              {metadata.tabSource.title && (
+              {metadata.capturedFrom?.title && (
                 <div>
                   <span className="text-muted-foreground">Title:</span>{" "}
-                  <span className="text-foreground">{metadata.tabSource.title}</span>
+                  <span className="text-foreground">{metadata.capturedFrom?.title}</span>
                 </div>
               )}
-              {metadata.tabSource.url && (
+              {metadata.capturedFrom?.url && (
                 <div>
                   <span className="text-muted-foreground">URL:</span>
                   <a
-                    href={metadata.tabSource.url}
+                    href={metadata.capturedFrom?.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={textLinkClassName({ tone: "accent", className: "ml-1" })}
                   >
-                    {metadata.tabSource.url}
+                    {metadata.capturedFrom?.url}
                   </a>
                 </div>
               )}
-              {metadata.tabSource.timestamp && (
+              {metadata.capturedFrom?.timestamp && (
                 <div className="flex items-center gap-1">
                   <Calendar size={12} className="text-muted-foreground" />
                   <span className="text-muted-foreground">Captured:</span>
                   <span className="text-foreground">
-                    {new Date(metadata.tabSource.timestamp).toLocaleString()}
+                    {new Date(metadata.capturedFrom?.timestamp).toLocaleString()}
                   </span>
                 </div>
               )}

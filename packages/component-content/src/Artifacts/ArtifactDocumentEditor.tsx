@@ -19,6 +19,7 @@ import {
   Pencil,
   Quote,
   Save,
+  Wand2,
 } from "lucide-react";
 import {
   type ReactNode,
@@ -41,6 +42,9 @@ interface ArtifactDocumentEditorProps {
   isSaving?: boolean;
   saveErrorMessage?: string;
   onDownload?: () => void;
+  onRewrite?: () => Promise<string>;
+  isRewriting?: boolean;
+  rewriteErrorMessage?: string;
 }
 
 export const ArtifactDocumentEditor = ({
@@ -50,6 +54,9 @@ export const ArtifactDocumentEditor = ({
   isSaving,
   saveErrorMessage,
   onDownload,
+  onRewrite,
+  isRewriting,
+  rewriteErrorMessage,
 }: ArtifactDocumentEditorProps) => {
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLTextAreaElement>(null);
@@ -245,6 +252,23 @@ export const ArtifactDocumentEditor = ({
           <span>{documentStats.characters} chars</span>
         </div>
 
+        {onRewrite ? (
+          <Button
+            size="xs"
+            variant="outline"
+            isLoading={isRewriting}
+            onClick={() => {
+              void onRewrite().then((rewritten) => {
+                setContent(rewritten);
+                setActiveView("edit");
+              });
+            }}
+            icon={<Wand2 size={13} />}
+          >
+            Rewrite
+          </Button>
+        ) : null}
+
         {onSave ? (
           <Button
             size="xs"
@@ -263,12 +287,12 @@ export const ArtifactDocumentEditor = ({
         </Button>
       </div>
 
-      {saveErrorMessage ? (
+      {(saveErrorMessage ?? rewriteErrorMessage) ? (
         <p
           role="alert"
           className="border-b border-border bg-surface px-3 py-2 text-xs text-failure"
         >
-          {saveErrorMessage}
+          {saveErrorMessage ?? rewriteErrorMessage}
         </p>
       ) : null}
 

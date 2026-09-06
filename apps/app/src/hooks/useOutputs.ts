@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   createOutputShare,
+  describeOutputDocument,
+  formatOutputDocument,
   getOutput,
   getOutputHistory,
   listOutputs,
@@ -94,6 +96,26 @@ export function useSaveDocumentRevision() {
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.detail(variables.outputId) }),
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.history(variables.outputId) }),
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.all }),
+      ]),
+  });
+}
+
+export function useFormatDocument() {
+  return useMutation({
+    mutationFn: ({ outputId, prompt }: { outputId: string; prompt?: string }) =>
+      formatOutputDocument(outputId, prompt),
+  });
+}
+
+export function useDescribeDocument() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (outputId: string) => describeOutputDocument(outputId),
+    onSettled: (_result, _error, outputId) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.detail(outputId) }),
+        queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.history(outputId) }),
       ]),
   });
 }
