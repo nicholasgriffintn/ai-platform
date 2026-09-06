@@ -5,7 +5,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import {
-  createAgentConversationActionPath,
+  createTeammateConversationActionPath,
   createRecipeManagementActionPath,
 } from "./assistant-action-launch";
 import { PLACE_PATHS } from "./navigation/places";
@@ -41,8 +41,8 @@ export function getProjectSurface(workspaceId: string, projectId: string): Capab
   return { basePath: `/work/${workspaceId}/projects/${projectId}`, projectId, workspaceId };
 }
 
-export function getAgentEditorPath(surface: CapabilitySurface, agentId: string): string {
-  return `${surface.basePath}/agents/${agentId}`;
+export function getTeammateEditorPath(surface: CapabilitySurface, teammateId: string): string {
+  return `${surface.basePath}/teammates/${teammateId}`;
 }
 
 export function getConversationPath(surface: CapabilitySurface): string {
@@ -142,7 +142,7 @@ export function getCapabilityOpenPath(
   }
 
   if (item.kind === "agent") {
-    return createAgentConversationActionPath(getConversationPath(surface), item.capability.id);
+    return createTeammateConversationActionPath(getConversationPath(surface), item.capability.id);
   }
 
   if (item.kind === "recipe" || item.kind === "installed_recipe") {

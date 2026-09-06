@@ -82,18 +82,18 @@ export function ComposerCommandChips(
   props: ComposerCommandsState & {
     attachments?: ComposerAttachmentChipState[];
     goal?: ComposerGoalChipState;
-    hideAgentChip?: boolean;
+    hideTeammateChip?: boolean;
     onClearMode?: () => void;
   },
 ) {
-  const { clearAgent, selectedAgent } = useComposerCommandActions();
+  const { clearTeammate, selectedTeammate } = useComposerCommandActions();
   const activeMode = props.modeCommands.find(
     (command) => command.isActive && command.command !== "chat",
   );
 
-  const shouldShowAgent = selectedAgent && !props.hideAgentChip;
+  const shouldShowTeammate = selectedTeammate && !props.hideTeammateChip;
 
-  if (!props.attachments?.length && !activeMode && !shouldShowAgent && !props.goal) {
+  if (!props.attachments?.length && !activeMode && !shouldShowTeammate && !props.goal) {
     return null;
   }
 
@@ -149,17 +149,17 @@ export function ComposerCommandChips(
           )}
         </ContextChip>
       )}
-      {shouldShowAgent && (
+      {shouldShowTeammate && (
         <ContextChip
           kind="agent"
           className="border-active-work/45 bg-active-work/12 text-active-work"
         >
           <AtSign className="h-3.5 w-3.5 shrink-0 text-active-work" aria-hidden="true" />
-          <span className="truncate">{selectedAgent.name}</span>
+          <span className="truncate">{selectedTeammate.name}</span>
           <ChipRemoveButton
-            onClick={clearAgent}
+            onClick={clearTeammate}
             className="rounded-sm text-active-work hover:text-active-work"
-            label={`Clear ${selectedAgent.name} agent`}
+            label={`Clear ${selectedTeammate.name} agent`}
           />
         </ContextChip>
       )}

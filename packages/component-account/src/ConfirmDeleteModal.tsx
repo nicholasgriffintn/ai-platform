@@ -12,26 +12,26 @@ export function ConfirmDeleteModal({
   isOpen,
   onClose,
   onConfirm,
-  agentName,
+  teammateName,
   isDeleting,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  agentName: string;
+  teammateName: string;
   isDeleting: boolean;
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete Agent</DialogTitle>
+          <DialogTitle>Delete teammate</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Are you sure you want to delete{" "}
-            <span className="font-medium text-foreground">"{agentName}"</span>? This action cannot
-            be undone.
+            <span className="font-medium text-foreground">"{teammateName}"</span>? This action
+            cannot be undone.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={onClose} disabled={isDeleting}>
@@ -44,7 +44,7 @@ export function ConfirmDeleteModal({
                   Deleting...
                 </>
               ) : (
-                "Delete Agent"
+                "Delete teammate"
               )}
             </Button>
           </DialogFooter>

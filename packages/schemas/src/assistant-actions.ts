@@ -1,6 +1,5 @@
 import z from "zod/v4";
 
-import type { AgentSummary } from "./agents";
 import {
   assistantCapabilityDescriptorSchema,
   type AssistantCapabilityDescriptor,
@@ -16,6 +15,7 @@ import {
 import { partialChatCompletionsJsonSchema } from "./chat";
 import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation";
 import { SKILL_LOAD_TOOL_NAME, skillSourceSchema, type SkillSummary } from "./skills";
+import type { TeammateSummary } from "./teammates";
 import { mergeToolIds, normaliseToolIds } from "./tool-ids";
 import { toolIdsSchema, toolIdSchema, type Tool } from "./tools";
 
@@ -49,7 +49,7 @@ export const assistantActionVerbSchema = z.object({
 });
 
 export const assistantActionItemMetadataSchema = z.object({
-  agentId: z.string().optional(),
+  teammateId: z.string().optional(),
   appId: z.string().optional(),
   appKind: z.enum(["dynamic", "frontend"]).optional(),
   authType: z.enum(["github_app", "api_key", "composio"]).optional(),
@@ -67,7 +67,7 @@ export const assistantActionItemMetadataSchema = z.object({
 export const assistantActionConversationLaunchSchema = z.object({
   kind: z.literal("conversation"),
   operation: z.enum(["ask_agent", "install_recipe", "invoke_recipe"]),
-  agentId: z.string().optional(),
+  teammateId: z.string().optional(),
   installationId: z.string().optional(),
   recipeId: z.string().optional(),
 });
@@ -236,7 +236,7 @@ export const assistantActionVerbs = [
   },
 ] satisfies AssistantActionVerb[];
 
-export type AssistantActionAgentSource = AgentSummary;
+export type AssistantActionTeammateSource = TeammateSummary;
 
 export interface AssistantActionModelToolDefinition {
   availabilityReason?: string;
@@ -251,7 +251,7 @@ export interface AssistantActionModelToolDefinition {
 }
 
 export interface AssistantActionCatalogSources {
-  agents?: readonly AssistantActionAgentSource[];
+  agents?: readonly AssistantActionTeammateSource[];
   apps?: readonly CapabilityCatalogItem[];
   connectors?: readonly RecipeConnectorManifest[];
   installations?: readonly RecipeInstallation[];
@@ -407,11 +407,11 @@ function createAppCapabilityDescriptor(app: CapabilityCatalogItem): AssistantCap
   };
 }
 
-function isWorkspaceOwnedAgent(agent: AssistantActionAgentSource): boolean {
+function isWorkspaceOwnedTeammate(agent: AssistantActionTeammateSource): boolean {
   return agent.ownerScopeType === "workspace";
 }
 
-function getAgentUnavailabilityReason(agent: AssistantActionAgentSource): string | undefined {
+function getTeammateUnavailabilityReason(agent: AssistantActionTeammateSource): string | undefined {
   if (!agent.modelAvailable) {
     return `${agent.model ?? "The pinned model"} cannot be run here.`;
   }
@@ -427,24 +427,24 @@ function getAgentUnavailabilityReason(agent: AssistantActionAgentSource): string
   return undefined;
 }
 
-function getAgentCapabilityCategory(agent: AssistantActionAgentSource): string {
-  return isWorkspaceOwnedAgent(agent) ? "Workspace" : "Personal";
+function getTeammateCapabilityCategory(agent: AssistantActionTeammateSource): string {
+  return isWorkspaceOwnedTeammate(agent) ? "Workspace" : "Personal";
 }
 
-function getAgentTags(agent: AssistantActionAgentSource): string[] {
+function getTeammateTags(agent: AssistantActionTeammateSource): string[] {
   return [
     "agent",
-    isWorkspaceOwnedAgent(agent) ? "workspace" : "personal",
+    isWorkspaceOwnedTeammate(agent) ? "workspace" : "personal",
     ...(agent.mode ? [agent.mode] : []),
     ...(agent.skillIds.length > 0 ? ["skills"] : []),
     ...(agent.toolIds.length > 0 ? ["tools"] : []),
   ];
 }
 
-function createAgentCapabilityDescriptor(
-  agent: AssistantActionAgentSource,
+function createTeammateCapabilityDescriptor(
+  agent: AssistantActionTeammateSource,
 ): AssistantCapabilityDescriptor {
-  const unavailabilityReason = getAgentUnavailabilityReason(agent);
+  const unavailabilityReason = getTeammateUnavailabilityReason(agent);
   const operationAccess = agent.toolIds.length > 0 ? "mixed" : "read";
   const needsToolCalls = agent.toolIds.length > 0 || agent.skillIds.length > 0;
 
@@ -459,17 +459,17 @@ function createAgentCapabilityDescriptor(
       action: "ask_agent",
     },
     executionMode: "agent",
-    authRequirement: isWorkspaceOwnedAgent(agent) ? "pro" : "signed_in",
-    authState: isWorkspaceOwnedAgent(agent) ? "pro_required" : "signed_in",
+    authRequirement: isWorkspaceOwnedTeammate(agent) ? "pro" : "signed_in",
+    authState: isWorkspaceOwnedTeammate(agent) ? "pro_required" : "signed_in",
     operationAccess,
     approvalPolicy: getApprovalPolicy(operationAccess),
     requiredModelCapabilities: needsToolCalls ? ["supportsToolCalls"] : [],
     requiredConnectors: [],
-    availabilityReason: unavailabilityReason ?? "Agent is ready to run.",
+    availabilityReason: unavailabilityReason ?? "Teammate is ready to run.",
     savedState: {
       supported: true,
     },
-    tags: getAgentTags(agent),
+    tags: getTeammateTags(agent),
   };
 }
 
@@ -714,7 +714,7 @@ export function buildAssistantActionCatalog(
         id: `agent:${agent.id}`,
         kind: "agent" as const,
         label: agent.name,
-        capability: createAgentCapabilityDescriptor(agent),
+        capability: createTeammateCapabilityDescriptor(agent),
         description: agent.description || undefined,
         status: agent.model ?? undefined,
         searchText: [
@@ -727,11 +727,11 @@ export function buildAssistantActionCatalog(
         launch: {
           kind: "conversation" as const,
           operation: "ask_agent" as const,
-          agentId: agent.id,
+          teammateId: agent.id,
         },
         metadata: {
-          agentId: agent.id,
-          category: getAgentCapabilityCategory(agent),
+          teammateId: agent.id,
+          category: getTeammateCapabilityCategory(agent),
         },
       })),
       ...(sources.skills ?? []).map((skill) => createSkillAssistantActionItem(skill)),

@@ -1,7 +1,7 @@
 import type { AssistantActionItem, AssistantActionSelection } from "@ngriffin_uk/polychat-schemas";
 import { createContext, type ReactNode, useContext } from "react";
 
-import type { ComposerAgentOption, ComposerCommandAction } from "../composerCommandTypes";
+import type { ComposerTeammateOption, ComposerCommandAction } from "../composerCommandTypes";
 
 /**
  * Command resolution reads agents, capability catalogues, and chat settings, so the host owns it
@@ -9,21 +9,21 @@ import type { ComposerAgentOption, ComposerCommandAction } from "../composerComm
  */
 export interface ComposerCommandActions {
   activeSlashCommand: ComposerCommandAction | null;
-  agents: ComposerAgentOption[];
+  agents: ComposerTeammateOption[];
   actionItems: AssistantActionItem[];
-  canUseAgents: boolean;
-  clearAgent: () => void;
+  canUseTeammates: boolean;
+  clearTeammate: () => void;
   exitSlashSubmenu: () => void;
   filteredActionItems: AssistantActionItem[];
   filteredSlashCommands: ComposerCommandAction[];
-  isLoadingAgents: boolean;
+  isLoadingTeammates: boolean;
   modeCommands: ComposerCommandAction[];
   selectActionItem: (item: AssistantActionItem) => void;
-  selectAgent: (agent: ComposerAgentOption) => void;
+  selectTeammate: (agent: ComposerTeammateOption) => void;
   selectSlashCommand: (command: ComposerCommandAction) => void;
   selectedAssistantAction: AssistantActionSelection | null;
-  selectedAgent?: ComposerAgentOption | null;
-  selectedAgentId?: string | null;
+  selectedTeammate?: ComposerTeammateOption | null;
+  selectedTeammateId?: string | null;
   settingCommands: ComposerCommandAction[];
   slashCommands: ComposerCommandAction[];
 }

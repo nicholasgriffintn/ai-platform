@@ -4,7 +4,7 @@ import { validateCapabilityReference } from "~/lib/capabilities";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { assistantRecipes } from "~/services/apps/recipes/catalog";
 
-function createAgentContext(overrides: {
+function createTeammateContext(overrides: {
   userId: number;
   ownerScopeType: "user" | "workspace";
   ownerScopeId: string;
@@ -17,7 +17,7 @@ function createAgentContext(overrides: {
     requireUser: () => user,
     repositories: {
       agents: {
-        getAgentById: vi.fn(async () => ({
+        getTeammateById: vi.fn(async () => ({
           id: "agent-1",
           user_id: 7,
           owner_scope_type: overrides.ownerScopeType,
@@ -34,7 +34,7 @@ function createAgentContext(overrides: {
 
 describe("attaching an agent to a project", () => {
   it("accepts a workspace agent from a workspace the person belongs to", async () => {
-    const context = createAgentContext({
+    const context = createTeammateContext({
       userId: 9,
       ownerScopeType: "workspace",
       ownerScopeId: "workspace-1",
@@ -45,7 +45,7 @@ describe("attaching an agent to a project", () => {
   });
 
   it("refuses an agent the person cannot read", async () => {
-    const context = createAgentContext({
+    const context = createTeammateContext({
       userId: 9,
       ownerScopeType: "user",
       ownerScopeId: "7",

@@ -12,12 +12,12 @@ import {
 import { SearchX } from "lucide-react";
 
 import { AddSkillDialog } from "~/components/Capabilities/AddSkillDialog";
-import { AttachAgentDialog } from "~/components/Capabilities/AttachAgentDialog";
+import { AttachTeammateDialog } from "~/components/Capabilities/AttachTeammateDialog";
 import { CapabilityAddMenu } from "~/components/Capabilities/CapabilityAddMenu";
 import { CapabilityGroups } from "~/components/Capabilities/CapabilityGroups";
 import { HireTeammateDialog } from "~/components/Capabilities/HireTeammateDialog";
-import { ShareAgentDialog } from "~/components/Capabilities/ShareAgentDialog";
-import { SharedAgentsDialog } from "~/components/Capabilities/SharedAgentsDialog";
+import { SharedTeammatesDialog } from "~/components/Capabilities/SharedTeammatesDialog";
+import { ShareTeammateDialog } from "~/components/Capabilities/ShareTeammateDialog";
 import { useCapabilityAuthoring } from "~/components/Capabilities/useCapabilityAuthoring";
 import {
   useCapabilityLibraryController,
@@ -118,7 +118,7 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
             toolById={controller.catalog.toolById}
             toolConfigurationById={controller.toolConfigurationById}
             surface={controller.surface}
-            agentActions={authoring.agentActions}
+            teammateActions={authoring.teammateActions}
             authoredSkillActions={authoring.authoredSkillActions}
           />
         )}
@@ -178,19 +178,22 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
         error={authoring.hireTeammate.error}
         workspaceId={controller.surface.workspaceId}
       />
-      <SharedAgentsDialog
-        open={authoring.browseSharedAgents.open}
-        onOpenChange={authoring.browseSharedAgents.setOpen}
+      <SharedTeammatesDialog
+        open={authoring.browseSharedTeammates.open}
+        onOpenChange={authoring.browseSharedTeammates.setOpen}
       />
-      <ShareAgentDialog agent={authoring.shareAgent.agent} onClose={authoring.shareAgent.close} />
-      <AttachAgentDialog
-        agents={authoring.attachAgent.agents}
-        error={authoring.attachAgent.error}
-        isLoading={authoring.attachAgent.isLoading}
-        onAttach={authoring.attachAgent.attach}
-        onOpenChange={authoring.attachAgent.setOpen}
-        open={authoring.attachAgent.open}
-        pendingAgentId={pendingAddCapabilityId}
+      <ShareTeammateDialog
+        agent={authoring.shareTeammate.agent}
+        onClose={authoring.shareTeammate.close}
+      />
+      <AttachTeammateDialog
+        agents={authoring.attachTeammate.agents}
+        error={authoring.attachTeammate.error}
+        isLoading={authoring.attachTeammate.isLoading}
+        onAttach={authoring.attachTeammate.attach}
+        onOpenChange={authoring.attachTeammate.setOpen}
+        open={authoring.attachTeammate.open}
+        pendingTeammateId={pendingAddCapabilityId}
       />
       <ConfirmationDialog
         open={authoring.deletion.pending !== null}

@@ -9,8 +9,8 @@ import {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Agent } from "~/lib/database/schema";
-import { assertAgentAvailableToWorkspace } from "~/services/agents/access";
 import { resolveProjectSkillGrants } from "~/services/skills/scope";
+import { assertTeammateAvailableToWorkspace } from "~/services/teammates/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import { toStringArray } from "~/utils/arrays";
 import { intersectEnabledTools, intersectGrantedIds } from "~/utils/enabledTools";
@@ -29,14 +29,14 @@ export interface ResolvedTaskRuntime {
   enforceModeToolPolicy: false;
 }
 
-async function resolveProjectAgent(
+async function resolveProjectTeammate(
   context: ServiceContext,
   projectId: string,
-  agentId: string,
+  teammateId: string,
 ): Promise<Agent> {
   const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
   const isAttached = capabilities.some(
-    (capability) => capability.kind === "agent" && capability.capability_id === agentId,
+    (capability) => capability.kind === "agent" && capability.capability_id === teammateId,
   );
 
   if (!isAttached) {
@@ -47,7 +47,7 @@ async function resolveProjectAgent(
     );
   }
 
-  const agent = await context.repositories.agents.getAgentById(agentId);
+  const agent = await context.repositories.agents.getTeammateById(teammateId);
 
   if (!agent) {
     throw new AssistantError("Agent not found", ErrorType.NOT_FOUND, 404);
@@ -59,7 +59,7 @@ async function resolveProjectAgent(
     throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await assertAgentAvailableToWorkspace(context, agent, project.workspace_id);
+  await assertTeammateAvailableToWorkspace(context, agent, project.workspace_id);
 
   return agent;
 }
@@ -93,8 +93,10 @@ export async function resolveTaskRuntime(params: {
   );
   const projectTools = resolveProjectTools(capabilities).enabledTools;
   const projectSkillIds = resolveProjectSkillGrants(capabilities);
-  const agentId = stage?.agentId ?? task.runner?.agentId ?? null;
-  const agent = agentId ? await resolveProjectAgent(context, task.projectId, agentId) : null;
+  const teammateId = stage?.teammateId ?? task.runner?.teammateId ?? null;
+  const agent = teammateId
+    ? await resolveProjectTeammate(context, task.projectId, teammateId)
+    : null;
   const configuredTools = agent
     ? intersectEnabledTools(projectTools, agent.enabled_tools)
     : projectTools;

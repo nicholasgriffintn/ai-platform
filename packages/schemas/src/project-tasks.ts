@@ -128,7 +128,7 @@ export type ProjectTaskConstraints = z.infer<typeof projectTaskConstraintsSchema
 
 export const projectTaskRunnerSchema = z.object({
   kind: projectTaskRunnerKindSchema,
-  agentId: z.string().min(1).nullable().default(null),
+  teammateId: z.string().min(1).nullable().default(null),
   model: z.string().min(1).nullable().default(null),
   mode: agentModeSchema.nullable().default(null),
 });
@@ -228,7 +228,7 @@ export const projectFlowStageSchema = z
       .regex(/^[a-z0-9][a-z0-9_-]*$/, "Stage ids are lowercase, and use - or _ as separators"),
     name: z.string().trim().min(1).max(60),
     instructions: z.string().trim().max(2000).nullable().default(null),
-    agentId: z.string().trim().min(1).nullable().default(null),
+    teammateId: z.string().trim().min(1).nullable().default(null),
     skillIds: z.array(z.string().trim().min(1)).default([]),
     mode: agentModeSchema.nullable().default(null),
     requiresApprovalFor: z.array(toolPermissionSchema).default([]),

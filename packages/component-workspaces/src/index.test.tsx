@@ -57,7 +57,7 @@ const flow: ProjectFlow = {
       id: "research",
       name: "Research",
       instructions: null,
-      agentId: "agent-research",
+      teammateId: "agent-research",
       skillIds: [],
       mode: "explore",
       requiresApprovalFor: [],
@@ -67,7 +67,7 @@ const flow: ProjectFlow = {
       id: "publish",
       name: "Publish",
       instructions: null,
-      agentId: "agent-publish",
+      teammateId: "agent-publish",
       skillIds: [],
       mode: "build",
       requiresApprovalFor: ["write"],
@@ -506,7 +506,7 @@ describe("FlowEditorDialog", () => {
           { id: "fact-checking", name: "Fact checking" },
         ]}
         capabilitiesHref="/projects/project-1/library"
-        createAgentHref="/work/workspace-1/projects/project-1/agents/new"
+        createTeammateHref="/work/workspace-1/projects/project-1/agents/new"
         onOpenChange={vi.fn()}
         onSave={onSave}
       />,
@@ -536,7 +536,7 @@ describe("FlowEditorDialog", () => {
         agents={[]}
         skills={[]}
         capabilitiesHref="/projects/project-1/library"
-        createAgentHref="/work/workspace-1/projects/project-1/agents/new"
+        createTeammateHref="/work/workspace-1/projects/project-1/agents/new"
         onOpenChange={vi.fn()}
         onSave={onSave}
       />,

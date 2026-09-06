@@ -1765,7 +1765,7 @@ export const agentInstalls = sqliteTable(
   }),
 );
 
-export type AgentInstall = typeof agentInstalls.$inferSelect;
+export type TeammateInstall = typeof agentInstalls.$inferSelect;
 
 export const agentRatings = sqliteTable(
   "agent_ratings",
@@ -1794,7 +1794,7 @@ export const agentRatings = sqliteTable(
   }),
 );
 
-export type AgentRating = typeof agentRatings.$inferSelect;
+export type TeammateRating = typeof agentRatings.$inferSelect;
 
 export const artificialAnalysisModels = sqliteTable(
   "artificial_analysis_models",

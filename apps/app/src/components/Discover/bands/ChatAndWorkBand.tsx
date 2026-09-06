@@ -69,7 +69,7 @@ export function ChatAndWorkBand() {
           summary="Shared workspaces with projects, tasks and the agents that run them."
           points={[
             "Invite people to a workspace and scope what each project can reach.",
-            "Hand a task to an agent and review the run before it lands.",
+            "Hand a task to a teammate and review the run before it lands.",
             "Governance and usage sit beside the work, not in another tab.",
           ]}
         />

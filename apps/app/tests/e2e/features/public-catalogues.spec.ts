@@ -31,7 +31,7 @@ test("opens the public capability catalogue and exposes plan requirements before
   await expect(cataloguePage.card("Function tools", ownKeyTool.name)).toContainText("Your keys");
   await cataloguePage.openSection("Curated by you");
   await expect(
-    cataloguePage.section("Agents, skills and installed recipes are yours"),
+    cataloguePage.section("Teammates, skills and installed recipes are yours"),
   ).toBeInViewport();
   await cataloguePage.startCurating();
   await expect(page.getByRole("button", { name: /Sign in with GitHub/i })).toBeVisible();

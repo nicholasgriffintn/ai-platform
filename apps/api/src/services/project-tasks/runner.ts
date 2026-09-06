@@ -12,7 +12,6 @@ import {
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { finishUsageReservation } from "~/lib/usage/reservations";
-import { buildAgentPersona } from "~/services/agents/completion-tools";
 import { scheduleComposioConnectorRunCleanup } from "~/services/apps/connectors/composio-run";
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
@@ -26,6 +25,7 @@ import {
 } from "~/services/tasks/task-execution-lease";
 import type { TaskExecutionLease } from "~/services/tasks/TaskHandler";
 import { TaskService } from "~/services/tasks/TaskService";
+import { buildTeammatePersona } from "~/services/teammates/completion-tools";
 import { parseProjectFlow } from "~/services/workspaces/format";
 import type { IEnv, Message } from "~/types";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
@@ -103,7 +103,7 @@ export async function queueProjectTaskRun(params: {
     dispatchTaskId,
     runner: task.runner ?? {
       kind: "conversation",
-      agentId: null,
+      teammateId: null,
       model: null,
       mode: null,
     },
@@ -686,7 +686,7 @@ export async function runProjectTaskDispatch(params: {
         },
         tool_choice: "auto",
         metadata: { project_id: claimed.projectId },
-        ...(runtime.agent ? { persona: buildAgentPersona(runtime.agent) } : {}),
+        ...(runtime.agent ? { persona: buildTeammatePersona(runtime.agent) } : {}),
       },
     });
 

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { contentExtractSchema, recipeInstallationUpdateRequestSchema } from "./apps";
-import { buildAssistantActionCatalog, type AssistantActionAgentSource } from "./assistant-actions";
+import {
+  buildAssistantActionCatalog,
+  type AssistantActionTeammateSource,
+} from "./assistant-actions";
 import {
   deleteEmbeddingSchema,
   insertEmbeddingSchema,
@@ -226,7 +229,7 @@ describe("embedding provider configuration schemas", () => {
 });
 
 describe("agent capability descriptors", () => {
-  const baseAgent: AssistantActionAgentSource = {
+  const baseTeammate: AssistantActionTeammateSource = {
     id: "agent-1",
     name: "Researcher",
     description: "Reads long documents.",
@@ -241,22 +244,22 @@ describe("agent capability descriptors", () => {
     unavailableToolIds: [],
   };
 
-  function describeAgent(agent: AssistantActionAgentSource) {
+  function describeTeammate(agent: AssistantActionTeammateSource) {
     const [item] = buildAssistantActionCatalog({ agents: [agent] }).items;
 
     return item;
   }
 
   it("reports an agent unavailable and says why when its model cannot be run", () => {
-    const item = describeAgent({ ...baseAgent, modelAvailable: false });
+    const item = describeTeammate({ ...baseTeammate, modelAvailable: false });
 
     expect(item.capability.availability).toBe("unavailable");
     expect(item.capability.availabilityReason).toContain("claude-sonnet");
   });
 
   it("names the skills and tools this scope cannot give the agent", () => {
-    const item = describeAgent({
-      ...baseAgent,
+    const item = describeTeammate({
+      ...baseTeammate,
       skillIds: ["artifacts"],
       unavailableSkillIds: ["artifacts"],
     });
@@ -266,15 +269,16 @@ describe("agent capability descriptors", () => {
   });
 
   it("requires tool calling only from an agent that carries skills or tools", () => {
-    expect(describeAgent(baseAgent).capability.requiredModelCapabilities).toEqual([]);
+    expect(describeTeammate(baseTeammate).capability.requiredModelCapabilities).toEqual([]);
     expect(
-      describeAgent({ ...baseAgent, toolIds: ["web_search"] }).capability.requiredModelCapabilities,
+      describeTeammate({ ...baseTeammate, toolIds: ["web_search"] }).capability
+        .requiredModelCapabilities,
     ).toEqual(["supportsToolCalls"]);
   });
 
   it("separates a workspace agent from a personal one by auth and category", () => {
-    const personal = describeAgent(baseAgent);
-    const workspace = describeAgent({ ...baseAgent, ownerScopeType: "workspace" });
+    const personal = describeTeammate(baseTeammate);
+    const workspace = describeTeammate({ ...baseTeammate, ownerScopeType: "workspace" });
 
     expect(personal.capability.authRequirement).toBe("signed_in");
     expect(personal.metadata?.category).toBe("Personal");

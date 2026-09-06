@@ -90,7 +90,7 @@ test.describe("Work experience", () => {
       await workPage.openProjectSurface("Teammates & tools");
       await capabilitiesPage.openAddMenuWithKeyboard();
 
-      await expect(capabilitiesPage.addMenuItem("New agent")).toContainText(
+      await expect(capabilitiesPage.addMenuItem("New teammate")).toContainText(
         "Configure a persona, its model, tools and skills",
       );
       await expect(capabilitiesPage.addMenuItem("Attach an agent")).toContainText(
@@ -100,7 +100,7 @@ test.describe("Work experience", () => {
         "Upload an Agent Skills document",
       );
       await expect(capabilitiesPage.addMenuItem("Browse shared agents")).toHaveCount(0);
-      await expect(capabilitiesPage.addMenuItem("New agent")).toBeFocused();
+      await expect(capabilitiesPage.addMenuItem("New teammate")).toBeFocused();
 
       await capabilitiesPage.moveAddMenuSelection();
       await expect(capabilitiesPage.addMenuItem("Attach an agent")).toBeFocused();

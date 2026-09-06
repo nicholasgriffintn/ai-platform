@@ -301,7 +301,7 @@ export const chatToolChoiceSchema = z.union([
   }),
 ]);
 
-const agentCompletionOptionsSchema = z.object({
+const teammateCompletionOptionsSchema = z.object({
   minToolCalls: z
     .number()
     .int()
@@ -337,7 +337,7 @@ export const chatRequestOptionsSchema = z
     connector: connectorChatRequestOptionsSchema
       .optional()
       .describe("The exact connector selected for this chat turn."),
-    agent: agentCompletionOptionsSchema
+    agent: teammateCompletionOptionsSchema
       .optional()
       .describe("Settings for agent mode, which enables multi-step reasoning and tool usage."),
     sandbox: sandboxRequestOptionsSchema

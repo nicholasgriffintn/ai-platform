@@ -74,7 +74,7 @@ export function CreateTaskDialog({
   const [contextNotes, setContextNotes] = useState("");
   const [assignee, setAssignee] = useState("");
   const [stageId, setStageId] = useState(flow?.stages[0]?.id ?? "");
-  const [agentId, setAgentId] = useState("");
+  const [teammateId, setTeammateId] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [constraintNotes, setConstraintNotes] = useState("");
   const [dependsOn, setDependsOn] = useState<string[]>([]);
@@ -88,7 +88,7 @@ export function CreateTaskDialog({
     setContextNotes("");
     setAssignee("");
     setStageId(flow?.stages[0]?.id ?? "");
-    setAgentId("");
+    setTeammateId("");
     setShowAdvanced(false);
     setConstraintNotes("");
     setDependsOn([]);
@@ -118,7 +118,9 @@ export function CreateTaskDialog({
         requireApprovalFor,
         assigneeUserId: assignee ? Number(assignee) : null,
         runner:
-          !stageId && agentId ? { kind: "conversation", agentId, model: null, mode: null } : null,
+          !stageId && teammateId
+            ? { kind: "conversation", teammateId, model: null, mode: null }
+            : null,
         stageId: stageId || null,
         tokenBudget: tokenBudget ? Number(tokenBudget) : null,
       },
@@ -219,8 +221,8 @@ export function CreateTaskDialog({
             ) : (
               <FormSelect
                 label="Agent"
-                value={agentId}
-                onChange={(event) => setAgentId(event.target.value)}
+                value={teammateId}
+                onChange={(event) => setTeammateId(event.target.value)}
                 required
               >
                 <option value="">Choose an agent</option>

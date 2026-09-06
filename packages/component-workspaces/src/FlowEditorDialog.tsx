@@ -27,7 +27,7 @@ export interface FlowEditorDialogProps {
   agents: { id: string; name: string }[];
   skills: { id: string; name: string }[];
   capabilitiesHref: string;
-  createAgentHref: string;
+  createTeammateHref: string;
   isSaving?: boolean;
   errorMessage?: string;
   onOpenChange: (open: boolean) => void;
@@ -54,7 +54,7 @@ function newStage(): ProjectFlowStage {
     id: `stage-${crypto.randomUUID().slice(0, 8)}`,
     name: "",
     instructions: null,
-    agentId: null,
+    teammateId: null,
     skillIds: [],
     mode: "build",
     requiresApprovalFor: [],
@@ -68,7 +68,7 @@ export function FlowEditorDialog({
   agents,
   skills,
   capabilitiesHref,
-  createAgentHref,
+  createTeammateHref,
   isSaving = false,
   errorMessage,
   onOpenChange,
@@ -149,13 +149,13 @@ export function FlowEditorDialog({
             </div>
             <div className="flex flex-wrap gap-2">
               <ButtonLink
-                href={createAgentHref}
+                href={createTeammateHref}
                 variant="ghost"
                 size="sm"
                 icon={<Plus size={13} />}
                 className="no-underline hover:!no-underline"
               >
-                New agent
+                New teammate
               </ButtonLink>
               <ButtonLink
                 href={capabilitiesHref}
@@ -229,9 +229,9 @@ export function FlowEditorDialog({
                       />
                       <FormSelect
                         label="Agent"
-                        value={stage.agentId ?? ""}
+                        value={stage.teammateId ?? ""}
                         onChange={(event) =>
-                          updateStage(index, { agentId: event.target.value || null })
+                          updateStage(index, { teammateId: event.target.value || null })
                         }
                       >
                         <option value="">Project default</option>

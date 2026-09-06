@@ -39,11 +39,11 @@ export function ComposerDirectiveMenu({
 }: ComposerDirectiveMenuProps) {
   const {
     activeSlashCommand,
-    canUseAgents,
+    canUseTeammates,
     exitSlashSubmenu,
     filteredActionItems,
     filteredSlashCommands,
-    isLoadingAgents,
+    isLoadingTeammates,
     selectActionItem,
     selectSlashCommand,
   } = useComposerCommandActions();
@@ -147,7 +147,7 @@ export function ComposerDirectiveMenu({
                 </span>
               </button>
             ))
-          : canUseAgents
+          : canUseTeammates
             ? groupAssistantActionItems(filteredActionItems).map((group) => (
                 <div key={group.label} className="py-1">
                   <div className="text-muted-foreground px-3 pb-1 text-[11px] font-semibold uppercase">
@@ -193,18 +193,18 @@ export function ComposerDirectiveMenu({
               ))
             : null}
 
-        {!isSlashDirective && !canUseAgents ? (
+        {!isSlashDirective && !canUseTeammates ? (
           <p className="text-muted-foreground px-3 py-4 text-sm">
             {ASSISTANT_ACTION_ITEM_SCOPE_LABEL} are available in Chat mode.
           </p>
         ) : null}
-        {!isSlashDirective && isLoadingAgents ? (
+        {!isSlashDirective && isLoadingTeammates ? (
           <div className="text-muted-foreground flex items-center gap-2 px-3 py-4 text-sm">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Loading capabilities…
           </div>
         ) : null}
-        {resultCount === 0 && !isLoadingAgents ? (
+        {resultCount === 0 && !isLoadingTeammates ? (
           <p className="text-muted-foreground px-3 py-4 text-sm">
             No {isSlashDirective ? "actions" : ASSISTANT_ACTION_ITEM_EMPTY_LABEL} match this search.
           </p>

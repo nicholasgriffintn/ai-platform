@@ -14,8 +14,8 @@ import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-comman
 import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
-import { useAgents } from "~/hooks/useAgents";
-import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
+import { useTeammates } from "~/hooks/useTeammates";
+import { useTeammateToolDefaults } from "~/hooks/useTeammateToolDefaults";
 import { useComposerDraft } from "~/state/composer-draft";
 import { useChatStore } from "~/state/stores/chatStore";
 
@@ -48,14 +48,14 @@ export function useComposerCommandController({
   onCursorPositionRequest?: (position: number) => void;
   toolSelectionLocked?: boolean;
 }) {
-  const { chatMode, selectedAgentId, selectedAgentTokenPosition, selectedAssistantAction } =
+  const { chatMode, selectedTeammateId, selectedTeammateTokenPosition, selectedAssistantAction } =
     useChatStore();
   const { composerInput, setComposerInput } = useComposerDraft();
-  const includeAgents = assistantActionCatalog?.includeAgents !== false;
-  const { agents } = useAgents({ enabled: includeAgents });
+  const includeTeammates = assistantActionCatalog?.includeTeammates !== false;
+  const { agents } = useTeammates({ enabled: includeTeammates });
   const [textareaCursorPosition, setTextareaCursorPosition] = useState(0);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
-  const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
+  const selectedTeammate = agents.find((agent) => agent.id === selectedTeammateId);
   const ignoredDirectiveRanges = useMemo(() => {
     const ranges: ComposerDirectiveIgnoredRange[] = [];
 
@@ -82,15 +82,17 @@ export function useComposerCommandController({
       }
     }
 
-    if (selectedAgent) {
-      ranges.push(...findComposerInlineTokenRanges(composerInput, selectedAgent.name));
-      if (typeof selectedAgentTokenPosition === "number") {
-        ranges.push(getComposerInlineTokenRange(selectedAgentTokenPosition, selectedAgent.name));
+    if (selectedTeammate) {
+      ranges.push(...findComposerInlineTokenRanges(composerInput, selectedTeammate.name));
+      if (typeof selectedTeammateTokenPosition === "number") {
+        ranges.push(
+          getComposerInlineTokenRange(selectedTeammateTokenPosition, selectedTeammate.name),
+        );
       }
     }
 
     return ranges;
-  }, [composerInput, selectedAgent, selectedAgentTokenPosition, selectedAssistantAction]);
+  }, [composerInput, selectedTeammate, selectedTeammateTokenPosition, selectedAssistantAction]);
   const directiveQuery = getComposerDirectiveQuery(composerInput, textareaCursorPosition, {
     ignoredRanges: ignoredDirectiveRanges,
   });
@@ -107,9 +109,9 @@ export function useComposerCommandController({
     toolSelectionLocked,
   });
 
-  useAgentToolDefaults({
+  useTeammateToolDefaults({
     agents,
-    selectedAgentId,
+    selectedTeammateId,
     chatMode,
   });
 
@@ -223,8 +225,8 @@ export function useComposerCommandController({
       onActionItemSelect: applyActionItem,
       onSlashCommandSelect: applySlashCommand,
       onSlashCommandBack: exitSlashSubmenu,
-      clearAgent: commandActions.clearAgent,
-      selectedAgent: commandActions.selectedAgent,
+      clearTeammate: commandActions.clearTeammate,
+      selectedTeammate: commandActions.selectedTeammate,
       toolSelectionLocked,
     },
     directiveQuery,

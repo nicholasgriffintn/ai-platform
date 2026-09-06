@@ -1,7 +1,6 @@
 import type { IEnv } from "~/types";
 
 import { ActivityRepository } from "./ActivityRepository";
-import { AgentRepository } from "./AgentRepository";
 import { AnonymousUserRepository } from "./AnonymousUserRepository";
 import { ApiKeyRepository } from "./ApiKeyRepository";
 import { ArtificialAnalysisRepository } from "./ArtificialAnalysisRepository";
@@ -29,10 +28,11 @@ import { ProjectTaskRepository } from "./ProjectTaskRepository";
 import { ProviderConnectionRepository } from "./ProviderConnectionRepository";
 import { RecipeComposioTriggerRepository } from "./RecipeComposioTriggerRepository";
 import { SessionRepository } from "./SessionRepository";
-import { SharedAgentRepository } from "./SharedAgentRepository";
+import { SharedTeammateRepository } from "./SharedTeammateRepository";
 import { SourceRepository } from "./SourceRepository";
 import { TaskNotificationRepository } from "./TaskNotificationRepository";
 import { TaskRepository } from "./TaskRepository";
+import { TeammateRepository } from "./TeammateRepository";
 import { TemplateRepository } from "./TemplateRepository";
 import { TrainingExampleRepository } from "./TrainingExampleRepository";
 import { UsageBalanceRepository } from "./UsageBalanceRepository";
@@ -45,7 +45,7 @@ import { WebAuthnRepository } from "./WebAuthnRepository";
 import { WorkspaceRepository } from "./WorkspaceRepository";
 
 export {
-  AgentRepository,
+  TeammateRepository,
   ActivityRepository,
   AttentionRepository,
   AnonymousUserRepository,
@@ -85,7 +85,7 @@ export {
   ProjectTaskRepository,
   ProviderConnectionRepository,
   RecipeComposioTriggerRepository,
-  SharedAgentRepository,
+  SharedTeammateRepository,
   SourceRepository,
   WorkspaceRepository,
 };
@@ -93,7 +93,7 @@ export {
 export class RepositoryManager {
   private activityRepo: ActivityRepository;
   private attentionRepo: AttentionRepository;
-  private agentRepo: AgentRepository;
+  private teammateRepo: TeammateRepository;
   private planRepo: PlanRepository;
   private projectTaskRepo: ProjectTaskRepository;
   private userRepo: UserRepository;
@@ -125,7 +125,7 @@ export class RepositoryManager {
   private outputRepo: OutputRepository;
   private providerConnectionRepo: ProviderConnectionRepository;
   private recipeComposioTriggerRepo: RecipeComposioTriggerRepository;
-  private sharedAgentRepo: SharedAgentRepository;
+  private sharedTeammateRepo: SharedTeammateRepository;
   private sourceRepo: SourceRepository;
   private taskRepo: TaskRepository;
   private taskNotificationRepo: TaskNotificationRepository;
@@ -137,7 +137,7 @@ export class RepositoryManager {
   constructor(env: IEnv) {
     this.activityRepo = new ActivityRepository(env);
     this.attentionRepo = new AttentionRepository(env);
-    this.agentRepo = new AgentRepository(env);
+    this.teammateRepo = new TeammateRepository(env);
     this.planRepo = new PlanRepository(env);
     this.projectTaskRepo = new ProjectTaskRepository(env);
     this.userRepo = new UserRepository(env);
@@ -169,7 +169,7 @@ export class RepositoryManager {
     this.outputRepo = new OutputRepository(env);
     this.providerConnectionRepo = new ProviderConnectionRepository(env);
     this.recipeComposioTriggerRepo = new RecipeComposioTriggerRepository(env);
-    this.sharedAgentRepo = new SharedAgentRepository(env);
+    this.sharedTeammateRepo = new SharedTeammateRepository(env);
     this.sourceRepo = new SourceRepository(env);
     this.taskRepo = new TaskRepository(env);
     this.taskNotificationRepo = new TaskNotificationRepository(env);
@@ -323,12 +323,12 @@ export class RepositoryManager {
     return this.templateRepo;
   }
 
-  public get agents(): AgentRepository {
-    return this.agentRepo;
+  public get agents(): TeammateRepository {
+    return this.teammateRepo;
   }
 
-  public get sharedAgents(): SharedAgentRepository {
-    return this.sharedAgentRepo;
+  public get sharedAgents(): SharedTeammateRepository {
+    return this.sharedTeammateRepo;
   }
 
   public get sources(): SourceRepository {

@@ -37,7 +37,7 @@ export interface TaskBoardMemberSummary {
   name: string | null;
 }
 
-export interface TaskBoardAgentSummary {
+export interface TaskBoardTeammateSummary {
   id: string;
   name: string;
 }
@@ -46,7 +46,7 @@ export interface TaskBoardProps {
   tasks: ProjectTask[];
   flow: ProjectFlow | null;
   members: TaskBoardMemberSummary[];
-  agents: TaskBoardAgentSummary[];
+  agents: TaskBoardTeammateSummary[];
   pendingTaskIds?: string[];
   taskHref: (task: ProjectTask) => string;
   conversationHref: (task: ProjectTask) => string | null;
@@ -136,7 +136,7 @@ function TaskRow({
   task: ProjectTask;
   flow: ProjectFlow | null;
   members: TaskBoardMemberSummary[];
-  agents: TaskBoardAgentSummary[];
+  agents: TaskBoardTeammateSummary[];
   href: string;
   conversationHref: string | null;
   isPending: boolean;
@@ -147,8 +147,8 @@ function TaskRow({
   const stage =
     flow?.stages.find((candidate) => candidate.id === task.stageId) ??
     (task.status === "done" || task.status === "cancelled" ? null : flow?.stages[0]);
-  const agentId = stage?.agentId ?? task.runner?.agentId;
-  const agent = agents.find((candidate) => candidate.id === agentId);
+  const teammateId = stage?.teammateId ?? task.runner?.teammateId;
+  const agent = agents.find((candidate) => candidate.id === teammateId);
   const canRetry = isProjectTaskRetryable(task);
   const needsInput = isProjectTaskAwaitingInput(task);
   const activityAt = task.updatedAt ?? task.createdAt;
@@ -255,7 +255,7 @@ function FlowStrip({
   onConfigure,
 }: {
   flow: ProjectFlow | null;
-  agents: TaskBoardAgentSummary[];
+  agents: TaskBoardTeammateSummary[];
   canManage: boolean;
   onConfigure: () => void;
 }) {
@@ -285,7 +285,7 @@ function FlowStrip({
       {flow ? (
         <ol className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
           {flow.stages.map((stage, index) => {
-            const agent = agents.find((candidate) => candidate.id === stage.agentId);
+            const agent = agents.find((candidate) => candidate.id === stage.teammateId);
 
             return (
               <li

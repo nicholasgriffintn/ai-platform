@@ -33,9 +33,9 @@ import { Loader2 } from "lucide-react";
 import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useTrackEvent } from "~/hooks/use-track-event";
-import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useRealtimeProviders } from "~/hooks/useRealtimeProviders";
+import { useTeammates } from "~/hooks/useTeammates";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { clearModelResponseSettings } from "~/lib/chat-settings";
 import {
@@ -88,10 +88,10 @@ export const ModelSelector = ({
     setChatMode,
     chatSettings,
     setChatSettings,
-    selectedAgentId,
-    setSelectedAgentId,
+    selectedTeammateId,
+    setSelectedTeammateId,
   } = useChatStore();
-  const { agents } = useAgents();
+  const { agents } = useTeammates();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCapability, setSelectedCapability] = useState<ModelModality | null>(null);
@@ -247,7 +247,7 @@ export const ModelSelector = ({
 
     if (chatMode === "agent") {
       setChatMode("remote");
-      setSelectedAgentId(null);
+      setSelectedTeammateId(null);
     }
 
     if (selectedTab !== "models") {
@@ -295,7 +295,7 @@ export const ModelSelector = ({
     selectModelWithDefaults,
     selectedTab,
     setChatMode,
-    setSelectedAgentId,
+    setSelectedTeammateId,
   ]);
 
   const clearHoverPreview = useCallback(() => setHoverPreview(null), []);
@@ -408,7 +408,7 @@ export const ModelSelector = ({
     }
 
     if (newChatMode !== "agent") {
-      setSelectedAgentId(null);
+      setSelectedTeammateId(null);
     }
 
     trackEvent({
@@ -419,18 +419,22 @@ export const ModelSelector = ({
     });
   };
 
-  const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
-  const isModelLockedByAgent = Boolean(selectedAgent?.model);
+  const selectedTeammate = agents.find((agent) => agent.id === selectedTeammateId);
+  const isModelLockedByTeammate = Boolean(selectedTeammate?.model);
 
-  const currentAgentModel = selectedAgentId
-    ? agents.find((agent) => agent.id === selectedAgentId)?.model
+  const currentTeammateModel = selectedTeammateId
+    ? agents.find((agent) => agent.id === selectedTeammateId)?.model
     : null;
 
   useEffect(() => {
-    if (chatMode === "agent" && currentAgentModel !== undefined && currentAgentModel !== model) {
-      selectModelWithDefaults(currentAgentModel);
+    if (
+      chatMode === "agent" &&
+      currentTeammateModel !== undefined &&
+      currentTeammateModel !== model
+    ) {
+      selectModelWithDefaults(currentTeammateModel);
     }
-  }, [currentAgentModel, model, selectModelWithDefaults, chatMode]);
+  }, [currentTeammateModel, model, selectModelWithDefaults, chatMode]);
 
   if (isLoadingModels || (isLiveScope && isLoadingRealtimeProviders)) {
     return (
@@ -493,7 +497,7 @@ export const ModelSelector = ({
 
   const handleSelectTier = ({ tier, agent }: ModelTierSelection) => {
     setModelTier(tier);
-    setSelectedAgentId(null);
+    setSelectedTeammateId(null);
 
     if (chatMode === "local" && agent) {
       selectModelWithDefaults(agent.id, { ...chatSettings, localOnly: true });
@@ -518,7 +522,7 @@ export const ModelSelector = ({
     setSelectedTab(tab);
     if (tab === "tiers") {
       setChatMode("remote");
-      setSelectedAgentId(null);
+      setSelectedTeammateId(null);
       selectModelWithDefaults(null, {
         ...chatSettings,
         localOnly: false,
@@ -526,7 +530,7 @@ export const ModelSelector = ({
       onModelChange?.(null);
     } else if (tab === "models" && model === null) {
       setChatMode("remote");
-      setSelectedAgentId(null);
+      setSelectedTeammateId(null);
       selectModelWithDefaults(defaultModelId ?? null, {
         ...chatSettings,
         localOnly: false,
@@ -534,18 +538,18 @@ export const ModelSelector = ({
     }
   };
 
-  const agentModelLabel = selectedModelInfo?.name || "Model";
+  const teammateModelLabel = selectedModelInfo?.name || "Model";
   const selectedModelLabel = selectedModelInfo?.name || "Select model";
-  const isAgentLabel = Boolean(selectedAgent) && chatMode === "agent";
-  const triggerLabel = isAgentLabel
-    ? `${selectedAgent?.name} - ${agentModelLabel}`
+  const isTeammateLabel = Boolean(selectedTeammate) && chatMode === "agent";
+  const triggerLabel = isTeammateLabel
+    ? `${selectedTeammate?.name} - ${teammateModelLabel}`
     : model === null
       ? selectedTierDisplayName
       : selectedModelLabel;
-  const triggerTitle = isAgentLabel
-    ? `${selectedAgent?.name} - ${agentModelLabel}`
-    : isModelLockedByAgent
-      ? `${agentModelLabel} (set by agent)`
+  const triggerTitle = isTeammateLabel
+    ? `${selectedTeammate?.name} - ${teammateModelLabel}`
+    : isModelLockedByTeammate
+      ? `${teammateModelLabel} (set by teammate)`
       : model === null
         ? selectedTierDisplayName
         : selectedModelLabel;
@@ -584,7 +588,7 @@ export const ModelSelector = ({
           label={
             <>
               {triggerLabel}
-              {isModelLockedByAgent && !selectedAgent && " (set by agent)"}
+              {isModelLockedByTeammate && !selectedTeammate && " (set by teammate)"}
             </>
           }
           title={triggerTitle}
@@ -629,7 +633,7 @@ export const ModelSelector = ({
           models={filteredModelList}
           featuredModelIds={featuredModelIds}
           isDisabled={isDisabled}
-          isModelLocked={isModelLockedByAgent}
+          isModelLocked={isModelLockedByTeammate}
           isPro={isPro}
           mono={mono}
           selectedModelId={selectedModelInfo?.id}

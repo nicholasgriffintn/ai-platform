@@ -36,7 +36,7 @@ export function getResponseStyle(
   userTraits?: string | null,
   userPreferences?: string | null,
   isCoding = false,
-  isAgent = false,
+  isTeammate = false,
   simulatedThinking = false,
 ): ResponseStyle {
   if (verbosity === "caveman") {
@@ -94,7 +94,7 @@ export function getResponseStyle(
   const selectedStyle = styleByVerbosity[normalizedVerbosity];
 
   basePreferences.push(selectedStyle);
-  if (isAgent) {
+  if (isTeammate) {
     basePreferences.push("Conclude with outcomes and recommended next actions when useful.");
   }
 

@@ -1,5 +1,5 @@
 import type {
-  AgentResponse,
+  TeammateResponse,
   HireTeammateInput,
   ProjectCapabilityKind,
 } from "@ngriffin_uk/polychat-schemas";
@@ -8,10 +8,10 @@ import { type ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import type {
-  AgentCardActions,
+  TeammateCardActions,
   AuthoredSkillActions,
 } from "~/components/Capabilities/CapabilityGroups";
-import { useAgentCapabilityActions } from "~/components/Capabilities/useAgentCapabilityActions";
+import { useTeammateCapabilityActions } from "~/components/Capabilities/useTeammateCapabilityActions";
 import type { CapabilitySurface, EnabledCapability } from "~/lib/capability-surfaces";
 
 interface PendingCapabilityDeletion {
@@ -45,7 +45,7 @@ export interface CapabilityAddChoice {
   onSelect: () => void;
 }
 
-export interface SharedAgentAuthoring {
+export interface SharedTeammateAuthoring {
   agent: { id: string; name: string; description?: string | null } | null;
   close: () => void;
 }
@@ -61,16 +61,16 @@ export interface HireTeammateAuthoring {
 export interface CapabilityAuthoring {
   addSkill: { open: boolean; setOpen: (open: boolean) => void };
   hireTeammate: HireTeammateAuthoring;
-  agentActions: AgentCardActions;
-  browseSharedAgents: { open: boolean; setOpen: (open: boolean) => void };
-  shareAgent: SharedAgentAuthoring;
-  attachAgent: {
-    agents: AgentResponse[];
+  teammateActions: TeammateCardActions;
+  browseSharedTeammates: { open: boolean; setOpen: (open: boolean) => void };
+  shareTeammate: SharedTeammateAuthoring;
+  attachTeammate: {
+    agents: TeammateResponse[];
     error: Error | null;
     isLoading: boolean;
     open: boolean;
     setOpen: (open: boolean) => void;
-    attach: (agentId: string) => Promise<unknown>;
+    attach: (teammateId: string) => Promise<unknown>;
   };
   authoredSkillActions: AuthoredSkillActions;
   canAuthor: boolean;
@@ -95,20 +95,20 @@ export function useCapabilityAuthoring({
   const navigate = useNavigate();
   const [addSkillOpen, setAddSkillOpen] = useState(false);
   const [hireTeammateOpen, setHireTeammateOpen] = useState(false);
-  const [attachAgentOpen, setAttachAgentOpen] = useState(false);
+  const [attachTeammateOpen, setAttachTeammateOpen] = useState(false);
   const [browseSharedOpen, setBrowseSharedOpen] = useState(false);
-  const [sharingAgentId, setSharingAgentId] = useState<string | null>(null);
+  const [sharingTeammateId, setSharingTeammateId] = useState<string | null>(null);
   const [pendingDeletion, setPendingDeletion] = useState<PendingCapabilityDeletion | null>(null);
   const projectId = surface.projectId;
   const canAuthor = projectId ? projectActions?.canManage === true : Boolean(currentUserId);
-  const attachedAgentIds = useMemo(
+  const attachedTeammateIds = useMemo(
     () =>
       capabilities
         .filter((capability) => capability.kind === "agent")
         .map((capability) => capability.capabilityId),
     [capabilities],
   );
-  const agents = useAgentCapabilityActions(surface, attachedAgentIds);
+  const agents = useTeammateCapabilityActions(surface, attachedTeammateIds);
   const addChoices = useMemo<CapabilityAddChoice[]>(() => {
     if (!canAuthor) {
       return [];
@@ -134,7 +134,7 @@ export function useCapabilityAuthoring({
             label: "Attach a teammate",
             description: "Bring in a teammate this workspace already owns",
             icon: <Link2 className="h-4 w-4" />,
-            onSelect: () => setAttachAgentOpen(true),
+            onSelect: () => setAttachTeammateOpen(true),
           }
         : {
             label: "Browse shared teammates",
@@ -151,7 +151,7 @@ export function useCapabilityAuthoring({
     ];
   }, [agents.createPath, canAuthor, navigate, projectId]);
 
-  const isDeletingAgent = pendingDeletion?.kind === "agent";
+  const isDeletingTeammate = pendingDeletion?.kind === "agent";
 
   const confirmDeletion = async () => {
     if (!pendingDeletion) {
@@ -159,7 +159,7 @@ export function useCapabilityAuthoring({
     }
 
     if (pendingDeletion.kind === "agent") {
-      await agents.deleteAgent(pendingDeletion.id);
+      await agents.deleteTeammate(pendingDeletion.id);
     } else {
       await skillDeletion.delete(pendingDeletion.id);
     }
@@ -167,12 +167,12 @@ export function useCapabilityAuthoring({
     setPendingDeletion(null);
   };
 
-  const attachAgentToProject = async (agentId: string) => {
+  const attachTeammateToProject = async (teammateId: string) => {
     if (!projectActions) {
       return;
     }
 
-    await projectActions.addCapability("agent", agentId);
+    await projectActions.addCapability("agent", teammateId);
     await agents.refreshCatalogue();
   };
 
@@ -196,7 +196,7 @@ export function useCapabilityAuthoring({
     setPendingDeletion(deletion);
   };
 
-  const sharingAgent = sharingAgentId ? agents.findAgent(sharingAgentId) : undefined;
+  const sharingTeammate = sharingTeammateId ? agents.findTeammate(sharingTeammateId) : undefined;
 
   return {
     addSkill: { open: addSkillOpen, setOpen: setAddSkillOpen },
@@ -207,34 +207,34 @@ export function useCapabilityAuthoring({
       isHiring: agents.isHiring,
       error: agents.hireError,
     },
-    agentActions: {
-      canManage: agents.canManageAgent,
-      canShare: agents.canShareAgent,
+    teammateActions: {
+      canManage: agents.canManageTeammate,
+      canShare: agents.canShareTeammate,
       onDelete: (id, label) => requestDeletion({ id, kind: "agent", label }),
       onEdit: (id) => {
         void navigate(agents.editPath(id));
       },
-      onShare: setSharingAgentId,
-      pendingAgentId: agents.pendingAgentId,
+      onShare: setSharingTeammateId,
+      pendingTeammateId: agents.pendingTeammateId,
     },
-    browseSharedAgents: { open: browseSharedOpen, setOpen: setBrowseSharedOpen },
-    shareAgent: {
-      agent: sharingAgent
+    browseSharedTeammates: { open: browseSharedOpen, setOpen: setBrowseSharedOpen },
+    shareTeammate: {
+      agent: sharingTeammate
         ? {
-            id: sharingAgent.id,
-            name: sharingAgent.name,
-            description: sharingAgent.description,
+            id: sharingTeammate.id,
+            name: sharingTeammate.name,
+            description: sharingTeammate.description,
           }
         : null,
-      close: () => setSharingAgentId(null),
+      close: () => setSharingTeammateId(null),
     },
-    attachAgent: {
-      agents: agents.attachableAgents,
-      attach: attachAgentToProject,
+    attachTeammate: {
+      agents: agents.attachableTeammates,
+      attach: attachTeammateToProject,
       error: projectAddError ?? null,
       isLoading: agents.isLoadingAttachable,
-      open: attachAgentOpen,
-      setOpen: setAttachAgentOpen,
+      open: attachTeammateOpen,
+      setOpen: setAttachTeammateOpen,
     },
     authoredSkillActions: {
       canDelete: canAuthor,
@@ -245,8 +245,8 @@ export function useCapabilityAuthoring({
     deletion: {
       cancel: () => setPendingDeletion(null),
       confirm: confirmDeletion,
-      error: isDeletingAgent ? agents.deletionError : skillDeletion.error,
-      isPending: isDeletingAgent ? agents.isDeleting : skillDeletion.isPending,
+      error: isDeletingTeammate ? agents.deletionError : skillDeletion.error,
+      isPending: isDeletingTeammate ? agents.isDeleting : skillDeletion.isPending,
       pending: pendingDeletion,
     },
     addChoices,

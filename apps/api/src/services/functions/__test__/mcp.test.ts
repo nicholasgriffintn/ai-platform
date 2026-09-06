@@ -11,8 +11,8 @@ import {
   type RegisteredMCPClient,
 } from "../mcp";
 
-const AGENT_ID = "agent123-4567-8901-2345-678901234567";
-const TOOL_CALL_NAME = `mcp_${AGENT_ID.substring(0, 8)}_search`;
+const TEAMMATE_ID = "agent123-4567-8901-2345-678901234567";
+const TOOL_CALL_NAME = `mcp_${TEAMMATE_ID.substring(0, 8)}_search`;
 
 const createContext = (): ServiceContext => ({ requestCache: new Map() }) as ServiceContext;
 
@@ -45,8 +45,8 @@ describe("MCP client lifecycle", () => {
     const clientA = createClient("from-request-a");
     const clientB = createClient("from-request-b");
 
-    await registerMCPClient(contextA, AGENT_ID, clientA);
-    await registerMCPClient(contextB, AGENT_ID, clientB);
+    await registerMCPClient(contextA, TEAMMATE_ID, clientA);
+    await registerMCPClient(contextB, TEAMMATE_ID, clientB);
 
     const [resultA, resultB] = await Promise.all([
       handleMCPTool("completion-a", {}, createRequest(contextA)),
@@ -65,7 +65,7 @@ describe("MCP client lifecycle", () => {
     const context = createContext();
     const client = createClient("task-stage-network");
 
-    await registerMCPClient(context, AGENT_ID, client);
+    await registerMCPClient(context, TEAMMATE_ID, client);
 
     const result = await handleFunctions({
       completion_id: "task-1",
@@ -95,7 +95,7 @@ describe("MCP client lifecycle", () => {
     const context = createContext();
     const client = createClient("saved-agent-network");
 
-    await registerMCPClient(context, AGENT_ID, client);
+    await registerMCPClient(context, TEAMMATE_ID, client);
 
     const result = await handleFunctions({
       completion_id: "agent-chat-1",
@@ -124,7 +124,7 @@ describe("MCP client lifecycle", () => {
   it("refuses to resolve a client registered against another request", async () => {
     const owningContext = createContext();
 
-    await registerMCPClient(owningContext, AGENT_ID, createClient("owned"));
+    await registerMCPClient(owningContext, TEAMMATE_ID, createClient("owned"));
 
     await expect(handleMCPTool("completion-c", {}, createRequest(createContext()))).rejects.toThrow(
       /MCP client not found/,
@@ -136,8 +136,8 @@ describe("MCP client lifecycle", () => {
     const first = createClient("first");
     const second = createClient("second");
 
-    await registerMCPClient(context, AGENT_ID, first);
-    await registerMCPClient(context, AGENT_ID, second);
+    await registerMCPClient(context, TEAMMATE_ID, first);
+    await registerMCPClient(context, TEAMMATE_ID, second);
 
     expect(first.dispose).toHaveBeenCalledTimes(1);
     expect(second.dispose).not.toHaveBeenCalled();
@@ -151,7 +151,7 @@ describe("MCP client lifecycle", () => {
     const context = createContext();
     const client = createClient("teardown");
 
-    await registerMCPClient(context, AGENT_ID, client);
+    await registerMCPClient(context, TEAMMATE_ID, client);
     await disposeMCPClients(context);
 
     expect(client.dispose).toHaveBeenCalledTimes(1);
@@ -175,7 +175,7 @@ describe("MCP client lifecycle", () => {
       ),
     });
 
-    await registerMCPClient(context, AGENT_ID, stalled);
+    await registerMCPClient(context, TEAMMATE_ID, stalled);
 
     await expect(handleMCPTool("completion-f", {}, createRequest(context))).rejects.toThrow(
       /MCP tool execution failed/,

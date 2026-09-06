@@ -7,12 +7,12 @@ export interface ComposerAssistantActionCapability {
 }
 
 export interface ComposerActionCatalogConfig {
-  includeAgents?: boolean;
+  includeTeammates?: boolean;
   includeTools?: boolean;
   projectId?: string;
 }
 
-export interface ComposerAgentOption {
+export interface ComposerTeammateOption {
   id: string;
   name: string;
   description?: string | null;

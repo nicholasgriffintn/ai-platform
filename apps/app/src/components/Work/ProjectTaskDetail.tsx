@@ -11,7 +11,7 @@ import { useProjectTask, useProjectTasks } from "~/hooks/useProjectTasks";
 import { getProjectConversationPath } from "~/lib/conversation-route";
 import { getErrorMessage } from "~/lib/errors";
 
-import { useProjectTaskAgents } from "./useProjectTaskAgents";
+import { useProjectTaskTeammates } from "./useProjectTaskTeammates";
 import { useWorkData } from "./WorkDataContext";
 
 export function ProjectTaskDetail({
@@ -26,7 +26,7 @@ export function ProjectTaskDetail({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const navigate = useNavigate();
   const { projectQuery, workspaceQuery } = useWorkData();
-  const agents = useProjectTaskAgents(projectQuery.data?.capabilities);
+  const agents = useProjectTaskTeammates(projectQuery.data?.capabilities);
   const { tasks, flow, isLoading, error, start, accept, update, remove } =
     useProjectTasks(projectId);
   const detailQuery = useProjectTask(projectId, taskId);

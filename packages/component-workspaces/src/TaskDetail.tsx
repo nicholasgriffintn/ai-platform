@@ -110,8 +110,8 @@ export function TaskDetail({
   const owner = members.find((member) => member.userId === task.assigneeUserId);
   const effectiveFlow = task.flowSnapshot ?? flow;
   const stage = effectiveFlow?.stages.find((candidate) => candidate.id === task.stageId);
-  const agentId = stage?.agentId ?? task.runner?.agentId;
-  const agent = agents.find((candidate) => candidate.id === agentId);
+  const teammateId = stage?.teammateId ?? task.runner?.teammateId;
+  const agent = agents.find((candidate) => candidate.id === teammateId);
   const isFinished = isTerminalProjectTaskStatus(task.status);
   const hasExecutionEvidence = Boolean(
     task.status === "done" || task.runId || task.completions.length > 0,

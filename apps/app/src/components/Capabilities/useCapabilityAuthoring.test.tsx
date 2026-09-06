@@ -1,4 +1,4 @@
-import type { AgentResponse, WorkspaceSummary } from "@ngriffin_uk/polychat-schemas";
+import type { TeammateResponse, WorkspaceSummary } from "@ngriffin_uk/polychat-schemas";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -9,7 +9,7 @@ import { getProjectSurface, PERSONAL_SURFACE } from "~/lib/capability-surfaces";
 import { useCapabilityAuthoring, type CapabilityAuthoringInput } from "./useCapabilityAuthoring";
 
 const navigate = vi.fn();
-const agentList: AgentResponse[] = [];
+const teammateList: TeammateResponse[] = [];
 const workspaceList: WorkspaceSummary[] = [];
 
 vi.mock("react-router", async (importOriginal) => ({
@@ -30,18 +30,18 @@ vi.mock("~/hooks/useWorkspaces", () => ({
 
 const hireTeammateMock = vi.fn(async () => agent({ id: "teammate-hired" }));
 
-vi.mock("~/hooks/useAgents", () => ({
-  AGENTS_QUERY_KEYS: { all: ["agents"], detail: (id: string) => ["agents", id] },
-  useAgent: () => ({ data: undefined, isLoading: false, error: null }),
-  usePublishAgentToWorkspace: () => ({ isPending: false, error: null, mutateAsync: vi.fn() }),
-  useAgents: () => ({
-    agents: agentList,
-    isLoadingAgents: false,
-    deleteAgentAsync: vi.fn(),
-    deleteAgentError: null,
-    deletingAgentId: undefined,
-    isDeletingAgent: false,
-    resetAgentDeletion: vi.fn(),
+vi.mock("~/hooks/useTeammates", () => ({
+  TEAMMATES_QUERY_KEYS: { all: ["agents"], detail: (id: string) => ["agents", id] },
+  useTeammate: () => ({ data: undefined, isLoading: false, error: null }),
+  usePublishTeammateToWorkspace: () => ({ isPending: false, error: null, mutateAsync: vi.fn() }),
+  useTeammates: () => ({
+    agents: teammateList,
+    isLoadingTeammates: false,
+    deleteTeammateAsync: vi.fn(),
+    deleteTeammateError: null,
+    deletingTeammateId: undefined,
+    isDeletingTeammate: false,
+    resetTeammateDeletion: vi.fn(),
     hireTeammate: hireTeammateMock,
     isHiringTeammate: false,
     hireTeammateError: null,
@@ -49,7 +49,7 @@ vi.mock("~/hooks/useAgents", () => ({
   }),
 }));
 
-function agent(overrides: Partial<AgentResponse>): AgentResponse {
+function agent(overrides: Partial<TeammateResponse>): TeammateResponse {
   return {
     id: "agent-1",
     user_id: 7,
@@ -127,22 +127,22 @@ function addChoice(
 beforeEach(() => {
   navigate.mockReset();
   hireTeammateMock.mockClear();
-  agentList.length = 0;
+  teammateList.length = 0;
   workspaceList.length = 0;
 });
 
-describe("capability library agent authoring", () => {
-  it("opens the personal agent editor from the library's add-agent action", () => {
+describe("capability library teammate authoring", () => {
+  it("opens the personal teammate editor from the library's build-from-scratch action", () => {
     const { result } = renderAuthoring();
 
     addChoice(result, "Build one from scratch")?.();
 
-    expect(navigate).toHaveBeenCalledWith("/chat/agents/new");
+    expect(navigate).toHaveBeenCalledWith("/chat/teammates/new");
     expect(addChoice(result, "Attach a teammate")).toBeUndefined();
     expect(addChoice(result, "Browse shared teammates")).toBeDefined();
   });
 
-  it("opens the project agent editor and offers attachment inside a project", () => {
+  it("opens the project teammate editor and offers attachment inside a project", () => {
     const { result } = renderAuthoring({
       projectActions: { addCapability: vi.fn(async () => undefined), canManage: true },
       surface: getProjectSurface("workspace-1", "project-1"),
@@ -150,7 +150,7 @@ describe("capability library agent authoring", () => {
 
     addChoice(result, "Build one from scratch")?.();
 
-    expect(navigate).toHaveBeenCalledWith("/work/workspace-1/projects/project-1/agents/new");
+    expect(navigate).toHaveBeenCalledWith("/work/workspace-1/projects/project-1/teammates/new");
     expect(addChoice(result, "Attach a teammate")).toBeDefined();
     expect(addChoice(result, "Browse shared teammates")).toBeUndefined();
   });
@@ -169,7 +169,7 @@ describe("capability library agent authoring", () => {
     expect(hireTeammateMock).toHaveBeenCalledWith({ role_slug: "research-analyst" });
     expect(addCapability).toHaveBeenCalledWith("agent", "teammate-hired");
     expect(navigate).toHaveBeenCalledWith(
-      "/work/workspace-1/projects/project-1/agents/teammate-hired",
+      "/work/workspace-1/projects/project-1/teammates/teammate-hired",
     );
   });
 
@@ -183,7 +183,7 @@ describe("capability library agent authoring", () => {
   });
 
   it("only lets a viewer manage the agents they own or administer", () => {
-    agentList.push(
+    teammateList.push(
       agent({ id: "mine", owner_scope_type: "user", owner_scope_id: "7", user_id: 7 }),
       agent({ id: "someone-elses", owner_scope_type: "user", owner_scope_id: "9", user_id: 9 }),
       agent({ id: "administered", owner_scope_type: "workspace", owner_scope_id: "workspace-1" }),
@@ -196,14 +196,14 @@ describe("capability library agent authoring", () => {
 
     const { result } = renderAuthoring();
 
-    expect(result.current.agentActions.canManage("mine")).toBe(true);
-    expect(result.current.agentActions.canManage("administered")).toBe(true);
-    expect(result.current.agentActions.canManage("someone-elses")).toBe(false);
-    expect(result.current.agentActions.canManage("read-only")).toBe(false);
+    expect(result.current.teammateActions.canManage("mine")).toBe(true);
+    expect(result.current.teammateActions.canManage("administered")).toBe(true);
+    expect(result.current.teammateActions.canManage("someone-elses")).toBe(false);
+    expect(result.current.teammateActions.canManage("read-only")).toBe(false);
   });
 
   it("offers marketplace sharing only for a personally-owned agent the viewer manages", () => {
-    agentList.push(
+    teammateList.push(
       agent({ id: "mine", owner_scope_type: "user", owner_scope_id: "7", user_id: 7 }),
       agent({ id: "someone-elses", owner_scope_type: "user", owner_scope_id: "9", user_id: 9 }),
       agent({ id: "administered", owner_scope_type: "workspace", owner_scope_id: "workspace-1" }),
@@ -212,30 +212,32 @@ describe("capability library agent authoring", () => {
 
     const { result } = renderAuthoring();
 
-    expect(result.current.agentActions.canShare("mine")).toBe(true);
-    expect(result.current.agentActions.canShare("someone-elses")).toBe(false);
-    expect(result.current.agentActions.canManage("administered")).toBe(true);
-    expect(result.current.agentActions.canShare("administered")).toBe(false);
+    expect(result.current.teammateActions.canShare("mine")).toBe(true);
+    expect(result.current.teammateActions.canShare("someone-elses")).toBe(false);
+    expect(result.current.teammateActions.canManage("administered")).toBe(true);
+    expect(result.current.teammateActions.canShare("administered")).toBe(false);
   });
 
   it("opens the sharing dialog against the agent the card asked to share", () => {
-    agentList.push(agent({ id: "mine", name: "Researcher", description: "Digs through sources." }));
+    teammateList.push(
+      agent({ id: "mine", name: "Researcher", description: "Digs through sources." }),
+    );
 
     const { result } = renderAuthoring();
 
-    expect(result.current.shareAgent.agent).toBeNull();
+    expect(result.current.shareTeammate.agent).toBeNull();
 
-    act(() => result.current.agentActions.onShare("mine"));
+    act(() => result.current.teammateActions.onShare("mine"));
 
-    expect(result.current.shareAgent.agent).toEqual({
+    expect(result.current.shareTeammate.agent).toEqual({
       id: "mine",
       name: "Researcher",
       description: "Digs through sources.",
     });
 
-    act(() => result.current.shareAgent.close());
+    act(() => result.current.shareTeammate.close());
 
-    expect(result.current.shareAgent.agent).toBeNull();
+    expect(result.current.shareTeammate.agent).toBeNull();
   });
 
   it("offers shared-agent browsing personally but not inside a project", () => {
@@ -252,7 +254,7 @@ describe("capability library agent authoring", () => {
   });
 
   it("offers only the workspace agents a project has not already attached", () => {
-    agentList.push(
+    teammateList.push(
       agent({ id: "attached", owner_scope_type: "workspace", owner_scope_id: "workspace-1" }),
       agent({ id: "spare", owner_scope_type: "workspace", owner_scope_id: "workspace-1" }),
       agent({
@@ -278,7 +280,7 @@ describe("capability library agent authoring", () => {
       surface: getProjectSurface("workspace-1", "project-1"),
     });
 
-    expect(result.current.attachAgent.agents.map((entry) => entry.id)).toEqual(["spare"]);
+    expect(result.current.attachTeammate.agents.map((entry) => entry.id)).toEqual(["spare"]);
   });
 
   it("attaches a chosen agent to the project as an agent capability", async () => {
@@ -289,7 +291,7 @@ describe("capability library agent authoring", () => {
       surface: getProjectSurface("workspace-1", "project-1"),
     });
 
-    await result.current.attachAgent.attach("spare");
+    await result.current.attachTeammate.attach("spare");
 
     expect(addCapability).toHaveBeenCalledWith("agent", "spare");
   });

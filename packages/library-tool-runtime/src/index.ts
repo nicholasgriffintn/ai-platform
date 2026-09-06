@@ -8,7 +8,7 @@ export {
 } from "./define-tool";
 
 export {
-  agentControlToolDefinitions,
+  teammateControlToolDefinitions,
   finishToolDefinition,
   FINISH_TOOL_NAME,
   updatePlanToolDefinition,

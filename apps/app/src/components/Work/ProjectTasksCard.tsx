@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { useProjectTasks } from "~/hooks/useProjectTasks";
 import { getErrorMessage } from "~/lib/errors";
 
-import { useProjectTaskAgents } from "./useProjectTaskAgents";
+import { useProjectTaskTeammates } from "./useProjectTaskTeammates";
 import { useWorkData } from "./WorkDataContext";
 
 export function ProjectTasksCard({
@@ -23,7 +23,7 @@ export function ProjectTasksCard({
 }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { projectQuery, workspaceQuery } = useWorkData();
-  const agents = useProjectTaskAgents(projectQuery.data?.capabilities);
+  const agents = useProjectTaskTeammates(projectQuery.data?.capabilities);
   const { tasks, flow, isLoading, create, start } = useProjectTasks(projectId);
   const boardHref = `/work/${workspaceId}/projects/${projectId}/tasks`;
   const members = (workspaceQuery.data?.members ?? []).map((member) => ({

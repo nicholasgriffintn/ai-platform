@@ -218,6 +218,19 @@ export const projectDetailSchema = projectSummarySchema.extend({
 
 export type WorkspaceRole = z.infer<typeof workspaceRoleSchema>;
 export type ProjectCapabilityKind = z.infer<typeof projectCapabilityKindSchema>;
+
+const PROJECT_CAPABILITY_KIND_LABELS: Record<ProjectCapabilityKind, string> = {
+  app: "app",
+  recipe: "automation",
+  skill: "skill",
+  tool: "tool",
+  agent: "teammate",
+};
+
+export function describeProjectCapabilityKind(kind: ProjectCapabilityKind): string {
+  return PROJECT_CAPABILITY_KIND_LABELS[kind];
+}
+
 export type WorkspaceMember = z.infer<typeof workspaceMemberSchema>;
 export type WorkspaceInvitation = z.infer<typeof workspaceInvitationSchema>;
 export type WorkspaceInvitationDelivery = z.infer<typeof workspaceInvitationDeliverySchema>;

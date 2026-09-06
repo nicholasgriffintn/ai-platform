@@ -11,16 +11,16 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { NEW_AGENT_ID } from "~/components/Agents/useAgentEditorController";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
+import { NEW_TEAMMATE_ID } from "~/components/Teammates/useTeammateEditorController";
 import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
 import { useProjectTasks } from "~/hooks/useProjectTasks";
-import { getAgentEditorPath, getProjectSurface } from "~/lib/capability-surfaces";
+import { getTeammateEditorPath, getProjectSurface } from "~/lib/capability-surfaces";
 import { getProjectConversationPath } from "~/lib/conversation-route";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
-import { projectTaskSkills, useProjectTaskAgents } from "./useProjectTaskAgents";
+import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates";
 import { useWorkData } from "./WorkDataContext";
 
 export function ProjectTaskBoard({
@@ -33,7 +33,7 @@ export function ProjectTaskBoard({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isFlowOpen, setIsFlowOpen] = useState(false);
   const { projectQuery, workspaceQuery } = useWorkData();
-  const agents = useProjectTaskAgents(projectQuery.data?.capabilities);
+  const agents = useProjectTaskTeammates(projectQuery.data?.capabilities);
   const capabilityCatalog = useCapabilityCatalog(projectId);
   const skills = projectTaskSkills(projectQuery.data?.capabilities, capabilityCatalog.data?.skills);
   const { tasks, flow, isLoading, error, create, start, accept, saveFlow } =
@@ -169,9 +169,9 @@ export function ProjectTaskBoard({
         agents={agents}
         skills={skills}
         capabilitiesHref={`${basePath}/library`}
-        createAgentHref={getAgentEditorPath(
+        createTeammateHref={getTeammateEditorPath(
           getProjectSurface(workspaceId, projectId),
-          NEW_AGENT_ID,
+          NEW_TEAMMATE_ID,
         )}
         isSaving={saveFlow.isPending}
         errorMessage={saveFlow.error ? getErrorMessage(saveFlow.error, "") : undefined}
@@ -180,7 +180,7 @@ export function ProjectTaskBoard({
           try {
             await saveFlow.mutateAsync(nextFlow);
             setIsFlowOpen(false);
-            toast.success("Agent pipeline saved");
+            toast.success("Teammate pipeline saved");
           } catch (mutationError) {
             toast.error(getErrorMessage(mutationError, "Unable to save the agent pipeline"));
           }

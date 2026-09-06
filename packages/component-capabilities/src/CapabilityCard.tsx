@@ -1,9 +1,10 @@
 import { Button, Card, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
-import type {
-  AssistantActionItem,
-  CapabilityCatalogItem,
-  ProjectCapabilityKind,
-  ModelToolDefinition,
+import {
+  describeProjectCapabilityKind,
+  type AssistantActionItem,
+  type CapabilityCatalogItem,
+  type ProjectCapabilityKind,
+  type ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   Bot,
@@ -221,6 +222,8 @@ interface CapabilityActionsMenuProps {
 }
 
 function CapabilityActionsMenu({ detach, detachLabel, kind, owner }: CapabilityActionsMenuProps) {
+  const kindLabel = describeProjectCapabilityKind(kind);
+
   if (!detach && !owner) {
     return null;
   }
@@ -241,12 +244,12 @@ function CapabilityActionsMenu({ detach, detachLabel, kind, owner }: CapabilityA
     >
       {owner?.onEdit && (
         <DropdownMenuItem icon={<Pencil size={15} />} onClick={owner.onEdit}>
-          Edit {kind}
+          Edit {kindLabel}
         </DropdownMenuItem>
       )}
       {owner?.onShare && (
         <DropdownMenuItem icon={<Share2 size={15} />} onClick={owner.onShare}>
-          Share {kind}
+          Share {kindLabel}
         </DropdownMenuItem>
       )}
       {detach && (
@@ -264,7 +267,7 @@ function CapabilityActionsMenu({ detach, detachLabel, kind, owner }: CapabilityA
           icon={<Trash2 size={15} />}
           onClick={owner.onDelete}
         >
-          Delete {kind}
+          Delete {kindLabel}
         </DropdownMenuItem>
       )}
     </DropdownMenu>

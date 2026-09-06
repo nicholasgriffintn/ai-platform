@@ -6,7 +6,7 @@ import { CapabilityCard, CapabilityFilters } from "./index";
 
 afterEach(cleanup);
 
-function agentItem(
+function teammateItem(
   availability: "available" | "unavailable",
   availabilityReason: string,
 ): AssistantActionItem {
@@ -36,9 +36,9 @@ function agentItem(
     launch: {
       kind: "conversation" as const,
       operation: "ask_agent" as const,
-      agentId: "researcher",
+      teammateId: "researcher",
     },
-    metadata: { agentId: "researcher" },
+    metadata: { teammateId: "researcher" },
   };
 }
 
@@ -94,13 +94,13 @@ describe("capability controls", () => {
   });
 });
 
-describe("agent capability card", () => {
+describe("teammate capability card", () => {
   it("starts a conversation with an agent the scope can run", () => {
     const onOpen = vi.fn();
 
     render(
       <CapabilityCard
-        item={agentItem("available", "Agent is ready to run.")}
+        item={teammateItem("available", "Teammate is ready to run.")}
         kind="agent"
         onOpen={onOpen}
       />,
@@ -114,7 +114,7 @@ describe("agent capability card", () => {
   it("explains why an unavailable agent cannot be run instead of offering the action", () => {
     render(
       <CapabilityCard
-        item={agentItem("unavailable", "These tools are not available here: sandbox.")}
+        item={teammateItem("unavailable", "These tools are not available here: sandbox.")}
         kind="agent"
         onOpen={vi.fn()}
       />,
@@ -124,13 +124,13 @@ describe("agent capability card", () => {
     expect(screen.getByText("These tools are not available here: sandbox.")).toBeTruthy();
   });
 
-  it("lets an owner edit and delete the agent from the library card", () => {
+  it("lets an owner edit and delete the teammate from the library card", () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
 
     render(
       <CapabilityCard
-        item={agentItem("available", "Agent is ready to run.")}
+        item={teammateItem("available", "Teammate is ready to run.")}
         kind="agent"
         onOpen={vi.fn()}
         authoredCapability={{ canManage: true, isDeleting: false, onDelete, onEdit }}
@@ -138,19 +138,19 @@ describe("agent capability card", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "More actions" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "Edit agent" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "Delete agent" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Edit teammate" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete teammate" }));
 
     expect(onEdit).toHaveBeenCalledTimes(1);
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
-  it("offers marketplace sharing only when the agent supplies a share action", () => {
+  it("offers marketplace sharing only when the teammate supplies a share action", () => {
     const onShare = vi.fn();
 
     render(
       <CapabilityCard
-        item={agentItem("available", "Agent is ready to run.")}
+        item={teammateItem("available", "Teammate is ready to run.")}
         kind="agent"
         onOpen={vi.fn()}
         authoredCapability={{ canManage: true, isDeleting: false, onDelete: vi.fn(), onShare }}
@@ -158,15 +158,15 @@ describe("agent capability card", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "More actions" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "Share agent" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Share teammate" }));
 
     expect(onShare).toHaveBeenCalledTimes(1);
   });
 
-  it("hides sharing for an agent the viewer manages but cannot publish", () => {
+  it("hides sharing for a teammate the viewer manages but cannot publish", () => {
     render(
       <CapabilityCard
-        item={agentItem("available", "Agent is ready to run.")}
+        item={teammateItem("available", "Teammate is ready to run.")}
         kind="agent"
         onOpen={vi.fn()}
         authoredCapability={{
@@ -180,14 +180,14 @@ describe("agent capability card", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "More actions" }));
 
-    expect(screen.getByRole("menuitem", { name: "Edit agent" })).toBeTruthy();
-    expect(screen.queryByRole("menuitem", { name: "Share agent" })).toBeNull();
+    expect(screen.getByRole("menuitem", { name: "Edit teammate" })).toBeTruthy();
+    expect(screen.queryByRole("menuitem", { name: "Share teammate" })).toBeNull();
   });
 
   it("withholds edit and delete from a viewer who cannot manage the agent", () => {
     render(
       <CapabilityCard
-        item={agentItem("available", "Agent is ready to run.")}
+        item={teammateItem("available", "Teammate is ready to run.")}
         kind="agent"
         onOpen={vi.fn()}
         authoredCapability={{

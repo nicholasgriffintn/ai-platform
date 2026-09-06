@@ -41,11 +41,11 @@ function capability(overrides: Partial<EnabledCapability> = {}): EnabledCapabili
   };
 }
 
-function agentItem(availability: "available" | "unavailable"): AssistantActionItem {
+function teammateItem(availability: "available" | "unavailable"): AssistantActionItem {
   return {
     kind: "agent",
     capability: { id: "researcher", availability },
-    metadata: { agentId: "researcher" },
+    metadata: { teammateId: "researcher" },
   } as unknown as AssistantActionItem;
 }
 
@@ -106,7 +106,7 @@ describe("capability surfaces", () => {
   });
 
   it("starts a conversation with an available agent in either scope", () => {
-    const agent = agentItem("available");
+    const agent = teammateItem("available");
 
     expect(getCapabilityOpenPath(agent, PERSONAL_SURFACE, [])).toBe("/chat?agent=researcher");
     expect(getCapabilityOpenPath(agent, getProjectSurface("w1", "p1"), [])).toBe(
@@ -115,6 +115,6 @@ describe("capability surfaces", () => {
   });
 
   it("offers no way in to a capability the scope cannot run", () => {
-    expect(getCapabilityOpenPath(agentItem("unavailable"), PERSONAL_SURFACE, [])).toBeNull();
+    expect(getCapabilityOpenPath(teammateItem("unavailable"), PERSONAL_SURFACE, [])).toBeNull();
   });
 });

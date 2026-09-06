@@ -7,10 +7,10 @@ import z from "zod/v4";
 
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { listScopedAgentSummaries } from "~/services/agents";
 import { listRecipeCatalogueSummaries } from "~/services/apps/recipes";
 import { getProjectExperienceCatalog, MODEL_TOOL_DEFINITIONS } from "~/services/experiences/config";
 import { listScopedSkillSummaries } from "~/services/skills";
+import { listScopedTeammateSummaries } from "~/services/teammates";
 import { listCatalogueTools } from "~/services/tools/toolsOperations";
 
 const app = new Hono();
@@ -34,7 +34,7 @@ addRoute(app, "get", "/", {
   },
   handler: async ({ query, serviceContext, user }) => {
     const [agents, skills] = await Promise.all([
-      listScopedAgentSummaries(serviceContext, user?.id, query.projectId),
+      listScopedTeammateSummaries(serviceContext, user?.id, query.projectId),
       listScopedSkillSummaries(serviceContext, user?.id, query.projectId),
     ]);
 

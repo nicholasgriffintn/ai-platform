@@ -1,4 +1,4 @@
-import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
+import type { TeammateResponse } from "@ngriffin_uk/polychat-schemas";
 import { AGENT_MODE_CONFIGS, updateUserSettingsSchema } from "@ngriffin_uk/polychat-schemas";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -8,8 +8,8 @@ import {
   AccountOverview,
   AccountPrompt,
   type AccountSection,
-  AgentEditor,
-  type AgentFormData,
+  TeammateEditor,
+  type TeammateFormData,
   SandboxConnectionList,
   prepareUserSettingsPayload,
 } from "./index";
@@ -149,7 +149,7 @@ describe("sandbox connection list", () => {
 });
 
 describe("agent editor", () => {
-  const personalAgent: AgentResponse = {
+  const personalTeammate: TeammateResponse = {
     id: "agent-1",
     user_id: 7,
     owner_scope_type: "user",
@@ -171,8 +171,8 @@ describe("agent editor", () => {
     created_at: "2026-01-01T00:00:00.000Z",
     updated_at: null,
   };
-  const workspaceAgent: AgentResponse = {
-    ...personalAgent,
+  const workspaceTeammate: TeammateResponse = {
+    ...personalTeammate,
     id: "agent-2",
     owner_scope_type: "workspace",
     owner_scope_id: "workspace-1",
@@ -184,12 +184,12 @@ describe("agent editor", () => {
     onPublish: vi.fn(),
   };
 
-  function renderEditor(overrides: Partial<Parameters<typeof AgentEditor>[0]> = {}) {
-    const onSubmit = vi.fn<(data: AgentFormData) => void>();
+  function renderEditor(overrides: Partial<Parameters<typeof TeammateEditor>[0]> = {}) {
+    const onSubmit = vi.fn<(data: TeammateFormData) => void>();
 
     render(
-      <AgentEditor
-        agent={personalAgent}
+      <TeammateEditor
+        agent={personalTeammate}
         models={{}}
         tools={[]}
         skills={[]}
@@ -208,15 +208,15 @@ describe("agent editor", () => {
 
   it("withholds saving and deleting from a viewer who cannot manage the agent", () => {
     renderEditor({
-      agent: workspaceAgent,
+      agent: workspaceTeammate,
       canManage: false,
-      cannotManageReason: "Aviary owns this agent.",
+      cannotManageReason: "Aviary owns this teammate.",
       ownerLabel: "Aviary",
     });
 
     expect(screen.queryByRole("button", { name: "Save agent" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Delete agent" })).toBeNull();
-    expect(screen.getByText("Aviary owns this agent.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Delete teammate" })).toBeNull();
+    expect(screen.getByText("Aviary owns this teammate.")).toBeTruthy();
     expect(screen.getByLabelText("Name").hasAttribute("disabled")).toBe(true);
   });
 
@@ -233,7 +233,7 @@ describe("agent editor", () => {
   });
 
   it("offers publishing only while the agent is still personally owned", () => {
-    renderEditor({ agent: workspaceAgent, ownerLabel: "Aviary", publish });
+    renderEditor({ agent: workspaceTeammate, ownerLabel: "Aviary", publish });
 
     expect(screen.queryByLabelText("Publish to a workspace")).toBeNull();
 
@@ -248,7 +248,7 @@ describe("agent editor", () => {
 
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Scout" } });
     fireEvent.click(screen.getByRole("radio", { name: /^Plan/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Create agent" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create teammate" }));
 
     expect(onSubmit).toHaveBeenCalledOnce();
     expect(onSubmit.mock.calls[0][0]).toMatchObject({
@@ -259,7 +259,7 @@ describe("agent editor", () => {
   });
 
   it("clears a saved temperature override back to automatic sampling", () => {
-    const onSubmit = renderEditor({ agent: { ...personalAgent, temperature: 0.4 } });
+    const onSubmit = renderEditor({ agent: { ...personalTeammate, temperature: 0.4 } });
 
     fireEvent.change(screen.getByLabelText("Temperature"), { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: "Save agent" }));
@@ -271,7 +271,7 @@ describe("agent editor", () => {
     const onSubmit = renderEditor({ agent: null });
 
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "   " } });
-    fireEvent.click(screen.getByRole("button", { name: "Create agent" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create teammate" }));
 
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByRole("alert").textContent).toContain("name");

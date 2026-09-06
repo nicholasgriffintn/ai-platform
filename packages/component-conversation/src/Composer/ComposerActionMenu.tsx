@@ -77,7 +77,7 @@ export function ComposerActionMenu({
   uploadIcon,
   uploadLabel,
 }: ComposerActionMenuProps) {
-  const { actionItems, canUseAgents, isLoadingAgents, selectActionItem, selectedAgent } =
+  const { actionItems, canUseTeammates, isLoadingTeammates, selectActionItem, selectedTeammate } =
     useComposerCommandActions();
   const [isOpen, setIsOpen] = useState(false);
   const [menuWidth, setMenuWidth] = useState<number>();
@@ -97,7 +97,7 @@ export function ComposerActionMenu({
     canAttachSources ||
     Boolean(autoPlayResponses) ||
     Boolean(tools) ||
-    (canUseAgents && (isLoadingAgents || actionGroups.length > 0));
+    (canUseTeammates && (isLoadingTeammates || actionGroups.length > 0));
   const isDirectiveOpen = Boolean(directive) && !isDisabled;
   const menuIsOpen = isDirectiveOpen || isOpen;
 
@@ -169,19 +169,19 @@ export function ComposerActionMenu({
     >
       {usesDrilldownNavigation ? (
         <ComposerActionMenuMobile
-          actionItems={canUseAgents ? menuActionItems : []}
+          actionItems={canUseTeammates ? menuActionItems : []}
           attachingSourceId={attachingSourceId}
           autoPlayResponses={autoPlayResponses}
           canAttachSources={canAttachSources}
           canUploadFiles={canUploadFiles}
           isDisabled={isDisabled}
-          isLoadingActions={isLoadingAgents}
+          isLoadingActions={isLoadingTeammates}
           isLoadingSources={isLoadingSources}
           isUploading={isUploading}
           onAttachSource={handleSourceSelect}
           onSelectActionItem={selectActionItem}
           onUploadClick={onUploadClick}
-          selectedAgentId={selectedAgent?.id}
+          selectedTeammateId={selectedTeammate?.id}
           sourceScopeLabel={sourceScopeLabel}
           sources={sources}
           tools={tools}
@@ -253,7 +253,7 @@ export function ComposerActionMenu({
             <OptionsMenuSeparator />
           ) : null}
 
-          {canUseAgents
+          {canUseTeammates
             ? capabilityGroups.map((group) => {
                 const GroupIcon = group.icon;
 
@@ -276,7 +276,7 @@ export function ComposerActionMenu({
                           icon={<AssistantActionItemIcon item={item} />}
                           label={item.label}
                           description={describeAssistantActionItem(item)}
-                          isActive={item.id === `agent:${selectedAgent?.id}`}
+                          isActive={item.id === `agent:${selectedTeammate?.id}`}
                         />
                       </OptionsMenuAction>
                     ))}
@@ -285,7 +285,7 @@ export function ComposerActionMenu({
               })
             : null}
 
-          {isLoadingAgents && actionGroups.length === 0 ? (
+          {isLoadingTeammates && actionGroups.length === 0 ? (
             <div className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               Loading capabilities…

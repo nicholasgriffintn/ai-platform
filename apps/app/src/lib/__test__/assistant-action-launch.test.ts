@@ -9,8 +9,8 @@ import {
   createRecipeAssistantActionLaunch,
   loadAssistantActionRequestOptions,
   parseAssistantActionLaunchState,
-  createAgentConversationActionPath,
-  readAgentConversationLaunchIntent,
+  createTeammateConversationActionPath,
+  readTeammateConversationLaunchIntent,
   readRecipeConversationLaunchIntent,
   removeConsumedAssistantActionLaunchParams,
 } from "../assistant-action-launch";
@@ -59,11 +59,11 @@ describe("assistant action launch URL contract", () => {
   });
 
   it("carries an agent into a conversation and reads it back", () => {
-    const path = createAgentConversationActionPath("/work/w1/projects/p1/chat", "researcher");
+    const path = createTeammateConversationActionPath("/work/w1/projects/p1/chat", "researcher");
 
     expect(path).toBe("/work/w1/projects/p1/chat?agent=researcher");
-    expect(readAgentConversationLaunchIntent(path.split("?")[1])).toBe("researcher");
-    expect(readAgentConversationLaunchIntent("agent=%20")).toBe(undefined);
+    expect(readTeammateConversationLaunchIntent(path.split("?")[1])).toBe("researcher");
+    expect(readTeammateConversationLaunchIntent("agent=%20")).toBe(undefined);
   });
 
   it("reads only valid compact recipe actions", () => {

@@ -121,7 +121,7 @@ function createContext(
           updateProject: vi.fn().mockResolvedValue(undefined),
         },
         agents: {
-          getAgentById: vi.fn().mockResolvedValue(overrides.agent ?? null),
+          getTeammateById: vi.fn().mockResolvedValue(overrides.agent ?? null),
         },
         projectTasks: {
           getTaskById: vi.fn().mockResolvedValue(task),
@@ -318,7 +318,7 @@ describe("createProjectTask", () => {
           id: "build",
           name: "Build",
           instructions: null,
-          agentId: null,
+          teammateId: null,
           skillIds: [],
           mode: "build",
           requiresApprovalFor: [],
@@ -433,7 +433,7 @@ describe("startProjectTask", () => {
           id: "plan",
           name: "Plan",
           instructions: null,
-          agentId: null,
+          teammateId: null,
           skillIds: [],
           mode: "plan",
           requiresApprovalFor: [],
@@ -530,7 +530,7 @@ describe("acceptProjectTask", () => {
         {
           id: "spec",
           name: "Spec",
-          agentId: null,
+          teammateId: null,
           skillIds: [],
           mode: null,
           requiresApprovalFor: [],
@@ -539,7 +539,7 @@ describe("acceptProjectTask", () => {
         {
           id: "build",
           name: "Build",
-          agentId: null,
+          teammateId: null,
           skillIds: [],
           mode: null,
           requiresApprovalFor: [],
@@ -583,7 +583,7 @@ describe("setProjectFlow", () => {
             id: "build",
             name: "Build",
             instructions: null,
-            agentId: "agent-1",
+            teammateId: "agent-1",
             skillIds: [],
             mode: null,
             requiresApprovalFor: [],
@@ -607,7 +607,7 @@ describe("setProjectFlow", () => {
           id: "research",
           name: "Research",
           instructions: null,
-          agentId: null,
+          teammateId: null,
           skillIds: ["research", "fact-checking"],
           mode: "explore",
           requiresApprovalFor: [],
@@ -642,7 +642,7 @@ describe("resolveTaskRuntime", () => {
         id: "build",
         name: "Build",
         instructions: null,
-        agentId: null,
+        teammateId: null,
         skillIds: [],
         mode: "build",
         requiresApprovalFor: ["network", "write"],
@@ -673,7 +673,7 @@ describe("resolveTaskRuntime", () => {
       task: {
         ...baseTask,
         stageId: "build",
-        runner: { kind: "conversation", agentId: null, model: "gpt-5", mode: null },
+        runner: { kind: "conversation", teammateId: null, model: "gpt-5", mode: null },
       },
       flow,
     });
@@ -705,7 +705,7 @@ describe("resolveTaskRuntime", () => {
       context,
       task: {
         ...baseTask,
-        runner: { kind: "conversation", agentId: "agent-1", model: null, mode: null },
+        runner: { kind: "conversation", teammateId: "agent-1", model: null, mode: null },
       },
       flow: null,
     });
@@ -730,23 +730,23 @@ describe("resolveTaskRuntime", () => {
         context,
         task: {
           ...baseTask,
-          runner: { kind: "conversation", agentId: "agent-1", model: null, mode: null },
+          runner: { kind: "conversation", teammateId: "agent-1", model: null, mode: null },
         },
         flow: null,
       }),
     ).rejects.toMatchObject({ statusCode: 403 });
   });
 
-  const workspaceAgent = {
+  const workspaceTeammate = {
     id: "agent-1",
     user_id: 7,
     owner_scope_type: "workspace",
     owner_scope_id: "workspace-1",
     enabled_tools: null,
   };
-  const agentRunner = {
+  const teammateRunner = {
     kind: "conversation" as const,
-    agentId: "agent-1",
+    teammateId: "agent-1",
     model: null,
     mode: null,
   };
@@ -757,12 +757,12 @@ describe("resolveTaskRuntime", () => {
         { kind: "agent", capability_id: "agent-1" },
         { kind: "skill", capability_id: "research" },
       ],
-      agent: { ...workspaceAgent, skill_ids: ["research", "payroll-export"] },
+      agent: { ...workspaceTeammate, skill_ids: ["research", "payroll-export"] },
     });
 
     const runtime = await resolveTaskRuntime({
       context,
-      task: { ...baseTask, runner: agentRunner },
+      task: { ...baseTask, runner: teammateRunner },
       flow: null,
     });
 
@@ -776,19 +776,19 @@ describe("resolveTaskRuntime", () => {
         { kind: "skill", capability_id: "research" },
         { kind: "skill", capability_id: "fact-checking" },
       ],
-      agent: { ...workspaceAgent, skill_ids: ["fact-checking", "payroll-export"] },
+      agent: { ...workspaceTeammate, skill_ids: ["fact-checking", "payroll-export"] },
     });
 
     const runtime = await resolveTaskRuntime({
       context,
-      task: { ...baseTask, stageId: "research", runner: agentRunner },
+      task: { ...baseTask, stageId: "research", runner: teammateRunner },
       flow: {
         stages: [
           {
             id: "research",
             name: "Research",
             instructions: null,
-            agentId: null,
+            teammateId: null,
             skillIds: ["research"],
             mode: "explore",
             requiresApprovalFor: [],
@@ -805,12 +805,12 @@ describe("resolveTaskRuntime", () => {
   it("lets the stage mode beat the agent's saved mode", async () => {
     const { context } = createContext({
       capabilities: [{ kind: "agent", capability_id: "agent-1" }],
-      agent: { ...workspaceAgent, mode: "plan" },
+      agent: { ...workspaceTeammate, mode: "plan" },
     });
 
     const runtime = await resolveTaskRuntime({
       context,
-      task: { ...baseTask, stageId: "build", runner: agentRunner },
+      task: { ...baseTask, stageId: "build", runner: teammateRunner },
       flow,
     });
 
@@ -820,12 +820,12 @@ describe("resolveTaskRuntime", () => {
   it("falls back to the agent's saved mode when neither the stage nor the runner sets one", async () => {
     const { context } = createContext({
       capabilities: [{ kind: "agent", capability_id: "agent-1" }],
-      agent: { ...workspaceAgent, mode: "plan" },
+      agent: { ...workspaceTeammate, mode: "plan" },
     });
 
     const runtime = await resolveTaskRuntime({
       context,
-      task: { ...baseTask, runner: agentRunner },
+      task: { ...baseTask, runner: teammateRunner },
       flow: null,
     });
 
@@ -850,7 +850,7 @@ describe("resolveTaskRuntime", () => {
         context,
         task: {
           ...baseTask,
-          runner: { kind: "conversation", agentId: "agent-1", model: null, mode: null },
+          runner: { kind: "conversation", teammateId: "agent-1", model: null, mode: null },
         },
         flow: null,
       }),

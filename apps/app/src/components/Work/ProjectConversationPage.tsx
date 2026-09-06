@@ -62,9 +62,9 @@ export function ProjectConversationPage({
     enabled: isNewConversation,
   });
   const setChatMode = useChatStore((state) => state.setChatMode);
-  const setSelectedAgentId = useChatStore((state) => state.setSelectedAgentId);
-  const setSelectedAgentTokenPosition = useChatStore(
-    (state) => state.setSelectedAgentTokenPosition,
+  const setSelectedTeammateId = useChatStore((state) => state.setSelectedTeammateId);
+  const setSelectedTeammateTokenPosition = useChatStore(
+    (state) => state.setSelectedTeammateTokenPosition,
   );
   const setSelectedAssistantAction = useChatStore((state) => state.setSelectedAssistantAction);
   const isStreamLoading = useStreamActivityStore((state) =>
@@ -140,10 +140,15 @@ export function ProjectConversationPage({
 
   useEffect(() => {
     setChatMode("remote");
-    setSelectedAgentId(null);
-    setSelectedAgentTokenPosition(null);
+    setSelectedTeammateId(null);
+    setSelectedTeammateTokenPosition(null);
     setSelectedAssistantAction(null);
-  }, [setChatMode, setSelectedAgentId, setSelectedAgentTokenPosition, setSelectedAssistantAction]);
+  }, [
+    setChatMode,
+    setSelectedTeammateId,
+    setSelectedTeammateTokenPosition,
+    setSelectedAssistantAction,
+  ]);
 
   useEffect(() => {
     if (!projectSources.error) {
@@ -194,7 +199,7 @@ export function ProjectConversationPage({
             recipes: recipeManagementPath,
           },
           assistantActionCatalog: {
-            includeAgents: false,
+            includeTeammates: false,
             includeTools: false,
             projectId,
           },
