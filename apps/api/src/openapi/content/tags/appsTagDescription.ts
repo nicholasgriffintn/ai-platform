@@ -9,6 +9,6 @@ Task-focused workflows such as research, summarization, creative generation, and
 
 - **Auth required** — shared middleware enforces JWT authentication and plan entitlements.
 - **Typed contracts** — request/response bodies align with schemas from \`@ngriffin_uk/polychat-schemas\`.
-- **Extensible** — new app modules mount as sub-routes (e.g. \`/apps/articles\`, \`/apps/notes\`, \`/apps/podcasts\`) and inherit logging plus metrics.
+- **Extensible** — new app modules mount as sub-routes (e.g. \`/apps/articles\`, \`/apps/notes\`, \`/apps/recordings\`) and inherit logging plus metrics.
 - **Sandbox control** — sandbox connection and worker-control operations are exposed under \`/apps/sandbox/*\`; user-facing runs are started through normal chat tools.
 `;

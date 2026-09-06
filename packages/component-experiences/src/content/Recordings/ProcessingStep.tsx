@@ -1,11 +1,11 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { BookText, ImageIcon, Mic } from "lucide-react";
 
-import type { PodcastFormData } from "./types";
-import { PodcastWorkflowStep } from "./workflow";
+import type { RecordingFormData } from "./types";
+import { RecordingWorkflowStep } from "./workflow";
 
 interface ProcessingStepProps {
-  formData: PodcastFormData;
+  formData: RecordingFormData;
   processingStatus: {
     transcribing: boolean;
     summarizing: boolean;
@@ -22,8 +22,8 @@ interface ProcessingStepProps {
     generatingImage: boolean;
   };
   handleRetry: (process: "transcribe" | "summarise" | "generate-image") => void;
-  setCurrentStep: (step: PodcastWorkflowStep) => void;
-  uploadedPodcastId: string;
+  setCurrentStep: (step: RecordingWorkflowStep) => void;
+  uploadedRecordingId: string;
   basePath: string;
   navigate: (path: string) => void;
 }
@@ -35,7 +35,7 @@ export function ProcessingStep({
   processingComplete,
   handleRetry,
   setCurrentStep,
-  uploadedPodcastId,
+  uploadedRecordingId,
   basePath,
   navigate,
 }: ProcessingStepProps) {
@@ -43,7 +43,7 @@ export function ProcessingStep({
 
   return (
     <div className="border-border bg-surface rounded-lg border p-6">
-      <h2 className="text-xl font-semibold mb-6 text-foreground">Processing Your Podcast</h2>
+      <h2 className="text-xl font-semibold mb-6 text-foreground">Processing Your Recording</h2>
 
       <div className="space-y-6">
         {formData.transcribe && (
@@ -118,7 +118,7 @@ export function ProcessingStep({
                     {processingErrors.summarizing}
                   </span>
                 ) : processingStatus.summarizing ? (
-                  "Creating a summary of your podcast..."
+                  "Creating a summary of your recording..."
                 ) : processingComplete.summarizing ? (
                   "Summary generation complete"
                 ) : !processingComplete.transcribing && formData.transcribe ? (
@@ -169,7 +169,7 @@ export function ProcessingStep({
                     {processingErrors.generatingImage}
                   </span>
                 ) : processingStatus.generatingImage ? (
-                  "Creating a cover image for your podcast..."
+                  "Creating a cover image for your recording..."
                 ) : processingComplete.generatingImage ? (
                   "Image generation complete"
                 ) : (!processingComplete.summarizing && formData.summarise) ||
@@ -205,17 +205,17 @@ export function ProcessingStep({
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => setCurrentStep(PodcastWorkflowStep.Process)}
+                onClick={() => setCurrentStep(RecordingWorkflowStep.Process)}
               >
                 Back to Options
               </Button>
               <Button
                 type="button"
                 variant="primary"
-                onClick={() => navigate(`${basePath}/${uploadedPodcastId}`)}
-                disabled={!uploadedPodcastId}
+                onClick={() => navigate(`${basePath}/${uploadedRecordingId}`)}
+                disabled={!uploadedRecordingId}
               >
-                Continue to Podcast
+                Continue to Recording
               </Button>
             </div>
           </div>

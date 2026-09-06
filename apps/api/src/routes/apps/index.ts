@@ -10,8 +10,8 @@ import drawing from "./drawing";
 import embeddings from "./embeddings";
 import notes from "./notes";
 import ocrBatches from "./ocr-batches";
-import podcasts from "./podcasts";
 import recipes from "./recipes";
+import recordings from "./recordings";
 import replicate from "./replicate";
 import retrieval from "./retrieval";
 import sandbox from "./sandbox";
@@ -33,7 +33,7 @@ app.route("/embeddings", embeddings);
 
 app.route("/drawing", drawing);
 
-app.route("/podcasts", podcasts);
+app.route("/recordings", recordings);
 
 app.route("/articles", articles);
 

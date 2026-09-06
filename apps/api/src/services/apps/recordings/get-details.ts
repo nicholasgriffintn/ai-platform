@@ -1,4 +1,4 @@
-import type { Podcast } from "@ngriffin_uk/polychat-schemas";
+import type { Recording } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
@@ -6,15 +6,15 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { safeParseJson } from "../../../utils/json";
 
-export interface IPodcastDetailRequest {
+export interface IRecordingDetailRequest {
   context?: ServiceContext;
   env?: IEnv;
-  podcastId: string;
+  recordingId: string;
   user: IUser;
   projectId?: string;
 }
 
-interface PodcastItem {
+interface RecordingItem {
   id: string;
   items?: {
     upload?: Array<{ data: Record<string, any> }>;
@@ -24,8 +24,8 @@ interface PodcastItem {
   };
 }
 
-export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<Podcast> => {
-  const { env, context, podcastId, user, projectId } = req;
+export const handleRecordingDetail = async (req: IRecordingDetailRequest): Promise<Recording> => {
+  const { env, context, recordingId, user, projectId } = req;
 
   if (!user?.id) {
     throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
@@ -37,36 +37,36 @@ export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<P
   const repositories = serviceContext.repositories;
 
   const appDataItems = projectId
-    ? await repositories.outputs.listProjectOutputGroup(projectId, "podcasts", podcastId)
-    : await repositories.outputs.listPersonalOutputGroup(user.id, "podcasts", podcastId);
+    ? await repositories.outputs.listProjectOutputGroup(projectId, "recordings", recordingId)
+    : await repositories.outputs.listPersonalOutputGroup(user.id, "recordings", recordingId);
 
   if (!appDataItems || appDataItems.length === 0) {
-    throw new AssistantError("Podcast not found", ErrorType.NOT_FOUND);
+    throw new AssistantError("Recording not found", ErrorType.NOT_FOUND);
   }
 
-  const podcastData: PodcastItem = { id: podcastId, items: {} };
+  const recordingData: RecordingItem = { id: recordingId, items: {} };
 
   for (const appData of appDataItems) {
     const itemType = appData.kind;
     const data = safeParseJson<Record<string, any>>(appData.content) ?? {};
 
-    if (!podcastData.items) {
-      podcastData.items = {};
+    if (!recordingData.items) {
+      recordingData.items = {};
     }
 
-    if (!podcastData.items[itemType]) {
-      podcastData.items[itemType] = [];
+    if (!recordingData.items[itemType]) {
+      recordingData.items[itemType] = [];
     }
 
-    podcastData.items[itemType]!.push({ data });
+    recordingData.items[itemType]!.push({ data });
   }
 
-  const uploads = podcastData.items?.upload || [];
-  const transcriptions = podcastData.items?.transcribe || [];
-  const summaries = podcastData.items?.summary || [];
-  const images = podcastData.items?.image || [];
+  const uploads = recordingData.items?.upload || [];
+  const transcriptions = recordingData.items?.transcribe || [];
+  const summaries = recordingData.items?.summary || [];
+  const images = recordingData.items?.image || [];
 
-  let status = "processing" as Podcast["status"];
+  let status = "processing" as Recording["status"];
 
   if (images.length > 0) {
     status = "complete";
@@ -78,9 +78,9 @@ export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<P
 
   const uploadData = uploads[0]?.data || {};
 
-  const podcast: Podcast = {
-    id: podcastData.id,
-    title: uploadData.title || "Untitled Podcast",
+  const recording: Recording = {
+    id: recordingData.id,
+    title: uploadData.title || "Untitled Recording",
     description: uploadData.description,
     createdAt: uploadData.createdAt || new Date().toISOString(),
     imageUrl: images.length > 0 ? images[0].data.imageUrl : undefined,
@@ -92,5 +92,5 @@ export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<P
     status,
   };
 
-  return podcast;
+  return recording;
 };

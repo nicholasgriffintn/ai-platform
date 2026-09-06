@@ -22,10 +22,10 @@ import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { InfraReconciliationHandler } from "./handlers/InfraReconciliationHandler";
 import { MemorySynthesisHandler } from "./handlers/MemorySynthesisHandler";
 import { OcrBatchPollingHandler } from "./handlers/OcrBatchPollingHandler";
-import { PodcastTranscriptionPollingHandler } from "./handlers/PodcastTranscriptionPollingHandler";
 import { ProjectTaskRunHandler } from "./handlers/ProjectTaskRunHandler";
 import { RealtimeReconciliationHandler } from "./handlers/RealtimeReconciliationHandler";
 import { RecipeExecutionHandler } from "./handlers/RecipeExecutionHandler";
+import { RecordingTranscriptionPollingHandler } from "./handlers/RecordingTranscriptionPollingHandler";
 import { ReplicatePollingHandler } from "./handlers/ReplicatePollingHandler";
 import { ResearchPollingHandler } from "./handlers/ResearchPollingHandler";
 import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
@@ -46,7 +46,7 @@ export function createTaskHandlers(): Map<TaskType, TaskHandler> {
     ["research_polling", new ResearchPollingHandler()],
     ["replicate_polling", new ReplicatePollingHandler()],
     ["async_message_polling", new AsyncMessagePollingHandler()],
-    ["podcast_transcription_polling", new PodcastTranscriptionPollingHandler()],
+    ["recording_transcription_polling", new RecordingTranscriptionPollingHandler()],
     ["training_quality_scoring", new TrainingQualityHandler()],
     ["recipe_execution", new RecipeExecutionHandler()],
     ["inbound_message", new InboundMessageHandler()],

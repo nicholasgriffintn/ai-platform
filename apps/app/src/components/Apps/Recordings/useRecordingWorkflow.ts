@@ -1,19 +1,19 @@
 import {
-  type PodcastFormData,
-  PodcastWorkflowStep,
+  type RecordingFormData,
+  RecordingWorkflowStep,
 } from "@ngriffin_uk/polychat-component-experiences/content";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { useProcessPodcast, useUploadPodcast } from "~/hooks/usePodcasts";
+import { useProcessRecording, useUploadRecording } from "~/hooks/useRecordings";
 import { getErrorMessage } from "~/lib/errors";
 
-type PodcastProcess = "transcribe" | "summarise" | "generate-image";
+type RecordingProcess = "transcribe" | "summarise" | "generate-image";
 type ProcessingKey = "transcribing" | "summarizing" | "generatingImage";
 type ProcessingStatus = Record<ProcessingKey, boolean>;
 type ProcessingErrors = Record<ProcessingKey, string | null>;
 
-const INITIAL_FORM_DATA: PodcastFormData = {
+const INITIAL_FORM_DATA: RecordingFormData = {
   title: "",
   description: "",
   audioFile: null,
@@ -23,7 +23,7 @@ const INITIAL_FORM_DATA: PodcastFormData = {
   summarise: true,
   generateImage: true,
   imagePrompt: "",
-  transcribePrompt: "Transcribe this podcast",
+  transcribePrompt: "Transcribe this recording",
   numberOfSpeakers: 2,
   speakers: { "1": "Speaker 1", "2": "Speaker 2" },
 };
@@ -40,7 +40,7 @@ const EMPTY_ERRORS: ProcessingErrors = {
   generatingImage: null,
 };
 
-function getProcessingKey(process: PodcastProcess): ProcessingKey {
+function getProcessingKey(process: RecordingProcess): ProcessingKey {
   if (process === "transcribe") {
     return "transcribing";
   }
@@ -53,7 +53,7 @@ function getProcessingKey(process: PodcastProcess): ProcessingKey {
 }
 
 function allRequestedProcessesComplete(
-  formData: PodcastFormData,
+  formData: RecordingFormData,
   complete: ProcessingStatus,
 ): boolean {
   return (
@@ -63,17 +63,17 @@ function allRequestedProcessesComplete(
   );
 }
 
-export function usePodcastWorkflow(basePath: string, projectId?: string) {
+export function useRecordingWorkflow(basePath: string, projectId?: string) {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(PodcastWorkflowStep.Upload);
-  const [formData, setFormData] = useState<PodcastFormData>(INITIAL_FORM_DATA);
-  const [uploadedPodcastId, setUploadedPodcastId] = useState("");
+  const [currentStep, setCurrentStep] = useState(RecordingWorkflowStep.Upload);
+  const [formData, setFormData] = useState<RecordingFormData>(INITIAL_FORM_DATA);
+  const [uploadedRecordingId, setUploadedRecordingId] = useState("");
   const [processingStatus, setProcessingStatus] = useState(EMPTY_STATUS);
   const [processingErrors, setProcessingErrors] = useState(EMPTY_ERRORS);
   const [processingComplete, setProcessingComplete] = useState(EMPTY_STATUS);
   const [workflowError, setWorkflowError] = useState<string | null>(null);
-  const uploadPodcast = useUploadPodcast(projectId);
-  const processPodcast = useProcessPodcast(projectId);
+  const uploadRecording = useUploadRecording(projectId);
+  const processRecording = useProcessRecording(projectId);
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -142,25 +142,25 @@ export function usePodcastWorkflow(basePath: string, projectId?: string) {
 
     setWorkflowError(null);
     try {
-      const result = await uploadPodcast.mutateAsync({
+      const result = await uploadRecording.mutateAsync({
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
         ...(formData.audioSource === "file"
           ? { audio: formData.audioFile ?? undefined }
           : { audioUrl: formData.audioUrl.trim() }),
       });
-      const podcastId = result.response.completion_id;
+      const recordingId = result.response.completion_id;
 
-      setUploadedPodcastId(podcastId);
-      setCurrentStep(PodcastWorkflowStep.Process);
+      setUploadedRecordingId(recordingId);
+      setCurrentStep(RecordingWorkflowStep.Process);
     } catch (error) {
       setWorkflowError(getErrorMessage(error, "Upload failed."));
     }
-  }, [formData, uploadPodcast]);
+  }, [formData, uploadRecording]);
 
   const runProcess = useCallback(
-    async (process: PodcastProcess): Promise<boolean> => {
-      if (!uploadedPodcastId) {
+    async (process: RecordingProcess): Promise<boolean> => {
+      if (!uploadedRecordingId) {
         return false;
       }
 
@@ -169,8 +169,8 @@ export function usePodcastWorkflow(basePath: string, projectId?: string) {
       setProcessingErrors((current) => ({ ...current, [key]: null }));
       setProcessingStatus((current) => ({ ...current, [key]: true }));
       try {
-        await processPodcast.mutateAsync({
-          podcastId: uploadedPodcastId,
+        await processRecording.mutateAsync({
+          recordingId: uploadedRecordingId,
           action: process,
           ...(process === "transcribe"
             ? {
@@ -195,18 +195,18 @@ export function usePodcastWorkflow(basePath: string, projectId?: string) {
         setProcessingStatus((current) => ({ ...current, [key]: false }));
       }
     },
-    [formData, processPodcast, uploadedPodcastId],
+    [formData, processRecording, uploadedRecordingId],
   );
 
   const process = useCallback(async () => {
-    if (!uploadedPodcastId) {
+    if (!uploadedRecordingId) {
       return;
     }
 
     setProcessingErrors(EMPTY_ERRORS);
     setProcessingComplete(EMPTY_STATUS);
-    setCurrentStep(PodcastWorkflowStep.Processing);
-    const requested: PodcastProcess[] = [
+    setCurrentStep(RecordingWorkflowStep.Processing);
+    const requested: RecordingProcess[] = [
       ...(formData.transcribe ? (["transcribe"] as const) : []),
       ...(formData.summarise ? (["summarise"] as const) : []),
       ...(formData.generateImage ? (["generate-image"] as const) : []),
@@ -218,11 +218,11 @@ export function usePodcastWorkflow(basePath: string, projectId?: string) {
       }
     }
 
-    void navigate(`${basePath}/${uploadedPodcastId}`);
-  }, [basePath, formData, navigate, runProcess, uploadedPodcastId]);
+    void navigate(`${basePath}/${uploadedRecordingId}`);
+  }, [basePath, formData, navigate, runProcess, uploadedRecordingId]);
 
   const retry = useCallback(
-    async (processToRetry: PodcastProcess) => {
+    async (processToRetry: RecordingProcess) => {
       if (!(await runProcess(processToRetry))) {
         return;
       }
@@ -233,23 +233,23 @@ export function usePodcastWorkflow(basePath: string, projectId?: string) {
       };
 
       if (allRequestedProcessesComplete(formData, complete)) {
-        void navigate(`${basePath}/${uploadedPodcastId}`);
+        void navigate(`${basePath}/${uploadedRecordingId}`);
       }
     },
-    [basePath, formData, navigate, processingComplete, runProcess, uploadedPodcastId],
+    [basePath, formData, navigate, processingComplete, runProcess, uploadedRecordingId],
   );
 
   return {
     currentStep,
     formData,
-    isProcessing: processPodcast.isPending,
-    isUploading: uploadPodcast.isPending,
+    isProcessing: processRecording.isPending,
+    isUploading: uploadRecording.isPending,
     processingComplete,
     processingErrors,
     processingStatus,
     setCurrentStep,
     setFormData,
-    uploadedPodcastId,
+    uploadedRecordingId,
     workflowError,
     actions: {
       handleChange,

@@ -1,4 +1,4 @@
-export interface PodcastFormData {
+export interface RecordingFormData {
   title: string;
   description: string;
   audioFile: File | null;
@@ -13,7 +13,7 @@ export interface PodcastFormData {
   speakers: Record<string, string>;
 }
 
-export interface UploadPodcastParams {
+export interface UploadRecordingParams {
   title: string;
   description?: string;
   audio?: File;
@@ -37,8 +37,8 @@ export interface UploadResponse {
   };
 }
 
-export interface ProcessPodcastParams {
-  podcastId: string;
+export interface ProcessRecordingParams {
+  recordingId: string;
   action: "transcribe" | "summarise" | "generate-image";
   prompt?: string;
   numberOfSpeakers?: number;

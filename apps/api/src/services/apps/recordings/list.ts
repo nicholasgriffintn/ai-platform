@@ -1,4 +1,4 @@
-import type { PodcastListItem } from "@ngriffin_uk/polychat-schemas";
+import type { RecordingListItem } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
@@ -6,14 +6,14 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { safeParseJson } from "../../../utils/json";
 
-export interface IPodcastListRequest {
+export interface IRecordingListRequest {
   context?: ServiceContext;
   env?: IEnv;
   user: IUser;
   projectId?: string;
 }
 
-interface PodcastItem {
+interface RecordingItem {
   id: string;
   items?: {
     upload?: Array<{ data: Record<string, any> }>;
@@ -23,7 +23,9 @@ interface PodcastItem {
   };
 }
 
-export const handlePodcastList = async (req: IPodcastListRequest): Promise<PodcastListItem[]> => {
+export const handleRecordingList = async (
+  req: IRecordingListRequest,
+): Promise<RecordingListItem[]> => {
   const { env, context, user, projectId } = req;
 
   if (!user?.id) {
@@ -36,14 +38,14 @@ export const handlePodcastList = async (req: IPodcastListRequest): Promise<Podca
   const repositories = serviceContext.repositories;
 
   const appDataList = projectId
-    ? await repositories.outputs.listProjectOutputs(projectId, "podcasts")
-    : await repositories.outputs.listPersonalOutputs(user.id, "podcasts");
+    ? await repositories.outputs.listProjectOutputs(projectId, "recordings")
+    : await repositories.outputs.listPersonalOutputs(user.id, "recordings");
 
   if (!appDataList || appDataList.length === 0) {
     return [];
   }
 
-  const podcastMap = new Map<string, PodcastItem>();
+  const recordingMap = new Map<string, RecordingItem>();
 
   for (const appData of appDataList) {
     if (!appData.group_id) {
@@ -54,30 +56,30 @@ export const handlePodcastList = async (req: IPodcastListRequest): Promise<Podca
     const itemType = appData.kind;
     const data = safeParseJson<Record<string, any>>(appData.content) ?? {};
 
-    if (!podcastMap.has(itemId)) {
-      podcastMap.set(itemId, { id: itemId, items: {} });
+    if (!recordingMap.has(itemId)) {
+      recordingMap.set(itemId, { id: itemId, items: {} });
     }
 
-    const podcast = podcastMap.get(itemId);
+    const recording = recordingMap.get(itemId);
 
-    if (!podcast.items) {
-      podcast.items = {};
+    if (!recording.items) {
+      recording.items = {};
     }
 
-    if (!podcast.items[itemType]) {
-      podcast.items[itemType] = [];
+    if (!recording.items[itemType]) {
+      recording.items[itemType] = [];
     }
 
-    podcast.items[itemType]!.push({ data });
+    recording.items[itemType]!.push({ data });
   }
 
-  const podcasts = Array.from(podcastMap.values()).map((podcast) => {
-    const uploads = podcast.items?.upload || [];
-    const transcriptions = podcast.items?.transcribe || [];
-    const summaries = podcast.items?.summary || [];
-    const images = podcast.items?.image || [];
+  const recordings = Array.from(recordingMap.values()).map((recording) => {
+    const uploads = recording.items?.upload || [];
+    const transcriptions = recording.items?.transcribe || [];
+    const summaries = recording.items?.summary || [];
+    const images = recording.items?.image || [];
 
-    let status = "processing" as PodcastListItem["status"];
+    let status = "processing" as RecordingListItem["status"];
 
     if (images.length > 0) {
       status = "complete";
@@ -90,8 +92,8 @@ export const handlePodcastList = async (req: IPodcastListRequest): Promise<Podca
     const uploadData = uploads[0]?.data || {};
 
     return {
-      id: podcast.id,
-      title: uploadData.title || "Untitled Podcast",
+      id: recording.id,
+      title: uploadData.title || "Untitled Recording",
       createdAt: uploadData.createdAt || new Date().toISOString(),
       imageUrl: images[0]?.data?.imageUrl,
       duration: uploadData.duration,
@@ -99,5 +101,5 @@ export const handlePodcastList = async (req: IPodcastListRequest): Promise<Podca
     };
   });
 
-  return podcasts;
+  return recordings;
 };

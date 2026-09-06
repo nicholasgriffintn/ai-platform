@@ -1,7 +1,7 @@
 import { ButtonLink, Card, Link } from "@ngriffin_uk/polychat-component-ui";
 import { Plus } from "lucide-react";
 
-export interface PodcastSummary {
+export interface RecordingSummary {
   id: string;
   title: string;
   status?: string;
@@ -10,21 +10,21 @@ export interface PodcastSummary {
   href: string;
 }
 
-export interface PodcastCardGridProps {
-  podcasts: PodcastSummary[];
-  newPodcastHref: string;
+export interface RecordingCardGridProps {
+  recordings: RecordingSummary[];
+  newRecordingHref: string;
 }
 
-export function PodcastCardGrid({ podcasts, newPodcastHref }: PodcastCardGridProps) {
+export function RecordingCardGrid({ recordings, newRecordingHref }: RecordingCardGridProps) {
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <ButtonLink variant="primary" icon={<Plus size={16} />} href={newPodcastHref}>
-          New podcast
+        <ButtonLink variant="primary" icon={<Plus size={16} />} href={newRecordingHref}>
+          New recording
         </ButtonLink>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {podcasts.map((item) => (
+        {recordings.map((item) => (
           <Link key={item.id} href={item.href} className="group no-underline hover:!no-underline">
             <Card className="h-full gap-3 p-5 shadow-none hover:border-border-strong">
               <div className="bg-selection aspect-video overflow-hidden rounded-lg">

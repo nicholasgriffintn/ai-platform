@@ -8,28 +8,28 @@ import { getLogger } from "~/utils/logger";
 
 import { safeParseJson } from "../../../utils/json";
 
-const logger = getLogger({ prefix: "services/apps/podcast/generate-image" });
+const logger = getLogger({ prefix: "services/apps/recording/generate-image" });
 
-export interface IPodcastGenerateImageBody {
-  podcastId: string;
+export interface IRecordingGenerateImageBody {
+  recordingId: string;
 }
 
 type GenerateImageRequest = {
   context?: ServiceContext;
   env?: IEnv;
-  request: IPodcastGenerateImageBody;
+  request: IRecordingGenerateImageBody;
   user: IUser;
   app_url?: string;
   projectId?: string;
 };
 
-export const handlePodcastGenerateImage = async (
+export const handleRecordingGenerateImage = async (
   req: GenerateImageRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
   const { request, context, env, user, projectId } = req;
 
-  if (!request.podcastId) {
-    throw new AssistantError("Missing podcast id", ErrorType.PARAMS_ERROR);
+  if (!request.recordingId) {
+    throw new AssistantError("Missing recording id", ErrorType.PARAMS_ERROR);
   }
 
   try {
@@ -46,14 +46,14 @@ export const handlePodcastGenerateImage = async (
     const existingImages = projectId
       ? await repositories.outputs.listProjectOutputGroup(
           projectId,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "image",
         )
       : await repositories.outputs.listPersonalOutputGroup(
           user.id,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "image",
         );
 
@@ -62,7 +62,7 @@ export const handlePodcastGenerateImage = async (
 
       return {
         status: "success",
-        content: `Podcast Featured Image: [${imageData.imageId}](${imageData.imageUrl})`,
+        content: `Recording Featured Image: [${imageData.imageId}](${imageData.imageUrl})`,
         data: {
           imageUrl: imageData.imageUrl,
           imageKey: imageData.imageKey,
@@ -73,24 +73,24 @@ export const handlePodcastGenerateImage = async (
     const summaryData = projectId
       ? await repositories.outputs.listProjectOutputGroup(
           projectId,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "summary",
         )
       : await repositories.outputs.listPersonalOutputGroup(
           user.id,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "summary",
         );
 
     if (summaryData.length === 0) {
-      throw new AssistantError("Podcast summary not found. Please summarize podcast first");
+      throw new AssistantError("Recording summary not found. Please summarize recording first");
     }
 
     const parsedSummaryData = safeParseJson<Record<string, any>>(summaryData[0].content) ?? {};
     const summaryContent = parsedSummaryData.summary || parsedSummaryData.description;
-    const summary = `I need a featured image for my latest podcast episode, this is the summary: ${summaryContent}`;
+    const summary = `I need a featured image for my latest recording episode, this is the summary: ${summaryContent}`;
 
     const data = await runtimeEnv.AI.run(
       "@cf/bytedance/stable-diffusion-xl-lightning",
@@ -114,7 +114,7 @@ export const handlePodcastGenerateImage = async (
     }
 
     const imageId = generateId();
-    const imageKey = `podcasts/${imageId}/featured.png`;
+    const imageKey = `recordings/${imageId}/featured.png`;
 
     const reader = data.getReader();
     const chunks = [];
@@ -147,10 +147,10 @@ export const handlePodcastGenerateImage = async (
       data: arrayBuffer,
       createdByUserId: user.id,
       projectId,
-      capabilityId: "podcasts",
-      groupId: request.podcastId,
+      capabilityId: "recordings",
+      groupId: request.recordingId,
       kind: "image",
-      title: "Podcast featured image",
+      title: "Recording featured image",
       content: appData,
       mimeType: "image/png",
       filename: "featured.png",
@@ -174,13 +174,13 @@ export const handlePodcastGenerateImage = async (
 
     return {
       status: "success",
-      content: `Podcast Featured Image Uploaded: [${imageId}](${storedImage.url})`,
+      content: `Recording Featured Image Uploaded: [${imageId}](${storedImage.url})`,
       data: appData,
     };
   } catch (error) {
-    logger.error("Failed to generate podcast image:", {
+    logger.error("Failed to generate recording image:", {
       error_message: error instanceof Error ? error.message : "Unknown error",
     });
-    throw new AssistantError("Failed to generate podcast image");
+    throw new AssistantError("Failed to generate recording image");
   }
 };

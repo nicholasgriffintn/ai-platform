@@ -18,11 +18,13 @@ export type UploadRequest = {
   projectId?: string;
 };
 
-interface IPodcastUploadResponse extends IFunctionResponse {
+interface IRecordingUploadResponse extends IFunctionResponse {
   completion_id?: string;
 }
 
-export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastUploadResponse> => {
+export const handleRecordingUpload = async (
+  req: UploadRequest,
+): Promise<IRecordingUploadResponse> => {
   const { env, context, request, user, projectId } = req;
 
   if (!user?.id) {
@@ -33,13 +35,13 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 
   serviceContext.ensureDatabase();
   const repositories = serviceContext.repositories;
-  const podcastId = generateId();
+  const recordingId = generateId();
 
   const sanitisedTitle = sanitiseInput(request.title);
   const sanitisedDescription = sanitiseInput(request.description);
 
   if (!request.audioUrl) {
-    const podcastAudioKey = `podcasts/${podcastId}/recording.mp3`;
+    const recordingAudioKey = `recordings/${recordingId}/recording.mp3`;
 
     if (!request.audio) {
       throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
@@ -54,25 +56,25 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
       audioByteSize = arrayBuffer.byteLength;
 
       storedAudio = await StorageService.forPrivateAssets(serviceContext).storeSourceFile({
-        key: podcastAudioKey,
+        key: recordingAudioKey,
         data: arrayBuffer,
         createdByUserId: user.id,
         projectId,
-        title: sanitisedTitle || request.audio.name || "Podcast recording",
+        title: sanitisedTitle || request.audio.name || "Recording recording",
         mimeType: "audio/mpeg",
         filename: "recording.mp3",
         byteSize: audioByteSize,
       });
     } catch {
-      throw new AssistantError("Failed to upload podcast", ErrorType.UNKNOWN_ERROR);
+      throw new AssistantError("Failed to upload recording", ErrorType.UNKNOWN_ERROR);
     }
 
     const appData = {
-      title: sanitisedTitle || "Untitled Podcast",
+      title: sanitisedTitle || "Untitled Recording",
       description: sanitisedDescription,
       audioSourceId: storedAudio.sourceId,
       audioUrl: storedAudio.url,
-      audioKey: podcastAudioKey,
+      audioKey: recordingAudioKey,
       status: "ready",
       createdAt: new Date().toISOString(),
     };
@@ -80,12 +82,12 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
     const output = await repositories.outputs.createOutput({
       createdByUserId: user.id,
       projectId,
-      capabilityId: "podcasts",
-      groupId: podcastId,
+      capabilityId: "recordings",
+      groupId: recordingId,
       kind: "upload",
       title: appData.title,
       content: appData,
-      storageKey: podcastAudioKey,
+      storageKey: recordingAudioKey,
       mimeType: "audio/mpeg",
       filename: "recording.mp3",
       byteSize: audioByteSize,
@@ -95,14 +97,14 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 
     return {
       status: "success",
-      content: `Podcast Upload: [Listen Here](${storedAudio.url})`,
-      completion_id: podcastId,
+      content: `Recording Upload: [Listen Here](${storedAudio.url})`,
+      completion_id: recordingId,
       data: appData,
     };
   }
 
   const appData = {
-    title: sanitisedTitle || "Untitled Podcast",
+    title: sanitisedTitle || "Untitled Recording",
     description: sanitisedDescription,
     audioUrl: request.audioUrl,
     status: "ready",
@@ -112,8 +114,8 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
   await repositories.outputs.createOutput({
     createdByUserId: user.id,
     projectId,
-    capabilityId: "podcasts",
-    groupId: podcastId,
+    capabilityId: "recordings",
+    groupId: recordingId,
     kind: "upload",
     title: appData.title,
     content: appData,
@@ -121,8 +123,8 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 
   return {
     status: "success",
-    content: `Podcast Upload: [Listen Here](${request.audioUrl})`,
-    completion_id: podcastId,
+    content: `Recording Upload: [Listen Here](${request.audioUrl})`,
+    completion_id: recordingId,
     data: appData,
   };
 };
