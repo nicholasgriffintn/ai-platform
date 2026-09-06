@@ -47,7 +47,7 @@ export function ArtifactSandbox({
 }) {
   if (!code) {
     return (
-      <div className="flex items-center justify-center h-full w-full bg-surface p-4 text-sm text-muted-foreground">
+      <div className="flex h-full w-full items-center justify-center bg-surface p-4 text-sm text-muted-foreground">
         No code to display
       </div>
     );

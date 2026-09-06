@@ -838,7 +838,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                 type="button"
                 onClick={() => (onStopResponse ? onStopResponse() : controller?.abort())}
                 variant="icon"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer rounded-md p-2"
+                className="cursor-pointer rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 title="Stop generating"
                 aria-label="Stop generating"
               >
@@ -902,7 +902,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                     type="submit"
                     onClick={() => void submitSelectedAttachments()}
                     disabled={isComposerSubmitDisabled}
-                    className="bg-human-action text-human-action-foreground hover:bg-human-action/90 cursor-pointer rounded-md p-2.5 shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer rounded-md bg-human-action p-2.5 text-human-action-foreground shadow-sm transition-colors hover:bg-human-action/90 disabled:cursor-not-allowed disabled:opacity-50"
                     title={isSteering ? "Send instruction" : "Send message"}
                     aria-label={isSteering ? "Send instruction" : "Send message"}
                   >

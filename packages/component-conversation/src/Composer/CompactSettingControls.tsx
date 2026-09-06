@@ -39,7 +39,7 @@ export function CompactSettingSelect({
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
         aria-describedby={descriptionId}
-        className="border-border bg-surface text-foreground focus:border-active-work h-9 w-full rounded-md border px-2.5 text-sm outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+        className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-foreground transition-colors outline-none focus:border-active-work disabled:cursor-not-allowed disabled:opacity-60"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -97,7 +97,7 @@ export function CompactSettingNumber({
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
           aria-describedby={descriptionId}
-          className="border-border bg-surface text-foreground focus:border-active-work h-8 w-28 rounded-md border px-2 text-right text-sm outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-8 w-28 rounded-md border border-border bg-surface px-2 text-right text-sm text-foreground transition-colors outline-none focus:border-active-work disabled:cursor-not-allowed disabled:opacity-60"
         />
       </div>
       {description && (
@@ -183,7 +183,7 @@ export function CompactSettingRange({
         />
         <div
           className={cn(
-            "pointer-events-none absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-active-work",
+            "pointer-events-none absolute top-1/2 left-0 h-1.5 -translate-y-1/2 rounded-full bg-active-work",
             isAutomatic && "opacity-40",
           )}
           style={{ width: `${percentage}%` }}

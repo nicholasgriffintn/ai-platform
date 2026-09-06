@@ -71,7 +71,7 @@ export function ConversationListItemActions({
         trigger={
           <button
             type="button"
-            className="text-muted-foreground hover:bg-selection hover:text-foreground data-[state=open]:bg-selection data-[state=open]:text-foreground focus-visible:outline-ring flex size-8 items-center justify-center rounded-lg border-0 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="flex size-8 items-center justify-center rounded-lg border-0 text-muted-foreground transition-colors hover:bg-selection hover:text-foreground focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=open]:bg-selection data-[state=open]:text-foreground"
             aria-label="Conversation actions"
             title="Conversation actions"
             onClick={(event) => event.stopPropagation()}

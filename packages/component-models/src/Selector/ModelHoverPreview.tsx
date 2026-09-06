@@ -102,7 +102,7 @@ export function ModelHoverPreview({
       role="tooltip"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onDismiss}
-      className="border-border bg-surface-elevated fixed z-[70] overflow-y-auto rounded-xl border p-3 shadow-[var(--polychat-elevated-shadow)] backdrop-blur-sm"
+      className="fixed z-[70] overflow-y-auto rounded-xl border border-border bg-surface-elevated p-3 shadow-[var(--polychat-elevated-shadow)] backdrop-blur-sm"
     >
       <div className="mb-3 rounded-lg border border-border/70 p-3">
         <div className="flex items-center gap-2">
@@ -113,16 +113,16 @@ export function ModelHoverPreview({
             size={28}
           />
           <div className="min-w-0">
-            <p className="font-semibold text-foreground whitespace-normal break-words">
+            <p className="font-semibold break-words whitespace-normal text-foreground">
               {model.name || model.matchingModel}
             </p>
-            <p className="text-xs text-muted-foreground whitespace-normal break-words">
+            <p className="text-xs break-words whitespace-normal text-muted-foreground">
               {model.provider}
             </p>
           </div>
         </div>
         {model.description && (
-          <p className="mt-2 text-xs text-muted-foreground whitespace-normal break-words">
+          <p className="mt-2 text-xs break-words whitespace-normal text-muted-foreground">
             {model.description}
           </p>
         )}
@@ -136,7 +136,7 @@ export function ModelHoverPreview({
               {featureTags.map((feature) => (
                 <span
                   key={`${model.id}-${feature}`}
-                  className="border-border bg-selection text-foreground rounded-full border px-2 py-0.5 text-[11px]"
+                  className="rounded-full border border-border bg-selection px-2 py-0.5 text-[11px] text-foreground"
                 >
                   {feature}
                 </span>

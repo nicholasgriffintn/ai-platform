@@ -71,7 +71,7 @@ export function AppRoute({
       <PageShell.Header title={title ?? "App"} />
       <BackLink href={backLink.to} label={backLink.label} />
       {definition && (
-        <p className="text-muted-foreground mb-6 max-w-3xl text-sm">{definition.description}</p>
+        <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{definition.description}</p>
       )}
 
       {isLoading ? (

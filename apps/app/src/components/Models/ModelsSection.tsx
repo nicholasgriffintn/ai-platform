@@ -16,17 +16,17 @@ export function ModelsSection({ section, description, aside, children }: ModelsS
     <section
       id={section.id}
       aria-labelledby={headingId}
-      className="border-border scroll-mt-20 space-y-6 border-t py-12 md:py-14"
+      className="scroll-mt-20 space-y-6 border-t border-border py-12 md:py-14"
     >
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-1">
           <h2
             id={headingId}
-            className="font-display text-foreground text-2xl font-medium tracking-tight md:text-3xl"
+            className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl"
           >
             {section.label}
           </h2>
-          <p className="text-muted-foreground max-w-prose text-sm leading-relaxed md:text-base">
+          <p className="max-w-prose text-sm leading-relaxed text-muted-foreground md:text-base">
             {description}
           </p>
         </div>

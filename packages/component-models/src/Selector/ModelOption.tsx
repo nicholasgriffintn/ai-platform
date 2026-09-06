@@ -95,7 +95,7 @@ export const ModelOption = ({
       onClick={selectModel}
       onKeyDown={handleKeyDown}
       className={cn(
-        "w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-active-work/40",
+        "w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors focus:ring-2 focus:ring-active-work/40 focus:outline-none",
         !disabled ? "cursor-pointer" : "cursor-not-allowed border-border/60 opacity-50",
         isSelected
           ? "border-creative/45 bg-creative/12"
@@ -117,7 +117,7 @@ export const ModelOption = ({
           </div>
           <div className="min-w-0">
             <div className="flex min-h-[1.4rem] flex-wrap items-center gap-1.5">
-              <span className="block min-w-0 font-medium text-foreground whitespace-normal break-words">
+              <span className="block min-w-0 font-medium break-words whitespace-normal text-foreground">
                 {getModelDisplayName(model)}
               </span>
               {!model.isFree && !model.isByokEnabled && (
@@ -126,23 +126,23 @@ export const ModelOption = ({
                 </div>
               )}
               {model.isByokEnabled ? (
-                <span className="rounded-full bg-success/12 px-1.5 py-0.5 text-[10px] font-medium leading-none text-success">
+                <span className="rounded-full bg-success/12 px-1.5 py-0.5 text-[10px] leading-none font-medium text-success">
                   BYOK
                 </span>
               ) : null}
               {isStealthModel(model) ? (
-                <span className="rounded-full bg-attention/12 px-1.5 py-0.5 text-[10px] font-medium leading-none text-attention">
+                <span className="rounded-full bg-attention/12 px-1.5 py-0.5 text-[10px] leading-none font-medium text-attention">
                   Stealth
                 </span>
               ) : null}
             </div>
             {model.description ? (
-              <p className="mt-0.5 text-xs leading-5 text-muted-foreground whitespace-normal break-words">
+              <p className="mt-0.5 text-xs leading-5 break-words whitespace-normal text-muted-foreground">
                 {model.description}
               </p>
             ) : null}
             {model.readiness && model.readiness.state !== "ready" ? (
-              <p className="mt-1 text-xs font-medium leading-5 text-attention whitespace-normal break-words">
+              <p className="mt-1 text-xs leading-5 font-medium break-words whitespace-normal text-attention">
                 {model.readiness.reason}
               </p>
             ) : null}
@@ -171,7 +171,7 @@ export const ModelOption = ({
                   event.stopPropagation();
                   onRegionSelect?.(event.target.value);
                 }}
-                className="border-border bg-surface text-foreground focus:border-active-work h-6 w-full cursor-pointer appearance-none rounded-full border py-0 pr-5 pl-5 text-[11px] font-medium focus:outline-none"
+                className="h-6 w-full cursor-pointer appearance-none rounded-full border border-border bg-surface py-0 pr-5 pl-5 text-[11px] font-medium text-foreground focus:border-active-work focus:outline-none"
               >
                 {regionOptions.map((option) => (
                   <option key={option.id} value={option.id}>

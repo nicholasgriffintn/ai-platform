@@ -18,11 +18,11 @@ export function SidebarHeader({
   onToggleSidebar,
 }: SidebarHeaderProps) {
   return (
-    <div className="bg-sidebar sticky top-0 z-10 h-[53px] w-full">
+    <div className="sticky top-0 z-10 h-[53px] w-full bg-sidebar">
       <div className="flex h-full items-center justify-between px-2">
         <Link
           href={homeHref}
-          className="text-sidebar-foreground hover:text-active-work px-1 text-sm font-semibold no-underline"
+          className="px-1 text-sm font-semibold text-sidebar-foreground no-underline hover:text-active-work"
         >
           {appName}
         </Link>

@@ -66,7 +66,7 @@ export function ArtifactInlinePreview({
       {previewError && (
         <div className="m-3 flex gap-2 rounded-md border border-failure/45 bg-failure/12 p-3 text-sm text-failure">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
-          <pre className="min-w-0 whitespace-pre-wrap text-xs">{previewError}</pre>
+          <pre className="min-w-0 text-xs whitespace-pre-wrap">{previewError}</pre>
         </div>
       )}
 

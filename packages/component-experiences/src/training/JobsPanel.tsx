@@ -60,8 +60,8 @@ export function JobsPanel({
 
   return (
     <>
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,420px)_1fr] gap-6">
-        <Card className="shadow-none h-fit">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,420px)_1fr]">
+        <Card className="h-fit shadow-none">
           <CardHeader>
             <CardTitle>Create job</CardTitle>
           </CardHeader>
@@ -92,7 +92,7 @@ export function JobsPanel({
                     <div key={key} className="rounded-md border border-border p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <div className="font-medium text-foreground truncate">{job.jobName}</div>
+                          <div className="truncate font-medium text-foreground">{job.jobName}</div>
                           <div className="text-xs text-muted-foreground">
                             {job.provider} · {job.modelId}
                           </div>

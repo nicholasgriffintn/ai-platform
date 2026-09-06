@@ -64,7 +64,7 @@ export function ProjectActivityList({
                 {item.capabilityId} · {formatDate(item.updatedAt ?? item.createdAt)}
               </p>
             </div>
-            <span className="text-xs capitalize text-muted-foreground">{item.status}</span>
+            <span className="text-xs text-muted-foreground capitalize">{item.status}</span>
           </div>
         ))}
       </Card>

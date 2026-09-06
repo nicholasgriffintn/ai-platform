@@ -23,7 +23,7 @@ export function ProfileTab({
     <div className="space-y-6">
       <PageShell.Header title={title} actions={actions} actionContent={actionContent} />
       {description ? (
-        <p className="text-muted-foreground max-w-3xl text-sm">{description}</p>
+        <p className="max-w-3xl text-sm text-muted-foreground">{description}</p>
       ) : null}
       {children}
     </div>

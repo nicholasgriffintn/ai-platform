@@ -34,7 +34,7 @@ export function DrawingView({ drawing }: DrawingViewProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2 justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex space-x-2">
           <Button
             variant={activeTab === "transformed" ? "default" : "outline"}
@@ -67,7 +67,7 @@ export function DrawingView({ drawing }: DrawingViewProps) {
         </Button>
       </div>
 
-      <div className="bg-selection relative aspect-video w-full overflow-hidden rounded-lg shadow-md">
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-selection shadow-md">
         <ImageModal
           src={activeTab === "transformed" ? drawing.paintingUrl : drawing.drawingUrl}
           alt={drawing.description || "Drawing"}
@@ -77,7 +77,7 @@ export function DrawingView({ drawing }: DrawingViewProps) {
         />
       </div>
 
-      <div className="bg-surface space-y-4 rounded-lg p-5 shadow">
+      <div className="space-y-4 rounded-lg bg-surface p-5 shadow">
         <div>
           <h2 className="text-lg font-semibold">Description</h2>
           <p className="text-muted-foreground">

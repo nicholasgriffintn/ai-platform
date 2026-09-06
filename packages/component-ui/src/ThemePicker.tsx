@@ -32,22 +32,22 @@ function ThemeComposerPreview({ compact = false }: { compact?: boolean }) {
     <span
       aria-hidden
       className={cn(
-        "bg-surface border-border flex flex-col gap-2 rounded-lg border",
+        "flex flex-col gap-2 rounded-lg border border-border bg-surface",
         compact ? "p-2.5" : "p-3",
       )}
     >
-      <span className="bg-surface-elevated h-1.5 w-3/5 rounded-full" />
-      <span className={cn("text-foreground font-medium", compact ? "text-xs" : "text-sm")}>
+      <span className="h-1.5 w-3/5 rounded-full bg-surface-elevated" />
+      <span className={cn("font-medium text-foreground", compact ? "text-xs" : "text-sm")}>
         What’s on your mind?
       </span>
       {!compact && (
-        <span className="text-muted-foreground text-xs leading-snug">
+        <span className="text-xs leading-snug text-muted-foreground">
           Bring a question, a rough idea, or something to work through.
         </span>
       )}
       <span className="flex items-center gap-1.5">
-        <span className="bg-surface-elevated border-border h-6 flex-1 rounded-md border" />
-        <span className="bg-human-action h-6 w-6 rounded-md" />
+        <span className="h-6 flex-1 rounded-md border border-border bg-surface-elevated" />
+        <span className="h-6 w-6 rounded-md bg-human-action" />
       </span>
     </span>
   );
@@ -74,9 +74,9 @@ function ThemeCardHeader({
 }) {
   return (
     <span className="flex items-baseline justify-between gap-3">
-      <span className="text-foreground font-display flex items-center gap-2 text-2xl font-medium tracking-tight">
+      <span className="flex items-center gap-2 font-display text-2xl font-medium tracking-tight text-foreground">
         {label}
-        {isSelected && <Check className="text-active-work h-4 w-4 shrink-0" aria-hidden />}
+        {isSelected && <Check className="h-4 w-4 shrink-0 text-active-work" aria-hidden />}
       </span>
       <span className="polychat-eyebrow">{caption}</span>
     </span>
@@ -103,10 +103,10 @@ function ThemeCardBody({
           caption={`${day.label} · ${night.label}`}
           isSelected={isSelected}
         />
-        <span className="text-muted-foreground text-sm leading-snug">{option.description}</span>
-        <span className="border-border grid grid-cols-2 overflow-hidden rounded-lg border">
+        <span className="text-sm leading-snug text-muted-foreground">{option.description}</span>
+        <span className="grid grid-cols-2 overflow-hidden rounded-lg border border-border">
           {[pair.light, pair.dark].map((id) => (
-            <span key={id} data-polychat-theme={id} className="bg-canvas flex flex-col gap-2 p-2">
+            <span key={id} data-polychat-theme={id} className="flex flex-col gap-2 bg-canvas p-2">
               <ThemeComposerPreview compact />
               <ThemeRoleChips />
             </span>
@@ -125,7 +125,7 @@ function ThemeCardBody({
         caption={`${theme.appearance} · ${theme.themeColor}`}
         isSelected={isSelected}
       />
-      <span className="text-muted-foreground min-h-10 text-sm leading-snug">
+      <span className="min-h-10 text-sm leading-snug text-muted-foreground">
         {option.description}
       </span>
       <ThemeComposerPreview />
@@ -195,11 +195,11 @@ export function ThemePicker({
             key={option.value}
             data-polychat-theme={themeId}
             className={cn(
-              "bg-canvas text-foreground polychat-motion-micro flex flex-col gap-3 rounded-xl border p-4 transition-[outline-color,border-color,transform]",
-              "has-[:focus-visible]:outline-active-work has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2",
+              "polychat-motion-micro flex flex-col gap-3 rounded-xl border bg-canvas p-4 text-foreground transition-[outline-color,border-color,transform]",
+              "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-active-work",
               "motion-safe:hover:-translate-y-0.5",
               isSelected
-                ? "border-active-work outline-active-work outline-2 outline-offset-2"
+                ? "border-active-work outline-2 outline-offset-2 outline-active-work"
                 : "border-border hover:border-border-strong",
             )}
           >

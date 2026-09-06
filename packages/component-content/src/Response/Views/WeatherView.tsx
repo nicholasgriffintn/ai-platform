@@ -56,7 +56,7 @@ export function WeatherView({ data, embedded }: WeatherViewProps) {
                     {formatWeatherTemperature(data.main.temp)}
                   </span>
                 </div>
-                <p className="mt-1 text-sm capitalize text-muted-foreground">
+                <p className="mt-1 text-sm text-muted-foreground capitalize">
                   {condition?.description ?? condition?.main ?? "Current conditions"}
                 </p>
               </div>

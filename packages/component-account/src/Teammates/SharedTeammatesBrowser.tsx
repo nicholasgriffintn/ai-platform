@@ -69,7 +69,7 @@ export function SharedTeammatesBrowser({
         <div className="flex gap-2">
           <FormSelect
             aria-label="Filter shared teammates by category"
-            className="bg-surface h-10 min-w-36"
+            className="h-10 min-w-36 bg-surface"
             value={selectedCategory}
             onChange={(event) => onSelectedCategoryChange(event.target.value)}
             options={[
@@ -79,7 +79,7 @@ export function SharedTeammatesBrowser({
           />
           <FormSelect
             aria-label="Filter shared teammates by tag"
-            className="bg-surface h-10 min-w-32"
+            className="h-10 min-w-32 bg-surface"
             value={selectedTag}
             onChange={(event) => onSelectedTagChange(event.target.value)}
             options={[
@@ -92,7 +92,7 @@ export function SharedTeammatesBrowser({
 
       {showFeatured && (
         <section className="space-y-3">
-          <h3 className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium">
+          <h3 className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
             <Star size={14} className="fill-attention text-attention" />
             Featured
           </h3>
@@ -107,7 +107,7 @@ export function SharedTeammatesBrowser({
       )}
 
       <section className="space-y-3">
-        <h3 className="text-muted-foreground text-sm font-medium">
+        <h3 className="text-sm font-medium text-muted-foreground">
           {isFiltering ? "Results" : "All shared teammates"}
         </h3>
         {isLoadingSharedTeammates ? (

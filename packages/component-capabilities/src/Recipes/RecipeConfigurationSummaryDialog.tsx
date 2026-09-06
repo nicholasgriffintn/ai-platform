@@ -49,7 +49,7 @@ export function RecipeConfigurationSummaryDialog({
                 <dt className="text-xs font-medium text-muted-foreground">
                   {fieldByKey.get(key)?.label ?? key}
                 </dt>
-                <dd className="break-words text-sm text-foreground">
+                <dd className="text-sm break-words text-foreground">
                   {formatRecipeConfigurationSummaryValue(configuration[key])}
                 </dd>
               </div>

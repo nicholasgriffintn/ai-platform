@@ -176,7 +176,7 @@ export function DeploymentCreateForm({
         }))}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <FormInput
           id="deployment-name"
           label="Deployment name"
@@ -193,7 +193,7 @@ export function DeploymentCreateForm({
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <FormSelect
           id="deployment-target"
           label="Deployment target"
@@ -233,7 +233,7 @@ export function DeploymentCreateForm({
       />
 
       {deploymentTarget === "sagemaker-endpoint" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <FormInput
             id="deployment-instance-type"
             label="Instance type"
@@ -252,7 +252,7 @@ export function DeploymentCreateForm({
       )}
 
       {deploymentTarget === "sagemaker-serverless-endpoint" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <FormInput
             id="deployment-serverless-memory"
             label="Memory (MB)"

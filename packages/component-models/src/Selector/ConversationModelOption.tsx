@@ -64,10 +64,10 @@ export function ConversationModelOption({
         />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-medium leading-5 text-foreground whitespace-normal break-words">
+        <span className="block text-sm leading-5 font-medium break-words whitespace-normal text-foreground">
           {displayName}
         </span>
-        <span className="block text-xs leading-4 text-muted-foreground whitespace-normal break-words">
+        <span className="block text-xs leading-4 break-words whitespace-normal text-muted-foreground">
           {model.provider}
         </span>
       </span>

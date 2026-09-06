@@ -20,7 +20,7 @@ export function ProjectHomeHeader({
   return (
     <>
       <PageShell.Header title={project?.name ?? "Project"} actionContent={actions} />
-      <p className="text-muted-foreground mb-6 max-w-2xl text-sm">
+      <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
         {project?.description || "No project description"}
       </p>
       <ProjectHomeTabs workspaceId={workspaceId} projectId={projectId} />

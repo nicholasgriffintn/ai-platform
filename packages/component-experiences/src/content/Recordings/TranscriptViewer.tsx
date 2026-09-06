@@ -58,7 +58,7 @@ export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptVi
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold">Transcript</h3>
         <div className="text-sm text-muted-foreground">
           {transcript.num_speakers ?? uniqueSpeakerCount(transcript.segments)} speakers
@@ -70,10 +70,10 @@ export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptVi
         {transcript.segments.map((segment, index) => (
           <div
             key={index}
-            className={`p-3 rounded-lg border ${speakerColors[getSegmentSpeaker(segment.speaker, index)] || "bg-surface-elevated border-border"}`}
+            className={`rounded-lg border p-3 ${speakerColors[getSegmentSpeaker(segment.speaker, index)] || "border-border bg-surface-elevated"}`}
           >
-            <div className="flex items-center justify-between mb-1">
-              <div className="font-medium text-sm">
+            <div className="mb-1 flex items-center justify-between">
+              <div className="text-sm font-medium">
                 {getSpeakerName(getSegmentSpeaker(segment.speaker, index))}
               </div>
               <div className="text-xs text-muted-foreground">

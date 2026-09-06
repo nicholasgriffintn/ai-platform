@@ -20,9 +20,9 @@ export function CardSkeleton({
   return (
     <>
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="border-border bg-surface rounded-lg border p-6">
+        <div key={index} className="rounded-lg border border-border bg-surface p-6">
           {showHeader && (
-            <div className="flex items-center gap-4 mb-4">
+            <div className="mb-4 flex items-center gap-4">
               <Skeleton className="h-12 w-12 rounded-full" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-5 w-1/3" />
@@ -42,7 +42,7 @@ export function CardSkeleton({
             ))}
           </div>
           {showFooter && (
-            <div className="border-border mt-4 flex gap-2 border-t pt-4">
+            <div className="mt-4 flex gap-2 border-t border-border pt-4">
               <Skeleton className="h-8 w-20" />
               <Skeleton className="h-8 w-20" />
             </div>

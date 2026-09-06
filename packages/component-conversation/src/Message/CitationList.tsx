@@ -27,13 +27,13 @@ export const CitationList = ({ citations, maxDisplayed = 3 }: CitationListProps)
   }
 
   return (
-    <div className="flex items-center mb-2 mt-2">
-      <div className="text-sm text-muted-foreground mr-2">Sources:</div>
+    <div className="mt-2 mb-2 flex items-center">
+      <div className="mr-2 text-sm text-muted-foreground">Sources:</div>
       <div className="flex">
         {displayedCitations.map((url, index) => (
           <div
             key={typeof url === "string" ? url : url.url}
-            className={`flex-shrink-0 -ml-2 first:ml-0 relative ${hoveredIndex === index ? "z-10" : "z-0"} transition-all duration-200`}
+            className={`relative -ml-2 flex-shrink-0 first:ml-0 ${hoveredIndex === index ? "z-10" : "z-0"} transition-all duration-200`}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             title={typeof url === "string" ? url : url.title || url.url}
@@ -42,12 +42,12 @@ export const CitationList = ({ citations, maxDisplayed = 3 }: CitationListProps)
               href={typeof url === "string" ? url : url.url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`block no-underline ${hoveredIndex === index ? "transform scale-125" : ""} transition-all duration-200 ease-in-out`}
+              className={`block no-underline ${hoveredIndex === index ? "scale-125 transform" : ""} transition-all duration-200 ease-in-out`}
               aria-label={`Citation source: ${typeof url === "string" ? url : url.title || url.url}`}
             >
               <Favicon
                 url={typeof url === "string" ? url : url.url}
-                className={`w-6 h-6 rounded-full border border-border bg-surface object-contain p-[2px] ${hoveredIndex === index ? "shadow-md" : ""} `}
+                className={`h-6 w-6 rounded-full border border-border bg-surface object-contain p-[2px] ${hoveredIndex === index ? "shadow-md" : ""} `}
               />
             </a>
           </div>
@@ -57,7 +57,7 @@ export const CitationList = ({ citations, maxDisplayed = 3 }: CitationListProps)
         <button
           type="button"
           onClick={() => setShowAllCitations(!showAllCitations)}
-          className="cursor-pointer ml-1 text-xs text-muted-foreground hover:text-foreground"
+          className="ml-1 cursor-pointer text-xs text-muted-foreground hover:text-foreground"
           aria-label={
             showAllCitations
               ? "Show fewer citations"

@@ -130,7 +130,7 @@ function TierRoleRow({
       </div>
       {selection ? (
         <div className="flex min-w-0 shrink-0 flex-col items-end gap-1 text-right">
-          <span className="text-foreground inline-flex max-w-[12rem] items-center gap-1.5 text-xs font-medium">
+          <span className="inline-flex max-w-[12rem] items-center gap-1.5 text-xs font-medium text-foreground">
             <ModelIcon
               url={selection.config.avatarUrl}
               modelName={getModelDisplayName(selection.config)}
@@ -139,13 +139,13 @@ function TierRoleRow({
             />
             <span className="truncate">{getModelDisplayName(selection.config)}</span>
           </span>
-          <span className="text-muted-foreground font-mono text-[10px] uppercase tracking-wide">
+          <span className="font-mono text-[10px] tracking-wide text-muted-foreground uppercase">
             {selection.config.provider}
             {selection.effort ? ` · ${formatReasoningLabel(selection.effort)}` : ""}
           </span>
         </div>
       ) : (
-        <span className="text-muted-foreground shrink-0 text-xs">Not on your plan yet</span>
+        <span className="shrink-0 text-xs text-muted-foreground">Not on your plan yet</span>
       )}
     </div>
   );
@@ -170,7 +170,7 @@ function TierDetail({
       : definition.description;
 
   return (
-    <div className="border-border bg-surface flex min-h-[17rem] flex-col rounded-lg border p-4">
+    <div className="flex min-h-[17rem] flex-col rounded-lg border border-border bg-surface p-4">
       <div className="flex items-start gap-3">
         <div
           className={cn(
@@ -185,7 +185,7 @@ function TierDetail({
           <p className="mt-1 text-sm leading-5 text-muted-foreground">{description}</p>
         </div>
       </div>
-      <div className="divide-border mt-4 divide-y">
+      <div className="mt-4 divide-y divide-border">
         {MODEL_TIER_ROLES.map((role) => (
           <TierRoleRow
             key={role}
@@ -257,7 +257,7 @@ export function ModelTierPicker({
                 "flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50",
                 isSelected
                   ? tone.selected
-                  : "bg-surface-elevated text-foreground hover:border-border-strong hover:bg-selection/60 border-transparent",
+                  : "border-transparent bg-surface-elevated text-foreground hover:border-border-strong hover:bg-selection/60",
               )}
             >
               <span

@@ -66,25 +66,25 @@ export const EditableMessageContent = ({
         onChange={handleTextareaChange}
         onKeyDown={handleKeyDown}
         disabled={isUpdating}
-        className="resize-none min-h-[80px] min-w-full md:min-w-[460px] focus:ring-2 focus:ring-active-work focus:border-active-work"
+        className="min-h-[80px] min-w-full resize-none focus:border-active-work focus:ring-2 focus:ring-active-work md:min-w-[460px]"
         placeholder="Edit your message..."
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap">
-          Press <kbd className="bg-selection rounded px-1 py-0.5 text-xs">Cmd+Enter</kbd>
+        <span className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+          Press <kbd className="rounded bg-selection px-1 py-0.5 text-xs">Cmd+Enter</kbd>
           to save,
-          <kbd className="bg-selection rounded px-1 py-0.5 text-xs">Esc</kbd>
+          <kbd className="rounded bg-selection px-1 py-0.5 text-xs">Esc</kbd>
           to cancel
         </span>
-        <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:justify-end sm:w-auto">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
           <Button
             type="button"
             variant="secondary"
             size="sm"
             onClick={onCancel}
             disabled={isUpdating}
-            className="flex items-center gap-1 w-full sm:w-auto"
+            className="flex w-full items-center gap-1 sm:w-auto"
           >
             <X size={14} />
             Cancel
@@ -96,7 +96,7 @@ export const EditableMessageContent = ({
             onClick={handleSave}
             disabled={isUpdating || !content.trim()}
             isLoading={isUpdating}
-            className="flex items-center gap-1 w-full sm:w-auto"
+            className="flex w-full items-center gap-1 sm:w-auto"
           >
             <Check size={14} />
             Save

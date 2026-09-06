@@ -175,7 +175,7 @@ export function UserSettingsForm({
       <SettingsSection title="Personalised responses">
         <div className="space-y-4">
           <div>
-            <label htmlFor="nickname" className="block text-sm font-medium text-foreground mb-1">
+            <label htmlFor="nickname" className="mb-1 block text-sm font-medium text-foreground">
               Nickname
             </label>
             <FormInput
@@ -189,7 +189,7 @@ export function UserSettingsForm({
           </div>
 
           <div>
-            <label htmlFor="job_role" className="block text-sm font-medium text-foreground mb-1">
+            <label htmlFor="job_role" className="mb-1 block text-sm font-medium text-foreground">
               Job Role
             </label>
             <FormInput
@@ -203,7 +203,7 @@ export function UserSettingsForm({
           </div>
 
           <div>
-            <label htmlFor="traits" className="block text-sm font-medium text-foreground mb-1">
+            <label htmlFor="traits" className="mb-1 block text-sm font-medium text-foreground">
               Personal Traits
             </label>
             <Textarea
@@ -217,7 +217,7 @@ export function UserSettingsForm({
           </div>
 
           <div>
-            <label htmlFor="preferences" className="block text-sm font-medium text-foreground mb-1">
+            <label htmlFor="preferences" className="mb-1 block text-sm font-medium text-foreground">
               Preferences
             </label>
             <Textarea
@@ -239,11 +239,11 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="sandbox_model"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Default Sandbox Model
             </label>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               Used for sandbox worker runs when no model override is provided in the request.
             </p>
             <FormInput
@@ -275,7 +275,7 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="guardrails_enabled"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Guardrails Enabled
             </label>
@@ -292,7 +292,7 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="guardrails_provider"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Guardrails Provider
             </label>
@@ -323,7 +323,7 @@ export function UserSettingsForm({
               <div>
                 <label
                   htmlFor="bedrock_guardrail_id"
-                  className="block text-sm font-medium text-foreground mb-1"
+                  className="mb-1 block text-sm font-medium text-foreground"
                 >
                   Guardrail ID
                 </label>
@@ -339,7 +339,7 @@ export function UserSettingsForm({
               <div>
                 <label
                   htmlFor="bedrock_guardrail_version"
-                  className="block text-sm font-medium text-foreground mb-1"
+                  className="mb-1 block text-sm font-medium text-foreground"
                 >
                   Guardrail Version
                 </label>
@@ -366,7 +366,7 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="embedding_provider"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Embedding Provider
             </label>
@@ -389,7 +389,7 @@ export function UserSettingsForm({
               <div>
                 <label
                   htmlFor="s3vectors_bucket_name"
-                  className="block text-sm font-medium text-foreground mb-1"
+                  className="mb-1 block text-sm font-medium text-foreground"
                 >
                   S3 Vectors Bucket Name *
                 </label>
@@ -406,7 +406,7 @@ export function UserSettingsForm({
               <div>
                 <label
                   htmlFor="s3vectors_index_name"
-                  className="block text-sm font-medium text-foreground mb-1"
+                  className="mb-1 block text-sm font-medium text-foreground"
                 >
                   Index Name *
                 </label>
@@ -423,7 +423,7 @@ export function UserSettingsForm({
               <div>
                 <label
                   htmlFor="s3vectors_region"
-                  className="block text-sm font-medium text-foreground mb-1"
+                  className="mb-1 block text-sm font-medium text-foreground"
                 >
                   AWS Region
                 </label>
@@ -458,7 +458,7 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="memory_provider"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Memory Provider
             </label>
@@ -486,7 +486,7 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="memories_save_enabled"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Memories Save Enabled
             </label>
@@ -507,7 +507,7 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="memories_chat_history_enabled"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Memories Chat History Enabled
             </label>
@@ -532,7 +532,7 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="temporary_chats_default"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Start chats as temporary by default
             </label>
@@ -554,7 +554,7 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="tracking_enabled"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Allow Prompt and Response Training Data
             </label>
@@ -580,11 +580,11 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="transcription_provider"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Transcription Provider
             </label>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               Choose the provider for speech-to-text transcription used by Polychat.
             </p>
             <FormSelect
@@ -604,11 +604,11 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="transcription_model"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Transcription Model
             </label>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               Select from the available models for the {formData.transcription_provider} provider.
             </p>
             <FormSelect
@@ -632,11 +632,11 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="speech_provider"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Speech Provider
             </label>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               Choose the provider for text-to-speech response audio.
             </p>
             <FormSelect
@@ -656,11 +656,11 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="speech_model"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Speech Model
             </label>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               Select from the available voices or models for the {formData.speech_provider}{" "}
               provider.
             </p>
@@ -689,11 +689,11 @@ export function UserSettingsForm({
           <div>
             <label
               htmlFor="search_provider"
-              className="block text-sm font-medium text-foreground mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               Search Provider
             </label>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               Choose the default search provider for web search requests.
             </p>
             <FormSelect
@@ -722,7 +722,7 @@ export function UserSettingsForm({
               <option value="parallel">Parallel</option>
               <option value="exa">Exa</option>
             </FormSelect>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="mt-2 text-sm text-muted-foreground">
               Configure provider keys in the providers section before selecting BYOK providers.
             </p>
           </div>
@@ -730,13 +730,13 @@ export function UserSettingsForm({
       </SettingsSection>
 
       {saveSuccess && (
-        <div className="p-3 bg-success/12 text-success rounded-md border border-success/45">
+        <div className="rounded-md border border-success/45 bg-success/12 p-3 text-success">
           Settings saved successfully!
         </div>
       )}
 
       {saveError && (
-        <div className="p-3 bg-failure/12 text-failure rounded-md border border-failure/45">
+        <div className="rounded-md border border-failure/45 bg-failure/12 p-3 text-failure">
           {saveError}
         </div>
       )}

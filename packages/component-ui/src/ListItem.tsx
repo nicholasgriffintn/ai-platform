@@ -38,7 +38,7 @@ export function ListItem({
   "data-id": dataId,
 }: ListItemProps) {
   const containerClassName = cn(
-    "group flex items-center relative p-2 rounded-lg transition-colors",
+    "group relative flex items-center rounded-lg p-2 transition-colors",
     isActive
       ? "bg-sidebar-accent text-sidebar-accent-foreground"
       : "text-muted-foreground hover:text-foreground",
@@ -55,26 +55,26 @@ export function ListItem({
     >
       <div
         className={cn(
-          "overflow-hidden pr-1 transition-all duration-200 flex items-center",
+          "flex items-center overflow-hidden pr-1 transition-all duration-200",
           actions
             ? actionsWidth === "compact"
-              ? "md:w-full md:group-hover:w-[calc(100%-40px)] md:group-has-[[data-hover-actions]:focus-within]:w-[calc(100%-40px)] w-[calc(100%-40px)]"
-              : "md:w-full md:group-hover:w-[calc(100%-60px)] md:group-has-[[data-hover-actions]:focus-within]:w-[calc(100%-60px)] w-[calc(100%-60px)]"
+              ? "w-[calc(100%-40px)] md:w-full md:group-hover:w-[calc(100%-40px)] md:group-has-[[data-hover-actions]:focus-within]:w-[calc(100%-40px)]"
+              : "w-[calc(100%-60px)] md:w-full md:group-hover:w-[calc(100%-60px)] md:group-has-[[data-hover-actions]:focus-within]:w-[calc(100%-60px)]"
             : "w-full",
         )}
       >
         {icon && <span className="mr-2 flex-shrink-0">{icon}</span>}
         {badge && <span className="relative z-10 mr-2 flex-shrink-0">{badge}</span>}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           {onClick ? (
             <button
               type="button"
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 labelClassName,
-                "w-full text-left cursor-pointer",
+                "w-full cursor-pointer text-left",
                 "after:absolute after:inset-0 after:content-['']",
-                "focus-visible:outline-ring focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none",
+                "focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
               )}
               onClick={onClick}
             >
@@ -84,7 +84,7 @@ export function ListItem({
             <span className={labelClassName}>{label}</span>
           )}
           {sublabel && (
-            <span className="text-muted-foreground block overflow-hidden text-xs text-ellipsis whitespace-nowrap">
+            <span className="block overflow-hidden text-xs text-ellipsis whitespace-nowrap text-muted-foreground">
               {sublabel}
             </span>
           )}

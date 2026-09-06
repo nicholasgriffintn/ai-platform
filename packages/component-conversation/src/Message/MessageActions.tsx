@@ -183,7 +183,7 @@ export const MessageActions = ({
   }, [isPlayingSpeech, speechAudioSource, stopSpeechPlayback]);
 
   return (
-    <div className="flex flex-wrap justify-end items-center gap-2">
+    <div className="flex flex-wrap items-center justify-end gap-2">
       <MessageStats
         message={message}
         responseDurationMs={responseDurationMs}
@@ -198,7 +198,7 @@ export const MessageActions = ({
             onClick={copyMessageToClipboard}
             className={cn(
               messageActionButtonClassName,
-              copied ? "text-success bg-success/12" : undefined,
+              copied ? "bg-success/12 text-success" : undefined,
             )}
             title={copied ? "Copied!" : "Copy message"}
             aria-label={copied ? "Copied!" : "Copy message"}
@@ -213,7 +213,7 @@ export const MessageActions = ({
             onClick={handleReplaySpeech}
             className={cn(
               messageActionButtonClassName,
-              isPlayingSpeech ? "text-success bg-success/12" : undefined,
+              isPlayingSpeech ? "bg-success/12 text-success" : undefined,
             )}
             title={isPlayingSpeech ? "Stop response audio" : "Replay response audio"}
             aria-label={isPlayingSpeech ? "Stop response audio" : "Replay response audio"}
@@ -295,7 +295,7 @@ export const MessageActions = ({
                   align="end"
                   sideOffset={8}
                   collisionPadding={{ top: 64, right: 8, bottom: 112, left: 8 }}
-                  className="border-border bg-surface-elevated w-[calc(100vw-1rem)] max-w-[22rem] overflow-hidden p-0 shadow-[var(--polychat-elevated-shadow)]"
+                  className="w-[calc(100vw-1rem)] max-w-[22rem] overflow-hidden border-border bg-surface-elevated p-0 shadow-[var(--polychat-elevated-shadow)]"
                 >
                   {renderModelSelector({
                     onModelSelect: handleModelSelected,
@@ -353,7 +353,7 @@ export const MessageActions = ({
             disabled={isSubmittingFeedback || feedbackState === "liked"}
             className={cn(
               messageActionButtonClassName,
-              feedbackState === "liked" ? "text-success bg-success/12" : undefined,
+              feedbackState === "liked" ? "bg-success/12 text-success" : undefined,
               (isSubmittingFeedback || feedbackState === "liked") &&
                 "cursor-not-allowed opacity-50",
             )}
@@ -369,7 +369,7 @@ export const MessageActions = ({
             disabled={isSubmittingFeedback || feedbackState === "disliked"}
             className={cn(
               messageActionButtonClassName,
-              feedbackState === "disliked" ? "text-failure bg-failure/12" : undefined,
+              feedbackState === "disliked" ? "bg-failure/12 text-failure" : undefined,
               (isSubmittingFeedback || feedbackState === "disliked") &&
                 "cursor-not-allowed opacity-50",
             )}

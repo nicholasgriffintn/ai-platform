@@ -139,7 +139,7 @@ export function RecipeCard({
               className="group w-fit"
             >
               <span>Connections</span>
-              <span className="min-w-5 rounded-full bg-surface-elevated px-1.5 text-center text-xs tabular-nums text-muted-foreground">
+              <span className="min-w-5 rounded-full bg-surface-elevated px-1.5 text-center text-xs text-muted-foreground tabular-nums">
                 {recipe.integrations.length}
               </span>
               <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />

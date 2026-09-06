@@ -205,8 +205,8 @@ export function ConnectorAccountsPanel({
 
       {isLoading ? (
         <div className="space-y-2" aria-label="Loading connected accounts">
-          <div className="bg-selection h-16 animate-pulse rounded-xl" />
-          <div className="bg-selection h-16 animate-pulse rounded-xl" />
+          <div className="h-16 animate-pulse rounded-xl bg-selection" />
+          <div className="h-16 animate-pulse rounded-xl bg-selection" />
         </div>
       ) : hasLoadError ? (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-attention/45 bg-attention/12 px-3 py-2.5">

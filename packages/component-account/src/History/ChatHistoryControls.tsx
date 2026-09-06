@@ -30,7 +30,7 @@ export function ChatHistoryControls({
             {isExporting ? "Exporting..." : "Export JSON"}
           </Button>
           {isExporting && (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Exporting please do not close the page...
             </p>
           )}
@@ -40,7 +40,7 @@ export function ChatHistoryControls({
       <SettingsSection title="Danger Zone" description="Deleting your history cannot be undone.">
         <div className="space-y-6">
           <div className="space-y-2">
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Permanently delete your history from your local device:
             </p>
             <Button
@@ -53,7 +53,7 @@ export function ChatHistoryControls({
           </div>
 
           <div className="space-y-2">
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Permanently delete your history from our servers*:
             </p>
             <Button
@@ -65,7 +65,7 @@ export function ChatHistoryControls({
             </Button>
           </div>
 
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             *Please note: The retention policies of our hosting partners may vary.
           </p>
         </div>

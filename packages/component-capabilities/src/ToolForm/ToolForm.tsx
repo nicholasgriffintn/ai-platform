@@ -104,33 +104,33 @@ export const ToolForm = ({
   const isLastStep = currentStepIndex === tool.formSchema.steps.length - 1;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="mx-auto max-w-3xl">
       <div
         className={cn(
-          "border border-border rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-surface-elevated hover:border-border-strong",
+          "rounded-xl border border-border bg-surface-elevated p-5 transition-all duration-200 hover:border-border-strong hover:shadow-lg",
           "bg-gradient-to-br",
           getCardGradient(tool.theme),
           "mb-6",
         )}
       >
         <div className="mb-6">
-          <div className="flex items-center space-x-4 mb-4">
-            <div className={cn("p-3 rounded-lg shadow-sm", getIconContainerClass(tool.theme))}>
+          <div className="mb-4 flex items-center space-x-4">
+            <div className={cn("rounded-lg p-3 shadow-sm", getIconContainerClass(tool.theme))}>
               {getIcon(tool.icon, tool.theme)}
             </div>
             <div>
-              <h1 className={cn("text-2xl font-bold mb-2 text-foreground")}>{tool.name}</h1>
+              <h1 className={cn("mb-2 text-2xl font-bold text-foreground")}>{tool.name}</h1>
               <p className={cn("text-muted-foreground")}>{tool.description}</p>
             </div>
           </div>
 
           {tool.formSchema.steps.length > 1 && (
             <>
-              <div className="flex items-center justify-between mt-6">
+              <div className="mt-6 flex items-center justify-between">
                 {tool.formSchema.steps.map((step, index) => (
                   <div key={step.id} className="flex flex-col items-center">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${
+                      className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full ${
                         index < currentStepIndex
                           ? "bg-success text-background"
                           : index === currentStepIndex
@@ -138,15 +138,15 @@ export const ToolForm = ({
                             : "bg-selection text-muted-foreground"
                       }`}
                     >
-                      {index < currentStepIndex ? <Check className="w-4 h-4" /> : index + 1}
+                      {index < currentStepIndex ? <Check className="h-4 w-4" /> : index + 1}
                     </div>
                     <span className="text-xs text-muted-foreground">{step.title}</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 h-2 bg-selection rounded-full">
+              <div className="mt-4 h-2 rounded-full bg-selection">
                 <div
-                  className="h-full bg-active-work rounded-full transition-all duration-300"
+                  className="h-full rounded-full bg-active-work transition-all duration-300"
                   style={{
                     width: `${((currentStepIndex + 1) / tool.formSchema.steps.length) * 100}%`,
                   }}
@@ -157,7 +157,7 @@ export const ToolForm = ({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="bg-surface-elevated p-5 rounded-lg">
+          <div className="rounded-lg bg-surface-elevated p-5">
             <FormStep
               step={currentStep}
               formData={formData}
@@ -166,13 +166,13 @@ export const ToolForm = ({
             />
 
             {errors.form && (
-              <div className="mt-4 p-3 bg-failure/12 text-failure rounded-md border border-failure/45">
+              <div className="mt-4 rounded-md border border-failure/45 bg-failure/12 p-3 text-failure">
                 {errors.form}
               </div>
             )}
           </div>
 
-          <div className="flex justify-between mt-6">
+          <div className="mt-6 flex justify-between">
             {!isFirstStep && (
               <Button
                 type="button"

@@ -13,7 +13,7 @@ export function ProviderMark({ provider, size }: ProviderMarkProps) {
       fallback={
         <span
           aria-hidden
-          className="text-muted-foreground font-mono font-semibold uppercase"
+          className="font-mono font-semibold text-muted-foreground uppercase"
           style={{ fontSize: Math.max(10, size * 0.7) }}
         >
           {provider.charAt(0)}

@@ -41,7 +41,7 @@ export function ProjectTaskListView({ data }: { data: unknown }) {
         {result.tasks.map((task) => (
           <li key={task.id} className="rounded-lg border border-border/70 bg-muted/20 p-3">
             <div className="flex items-start justify-between gap-3">
-              <p className="min-w-0 text-sm font-medium leading-5 text-foreground">
+              <p className="min-w-0 text-sm leading-5 font-medium text-foreground">
                 {task.objective}
               </p>
               <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">

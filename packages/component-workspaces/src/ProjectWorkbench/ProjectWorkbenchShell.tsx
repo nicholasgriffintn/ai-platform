@@ -174,7 +174,7 @@ function PaneTabs({
             onClick={() => onSelectedPaneChange(pane)}
             onKeyDown={(event) => handleKeyDown(pane, event)}
             className={cn(
-              "polychat-motion-micro focus-visible:outline-ring inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2",
+              "polychat-motion-micro inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
               selectedPane === pane
                 ? "bg-selection text-active-work"
                 : "text-muted-foreground hover:bg-selection hover:text-foreground",
@@ -217,7 +217,7 @@ function RunStatusStrip({
   return (
     <div
       className={cn(
-        "border-border flex min-h-11 items-center gap-2 border-b px-2 sm:gap-3 sm:px-3",
+        "flex min-h-11 items-center gap-2 border-b border-border px-2 sm:gap-3 sm:px-3",
         presentation.requiresAttention && "bg-attention/10",
       )}
     >
@@ -234,7 +234,7 @@ function RunStatusStrip({
             presentation.animated && "polychat-motion-active-execution",
           )}
         />
-        <div className="flex min-w-0 max-w-xl items-baseline gap-2">
+        <div className="flex max-w-xl min-w-0 items-baseline gap-2">
           <span
             className={cn(
               "truncate text-sm font-medium",
@@ -244,7 +244,7 @@ function RunStatusStrip({
             {presentation.label}
           </span>
           {statusDetail ? (
-            <span className="text-muted-foreground hidden min-w-0 truncate text-xs sm:inline">
+            <span className="hidden min-w-0 truncate text-xs text-muted-foreground sm:inline">
               {statusDetail}
             </span>
           ) : null}
@@ -303,7 +303,7 @@ export function ProjectWorkbenchShell({
       <div
         ref={containerRef}
         data-active-work={STATUS_PRESENTATION[status].activeWork}
-        className="bg-canvas flex h-full min-h-0 flex-col overflow-hidden"
+        className="flex h-full min-h-0 flex-col overflow-hidden bg-canvas"
       >
         <RunStatusStrip status={status} statusDetail={statusDetail} runControls={runControls} />
         <div className="flex min-h-0 flex-1">
@@ -312,7 +312,7 @@ export function ProjectWorkbenchShell({
           </main>
           <div className="relative hidden min-h-0 lg:flex">
             {dockCollapsed ? (
-              <div className="border-border bg-surface flex w-12 items-start justify-center border-l pt-2">
+              <div className="flex w-12 items-start justify-center border-l border-border bg-surface pt-2">
                 <Button
                   type="button"
                   variant="icon"
@@ -335,15 +335,15 @@ export function ProjectWorkbenchShell({
                   aria-valuemax={MAX_DOCK_WIDTH}
                   aria-valuenow={dockWidth}
                   tabIndex={0}
-                  className="bg-border hover:bg-active-work focus-visible:bg-active-work focus-visible:outline-ring polychat-motion-micro m-0 w-1 cursor-col-resize touch-none border-0 focus-visible:outline-2"
+                  className="polychat-motion-micro m-0 w-1 cursor-col-resize touch-none border-0 bg-border hover:bg-active-work focus-visible:bg-active-work focus-visible:outline-2 focus-visible:outline-ring"
                   {...resizeHandleProps}
                 />
                 <aside
                   aria-label="Project workbench"
-                  className="bg-surface polychat-motion-panel flex min-h-0 flex-col"
+                  className="polychat-motion-panel flex min-h-0 flex-col bg-surface"
                   style={{ width: dockWidth }}
                 >
-                  <div className="border-border flex items-center border-b pr-1">
+                  <div className="flex items-center border-b border-border pr-1">
                     <div className="min-w-0 flex-1">
                       <PaneTabs
                         selectedPane={selectedPane}
@@ -374,11 +374,11 @@ export function ProjectWorkbenchShell({
         </div>
       </div>
       <DialogContent className="inset-0 top-0 left-0 flex h-[100dvh] max-h-none max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0 sm:max-w-none lg:hidden">
-        <DialogHeader className="border-border border-b px-4 py-3 pr-14 text-left">
+        <DialogHeader className="border-b border-border px-4 py-3 pr-14 text-left">
           <DialogTitle>Project workbench</DialogTitle>
           <DialogDescription>{STATUS_PRESENTATION[status].label}</DialogDescription>
         </DialogHeader>
-        <div className="border-border border-b px-2">
+        <div className="border-b border-border px-2">
           <PaneTabs
             selectedPane={selectedPane}
             onSelectedPaneChange={onSelectedPaneChange}

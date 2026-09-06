@@ -47,7 +47,7 @@ export function ModelsBand() {
                 <li
                   key={provider.id}
                   title={`${provider.id}: ${provider.modelCount} models`}
-                  className="bg-surface border-border text-foreground flex h-11 w-11 items-center justify-center rounded-lg border"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-surface text-foreground"
                 >
                   <ProviderGlyph
                     name={provider.id}
@@ -69,7 +69,7 @@ export function ModelsBand() {
             {featured.map((model) => (
               <li
                 key={model.matchingModel}
-                className="bg-surface-elevated text-foreground rounded-md px-2.5 py-1 font-mono text-xs"
+                className="rounded-md bg-surface-elevated px-2.5 py-1 font-mono text-xs text-foreground"
               >
                 {model.name}
               </li>

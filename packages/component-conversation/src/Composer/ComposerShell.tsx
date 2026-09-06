@@ -29,7 +29,7 @@ export function ComposerShell({
   return (
     <div
       data-chat-input-shell
-      className="border-border bg-card text-card-foreground hover:border-border-strong focus-within:border-ring focus-within:ring-ring/30 relative rounded-lg border shadow-sm transition-[border-color,box-shadow] focus-within:ring-[3px]"
+      className="relative rounded-lg border border-border bg-card text-card-foreground shadow-sm transition-[border-color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/30 hover:border-border-strong"
     >
       <div className="flex flex-col">
         {chips}
@@ -53,29 +53,29 @@ export function ComposerShell({
               </div>
             )}
             {actions && (
-              <div className="flex flex-shrink-0 items-center gap-1 pr-3 pt-3">{actions}</div>
+              <div className="flex flex-shrink-0 items-center gap-1 pt-3 pr-3">{actions}</div>
             )}
           </div>
         </div>
 
         {(isGeneratingAudio || footerStart || footerEnd) && (
-          <div className="border-border mt-2 border-t px-3 pt-3 pb-3">
+          <div className="mt-2 border-t border-border px-3 pt-3 pb-3">
             {isGeneratingAudio && (
               <div
-                className="text-muted-foreground mb-3 flex items-center gap-2 text-xs"
+                className="mb-3 flex items-center gap-2 text-xs text-muted-foreground"
                 aria-live="polite"
                 role="status"
               >
-                <Loader2 className="text-active-work h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-active-work" aria-hidden="true" />
                 <span>Generating response audio...</span>
               </div>
             )}
             {(footerStart || footerEnd) && (
               <div className="@container/composer-footer flex items-center justify-between gap-1 sm:gap-2">
-                <div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
+                <div className="flex max-w-[70%] min-w-0 flex-1 items-center gap-2 sm:max-w-none">
                   {footerStart}
                 </div>
-                <div className="flex-shrink-0 flex items-center gap-2">{footerEnd}</div>
+                <div className="flex flex-shrink-0 items-center gap-2">{footerEnd}</div>
               </div>
             )}
           </div>

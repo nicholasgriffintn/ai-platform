@@ -44,7 +44,7 @@ export function ProjectSettings({
 
   if (error || !project) {
     return (
-      <div role="alert" className="text-failure p-10 text-sm">
+      <div role="alert" className="p-10 text-sm text-failure">
         {error?.message ?? "Project not found"}
       </div>
     );
@@ -67,7 +67,7 @@ export function ProjectSettings({
           </ButtonLink>
         }
       />
-      <p className="text-muted-foreground mb-6 max-w-2xl text-sm">
+      <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
         How this project briefs its teammates, which model tier it runs on, what it knows, and what
         runs on a schedule.
       </p>

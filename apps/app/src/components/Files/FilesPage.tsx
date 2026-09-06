@@ -60,7 +60,7 @@ export function FilesPage({
             : undefined
         }
       />
-      <p className="text-muted-foreground mb-4 max-w-3xl text-sm">{activeTab.description}</p>
+      <p className="mb-4 max-w-3xl text-sm text-muted-foreground">{activeTab.description}</p>
       <nav aria-label="Files sections" className="mb-6">
         <ul className="flex flex-wrap gap-1">
           {TABS.map((candidate) => (

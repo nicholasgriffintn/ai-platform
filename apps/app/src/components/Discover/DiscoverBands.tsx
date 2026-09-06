@@ -22,10 +22,10 @@ export function DiscoverBands({ variant }: DiscoverBandsProps) {
       {variant === "page" && (
         <header className="mb-12 space-y-5">
           <p className="polychat-eyebrow">A short tour</p>
-          <h1 className="font-display text-foreground text-4xl font-medium tracking-tight text-balance md:text-5xl">
+          <h1 className="font-display text-4xl font-medium tracking-tight text-balance text-foreground md:text-5xl">
             What Polychat is for
           </h1>
-          <p className="text-muted-foreground max-w-prose text-lg leading-relaxed">
+          <p className="max-w-prose text-lg leading-relaxed text-muted-foreground">
             One place to talk to every model, keep what comes of it, and bring other people in when
             a question grows into a project.
           </p>

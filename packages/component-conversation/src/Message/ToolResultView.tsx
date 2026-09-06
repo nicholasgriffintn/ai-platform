@@ -76,7 +76,7 @@ export const ToolResultView = ({
       </div>
 
       {showInput && formattedInput && (
-        <pre className="border-border bg-surface-elevated text-foreground mt-1.5 overflow-x-auto rounded border p-2 text-xs">
+        <pre className="mt-1.5 overflow-x-auto rounded border border-border bg-surface-elevated p-2 text-xs text-foreground">
           {formattedInput}
         </pre>
       )}

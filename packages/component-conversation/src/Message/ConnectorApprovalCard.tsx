@@ -84,7 +84,7 @@ export function ConnectorApprovalCard({ data, onResolve }: ConnectorApprovalCard
       {argumentSummary ? (
         <div className="space-y-1">
           <div className="text-xs font-medium text-muted-foreground">Action details</div>
-          <pre className="border-attention/35 bg-surface text-foreground max-h-48 overflow-auto rounded border p-2 text-xs">
+          <pre className="max-h-48 overflow-auto rounded border border-attention/35 bg-surface p-2 text-xs text-foreground">
             <code>{argumentSummary}</code>
           </pre>
         </div>

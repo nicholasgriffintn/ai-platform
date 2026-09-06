@@ -134,7 +134,7 @@ export function SearchDialog({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} width="min(840px, 100%)">
       <DialogContent
-        className="border-border bg-surface-elevated gap-0 overflow-hidden p-0 shadow-[var(--polychat-elevated-shadow)] [&_[data-slot=dialog-close]]:right-5 [&_[data-slot=dialog-close]]:top-6"
+        className="gap-0 overflow-hidden border-border bg-surface-elevated p-0 shadow-[var(--polychat-elevated-shadow)] [&_[data-slot=dialog-close]]:top-6 [&_[data-slot=dialog-close]]:right-5"
         onKeyDown={handleKeyDown}
       >
         <DialogTitle className="sr-only">Search Polychat</DialogTitle>
@@ -142,10 +142,10 @@ export function SearchDialog({
           Search conversations, projects, workspaces, and capabilities.
         </DialogDescription>
 
-        <div className="border-border relative border-b px-5 py-4 pr-14">
+        <div className="relative border-b border-border px-5 py-4 pr-14">
           <Search
             size={21}
-            className="text-muted-foreground pointer-events-none absolute left-6 top-1/2 -translate-y-1/2"
+            className="pointer-events-none absolute top-1/2 left-6 -translate-y-1/2 text-muted-foreground"
           />
           <FormInput
             id="global-search-input"
@@ -160,12 +160,12 @@ export function SearchDialog({
               onQueryChange(event.target.value);
               setFocusedIndex(0);
             }}
-            className="h-12 border-0 bg-transparent pl-10 pr-20 text-base shadow-none focus:ring-0 dark:bg-transparent"
+            className="h-12 border-0 bg-transparent pr-20 pl-10 text-base shadow-none focus:ring-0 dark:bg-transparent"
             fullWidth
           />
-          <div className="pointer-events-none absolute right-14 top-1/2 hidden -translate-y-1/2 items-center gap-2 sm:flex">
-            {isUpdating && <Loader2 size={15} className="text-active-work animate-spin" />}
-            <kbd className="border-border bg-surface text-muted-foreground rounded border px-1.5 py-0.5 text-[11px] shadow-sm">
+          <div className="pointer-events-none absolute top-1/2 right-14 hidden -translate-y-1/2 items-center gap-2 sm:flex">
+            {isUpdating && <Loader2 size={15} className="animate-spin text-active-work" />}
+            <kbd className="rounded border border-border bg-surface px-1.5 py-0.5 text-[11px] text-muted-foreground shadow-sm">
               ⌘K
             </kbd>
           </div>
@@ -182,7 +182,7 @@ export function SearchDialog({
         >
           {results.length > 0 ? (
             <div className="space-y-1">
-              <p className="text-muted-foreground px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-[0.2em]">
+              <p className="px-3 pt-1 pb-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
                 {hasQuery ? "Best matches" : "Recent"}
               </p>
               {results.map((result, index) => (
@@ -225,24 +225,24 @@ export function SearchDialog({
               ))}
             </div>
           ) : isLoading ? (
-            <div className="text-muted-foreground flex items-center justify-center gap-2 py-16 text-sm">
+            <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
               <Loader2 size={17} className="animate-spin" /> Searching Polychat…
             </div>
           ) : hasError ? (
-            <p className="text-muted-foreground py-16 text-center text-sm">
+            <p className="py-16 text-center text-sm text-muted-foreground">
               Search is temporarily unavailable. Try again in a moment.
             </p>
           ) : (
             <div className="py-16 text-center">
-              <p className="text-foreground text-sm font-medium">No matches found</p>
-              <p className="text-muted-foreground mt-1 text-xs">
+              <p className="text-sm font-medium text-foreground">No matches found</p>
+              <p className="mt-1 text-xs text-muted-foreground">
                 Try another name, topic, or capability.
               </p>
             </div>
           )}
         </div>
 
-        <div className="border-border text-muted-foreground hidden items-center justify-between border-t px-5 py-2.5 text-[11px] sm:flex">
+        <div className="hidden items-center justify-between border-t border-border px-5 py-2.5 text-[11px] text-muted-foreground sm:flex">
           <span>Search across your accessible Polychat</span>
           <span>↑↓ Navigate · ↵ Open · Esc Close</span>
         </div>

@@ -170,7 +170,7 @@ export function DropdownMenu({
 
       {isOpen && (
         <div
-          className={`bg-popover text-popover-foreground ring-border absolute ${positionClasses[position]} z-50 w-48 rounded-md shadow-[var(--polychat-elevated-shadow)] ring-1 ${menuClassName}`}
+          className={`absolute bg-popover text-popover-foreground ring-border ${positionClasses[position]} z-50 w-48 rounded-md shadow-[var(--polychat-elevated-shadow)] ring-1 ${menuClassName}`}
           role="menu"
           tabIndex={-1}
           aria-orientation="vertical"

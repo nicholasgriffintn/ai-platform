@@ -69,7 +69,7 @@ export default function SharedOutputPage() {
           <div className="flex items-center gap-3">
             <FileQuestion size={20} className="text-muted-foreground" />
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 {output.capabilityId}
               </p>
               <h1 className="text-xl font-semibold">{output.title}</h1>

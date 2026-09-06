@@ -74,7 +74,7 @@ export function LiveProviderPicker({
               <ProviderIcon option={option} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block font-medium leading-5">{option.label}</span>
+              <span className="block leading-5 font-medium">{option.label}</span>
               <span className="block truncate text-xs text-muted-foreground">
                 {isReady
                   ? `${option.transport.toUpperCase()} · ${option.description}`

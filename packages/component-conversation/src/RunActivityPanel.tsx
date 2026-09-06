@@ -84,10 +84,10 @@ function EntryDetails({ entry }: { entry: RunActivityEntry }) {
     <div className="mt-1 space-y-1.5">
       {entry.detail ? (
         <details className="group">
-          <summary className="text-muted-foreground focus-visible:ring-ring w-fit cursor-pointer text-xs outline-none focus-visible:ring-2">
+          <summary className="w-fit cursor-pointer text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
             View details
           </summary>
-          <p className="bg-surface-elevated mt-1 max-h-56 overflow-auto whitespace-pre-wrap rounded-md p-2 text-xs leading-5 break-words">
+          <p className="mt-1 max-h-56 overflow-auto rounded-md bg-surface-elevated p-2 text-xs leading-5 break-words whitespace-pre-wrap">
             {entry.detail}
           </p>
         </details>
@@ -95,11 +95,11 @@ function EntryDetails({ entry }: { entry: RunActivityEntry }) {
 
       {entry.evidence ? (
         <details className="group">
-          <summary className="text-muted-foreground focus-visible:ring-ring w-fit cursor-pointer text-xs outline-none focus-visible:ring-2">
+          <summary className="w-fit cursor-pointer text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
             {entry.evidence.lines.length.toLocaleString()} output updates
             {entry.evidence.omitted > 0 ? ` · ${entry.evidence.omitted} omitted` : ""}
           </summary>
-          <pre className="bg-surface-elevated mt-1 max-h-56 overflow-auto rounded-md p-2 text-xs leading-5 whitespace-pre-wrap break-words">
+          <pre className="mt-1 max-h-56 overflow-auto rounded-md bg-surface-elevated p-2 text-xs leading-5 break-words whitespace-pre-wrap">
             {entry.evidence.lines.join("\n")}
           </pre>
         </details>
@@ -107,10 +107,10 @@ function EntryDetails({ entry }: { entry: RunActivityEntry }) {
 
       {hasMetrics ? (
         <details>
-          <summary className="text-muted-foreground focus-visible:ring-ring w-fit cursor-pointer text-xs outline-none focus-visible:ring-2">
+          <summary className="w-fit cursor-pointer text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
             Cost and latency
           </summary>
-          <dl className="bg-surface-elevated mt-1 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 rounded-md p-2 text-xs">
+          <dl className="mt-1 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 rounded-md bg-surface-elevated p-2 text-xs">
             {entry.metrics?.provider ? (
               <>
                 <dt className="text-muted-foreground">Provider</dt>
@@ -139,7 +139,7 @@ function EntryDetails({ entry }: { entry: RunActivityEntry }) {
         </details>
       ) : null}
 
-      {duration ? <p className="text-muted-foreground text-xs">Duration {duration}</p> : null}
+      {duration ? <p className="text-xs text-muted-foreground">Duration {duration}</p> : null}
     </div>
   );
 }
@@ -152,7 +152,7 @@ export function RunActivityPanel({
   if (errorMessage) {
     return (
       <EmptyState
-        icon={<AlertTriangle className="text-failure size-5" />}
+        icon={<AlertTriangle className="size-5 text-failure" />}
         title="Activity unavailable"
         message={errorMessage}
         className="min-h-52 border-0 bg-transparent"
@@ -163,7 +163,7 @@ export function RunActivityPanel({
   if (isLoading) {
     return (
       <EmptyState
-        icon={<Activity className="text-muted-foreground size-5" />}
+        icon={<Activity className="size-5 text-muted-foreground" />}
         title="Loading activity"
         message="Restoring the recorded conversation and run history…"
         className="min-h-52 border-0 bg-transparent"
@@ -174,7 +174,7 @@ export function RunActivityPanel({
   if (entries.length === 0) {
     return (
       <EmptyState
-        icon={<Activity className="text-muted-foreground size-5" />}
+        icon={<Activity className="size-5 text-muted-foreground" />}
         title="No recorded activity yet"
         message="Conversation and run events will appear here as work progresses."
         className="min-h-52 border-0 bg-transparent"
@@ -187,9 +187,9 @@ export function RunActivityPanel({
       {entries.map((entry) => (
         <li
           key={entry.id}
-          className="border-border grid grid-cols-[auto_minmax(0,1fr)] gap-3 border-b py-3 last:border-0"
+          className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 border-b border-border py-3 last:border-0"
         >
-          <span className="bg-surface-elevated text-muted-foreground mt-0.5 flex size-7 items-center justify-center rounded-md">
+          <span className="mt-0.5 flex size-7 items-center justify-center rounded-md bg-surface-elevated text-muted-foreground">
             <ActivityIcon kind={entry.kind} />
           </span>
           <div className="min-w-0">
@@ -201,12 +201,12 @@ export function RunActivityPanel({
                 </Badge>
               ) : null}
               {entry.approvalState ? (
-                <span className="text-muted-foreground text-xs capitalize">
+                <span className="text-xs text-muted-foreground capitalize">
                   Approval {entry.approvalState.replaceAll("_", " ")}
                 </span>
               ) : null}
             </div>
-            <p className="text-muted-foreground mt-0.5 text-xs">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {entry.source === "conversation" ? "Conversation" : "Coding run"}
               {entry.occurredAt ? ` · ${formatDate(entry.occurredAt)}` : ""}
             </p>

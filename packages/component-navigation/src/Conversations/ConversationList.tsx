@@ -48,7 +48,7 @@ export function ConversationList({
         conversations.length === 0 ? null : (
           <div key={id}>
             {title && (
-              <h3 className="text-muted-foreground px-2 py-1 text-xs font-semibold tracking-wider">
+              <h3 className="px-2 py-1 text-xs font-semibold tracking-wider text-muted-foreground">
                 {title}
               </h3>
             )}
@@ -63,7 +63,7 @@ export function ConversationList({
                       {conversation.isStreaming && (
                         <LoaderCircle
                           size={16}
-                          className="text-active-work animate-spin"
+                          className="animate-spin text-active-work"
                           aria-label="Response in progress"
                         />
                       )}
@@ -81,7 +81,7 @@ export function ConversationList({
                         <Mail size={14} className="text-attention" aria-label="Unread" />
                       )}
                       {(conversation.isLocalOnly || localOnlyMode) && (
-                        <span className="text-active-work inline-flex items-center text-xs">
+                        <span className="inline-flex items-center text-xs text-active-work">
                           <CloudOff size={14} />
                           <span className="sr-only">Local only</span>
                         </span>
@@ -89,7 +89,7 @@ export function ConversationList({
                       {conversation.parentConversationId && (
                         <button
                           type="button"
-                          className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center text-xs"
+                          className="inline-flex cursor-pointer items-center text-xs text-muted-foreground hover:text-foreground"
                           title="Go to original conversation"
                           aria-label="Go to original conversation"
                           onClick={(event) => {

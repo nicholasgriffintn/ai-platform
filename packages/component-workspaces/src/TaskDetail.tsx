@@ -187,7 +187,7 @@ export function TaskDetail({
         </div>
 
         {originConversationHref ? (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             Filed from{" "}
             <TextLink href={originConversationHref}>the conversation it came from</TextLink>.
           </p>

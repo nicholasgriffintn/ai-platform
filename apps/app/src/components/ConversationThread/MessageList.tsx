@@ -257,7 +257,7 @@ export const MessageList = ({
         <VList
           ref={virtualRef}
           data-header-scroll-source
-          className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
+          className="h-full w-full flex-1 overflow-auto pt-4 pr-2"
           onScroll={handleScroll}
         >
           {!isSharedView && conversation?.has_more_messages ? (
@@ -350,8 +350,8 @@ export const MessageList = ({
             )
           ) : null}
           {!isSharedView && isModelInitializing && (
-            <div className="flex items-center gap-2 py-2 px-4 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin text-active-work flex-shrink-0" />
+            <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin text-active-work" />
               <span>
                 {modelInitMessage}
                 {modelInitProgress !== undefined ? ` ${Math.round(modelInitProgress)}%` : null}
@@ -360,7 +360,7 @@ export const MessageList = ({
           )}
         </VList>
         {showScroll && !isSharedView && (
-          <div className="absolute bottom-2 right-2 z-10">
+          <div className="absolute right-2 bottom-2 z-10">
             <ScrollButton
               onClick={() => {
                 isNearBottomRef.current = true;

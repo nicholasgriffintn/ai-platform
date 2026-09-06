@@ -42,7 +42,7 @@ function MenuToggleButton({
       <span className="flex min-w-0 items-center gap-3">
         {icon}
         <span className="block min-w-0">
-          <span className="block truncate font-medium leading-5">{label}</span>
+          <span className="block truncate leading-5 font-medium">{label}</span>
           {description ? (
             <span className="block truncate text-xs text-muted-foreground">{description}</span>
           ) : null}
@@ -51,11 +51,11 @@ function MenuToggleButton({
       <span
         className={cn(
           "flex h-6 w-10 shrink-0 rounded-full p-0.5",
-          isPressed ? "bg-active-work justify-end" : "bg-border-strong",
+          isPressed ? "justify-end bg-active-work" : "bg-border-strong",
         )}
         aria-hidden="true"
       >
-        <span className="bg-surface h-5 w-5 rounded-full" />
+        <span className="h-5 w-5 rounded-full bg-surface" />
       </span>
     </button>
   );
@@ -85,7 +85,7 @@ export function ToolToggleMenu({
   return (
     <div className={showHeading ? "border-t border-border pt-2" : undefined}>
       {showHeading ? (
-        <div className="px-3 pb-1 text-[11px] font-semibold uppercase text-muted-foreground">
+        <div className="px-3 pb-1 text-[11px] font-semibold text-muted-foreground uppercase">
           Tools
         </div>
       ) : null}

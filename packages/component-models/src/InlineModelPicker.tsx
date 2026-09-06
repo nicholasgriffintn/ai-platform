@@ -33,7 +33,7 @@ export function InlineModelPicker({
   return (
     <div ref={dropdownRef} className={cn("w-full", className)}>
       {isOpen && (
-        <div className="bg-surface-elevated w-full overflow-hidden rounded-lg">
+        <div className="w-full overflow-hidden rounded-lg bg-surface-elevated">
           <div className="border-b border-border p-2">
             <SearchInput
               value={searchQuery}
@@ -49,7 +49,7 @@ export function InlineModelPicker({
             )}
             {currentModel && (
               <>
-                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <div className="px-2 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Current Model
                 </div>
                 <ConversationModelOption model={currentModel} onSelect={onSelect} />
@@ -57,7 +57,7 @@ export function InlineModelPicker({
             )}
             {isSearching && (
               <div className={currentModel ? "mt-3" : ""}>
-                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <div className="px-2 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Search Results
                 </div>
                 {searchResults.length > 0 ? (
@@ -77,7 +77,7 @@ export function InlineModelPicker({
             )}
             {featuredModels.length > 0 && (
               <div className={currentModel || isSearching ? "mt-3" : ""}>
-                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <div className="px-2 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Featured Models
                 </div>
                 {featuredModels.map((modelItem) => (

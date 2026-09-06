@@ -18,7 +18,7 @@
     "sortScripts": true
   },
   "sortTailwindcss": {
-    "stylesheet": "./packages/ui/src/styles.css",
+    "stylesheet": "./apps/app/src/styles/index.css",
     "functions": ["clsx", "cn", "cva", "twMerge"]
   },
   "ignorePatterns": [
@@ -29,6 +29,6 @@
     "**/generated/**",
     "**/target/**",
     "apps/api/src/data-model/models/**",
-    "apps/desktop/index.html"
+    "apps/api/src/openapi/content/**"
   ]
 }

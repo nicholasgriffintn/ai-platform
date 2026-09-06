@@ -166,7 +166,7 @@ export function PricingPage() {
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
       <header className="text-center">
         <p className="polychat-eyebrow">Plans</p>
-        <h1 className="font-display text-foreground mt-2 text-4xl font-medium tracking-tight text-balance md:text-5xl">
+        <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-balance text-foreground md:text-5xl">
           Pricing
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-muted-foreground">

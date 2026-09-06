@@ -280,7 +280,7 @@ export function ProfileProvidersTab() {
               {
                 label: isSyncingProviders ? "Syncing..." : "Sync Providers",
                 onClick: () => syncProviders(),
-                icon: <RefreshCcw className="h-4 w-4 mr-2" />,
+                icon: <RefreshCcw className="mr-2 h-4 w-4" />,
                 disabled: isSyncingProviders,
                 variant: "secondary",
               },
@@ -326,14 +326,14 @@ export function ProfileProvidersTab() {
         ) : totalProviderCount === 0 ? (
           <EmptyState
             message="No providers available"
-            className="bg-transparent dark:bg-transparent border-none py-10 px-0"
+            className="border-none bg-transparent px-0 py-10 dark:bg-transparent"
           />
         ) : catalogueItems.length === 0 ? (
           <EmptyState
             message={
               providerSearch ? "No providers match your search" : "No providers in this view"
             }
-            className="bg-transparent dark:bg-transparent border-none py-10 px-0"
+            className="border-none bg-transparent px-0 py-10 dark:bg-transparent"
           />
         ) : (
           <ProviderCatalogue items={catalogueItems} />

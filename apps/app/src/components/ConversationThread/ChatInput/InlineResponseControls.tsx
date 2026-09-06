@@ -94,7 +94,7 @@ export function InlineResponseControls({ isDisabled = false }: InlineResponseCon
                 service_tier: pressed ? "fast" : undefined,
               });
             }}
-            className="text-muted-foreground hover:bg-selection hover:text-foreground data-[state=on]:bg-active-work/15 data-[state=on]:text-active-work h-8 min-w-8 gap-1.5 px-2 text-xs font-normal"
+            className="h-8 min-w-8 gap-1.5 px-2 text-xs font-normal text-muted-foreground hover:bg-selection hover:text-foreground data-[state=on]:bg-active-work/15 data-[state=on]:text-active-work"
           >
             <Zap className="h-4 w-4" aria-hidden="true" />
           </Toggle>

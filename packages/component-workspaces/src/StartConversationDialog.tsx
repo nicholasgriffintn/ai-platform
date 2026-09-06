@@ -67,7 +67,7 @@ export function StartConversationDialog({
         </DialogHeader>
 
         {errorMessage ? (
-          <p role="alert" className="text-failure text-sm">
+          <p role="alert" className="text-sm text-failure">
             {errorMessage}
           </p>
         ) : null}
@@ -84,11 +84,11 @@ export function StartConversationDialog({
               All workspaces
             </Button>
             {isLoadingProjects ? (
-              <div className="text-muted-foreground flex items-center gap-2 px-3 py-2 text-sm">
+              <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
                 <Loader2 size={16} className="animate-spin" /> Loading projects…
               </div>
             ) : projects.length === 0 ? (
-              <p className="text-muted-foreground px-3 py-2 text-sm">
+              <p className="px-3 py-2 text-sm text-muted-foreground">
                 This workspace has no projects yet. Create one from the workspace page first.
               </p>
             ) : (
@@ -108,12 +108,12 @@ export function StartConversationDialog({
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-medium">{project.name}</span>
                         {project.description ? (
-                          <span className="text-muted-foreground block truncate text-xs">
+                          <span className="block truncate text-xs text-muted-foreground">
                             {project.description}
                           </span>
                         ) : null}
                       </span>
-                      <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+                      <ChevronRight size={16} className="shrink-0 text-muted-foreground" />
                     </button>
                   </li>
                 ))}
@@ -121,11 +121,11 @@ export function StartConversationDialog({
             )}
           </div>
         ) : isLoadingWorkspaces ? (
-          <div className="text-muted-foreground flex items-center gap-2 px-3 py-2 text-sm">
+          <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
             <Loader2 size={16} className="animate-spin" /> Loading workspaces…
           </div>
         ) : workspaces.length === 0 ? (
-          <p className="text-muted-foreground px-3 py-2 text-sm">
+          <p className="px-3 py-2 text-sm text-muted-foreground">
             You are not a member of any workspace yet.
           </p>
         ) : (
@@ -137,14 +137,14 @@ export function StartConversationDialog({
                   className={cn(rowClassName)}
                   onClick={() => onSelectWorkspace(workspace.id)}
                 >
-                  <FolderKanban size={16} className="text-muted-foreground shrink-0" />
+                  <FolderKanban size={16} className="shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1 truncate font-medium">{workspace.name}</span>
-                  <span className="text-muted-foreground shrink-0 text-xs">
+                  <span className="shrink-0 text-xs text-muted-foreground">
                     {workspace.projectCount === 1
                       ? "1 project"
                       : `${workspace.projectCount} projects`}
                   </span>
-                  <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+                  <ChevronRight size={16} className="shrink-0 text-muted-foreground" />
                 </button>
               </li>
             ))}

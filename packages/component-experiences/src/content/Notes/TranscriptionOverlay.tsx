@@ -37,14 +37,14 @@ export const TranscriptionOverlay = memo(function TranscriptionOverlay({
 
   return (
     <div
-      className="border-border bg-surface-elevated absolute right-4 bottom-16 left-4 max-h-32 overflow-y-auto rounded border p-3 shadow-[var(--polychat-elevated-shadow)]"
+      className="absolute right-4 bottom-16 left-4 max-h-32 overflow-y-auto rounded border border-border bg-surface-elevated p-3 shadow-[var(--polychat-elevated-shadow)]"
       aria-live="polite"
     >
-      <div className="flex items-center mb-1 text-xs text-muted-foreground">
-        <span className="font-medium mr-2">Status:</span>
+      <div className="mb-1 flex items-center text-xs text-muted-foreground">
+        <span className="mr-2 font-medium">Status:</span>
         <span
           className={cn(
-            "px-2 py-0.5 rounded text-xs",
+            "rounded px-2 py-0.5 text-xs",
             transcriptionStatus === "active"
               ? "bg-success/12 text-success"
               : transcriptionStatus === "connecting"
@@ -77,9 +77,9 @@ export const TranscriptionOverlay = memo(function TranscriptionOverlay({
         </div>
       </div>
       {partialTranscript ? (
-        <p className="text-sm opacity-70 text-muted-foreground italic">{partialTranscript}</p>
+        <p className="text-sm text-muted-foreground italic opacity-70">{partialTranscript}</p>
       ) : (
-        <p className="text-sm opacity-50 text-muted-foreground animate-pulse">
+        <p className="animate-pulse text-sm text-muted-foreground opacity-50">
           {isSpeechDetected ? "Listening..." : "Waiting for speech..."}
         </p>
       )}

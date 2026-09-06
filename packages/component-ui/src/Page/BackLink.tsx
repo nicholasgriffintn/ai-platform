@@ -7,7 +7,7 @@ const backLinkClassName =
   "no-underline flex items-center text-active-work mb-2 hover:underline group";
 
 const backLinkIcon = (
-  <ArrowLeft size={16} className="mr-1 group-hover:-translate-x-1 transition-transform" />
+  <ArrowLeft size={16} className="mr-1 transition-transform group-hover:-translate-x-1" />
 );
 
 export function BackLink({

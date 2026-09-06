@@ -103,8 +103,8 @@ export function ReplicateModels({ basePath, projectId }: { basePath: string; pro
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto max-w-7xl px-4">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <CardSkeleton count={6} showHeader showFooter />
         </div>
       </div>

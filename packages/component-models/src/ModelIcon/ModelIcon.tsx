@@ -91,7 +91,7 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
         <img
           src={url}
           alt={modelName}
-          className="w-6 h-6 rounded-full object-cover"
+          className="h-6 w-6 rounded-full object-cover"
           decoding="async"
           loading="lazy"
         />

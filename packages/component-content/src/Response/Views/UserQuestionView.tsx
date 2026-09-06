@@ -80,7 +80,7 @@ export function UserQuestionView({
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => void answerCurrent(option.label)}
-                  className="group flex w-full cursor-pointer items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-surface-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-active-work"
+                  className="group flex w-full cursor-pointer items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-surface-elevated focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none focus-visible:ring-inset"
                 >
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-surface-elevated text-xs font-medium text-muted-foreground group-hover:bg-selection">
                     {index + 1}
@@ -114,7 +114,7 @@ export function UserQuestionView({
               <div className="relative min-w-0 flex-1">
                 <PencilLine
                   size={15}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
                   aria-hidden="true"
                 />
                 <input
@@ -124,7 +124,7 @@ export function UserQuestionView({
                   onChange={(event) => setOtherAnswer(event.target.value)}
                   placeholder="Write an answer…"
                   aria-label={`Answer: ${currentQuestion.prompt}`}
-                  className="h-10 w-full rounded-lg border border-border-strong bg-surface pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-active-work"
+                  className="h-10 w-full rounded-lg border border-border-strong bg-surface pr-3 pl-9 text-sm text-foreground transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-active-work"
                 />
               </div>
               <Button

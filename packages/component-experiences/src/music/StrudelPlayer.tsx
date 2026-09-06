@@ -187,29 +187,29 @@ export function StrudelPlayer({
   return (
     <div className="w-full">
       {title || subtitle ? (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-1">
+        <div className="mb-3 flex flex-col gap-1 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            {title && <h3 className="text-base sm:text-lg font-semibold">{title}</h3>}
+            {title && <h3 className="text-base font-semibold sm:text-lg">{title}</h3>}
             {isPlaying && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success border border-success/40">
-                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+              <span className="inline-flex items-center gap-1 rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
                 Live
               </span>
             )}
           </div>
-          {subtitle && <span className="text-xs sm:text-sm text-muted-foreground">{subtitle}</span>}
+          {subtitle && <span className="text-xs text-muted-foreground sm:text-sm">{subtitle}</span>}
         </div>
       ) : null}
 
-      <div className="relative w-full rounded-xl border bg-gradient-to-b from-canvas via-canvas/95 to-canvas/90 overflow-hidden shadow-lg">
-        <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/80 bg-surface/80">
+      <div className="relative w-full overflow-hidden rounded-xl border bg-gradient-to-b from-canvas via-canvas/95 to-canvas/90 shadow-lg">
+        <div className="flex items-center justify-between gap-2 border-b border-border/80 bg-surface/80 px-3 py-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono uppercase tracking-wide text-muted-foreground">
+            <span className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
               Strudel Live Code
             </span>
           </div>
 
-          <div className="flex-1 flex items-center justify-end text-[11px] text-muted-foreground">
+          <div className="flex flex-1 items-center justify-end text-[11px] text-muted-foreground">
             {isPlaying && <span className="text-success">Playing current pattern</span>}
           </div>
 
@@ -239,28 +239,28 @@ export function StrudelPlayer({
 
         {readOnly ? (
           <div>
-            <pre className="p-4 overflow-x-auto text-xs sm:text-sm font-mono bg-surface/80">
+            <pre className="overflow-x-auto bg-surface/80 p-4 font-mono text-xs sm:text-sm">
               {code}
             </pre>
             <div ref={editorContainerRef} className="sr-only" aria-hidden="true" />
           </div>
         ) : (
-          <div ref={editorContainerRef} className="w-full min-h-[320px]" />
+          <div ref={editorContainerRef} className="min-h-[320px] w-full" />
         )}
 
         {error && (
-          <div className="px-3 py-2 bg-destructive/10 border-t border-destructive/20">
-            <p className="text-[11px] text-destructive font-mono">{error}</p>
+          <div className="border-t border-destructive/20 bg-destructive/10 px-3 py-2">
+            <p className="font-mono text-[11px] text-destructive">{error}</p>
           </div>
         )}
       </div>
 
       {readOnly ? (
-        <p className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">
+        <p className="mt-2 text-xs text-muted-foreground sm:mt-3 sm:text-sm">
           Press play to load the Strudel runtime and listen in your browser.
         </p>
       ) : (
-        <p className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">
+        <p className="mt-2 text-xs text-muted-foreground sm:mt-3 sm:text-sm">
           The Strudel REPL runs entirely in your browser. Edit the code and press{" "}
           <span className="font-mono text-[11px]">Alt+Enter</span> to play,{" "}
           <span className="font-mono text-[11px]">Alt+.</span> to pause.

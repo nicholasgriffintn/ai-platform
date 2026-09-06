@@ -20,7 +20,7 @@ export function SharedTeammateCard({
     <Card className="justify-between p-5 shadow-none">
       <div>
         <div className="mb-4 flex items-center justify-between gap-3">
-          <span className="bg-selection flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl">
+          <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-selection">
             {teammate.avatar_url ? (
               <img
                 src={teammate.avatar_url}
@@ -38,7 +38,7 @@ export function SharedTeammateCard({
             {teammate.rating_average ?? 0} ({teammate.rating_count ?? 0})
           </span>
         </div>
-        <h3 className="text-foreground text-lg font-bold">{teammate.name}</h3>
+        <h3 className="text-lg font-bold text-foreground">{teammate.name}</h3>
         <p className="mt-2 min-h-12 text-sm leading-6 text-muted-foreground">
           {teammate.description}
         </p>

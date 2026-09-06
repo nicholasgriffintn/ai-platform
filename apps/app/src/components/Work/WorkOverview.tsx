@@ -103,7 +103,7 @@ export function WorkOverview() {
 
         {canAccessWork && (
           <section className="mt-10">
-            <h2 className="text-foreground mb-3 text-sm font-semibold">
+            <h2 className="mb-3 text-sm font-semibold text-foreground">
               Notification inbox{unread > 0 ? ` · ${unread} unread` : ""}
             </h2>
             <TaskAttentionList

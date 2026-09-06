@@ -152,7 +152,7 @@ export function CapabilityCard({
             )}
           </span>
           {isIncluded && (
-            <span className="rounded-full bg-surface-elevated px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <span className="rounded-full bg-surface-elevated px-2 py-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
               {statusLabel}
             </span>
           )}

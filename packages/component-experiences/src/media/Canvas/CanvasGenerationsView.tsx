@@ -17,7 +17,7 @@ export function CanvasGenerationsView({
       <section data-header-scroll-source className={cn("h-full overflow-auto p-4", className)}>
         <div className="mx-auto max-w-[1400px]">
           <div className="mb-4 flex items-center gap-2">
-            <div className="bg-creative/15 text-creative rounded-lg p-2">
+            <div className="rounded-lg bg-creative/15 p-2 text-creative">
               <Layers className="h-4 w-4" />
             </div>
             <div>
@@ -38,7 +38,7 @@ export function CanvasGenerationsView({
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="bg-creative/15 text-creative rounded-lg p-2">
+            <div className="rounded-lg bg-creative/15 p-2 text-creative">
               <Layers className="h-4 w-4" />
             </div>
             <div>
@@ -59,14 +59,14 @@ export function CanvasGenerationsView({
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={`loading-${index}`}
-                className="bg-selection h-48 animate-pulse rounded-xl"
+                className="h-48 animate-pulse rounded-xl bg-selection"
               />
             ))}
           </div>
         )}
 
         {!canvas.isModelsLoading && canvas.displayRuns.length === 0 && (
-          <div className="border-border text-muted-foreground flex min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed">
+          <div className="flex min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed border-border text-muted-foreground">
             <Sparkles className="mb-2 h-6 w-6" />
             <p>Select models in the sidebar and run your first generation.</p>
           </div>

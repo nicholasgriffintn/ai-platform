@@ -137,7 +137,7 @@ export function OptionsMenuRadioGroup<TValue extends string>({
           className={cn(rowClassName, "justify-between gap-4")}
         >
           <span className="truncate">{option.label}</span>
-          <DropdownMenuPrimitive.ItemIndicator className="text-active-work shrink-0">
+          <DropdownMenuPrimitive.ItemIndicator className="shrink-0 text-active-work">
             <Check size={13} aria-hidden="true" />
           </DropdownMenuPrimitive.ItemIndicator>
         </DropdownMenuPrimitive.RadioItem>
@@ -164,7 +164,7 @@ export function OptionsMenuSection<TValue extends string>({
     <DropdownMenuPrimitive.Sub>
       <DropdownMenuPrimitive.SubTrigger className={cn(rowClassName, "justify-between gap-4")}>
         <span className="truncate">{label}</span>
-        <span className="text-muted-foreground flex shrink-0 items-center gap-1">
+        <span className="flex shrink-0 items-center gap-1 text-muted-foreground">
           {selected?.label}
           <ChevronRight size={13} aria-hidden="true" />
         </span>
@@ -219,7 +219,7 @@ export function OptionsMenuSubmenu({
 }
 
 export function OptionsMenuSeparator() {
-  return <DropdownMenuPrimitive.Separator className="bg-border my-1 h-px" />;
+  return <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border" />;
 }
 
 export interface OptionsMenuActionProps {
@@ -255,7 +255,7 @@ export function OptionsMenuAction({
       {children}
       {shortcut && (
         <kbd
-          className="text-muted-foreground ml-auto shrink-0 font-sans text-[11px] font-medium uppercase"
+          className="ml-auto shrink-0 font-sans text-[11px] font-medium text-muted-foreground uppercase"
           aria-hidden="true"
         >
           {shortcut}

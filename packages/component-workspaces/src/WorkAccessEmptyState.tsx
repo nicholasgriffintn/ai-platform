@@ -28,7 +28,7 @@ export function WorkAccessEmptyState() {
       className="relative isolate w-full overflow-hidden rounded-[1.75rem] border border-border bg-surface px-6 py-8 shadow-2xl sm:px-10 sm:py-10 lg:px-12 lg:py-12"
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-active-work/20 blur-3xl" />
+        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-active-work/20 blur-3xl" />
         <div className="absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-creative/10 blur-3xl" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.12),transparent_34%)]" />
       </div>
@@ -89,7 +89,7 @@ export function WorkAccessEmptyState() {
                   <p className="truncate text-sm font-semibold text-foreground">Product launch</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">Shared workspace</p>
                 </div>
-                <span className="rounded-full bg-active-work/10 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-active-work">
+                <span className="rounded-full bg-active-work/10 px-2 py-1 text-[9px] font-bold tracking-wider text-active-work uppercase">
                   Pro
                 </span>
               </div>

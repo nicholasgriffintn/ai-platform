@@ -46,7 +46,7 @@ export function ProfilePasskeysTab() {
                 label: isRegisteringPasskey ? "Adding..." : "Add Passkey",
                 onClick: handleAddPasskey,
                 disabled: isRegisteringPasskey,
-                icon: <KeyRound className="h-4 w-4 mr-2" />,
+                icon: <KeyRound className="mr-2 h-4 w-4" />,
               },
             ]
           : []

@@ -15,7 +15,7 @@ export function ConnectorLogo({
   return (
     <div
       className={cn(
-        "border-border bg-surface flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border shadow-sm",
+        "flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface shadow-sm",
         className,
       )}
     >

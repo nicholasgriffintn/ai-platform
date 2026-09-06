@@ -26,15 +26,15 @@ export function ReplicateModelDetailView({
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">{model.name}</h1>
-        <p className="text-muted-foreground mb-4">{model.description}</p>
+        <h1 className="mb-2 text-3xl font-bold text-foreground">{model.name}</h1>
+        <p className="mb-4 text-muted-foreground">{model.description}</p>
 
         {tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="mb-4 flex flex-wrap gap-2">
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="px-3 py-1 bg-active-work/12 text-active-work text-sm rounded-full"
+                className="rounded-full bg-active-work/12 px-3 py-1 text-sm text-active-work"
               >
                 {tag}
               </span>
@@ -60,11 +60,11 @@ export function ReplicateModelDetailView({
         </div>
       </div>
 
-      <div className="border-border bg-surface rounded-lg border p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-4">Model Parameters</h2>
+      <div className="rounded-lg border border-border bg-surface p-6">
+        <h2 className="mb-4 text-xl font-semibold text-foreground">Model Parameters</h2>
         {form}
         {errorMessage && (
-          <div className="mt-4 bg-failure/12 border border-failure/45 rounded-lg p-4">
+          <div className="mt-4 rounded-lg border border-failure/45 bg-failure/12 p-4">
             <p className="text-failure">{errorMessage}</p>
           </div>
         )}

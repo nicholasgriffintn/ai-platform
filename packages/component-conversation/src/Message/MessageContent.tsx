@@ -236,13 +236,13 @@ const renderDocumentContent = (
   return (
     <div
       key={`document-attachment-${index ?? 0}`}
-      className="border-border bg-surface-elevated flex flex-col items-start gap-2 rounded-lg border p-3 text-sm"
+      className="flex flex-col items-start gap-2 rounded-lg border border-border bg-surface-elevated p-3 text-sm"
     >
       <div className="flex items-center gap-2">
         <File className="h-5 w-5 text-active-work" />
         <span className="text-foreground">
           {documentName || "Document"}
-          {isMarkdown && <span className="text-xs ml-2 italic">(converted to text)</span>}
+          {isMarkdown && <span className="ml-2 text-xs italic">(converted to text)</span>}
         </span>
       </div>
       {documentUrl && (
@@ -269,7 +269,7 @@ const renderArtifactSelectionContent = (
   return (
     <div
       key={`artifact-selection-${index ?? 0}`}
-      className="border-border bg-surface flex items-center gap-3 rounded-lg border p-3 text-sm shadow-sm"
+      className="flex items-center gap-3 rounded-lg border border-border bg-surface p-3 text-sm shadow-sm"
     >
       <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-active-work/12 text-active-work">
         <FileText className="h-4 w-4" aria-hidden="true" />
@@ -286,7 +286,7 @@ const renderAudioContent = (audioUrl: string, audioName?: string, index?: number
   return (
     <div
       key={`audio-attachment-${index ?? 0}`}
-      className="border-border bg-surface-elevated flex flex-col items-start gap-2 rounded-lg border p-3 text-sm"
+      className="flex flex-col items-start gap-2 rounded-lg border border-border bg-surface-elevated p-3 text-sm"
     >
       <div className="flex items-center gap-2">
         <Volume2 className="h-5 w-5 text-creative" />
@@ -339,7 +339,7 @@ const renderSnapshotPart = (
   index: number,
 ): ReactNode => {
   return (
-    <div key={`snapshot-${index}`} className="border-border bg-surface-elevated rounded border p-3">
+    <div key={`snapshot-${index}`} className="rounded border border-border bg-surface-elevated p-3">
       {part.title ? (
         <div className="mb-1 text-xs font-semibold text-muted-foreground">{part.title}</div>
       ) : null}

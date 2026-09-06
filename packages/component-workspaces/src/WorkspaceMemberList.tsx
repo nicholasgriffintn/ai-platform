@@ -83,7 +83,7 @@ export function WorkspaceMemberList({
                 {viewerRole === "owner" ? <option value="admin">Admin</option> : null}
               </FormSelect>
             ) : (
-              <span className="flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs capitalize text-muted-foreground">
+              <span className="flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground capitalize">
                 {member.role === "owner" && <ShieldCheck size={13} />}
                 {member.role}
               </span>
@@ -146,7 +146,7 @@ export function WorkspaceInvitationList({
                 <Clock3 size={12} /> Expires {new Date(invite.expiresAt).toLocaleDateString()}
               </p>
             </div>
-            <span className="text-xs capitalize text-muted-foreground">{invite.role}</span>
+            <span className="text-xs text-muted-foreground capitalize">{invite.role}</span>
             <Button
               type="button"
               size="sm"

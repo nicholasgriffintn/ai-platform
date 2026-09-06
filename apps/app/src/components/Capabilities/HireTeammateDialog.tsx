@@ -92,7 +92,7 @@ export function HireTeammateDialog({
         <div className="max-h-[22rem] space-y-5 overflow-y-auto pr-1">
           {roleGroups.map((group) => (
             <section key={group.category} className="space-y-2">
-              <h3 className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
+              <h3 className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
                 {group.category}
               </h3>
               <ul className="grid gap-2 sm:grid-cols-2">
@@ -106,19 +106,19 @@ export function HireTeammateDialog({
                         aria-pressed={isSelected}
                         onClick={() => setSelectedRole(isSelected ? null : role)}
                         className={cn(
-                          "border-border hover:bg-selection flex w-full flex-col gap-1 rounded-lg border p-3 text-left transition-colors",
+                          "flex w-full flex-col gap-1 rounded-lg border border-border p-3 text-left transition-colors hover:bg-selection",
                           isSelected && "border-active-work bg-selection",
                         )}
                       >
                         <span className="flex items-center gap-2">
                           {role.kind === "bot" ? (
-                            <Bot size={15} className="text-muted-foreground shrink-0" />
+                            <Bot size={15} className="shrink-0 text-muted-foreground" />
                           ) : (
-                            <UserRound size={15} className="text-muted-foreground shrink-0" />
+                            <UserRound size={15} className="shrink-0 text-muted-foreground" />
                           )}
                           <span className="min-w-0 truncate text-sm font-medium">{role.title}</span>
                         </span>
-                        <span className="text-muted-foreground text-xs">{role.summary}</span>
+                        <span className="text-xs text-muted-foreground">{role.summary}</span>
                       </button>
                     </li>
                   );
@@ -147,7 +147,7 @@ export function HireTeammateDialog({
               onChange={(event) => setJobDescription(event.target.value)}
             />
           </div>
-          <p className="text-muted-foreground text-xs">{TEAMMATE_PERMISSIONS_SENTENCE}</p>
+          <p className="text-xs text-muted-foreground">{TEAMMATE_PERMISSIONS_SENTENCE}</p>
         </div>
 
         <DialogFooter>

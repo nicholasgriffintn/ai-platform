@@ -55,7 +55,7 @@ export function TrainingLogsDialog({
           <div className="rounded-md border border-border p-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="font-medium truncate">{resource.title}</div>
+                <div className="truncate font-medium">{resource.title}</div>
                 <div className="text-xs text-muted-foreground">{resource.description}</div>
                 {resource.subtitle && (
                   <div className="text-xs text-muted-foreground">{resource.subtitle}</div>
@@ -92,7 +92,7 @@ export function TrainingLogsDialog({
                 return (
                   <div key={event.id} className="rounded-md border border-border p-3">
                     <div className="flex items-center justify-between gap-3 text-xs">
-                      <span className="uppercase tracking-wide text-muted-foreground">
+                      <span className="tracking-wide text-muted-foreground uppercase">
                         {event.level}
                       </span>
                       <span className="text-muted-foreground">

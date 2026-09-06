@@ -41,7 +41,7 @@ function StatCard({ label, value, hint }: { label: string; value: string; hint: 
   return (
     <Card className="gap-1 p-5">
       <div className="text-sm font-medium text-muted-foreground">{label}</div>
-      <div className="text-2xl font-semibold tracking-tight text-foreground break-words">
+      <div className="text-2xl font-semibold tracking-tight break-words text-foreground">
         {value}
       </div>
       <div className="text-xs text-muted-foreground">{hint}</div>
@@ -72,7 +72,7 @@ function UsageCard({
     <SettingsSection
       title={title}
       actions={
-        <div className="text-sm tabular-nums text-muted-foreground">
+        <div className="text-sm text-muted-foreground tabular-nums">
           {limit !== undefined ? `${used} / ${limit}` : `${used} used`}
         </div>
       }
@@ -80,7 +80,7 @@ function UsageCard({
     >
       {percentage !== null && (
         <div
-          className="bg-selection h-2 w-full overflow-hidden rounded-full"
+          className="h-2 w-full overflow-hidden rounded-full bg-selection"
           role="meter"
           aria-label={`${used} of ${limit} ${title.toLowerCase()} used today`}
           aria-valuemin={0}
@@ -184,14 +184,14 @@ export function AccountOverview({
               className="h-20 w-20 shrink-0 rounded-full border border-border object-cover"
             />
           ) : (
-            <div className="bg-selection text-muted-foreground flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-3xl font-semibold">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-selection text-3xl font-semibold text-muted-foreground">
               {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
             </div>
           )}
 
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:justify-start">
-              <h3 className="text-foreground text-lg font-bold">{user?.name || "Your Account"}</h3>
+              <h3 className="text-lg font-bold text-foreground">{user?.name || "Your Account"}</h3>
               <Badge variant="secondary">
                 {user?.plan_id === "enterprise"
                   ? "Enterprise plan"
@@ -201,7 +201,7 @@ export function AccountOverview({
               </Badge>
             </div>
 
-            {user?.email && <p className="break-all text-sm text-muted-foreground">{user.email}</p>}
+            {user?.email && <p className="text-sm break-all text-muted-foreground">{user.email}</p>}
 
             {user?.github_username && (
               <ProfileLink href={`https://github.com/${user.github_username}`}>
@@ -210,7 +210,7 @@ export function AccountOverview({
             )}
 
             {user?.bio && (
-              <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+              <p className="text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
                 {user.bio}
               </p>
             )}
@@ -218,14 +218,14 @@ export function AccountOverview({
         </div>
 
         {details.length > 0 && (
-          <dl className="border-border bg-border grid grid-cols-1 gap-px border-t sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-px border-t border-border bg-border sm:grid-cols-2">
             {details.map((detail) => (
               <div
                 key={detail.label}
                 className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-card px-5 py-3 sm:px-6"
               >
                 <dt className="text-sm text-muted-foreground">{detail.label}</dt>
-                <dd className="min-w-0 break-words text-sm font-medium text-foreground">
+                <dd className="min-w-0 text-sm font-medium break-words text-foreground">
                   {detail.value}
                 </dd>
               </div>
@@ -247,7 +247,7 @@ export function AccountOverview({
 
       <section className="space-y-4">
         <div className="space-y-1">
-          <h3 className="text-foreground text-lg font-bold">Usage</h3>
+          <h3 className="text-lg font-bold text-foreground">Usage</h3>
           <p className="text-sm text-muted-foreground">
             Model, capability and infrastructure work in one account.
           </p>

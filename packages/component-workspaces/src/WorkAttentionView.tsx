@@ -245,12 +245,12 @@ export function WorkAttentionView({
       </Card>
 
       {isLoading ? (
-        <div className="text-muted-foreground flex min-h-48 items-center justify-center gap-2 text-sm">
+        <div className="flex min-h-48 items-center justify-center gap-2 text-sm text-muted-foreground">
           <LoaderCircle className="polychat-motion-active-execution size-4" /> Loading attention…
         </div>
       ) : items.length === 0 ? (
         <EmptyState
-          icon={<Inbox className="text-muted-foreground size-6" />}
+          icon={<Inbox className="size-6 text-muted-foreground" />}
           title={hasFilters ? "No work matches these filters" : "Nothing needs attention"}
           message={
             hasFilters
@@ -271,7 +271,7 @@ export function WorkAttentionView({
                   aria-label={item.title}
                   className="group block no-underline hover:!no-underline"
                 >
-                  <div className="border-border bg-surface group-hover:border-border-strong flex items-start gap-3 rounded-lg border p-3">
+                  <div className="flex items-start gap-3 rounded-lg border border-border bg-surface p-3 group-hover:border-border-strong">
                     <Icon
                       className={cn(
                         "mt-0.5 size-4 shrink-0",
@@ -284,25 +284,25 @@ export function WorkAttentionView({
                         <Badge variant="outline" className={kindClass(item.kind)}>
                           {KIND_LABELS[item.kind]}
                         </Badge>
-                        <span className="text-muted-foreground text-xs capitalize">
+                        <span className="text-xs text-muted-foreground capitalize">
                           {item.type}
                         </span>
                         {item.isUnread ? (
-                          <span className="text-human-action text-xs font-medium">Unread</span>
+                          <span className="text-xs font-medium text-human-action">Unread</span>
                         ) : null}
-                        <span className="text-muted-foreground truncate text-xs">
+                        <span className="truncate text-xs text-muted-foreground">
                           {item.workspaceName} · {item.projectName}
                         </span>
                       </div>
-                      <p className="text-foreground mt-1 line-clamp-2 text-sm font-medium">
+                      <p className="mt-1 line-clamp-2 text-sm font-medium text-foreground">
                         {item.title}
                       </p>
                       {item.detail ? (
-                        <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                           {item.detail}
                         </p>
                       ) : null}
-                      <p className="text-muted-foreground mt-2 text-xs">
+                      <p className="mt-2 text-xs text-muted-foreground">
                         {item.ownerName} · {formatDate(item.occurredAt)}
                       </p>
                     </div>
@@ -316,7 +316,7 @@ export function WorkAttentionView({
 
       {total > 0 ? (
         <nav aria-label="Attention pages" className="flex items-center justify-between gap-3">
-          <p className="text-muted-foreground text-xs">
+          <p className="text-xs text-muted-foreground">
             {offset + 1}–{Math.min(offset + limit, total)} of {total}
           </p>
           <div className="flex gap-2">

@@ -30,14 +30,14 @@ export function NoteEditorSurface({
   const [showMetadata, setShowMetadata] = useState(false);
 
   return (
-    <div className="relative flex flex-col flex-1 h-full">
+    <div className="relative flex h-full flex-1 flex-col">
       <output aria-live="polite" className="absolute top-4 right-4 z-20">
         <div
           className={cn(
-            "w-2 h-2 sm:w-3 sm:h-3 rounded-full",
+            "h-2 w-2 rounded-full sm:h-3 sm:w-3",
             isSaving
-              ? "bg-active-work animate-pulse ring-2 ring-active-work/45"
-              : "bg-border-strong ring-border ring-1",
+              ? "animate-pulse bg-active-work ring-2 ring-active-work/45"
+              : "bg-border-strong ring-1 ring-border",
           )}
           title={isSaving ? "Saving..." : "All changes saved"}
         />
@@ -69,7 +69,7 @@ export function NoteEditorSurface({
         onChange={(event) => onTextChange(event.target.value)}
         placeholder="Start typing..."
         className={cn(
-          "flex-1 w-full p-4 focus:outline-none resize-none",
+          "w-full flex-1 resize-none p-4 focus:outline-none",
           fontFamily === "serif" ? "font-serif" : "font-sans",
         )}
         style={{ fontSize: `${fontSize}px` }}

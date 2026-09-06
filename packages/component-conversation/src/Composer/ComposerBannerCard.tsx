@@ -66,7 +66,7 @@ export function ComposerBannerCard({ banner, onDismiss }: ComposerBannerCardProp
               aria-label={
                 banner.dismissal?.scope === "day" ? "Dismiss for today" : "Dismiss notification"
               }
-              className="hover:bg-selection text-current opacity-60 hover:text-current hover:opacity-100"
+              className="text-current opacity-60 hover:bg-selection hover:text-current hover:opacity-100"
               onClick={onDismiss}
             >
               <X size={14} aria-hidden="true" />

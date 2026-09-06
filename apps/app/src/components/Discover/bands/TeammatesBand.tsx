@@ -38,16 +38,16 @@ export function TeammatesBand() {
           : apps.map((experience) => (
               <li
                 key={experience.id}
-                className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4 lg:flex-row"
+                className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 lg:flex-row"
               >
-                <span className="bg-surface-elevated flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated">
                   {getIcon(experience.icon, experience.theme, "h-5 w-5")}
                 </span>
                 <span className="min-w-0">
-                  <span className="text-foreground block text-sm font-medium">
+                  <span className="block text-sm font-medium text-foreground">
                     {experience.name}
                   </span>
-                  <span className="text-muted-foreground mt-1 line-clamp-2 block text-xs leading-relaxed">
+                  <span className="mt-1 line-clamp-2 block text-xs leading-relaxed text-muted-foreground">
                     {experience.description}
                   </span>
                 </span>

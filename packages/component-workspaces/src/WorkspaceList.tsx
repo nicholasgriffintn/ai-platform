@@ -25,7 +25,7 @@ export function WorkspaceList({
           >
             <strong className="text-sm text-foreground">{workspace.name}</strong>
             <span className="text-sm text-muted-foreground">{workspace.description}</span>
-            <small className="text-xs capitalize text-muted-foreground">{workspace.role}</small>
+            <small className="text-xs text-muted-foreground capitalize">{workspace.role}</small>
           </button>
         </li>
       ))}

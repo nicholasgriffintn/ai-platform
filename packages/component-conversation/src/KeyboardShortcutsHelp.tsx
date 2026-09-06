@@ -62,7 +62,7 @@ export const KeyboardShortcutsHelp = ({
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {sections.map((section) => (
             <section key={section.title}>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                 {section.title}
               </h3>
               <div className="divide-y divide-border">

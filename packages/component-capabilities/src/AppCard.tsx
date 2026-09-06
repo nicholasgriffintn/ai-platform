@@ -39,14 +39,14 @@ export const AppCard = ({
       aria-label={`Open ${app.name}${isPremium ? " (Premium)" : ""}${requiresSignIn ? " (Sign in required)" : ""}`}
       aria-disabled={isDisabled}
       className={cn(
-        "p-5 shadow-none relative",
+        "relative p-5 shadow-none",
         !isWrappedInGroup && "group",
         isDisabled
           ? "cursor-not-allowed opacity-60"
-          : "cursor-pointer hover:shadow-lg hover:border-border-strong",
-        "w-full h-full",
+          : "cursor-pointer hover:border-border-strong hover:shadow-lg",
+        "h-full w-full",
         "transition-all duration-200",
-        "focus:outline-none focus:ring-2 focus:ring-active-work/40",
+        "focus:ring-2 focus:ring-active-work/40 focus:outline-none",
         "bg-transparent",
         "bg-gradient-to-br",
         getCardGradient(app.theme),
@@ -55,36 +55,36 @@ export const AppCard = ({
       {isDisabled && (
         <div className="absolute top-3 right-3 z-10">
           <div
-            className={cn("p-1.5 rounded-full", isDisabled ? "bg-selection" : "bg-attention")}
+            className={cn("rounded-full p-1.5", isDisabled ? "bg-selection" : "bg-attention")}
             title={requiresSignIn ? "Sign in required" : "Premium Feature"}
           >
             {requiresSignIn ? (
-              <Lock className="w-4 h-4 text-foreground" />
+              <Lock className="h-4 w-4 text-foreground" />
             ) : (
-              <Crown className="w-4 h-4 text-foreground" />
+              <Crown className="h-4 w-4 text-foreground" />
             )}
           </div>
         </div>
       )}
 
-      <div className={cn("flex flex-col h-full", isDisabled && "pr-10")}>
-        <div className="flex flex-col space-y-2 md:flex-row md:items-start md:space-y-0 md:space-x-4 mb-3">
+      <div className={cn("flex h-full flex-col", isDisabled && "pr-10")}>
+        <div className="mb-3 flex flex-col space-y-2 md:flex-row md:items-start md:space-y-0 md:space-x-4">
           <div
             className={cn(
-              "p-3 rounded-lg shadow-sm flex-shrink-0",
+              "flex-shrink-0 rounded-lg p-3 shadow-sm",
               getIconContainerClass(app.theme),
             )}
           >
             {getIcon(app.icon, app.theme)}
           </div>
-          <div className="flex flex-col items-start flex-grow min-w-0">
-            <h3 className="font-semibold text-lg text-foreground group-hover:underline">
+          <div className="flex min-w-0 flex-grow flex-col items-start">
+            <h3 className="text-lg font-semibold text-foreground group-hover:underline">
               {app.name}
             </h3>
             {app.category && (
               <span
                 className={cn(
-                  "inline-flex items-center px-3 py-1 text-xs rounded-full mt-1 no-underline",
+                  "mt-1 inline-flex items-center rounded-full px-3 py-1 text-xs no-underline",
                   getBadgeClass(app.theme),
                 )}
               >
@@ -94,7 +94,7 @@ export const AppCard = ({
           </div>
         </div>
 
-        <p className="text-muted-foreground text-sm mb-4 flex-grow text-left overflow-x-hidden no-underline">
+        <p className="mb-4 flex-grow overflow-x-hidden text-left text-sm text-muted-foreground no-underline">
           {app.description}
         </p>
       </div>

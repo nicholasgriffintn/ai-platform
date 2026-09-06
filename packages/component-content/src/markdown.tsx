@@ -55,9 +55,9 @@ const CodeBlock = ({ children, ...props }: PreProps) => {
   const { language, text } = readFencedCode(children);
 
   return (
-    <div className="group/code border-border relative my-4 overflow-hidden rounded-lg border">
-      <div className="border-border bg-surface-elevated flex items-center justify-between gap-2 border-b px-3 py-1.5">
-        <span className="text-muted-foreground font-mono text-[0.68rem] tracking-wider uppercase">
+    <div className="group/code relative my-4 overflow-hidden rounded-lg border border-border">
+      <div className="flex items-center justify-between gap-2 border-b border-border bg-surface-elevated px-3 py-1.5">
+        <span className="font-mono text-[0.68rem] tracking-wider text-muted-foreground uppercase">
           {language || "code"}
         </span>
         <Button
@@ -126,7 +126,7 @@ export function Markdown({ children, className, isStreaming = false }: MarkdownP
       </ReactMarkdown>
       {isStreaming && (
         <span
-          className="bg-active-work ml-1 inline-block h-4 w-2 animate-pulse align-text-bottom"
+          className="ml-1 inline-block h-4 w-2 animate-pulse bg-active-work align-text-bottom"
           aria-hidden="true"
         />
       )}

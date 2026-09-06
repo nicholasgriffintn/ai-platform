@@ -41,7 +41,7 @@ export function ConnectorDetailsModal({
   return (
     <Dialog open onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
-        <div className="flex flex-col items-center px-2 pb-2 pt-4 text-center">
+        <div className="flex flex-col items-center px-2 pt-4 pb-2 text-center">
           <ConnectorLogo connector={connector} className="size-20 rounded-2xl [&_img]:size-12" />
           <DialogTitle className="mt-5 text-2xl">{connector.name}</DialogTitle>
           <DialogDescription className="mt-1">

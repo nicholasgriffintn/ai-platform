@@ -61,7 +61,7 @@ export function IdentitySection({ value, disabled, onChange }: IdentitySectionPr
         description="Optional. Falls back to the teammate's initial."
         onChange={(event) => onChange({ avatarUrl: event.target.value })}
       />
-      <p className="text-muted-foreground text-xs">{TEAMMATE_PERMISSIONS_SENTENCE}</p>
+      <p className="text-xs text-muted-foreground">{TEAMMATE_PERMISSIONS_SENTENCE}</p>
     </TeammateEditorSection>
   );
 }

@@ -86,9 +86,9 @@ export function DocumentMetadataPanel({
 
   if (isEditing) {
     return (
-      <div className="border-border bg-surface-elevated space-y-4 rounded-lg border p-4">
+      <div className="space-y-4 rounded-lg border border-border bg-surface-elevated p-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium flex items-center gap-2 text-foreground">
+          <h3 className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Hash size={16} className="text-muted-foreground" />
             Edit Metadata
           </h3>
@@ -139,7 +139,7 @@ export function DocumentMetadataPanel({
               id="tags-input"
               value={editingMetadata.tags?.join(", ") || ""}
               onChange={(e) => handleTagsChange(e.target.value)}
-              className="bg-surface text-foreground mt-1"
+              className="mt-1 bg-surface text-foreground"
               placeholder="tag1, tag2, tag3"
             />
           </div>
@@ -152,7 +152,7 @@ export function DocumentMetadataPanel({
               id="topics-input"
               value={editingMetadata.keyTopics?.join(", ") || ""}
               onChange={(e) => handleKeyTopicsChange(e.target.value)}
-              className="bg-surface text-foreground mt-1"
+              className="mt-1 bg-surface text-foreground"
               placeholder="topic1, topic2, topic3"
             />
           </div>
@@ -174,7 +174,7 @@ export function DocumentMetadataPanel({
                     contentType: e.target.value as DocumentMetadata["contentType"],
                   }))
                 }
-                className="border-border bg-surface text-foreground mt-1 w-full rounded-md border px-3 py-2"
+                className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground"
               >
                 <option value="text">Text</option>
                 <option value="list">List</option>
@@ -199,7 +199,7 @@ export function DocumentMetadataPanel({
                     sentiment: e.target.value as DocumentMetadata["sentiment"],
                   }))
                 }
-                className="border-border bg-surface text-foreground mt-1 w-full rounded-md border px-3 py-2"
+                className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground"
               >
                 <option value="positive">Positive</option>
                 <option value="neutral">Neutral</option>
@@ -209,8 +209,8 @@ export function DocumentMetadataPanel({
           </div>
 
           {editingMetadata.capturedFrom && (
-            <div className="pt-4 border-t">
-              <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+            <div className="border-t pt-4">
+              <h4 className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                 <Monitor size={14} className="text-muted-foreground" />
                 Capture Source
               </h4>
@@ -231,7 +231,7 @@ export function DocumentMetadataPanel({
                         capturedFrom: { ...prev.capturedFrom, title: e.target.value },
                       }))
                     }
-                    className="bg-surface text-foreground mt-1"
+                    className="mt-1 bg-surface text-foreground"
                     placeholder="Source title"
                   />
                 </div>
@@ -251,7 +251,7 @@ export function DocumentMetadataPanel({
                         capturedFrom: { ...prev.capturedFrom, url: e.target.value },
                       }))
                     }
-                    className="bg-surface text-foreground mt-1"
+                    className="mt-1 bg-surface text-foreground"
                     placeholder="https://example.com"
                   />
                 </div>
@@ -264,9 +264,9 @@ export function DocumentMetadataPanel({
   }
 
   return (
-    <div className="border-border bg-surface-elevated space-y-3 rounded-lg border p-4">
+    <div className="space-y-3 rounded-lg border border-border bg-surface-elevated p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium flex items-center gap-2 text-foreground">
+        <h3 className="flex items-center gap-2 text-sm font-medium text-foreground">
           <Hash size={16} className="text-muted-foreground" />
           Note Metadata
         </h3>
@@ -297,14 +297,14 @@ export function DocumentMetadataPanel({
       <div className="space-y-3">
         {metadata?.summary && (
           <div>
-            <div className="text-xs font-medium text-muted-foreground mb-1">Summary</div>
+            <div className="mb-1 text-xs font-medium text-muted-foreground">Summary</div>
             <p className="text-sm text-foreground">{metadata.summary}</p>
           </div>
         )}
 
         {metadata?.tags && metadata.tags.length > 0 && (
           <div>
-            <div className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+            <div className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
               <Tag size={12} className="text-muted-foreground" />
               Tags
             </div>
@@ -320,7 +320,7 @@ export function DocumentMetadataPanel({
 
         {metadata?.keyTopics && metadata.keyTopics.length > 0 && (
           <div>
-            <div className="text-xs font-medium text-muted-foreground mb-2">Key Topics</div>
+            <div className="mb-2 text-xs font-medium text-muted-foreground">Key Topics</div>
             <div className="flex flex-wrap gap-1">
               {metadata.keyTopics.map((topic: string) => (
                 <Badge key={topic} variant="outline" className="text-xs">
@@ -352,7 +352,7 @@ export function DocumentMetadataPanel({
             <div className="flex items-center gap-1">
               <FileText size={12} className="text-muted-foreground" />
               <span className="text-muted-foreground">Type:</span>
-              <span className="capitalize text-foreground">{metadata.contentType}</span>
+              <span className="text-foreground capitalize">{metadata.contentType}</span>
             </div>
           )}
 
@@ -360,7 +360,7 @@ export function DocumentMetadataPanel({
             <div className="flex items-center gap-1">
               <span
                 className={cn(
-                  "px-2 py-1 rounded text-xs capitalize",
+                  "rounded px-2 py-1 text-xs capitalize",
                   getSentimentColor(metadata.sentiment),
                 )}
               >
@@ -373,7 +373,7 @@ export function DocumentMetadataPanel({
             <div className="flex items-center gap-1">
               {getSourceTypeIcon(metadata.sourceType)}
               <span className="text-muted-foreground">Source:</span>
-              <span className="capitalize text-foreground">
+              <span className="text-foreground capitalize">
                 {metadata.sourceType.replace("_", " ")}
               </span>
             </div>
@@ -381,12 +381,12 @@ export function DocumentMetadataPanel({
         </div>
 
         {metadata?.capturedFrom && (
-          <div className="pt-2 border-t">
-            <div className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+          <div className="border-t pt-2">
+            <div className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
               <Monitor size={12} className="text-muted-foreground" />
               Capture Source
             </div>
-            <div className="text-xs space-y-1">
+            <div className="space-y-1 text-xs">
               {metadata.capturedFrom?.title && (
                 <div>
                   <span className="text-muted-foreground">Title:</span>{" "}

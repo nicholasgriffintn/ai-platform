@@ -41,7 +41,7 @@ export function GenerationCard({
   const paletteClass = getPlaceholderPaletteClass(index);
 
   return (
-    <article className="border-border bg-surface/80 mb-4 break-inside-avoid rounded-2xl border p-3 shadow-sm backdrop-blur-sm">
+    <article className="mb-4 break-inside-avoid rounded-2xl border border-border bg-surface/80 p-3 shadow-sm backdrop-blur-sm">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold text-foreground">{run.modelName}</h3>
@@ -53,7 +53,7 @@ export function GenerationCard({
         </div>
         <span
           className={cn(
-            "rounded-full border px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide",
+            "rounded-full border px-2 py-0.5 text-[11px] font-medium tracking-wide uppercase",
             statusStyles[run.status],
           )}
         >
@@ -64,14 +64,14 @@ export function GenerationCard({
       {showPlaceholder && (
         <div
           className={cn(
-            "border-border relative overflow-hidden rounded-xl border bg-gradient-to-br",
+            "relative overflow-hidden rounded-xl border border-border bg-gradient-to-br",
             paletteClass,
             aspectClass,
           )}
         >
-          <div className="absolute -right-10 top-0 h-28 w-28 rounded-full bg-surface mix-blend-soft-light" />
-          <div className="absolute -left-10 bottom-0 h-24 w-24 rounded-full bg-surface mix-blend-soft-light" />
-          <div className="absolute left-1/3 top-1/3 h-16 w-16 rounded-full bg-surface blur-md" />
+          <div className="absolute top-0 -right-10 h-28 w-28 rounded-full bg-surface mix-blend-soft-light" />
+          <div className="absolute bottom-0 -left-10 h-24 w-24 rounded-full bg-surface mix-blend-soft-light" />
+          <div className="absolute top-1/3 left-1/3 h-16 w-16 rounded-full bg-surface blur-md" />
           {(run.status === "queued" || run.status === "processing") && (
             <div className="absolute inset-0 flex items-center justify-center text-foreground">
               <Clock3 className="mr-2 h-4 w-4 animate-pulse" />
@@ -82,7 +82,7 @@ export function GenerationCard({
       )}
 
       {preview?.type === "image" && (
-        <div className="border-border rounded-xl border">
+        <div className="rounded-xl border border-border">
           <ImageModal
             src={preview.url}
             alt={run.modelName}
@@ -94,7 +94,7 @@ export function GenerationCard({
       )}
 
       {preview?.type === "video" && (
-        <div className={cn("border-border overflow-hidden rounded-xl border", aspectClass)}>
+        <div className={cn("overflow-hidden rounded-xl border border-border", aspectClass)}>
           <video controls className="h-full w-full object-cover">
             <source src={preview.url} type="video/mp4" />
           </video>

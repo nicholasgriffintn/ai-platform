@@ -35,20 +35,20 @@ export function StreamActivityIndicator({
   return (
     <div
       className={cn(
-        "text-muted-foreground flex min-w-0 flex-col gap-0.5 px-4 py-2 text-sm",
+        "flex min-w-0 flex-col gap-0.5 px-4 py-2 text-sm text-muted-foreground",
         className,
       )}
       data-testid="stream-activity"
     >
       <div className="flex items-start gap-2">
         <span
-          className="polychat-motion-active-execution bg-active-work mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full"
+          className="polychat-motion-active-execution mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-active-work"
           aria-hidden="true"
         />
         <span className="min-w-0">{turnActivity?.label ?? label}</span>
       </div>
       {metrics.length > 0 && (
-        <span aria-hidden="true" className="text-muted-foreground text-xs tabular-nums">
+        <span aria-hidden="true" className="text-xs text-muted-foreground tabular-nums">
           {metrics.join(" · ")}
         </span>
       )}

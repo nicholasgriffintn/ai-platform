@@ -58,7 +58,7 @@ export function ProjectHomeActions({
         href={settingsPath}
         aria-label="Project settings"
         title="Project settings"
-        className="text-muted-foreground hover:text-foreground hover:bg-selection flex h-8 w-8 shrink-0 items-center justify-center rounded-md no-underline transition-colors"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground no-underline transition-colors hover:bg-selection hover:text-foreground"
       >
         <Settings2 size={16} />
       </Link>

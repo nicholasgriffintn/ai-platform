@@ -16,7 +16,7 @@ export function DrawingWorkspace({ drawing }: { drawing: DrawingStudioState }) {
         </div>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
           <DrawingEditorControls drawing={drawing} />
-          <div className="border-border bg-surface relative rounded-xl border p-3 shadow-sm">
+          <div className="relative rounded-xl border border-border bg-surface p-3 shadow-sm">
             <DrawingCanvas
               canvasRef={drawing.canvasRef}
               isFillMode={drawing.isFillMode}
@@ -49,7 +49,7 @@ export function DrawingWorkspace({ drawing }: { drawing: DrawingStudioState }) {
     if (drawing.isSelectedDrawingLoading) {
       return (
         <div className="flex min-h-[280px] items-center justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-t-2 border-active-work" />
+          <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-active-work" />
         </div>
       );
     }
@@ -85,7 +85,7 @@ export function DrawingWorkspace({ drawing }: { drawing: DrawingStudioState }) {
         {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={`drawing-loading-${index}`}
-            className="bg-selection h-56 animate-pulse rounded-xl"
+            className="h-56 animate-pulse rounded-xl bg-selection"
           />
         ))}
       </div>
@@ -122,10 +122,10 @@ export function DrawingWorkspace({ drawing }: { drawing: DrawingStudioState }) {
           type="button"
           onClick={() => drawing.setSelectedDrawingId(item.id)}
           className={cn(
-            "border-border bg-surface hover:border-border-strong rounded-xl border p-3 text-left shadow-sm transition hover:shadow-md",
+            "rounded-xl border border-border bg-surface p-3 text-left shadow-sm transition hover:border-border-strong hover:shadow-md",
           )}
         >
-          <div className="bg-selection relative mb-3 aspect-video w-full overflow-hidden rounded-lg">
+          <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-lg bg-selection">
             {item.paintingUrl ? (
               <Image
                 src={item.paintingUrl}

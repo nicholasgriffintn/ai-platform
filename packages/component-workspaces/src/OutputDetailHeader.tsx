@@ -27,7 +27,7 @@ export function OutputDetailHeader({
     <>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
             {capabilityId}
           </p>
           <h1 className="mt-1 text-xl font-semibold text-foreground">{title}</h1>

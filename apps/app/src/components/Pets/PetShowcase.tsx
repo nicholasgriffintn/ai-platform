@@ -9,7 +9,7 @@ function TraitList({ traits }: { traits: PetLoreEntry["traits"] }) {
       {traits.map((trait) => (
         <div key={trait.label}>
           <dt className="polychat-eyebrow">{trait.label}</dt>
-          <dd className="text-foreground mt-0.5">{trait.value}</dd>
+          <dd className="mt-0.5 text-foreground">{trait.value}</dd>
         </div>
       ))}
     </dl>
@@ -18,7 +18,7 @@ function TraitList({ traits }: { traits: PetLoreEntry["traits"] }) {
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <h2 className="font-display text-foreground text-3xl font-medium tracking-tight text-balance">
+    <h2 className="font-display text-3xl font-medium tracking-tight text-balance text-foreground">
       {children}
     </h2>
   );
@@ -29,10 +29,10 @@ export function PetShowcase() {
     <div className="mx-auto w-full max-w-5xl space-y-16 px-4 pb-16 sm:px-6">
       <header className="space-y-4 pt-2">
         <p className="polychat-eyebrow">Company</p>
-        <h1 className="font-display text-foreground text-4xl font-medium tracking-tight text-balance md:text-5xl">
+        <h1 className="font-display text-4xl font-medium tracking-tight text-balance text-foreground md:text-5xl">
           The Polychat pets
         </h1>
-        <p className="text-muted-foreground max-w-prose text-lg leading-relaxed">
+        <p className="max-w-prose text-lg leading-relaxed text-muted-foreground">
           A pet perches above the composer and reacts to whatever Polychat is doing. Four parrots
           that used to be logos, and a few strays that turned up on their own.
         </p>
@@ -49,7 +49,7 @@ export function PetShowcase() {
           <SectionTitle>{PET_FLOCK.title}</SectionTitle>
           <p className="text-muted-foreground italic">{PET_FLOCK.standfirst}</p>
           {PET_FLOCK.lore.map((paragraph) => (
-            <p key={paragraph} className="text-muted-foreground leading-relaxed">
+            <p key={paragraph} className="leading-relaxed text-muted-foreground">
               {paragraph}
             </p>
           ))}
@@ -59,7 +59,7 @@ export function PetShowcase() {
           {PET_FLOCK.members.map((member) => (
             <li
               key={member.slug}
-              className="bg-surface border-border flex flex-col gap-4 rounded-xl border p-5 sm:flex-row sm:items-start"
+              className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 sm:flex-row sm:items-start"
             >
               <div className="flex h-20 w-20 shrink-0 items-end justify-center overflow-hidden">
                 <PetPreview
@@ -69,12 +69,12 @@ export function PetShowcase() {
                 />
               </div>
               <div className="min-w-0">
-                <h3 className="font-display text-foreground text-xl font-medium tracking-tight">
+                <h3 className="font-display text-xl font-medium tracking-tight text-foreground">
                   {member.name}
                 </h3>
-                <p className="text-muted-foreground text-sm">{member.tagline}</p>
+                <p className="text-sm text-muted-foreground">{member.tagline}</p>
                 {member.lore.map((paragraph) => (
-                  <p key={paragraph} className="text-muted-foreground mt-3 text-sm leading-relaxed">
+                  <p key={paragraph} className="mt-3 text-sm leading-relaxed text-muted-foreground">
                     {paragraph}
                   </p>
                 ))}
@@ -87,7 +87,7 @@ export function PetShowcase() {
 
       <section className="space-y-3">
         <SectionTitle>The strays</SectionTitle>
-        <p className="text-muted-foreground max-w-prose leading-relaxed">
+        <p className="max-w-prose leading-relaxed text-muted-foreground">
           Not birds. They arrived separately, by routes nobody has fully established, and were
           allowed to stay on the grounds that they were already here.
         </p>
@@ -104,12 +104,12 @@ export function PetShowcase() {
             <PetPreview sheetUrl={stray.sheetUrl} label={`${stray.name}, animated`} size={120} />
           </div>
           <div>
-            <h2 className="font-display text-foreground text-3xl font-medium tracking-tight">
+            <h2 className="font-display text-3xl font-medium tracking-tight text-foreground">
               {stray.name}
             </h2>
-            <p className="text-muted-foreground mt-1 italic">{stray.tagline}</p>
+            <p className="mt-1 text-muted-foreground italic">{stray.tagline}</p>
             {stray.lore.map((paragraph) => (
-              <p key={paragraph} className="text-muted-foreground mt-4 leading-relaxed">
+              <p key={paragraph} className="mt-4 leading-relaxed text-muted-foreground">
                 {paragraph}
               </p>
             ))}
@@ -118,8 +118,8 @@ export function PetShowcase() {
         </section>
       ))}
 
-      <footer className="border-border border-t pt-8">
-        <p className="text-muted-foreground max-w-prose leading-relaxed">
+      <footer className="border-t border-border pt-8">
+        <p className="max-w-prose leading-relaxed text-muted-foreground">
           You can also bring your own. Upload a sprite sheet, or describe something and let Polychat
           draw it, then keep it in your library.
         </p>

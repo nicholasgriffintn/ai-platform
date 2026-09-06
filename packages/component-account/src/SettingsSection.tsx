@@ -26,7 +26,7 @@ export function SettingsSection({
         <div className="min-w-0">
           {title ? <SettingsSectionTitle>{title}</SettingsSectionTitle> : null}
           {description ? (
-            <p className="text-muted-foreground mt-1 max-w-3xl text-sm">{description}</p>
+            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{description}</p>
           ) : null}
         </div>
         {actions ? <div className="shrink-0">{actions}</div> : null}
@@ -44,7 +44,7 @@ export function SettingsSection({
 
   return (
     <Card className={className}>
-      {header ? <div className="border-border border-b px-6 pb-4">{header}</div> : null}
+      {header ? <div className="border-b border-border px-6 pb-4">{header}</div> : null}
       <div className={cn("px-6", contentClassName)}>{children}</div>
     </Card>
   );
@@ -57,7 +57,7 @@ export function SettingsSectionTitle({
   children: ReactNode;
   className?: string;
 }) {
-  return <h3 className={cn("text-foreground text-lg font-bold", className)}>{children}</h3>;
+  return <h3 className={cn("text-lg font-bold text-foreground", className)}>{children}</h3>;
 }
 
 export function SettingsFieldLabel({
@@ -67,7 +67,7 @@ export function SettingsFieldLabel({
   children: ReactNode;
   className?: string;
 }) {
-  return <h3 className={cn("text-muted-foreground text-sm font-medium", className)}>{children}</h3>;
+  return <h3 className={cn("text-sm font-medium text-muted-foreground", className)}>{children}</h3>;
 }
 
 export function SettingsGroupLabel({
@@ -80,7 +80,7 @@ export function SettingsGroupLabel({
   return (
     <h2
       className={cn(
-        "text-muted-foreground text-xs font-semibold tracking-wide uppercase",
+        "text-xs font-semibold tracking-wide text-muted-foreground uppercase",
         className,
       )}
     >

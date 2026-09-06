@@ -86,7 +86,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 
         {workspaceAttention.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-foreground mb-3 text-sm font-semibold">Waiting on you</h2>
+            <h2 className="mb-3 text-sm font-semibold text-foreground">Waiting on you</h2>
             <TaskAttentionList
               items={workspaceAttention}
               itemHref={(item) =>

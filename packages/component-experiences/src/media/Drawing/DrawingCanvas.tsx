@@ -168,7 +168,7 @@ export function DrawingCanvas({
         ref={canvasRef}
         width={800}
         height={650}
-        className={`bg-[#f9fafb] w-full h-auto max-h-[80vh] border border-border rounded-lg touch-none ${
+        className={`h-auto max-h-[80vh] w-full touch-none rounded-lg border border-border bg-[#f9fafb] ${
           isReadOnly ? "cursor-default" : "cursor-crosshair"
         }`}
         style={{ aspectRatio: "800 / 650" }}

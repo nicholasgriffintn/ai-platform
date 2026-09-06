@@ -18,18 +18,18 @@ export function ReplicateModelCategoryGrid<TModel extends { id: string }>({
   return (
     <>
       {categories.map(({ category, models }) => (
-        <div key={category} className="space-y-6 mb-8">
+        <div key={category} className="mb-8 space-y-6">
           <h2
             data-category={category}
-            className={cn("text-xl font-semibold text-foreground border-b border-border pb-2")}
+            className={cn("border-b border-border pb-2 text-xl font-semibold text-foreground")}
           >
             {category}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {models.map((model) => (
               <div
                 key={model.id}
-                className="transform transition-transform hover:scale-[1.02] h-[200px]"
+                className="h-[200px] transform transition-transform hover:scale-[1.02]"
               >
                 {renderModel(model)}
               </div>

@@ -65,7 +65,7 @@ export function hardenSandboxDocument(documentContent: string | null): string | 
 
 export function LoadingIndicator() {
   return (
-    <div className="flex items-center justify-center h-full w-full bg-surface p-4 text-sm text-muted-foreground">
+    <div className="flex h-full w-full items-center justify-center bg-surface p-4 text-sm text-muted-foreground">
       Processing code...
     </div>
   );
@@ -99,7 +99,7 @@ export function SandboxIframe({
     <iframe
       key={iframeKey}
       srcDoc={hardenSandboxDocument(documentContent)}
-      className="w-full h-full border-0"
+      className="h-full w-full border-0"
       sandbox="allow-scripts"
       title="Code Preview"
       onLoad={handleIframeLoad}

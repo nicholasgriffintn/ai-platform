@@ -151,7 +151,7 @@ export function ProjectKnowledgeCard({
                 />
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{source.title}</span>
-                  <span className="block text-xs capitalize text-muted-foreground">
+                  <span className="block text-xs text-muted-foreground capitalize">
                     {source.kind}
                   </span>
                 </span>

@@ -40,15 +40,15 @@ export function ProjectWorkbenchApprovals({
   return (
     <section
       aria-label="Pending command approvals"
-      className="border-attention/45 bg-attention/12 mb-2 space-y-2 rounded-lg border px-3 py-2"
+      className="mb-2 space-y-2 rounded-lg border border-attention/45 bg-attention/12 px-3 py-2"
     >
       <div className="flex items-center gap-2">
-        <ShieldQuestion className="text-attention size-4" aria-hidden="true" />
+        <ShieldQuestion className="size-4 text-attention" aria-hidden="true" />
         <h3 className="text-sm font-medium">Needs approval</h3>
       </div>
       <ul className="space-y-2">
         {approvals.map((approval) => (
-          <li key={approval.id} className="bg-surface rounded-md p-2">
+          <li key={approval.id} className="rounded-md bg-surface p-2">
             <p className="font-mono text-xs break-words whitespace-pre-wrap">
               {approval.command ?? "Command details unavailable"}
             </p>
@@ -72,14 +72,14 @@ export function ProjectWorkbenchApprovals({
               >
                 Reject
               </Button>
-              <span className="text-muted-foreground ml-auto text-xs capitalize">
+              <span className="ml-auto text-xs text-muted-foreground capitalize">
                 {approval.state}
               </span>
             </div>
           </li>
         ))}
       </ul>
-      {errorMessage ? <p className="text-failure text-xs">{errorMessage}</p> : null}
+      {errorMessage ? <p className="text-xs text-failure">{errorMessage}</p> : null}
     </section>
   );
 }

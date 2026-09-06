@@ -52,30 +52,30 @@ export function WebSearchView({
     <div className="max-w-full overflow-x-hidden">
       <div className={embedded ? "mb-4" : "mb-6"}>
         {sources && sources.length > 0 && (
-          <div className="flex items-center text-sm mb-2 text-muted-foreground">
-            <ArrowRight className="h-5 w-5 mr-2" aria-hidden="true" />
+          <div className="mb-2 flex items-center text-sm text-muted-foreground">
+            <ArrowRight className="mr-2 h-5 w-5" aria-hidden="true" />
             <span>{sources.length} sources</span>
           </div>
         )}
 
         {displayedSources?.length > 0 && (
-          <div id="source-list" className="flex flex-wrap gap-2 mb-4">
+          <div id="source-list" className="mb-4 flex flex-wrap gap-2">
             {displayedSources?.map((source: any) => (
               <a
                 key={`source-card-${source.url}`}
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group no-underline hover:!no-underline flex-1 min-w-[150px] rounded-md border border-border p-3 transition-colors hover:bg-surface-elevated"
+                className="group min-w-[150px] flex-1 rounded-md border border-border p-3 no-underline transition-colors hover:bg-surface-elevated hover:!no-underline"
                 aria-label={`View source: ${source.title}`}
               >
-                <div className="flex items-center mb-2">
+                <div className="mb-2 flex items-center">
                   <Favicon url={source.url} />
-                  <div className="text-xs text-muted-foreground truncate">
+                  <div className="truncate text-xs text-muted-foreground">
                     {getDomain(source.url)}
                   </div>
                 </div>
-                <p className="text-sm font-medium line-clamp-2 text-muted-foreground group-hover:underline">
+                <p className="line-clamp-2 text-sm font-medium text-muted-foreground group-hover:underline">
                   {source.title}
                 </p>
               </a>
@@ -109,16 +109,16 @@ export function WebSearchView({
 
         {providerLabel && (
           <div className="mt-2">
-            <div className="inline-flex items-center gap-2 bg-active-work/10 text-active-work px-3 py-1 rounded-full w-fit">
-              <span className="font-medium tracking-wide uppercase text-xs">Provider</span>
-              <span className="font-medium text-xs">{providerLabel}</span>
+            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-active-work/10 px-3 py-1 text-active-work">
+              <span className="text-xs font-medium tracking-wide uppercase">Provider</span>
+              <span className="text-xs font-medium">{providerLabel}</span>
             </div>
           </div>
         )}
       </div>
 
       <div className={`text-muted-foreground ${embedded ? "mb-4" : "mb-6"}`}>
-        <div className="prose dark:prose-invert text-muted-foreground">
+        <div className="prose text-muted-foreground dark:prose-invert">
           <MemoizedMarkdown>{answer}</MemoizedMarkdown>
         </div>
       </div>
@@ -139,7 +139,7 @@ export function WebSearchView({
                   index === similarQuestions.length - 1 ? "border-b" : ""
                 }`}
               >
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <p className="text-muted-foreground">{question}</p>
                   {embedded && onToolInteraction && (
                     <Button
@@ -177,7 +177,7 @@ export function WebSearchView({
       )}
 
       {providerWarning && (
-        <div className="mt-6 rounded-md border border-attention/60 bg-attention/12 text-attention px-4 py-3">
+        <div className="mt-6 rounded-md border border-attention/60 bg-attention/12 px-4 py-3 text-attention">
           {providerWarning}
         </div>
       )}

@@ -68,7 +68,7 @@ export function SourceCollectionList({
             onClick={() => onSelectCollection(collection.id)}
           >
             <span className="block truncate">{collection.title}</span>
-            <span className="text-muted-foreground block text-xs">
+            <span className="block text-xs text-muted-foreground">
               {collection.sourceCount} {collection.sourceCount === 1 ? "source" : "sources"}
             </span>
           </button>
@@ -77,7 +77,7 @@ export function SourceCollectionList({
             size="icon"
             icon={<Trash2 size={14} />}
             aria-label={`Delete ${collection.title}`}
-            className="absolute top-1/2 right-1 -translate-y-1/2 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+            className="absolute top-1/2 right-1 -translate-y-1/2 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
             onClick={() => onDeleteCollection(collection.id)}
           />
         </div>

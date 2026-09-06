@@ -123,15 +123,15 @@ export function ProjectTaskBoard({
             </Button>
           }
         />
-        <p className="text-muted-foreground mb-6 max-w-3xl text-sm">
+        <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
           Route outcomes through specialist teammates, watch live work, and step in only when a
           stage needs review or approval.
         </p>
 
         {isLoading ? (
-          <p className="text-muted-foreground text-sm">Loading project tasks…</p>
+          <p className="text-sm text-muted-foreground">Loading project tasks…</p>
         ) : error ? (
-          <p role="alert" className="text-failure text-sm">
+          <p role="alert" className="text-sm text-failure">
             {error.message}
           </p>
         ) : (

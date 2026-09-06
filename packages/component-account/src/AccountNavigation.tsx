@@ -42,7 +42,7 @@ export function AccountNavigation({
       {groupSections(sections).map(([group, groupedSections], index) => (
         <div key={group ?? `group-${index}`} className="space-y-1">
           {group ? (
-            <p className="text-muted-foreground px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em]">
+            <p className="px-2 pb-1.5 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
               {group}
             </p>
           ) : null}

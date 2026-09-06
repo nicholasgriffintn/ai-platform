@@ -56,15 +56,15 @@ function DiffFileButton({
       type="button"
       aria-current={selected ? "true" : undefined}
       onClick={onSelect}
-      className={`focus-visible:ring-ring flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm outline-none focus-visible:ring-2 ${
+      className={`flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         selected ? "bg-selection text-foreground" : "hover:bg-selection/60"
       }`}
     >
-      <FileDiff className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
+      <FileDiff className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       <span className="min-w-0 flex-1">
         <span className="block truncate">{fileName(file.path)}</span>
         {directory(file.path) ? (
-          <span className="text-muted-foreground block truncate text-xs">
+          <span className="block truncate text-xs text-muted-foreground">
             {directory(file.path)}
           </span>
         ) : null}
@@ -82,7 +82,7 @@ function SelectedDiff({ file }: { file: DiffFile }) {
   if (file.binary) {
     return (
       <EmptyState
-        icon={<FileWarning className="text-muted-foreground size-5" />}
+        icon={<FileWarning className="size-5 text-muted-foreground" />}
         title="Binary change"
         message="This file cannot be rendered as text. Its change status remains available."
         className="min-h-52 border-0 bg-transparent"
@@ -93,7 +93,7 @@ function SelectedDiff({ file }: { file: DiffFile }) {
   if (file.hunks.length === 0) {
     return (
       <EmptyState
-        icon={<FileDiff className="text-muted-foreground size-5" />}
+        icon={<FileDiff className="size-5 text-muted-foreground" />}
         title="No text hunks available"
         message="The file metadata was recorded, but this diff contains no reviewable text."
         className="min-h-52 border-0 bg-transparent"
@@ -106,15 +106,15 @@ function SelectedDiff({ file }: { file: DiffFile }) {
       {file.hunks.map((hunk) => (
         <section
           key={`${hunk.header}-${hunk.lines[0] ?? "empty"}-${hunk.lines.length}`}
-          className="border-border bg-canvas overflow-hidden rounded-lg border"
+          className="overflow-hidden rounded-lg border border-border bg-canvas"
         >
-          <h4 className="bg-surface-elevated text-muted-foreground px-3 py-2 font-mono text-xs">
+          <h4 className="bg-surface-elevated px-3 py-2 font-mono text-xs text-muted-foreground">
             {hunk.header}
           </h4>
           {groupDiffHunkLines(hunk.lines).map((group) =>
             group.kind === "context" ? (
-              <details key={`context-${group.startIndex}`} open className="border-border border-t">
-                <summary className="text-muted-foreground focus-visible:ring-ring cursor-pointer px-3 py-2 text-xs outline-none focus-visible:ring-2">
+              <details key={`context-${group.startIndex}`} open className="border-t border-border">
+                <summary className="cursor-pointer px-3 py-2 text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   {group.lines.length} unchanged {group.lines.length === 1 ? "line" : "lines"}
                 </summary>
                 <Markdown className="max-w-none text-xs">
@@ -124,7 +124,7 @@ function SelectedDiff({ file }: { file: DiffFile }) {
             ) : (
               <Markdown
                 key={`change-${group.startIndex}`}
-                className="border-border max-w-none border-t text-xs"
+                className="max-w-none border-t border-border text-xs"
               >
                 {`\`\`\`diff\n${group.lines.join("\n")}\n\`\`\``}
               </Markdown>
@@ -160,7 +160,7 @@ export function RunChangesView({
   if (errorMessage) {
     return (
       <EmptyState
-        icon={<FileWarning className="text-failure size-5" />}
+        icon={<FileWarning className="size-5 text-failure" />}
         title="Changes unavailable"
         message={errorMessage}
         className="min-h-52 border-0 bg-transparent"
@@ -171,7 +171,7 @@ export function RunChangesView({
   if (isLoading) {
     return (
       <EmptyState
-        icon={<FileDiff className="text-muted-foreground size-5" />}
+        icon={<FileDiff className="size-5 text-muted-foreground" />}
         title="Loading changes"
         message="Fetching the authorised diff…"
         className="min-h-52 border-0 bg-transparent"
@@ -184,14 +184,14 @@ export function RunChangesView({
       return (
         <div className="space-y-3">
           <EmptyState
-            icon={<FileWarning className="text-muted-foreground size-5" />}
+            icon={<FileWarning className="size-5 text-muted-foreground" />}
             title="Diff unavailable"
             message="The run recorded changed files, but its reviewable diff is unavailable."
             className="min-h-40 border-0 bg-transparent"
           />
           <ul aria-label="Recorded changed files" className="space-y-1">
             {recordedFiles.map((path) => (
-              <li key={path} className="bg-surface-elevated rounded-md px-3 py-2 font-mono text-xs">
+              <li key={path} className="rounded-md bg-surface-elevated px-3 py-2 font-mono text-xs">
                 {path}
               </li>
             ))}
@@ -202,7 +202,7 @@ export function RunChangesView({
 
     return (
       <EmptyState
-        icon={<FileDiff className="text-muted-foreground size-5" />}
+        icon={<FileDiff className="size-5 text-muted-foreground" />}
         title="No changes recorded"
         message="A reviewable change set will appear when the run records a diff."
         className="min-h-52 border-0 bg-transparent"
@@ -213,7 +213,7 @@ export function RunChangesView({
   if (content.binary) {
     return (
       <EmptyState
-        icon={<FileWarning className="text-muted-foreground size-5" />}
+        icon={<FileWarning className="size-5 text-muted-foreground" />}
         title="Diff is not text"
         message="This evidence cannot be rendered safely as a unified diff."
         className="min-h-52 border-0 bg-transparent"
@@ -224,7 +224,7 @@ export function RunChangesView({
   return (
     <div className="space-y-3">
       {content.truncated ? (
-        <output className="bg-attention/10 text-attention block rounded-lg px-3 py-2 text-sm">
+        <output className="block rounded-lg bg-attention/10 px-3 py-2 text-sm text-attention">
           This diff is too large to render in full. Showing a bounded preview.
         </output>
       ) : null}
@@ -260,7 +260,7 @@ export function RunChangesView({
 
       {filteredFiles.length === 0 ? (
         <EmptyState
-          icon={<FileDiff className="text-muted-foreground size-5" />}
+          icon={<FileDiff className="size-5 text-muted-foreground" />}
           title="No matching files"
           message="Try a different file name or directory."
           className="min-h-40 border-0 bg-transparent"
@@ -269,9 +269,9 @@ export function RunChangesView({
         <div className="grid min-h-0 gap-3 xl:grid-cols-[minmax(12rem,0.34fr)_minmax(0,1fr)]">
           <nav
             aria-label="Changed files"
-            className="border-border max-h-80 overflow-auto border-r pr-2"
+            className="max-h-80 overflow-auto border-r border-border pr-2"
           >
-            <p className="text-muted-foreground px-2 pb-1 text-xs">
+            <p className="px-2 pb-1 text-xs text-muted-foreground">
               Contracts and configuration first, tests last
             </p>
             {filteredFiles.map((file) => (

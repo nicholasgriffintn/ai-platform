@@ -51,8 +51,8 @@ export function HoverActions({
         positionClasses[position],
         alwaysVisible
           ? "opacity-100"
-          : "md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 opacity-100",
-        "transition-opacity duration-200 flex items-center space-x-1 bg-inherit",
+          : "opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100",
+        "flex items-center space-x-1 bg-inherit transition-opacity duration-200",
         className,
       )}
     >

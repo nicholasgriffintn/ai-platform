@@ -177,7 +177,7 @@ export function CouncilMemberPickerView({
                 className="mt-0.5"
               />
               <span className="min-w-0">
-                <span className="block text-sm font-medium leading-5">{member.name}</span>
+                <span className="block text-sm leading-5 font-medium">{member.name}</span>
                 {member.role && (
                   <span className="block text-xs leading-4 text-muted-foreground">
                     {member.role}

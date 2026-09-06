@@ -157,8 +157,8 @@ export function MetaAssistantOverlay({ open, onClose }: { open: boolean; onClose
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()} width="min(56rem, 96vw)">
       <DialogContent className="flex h-[min(44rem,92dvh)] flex-col gap-0 overflow-hidden p-0">
-        <div className="border-border flex items-center gap-3 border-b px-4 py-3 pr-14">
-          <Feather size={18} aria-hidden="true" className="text-active-work shrink-0" />
+        <div className="flex items-center gap-3 border-b border-border px-4 py-3 pr-14">
+          <Feather size={18} aria-hidden="true" className="shrink-0 text-active-work" />
           <div className="min-w-0 flex-1">
             <DialogTitle className="text-sm font-semibold">Poly</DialogTitle>
             <DialogDescription className="truncate text-xs">
@@ -187,7 +187,7 @@ export function MetaAssistantOverlay({ open, onClose }: { open: boolean; onClose
             />
           </div>
         ) : localOnlyMode ? (
-          <div className="text-muted-foreground p-6 text-sm">
+          <div className="p-6 text-sm text-muted-foreground">
             Poly works on conversations stored in the cloud. Switch off local-only mode to use it.
           </div>
         ) : (

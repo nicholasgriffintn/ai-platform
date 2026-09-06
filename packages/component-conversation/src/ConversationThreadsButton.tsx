@@ -59,7 +59,7 @@ export function ConversationThreadsButton({
         <div className="flex items-center justify-between gap-3 border-b border-border px-3.5 py-3">
           <h2 className="text-xs font-semibold text-foreground">Threads</h2>
           {data && (
-            <span className="text-xs tabular-nums text-muted-foreground">
+            <span className="text-xs text-muted-foreground tabular-nums">
               {rows.length}
               {data.truncated ? "+" : ""} conversations
             </span>
@@ -103,7 +103,7 @@ export function ConversationThreadsButton({
                     {thread.depth > 0 && (
                       <span
                         aria-hidden="true"
-                        className="absolute -left-2 top-0 h-6 w-2 rounded-bl border-b border-l border-border-strong"
+                        className="absolute top-0 -left-2 h-6 w-2 rounded-bl border-b border-l border-border-strong"
                       />
                     )}
                     <button

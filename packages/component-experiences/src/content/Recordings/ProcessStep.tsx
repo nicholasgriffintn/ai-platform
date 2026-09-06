@@ -22,12 +22,12 @@ export function ProcessStep({
   isProcessing,
 }: ProcessStepProps) {
   return (
-    <div className="border-border bg-surface rounded-lg border p-6">
-      <h2 className="text-xl font-semibold mb-4 text-foreground">Processing Options</h2>
+    <div className="rounded-lg border border-border bg-surface p-6">
+      <h2 className="mb-4 text-xl font-semibold text-foreground">Processing Options</h2>
 
       <div className="space-y-4">
         <div className="flex items-start">
-          <div className="flex items-center h-5">
+          <div className="flex h-5 items-center">
             <FormCheckbox
               id="transcribe"
               name="transcribe"
@@ -73,7 +73,7 @@ export function ProcessStep({
         </div>
 
         <div className="flex items-start">
-          <div className="flex items-center h-5">
+          <div className="flex h-5 items-center">
             <FormCheckbox
               id="summarise"
               name="summarise"
@@ -100,7 +100,7 @@ export function ProcessStep({
                     <div key={speakerId} className="flex items-center">
                       <label
                         htmlFor={`speaker_${speakerId}`}
-                        className="text-sm text-muted-foreground w-24"
+                        className="w-24 text-sm text-muted-foreground"
                       >
                         Speaker {speakerId}:
                       </label>
@@ -120,7 +120,7 @@ export function ProcessStep({
         </div>
 
         <div className="flex items-start">
-          <div className="flex items-center h-5">
+          <div className="flex h-5 items-center">
             <FormCheckbox
               id="generateImage"
               name="generateImage"

@@ -27,7 +27,7 @@ export function UserMenuItem({
 }: UserMenuItemProps) {
   if (!isReady) {
     return (
-      <div className="flex items-center justify-center w-10 h-10 text-foreground">
+      <div className="flex h-10 w-10 items-center justify-center text-foreground">
         <User size={16} />
         <span className="sr-only">User</span>
       </div>
@@ -36,7 +36,7 @@ export function UserMenuItem({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center w-10 h-10 text-foreground">
+      <div className="flex h-10 w-10 items-center justify-center text-foreground">
         <Loader2 size={16} className="animate-spin" />
         <span className="sr-only">Loading...</span>
       </div>
@@ -49,7 +49,7 @@ export function UserMenuItem({
         type="button"
         variant="ghost"
         onClick={onSignIn}
-        className="cursor-pointer flex items-center justify-center p-2 text-foreground hover:bg-surface-elevated rounded-md"
+        className="flex cursor-pointer items-center justify-center rounded-md p-2 text-foreground hover:bg-surface-elevated"
         icon={<KeyRound size={16} />}
       >
         Login
@@ -64,18 +64,18 @@ export function UserMenuItem({
   return (
     <Link
       href={profileHref}
-      className="no-underline cursor-pointer flex items-center justify-center w-10 h-10 text-foreground hover:bg-surface-elevated rounded-md"
+      className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-foreground no-underline hover:bg-surface-elevated"
       aria-disabled={isLoggingOut}
     >
       {account.avatarUrl ? (
         <img
           src={account.avatarUrl}
           alt={account.name || "User"}
-          className="w-6 h-6 rounded-full object-cover"
+          className="h-6 w-6 rounded-full object-cover"
           loading="eager"
         />
       ) : (
-        <div className="w-6 h-6 rounded-full bg-creative flex items-center justify-center text-background text-xs font-semibold">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-creative text-xs font-semibold text-background">
           {account.name ? account.name.charAt(0).toUpperCase() : "U"}
         </div>
       )}

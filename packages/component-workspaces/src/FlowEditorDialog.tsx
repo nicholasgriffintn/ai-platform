@@ -193,7 +193,7 @@ export function FlowEditorDialog({
               <section key={stage.id} className="overflow-hidden rounded-xl border border-border">
                 <div className="flex items-center justify-between gap-3 border-b border-border bg-surface-elevated/70 px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background text-xs font-semibold">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">
                       {index + 1}
                     </span>
                     <p className="text-sm font-semibold">{stage.name || "New stage"}</p>

@@ -43,10 +43,10 @@ export const SearchGroundingSection = ({ searchGrounding }: SearchGroundingProps
     .filter((source) => source.url);
 
   return (
-    <div className="mb-4 mt-2">
+    <div className="mt-2 mb-4">
       <div className="mt-3">
         {searchGrounding.webSearchQueries && searchGrounding.webSearchQueries?.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-2 w-full">
+          <div className="mb-2 flex w-full flex-wrap gap-2">
             <span className="text-sm text-muted-foreground">Queries:</span>
             {searchGrounding.webSearchQueries?.map((query, index) => (
               <a
@@ -54,7 +54,7 @@ export const SearchGroundingSection = ({ searchGrounding }: SearchGroundingProps
                 href={`https://www.google.com/search?q=${encodeURIComponent(query)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-selection text-foreground hover:bg-active-work/15 rounded-full px-2 py-1 text-xs no-underline transition-colors hover:!no-underline"
+                className="rounded-full bg-selection px-2 py-1 text-xs text-foreground no-underline transition-colors hover:bg-active-work/15 hover:!no-underline"
               >
                 {query}
               </a>

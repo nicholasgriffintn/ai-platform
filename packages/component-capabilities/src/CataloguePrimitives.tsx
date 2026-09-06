@@ -22,11 +22,11 @@ export function CatalogueSection({
         <p className="polychat-eyebrow">{eyebrow}</p>
         <h2
           id={headingId}
-          className="font-display text-foreground text-3xl font-medium tracking-tight text-balance"
+          className="font-display text-3xl font-medium tracking-tight text-balance text-foreground"
         >
           {title}
         </h2>
-        <p className="text-muted-foreground max-w-prose leading-relaxed">{lede}</p>
+        <p className="max-w-prose leading-relaxed text-muted-foreground">{lede}</p>
       </div>
       {children}
     </section>
@@ -47,16 +47,16 @@ export function CatalogueCard({
   footer?: ReactNode;
 }) {
   return (
-    <li className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4 lg:flex-row">
-      <span className="bg-surface-elevated text-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+    <li className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 lg:flex-row">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-foreground">
         {icon}
       </span>
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-foreground text-sm font-medium">{title}</span>
+          <span className="text-sm font-medium text-foreground">{title}</span>
           {badges}
         </div>
-        <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed">{description}</p>
+        <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">{description}</p>
         {footer}
       </div>
     </li>

@@ -23,7 +23,7 @@ const formatTimestamp = (timestamp: number) => new Date(timestamp).toLocaleStrin
 const Row = ({ label, value }: { label: string; value: string }) => (
   <div className="flex items-baseline justify-between gap-4">
     <dt className="text-muted-foreground">{label}</dt>
-    <dd className="m-0 text-right tabular-nums text-foreground">{value}</dd>
+    <dd className="m-0 text-right text-foreground tabular-nums">{value}</dd>
   </div>
 );
 

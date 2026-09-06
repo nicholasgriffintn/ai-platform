@@ -49,7 +49,7 @@ export function ProjectHome({
 
   if (error || !project) {
     return (
-      <div role="alert" className="text-failure p-10 text-sm">
+      <div role="alert" className="p-10 text-sm text-failure">
         {error?.message ?? "Project not found"}
       </div>
     );
@@ -108,7 +108,7 @@ export function ProjectHome({
         }}
       >
         {archiveProject.error && (
-          <p role="alert" className="text-failure text-sm">
+          <p role="alert" className="text-sm text-failure">
             {archiveProject.error.message}
           </p>
         )}

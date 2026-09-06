@@ -59,13 +59,13 @@ export const AIFormattingModal = memo(function AIFormattingModal({
               </p>
             </>
           ) : (
-            <div className="mb-4 h-48 border rounded">
+            <div className="mb-4 h-48 rounded border">
               {formatNoteMutation.status === "pending" ? (
-                <div className="flex items-center justify-center h-full">
+                <div className="flex h-full items-center justify-center">
                   <Loader2 className="animate-spin text-muted-foreground" />
                 </div>
               ) : formatNoteMutation.status === "error" ? (
-                <p role="alert" className="text-failure p-4">
+                <p role="alert" className="p-4 text-failure">
                   Formatting failed. Try again.
                 </p>
               ) : (

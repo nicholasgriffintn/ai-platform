@@ -50,7 +50,7 @@ export function StrudelPatternGrid({ patterns, newPatternHref }: StrudelPatternG
                   {pattern.description}
                 </p>
               )}
-              <pre className="bg-surface-elevated text-muted-foreground max-h-40 overflow-hidden rounded-lg p-3 text-xs leading-relaxed">
+              <pre className="max-h-40 overflow-hidden rounded-lg bg-surface-elevated p-3 text-xs leading-relaxed text-muted-foreground">
                 {pattern.code}
               </pre>
               {pattern.tags?.length ? (

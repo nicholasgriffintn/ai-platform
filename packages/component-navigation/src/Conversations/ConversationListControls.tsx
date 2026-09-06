@@ -92,13 +92,13 @@ export function ConversationListControls({
       trigger={
         <button
           type="button"
-          className="text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground relative flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors"
+          className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           aria-label="Conversation list options"
           title="Conversation list options"
         >
           <SlidersHorizontal size={15} />
           {isCustomised && (
-            <span className="bg-active-work absolute top-1 right-1 h-1.5 w-1.5 rounded-full" />
+            <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-active-work" />
           )}
         </button>
       }

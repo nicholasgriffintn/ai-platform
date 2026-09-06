@@ -74,7 +74,7 @@ export default function SharedConversationPage() {
   if (isLoading) {
     return (
       <PageShell
-        className="bg-canvas flex h-screen w-full items-center justify-center"
+        className="flex h-screen w-full items-center justify-center bg-canvas"
         displayNavBar={false}
       >
         <LoadingSpinner message="Loading shared conversation..." />
@@ -108,16 +108,16 @@ export default function SharedConversationPage() {
       }
       displayNavBar={false}
       fullBleed
-      className="bg-canvas flex min-h-screen flex-col"
+      className="flex min-h-screen flex-col bg-canvas"
     >
       <div
-        className={`flex h-full flex-col w-full ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
+        className={`flex h-full w-full flex-col ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
       >
         <div className="relative flex-1 overflow-x-hidden overflow-y-scroll">
-          <div className="h-full mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4">
+          <div className="mx-auto flex h-full w-full max-w-3xl grow flex-col gap-8 px-4">
             {messages.length > 0 ? (
               <div className="flex-1">
-                <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8 px-4">
+                <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-8 px-4">
                   <MessageList messages={messages} isSharedView onArtifactOpen={openArtifact} />
                 </div>
               </div>
@@ -127,7 +127,7 @@ export default function SharedConversationPage() {
           </div>
         </div>
 
-        <footer className="border-border bg-surface text-muted-foreground border-t p-4 text-center text-sm">
+        <footer className="border-t border-border bg-surface p-4 text-center text-sm text-muted-foreground">
           This is a shared conversation from Polychat.
         </footer>
       </div>

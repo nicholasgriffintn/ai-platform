@@ -47,7 +47,7 @@ export function ThemeMenu({
             <Palette className="h-4 w-4" aria-hidden="true" />
             <span>Theme</span>
           </span>
-          <span className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs">
+          <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
             {selected?.label}
             <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
           </span>

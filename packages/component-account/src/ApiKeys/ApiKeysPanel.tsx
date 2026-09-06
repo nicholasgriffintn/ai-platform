@@ -72,12 +72,12 @@ function GeneratedApiKeyModal({
         <p className="mt-2 text-sm text-muted-foreground">
           Please copy your new API key. You won't be able to see it again!
         </p>
-        <div className="space-y-4 mt-4">
-          <div className="bg-selection flex items-center justify-between gap-2 rounded-md p-3">
-            <code className="text-sm text-foreground break-all flex-1">{generatedKey.key}</code>
+        <div className="mt-4 space-y-4">
+          <div className="flex items-center justify-between gap-2 rounded-md bg-selection p-3">
+            <code className="flex-1 text-sm break-all text-foreground">{generatedKey.key}</code>
             {renderCopyButton(generatedKey.key)}
           </div>
-          <p className="text-xs text-attention font-medium">
+          <p className="text-xs font-medium text-attention">
             Store this key securely. It grants access to your account.
           </p>
           <div className="flex justify-end">
@@ -164,17 +164,17 @@ export function ApiKeysPanel({
           <SignInEmptyState
             title="Sign in to view API keys"
             message="Sign in to manage the API keys connected to your account."
-            className="bg-transparent dark:bg-transparent py-6 px-0"
+            className="bg-transparent px-0 py-6 dark:bg-transparent"
             onSignIn={onSignIn}
           />
         ) : loadErrorMessage ? (
-          <p className="text-center text-failure py-6">
+          <p className="py-6 text-center text-failure">
             Error loading API keys: {loadErrorMessage}
           </p>
         ) : apiKeys.length === 0 ? (
           <EmptyState
             message="You haven't generated any API keys yet."
-            className="bg-transparent dark:bg-transparent py-6 px-0"
+            className="bg-transparent px-0 py-6 dark:bg-transparent"
           />
         ) : (
           <ul className="space-y-2">
@@ -182,7 +182,7 @@ export function ApiKeysPanel({
               <ListItem
                 key={key.id}
                 label={key.name}
-                className="border-border bg-surface hover:bg-selection border"
+                className="border border-border bg-surface hover:bg-selection"
                 sublabel={`Created: ${formatCreatedAt(key.created_at)}`}
                 actions={
                   <HoverActions

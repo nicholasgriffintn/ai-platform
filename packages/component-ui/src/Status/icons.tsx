@@ -6,7 +6,7 @@ export function getStatusIcon(status: string): React.ReactNode {
     case "succeeded":
       return <CheckCircle2 size={16} className="text-success" />;
     case "running":
-      return <Loader2 size={16} className="text-active-work animate-spin" />;
+      return <Loader2 size={16} className="animate-spin text-active-work" />;
     case "failed":
       return <XCircle size={16} className="text-failure" />;
     case "pending":
