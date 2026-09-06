@@ -4,6 +4,7 @@ mod chat;
 mod discovery;
 mod egress;
 mod runs;
+mod store;
 
 use std::time::Duration;
 
@@ -12,7 +13,9 @@ use discovery::DiscoveredModel;
 use egress::{DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport};
 use futures_util::StreamExt;
 use runs::{RunRegistry, StreamEvent};
+use rusqlite::Connection;
 use serde::Serialize;
+use store::Store;
 use tauri::ipc::Channel;
 use tauri::{Manager, State};
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
@@ -95,8 +98,8 @@ fn refusal_detail(refusal: EgressRefusal) -> String {
     }
 }
 
-fn authorised_endpoint(endpoint_id: &str) -> Result<(DesktopEndpoint, Url), String> {
-    let endpoints = configured_endpoints();
+fn authorised_endpoint(store: &Store, endpoint_id: &str) -> Result<(DesktopEndpoint, Url), String> {
+    let endpoints = store.list_endpoints()?;
     let target = egress::resolve_target(&endpoints, endpoint_id).map_err(refusal_detail)?;
     let endpoint = endpoints
         .into_iter()
@@ -114,33 +117,46 @@ fn http_client(timeout: Duration) -> Result<reqwest::Client, String> {
 }
 
 #[tauri::command]
-fn list_endpoints() -> Vec<DesktopEndpoint> {
-    configured_endpoints()
+fn list_endpoints(store: State<'_, Store>) -> Result<Vec<DesktopEndpoint>, String> {
+    store.list_endpoints()
 }
 
 #[tauri::command]
-async fn probe_endpoint(endpoint_id: String) -> Readiness {
-    let target = match authorised_endpoint(&endpoint_id) {
+fn save_endpoint(endpoint: DesktopEndpoint, store: State<'_, Store>) -> Result<(), String> {
+    egress::resolve_target(std::slice::from_ref(&endpoint), &endpoint.id)
+        .map_err(refusal_detail)?;
+
+    store.save_endpoint(&endpoint)
+}
+
+#[tauri::command]
+fn forget_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<(), String> {
+    store.forget_endpoint(&endpoint_id)
+}
+
+#[tauri::command]
+async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<Readiness, String> {
+    let target = match authorised_endpoint(&store, &endpoint_id) {
         Ok((_, target)) => target,
         Err(detail) => {
-            return Readiness::Unreachable {
+            return Ok(Readiness::Unreachable {
                 checked_at: timestamp(),
                 detail: Some(detail),
-            }
+            })
         }
     };
 
     let client = match http_client(REQUEST_TIMEOUT) {
         Ok(client) => client,
         Err(detail) => {
-            return Readiness::Unreachable {
+            return Ok(Readiness::Unreachable {
                 checked_at: timestamp(),
                 detail: Some(detail),
-            }
+            })
         }
     };
 
-    match client.get(target).send().await {
+    Ok(match client.get(target).send().await {
         Ok(response) if matches!(response.status().as_u16(), 401 | 403) => {
             Readiness::Unauthorised {
                 checked_at: timestamp(),
@@ -162,12 +178,15 @@ async fn probe_endpoint(endpoint_id: String) -> Readiness {
             checked_at: timestamp(),
             detail: Some(cause.to_string()),
         },
-    }
+    })
 }
 
 #[tauri::command]
-async fn discover_models(endpoint_id: String) -> Result<Vec<DiscoveredModel>, String> {
-    let (endpoint, base) = authorised_endpoint(&endpoint_id)?;
+async fn discover_models(
+    endpoint_id: String,
+    store: State<'_, Store>,
+) -> Result<Vec<DiscoveredModel>, String> {
+    let (endpoint, base) = authorised_endpoint(&store, &endpoint_id)?;
     let target = base
         .join(discovery::models_path(&endpoint))
         .map_err(|cause| cause.to_string())?;
@@ -205,8 +224,9 @@ async fn start_model_run(
     request: ModelRunRequest,
     on_event: Channel<StreamEvent>,
     registry: State<'_, RunRegistry>,
+    store: State<'_, Store>,
 ) -> Result<(), String> {
-    let (endpoint, base) = authorised_endpoint(&request.endpoint_id)?;
+    let (endpoint, base) = authorised_endpoint(&store, &request.endpoint_id)?;
     let target = base
         .join(chat::chat_path(&endpoint))
         .map_err(|cause| cause.to_string())?;
@@ -320,6 +340,15 @@ async fn start_model_run(
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
+            let directory = app.path().app_data_dir()?;
+
+            std::fs::create_dir_all(&directory)?;
+
+            let store = Store::open(Connection::open(directory.join("polychat.sqlite"))?)?;
+
+            store.seed_missing(&configured_endpoints())?;
+
+            app.manage(store);
             app.manage(RunRegistry::default());
 
             Ok(())
@@ -328,6 +357,8 @@ fn main() {
             list_endpoints,
             probe_endpoint,
             discover_models,
+            save_endpoint,
+            forget_endpoint,
             start_model_run,
             cancel_model_run
         ])

@@ -6,6 +6,7 @@ import type {
 import { formatBytes, formatCompactCount } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useEffect, useState } from "react";
 
+import { AddEndpoint } from "./AddEndpoint";
 import { Composer } from "./Composer";
 import type { ConnectedDesktopBackend } from "./desktop-backend";
 
@@ -70,12 +71,26 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
   const [checking, setChecking] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     backend
       .listEndpoints()
       .then(setEndpoints)
       .catch((cause: unknown) => setError(String(cause)));
   }, [backend]);
+
+  useEffect(refresh, [refresh]);
+
+  const forget = useCallback(
+    async (endpointId: string) => {
+      try {
+        await backend.forgetEndpoint(endpointId);
+        refresh();
+      } catch (cause) {
+        setError(String(cause));
+      }
+    },
+    [backend, refresh],
+  );
 
   const check = useCallback(
     async (endpointId: string) => {
@@ -125,12 +140,16 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
             >
               Check
             </button>
+            <button type="button" onClick={() => void forget(endpoint.id)}>
+              Forget
+            </button>
             {readiness[endpoint.id]?.status === "ready" ? (
               <ModelList models={models[endpoint.id] ?? []} backend={backend} />
             ) : null}
           </li>
         ))}
       </ul>
+      <AddEndpoint backend={backend} onAdded={refresh} />
     </main>
   );
 }

@@ -12,11 +12,22 @@ import { Channel, invoke } from "@tauri-apps/api/core";
 
 export type ConnectedDesktopBackend = Pick<
   DesktopBackend,
-  "listEndpoints" | "probeEndpoint" | "discoverModels" | "startModelRun"
+  | "listEndpoints"
+  | "saveEndpoint"
+  | "forgetEndpoint"
+  | "probeEndpoint"
+  | "discoverModels"
+  | "startModelRun"
 >;
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
   listEndpoints: async () => desktopEndpointSchema.array().parse(await invoke("list_endpoints")),
+  saveEndpoint: async (endpoint) => {
+    await invoke("save_endpoint", { endpoint });
+  },
+  forgetEndpoint: async (endpointId) => {
+    await invoke("forget_endpoint", { endpointId });
+  },
   probeEndpoint: async (endpointId) =>
     desktopRuntimeReadinessSchema.parse(await invoke("probe_endpoint", { endpointId })),
   discoverModels: async (endpointId) =>

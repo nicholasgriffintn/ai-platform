@@ -1,4 +1,4 @@
-import type { DesktopStreamEvent } from "@ngriffin_uk/polychat-schemas";
+import type { DesktopEndpoint, DesktopStreamEvent } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -106,5 +106,47 @@ describe("resolveExecutionHandoff", () => {
       requiresNewConversation: false,
       carriesHistory: true,
     });
+  });
+});
+
+const endpoint: DesktopEndpoint = {
+  id: "endpoint-1",
+  kind: "model",
+  vendor: "ollama",
+  label: "Ollama",
+  url: "http://127.0.0.1:11434",
+  transport: "loopback",
+  pairingSecretStored: false,
+  approvedAt: "2026-09-06T09:00:00.000Z",
+  lastSeenAt: null,
+};
+
+describe("fake endpoint management", () => {
+  it("lists an endpoint once it has been saved", async () => {
+    const backend = createFakeDesktopBackend();
+
+    await backend.saveEndpoint(endpoint);
+
+    await expect(backend.listEndpoints()).resolves.toEqual([endpoint]);
+  });
+
+  it("replaces an endpoint saved again under the same id", async () => {
+    const backend = createFakeDesktopBackend({ endpoints: [endpoint] });
+
+    await backend.saveEndpoint({ ...endpoint, label: "Renamed" });
+    const listed = await backend.listEndpoints();
+
+    expect(listed).toHaveLength(1);
+    expect(listed[0]?.label).toBe("Renamed");
+  });
+
+  it("forgets only the endpoint asked for", async () => {
+    const backend = createFakeDesktopBackend({
+      endpoints: [endpoint, { ...endpoint, id: "endpoint-2" }],
+    });
+
+    await backend.forgetEndpoint("endpoint-2");
+
+    await expect(backend.listEndpoints()).resolves.toEqual([endpoint]);
   });
 });

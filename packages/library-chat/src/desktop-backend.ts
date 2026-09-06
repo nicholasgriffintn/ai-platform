@@ -18,6 +18,8 @@ export interface DesktopRun {
 
 export interface DesktopBackend {
   listEndpoints: () => Promise<DesktopEndpoint[]>;
+  saveEndpoint: (endpoint: DesktopEndpoint) => Promise<void>;
+  forgetEndpoint: (endpointId: string) => Promise<void>;
   probeEndpoint: (endpointId: string) => Promise<DesktopRuntimeReadiness>;
   discoverModels: (endpointId: string) => Promise<DiscoveredModel[]>;
   startModelRun: (request: DesktopModelRunRequest) => Promise<DesktopRun>;
@@ -77,10 +79,30 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
     };
   }
 
+  const saved: DesktopEndpoint[] = [...(seed.endpoints ?? [])];
+
   return {
     decisions,
     cancelledRuns,
-    listEndpoints: async () => seed.endpoints ?? [],
+    listEndpoints: async () => saved,
+    saveEndpoint: async (endpoint) => {
+      const existing = saved.findIndex((candidate) => candidate.id === endpoint.id);
+
+      if (existing === -1) {
+        saved.push(endpoint);
+
+        return;
+      }
+
+      saved[existing] = endpoint;
+    },
+    forgetEndpoint: async (endpointId) => {
+      const existing = saved.findIndex((candidate) => candidate.id === endpointId);
+
+      if (existing !== -1) {
+        saved.splice(existing, 1);
+      }
+    },
     probeEndpoint: async (endpointId) => seed.readiness?.[endpointId] ?? UNREACHABLE,
     discoverModels: async (endpointId) =>
       (seed.models ?? []).filter((model) => model.endpointId === endpointId),

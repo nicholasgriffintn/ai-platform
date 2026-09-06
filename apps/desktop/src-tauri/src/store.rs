@@ -1,0 +1,260 @@
+use std::sync::Mutex;
+
+use rusqlite::{params, Connection};
+
+use crate::egress::{DesktopEndpoint, EndpointKind, EndpointTransport};
+
+pub struct Store {
+    connection: Mutex<Connection>,
+}
+
+fn kind_from_text(value: &str) -> EndpointKind {
+    match value {
+        "agent" => EndpointKind::Agent,
+        _ => EndpointKind::Model,
+    }
+}
+
+fn kind_to_text(kind: EndpointKind) -> &'static str {
+    match kind {
+        EndpointKind::Agent => "agent",
+        EndpointKind::Model => "model",
+    }
+}
+
+fn transport_from_text(value: &str) -> EndpointTransport {
+    match value {
+        "network" => EndpointTransport::Network,
+        _ => EndpointTransport::Loopback,
+    }
+}
+
+fn transport_to_text(transport: EndpointTransport) -> &'static str {
+    match transport {
+        EndpointTransport::Network => "network",
+        EndpointTransport::Loopback => "loopback",
+    }
+}
+
+impl Store {
+    pub fn open(connection: Connection) -> Result<Self, String> {
+        let store = Self {
+            connection: Mutex::new(connection),
+        };
+
+        store.migrate()?;
+
+        Ok(store)
+    }
+
+    fn with_connection<T>(
+        &self,
+        action: impl FnOnce(&Connection) -> rusqlite::Result<T>,
+    ) -> Result<T, String> {
+        let connection = self
+            .connection
+            .lock()
+            .map_err(|_| "The local database is unavailable.".to_string())?;
+
+        action(&connection).map_err(|cause| cause.to_string())
+    }
+
+    fn migrate(&self) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute_batch(
+                "CREATE TABLE IF NOT EXISTS endpoints (
+                    id TEXT PRIMARY KEY,
+                    kind TEXT NOT NULL,
+                    vendor TEXT NOT NULL,
+                    label TEXT NOT NULL,
+                    url TEXT NOT NULL,
+                    transport TEXT NOT NULL,
+                    pairing_secret_stored INTEGER NOT NULL,
+                    approved_at TEXT NOT NULL,
+                    last_seen_at TEXT
+                );",
+            )
+        })
+    }
+
+    pub fn list_endpoints(&self) -> Result<Vec<DesktopEndpoint>, String> {
+        self.with_connection(|connection| {
+            let mut statement = connection.prepare(
+                "SELECT id, kind, vendor, label, url, transport, pairing_secret_stored,
+                        approved_at, last_seen_at
+                 FROM endpoints
+                 ORDER BY approved_at, id",
+            )?;
+
+            let rows = statement.query_map([], |row| {
+                Ok(DesktopEndpoint {
+                    id: row.get(0)?,
+                    kind: kind_from_text(&row.get::<_, String>(1)?),
+                    vendor: row.get(2)?,
+                    label: row.get(3)?,
+                    url: row.get(4)?,
+                    transport: transport_from_text(&row.get::<_, String>(5)?),
+                    pairing_secret_stored: row.get::<_, i64>(6)? != 0,
+                    approved_at: row.get(7)?,
+                    last_seen_at: row.get(8)?,
+                })
+            })?;
+
+            rows.collect()
+        })
+    }
+
+    pub fn save_endpoint(&self, endpoint: &DesktopEndpoint) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "INSERT INTO endpoints (id, kind, vendor, label, url, transport,
+                                        pairing_secret_stored, approved_at, last_seen_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+                 ON CONFLICT(id) DO UPDATE SET
+                    kind = excluded.kind,
+                    vendor = excluded.vendor,
+                    label = excluded.label,
+                    url = excluded.url,
+                    transport = excluded.transport,
+                    pairing_secret_stored = excluded.pairing_secret_stored,
+                    last_seen_at = excluded.last_seen_at",
+                params![
+                    endpoint.id,
+                    kind_to_text(endpoint.kind),
+                    endpoint.vendor,
+                    endpoint.label,
+                    endpoint.url,
+                    transport_to_text(endpoint.transport),
+                    i64::from(endpoint.pairing_secret_stored),
+                    endpoint.approved_at,
+                    endpoint.last_seen_at,
+                ],
+            )?;
+
+            Ok(())
+        })
+    }
+
+    pub fn forget_endpoint(&self, endpoint_id: &str) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute("DELETE FROM endpoints WHERE id = ?1", params![endpoint_id])?;
+
+            Ok(())
+        })
+    }
+
+    pub fn seed_missing(&self, endpoints: &[DesktopEndpoint]) -> Result<(), String> {
+        for endpoint in endpoints {
+            self.with_connection(|connection| {
+                connection.execute(
+                    "INSERT OR IGNORE INTO endpoints (id, kind, vendor, label, url, transport,
+                                                      pairing_secret_stored, approved_at, last_seen_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+                    params![
+                        endpoint.id,
+                        kind_to_text(endpoint.kind),
+                        endpoint.vendor,
+                        endpoint.label,
+                        endpoint.url,
+                        transport_to_text(endpoint.transport),
+                        i64::from(endpoint.pairing_secret_stored),
+                        endpoint.approved_at,
+                        endpoint.last_seen_at,
+                    ],
+                )?;
+
+                Ok(())
+            })?;
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn store() -> Store {
+        Store::open(Connection::open_in_memory().expect("in-memory database")).expect("migrated")
+    }
+
+    fn endpoint(id: &str, label: &str) -> DesktopEndpoint {
+        DesktopEndpoint {
+            id: id.to_string(),
+            kind: EndpointKind::Model,
+            vendor: "ollama".to_string(),
+            label: label.to_string(),
+            url: "http://127.0.0.1:11434".to_string(),
+            transport: EndpointTransport::Loopback,
+            pairing_secret_stored: false,
+            approved_at: "2026-09-06T09:00:00Z".to_string(),
+            last_seen_at: None,
+        }
+    }
+
+    #[test]
+    fn returns_saved_endpoints_with_their_fields_intact() {
+        let store = store();
+        let mut agent = endpoint("gateway", "Home gateway");
+        agent.kind = EndpointKind::Agent;
+        agent.transport = EndpointTransport::Network;
+        agent.pairing_secret_stored = true;
+        agent.url = "http://10.0.0.4:18789".to_string();
+
+        store.save_endpoint(&agent).expect("saved");
+        let saved = store.list_endpoints().expect("listed");
+
+        assert_eq!(saved.len(), 1);
+        assert_eq!(saved[0].kind, EndpointKind::Agent);
+        assert_eq!(saved[0].transport, EndpointTransport::Network);
+        assert!(saved[0].pairing_secret_stored);
+        assert_eq!(saved[0].url, "http://10.0.0.4:18789");
+    }
+
+    #[test]
+    fn seeding_twice_does_not_duplicate_or_overwrite() {
+        let store = store();
+        let built_ins = vec![endpoint("ollama-loopback", "Ollama")];
+
+        store.seed_missing(&built_ins).expect("seeded");
+        store
+            .save_endpoint(&endpoint("ollama-loopback", "Renamed by the user"))
+            .expect("renamed");
+        store.seed_missing(&built_ins).expect("seeded again");
+
+        let saved = store.list_endpoints().expect("listed");
+
+        assert_eq!(saved.len(), 1);
+        assert_eq!(saved[0].label, "Renamed by the user");
+    }
+
+    #[test]
+    fn saving_the_same_endpoint_again_updates_it_rather_than_failing() {
+        let store = store();
+
+        store.save_endpoint(&endpoint("a", "First")).expect("saved");
+        store
+            .save_endpoint(&endpoint("a", "Second"))
+            .expect("saved");
+
+        let saved = store.list_endpoints().expect("listed");
+
+        assert_eq!(saved.len(), 1);
+        assert_eq!(saved[0].label, "Second");
+    }
+
+    #[test]
+    fn forgetting_an_endpoint_removes_only_that_one() {
+        let store = store();
+
+        store.save_endpoint(&endpoint("a", "Keep")).expect("saved");
+        store.save_endpoint(&endpoint("b", "Drop")).expect("saved");
+        store.forget_endpoint("b").expect("forgotten");
+
+        let saved = store.list_endpoints().expect("listed");
+
+        assert_eq!(saved.len(), 1);
+        assert_eq!(saved[0].id, "a");
+    }
+}
