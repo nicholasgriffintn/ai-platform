@@ -420,6 +420,41 @@ fn delete_all_local_chats(scope: String, store: State<'_, Store>) -> Result<(), 
 }
 
 #[tauri::command]
+async fn access_token() -> Result<String, String> {
+    let Some(session) = secrets::read(SESSION_SECRET)? else {
+        return Err("Sign in before using Polychat.".to_string());
+    };
+
+    let response = http_client(REQUEST_TIMEOUT)?
+        .get(format!("{API_BASE_URL}/auth/token"))
+        .header(reqwest::header::COOKIE, format!("session={session}"))
+        .send()
+        .await
+        .map_err(|cause| cause.to_string())?;
+
+    if !response.status().is_success() {
+        let status = response.status().as_u16();
+
+        if status == 401 {
+            secrets::forget(SESSION_SECRET)?;
+        }
+
+        let detail = response.text().await.unwrap_or_default();
+
+        return Err(sign_in_failure(status, &detail));
+    }
+
+    response
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|cause| cause.to_string())?
+        .get("token")
+        .and_then(serde_json::Value::as_str)
+        .map(str::to_string)
+        .ok_or_else(|| "Polychat returned no access token.".to_string())
+}
+
+#[tauri::command]
 fn is_signed_in() -> Result<bool, String> {
     Ok(secrets::read(SESSION_SECRET)?.is_some())
 }
@@ -462,16 +497,26 @@ async fn sign_in() -> Result<(), String> {
         return Err(sign_in_failure(status, &detail));
     }
 
-    let body = response
-        .json::<serde_json::Value>()
-        .await
-        .map_err(|cause| cause.to_string())?;
-    let token = body
-        .get("token")
-        .and_then(serde_json::Value::as_str)
+    let session = read_session_cookie(response.headers())
         .ok_or_else(|| "Sign-in returned no session.".to_string())?;
 
-    secrets::store(SESSION_SECRET, token)
+    secrets::store(SESSION_SECRET, &session)
+}
+
+fn read_session_cookie(headers: &reqwest::header::HeaderMap) -> Option<String> {
+    headers
+        .get_all(reqwest::header::SET_COOKIE)
+        .iter()
+        .filter_map(|value| value.to_str().ok())
+        .find_map(|value| {
+            value
+                .split(';')
+                .next()?
+                .trim()
+                .strip_prefix("session=")
+                .map(str::to_string)
+        })
+        .filter(|session| !session.is_empty())
 }
 
 fn sign_in_failure(status: u16, body: &str) -> String {
@@ -860,6 +905,7 @@ fn main() {
             forget_endpoint,
             sign_in,
             sign_out,
+            access_token,
             is_signed_in,
             list_conversations,
             save_conversation,

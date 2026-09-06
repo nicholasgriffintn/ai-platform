@@ -996,6 +996,9 @@ importers:
       '@ngriffin_uk/polychat-component-models':
         specifier: workspace:^
         version: link:../component-models
+      '@ngriffin_uk/polychat-component-navigation':
+        specifier: workspace:^
+        version: link:../component-navigation
       '@ngriffin_uk/polychat-component-ui':
         specifier: workspace:^
         version: link:../component-ui

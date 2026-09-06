@@ -1,7 +1,8 @@
 import { WelcomeScreen } from "@ngriffin_uk/polychat-component-account";
 import { CustomResponseViewProvider } from "@ngriffin_uk/polychat-component-content";
 import {
-  ConversationThread,
+  ConversationHeader,
+  ConversationSurface,
   sharedResponseViews,
 } from "@ngriffin_uk/polychat-component-conversation";
 import { LinkProvider, ThemedToaster } from "@ngriffin_uk/polychat-component-ui";
@@ -61,7 +62,11 @@ export function App() {
       <DesktopSessionGate>
         <LoadingProvider>
           <AppInitializer>
-            <ConversationThread modeConfig={{ analyticsSource: "desktop" }} />
+            <ConversationSurface
+              ownsWindow
+              header={<ConversationHeader />}
+              modeConfig={{ analyticsSource: "desktop" }}
+            />
             <ThemedToaster />
           </AppInitializer>
         </LoadingProvider>

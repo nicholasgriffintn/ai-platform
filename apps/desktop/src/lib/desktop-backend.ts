@@ -36,6 +36,7 @@ export interface ConnectedDesktopBackend extends DesktopBackend {
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   isSignedIn: () => Promise<boolean>;
+  accessToken: () => Promise<string>;
 }
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
@@ -65,6 +66,11 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
     await invoke("sign_out");
   },
   isSignedIn: async () => z.boolean().parse(await invoke("is_signed_in")),
+  accessToken: async () =>
+    z
+      .string()
+      .min(1)
+      .parse(await invoke("access_token")),
   probeEndpoint: async (endpointId) =>
     desktopRuntimeReadinessSchema.parse(await invoke("probe_endpoint", { endpointId })),
   discoverModels: async (endpointId) =>

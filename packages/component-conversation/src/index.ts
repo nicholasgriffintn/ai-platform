@@ -1,3 +1,5 @@
+export * from "./Thread/ConversationHeader";
+export * from "./Thread/ConversationSurface";
 export * from "./ResponseViews";
 export * from "./Thread/InlineModelSelector";
 export * from "./Thread/FooterInfo";
@@ -43,7 +45,6 @@ export * from "./Message/ReasoningSection";
 export * from "./Message/SearchGroundingSection";
 export * from "./messageListScroll";
 export * from "./ChatSuggestionList";
-export * from "./ConversationSurface";
 export * from "./PetPerch";
 export * from "./ScrollButton";
 export * from "./ToolToggleMenu";

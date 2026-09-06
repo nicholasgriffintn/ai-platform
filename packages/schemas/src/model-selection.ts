@@ -177,10 +177,10 @@ export function modelHasOutputModality(
 }
 
 export function isModelSelectableForAccount(
-  model: Pick<ModelConfigItem, "isByokEnabled" | "isFree">,
+  model: Pick<ModelConfigItem, "isByokEnabled" | "isFree" | "runsOn">,
   isPro: boolean,
 ) {
-  return isPro || Boolean(model.isFree) || Boolean(model.isByokEnabled);
+  return runsOnDevice(model) || isPro || Boolean(model.isFree) || Boolean(model.isByokEnabled);
 }
 
 export function isActiveModel(model: Pick<ModelConfigItem, "deprecated" | "status">): boolean {
