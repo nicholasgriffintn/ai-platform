@@ -1,6 +1,6 @@
 import { ButtonLink, Card } from "@ngriffin_uk/polychat-component-ui";
 import {
-  ProjectCapabilitiesCard,
+  ProjectTeammatesCard,
   ProjectOverviewSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { ChevronLeft } from "lucide-react";
@@ -94,10 +94,10 @@ export function ProjectSettings({
           members={workspace?.members ?? []}
         />
         <ProjectCodingEnvironmentCard embedded canManage={canManage} project={project} />
-        <ProjectCapabilitiesCard
+        <ProjectTeammatesCard
           embedded
-          capabilities={project.capabilities}
           capabilityCount={project.capabilityCount}
+          teammatesHref={`${getProjectBasePath(workspaceId, projectId)}/teammates`}
         />
       </Card>
     </PageShell.Content>
