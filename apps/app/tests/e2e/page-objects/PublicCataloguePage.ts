@@ -14,7 +14,7 @@ export class PublicCataloguePage extends BasePage {
       .filter({ has: this.page.getByText(title, { exact: true }) });
   }
 
-  async openCapabilities() {
+  async openCatalogue() {
     const response = await this.page.request.get(`${E2E_API_BASE_URL}/capabilities/catalogue`);
 
     if (!response.ok()) {
@@ -23,8 +23,10 @@ export class PublicCataloguePage extends BasePage {
 
     const catalogue = publicCapabilityCatalogueResponseSchema.parse(await response.json());
 
-    await this.navigate("/capabilities");
-    await this.page.getByRole("heading", { name: "Capabilities, not just chat" }).waitFor();
+    await this.navigate("/apps");
+    await this.page
+      .getByRole("heading", { name: "Everything you can ask for on your first day" })
+      .waitFor();
     await this.page
       .getByRole("list", { name: "Loading", exact: true })
       .first()
@@ -45,6 +47,6 @@ export class PublicCataloguePage extends BasePage {
   }
 
   async openPersonalLibrary() {
-    await this.page.getByRole("link", { name: "Open your capabilities" }).click();
+    await this.page.getByRole("link", { name: "Open your teammates" }).click();
   }
 }

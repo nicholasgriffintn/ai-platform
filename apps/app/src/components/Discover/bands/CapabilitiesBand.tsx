@@ -23,7 +23,7 @@ export function CapabilitiesBand() {
       title="Capabilities, not just chat"
       lede={lede}
       actions={
-        <ButtonLink variant="outline" href="/capabilities">
+        <ButtonLink variant="outline" href="/apps">
           Browse the catalogue
         </ButtonLink>
       }

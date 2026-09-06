@@ -12,7 +12,7 @@ export function DiscoverSidebarSection({ onNavigate }: { onNavigate?: () => void
       <SidebarNavLink href="/models" end icon={<Cpu size={16} />} onClick={onNavigate}>
         Models
       </SidebarNavLink>
-      <SidebarNavLink href="/capabilities" end icon={<Puzzle size={16} />} onClick={onNavigate}>
+      <SidebarNavLink href="/apps" end icon={<Puzzle size={16} />} onClick={onNavigate}>
         Capabilities
       </SidebarNavLink>
       <SidebarNavLink href="/pets" end icon={<PawPrint size={16} />} onClick={onNavigate}>
