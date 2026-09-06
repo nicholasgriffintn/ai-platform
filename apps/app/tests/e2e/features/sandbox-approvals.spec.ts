@@ -84,6 +84,7 @@ test.describe("Sandbox command approval", () => {
       } else {
         await workbench.resolveApproval(action);
       }
+
       await expect
         .poll(
           async () =>
@@ -113,6 +114,7 @@ test.describe("Sandbox command approval", () => {
         expect(events.some(({ event }) => event.type === "command_approval_escalated")).toBe(true);
         expect(events.some(({ event }) => event.type === "command_approval_timed_out")).toBe(true);
       }
+
       expect(events.some(({ event }) => event.type === "environment_setup_command_started")).toBe(
         action === "Approve",
       );
