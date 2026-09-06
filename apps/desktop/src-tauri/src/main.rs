@@ -226,8 +226,17 @@ async fn read_bounded_json(response: reqwest::Response) -> Result<serde_json::Va
     serde_json::from_slice(&body).map_err(|cause| cause.to_string())
 }
 
+fn user_agent() -> String {
+    format!(
+        "Polychat-Desktop/{} ({})",
+        env!("CARGO_PKG_VERSION"),
+        std::env::consts::OS
+    )
+}
+
 fn http_client(timeout: Duration) -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
+        .user_agent(user_agent())
         .timeout(timeout)
         .redirect(reqwest::redirect::Policy::none())
         .build()
@@ -236,6 +245,7 @@ fn http_client(timeout: Duration) -> Result<reqwest::Client, String> {
 
 fn streaming_client() -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
+        .user_agent(user_agent())
         .read_timeout(RUN_IDLE_TIMEOUT)
         .redirect(reqwest::redirect::Policy::none())
         .build()
@@ -868,4 +878,18 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("Polychat desktop failed to start");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn identifies_itself_to_the_api_as_a_desktop_client() {
+        let agent = user_agent();
+
+        assert!(agent.starts_with("Polychat-Desktop/"));
+        assert!(agent.contains('('), "the agent needs a platform comment: {agent}");
+        assert!(agent.ends_with(')'), "the agent needs a platform comment: {agent}");
+    }
 }

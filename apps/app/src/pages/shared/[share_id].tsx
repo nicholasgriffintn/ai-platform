@@ -2,10 +2,6 @@ import { ArtifactPanel } from "@ngriffin_uk/polychat-component-content";
 import { MessageList } from "@ngriffin_uk/polychat-component-conversation";
 import { ButtonLink, LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
-
-import "~/styles/scrollbar.css";
-import "~/styles/github.css";
-import "~/styles/github-dark.css";
 import { ApiError, fetchSharedConversationHistory } from "@ngriffin_uk/polychat-library-client";
 import { useArtifactPanel, useCopyToClipboard } from "@ngriffin_uk/polychat-library-react";
 import { PlusCircle } from "lucide-react";
