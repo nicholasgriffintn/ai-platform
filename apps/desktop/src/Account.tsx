@@ -1,20 +1,28 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { CloudComposer } from "./CloudComposer";
 import type { ConnectedDesktopBackend } from "./desktop-backend";
 
-export function Account({ backend }: { backend: ConnectedDesktopBackend }) {
+export function Account({
+  backend,
+  onSignedInChange,
+}: {
+  backend: ConnectedDesktopBackend;
+  onSignedInChange: (signedIn: boolean) => void;
+}) {
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
-      setSignedIn(await backend.isSignedIn());
+      const current = await backend.isSignedIn();
+
+      setSignedIn(current);
+      onSignedInChange(current);
     } catch (cause) {
       setError(String(cause));
     }
-  }, [backend]);
+  }, [backend, onSignedInChange]);
 
   useEffect(() => {
     let active = true;
@@ -25,6 +33,7 @@ export function Account({ backend }: { backend: ConnectedDesktopBackend }) {
 
         if (active) {
           setSignedIn(current);
+          onSignedInChange(current);
         }
       } catch (cause) {
         if (active) {
@@ -38,7 +47,7 @@ export function Account({ backend }: { backend: ConnectedDesktopBackend }) {
     return () => {
       active = false;
     };
-  }, [backend]);
+  }, [backend, onSignedInChange]);
 
   const run = useCallback(
     async (action: () => Promise<void>) => {
@@ -78,7 +87,6 @@ export function Account({ backend }: { backend: ConnectedDesktopBackend }) {
       )}
       {busy && signedIn === false ? <p>Finish signing in in your browser.</p> : null}
       {error ? <p role="alert">{error}</p> : null}
-      {signedIn ? <CloudComposer backend={backend} /> : null}
     </section>
   );
 }

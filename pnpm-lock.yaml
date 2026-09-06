@@ -613,6 +613,9 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@ngriffin_uk/polychat-component-models':
+        specifier: workspace:^
+        version: link:../../packages/component-models
       '@ngriffin_uk/polychat-library-chat':
         specifier: workspace:^
         version: link:../../packages/library-chat
@@ -656,6 +659,9 @@ importers:
       vite:
         specifier: 8.2.2
         version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
       webdriverio:
         specifier: 9.12.7
         version: 9.12.7(supports-color@10.2.2)

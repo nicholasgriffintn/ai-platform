@@ -1,4 +1,4 @@
-import { MODEL_TIERS, type DesktopRunProgress } from "@ngriffin_uk/polychat-schemas";
+import type { DesktopRunProgress } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useRef, useState, type FormEvent } from "react";
 
 import type { ConnectedDesktopBackend } from "./desktop-backend";
@@ -9,8 +9,13 @@ const PROGRESS_LABELS: Record<string, string> = {
   generating: "Generating",
 };
 
-export function CloudComposer({ backend }: { backend: ConnectedDesktopBackend }) {
-  const [tier, setTier] = useState<string>("medium");
+export function CloudComposer({
+  backend,
+  tier,
+}: {
+  backend: ConnectedDesktopBackend;
+  tier: string;
+}) {
   const [prompt, setPrompt] = useState("");
   const [reply, setReply] = useState("");
   const [progress, setProgress] = useState<DesktopRunProgress | null>(null);
@@ -66,15 +71,6 @@ export function CloudComposer({ backend }: { backend: ConnectedDesktopBackend })
         }
       }}
     >
-      <h2>Cloud</h2>
-      <label htmlFor="cloud-tier">Tier</label>
-      <select id="cloud-tier" value={tier} onChange={(event) => setTier(event.target.value)}>
-        {MODEL_TIERS.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
       <label htmlFor="cloud-prompt">Ask a cloud model</label>
       <textarea
         id="cloud-prompt"

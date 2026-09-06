@@ -10,6 +10,7 @@ export * from "./Selector/ModelHoverPreview";
 export * from "./Selector/ModelOption";
 export * from "./Selector/ModelSelectorPanel";
 export * from "./Selector/ModelSelectorTrigger";
+export * from "./Selector/ModelSourcePicker";
 export * from "./Selector/ModelsList";
 export * from "./Selector/useHoverPreviewDismiss";
 export * from "./InlineModelPicker";

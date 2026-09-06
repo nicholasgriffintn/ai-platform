@@ -10,10 +10,12 @@
     "dev": "tauri dev",
     "dev:renderer": "vite",
     "tauri": "tauri",
+    "test": "vitest run",
     "test:e2e": "node --test tests/e2e/*.spec.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ngriffin_uk/polychat-component-models": "workspace:^",
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
@@ -30,6 +32,7 @@
     "@vitejs/plugin-react": "6.1.1",
     "typescript": "catalog:",
     "vite": "8.2.2",
+    "vitest": "catalog:",
     "webdriverio": "9.12.7"
   }
 }

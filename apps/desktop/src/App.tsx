@@ -1,77 +1,31 @@
-import type {
-  DesktopEndpoint,
-  DesktopRuntimeReadiness,
-  DiscoveredModel,
+import {
+  ModelSourcePicker,
+  type ModelSourceSelection,
+} from "@ngriffin_uk/polychat-component-models";
+import {
+  HOSTED_ENDPOINT_ID,
+  type DesktopEndpoint,
+  type DesktopRuntimeReadiness,
+  type DiscoveredModel,
 } from "@ngriffin_uk/polychat-schemas";
-import { formatBytes, formatCompactCount } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useEffect, useState } from "react";
 
 import { Account } from "./Account";
 import { AddEndpoint } from "./AddEndpoint";
 import { AgentSessions } from "./AgentSessions";
+import { CloudComposer } from "./CloudComposer";
 import { Composer } from "./Composer";
 import type { ConnectedDesktopBackend } from "./desktop-backend";
 import { Diagnostics } from "./Diagnostics";
-
-const READINESS_LABELS: Record<DesktopRuntimeReadiness["status"], string> = {
-  ready: "Ready",
-  unreachable: "Not running",
-  unauthorised: "Needs authorisation",
-  unrecognised: "Unrecognised version",
-};
-
-function readinessLabel(readiness: DesktopRuntimeReadiness | undefined): string {
-  if (!readiness) {
-    return "Not checked";
-  }
-
-  if (readiness.status === "ready" && readiness.version) {
-    return `Ready, version ${readiness.version}`;
-  }
-
-  return READINESS_LABELS[readiness.status];
-}
-
-function ModelList({
-  models,
-  backend,
-}: {
-  models: DiscoveredModel[];
-  backend: ConnectedDesktopBackend;
-}) {
-  const [selected, setSelected] = useState<string | null>(null);
-
-  if (models.length === 0) {
-    return <p>No models installed here.</p>;
-  }
-
-  return (
-    <ul>
-      {models.map((model) => (
-        <li key={model.nativeId}>
-          <button type="button" onClick={() => setSelected(model.nativeId)}>
-            {model.displayName}
-          </button>
-          {model.parameterSizeBytes === null ? null : (
-            <span>{formatBytes(model.parameterSizeBytes)}</span>
-          )}
-          {model.contextTokens === null ? null : (
-            <span>{formatCompactCount(model.contextTokens)} context</span>
-          )}
-          {model.capabilities.vision ? <span>Vision</span> : null}
-          {model.loaded ? <span>Loaded</span> : null}
-          {selected === model.nativeId ? <Composer backend={backend} model={model} /> : null}
-        </li>
-      ))}
-    </ul>
-  );
-}
+import { buildModelSources } from "./modelSources";
 
 export function App({ backend }: { backend: ConnectedDesktopBackend }) {
   const [endpoints, setEndpoints] = useState<DesktopEndpoint[]>([]);
   const [readiness, setReadiness] = useState<Record<string, DesktopRuntimeReadiness>>({});
   const [models, setModels] = useState<Record<string, DiscoveredModel[]>>({});
   const [checking, setChecking] = useState<string | null>(null);
+  const [selection, setSelection] = useState<ModelSourceSelection | null>(null);
+  const [signedIn, setSignedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
@@ -82,6 +36,28 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
   }, [backend]);
 
   useEffect(refresh, [refresh]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function readSession() {
+      try {
+        const current = await backend.isSignedIn();
+
+        if (active) {
+          setSignedIn(current);
+        }
+      } catch {
+        void 0;
+      }
+    }
+
+    void readSession();
+
+    return () => {
+      active = false;
+    };
+  }, [backend]);
 
   const forget = useCallback(
     async (endpointId: string) => {
@@ -96,27 +72,19 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
   );
 
   const check = useCallback(
-    async (endpointId: string) => {
-      setChecking(endpointId);
+    async (endpoint: DesktopEndpoint) => {
+      setChecking(endpoint.id);
       setError(null);
 
       try {
-        const result = await backend.probeEndpoint(endpointId);
+        const result = await backend.probeEndpoint(endpoint.id);
 
-        setReadiness((current) => ({ ...current, [endpointId]: result }));
+        setReadiness((current) => ({ ...current, [endpoint.id]: result }));
 
-        if (result.status !== "ready") {
-          setModels((current) => ({ ...current, [endpointId]: [] }));
+        if (result.status === "ready" && endpoint.kind === "model") {
+          const discovered = await backend.discoverModels(endpoint.id);
 
-          return;
-        }
-
-        const endpoint = endpoints.find((candidate) => candidate.id === endpointId);
-
-        if (endpoint?.kind === "model") {
-          const discovered = await backend.discoverModels(endpointId);
-
-          setModels((current) => ({ ...current, [endpointId]: discovered }));
+          setModels((current) => ({ ...current, [endpoint.id]: discovered }));
         }
       } catch (cause) {
         setError(String(cause));
@@ -124,36 +92,38 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
         setChecking(null);
       }
     },
-    [backend, endpoints],
+    [backend],
   );
+
+  const sources = buildModelSources({ endpoints, readiness, models, checking, signedIn });
+  const chosenModel =
+    selection?.location === "device"
+      ? (models[selection.sourceId] ?? []).find((model) => model.nativeId === selection.entryId)
+      : undefined;
 
   return (
     <main>
-      <Account backend={backend} />
-      <h1>Runtimes on this device</h1>
+      <Account backend={backend} onSignedInChange={setSignedIn} />
+      <h1>Models</h1>
       {error ? <p role="alert">{error}</p> : null}
+      <ModelSourcePicker sources={sources} selected={selection} onSelect={setSelection} />
+      {chosenModel ? <Composer backend={backend} model={chosenModel} /> : null}
+      {selection?.sourceId === HOSTED_ENDPOINT_ID ? (
+        <CloudComposer backend={backend} tier={selection.entryId} />
+      ) : null}
+      <h2>Runtimes</h2>
       <ul>
         {endpoints.map((endpoint) => (
           <li key={endpoint.id}>
             <span>{endpoint.label}</span>
             <span>{endpoint.kind === "model" ? "Model runtime" : "Agent runtime"}</span>
             <span>{endpoint.url}</span>
-            <span>
-              {checking === endpoint.id ? "Checking" : readinessLabel(readiness[endpoint.id])}
-            </span>
-            <button
-              type="button"
-              onClick={() => void check(endpoint.id)}
-              disabled={checking !== null}
-            >
+            <button type="button" onClick={() => void check(endpoint)} disabled={checking !== null}>
               Check
             </button>
             <button type="button" onClick={() => void forget(endpoint.id)}>
               Forget
             </button>
-            {readiness[endpoint.id]?.status === "ready" && endpoint.kind === "model" ? (
-              <ModelList models={models[endpoint.id] ?? []} backend={backend} />
-            ) : null}
             {readiness[endpoint.id]?.status === "ready" && endpoint.kind === "agent" ? (
               <AgentSessions backend={backend} endpoint={endpoint} />
             ) : null}
