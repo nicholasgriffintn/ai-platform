@@ -44,26 +44,26 @@ jobs:
         with:
           json-summary-path: ./coverage/coverage-summary.json
           json-final-path: ./coverage/coverage-final.json
+          file-coverage-mode: none
       - name: Coverage summary
         if: always()
         run: |
           echo "## 📊 Coverage Report" >> $GITHUB_STEP_SUMMARY
           if [ -f "./coverage/coverage-summary.json" ]; then
-            echo "### Overall Coverage" >> $GITHUB_STEP_SUMMARY
-            echo '```json' >> $GITHUB_STEP_SUMMARY
-            cat ./coverage/coverage-summary.json >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Covered | Total | Percent |" >> $GITHUB_STEP_SUMMARY
+            echo "| --- | ---: | ---: | ---: |" >> $GITHUB_STEP_SUMMARY
+            jq -r '.total | to_entries[] | "| \(.key) | \(.value.covered) | \(.value.total) | \(.value.pct)% |"' \
+              ./coverage/coverage-summary.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No coverage summary was produced." >> $GITHUB_STEP_SUMMARY
           fi
-
-          echo "### Workspace Coverage" >> $GITHUB_STEP_SUMMARY
-          for app in apps/*/; do
-            if [ -f "${app}coverage/coverage-summary.json" ]; then
-              echo "#### $(basename $app)" >> $GITHUB_STEP_SUMMARY
-              echo '```json' >> $GITHUB_STEP_SUMMARY
-              cat "${app}coverage/coverage-summary.json" >> $GITHUB_STEP_SUMMARY
-              echo '```' >> $GITHUB_STEP_SUMMARY
-            fi
-          done
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          retention-days: 7
 
   e2e-changes:
     name: Detect E2E changes
