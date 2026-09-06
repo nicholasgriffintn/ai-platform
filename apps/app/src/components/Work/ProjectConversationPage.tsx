@@ -21,7 +21,9 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
+import { ProjectFileAsTaskControl } from "./ProjectFileAsTaskControl";
 import { ProjectWorkbenchConversation } from "./ProjectWorkbenchConversation";
+import { useFileMessageAsTask } from "./useFileMessageAsTask";
 import { useWorkData } from "./WorkDataContext";
 
 export function ProjectConversationPage({
@@ -41,6 +43,7 @@ export function ProjectConversationPage({
   const { data: project } = projectQuery;
   const queryClient = useQueryClient();
   const currentConversationId = useChatStore((state) => state.currentConversationId);
+  const fileAsTask = useFileMessageAsTask({ projectId, conversationId: currentConversationId });
   const model = useChatStore((state) => state.model);
   const { data: models } = useModels();
   const sourceCapabilities = useMemo(() => {
@@ -226,7 +229,14 @@ export function ProjectConversationPage({
               isDisabled={isStreamLoading}
               onChange={handleTaskTypeChange}
             />
-          ) : undefined,
+          ) : (
+            <ProjectFileAsTaskControl
+              isEnabled={fileAsTask.isEnabled}
+              isDisabled={isStreamLoading || fileAsTask.isFiling}
+              onChange={fileAsTask.setIsEnabled}
+            />
+          ),
+          ...(fileAsTask.isEnabled && !codingEnvironment ? { onFileAsTask: fileAsTask.file } : {}),
           requestOptions: {
             metadata: { project_id: projectId },
             ...(codingEnvironment

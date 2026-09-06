@@ -39,6 +39,7 @@ import { use_recipe_connector } from "./recipes/use_recipe_connector";
 import { applyFunctionRequestContext } from "./request-context";
 import { research } from "./research";
 import { run_sandbox_task } from "./sandbox";
+import { save_skill } from "./save_skill";
 import { capture_screenshot } from "./screenshot";
 import { search_documents } from "./search_documents";
 import { second_opinion } from "./second_opinion";
@@ -89,6 +90,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   set_goal,
   complete_goal,
   load_skill,
+  save_skill,
   run_council,
   select_council_members,
   second_opinion,
