@@ -185,8 +185,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     sendMessage,
     respondToExistingConversation,
     abortStream,
-    branchConversation,
-    isBranching,
+    startConversationThread,
+    isStartingThread,
     requestSecondOpinion,
     isRequestingSecondOpinion,
   } = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
@@ -763,11 +763,11 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const showWelcomeScreen =
     messages.length === 0 && !currentConversationId && !isStreamLoading && !streamStarted;
 
-  const handleBranch = useCallback(
+  const handleStartThread = useCallback(
     (messageId: string, modelId?: string) => {
-      void branchConversation(messageId, modelId);
+      void startConversationThread(messageId, modelId);
     },
-    [branchConversation],
+    [startConversationThread],
   );
 
   return (
@@ -834,8 +834,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
             onToolInteraction={handleToolInteraction}
             onConnectorApproval={handleConnectorApproval}
             onArtifactOpen={handleArtifactOpen}
-            onBranch={handleBranch}
-            isBranching={isBranching}
+            onStartThread={handleStartThread}
+            isStartingThread={isStartingThread}
             onRequestSecondOpinion={requestSecondOpinion}
             isRequestingSecondOpinion={isRequestingSecondOpinion}
           />

@@ -1,4 +1,4 @@
-import type { ConversationBranchesResponse } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationThreadsResponse } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { requireProjectAccess } from "~/services/workspaces/access";
@@ -9,7 +9,7 @@ const MAX_BRANCHES = 200;
 export async function getConversationBranches(
   context: ServiceContext,
   conversationId: string,
-): Promise<ConversationBranchesResponse> {
+): Promise<ConversationThreadsResponse> {
   const user = context.requireUser();
   const conversation = await context.repositories.conversations.getConversation(conversationId);
 
@@ -23,7 +23,7 @@ export async function getConversationBranches(
     await requireProjectAccess(context, projectId);
   }
 
-  const rows = await context.repositories.conversations.listConversationBranches(
+  const rows = await context.repositories.conversations.listConversationThreads(
     conversationId,
     user.id,
     projectId,
@@ -40,7 +40,7 @@ export async function getConversationBranches(
 
   return {
     truncated: rows.length > MAX_BRANCHES,
-    branches: page.map((row) => ({
+    threads: page.map((row) => ({
       ...row,
       parent_conversation_id:
         row.parent_conversation_id && ids.has(row.parent_conversation_id)

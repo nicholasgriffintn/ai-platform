@@ -138,12 +138,12 @@ export function useChatManager(
 
   const {
     editingMessageId,
-    isBranching,
+    isStartingThread,
     retryMessage,
     updateUserMessage,
     startEditingMessage,
     stopEditingMessage,
-    branchConversation,
+    startConversationThread,
     isRequestingSecondOpinion,
     requestSecondOpinion,
   } = useConversationActions(streamResponse, generateConversationTitle, requestOptions);
@@ -342,7 +342,7 @@ export function useChatManager(
     assistantResponseRef,
     assistantReasoningRef,
     editingMessageId,
-    isBranching,
+    isStartingThread,
     compactConversation,
     sendMessage,
     respondToExistingConversation,
@@ -354,7 +354,7 @@ export function useChatManager(
     updateUserMessage,
     startEditingMessage,
     stopEditingMessage,
-    branchConversation,
+    startConversationThread,
     isRequestingSecondOpinion,
     requestSecondOpinion,
   };

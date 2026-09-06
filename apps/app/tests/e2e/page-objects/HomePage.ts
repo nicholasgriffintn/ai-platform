@@ -810,7 +810,7 @@ export class HomePage extends BasePage {
     return response.request().postDataJSON() as Record<string, unknown>;
   }
 
-  async branchFromLatestUserMessageWithModel(modelName: string, providerName: string) {
+  async startThreadFromLatestUserMessageWithModel(modelName: string, providerName: string) {
     const responsePromise = this.waitForCompletionRequest();
     const titleResponsePromise = this.page.waitForResponse(
       (response) =>
@@ -818,7 +818,7 @@ export class HomePage extends BasePage {
         new URL(response.url()).pathname.endsWith("/generate-title"),
     );
 
-    await this.getLatestUserMessage().getByRole("button", { name: "Branch conversation" }).click();
+    await this.getLatestUserMessage().getByRole("button", { name: "Start a thread" }).click();
     await this.page.getByPlaceholder("Search other models").fill(modelName);
     await this.page
       .getByRole("button")
@@ -830,7 +830,7 @@ export class HomePage extends BasePage {
 
     if (!response.ok()) {
       throw new Error(
-        `Branched completion failed with ${response.status()}: ${await response.text()}`,
+        `Thread completion failed with ${response.status()}: ${await response.text()}`,
       );
     }
 
@@ -838,7 +838,7 @@ export class HomePage extends BasePage {
 
     if (!titleResponse.ok()) {
       throw new Error(
-        `Branched title generation failed with ${titleResponse.status()}: ${await titleResponse.text()}`,
+        `Thread title generation failed with ${titleResponse.status()}: ${await titleResponse.text()}`,
       );
     }
 
@@ -875,9 +875,9 @@ export class HomePage extends BasePage {
       .getByRole("button", { name: "Go to original conversation", exact: true });
   }
 
-  async branchFromLatestAssistantMessage() {
+  async startThreadFromLatestAssistantMessage() {
     await this.clickElement(
-      this.getLatestAssistantMessage().getByRole("button", { name: "Branch conversation" }),
+      this.getLatestAssistantMessage().getByRole("button", { name: "Start a thread" }),
     );
     await this.originalConversationButton.waitFor();
   }
@@ -887,26 +887,26 @@ export class HomePage extends BasePage {
     await this.page.getByRole("region", { name: "Conversation messages" }).waitFor();
   }
 
-  async openConversationBranches() {
-    await this.page.getByRole("button", { name: "Browse conversation branches" }).click();
-    await this.page.getByRole("dialog", { name: "Conversation branches" }).waitFor();
+  async openConversationThreads() {
+    await this.page.getByRole("button", { name: "Browse conversation threads" }).click();
+    await this.page.getByRole("dialog", { name: "Conversation threads" }).waitFor();
   }
 
-  conversationBranch(title: string) {
+  conversationThread(title: string) {
     return this.page
-      .getByRole("dialog", { name: "Conversation branches" })
+      .getByRole("dialog", { name: "Conversation threads" })
       .getByRole("button", { name: title });
   }
 
-  async selectConversationBranch(title: string) {
-    await this.conversationBranch(title).click();
+  async selectConversationThread(title: string) {
+    await this.conversationThread(title).click();
     await this.page.getByRole("region", { name: "Conversation messages" }).waitFor();
   }
 
-  async closeConversationBranches() {
+  async closeConversationThreads() {
     await this.page.keyboard.press("Escape");
     await this.page
-      .getByRole("dialog", { name: "Conversation branches" })
+      .getByRole("dialog", { name: "Conversation threads" })
       .waitFor({ state: "hidden" });
   }
 }

@@ -151,4 +151,4 @@ export * from "./research";
 export * from "./recipe-trigger-configuration";
 export * from "./strudel";
 
-export * from "./conversation-branches";
+export * from "./conversation-threads";

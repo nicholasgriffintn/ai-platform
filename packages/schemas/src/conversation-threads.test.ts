@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { flattenConversationBranches, type ConversationBranch } from "./conversation-branches";
+import { flattenConversationThreads, type ConversationThread } from "./conversation-threads";
 
-const root: ConversationBranch = {
+const root: ConversationThread = {
   id: "root",
   title: "Root",
   parent_conversation_id: null,
@@ -10,9 +10,9 @@ const root: ConversationBranch = {
   is_archived: false,
 };
 
-describe("conversation branch navigation", () => {
-  it("places parents before their descendants without dropping orphaned branches", () => {
-    const result = flattenConversationBranches([
+describe("conversation thread navigation", () => {
+  it("places parents before their descendants without dropping orphaned threads", () => {
+    const result = flattenConversationThreads([
       { ...root, id: "child", parent_conversation_id: "root" },
       { ...root, id: "orphan", parent_conversation_id: "missing" },
       root,
@@ -26,8 +26,8 @@ describe("conversation branch navigation", () => {
       ["grandchild", 2],
     ]);
   });
-  it("visits each branch only once when legacy parent links contain a cycle", () => {
-    const result = flattenConversationBranches([
+  it("visits each thread only once when legacy parent links contain a cycle", () => {
+    const result = flattenConversationThreads([
       { ...root, id: "a", parent_conversation_id: "b" },
       { ...root, id: "b", parent_conversation_id: "a" },
       { ...root, id: "self", parent_conversation_id: "self" },

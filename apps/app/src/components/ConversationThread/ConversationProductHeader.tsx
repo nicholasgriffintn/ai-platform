@@ -11,7 +11,7 @@ import { API_BASE_URL } from "~/constants";
 import { useChat } from "~/hooks/useChat";
 import { useChatStore } from "~/state/stores/chatStore";
 
-import { ConversationBranchNavigation } from "./ConversationBranchNavigation";
+import { ConversationThreadNavigation } from "./ConversationThreadNavigation";
 import { ShareButton } from "./ShareButton";
 
 interface ConversationProductHeaderProps {
@@ -47,7 +47,7 @@ export function ConversationProductHeader({
       }
       actions={
         <div className="flex shrink-0 items-center gap-0.5">
-          <ConversationBranchNavigation />
+          <ConversationThreadNavigation />
           {conversation?.latest_run?.context || conversation?.latest_run?.usage ? (
             <ContextDetailsButton
               context={conversation.latest_run.context}

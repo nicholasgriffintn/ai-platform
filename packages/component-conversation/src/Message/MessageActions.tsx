@@ -5,11 +5,11 @@ import {
   PopoverTrigger,
   cn,
 } from "@ngriffin_uk/polychat-component-ui";
-import { canBranchFromMessage } from "@ngriffin_uk/polychat-library-chat/branching";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { isCompactionMarkerMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import { resolveMessageSpeechAudioSource } from "@ngriffin_uk/polychat-library-chat/message-speech";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
+import { canStartThreadFromMessage } from "@ngriffin_uk/polychat-library-chat/threading";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import {
   Check,
@@ -43,8 +43,8 @@ export interface MessageActionsProps {
   isRetrying?: boolean;
   onEdit?: () => void;
   isEditing?: boolean;
-  onBranch?: (messageId: string, modelId?: string) => void;
-  isBranching?: boolean;
+  onStartThread?: (messageId: string, modelId?: string) => void;
+  isStartingThread?: boolean;
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
   isArchivedByCompaction?: boolean;
@@ -72,8 +72,8 @@ export const MessageActions = ({
   isRetrying = false,
   onEdit,
   isEditing = false,
-  onBranch,
-  isBranching = false,
+  onStartThread,
+  isStartingThread = false,
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
   isArchivedByCompaction = false,
@@ -81,14 +81,14 @@ export const MessageActions = ({
   modelConfig,
   renderModelSelector,
 }: MessageActionsProps) => {
-  const [showBranchModelSelector, setShowBranchModelSelector] = useState(false);
+  const [showThreadModelSelector, setShowThreadModelSelector] = useState(false);
   const [isPlayingSpeech, setIsPlayingSpeech] = useState(false);
   const speechAudioRef = useRef<HTMLAudioElement | null>(null);
   const isCompactionMarker = isCompactionMarkerMessage(message);
   const hasText = Boolean(getMessageTextContent(message)?.trim());
   const canMutateConversation = !isArchivedByCompaction;
-  const canBranch = Boolean(
-    onBranch && !isSharedView && canMutateConversation && canBranchFromMessage(message),
+  const canStartThread = Boolean(
+    onStartThread && !isSharedView && canMutateConversation && canStartThreadFromMessage(message),
   );
   const canRequestSecondOpinion = Boolean(
     onRequestSecondOpinion &&
@@ -104,25 +104,25 @@ export const MessageActions = ({
       : undefined;
 
   const handleAssistantBranchClick = useCallback(() => {
-    if (!onBranch) {
+    if (!onStartThread) {
       return;
     }
 
-    onBranch(message.id);
-  }, [message.id, onBranch]);
+    onStartThread(message.id);
+  }, [message.id, onStartThread]);
 
   const handleModelSelected = useCallback(
     (modelId: string) => {
-      setShowBranchModelSelector(false);
-      if (onBranch) {
-        onBranch(message.id, modelId);
+      setShowThreadModelSelector(false);
+      if (onStartThread) {
+        onStartThread(message.id, modelId);
       }
     },
-    [onBranch, message.id],
+    [onStartThread, message.id],
   );
 
   const handleCancelModelSelection = useCallback(() => {
-    setShowBranchModelSelector(false);
+    setShowThreadModelSelector(false);
   }, []);
 
   const handleSecondOpinionClick = useCallback(() => {
@@ -266,21 +266,21 @@ export const MessageActions = ({
             <MessageSquareQuote size={14} />
           </Button>
         )}
-        {canBranch && (
+        {canStartThread && (
           <div className="relative flex items-center">
             {message.role === "user" ? (
-              <Popover open={showBranchModelSelector} onOpenChange={setShowBranchModelSelector}>
+              <Popover open={showThreadModelSelector} onOpenChange={setShowThreadModelSelector}>
                 <PopoverTrigger asChild>
                   <Button
                     type="button"
                     variant="icon"
-                    disabled={isBranching}
+                    disabled={isStartingThread}
                     className={cn(
                       messageActionButtonClassName,
-                      isBranching && "cursor-not-allowed opacity-50",
+                      isStartingThread && "cursor-not-allowed opacity-50",
                     )}
-                    title={isBranching ? "Branching..." : "Branch conversation"}
-                    aria-label={isBranching ? "Branching..." : "Branch conversation"}
+                    title={isStartingThread ? "Starting a thread..." : "Start a thread"}
+                    aria-label={isStartingThread ? "Starting a thread..." : "Start a thread"}
                   >
                     <GitBranch size={14} />
                   </Button>
@@ -303,13 +303,13 @@ export const MessageActions = ({
                 type="button"
                 variant="icon"
                 onClick={handleAssistantBranchClick}
-                disabled={isBranching}
+                disabled={isStartingThread}
                 className={cn(
                   messageActionButtonClassName,
-                  isBranching && "cursor-not-allowed opacity-50",
+                  isStartingThread && "cursor-not-allowed opacity-50",
                 )}
-                title={isBranching ? "Branching..." : "Branch conversation"}
-                aria-label={isBranching ? "Branching..." : "Branch conversation"}
+                title={isStartingThread ? "Starting a thread..." : "Start a thread"}
+                aria-label={isStartingThread ? "Starting a thread..." : "Start a thread"}
               >
                 <GitBranch size={14} />
               </Button>

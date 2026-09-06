@@ -59,7 +59,7 @@ export function ChatAndWorkBand() {
           summary="Personal, quick, and kept. Every conversation stays where you left it."
           points={[
             "Pick a model per message, or a tier and let the lineup choose.",
-            "Branch a reply and compare the answers side by side.",
+            "Start a thread from a reply and compare the answers side by side.",
             "Sources, notes and saved outputs travel with the thread.",
           ]}
         />

@@ -6,8 +6,8 @@ import {
   cn,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
-  flattenConversationBranches,
-  type ConversationBranchesResponse,
+  flattenConversationThreads,
+  type ConversationThreadsResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { Check, GitBranch, MessageSquare, RotateCw } from "lucide-react";
@@ -16,14 +16,14 @@ export interface ConversationBranchesButtonProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currentId: string;
-  data?: ConversationBranchesResponse;
+  data?: ConversationThreadsResponse;
   isLoading: boolean;
   errorMessage?: string;
   onRetry: () => void;
   onSelect: (id: string) => void;
 }
 
-export function ConversationBranchesButton({
+export function ConversationThreadsButton({
   open,
   onOpenChange,
   currentId,
@@ -33,7 +33,7 @@ export function ConversationBranchesButton({
   onRetry,
   onSelect,
 }: ConversationBranchesButtonProps) {
-  const rows = flattenConversationBranches(data?.branches ?? []);
+  const rows = flattenConversationThreads(data?.threads ?? []);
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -43,21 +43,21 @@ export function ConversationBranchesButton({
           size="sm"
           collapseLabel="container"
           className="flex-shrink-0 text-muted-foreground hover:text-foreground"
-          title="Browse conversation branches"
-          aria-label="Browse conversation branches"
+          title="Browse conversation threads"
+          aria-label="Browse conversation threads"
           icon={<GitBranch className="h-3.5 w-3.5" />}
         >
-          Branches
+          Threads
         </Button>
       </PopoverTrigger>
       <PopoverContent
         align="end"
         sideOffset={8}
         className="w-[min(92vw,22rem)] overflow-hidden rounded-xl p-0 shadow-lg"
-        aria-label="Conversation branches"
+        aria-label="Conversation threads"
       >
         <div className="flex items-center justify-between gap-3 border-b border-border px-3.5 py-3">
-          <h2 className="text-xs font-semibold text-foreground">Branches</h2>
+          <h2 className="text-xs font-semibold text-foreground">Threads</h2>
           {data && (
             <span className="text-xs tabular-nums text-muted-foreground">
               {rows.length}
@@ -83,7 +83,7 @@ export function ConversationBranchesButton({
               className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"
               aria-hidden="true"
             />
-            Loading branches…
+            Loading threads…
           </output>
         ) : (
           <nav
@@ -91,16 +91,16 @@ export function ConversationBranchesButton({
             className="max-h-[min(28rem,60dvh)] overflow-y-auto p-1.5"
           >
             <ul>
-              {rows.map((branch) => {
-                const current = branch.id === currentId;
+              {rows.map((thread) => {
+                const current = thread.id === currentId;
 
                 return (
                   <li
-                    key={branch.id}
+                    key={thread.id}
                     className="relative"
-                    style={{ marginLeft: `${Math.min(branch.depth, 6) * 14}px` }}
+                    style={{ marginLeft: `${Math.min(thread.depth, 6) * 14}px` }}
                   >
-                    {branch.depth > 0 && (
+                    {thread.depth > 0 && (
                       <span
                         aria-hidden="true"
                         className="absolute -left-2 top-0 h-6 w-2 rounded-bl border-b border-l border-border-strong"
@@ -108,7 +108,7 @@ export function ConversationBranchesButton({
                     )}
                     <button
                       type="button"
-                      onClick={() => onSelect(branch.id)}
+                      onClick={() => onSelect(thread.id)}
                       disabled={current}
                       aria-current={current ? "page" : undefined}
                       className={cn(
@@ -116,7 +116,7 @@ export function ConversationBranchesButton({
                         current ? "bg-selection" : "hover:bg-selection/60",
                       )}
                     >
-                      {branch.depth === 0 ? (
+                      {thread.depth === 0 ? (
                         <MessageSquare
                           aria-hidden="true"
                           className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground"
@@ -130,19 +130,19 @@ export function ConversationBranchesButton({
                       <span className="min-w-0 flex-1">
                         <span
                           className="block truncate text-sm font-medium text-foreground"
-                          title={branch.title || "Untitled conversation"}
+                          title={thread.title || "Untitled conversation"}
                         >
-                          {branch.title || "Untitled conversation"}
+                          {thread.title || "Untitled conversation"}
                         </span>
                         <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-4 text-muted-foreground">
-                          {branch.depth === 0 && (
+                          {thread.depth === 0 && (
                             <>
                               <span>Original</span>
                               <span aria-hidden="true">·</span>
                             </>
                           )}
-                          <span>{formatDate(branch.created_at)}</span>
-                          {branch.is_archived && (
+                          <span>{formatDate(thread.created_at)}</span>
+                          {thread.is_archived && (
                             <>
                               <span aria-hidden="true">·</span>
                               <span>Archived</span>

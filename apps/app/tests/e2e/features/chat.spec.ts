@@ -821,17 +821,17 @@ test.describe("Pro message attachments", () => {
     }
   });
 
-  test("shares, unshares and navigates a conversation branch family", async ({
+  test("shares, unshares and navigates a conversation thread family", async ({
     browser,
     homePage,
     page,
     polychatApi,
   }, testInfo) => {
-    const branchRequests: string[] = [];
+    const threadRequests: string[] = [];
 
     page.on("request", (request) => {
-      if (new URL(request.url()).pathname.endsWith("/branches")) {
-        branchRequests.push(request.url());
+      if (new URL(request.url()).pathname.endsWith("/threads")) {
+        threadRequests.push(request.url());
       }
     });
 
@@ -844,70 +844,70 @@ test.describe("Pro message attachments", () => {
     await homePage.waitForChatResponse(0);
     const parentId = homePage.completionIdFromRequest(parentRequest);
 
-    await expect(page.getByRole("button", { name: "Browse conversation branches" })).toHaveCount(0);
-    expect(branchRequests).toHaveLength(0);
+    await expect(page.getByRole("button", { name: "Browse conversation threads" })).toHaveCount(0);
+    expect(threadRequests).toHaveLength(0);
 
     await homePage.shareConversation();
     await expect(page.getByLabel("Share link")).toHaveValue(/\/s\//);
     await homePage.stopSharingConversation();
-    await homePage.branchFromLatestAssistantMessage();
+    await homePage.startThreadFromLatestAssistantMessage();
     await expect(homePage.originalConversationButton).toBeVisible();
-    const childId = (await polychatApi.getConversationBranches(parentId)).branches.find(
+    const childId = (await polychatApi.getConversationThreads(parentId)).threads.find(
       ({ id }) => id !== parentId,
     )?.id;
 
     if (!childId) {
-      throw new Error("Assistant-message branch was not added to the branch family");
+      throw new Error("Assistant-message thread was not added to the thread family");
     }
 
     await homePage.returnToOriginalConversation();
-    await homePage.branchFromLatestUserMessageWithModel(
+    await homePage.startThreadFromLatestUserMessageWithModel(
       "Llama 4 Scout 17B 16E Instruct",
       "workers-ai",
     );
     await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
-    const siblingId = (await polychatApi.getConversationBranches(parentId)).branches.find(
+    const siblingId = (await polychatApi.getConversationThreads(parentId)).threads.find(
       ({ id }) => id !== parentId && id !== childId,
     )?.id;
 
     if (!siblingId) {
-      throw new Error("User-message branch was not added to the branch family");
+      throw new Error("User-message thread was not added to the thread family");
     }
 
-    await polychatApi.updateConversation(parentId, { title: "Release branch parent" });
+    await polychatApi.updateConversation(parentId, { title: "Release thread parent" });
     await polychatApi.updateConversation(childId, {
-      title: "Release branch child",
+      title: "Release thread child",
       archived: true,
     });
-    await polychatApi.updateConversation(siblingId, { title: "Release branch sibling" });
-    const branchFamily = await polychatApi.getConversationBranches(siblingId);
+    await polychatApi.updateConversation(siblingId, { title: "Release thread sibling" });
+    const threadFamily = await polychatApi.getConversationThreads(siblingId);
 
-    expect(new Set(branchFamily.branches.map(({ id }) => id))).toEqual(
+    expect(new Set(threadFamily.threads.map(({ id }) => id))).toEqual(
       new Set([parentId, childId, siblingId]),
     );
-    await homePage.openConversationBranches();
-    await expect(homePage.conversationBranch("Release branch sibling")).toContainText("Current");
-    await expect(homePage.conversationBranch("Release branch child")).toContainText("Archived");
-    await homePage.selectConversationBranch("Release branch child");
-    await homePage.openConversationBranches();
-    await expect(homePage.conversationBranch("Release branch child")).toContainText("Archived");
-    await expect(homePage.conversationBranch("Release branch child")).toContainText("Current");
-    await homePage.selectConversationBranch("Release branch parent");
-    await homePage.openConversationBranches();
-    await expect(homePage.conversationBranch("Release branch parent")).toContainText("Current");
-    await homePage.selectConversationBranch("Release branch sibling");
-    await homePage.openConversationBranches();
-    await expect(homePage.conversationBranch("Release branch sibling")).toContainText("Current");
-    await homePage.closeConversationBranches();
+    await homePage.openConversationThreads();
+    await expect(homePage.conversationThread("Release thread sibling")).toContainText("Current");
+    await expect(homePage.conversationThread("Release thread child")).toContainText("Archived");
+    await homePage.selectConversationThread("Release thread child");
+    await homePage.openConversationThreads();
+    await expect(homePage.conversationThread("Release thread child")).toContainText("Archived");
+    await expect(homePage.conversationThread("Release thread child")).toContainText("Current");
+    await homePage.selectConversationThread("Release thread parent");
+    await homePage.openConversationThreads();
+    await expect(homePage.conversationThread("Release thread parent")).toContainText("Current");
+    await homePage.selectConversationThread("Release thread sibling");
+    await homePage.openConversationThreads();
+    await expect(homePage.conversationThread("Release thread sibling")).toContainText("Current");
+    await homePage.closeConversationThreads();
     await homePage.reload();
-    await homePage.openConversation("Release branch sibling");
-    await homePage.openConversationBranches();
-    await expect(homePage.conversationBranch("Release branch sibling")).toContainText("Current");
-    await homePage.closeConversationBranches();
+    await homePage.openConversation("Release thread sibling");
+    await homePage.openConversationThreads();
+    await expect(homePage.conversationThread("Release thread sibling")).toContainText("Current");
+    await homePage.closeConversationThreads();
 
     const otherUser = await provisionPersonaSession(
       "pro",
-      `${testInfo.testId}:branch-outsider:${testInfo.retry}`,
+      `${testInfo.testId}:thread-outsider:${testInfo.retry}`,
     );
     const otherContext = await browser.newContext();
 
@@ -923,14 +923,14 @@ test.describe("Pro message attachments", () => {
           secure: false,
         },
       ]);
-      expect(await new PolychatApi(otherContext.request).conversationBranchesStatus(parentId)).toBe(
+      expect(await new PolychatApi(otherContext.request).conversationThreadsStatus(parentId)).toBe(
         404,
       );
     } finally {
       await otherContext.close();
     }
 
-    await captureVisualSnapshots(page, "release-chat-branching", {
+    await captureVisualSnapshots(page, "release-chat-threading", {
       ...DEFAULT_VISUAL_CHECKPOINTS,
       viewports: [{ name: "desktop", width: 1280, height: 720 }],
     });

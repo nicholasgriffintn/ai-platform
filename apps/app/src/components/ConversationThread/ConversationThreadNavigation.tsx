@@ -1,9 +1,9 @@
-import { ConversationBranchesButton } from "@ngriffin_uk/polychat-component-conversation";
+import { ConversationThreadsButton } from "@ngriffin_uk/polychat-component-conversation";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { useChat } from "~/hooks/useChat";
-import { getConversationBranches } from "~/lib/api/conversation-branches";
+import { getConversationBranches } from "~/lib/api/conversation-threads";
 import { useChatStore } from "~/state/stores/chatStore";
 
 function BranchPicker({
@@ -17,7 +17,7 @@ function BranchPicker({
 }) {
   const [open, setOpen] = useState(false);
   const query = useQuery({
-    queryKey: ["conversation-branches", userId, conversationId],
+    queryKey: ["conversation-threads", userId, conversationId],
     queryFn: () => getConversationBranches(conversationId),
     enabled: open,
     staleTime: 60_000,
@@ -25,7 +25,7 @@ function BranchPicker({
   });
 
   return (
-    <ConversationBranchesButton
+    <ConversationThreadsButton
       open={open}
       onOpenChange={setOpen}
       currentId={conversationId}
@@ -43,7 +43,7 @@ function BranchPicker({
   );
 }
 
-export function ConversationBranchNavigation() {
+export function ConversationThreadNavigation() {
   const { currentConversationId, isAuthenticated, user, setCurrentConversationId } = useChatStore();
   const { data: conversation } = useChat(currentConversationId);
 
