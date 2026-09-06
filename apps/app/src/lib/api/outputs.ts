@@ -80,6 +80,28 @@ export async function restoreOutputRevision(
   return returnFetchedData<Output>(response);
 }
 
+export async function updateOutput(
+  outputId: string,
+  updates: { content?: Record<string, unknown>; title?: string; expectedRevision: number },
+): Promise<Output> {
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}`, {
+    method: "PUT",
+    headers: await getHeaders(),
+    body: updates,
+  });
+
+  return returnFetchedData<Output>(response);
+}
+
+export async function exportOutputDocument(outputId: string): Promise<{ body: string }> {
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/export`, {
+    method: "GET",
+    headers: await getHeaders(),
+  });
+
+  return { body: await response.text() };
+}
+
 export async function getOutputArtifactContent(
   outputId: string,
   maxBytes = 1_000_000,

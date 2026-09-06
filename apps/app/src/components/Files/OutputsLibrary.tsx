@@ -1,3 +1,4 @@
+import { ArtifactDocumentEditor } from "@ngriffin_uk/polychat-component-content";
 import { Card, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   OutputCardGrid,
@@ -5,6 +6,12 @@ import {
   OutputRevisionReview,
   ShareLinkList,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import {
+  DOCUMENT_OUTPUT_KIND,
+  documentExportFilename,
+  readDocumentBody,
+} from "@ngriffin_uk/polychat-schemas";
+import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
 import { Puzzle } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -18,6 +25,7 @@ import {
   useOutputShares,
   useRevokeOutputShare,
   useRestoreOutputRevision,
+  useSaveDocumentRevision,
 } from "~/hooks/useOutputs";
 import { useRunnableTool } from "~/hooks/useRunnableTools";
 import { isAuthenticationError } from "~/lib/errors";
@@ -29,6 +37,7 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
   const createShare = useCreateOutputShare();
   const revokeShare = useRevokeOutputShare();
   const restoreRevision = useRestoreOutputRevision();
+  const saveDocument = useSaveDocumentRevision();
   const outputId = subpath.split("/").find(Boolean);
   const { data: shares } = useOutputShares(outputId ?? null);
   const {
@@ -45,6 +54,9 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
   } = useOutput(outputId ?? null);
   const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
   const { data: outputHistory, error: outputHistoryError } = useOutputHistory(outputId ?? null);
+
+  const documentBody =
+    output && output.kind === DOCUMENT_OUTPUT_KIND ? readDocumentBody(output.content) : null;
 
   if (outputId) {
     if (isOutputLoading) {
@@ -102,7 +114,37 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
             }
           }}
         />
-        <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
+        {documentBody === null ? (
+          <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
+        ) : (
+          <div className="h-[560px] overflow-hidden rounded-lg border border-border">
+            <ArtifactDocumentEditor
+              artifact={{
+                identifier: output.id,
+                type: "text/markdown",
+                language: "markdown",
+                title: output.title,
+                content: documentBody,
+              }}
+              isSaving={saveDocument.isPending}
+              saveErrorMessage={saveDocument.error?.message}
+              onSave={async (body) => {
+                await saveDocument.mutateAsync({
+                  outputId: output.id,
+                  body,
+                  expectedRevision: output.revision,
+                });
+              }}
+              onDownload={() =>
+                downloadTextFile(
+                  documentExportFilename(output.title),
+                  documentBody,
+                  "text/markdown",
+                )
+              }
+            />
+          </div>
+        )}
         {outputHistory ? (
           <OutputRevisionReview
             history={outputHistory}

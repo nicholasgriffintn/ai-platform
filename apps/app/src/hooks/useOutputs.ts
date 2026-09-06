@@ -8,6 +8,7 @@ import {
   listOutputShares,
   revokeOutputShare,
   restoreOutputRevision,
+  updateOutput,
 } from "~/lib/api/outputs";
 
 export const OUTPUT_QUERY_KEYS = {
@@ -62,6 +63,32 @@ export function useRestoreOutputRevision() {
       revision: number;
       expectedRevision: number;
     }) => restoreOutputRevision(outputId, revision, expectedRevision),
+    onSettled: (_output, _error, variables) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.detail(variables.outputId) }),
+        queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.history(variables.outputId) }),
+        queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.all }),
+      ]),
+  });
+}
+
+export function useSaveDocumentRevision() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      outputId,
+      body,
+      expectedRevision,
+    }: {
+      outputId: string;
+      body: string;
+      expectedRevision: number;
+    }) =>
+      updateOutput(outputId, {
+        content: { format: "markdown", body },
+        expectedRevision,
+      }),
     onSettled: (_output, _error, variables) =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.detail(variables.outputId) }),
