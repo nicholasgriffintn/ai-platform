@@ -1,4 +1,9 @@
-import type { DesktopEndpoint, DesktopRuntimeReadiness } from "@ngriffin_uk/polychat-schemas";
+import type {
+  DesktopEndpoint,
+  DesktopRuntimeReadiness,
+  DiscoveredModel,
+} from "@ngriffin_uk/polychat-schemas";
+import { formatBytes, formatCompactCount } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useEffect, useState } from "react";
 
 import type { ConnectedDesktopBackend } from "./desktop-backend";
@@ -22,9 +27,35 @@ function readinessLabel(readiness: DesktopRuntimeReadiness | undefined): string 
   return READINESS_LABELS[readiness.status];
 }
 
+function ModelList({ models }: { models: DiscoveredModel[] }) {
+  if (models.length === 0) {
+    return <p>No models installed here.</p>;
+  }
+
+  return (
+    <ul>
+      {models.map((model) => (
+        <li key={model.nativeId}>
+          <span>{model.displayName}</span>
+          {model.parameterSizeBytes === null ? null : (
+            <span>{formatBytes(model.parameterSizeBytes)}</span>
+          )}
+          {model.contextTokens === null ? null : (
+            <span>{formatCompactCount(model.contextTokens)} context</span>
+          )}
+          {model.capabilities.vision ? <span>Vision</span> : null}
+          {model.loaded ? <span>Loaded</span> : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function App({ backend }: { backend: ConnectedDesktopBackend }) {
   const [endpoints, setEndpoints] = useState<DesktopEndpoint[]>([]);
   const [readiness, setReadiness] = useState<Record<string, DesktopRuntimeReadiness>>({});
+  const [models, setModels] = useState<Record<string, DiscoveredModel[]>>({});
+  const [checking, setChecking] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,14 +65,29 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
       .catch((cause: unknown) => setError(String(cause)));
   }, [backend]);
 
-  const probe = useCallback(
+  const check = useCallback(
     async (endpointId: string) => {
+      setChecking(endpointId);
+      setError(null);
+
       try {
         const result = await backend.probeEndpoint(endpointId);
 
         setReadiness((current) => ({ ...current, [endpointId]: result }));
+
+        if (result.status !== "ready") {
+          setModels((current) => ({ ...current, [endpointId]: [] }));
+
+          return;
+        }
+
+        const discovered = await backend.discoverModels(endpointId);
+
+        setModels((current) => ({ ...current, [endpointId]: discovered }));
       } catch (cause) {
         setError(String(cause));
+      } finally {
+        setChecking(null);
       }
     },
     [backend],
@@ -57,10 +103,19 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
             <span>{endpoint.label}</span>
             <span>{endpoint.kind === "model" ? "Model runtime" : "Agent runtime"}</span>
             <span>{endpoint.url}</span>
-            <span>{readinessLabel(readiness[endpoint.id])}</span>
-            <button type="button" onClick={() => void probe(endpoint.id)}>
+            <span>
+              {checking === endpoint.id ? "Checking" : readinessLabel(readiness[endpoint.id])}
+            </span>
+            <button
+              type="button"
+              onClick={() => void check(endpoint.id)}
+              disabled={checking !== null}
+            >
               Check
             </button>
+            {readiness[endpoint.id]?.status === "ready" ? (
+              <ModelList models={models[endpoint.id] ?? []} />
+            ) : null}
           </li>
         ))}
       </ul>

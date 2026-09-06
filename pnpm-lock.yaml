@@ -619,6 +619,9 @@ importers:
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../../packages/schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../../packages/utility-core
       '@tauri-apps/api':
         specifier: 2.9.0
         version: 2.9.0

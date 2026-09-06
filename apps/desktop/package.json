@@ -15,6 +15,7 @@
   "dependencies": {
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@tauri-apps/api": "2.9.0",
     "react": "catalog:",
     "react-dom": "catalog:"

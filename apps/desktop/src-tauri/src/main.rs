@@ -1,14 +1,18 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod discovery;
 mod egress;
 
 use std::time::Duration;
 
+use discovery::DiscoveredModel;
 use egress::{DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport};
 use serde::Serialize;
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
+use url::Url;
 
-const PROBE_TIMEOUT: Duration = Duration::from_secs(3);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(3);
+const DISCOVERY_TIMEOUT: Duration = Duration::from_secs(10);
 const BUILT_IN_APPROVED_AT: &str = "1970-01-01T00:00:00Z";
 
 #[derive(Serialize)]
@@ -83,6 +87,24 @@ fn refusal_detail(refusal: EgressRefusal) -> String {
     }
 }
 
+fn authorised_endpoint(endpoint_id: &str) -> Result<(DesktopEndpoint, Url), String> {
+    let endpoints = configured_endpoints();
+    let target = egress::resolve_target(&endpoints, endpoint_id).map_err(refusal_detail)?;
+    let endpoint = endpoints
+        .into_iter()
+        .find(|candidate| candidate.id == endpoint_id)
+        .ok_or_else(|| refusal_detail(EgressRefusal::UnknownEndpoint))?;
+
+    Ok((endpoint, target))
+}
+
+fn http_client(timeout: Duration) -> Result<reqwest::Client, String> {
+    reqwest::Client::builder()
+        .timeout(timeout)
+        .build()
+        .map_err(|cause| cause.to_string())
+}
+
 #[tauri::command]
 fn list_endpoints() -> Vec<DesktopEndpoint> {
     configured_endpoints()
@@ -90,23 +112,22 @@ fn list_endpoints() -> Vec<DesktopEndpoint> {
 
 #[tauri::command]
 async fn probe_endpoint(endpoint_id: String) -> Readiness {
-    let endpoints = configured_endpoints();
-    let target = match egress::resolve_target(&endpoints, &endpoint_id) {
-        Ok(target) => target,
-        Err(refusal) => {
+    let target = match authorised_endpoint(&endpoint_id) {
+        Ok((_, target)) => target,
+        Err(detail) => {
             return Readiness::Unreachable {
                 checked_at: timestamp(),
-                detail: Some(refusal_detail(refusal)),
+                detail: Some(detail),
             }
         }
     };
 
-    let client = match reqwest::Client::builder().timeout(PROBE_TIMEOUT).build() {
+    let client = match http_client(REQUEST_TIMEOUT) {
         Ok(client) => client,
-        Err(cause) => {
+        Err(detail) => {
             return Readiness::Unreachable {
                 checked_at: timestamp(),
-                detail: Some(cause.to_string()),
+                detail: Some(detail),
             }
         }
     };
@@ -136,9 +157,42 @@ async fn probe_endpoint(endpoint_id: String) -> Readiness {
     }
 }
 
+#[tauri::command]
+async fn discover_models(endpoint_id: String) -> Result<Vec<DiscoveredModel>, String> {
+    let (endpoint, base) = authorised_endpoint(&endpoint_id)?;
+    let target = base
+        .join(discovery::models_path(&endpoint))
+        .map_err(|cause| cause.to_string())?;
+
+    let response = http_client(DISCOVERY_TIMEOUT)?
+        .get(target)
+        .send()
+        .await
+        .map_err(|cause| cause.to_string())?;
+
+    if !response.status().is_success() {
+        return Err(format!(
+            "{} answered with status {}",
+            endpoint.label,
+            response.status().as_u16()
+        ));
+    }
+
+    let body = response
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|cause| cause.to_string())?;
+
+    Ok(discovery::parse_models(&endpoint, &body, &timestamp()))
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![list_endpoints, probe_endpoint])
+        .invoke_handler(tauri::generate_handler![
+            list_endpoints,
+            probe_endpoint,
+            discover_models
+        ])
         .run(tauri::generate_context!())
         .expect("Polychat desktop failed to start");
 }
