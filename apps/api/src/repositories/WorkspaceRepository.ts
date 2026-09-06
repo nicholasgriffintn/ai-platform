@@ -352,7 +352,9 @@ export class WorkspaceRepository extends BaseRepository {
         .prepare(`DELETE FROM template WHERE project_id IN (${projectIds})`)
         .bind(workspaceId),
       database
-        .prepare("DELETE FROM agents WHERE owner_scope_type = 'workspace' AND owner_scope_id = ?")
+        .prepare(
+          "DELETE FROM teammates WHERE owner_scope_type = 'workspace' AND owner_scope_id = ?",
+        )
         .bind(workspaceId),
       database.prepare("DELETE FROM workspace WHERE id = ?").bind(workspaceId),
     ]);

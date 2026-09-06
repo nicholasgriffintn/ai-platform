@@ -92,10 +92,10 @@ addRoute(app, "put", "/plans/:id/credits", {
     updatePlanCredits(serviceContext.env, params.id, body),
 });
 
-addRoute(app, "put", "/shared-agents/:id/featured", {
+addRoute(app, "put", "/shared-teammates/:id/featured", {
   tags: ["admin"],
-  summary: "Set agent featured status",
-  description: "Mark an agent as featured or unfeatured (admin only)",
+  summary: "Set teammate featured status",
+  description: "Mark an teammate as featured or unfeatured (admin only)",
   bodySchema: setTeammateFeaturedSchema,
   paramSchema: sharedTeammateParamsSchema,
   auth: true,
@@ -120,10 +120,10 @@ addRoute(app, "put", "/shared-agents/:id/featured", {
   },
 });
 
-addRoute(app, "get", "/shared-agents", {
+addRoute(app, "get", "/shared-teammates", {
   tags: ["admin"],
-  summary: "Get all shared agents for admin review",
-  description: "Get all shared agents including non-public ones (admin only)",
+  summary: "Get all shared teammates for admin review",
+  description: "Get all shared teammates including non-public ones (admin only)",
   responses: {
     "200": { description: "Success", schema: apiResponseSchema },
   },
@@ -132,10 +132,10 @@ addRoute(app, "get", "/shared-agents", {
   handler: async ({ serviceContext }) => getAllSharedTeammatesForAdmin({ context: serviceContext }),
 });
 
-addRoute(app, "put", "/shared-agents/:id/moderate", {
+addRoute(app, "put", "/shared-teammates/:id/moderate", {
   tags: ["admin"],
-  summary: "Moderate shared agent",
-  description: "Approve or reject a shared agent (admin only)",
+  summary: "Moderate shared teammate",
+  description: "Approve or reject a shared teammate (admin only)",
   bodySchema: moderateTeammateSchema,
   paramSchema: sharedTeammateParamsSchema,
   auth: true,
@@ -154,7 +154,7 @@ addRoute(app, "put", "/shared-agents/:id/moderate", {
     });
 
     if (!result.success) {
-      return ResponseFactory.error(raw, result.error || "Failed to moderate agent", 400);
+      return ResponseFactory.error(raw, result.error || "Failed to moderate teammate", 400);
     }
 
     return result.data;

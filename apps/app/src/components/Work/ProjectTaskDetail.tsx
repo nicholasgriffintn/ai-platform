@@ -26,7 +26,7 @@ export function ProjectTaskDetail({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const navigate = useNavigate();
   const { projectQuery, workspaceQuery } = useWorkData();
-  const agents = useProjectTaskTeammates(projectQuery.data?.capabilities);
+  const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);
   const { tasks, flow, isLoading, error, start, accept, update, remove } =
     useProjectTasks(projectId);
   const detailQuery = useProjectTask(projectId, taskId);
@@ -107,7 +107,7 @@ export function ProjectTaskDetail({
           plan={plan}
           flow={flow}
           members={workspaceQuery.data?.members ?? []}
-          agents={agents}
+          teammates={teammates}
           blockedBy={tasks.filter((candidate) => task.dependsOnTaskIds.includes(candidate.id))}
           conversationHref={
             task.conversationId

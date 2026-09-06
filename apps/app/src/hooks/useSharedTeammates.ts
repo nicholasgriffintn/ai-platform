@@ -8,11 +8,11 @@ import { capabilityCatalogQueryKey } from "./useCapabilityCatalog";
 import { TEAMMATES_QUERY_KEYS } from "./useTeammates";
 
 export const SHARED_TEAMMATES_QUERY_KEYS = {
-  all: ["sharedAgents"],
-  featured: ["sharedAgents", "featured"],
-  categories: ["sharedAgents", "categories"],
-  tags: ["sharedAgents", "tags"],
-  listing: (teammateId: string) => ["sharedAgents", "listing", teammateId],
+  all: ["sharedTeammates"],
+  featured: ["sharedTeammates", "featured"],
+  categories: ["sharedTeammates", "categories"],
+  tags: ["sharedTeammates", "tags"],
+  listing: (teammateId: string) => ["sharedTeammates", "listing", teammateId],
 } as const;
 
 const CATALOGUE_STALE_TIME = 1000 * 60 * 60;
@@ -52,7 +52,7 @@ export function useSharedTeammates(filters?: SharedTeammateFilterInput, enabled 
   const queryClient = useQueryClient();
   const { categories, tags } = useSharedTeammateCategories(enabled);
 
-  const { data: sharedAgents = [], isLoading: isLoadingSharedTeammates } = useQuery<
+  const { data: sharedTeammates = [], isLoading: isLoadingSharedTeammates } = useQuery<
     SharedTeammateSummary[]
   >({
     queryKey: [...SHARED_TEAMMATES_QUERY_KEYS.all, filters],
@@ -78,15 +78,15 @@ export function useSharedTeammates(filters?: SharedTeammateFilterInput, enabled 
         queryClient.invalidateQueries({ queryKey: capabilityCatalogQueryKey() }),
         queryClient.invalidateQueries({ queryKey: SHARED_TEAMMATES_QUERY_KEYS.all }),
       ]);
-      toast.success("Agent installed");
+      toast.success("Teammate installed");
     },
     onError: (error) => {
-      toast.error(`Failed to install agent: ${error.message}`);
+      toast.error(`Failed to install teammate: ${error.message}`);
     },
   });
 
   return {
-    sharedAgents,
+    sharedTeammates,
     isLoadingSharedTeammates,
     featuredTeammates,
     isLoadingFeaturedTeammates,
@@ -122,17 +122,17 @@ export function useTeammateSharing(teammateId: string | null) {
   const shareMutation = useMutation<unknown, Error, ShareTeammateInput>({
     mutationFn: ({ name, description, category, tags }) => {
       if (!teammateId) {
-        throw new Error("No agent selected to share");
+        throw new Error("No teammate selected to share");
       }
 
       return apiService.shareTeammate(teammateId, name, description, undefined, category, tags);
     },
     onSuccess: async () => {
       await refreshMarketplace();
-      toast.success("Agent shared");
+      toast.success("Teammate shared");
     },
     onError: (error) => {
-      toast.error(`Failed to share agent: ${error.message}`);
+      toast.error(`Failed to share teammate: ${error.message}`);
     },
   });
 
@@ -140,10 +140,10 @@ export function useTeammateSharing(teammateId: string | null) {
     mutationFn: (sharedTeammateId) => apiService.unshareTeammate(sharedTeammateId),
     onSuccess: async () => {
       await refreshMarketplace();
-      toast.success("Agent removed from the marketplace");
+      toast.success("Teammate removed from the marketplace");
     },
     onError: (error) => {
-      toast.error(`Failed to stop sharing agent: ${error.message}`);
+      toast.error(`Failed to stop sharing teammate: ${error.message}`);
     },
   });
 

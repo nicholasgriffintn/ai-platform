@@ -54,7 +54,7 @@ export interface TeammatePublishState {
 }
 
 export interface TeammateEditorProps {
-  agent: TeammateResponse | null;
+  teammate: TeammateResponse | null;
   models: ModelConfig;
   tools: Tool[];
   skills: SkillSummary[];

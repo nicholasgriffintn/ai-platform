@@ -3,7 +3,7 @@ import { md } from "~/utils/markdown.js";
 export const teammatesTagDescription = md`
 # Agents
 
-Create AI agents with custom configurations, tools, and MCP (Model Context Protocol) server integrations.
+Create AI teammates with custom configurations, tools, and MCP (Model Context Protocol) server integrations.
 
 ## Overview
 
@@ -17,13 +17,13 @@ Agents are configurable AI assistants that can:
 
 ## Using Agents
 
-### Create Agent Completion
+### Create Teammate Completion
 
 ~~~http
-POST /v1/agents/{teammateId}/completions
+POST /v1/teammates/{teammateId}/completions
 ~~~
 
-Start a conversation with an agent. The agent will use its configured model, system prompt, MCP servers, and tools automatically.
+Start a conversation with an teammate. The teammate will use its configured model, system prompt, MCP servers, and tools automatically.
 
 **Request:**
 
@@ -39,16 +39,16 @@ Start a conversation with an agent. The agent will use its configured model, sys
 }
 ~~~
 
-Uses the same parameters as \`/v1/chat/completions\`, but with agent configuration applied automatically.
+Uses the same parameters as \`/v1/chat/completions\`, but with teammate configuration applied automatically.
 
 **Response:**
-Same format as chat completions, with the agent's configuration applied.
+Same format as chat completions, with the teammate's configuration applied.
 
 ## MCP Server Integration
 
 ### What are MCP Servers?
 
-MCP (Model Context Protocol) servers provide external context and capabilities to agents:
+MCP (Model Context Protocol) servers provide external context and capabilities to teammates:
 
 - File system access
 - Database connections
@@ -90,11 +90,11 @@ Each server in the \`servers\` array supports:
 }
 ~~~
 
-## Agent Configuration
+## Teammate Configuration
 
 ### System Prompts
 
-Define how your agent behaves:
+Define how your teammate behaves:
 
 ~~~json
 {
@@ -135,7 +135,7 @@ Provide example inputs/outputs to guide behavior:
 
 ## Use Cases
 
-### Code Review Agent
+### Code Review Teammate
 
 ~~~json
 {
@@ -173,7 +173,7 @@ Provide example inputs/outputs to guide behavior:
 
 ~~~json
 {
-  "name": "Support Agent",
+  "name": "Support Teammate",
   "model": "claude-3-5-haiku-20241022",
   "system_prompt": "Provide friendly, helpful customer support. Be concise and solution-focused.",
   "temperature": 0.5,
@@ -191,7 +191,7 @@ Provide example inputs/outputs to guide behavior:
 ### Create a Code Assistant
 
 ~~~bash
-curl -X POST https://api.polychat.app/agents \\
+curl -X POST https://api.polychat.app/teammates \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -202,10 +202,10 @@ curl -X POST https://api.polychat.app/agents \\
   }'
 ~~~
 
-### Use an Agent
+### Use an Teammate
 
 ~~~bash
-curl -X POST https://api.polychat.app/agents/agent_abc123/completions \\
+curl -X POST https://api.polychat.app/teammates/agent_abc123/completions \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -215,10 +215,10 @@ curl -X POST https://api.polychat.app/agents/agent_abc123/completions \\
   }'
 ~~~
 
-### Update an Agent
+### Update an Teammate
 
 ~~~bash
-curl -X PUT https://api.polychat.app/agents/agent_abc123 \\
+curl -X PUT https://api.polychat.app/teammates/agent_abc123 \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type": application/json" \\
   -d '{
@@ -229,10 +229,10 @@ curl -X PUT https://api.polychat.app/agents/agent_abc123 \\
 
 ## Best Practices
 
-1. **Specific System Prompts** - Be clear about the agent's role and behavior
+1. **Specific System Prompts** - Be clear about the teammate's role and behavior
 2. **Appropriate Models** - Choose models that fit the task (cost vs capability)
 3. **Temperature Settings** - Lower for deterministic tasks, higher for creative ones
-4. **Test Thoroughly** - Test agents before production use
+4. **Test Thoroughly** - Test teammates before production use
 5. **MCP Security** - Secure MCP server endpoints with proper authentication
 6. **Few-Shot Examples** - Provide examples for complex or specific behavior
 `;

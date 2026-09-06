@@ -20,7 +20,7 @@ import { userTagDescription } from "./content/tags/userTagDescription.js";
 
 export const tagDescriptions = {
   admin: adminTagDescription,
-  agents: teammatesTagDescription,
+  teammates: teammatesTagDescription,
   apps: appsTagDescription,
   audio: audioTagDescription,
   auth: authTagDescription,

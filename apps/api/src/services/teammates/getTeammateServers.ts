@@ -6,7 +6,7 @@ import { connectMCPServerReady, parseMCPServerConfigs } from "~/services/teammat
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "services/agents/servers" });
+const logger = getLogger({ prefix: "services/teammates/servers" });
 
 export async function getTeammateServers(
   context: ServiceContext,
@@ -14,13 +14,13 @@ export async function getTeammateServers(
   userId?: number,
 ) {
   context.ensureDatabase();
-  const agent = await requireTeammateAccess(context, teammateId, "read", userId);
+  const teammate = await requireTeammateAccess(context, teammateId, "read", userId);
 
-  if (!agent.servers) {
+  if (!teammate.servers) {
     return [];
   }
 
-  const serverConfigs = parseMCPServerConfigs(agent.servers);
+  const serverConfigs = parseMCPServerConfigs(teammate.servers);
 
   if (!serverConfigs || serverConfigs.length === 0) {
     return [];
@@ -31,7 +31,7 @@ export async function getTeammateServers(
   }
 
   const { MCPClientManager } = await import("agents/mcp/client");
-  const mcp: MCPClientManager = new MCPClientManager(agent.id, "1.0.0", {
+  const mcp: MCPClientManager = new MCPClientManager(teammate.id, "1.0.0", {
     storage: context.env.MCP_STORAGE,
   });
 

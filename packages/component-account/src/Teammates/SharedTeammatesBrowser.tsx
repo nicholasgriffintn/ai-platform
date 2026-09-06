@@ -18,7 +18,7 @@ export interface SharedTeammatesBrowserProps {
   onSelectedTagChange: (tag: string) => void;
   categories: string[];
   tags: string[];
-  sharedAgents: SharedTeammateSummary[];
+  sharedTeammates: SharedTeammateSummary[];
   featuredTeammates: SharedTeammateSummary[];
   isLoadingSharedTeammates: boolean;
   isLoadingFeaturedTeammates: boolean;
@@ -36,7 +36,7 @@ export function SharedTeammatesBrowser({
   onSelectedTagChange,
   categories,
   tags,
-  sharedAgents,
+  sharedTeammates,
   featuredTeammates,
   isLoadingSharedTeammates,
   isLoadingFeaturedTeammates,
@@ -47,12 +47,12 @@ export function SharedTeammatesBrowser({
   const isFiltering = Boolean(searchTerm || selectedCategory || selectedTag);
   const showFeatured = !isFiltering && (isLoadingFeaturedTeammates || featuredTeammates.length > 0);
 
-  const renderCard = (agent: SharedTeammateSummary) => (
+  const renderCard = (teammate: SharedTeammateSummary) => (
     <SharedTeammateCard
-      key={agent.id}
-      agent={agent}
+      key={teammate.id}
+      teammate={teammate}
       onInstall={onInstall}
-      isInstalling={isInstalling && installingTeammateId === agent.id}
+      isInstalling={isInstalling && installingTeammateId === teammate.id}
     />
   );
 
@@ -60,9 +60,9 @@ export function SharedTeammatesBrowser({
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row">
         <SearchInput
-          aria-label="Search shared agents"
+          aria-label="Search shared teammates"
           className="flex-1"
-          placeholder="Search shared agents..."
+          placeholder="Search shared teammates..."
           value={searchTerm}
           onChange={onSearchTermChange}
         />
@@ -112,7 +112,7 @@ export function SharedTeammatesBrowser({
         </h3>
         {isLoadingSharedTeammates ? (
           <CardGridLoadingSkeleton count={3} label="Loading shared teammates" />
-        ) : sharedAgents.length === 0 ? (
+        ) : sharedTeammates.length === 0 ? (
           <EmptyState
             icon={<SearchX size={24} className="text-muted-foreground" />}
             title="No shared teammates found"
@@ -121,7 +121,7 @@ export function SharedTeammatesBrowser({
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {sharedAgents.map(renderCard)}
+            {sharedTeammates.map(renderCard)}
           </div>
         )}
       </section>

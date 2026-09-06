@@ -52,10 +52,10 @@ export function useComposerCommandController({
     useChatStore();
   const { composerInput, setComposerInput } = useComposerDraft();
   const includeTeammates = assistantActionCatalog?.includeTeammates !== false;
-  const { agents } = useTeammates({ enabled: includeTeammates });
+  const { teammates } = useTeammates({ enabled: includeTeammates });
   const [textareaCursorPosition, setTextareaCursorPosition] = useState(0);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
-  const selectedTeammate = agents.find((agent) => agent.id === selectedTeammateId);
+  const selectedTeammate = teammates.find((teammate) => teammate.id === selectedTeammateId);
   const ignoredDirectiveRanges = useMemo(() => {
     const ranges: ComposerDirectiveIgnoredRange[] = [];
 
@@ -110,7 +110,7 @@ export function useComposerCommandController({
   });
 
   useTeammateToolDefaults({
-    agents,
+    teammates,
     selectedTeammateId,
     chatMode,
   });

@@ -14,7 +14,7 @@ import { Bot, Plus } from "lucide-react";
 import { useState } from "react";
 
 interface AttachTeammateDialogProps {
-  agents: TeammateResponse[];
+  teammates: TeammateResponse[];
   error?: Error | null;
   isLoading: boolean;
   onAttach: (teammateId: string) => Promise<unknown>;
@@ -24,7 +24,7 @@ interface AttachTeammateDialogProps {
 }
 
 export function AttachTeammateDialog({
-  agents,
+  teammates,
   error,
   isLoading,
   onAttach,
@@ -65,7 +65,7 @@ export function AttachTeammateDialog({
           <LoadingRegion label="Loading teammates">
             <SkeletonList count={3} />
           </LoadingRegion>
-        ) : agents.length === 0 ? (
+        ) : teammates.length === 0 ? (
           <EmptyState
             icon={<Bot size={24} className="text-muted-foreground" />}
             title="No teammates left to add"
@@ -74,21 +74,23 @@ export function AttachTeammateDialog({
           />
         ) : (
           <ul className="max-h-80 space-y-2 overflow-y-auto">
-            {agents.map((agent) => (
+            {teammates.map((teammate) => (
               <li
-                key={agent.id}
+                key={teammate.id}
                 className="flex items-center justify-between gap-3 rounded-lg border border-border p-3"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{agent.name}</p>
-                  <p className="truncate text-sm text-muted-foreground">{agent.description}</p>
+                  <p className="truncate text-sm font-medium">{teammate.name}</p>
+                  <p className="truncate text-sm text-muted-foreground">{teammate.description}</p>
                 </div>
                 <Button
                   variant="primary"
                   icon={<Plus size={15} />}
-                  isLoading={attachingTeammateId === agent.id || pendingTeammateId === agent.id}
+                  isLoading={
+                    attachingTeammateId === teammate.id || pendingTeammateId === teammate.id
+                  }
                   disabled={attachingTeammateId !== null}
-                  onClick={() => void attach(agent.id)}
+                  onClick={() => void attach(teammate.id)}
                 >
                   Add to project
                 </Button>

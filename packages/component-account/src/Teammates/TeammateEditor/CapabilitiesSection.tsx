@@ -59,7 +59,7 @@ export function CapabilitiesSection({
   return (
     <TeammateEditorSection
       title="Capabilities"
-      description={`Tools the agent may call and skills it loads. ${selectedCount} selected.`}
+      description={`Tools the teammate may call and skills it loads. ${selectedCount} selected.`}
     >
       <CapabilityFilters
         availableFilters={TEAMMATE_CAPABILITY_FILTERS}

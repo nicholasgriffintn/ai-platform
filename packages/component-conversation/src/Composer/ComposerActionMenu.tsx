@@ -276,7 +276,7 @@ export function ComposerActionMenu({
                           icon={<AssistantActionItemIcon item={item} />}
                           label={item.label}
                           description={describeAssistantActionItem(item)}
-                          isActive={item.id === `agent:${selectedTeammate?.id}`}
+                          isActive={item.id === `teammate:${selectedTeammate?.id}`}
                         />
                       </OptionsMenuAction>
                     ))}

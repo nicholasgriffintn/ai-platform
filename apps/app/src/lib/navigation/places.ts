@@ -16,7 +16,7 @@ const PLACE_PREFIXES: Array<[ProductPlace, string[]]> = [
   ["files", ["/files"]],
   [
     "library",
-    ["/teammates", "/chat/capabilities", "/chat/tools", "/chat/agents", "/chat/experiences"],
+    ["/teammates", "/chat/capabilities", "/chat/tools", "/chat/teammates", "/chat/experiences"],
   ],
   ["you", ["/profile"]],
   ["work", ["/work"]],

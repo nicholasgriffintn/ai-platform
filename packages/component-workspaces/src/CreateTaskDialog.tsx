@@ -31,7 +31,7 @@ export interface CreateTaskDialogProps {
   open: boolean;
   flow: ProjectFlow | null;
   members: { userId: number; name: string | null }[];
-  agents: { id: string; name: string }[];
+  teammates: { id: string; name: string }[];
   boardTasks: ProjectTask[];
   isSubmitting?: boolean;
   errorMessage?: string;
@@ -60,7 +60,7 @@ export function CreateTaskDialog({
   open,
   flow,
   members,
-  agents,
+  teammates,
   boardTasks,
   isSubmitting = false,
   errorMessage,
@@ -138,7 +138,7 @@ export function CreateTaskDialog({
       <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-2xl">
         <form onSubmit={(event) => void handleSubmit(event)} className="space-y-5">
           <DialogHeader>
-            <DialogTitle>Add work to the agent queue</DialogTitle>
+            <DialogTitle>Add work to the teammate queue</DialogTitle>
             <DialogDescription>
               Define the outcome, choose its pipeline entry point, then save it or start the run.
             </DialogDescription>
@@ -154,7 +154,7 @@ export function CreateTaskDialog({
 
           <Field
             label="Acceptance criteria"
-            hint="The agent uses these to decide when its goal is complete."
+            hint="The teammate uses these to decide when its goal is complete."
           >
             <div className="space-y-2">
               {criteria.map((criterion, index) => (
@@ -220,15 +220,15 @@ export function CreateTaskDialog({
               </FormSelect>
             ) : (
               <FormSelect
-                label="Agent"
+                label="Teammate"
                 value={teammateId}
                 onChange={(event) => setTeammateId(event.target.value)}
                 required
               >
-                <option value="">Choose an agent</option>
-                {agents.map((agent) => (
-                  <option key={agent.id} value={agent.id}>
-                    {agent.name}
+                <option value="">Choose an teammate</option>
+                {teammates.map((teammate) => (
+                  <option key={teammate.id} value={teammate.id}>
+                    {teammate.name}
                   </option>
                 ))}
               </FormSelect>

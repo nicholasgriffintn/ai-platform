@@ -20,7 +20,7 @@ const QUERY_PARAM = "query";
 const ENABLED_TOOLS_PARAM = "enabled_tools";
 const RECIPE_ACTION_PARAM = "action";
 const RECIPE_ID_PARAM = "recipe";
-const TEAMMATE_ID_PARAM = "agent";
+const TEAMMATE_ID_PARAM = "teammate";
 const ASSISTANT_ACTION_LAUNCH_PARAMS = [
   ACTION_CONTEXT_PARAM,
   LEGACY_RECIPE_CONTEXT_PARAM,

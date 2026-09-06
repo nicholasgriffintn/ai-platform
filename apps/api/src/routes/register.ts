@@ -56,7 +56,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/realtime", realtime);
   app.route("/search", search);
   app.route("/teammates", teammates);
-  app.route("/agents", teammates);
+  app.route("/teammates", teammates);
   app.route("/admin", admin);
   app.route("/webhooks", webhook);
   app.route("/training", training);

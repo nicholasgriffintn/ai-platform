@@ -43,7 +43,7 @@ function capability(overrides: Partial<EnabledCapability> = {}): EnabledCapabili
 
 function teammateItem(availability: "available" | "unavailable"): AssistantActionItem {
   return {
-    kind: "agent",
+    kind: "teammate",
     capability: { id: "researcher", availability },
     metadata: { teammateId: "researcher" },
   } as unknown as AssistantActionItem;
@@ -105,12 +105,12 @@ describe("capability surfaces", () => {
     expect(getCapabilityOpenPath(modelTool, PERSONAL_SURFACE, [])).toBeNull();
   });
 
-  it("starts a conversation with an available agent in either scope", () => {
-    const agent = teammateItem("available");
+  it("starts a conversation with an available teammate in either scope", () => {
+    const teammate = teammateItem("available");
 
-    expect(getCapabilityOpenPath(agent, PERSONAL_SURFACE, [])).toBe("/chat?agent=researcher");
-    expect(getCapabilityOpenPath(agent, getProjectSurface("w1", "p1"), [])).toBe(
-      "/work/w1/projects/p1/chat?agent=researcher",
+    expect(getCapabilityOpenPath(teammate, PERSONAL_SURFACE, [])).toBe("/chat?teammate=researcher");
+    expect(getCapabilityOpenPath(teammate, getProjectSurface("w1", "p1"), [])).toBe(
+      "/work/w1/projects/p1/chat?teammate=researcher",
     );
   });
 

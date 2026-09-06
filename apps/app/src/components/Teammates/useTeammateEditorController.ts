@@ -35,7 +35,7 @@ export interface TeammateEditorControllerOptions {
 }
 
 export interface TeammateEditorController {
-  agent: TeammateResponse | null;
+  teammate: TeammateResponse | null;
   models: ModelConfig;
   tools: Tool[];
   skills: SkillSummary[];
@@ -83,45 +83,45 @@ export function useTeammateEditorController({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [deleteRequested, setDeleteRequested] = useState(false);
 
-  const agent = isCreate ? null : (teammateQuery.data ?? null);
+  const teammate = isCreate ? null : (teammateQuery.data ?? null);
   const workspaces = workspacesQuery.data?.workspaces ?? [];
-  const permission = resolveTeammateManagePermission(agent, currentUserId, workspaces);
+  const permission = resolveTeammateManagePermission(teammate, currentUserId, workspaces);
   const publishTargets = getTeammatePublishTargets(workspaces);
 
   const save = async (data: TeammateFormData) => {
     setSaveError(null);
 
     try {
-      if (agent) {
-        await updateTeammate({ id: agent.id, data });
-        toast.success("Agent saved");
+      if (teammate) {
+        await updateTeammate({ id: teammate.id, data });
+        toast.success("Teammate saved");
 
         return;
       }
 
       const created = await createTeammate(data);
 
-      toast.success("Agent created");
+      toast.success("Teammate created");
       await navigate(`${teammatesPath}/${created.id}`, { replace: true });
     } catch (error) {
-      setSaveError(getErrorMessage(error, "Could not save this agent."));
+      setSaveError(getErrorMessage(error, "Could not save this teammate."));
     }
   };
 
   const confirmDelete = () => {
-    if (!agent) {
+    if (!teammate) {
       return;
     }
 
-    deleteTeammate(agent.id, {
+    deleteTeammate(teammate.id, {
       onSuccess: () => {
         setDeleteRequested(false);
-        toast.success(`Agent "${agent.name}" deleted`);
+        toast.success(`Teammate "${teammate.name}" deleted`);
         void navigate(backPath);
       },
       onError: (error) => {
         setDeleteRequested(false);
-        setSaveError(getErrorMessage(error, "Could not delete this agent."));
+        setSaveError(getErrorMessage(error, "Could not delete this teammate."));
       },
     });
   };
@@ -132,26 +132,26 @@ export function useTeammateEditorController({
       .catch(() => null);
 
     if (published) {
-      toast.success("Agent published to the workspace");
+      toast.success("Teammate published to the workspace");
     }
   };
 
   const publish: TeammatePublishState | undefined =
-    agent && agent.owner_scope_type === "user" && permission.canManage
+    teammate && teammate.owner_scope_type === "user" && permission.canManage
       ? {
           workspaces: publishTargets,
           isPublishing: publishMutation.isPending,
           error: publishMutation.error
-            ? getErrorMessage(publishMutation.error, "Could not publish this agent.")
+            ? getErrorMessage(publishMutation.error, "Could not publish this teammate.")
             : null,
           onPublish: (workspaceId: string) => {
-            void publishToWorkspace(agent.id, workspaceId);
+            void publishToWorkspace(teammate.id, workspaceId);
           },
         }
       : undefined;
 
   return {
-    agent,
+    teammate,
     models: modelsQuery.data ?? EMPTY_MODEL_CONFIG,
     tools: toolsQuery.data ?? [],
     skills: catalogQuery.data?.skills ?? [],

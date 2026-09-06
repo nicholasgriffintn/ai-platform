@@ -4,12 +4,12 @@ import { createContext, type ReactNode, useContext } from "react";
 import type { ComposerTeammateOption, ComposerCommandAction } from "../composerCommandTypes";
 
 /**
- * Command resolution reads agents, capability catalogues, and chat settings, so the host owns it
+ * Command resolution reads teammates, capability catalogues, and chat settings, so the host owns it
  * and supplies the result. The composer surface only presents and emits selections.
  */
 export interface ComposerCommandActions {
   activeSlashCommand: ComposerCommandAction | null;
-  agents: ComposerTeammateOption[];
+  teammates: ComposerTeammateOption[];
   actionItems: AssistantActionItem[];
   canUseTeammates: boolean;
   clearTeammate: () => void;
@@ -19,7 +19,7 @@ export interface ComposerCommandActions {
   isLoadingTeammates: boolean;
   modeCommands: ComposerCommandAction[];
   selectActionItem: (item: AssistantActionItem) => void;
-  selectTeammate: (agent: ComposerTeammateOption) => void;
+  selectTeammate: (teammate: ComposerTeammateOption) => void;
   selectSlashCommand: (command: ComposerCommandAction) => void;
   selectedAssistantAction: AssistantActionSelection | null;
   selectedTeammate?: ComposerTeammateOption | null;

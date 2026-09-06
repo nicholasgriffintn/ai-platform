@@ -1,1 +1,6 @@
-export type { Agent, TeammateInstall, TeammateRating, SharedAgent } from "~/lib/database/schema";
+export type {
+  Teammate,
+  TeammateInstall,
+  TeammateRating,
+  SharedTeammate,
+} from "~/lib/database/schema";

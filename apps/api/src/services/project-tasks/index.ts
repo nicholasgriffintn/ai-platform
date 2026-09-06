@@ -649,7 +649,7 @@ export async function setProjectFlow(
     const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
     const attachedTeammates = new Set(
       capabilities
-        .filter((capability) => capability.kind === "agent")
+        .filter((capability) => capability.kind === "teammate")
         .map((capability) => capability.capability_id),
     );
     const missing = flow.stages
@@ -661,7 +661,7 @@ export async function setProjectFlow(
 
     if (missing.length > 0) {
       throw new AssistantError(
-        `Attach these agents to the project before using them in a flow: ${missing.join(", ")}`,
+        `Attach these teammates to the project before using them in a flow: ${missing.join(", ")}`,
         ErrorType.PARAMS_ERROR,
         400,
       );

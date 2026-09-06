@@ -50,15 +50,15 @@ export function useAssistantActionCatalog({
     projectId,
   ]);
 
-  const agents = useMemo(
-    () => (includeTeammates ? (capabilityCatalog.data?.agents ?? []) : []),
-    [capabilityCatalog.data?.agents, includeTeammates],
+  const teammates = useMemo(
+    () => (includeTeammates ? (capabilityCatalog.data?.teammates ?? []) : []),
+    [capabilityCatalog.data?.teammates, includeTeammates],
   );
 
   return useMemo(
     () =>
       buildAssistantActionCatalog({
-        agents,
+        teammates,
         connectors: connectorsData?.connectors ?? [],
         installations: installationsData?.installations ?? [],
         modelTools,
@@ -66,7 +66,7 @@ export function useAssistantActionCatalog({
         skills,
       }),
     [
-      agents,
+      teammates,
       connectorsData?.connectors,
       installationsData?.installations,
       modelTools,

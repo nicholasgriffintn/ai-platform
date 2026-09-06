@@ -13,7 +13,7 @@ export default function PersonalTeammatePage() {
   return (
     <TeammateEditorPage
       teammateId={teammateId}
-      teammatesPath="/chat/agents"
+      teammatesPath="/chat/teammates"
       backPath={PLACE_PATHS.library}
       backLabel="Back to capabilities"
     />

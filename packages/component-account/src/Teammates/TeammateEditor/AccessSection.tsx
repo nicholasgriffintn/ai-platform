@@ -17,7 +17,7 @@ export function AccessSection({
   return (
     <TeammateEditorSection
       title="Access"
-      description="Who owns this agent, and therefore who can change it."
+      description="Who owns this teammate, and therefore who can change it."
     >
       <p className="text-sm">
         {ownerScopeType === "workspace"

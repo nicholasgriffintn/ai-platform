@@ -6,7 +6,7 @@ import type {
   TeammateKind,
 } from "@ngriffin_uk/polychat-schemas";
 
-import type { Agent } from "~/lib/database/schema";
+import type { Teammate } from "~/lib/database/schema";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -33,16 +33,16 @@ export interface CreateTeammateRecord {
 }
 
 export class TeammateRepository extends BaseRepository {
-  public async createTeammate(record: CreateTeammateRecord): Promise<Agent> {
+  public async createTeammate(record: CreateTeammateRecord): Promise<Teammate> {
     const id = generateId();
     const insert = this.buildInsertQuery(
-      "agents",
+      "teammates",
       {
         id,
         user_id: record.userId,
         owner_scope_type: record.ownerScopeType,
         owner_scope_id: record.ownerScopeId,
-        derived_from_agent_id: record.derivedFromTeammateId ?? null,
+        derived_from_teammate_id: record.derivedFromTeammateId ?? null,
         kind: record.kind ?? "colleague",
         name: record.name,
         description: record.description,
@@ -67,19 +67,19 @@ export class TeammateRepository extends BaseRepository {
     );
 
     if (!insert) {
-      throw new AssistantError("Failed to build agent insert query", ErrorType.INTERNAL_ERROR);
+      throw new AssistantError("Failed to build teammate insert query", ErrorType.INTERNAL_ERROR);
     }
 
-    const created = await this.runQuery<Agent>(insert.query, insert.values, true);
+    const created = await this.runQuery<Teammate>(insert.query, insert.values, true);
 
     if (!created) {
-      throw new AssistantError("Failed to insert agent", ErrorType.INTERNAL_ERROR);
+      throw new AssistantError("Failed to insert teammate", ErrorType.INTERNAL_ERROR);
     }
 
     return created;
   }
 
-  public async getTeammatesForScopes(userId: number, workspaceIds: string[]): Promise<Agent[]> {
+  public async getTeammatesForScopes(userId: number, workspaceIds: string[]): Promise<Teammate[]> {
     const uniqueWorkspaceIds = [...new Set(workspaceIds)];
     const workspaceClause = uniqueWorkspaceIds.length
       ? ` OR (owner_scope_type = 'workspace' AND owner_scope_id IN (${uniqueWorkspaceIds
@@ -87,33 +87,33 @@ export class TeammateRepository extends BaseRepository {
           .join(", ")}))`
       : "";
 
-    return this.runQuery<Agent>(
-      `SELECT * FROM agents
+    return this.runQuery<Teammate>(
+      `SELECT * FROM teammates
 			 WHERE (owner_scope_type = 'user' AND owner_scope_id = ?)${workspaceClause}
 			 ORDER BY created_at DESC`,
       [String(userId), ...uniqueWorkspaceIds],
     );
   }
 
-  public async getTeammatesByIds(teammateIds: string[]): Promise<Agent[]> {
+  public async getTeammatesByIds(teammateIds: string[]): Promise<Teammate[]> {
     const uniqueIds = [...new Set(teammateIds)];
 
     if (uniqueIds.length === 0) {
       return [];
     }
 
-    return this.runQuery<Agent>(
-      `SELECT * FROM agents
+    return this.runQuery<Teammate>(
+      `SELECT * FROM teammates
 			 WHERE id IN (${uniqueIds.map(() => "?").join(", ")})
 			 ORDER BY created_at DESC`,
       uniqueIds,
     );
   }
 
-  public async getTeammateById(teammateId: string): Promise<Agent | null> {
-    const { query, values } = this.buildSelectQuery("agents", { id: teammateId });
+  public async getTeammateById(teammateId: string): Promise<Teammate | null> {
+    const { query, values } = this.buildSelectQuery("teammates", { id: teammateId });
 
-    return this.runQuery<Agent>(query, values, true);
+    return this.runQuery<Teammate>(query, values, true);
   }
 
   public async updateTeammate(
@@ -150,7 +150,7 @@ export class TeammateRepository extends BaseRepository {
       "kind",
     ];
 
-    const result = this.buildUpdateQuery("agents", data, allowedFields, "id = ?", [teammateId], {
+    const result = this.buildUpdateQuery("teammates", data, allowedFields, "id = ?", [teammateId], {
       jsonFields: ["servers", "few_shot_examples", "enabled_tools", "skill_ids"],
       transformer: (field, value) => {
         if (field === "temperature" && value !== undefined && value !== null) {
@@ -174,7 +174,7 @@ export class TeammateRepository extends BaseRepository {
   }
 
   public async deleteTeammate(teammateId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("agents", { id: teammateId });
+    const { query, values } = this.buildDeleteQuery("teammates", { id: teammateId });
 
     if (!query) {
       return;

@@ -16,7 +16,7 @@ import {
 import type { TeammateEditorChange, TeammateEditorProps } from "./types";
 
 export function TeammateEditor({
-  agent,
+  teammate,
   models,
   tools,
   skills,
@@ -31,7 +31,7 @@ export function TeammateEditor({
   onCancel,
   onDelete,
 }: TeammateEditorProps) {
-  const [value, setValue] = useState(() => createTeammateEditorValue(agent, models));
+  const [value, setValue] = useState(() => createTeammateEditorValue(teammate, models));
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const change: TeammateEditorChange = (patch) => {
@@ -60,7 +60,7 @@ export function TeammateEditor({
         <Alert variant="info">
           <AlertTitle>Read only</AlertTitle>
           <AlertDescription>
-            {cannotManageReason ?? "You do not have permission to change this agent."}
+            {cannotManageReason ?? "You do not have permission to change this teammate."}
           </AlertDescription>
         </Alert>
       )}
@@ -84,15 +84,15 @@ export function TeammateEditor({
       />
       <ConnectionsSection value={value} disabled={disabled} onChange={change} />
       <AccessSection
-        ownerScopeType={agent?.owner_scope_type ?? "user"}
+        ownerScopeType={teammate?.owner_scope_type ?? "user"}
         ownerLabel={ownerLabel}
-        isSaved={agent !== null}
+        isSaved={teammate !== null}
         publish={canManage ? publish : undefined}
       />
 
       <div className="flex items-center justify-between gap-3">
         <div>
-          {agent && canManage && onDelete && (
+          {teammate && canManage && onDelete && (
             <Button type="button" variant="destructive" onClick={onDelete}>
               Delete teammate
             </Button>
@@ -108,7 +108,7 @@ export function TeammateEditor({
               disabled={isSaving}
               icon={isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined}
             >
-              {agent ? "Save agent" : "Create teammate"}
+              {teammate ? "Save teammate" : "Create teammate"}
             </Button>
           )}
         </div>

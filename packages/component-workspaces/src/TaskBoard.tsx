@@ -46,7 +46,7 @@ export interface TaskBoardProps {
   tasks: ProjectTask[];
   flow: ProjectFlow | null;
   members: TaskBoardMemberSummary[];
-  agents: TaskBoardTeammateSummary[];
+  teammates: TaskBoardTeammateSummary[];
   pendingTaskIds?: string[];
   taskHref: (task: ProjectTask) => string;
   conversationHref: (task: ProjectTask) => string | null;
@@ -126,7 +126,7 @@ function TaskRow({
   task,
   flow,
   members,
-  agents,
+  teammates,
   href,
   conversationHref,
   isPending,
@@ -136,7 +136,7 @@ function TaskRow({
   task: ProjectTask;
   flow: ProjectFlow | null;
   members: TaskBoardMemberSummary[];
-  agents: TaskBoardTeammateSummary[];
+  teammates: TaskBoardTeammateSummary[];
   href: string;
   conversationHref: string | null;
   isPending: boolean;
@@ -148,7 +148,7 @@ function TaskRow({
     flow?.stages.find((candidate) => candidate.id === task.stageId) ??
     (task.status === "done" || task.status === "cancelled" ? null : flow?.stages[0]);
   const teammateId = stage?.teammateId ?? task.runner?.teammateId;
-  const agent = agents.find((candidate) => candidate.id === teammateId);
+  const teammate = teammates.find((candidate) => candidate.id === teammateId);
   const canRetry = isProjectTaskRetryable(task);
   const needsInput = isProjectTaskAwaitingInput(task);
   const activityAt = task.updatedAt ?? task.createdAt;
@@ -176,7 +176,7 @@ function TaskRow({
 
       <div className="space-y-1 text-xs text-muted-foreground">
         <p className="flex items-center gap-1.5 text-foreground">
-          <Bot size={13} /> {agent?.name ?? "No agent assigned"}
+          <Bot size={13} /> {teammate?.name ?? "No teammate assigned"}
         </p>
         <p>{owner?.name ? `Owned by ${owner.name}` : "No human owner"}</p>
         <p>{formatRelativeTime(activityAt)}</p>
@@ -250,12 +250,12 @@ function TaskRow({
 
 function FlowStrip({
   flow,
-  agents,
+  teammates,
   canManage,
   onConfigure,
 }: {
   flow: ProjectFlow | null;
-  agents: TaskBoardTeammateSummary[];
+  teammates: TaskBoardTeammateSummary[];
   canManage: boolean;
   onConfigure: () => void;
 }) {
@@ -264,10 +264,10 @@ function FlowStrip({
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold">
-            <GitBranch size={15} /> Agent pipeline
+            <GitBranch size={15} /> Teammate pipeline
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Each completed stage either hands work to the next agent or stops for review.
+            Each completed stage either hands work to the next teammate or stops for review.
           </p>
         </div>
         {canManage ? (
@@ -285,7 +285,7 @@ function FlowStrip({
       {flow ? (
         <ol className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
           {flow.stages.map((stage, index) => {
-            const agent = agents.find((candidate) => candidate.id === stage.teammateId);
+            const teammate = teammates.find((candidate) => candidate.id === stage.teammateId);
 
             return (
               <li
@@ -307,7 +307,7 @@ function FlowStrip({
                 </div>
                 <p className="mt-3 truncate text-sm font-semibold">{stage.name}</p>
                 <p className="mt-1 truncate text-xs text-muted-foreground">
-                  {agent?.name ?? "Project default agent"}
+                  {teammate?.name ?? "Project default teammate"}
                   {stage.mode ? ` · ${stage.mode}` : ""}
                 </p>
               </li>
@@ -317,9 +317,9 @@ function FlowStrip({
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-border-strong px-4 py-5">
           <div>
-            <p className="text-sm font-medium">No agent pipeline configured</p>
+            <p className="text-sm font-medium">No teammate pipeline configured</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Add stages to hand work between specialist agents automatically.
+              Add stages to hand work between specialist teammates automatically.
             </p>
           </div>
           {canManage ? (
@@ -337,7 +337,7 @@ export function TaskBoard({
   tasks,
   flow,
   members,
-  agents,
+  teammates,
   pendingTaskIds = NO_PENDING_TASKS,
   taskHref,
   conversationHref,
@@ -365,7 +365,7 @@ export function TaskBoard({
     <div className="space-y-5">
       <FlowStrip
         flow={flow}
-        agents={agents}
+        teammates={teammates}
         canManage={canManageFlow}
         onConfigure={onConfigureFlow}
       />
@@ -419,7 +419,7 @@ export function TaskBoard({
                 task={task}
                 flow={flow}
                 members={members}
-                agents={agents}
+                teammates={teammates}
                 href={taskHref(task)}
                 conversationHref={conversationHref(task)}
                 isPending={pendingTaskIds.includes(task.id)}
@@ -444,7 +444,7 @@ export function TaskBoard({
           <EmptyState
             icon={<ListChecks className="text-muted-foreground" size={24} />}
             title="The queue is empty"
-            message="Add an outcome, then let the configured agents move it through the pipeline."
+            message="Add an outcome, then let the configured teammates move it through the pipeline."
             action={
               canCreateTask ? (
                 <Button variant="primary" onClick={onCreateTask}>

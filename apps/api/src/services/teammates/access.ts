@@ -1,13 +1,13 @@
 import type { WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { Agent } from "~/lib/database/schema";
+import type { Teammate } from "~/lib/database/schema";
 import { requireWorkspaceAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type TeammateAccessAction = "read" | "write";
 
-export const TEAMMATE_CAPABILITY_KIND = "agent";
+export const TEAMMATE_CAPABILITY_KIND = "teammate";
 
 interface ProjectCapabilityGrant {
   kind: string;
@@ -25,8 +25,8 @@ export function resolveProjectTeammateGrants(
 const TEAMMATE_READ_ROLES: readonly WorkspaceRole[] = ["owner", "admin", "member"];
 const TEAMMATE_WRITE_ROLES: readonly WorkspaceRole[] = ["owner", "admin"];
 
-export function isWorkspaceTeammate(agent: Pick<Agent, "owner_scope_type">): boolean {
-  return agent.owner_scope_type === "workspace";
+export function isWorkspaceTeammate(teammate: Pick<Teammate, "owner_scope_type">): boolean {
+  return teammate.owner_scope_type === "workspace";
 }
 
 export function teammateOwnerScopeForUser(userId: number): {
@@ -38,33 +38,33 @@ export function teammateOwnerScopeForUser(userId: number): {
 
 export async function assertTeammateAccess(
   context: ServiceContext,
-  agent: Pick<Agent, "owner_scope_type" | "owner_scope_id">,
+  teammate: Pick<Teammate, "owner_scope_type" | "owner_scope_id">,
   action: TeammateAccessAction,
   userId: number,
 ): Promise<void> {
-  if (isWorkspaceTeammate(agent)) {
+  if (isWorkspaceTeammate(teammate)) {
     await requireWorkspaceAccess(
       context,
-      agent.owner_scope_id,
+      teammate.owner_scope_id,
       action === "write" ? TEAMMATE_WRITE_ROLES : TEAMMATE_READ_ROLES,
     );
 
     return;
   }
 
-  if (agent.owner_scope_id !== String(userId)) {
+  if (teammate.owner_scope_id !== String(userId)) {
     throw new AssistantError("Forbidden", ErrorType.FORBIDDEN, 403);
   }
 }
 
-async function loadTeammate(context: ServiceContext, teammateId: string): Promise<Agent> {
-  const agent = await context.repositories.agents.getTeammateById(teammateId);
+async function loadTeammate(context: ServiceContext, teammateId: string): Promise<Teammate> {
+  const teammate = await context.repositories.teammates.getTeammateById(teammateId);
 
-  if (!agent) {
-    throw new AssistantError("Agent not found", ErrorType.NOT_FOUND, 404);
+  if (!teammate) {
+    throw new AssistantError("Teammate not found", ErrorType.NOT_FOUND, 404);
   }
 
-  return agent;
+  return teammate;
 }
 
 export async function requireTeammateAccess(
@@ -72,23 +72,23 @@ export async function requireTeammateAccess(
   teammateId: string,
   action: TeammateAccessAction,
   userId?: number,
-): Promise<Agent> {
+): Promise<Teammate> {
   const id = userId ?? context.requireUser().id;
-  const agent = await loadTeammate(context, teammateId);
+  const teammate = await loadTeammate(context, teammateId);
 
-  await assertTeammateAccess(context, agent, action, id);
+  await assertTeammateAccess(context, teammate, action, id);
 
-  return agent;
+  return teammate;
 }
 
 export async function canAccessTeammate(
   context: ServiceContext,
-  agent: Pick<Agent, "owner_scope_type" | "owner_scope_id">,
+  teammate: Pick<Teammate, "owner_scope_type" | "owner_scope_id">,
   action: TeammateAccessAction,
   userId: number,
 ): Promise<boolean> {
   try {
-    await assertTeammateAccess(context, agent, action, userId);
+    await assertTeammateAccess(context, teammate, action, userId);
 
     return true;
   } catch (error) {
@@ -102,12 +102,16 @@ export async function canAccessTeammate(
 
 export async function assertTeammateAvailableToWorkspace(
   context: ServiceContext,
-  agent: Pick<Agent, "owner_scope_type" | "owner_scope_id" | "user_id">,
+  teammate: Pick<Teammate, "owner_scope_type" | "owner_scope_id" | "user_id">,
   workspaceId: string,
 ): Promise<void> {
-  if (isWorkspaceTeammate(agent)) {
-    if (agent.owner_scope_id !== workspaceId) {
-      throw new AssistantError("That agent belongs to another workspace", ErrorType.FORBIDDEN, 403);
+  if (isWorkspaceTeammate(teammate)) {
+    if (teammate.owner_scope_id !== workspaceId) {
+      throw new AssistantError(
+        "That teammate belongs to another workspace",
+        ErrorType.FORBIDDEN,
+        403,
+      );
     }
 
     return;
@@ -115,12 +119,12 @@ export async function assertTeammateAvailableToWorkspace(
 
   const membership = await context.repositories.workspaces.getMembership(
     workspaceId,
-    agent.user_id,
+    teammate.user_id,
   );
 
   if (!membership) {
     throw new AssistantError(
-      "That agent's author is no longer a member of this workspace",
+      "That teammate's author is no longer a member of this workspace",
       ErrorType.FORBIDDEN,
       403,
     );
@@ -129,11 +133,11 @@ export async function assertTeammateAvailableToWorkspace(
 
 export async function isTeammateAvailableToWorkspace(
   context: ServiceContext,
-  agent: Pick<Agent, "owner_scope_type" | "owner_scope_id" | "user_id">,
+  teammate: Pick<Teammate, "owner_scope_type" | "owner_scope_id" | "user_id">,
   workspaceId: string,
 ): Promise<boolean> {
   try {
-    await assertTeammateAvailableToWorkspace(context, agent, workspaceId);
+    await assertTeammateAvailableToWorkspace(context, teammate, workspaceId);
 
     return true;
   } catch (error) {

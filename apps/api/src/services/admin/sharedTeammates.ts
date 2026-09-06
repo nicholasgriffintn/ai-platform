@@ -6,7 +6,7 @@ import {
 import type { IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "services/admin/sharedAgents" });
+const logger = getLogger({ prefix: "services/admin/sharedTeammates" });
 
 export interface FeaturedTeammateResult {
   success: boolean;
@@ -41,21 +41,21 @@ export async function setTeammateFeaturedStatus({
   const serviceContext = resolveServiceContext({ context, env });
 
   try {
-    const sharedAgent =
-      await serviceContext.repositories.sharedAgents.getSharedTeammateById(teammateId);
+    const sharedTeammate =
+      await serviceContext.repositories.sharedTeammates.getSharedTeammateById(teammateId);
 
-    if (!sharedAgent) {
+    if (!sharedTeammate) {
       return {
         success: false,
-        error: "Shared agent not found",
+        error: "Shared teammate not found",
       };
     }
 
-    await serviceContext.repositories.sharedAgents.setFeatured(teammateId, featured);
+    await serviceContext.repositories.sharedTeammates.setFeatured(teammateId, featured);
 
     if (featured) {
       const teammateOwner = await serviceContext.repositories.users.getUserById(
-        sharedAgent.user_id,
+        sharedTeammate.user_id,
       );
 
       if (teammateOwner?.email) {
@@ -64,8 +64,8 @@ export async function setTeammateFeaturedStatus({
           teammateOwner.email,
           teammateOwner.name || "User",
           {
-            teammateName: sharedAgent.name,
-            teammateId: sharedAgent.id,
+            teammateName: sharedTeammate.name,
+            teammateId: sharedTeammate.id,
             isFeatured: featured,
             moderatorName: moderator?.name || "Admin",
           },
@@ -109,19 +109,21 @@ export async function moderateTeammate({
   const serviceContext = resolveServiceContext({ context, env });
 
   try {
-    const sharedAgent =
-      await serviceContext.repositories.sharedAgents.getSharedTeammateById(teammateId);
+    const sharedTeammate =
+      await serviceContext.repositories.sharedTeammates.getSharedTeammateById(teammateId);
 
-    if (!sharedAgent) {
+    if (!sharedTeammate) {
       return {
         success: false,
-        error: "Shared agent not found",
+        error: "Shared teammate not found",
       };
     }
 
-    await serviceContext.repositories.sharedAgents.moderateTeammate(teammateId, isPublic);
+    await serviceContext.repositories.sharedTeammates.moderateTeammate(teammateId, isPublic);
 
-    const teammateOwner = await serviceContext.repositories.users.getUserById(sharedAgent.user_id);
+    const teammateOwner = await serviceContext.repositories.users.getUserById(
+      sharedTeammate.user_id,
+    );
 
     if (teammateOwner?.email) {
       await sendTeammateModerationNotification(
@@ -129,8 +131,8 @@ export async function moderateTeammate({
         teammateOwner.email,
         teammateOwner.name || "User",
         {
-          teammateName: sharedAgent.name,
-          teammateId: sharedAgent.id,
+          teammateName: sharedTeammate.name,
+          teammateId: sharedTeammate.id,
           isApproved: isPublic,
           reason,
           moderatorName: moderator?.name || "Admin",
@@ -143,7 +145,7 @@ export async function moderateTeammate({
       data: { is_public: isPublic, reason },
     };
   } catch (error) {
-    logger.error("Failed to moderate agent", {
+    logger.error("Failed to moderate teammate", {
       teammateId,
       isPublic,
       reason,
@@ -152,7 +154,7 @@ export async function moderateTeammate({
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to moderate agent",
+      error: error instanceof Error ? error.message : "Failed to moderate teammate",
     };
   }
 }
@@ -165,7 +167,9 @@ export async function getAllSharedTeammatesForAdmin({
   env?: IEnv;
 }): Promise<Record<string, unknown>[]> {
   const serviceContext = resolveServiceContext({ context, env });
-  const agents = await serviceContext.repositories.sharedAgents.getAllSharedTeammatesForAdmin({});
+  const teammates = await serviceContext.repositories.sharedTeammates.getAllSharedTeammatesForAdmin(
+    {},
+  );
 
-  return agents as unknown as Record<string, unknown>[];
+  return teammates as unknown as Record<string, unknown>[];
 }

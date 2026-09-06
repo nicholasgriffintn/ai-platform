@@ -361,8 +361,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
       if (commandState.selectedTeammate && typeof selectedTeammateTokenPosition === "number") {
         tokens.push({
-          id: `agent:${commandState.selectedTeammate.id}`,
-          kind: "agent",
+          id: `teammate:${commandState.selectedTeammate.id}`,
+          kind: "teammate",
           label: commandState.selectedTeammate.name,
           position: selectedTeammateTokenPosition,
         });
@@ -370,7 +370,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
       return tokens;
     }, [commandState.selectedTeammate, selectedTeammateTokenPosition, selectedAssistantAction]);
-    const hasInlineTeammateToken = composerTokens.some((token) => token.kind === "agent");
+    const hasInlineTeammateToken = composerTokens.some((token) => token.kind === "teammate");
 
     const handleComposerTokenPositionsChange = (positions: ComposerInputTokenPosition[]) => {
       const nextPositions = new Map(positions.map((position) => [position.id, position.position]));
@@ -392,7 +392,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       }
 
       if (selectedTeammateId) {
-        const nextPosition = nextPositions.get(`agent:${selectedTeammateId}`);
+        const nextPosition = nextPositions.get(`teammate:${selectedTeammateId}`);
 
         if (typeof nextPosition === "number") {
           if (selectedTeammateTokenPosition !== nextPosition) {

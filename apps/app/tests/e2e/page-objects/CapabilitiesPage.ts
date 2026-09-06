@@ -55,7 +55,7 @@ export class CapabilitiesPage extends BasePage {
   }
 
   async legacyTeamEndpointStatus() {
-    return (await this.page.request.get(`${E2E_API_BASE_URL}/agents/teams`)).status();
+    return (await this.page.request.get(`${E2E_API_BASE_URL}/teammates/teams`)).status();
   }
 
   async startNewTeammate() {
@@ -91,7 +91,7 @@ export class CapabilitiesPage extends BasePage {
     const created = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/agents"),
+        new URL(response.url()).pathname.endsWith("/teammates"),
     );
 
     await this.clickElement(
@@ -100,7 +100,9 @@ export class CapabilitiesPage extends BasePage {
     const response = await created;
 
     if (!response.ok()) {
-      throw new Error(`Agent creation failed with ${response.status()}: ${await response.text()}`);
+      throw new Error(
+        `Teammate creation failed with ${response.status()}: ${await response.text()}`,
+      );
     }
 
     await this.page.getByRole("button", { name: "Delete teammate", exact: true }).waitFor();
@@ -116,15 +118,15 @@ export class CapabilitiesPage extends BasePage {
   async updateTeammateDescription(description: string) {
     const saved = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "PUT" && /\/agents\/[^/]+$/.test(response.url()),
+        response.request().method() === "PUT" && /\/teammates\/[^/]+$/.test(response.url()),
     );
 
     await this.fillInput(this.page.getByLabel("Description", { exact: true }), description);
-    await this.clickElement(this.page.getByRole("button", { name: "Save agent", exact: true }));
+    await this.clickElement(this.page.getByRole("button", { name: "Save teammate", exact: true }));
     const response = await saved;
 
     if (!response.ok()) {
-      throw new Error(`Agent update failed with ${response.status()}: ${await response.text()}`);
+      throw new Error(`Teammate update failed with ${response.status()}: ${await response.text()}`);
     }
   }
 

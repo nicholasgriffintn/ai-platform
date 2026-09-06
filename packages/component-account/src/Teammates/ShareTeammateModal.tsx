@@ -31,7 +31,7 @@ export interface ShareTeammateModalProps {
   isLoadingListing: boolean;
   listing: SharedTeammateSummary | null;
   error?: Error | null;
-  agent: {
+  teammate: {
     id: string;
     name: string;
     description?: string | null;
@@ -49,7 +49,7 @@ export function ShareTeammateModal({
   isLoadingListing,
   listing,
   error,
-  agent,
+  teammate,
   categories,
 }: ShareTeammateModalProps) {
   const [shareName, setShareName] = useState("");
@@ -58,15 +58,15 @@ export function ShareTeammateModal({
   const [shareTagsInput, setShareTagsInput] = useState("");
 
   useEffect(() => {
-    if (open && agent) {
-      setShareName(agent.name);
-      setShareDescription(agent.description ?? "");
+    if (open && teammate) {
+      setShareName(teammate.name);
+      setShareDescription(teammate.description ?? "");
       setShareCategory("");
       setShareTagsInput("");
     }
-  }, [open, agent]);
+  }, [open, teammate]);
 
-  if (!agent) {
+  if (!teammate) {
     return null;
   }
 
@@ -88,11 +88,11 @@ export function ShareTeammateModal({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{listing ? "Sharing settings" : "Share agent"}</DialogTitle>
+          <DialogTitle>{listing ? "Sharing settings" : "Share teammate"}</DialogTitle>
           <DialogDescription>
             {listing
-              ? "This agent is listed in the public marketplace where anyone can install a copy."
-              : "Publish a copy of this agent to the public marketplace. Your own agent stays yours."}
+              ? "This teammate is listed in the public marketplace where anyone can install a copy."
+              : "Publish a copy of this teammate to the public marketplace. Your own teammate stays yours."}
           </DialogDescription>
         </DialogHeader>
 
@@ -186,7 +186,7 @@ export function ShareTeammateModal({
                 Cancel
               </Button>
               <Button type="submit" variant="primary" isLoading={isSharing} disabled={isSharing}>
-                Share agent
+                Share teammate
               </Button>
             </DialogFooter>
           </form>

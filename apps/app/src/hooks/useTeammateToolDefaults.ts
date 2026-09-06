@@ -11,11 +11,11 @@ const areToolsEqual = (left: readonly string[], right: readonly string[]) =>
   left.length === right.length && left.every((toolId, index) => toolId === right[index]);
 
 export const useTeammateToolDefaults = ({
-  agents,
+  teammates,
   selectedTeammateId,
   chatMode,
 }: {
-  agents: TeammateWithTools[];
+  teammates: TeammateWithTools[];
   selectedTeammateId: string | null;
   chatMode: ChatMode;
 }) => {
@@ -24,11 +24,11 @@ export const useTeammateToolDefaults = ({
   const hadTeammateToolsRef = useRef(false);
 
   useEffect(() => {
-    const agent =
+    const teammate =
       chatMode === "agent" && selectedTeammateId
-        ? agents.find((candidate) => candidate.id === selectedTeammateId)
+        ? teammates.find((candidate) => candidate.id === selectedTeammateId)
         : undefined;
-    const teammateTools = agent ? (readToolIds(agent.enabled_tools) ?? []) : [];
+    const teammateTools = teammate ? (readToolIds(teammate.enabled_tools) ?? []) : [];
 
     if (teammateTools.length > 0) {
       hadTeammateToolsRef.current = true;
@@ -60,7 +60,7 @@ export const useTeammateToolDefaults = ({
       setSelectedTools(modelTools);
     }
   }, [
-    agents,
+    teammates,
     chatMode,
     selectedTeammateId,
     selectedTools,

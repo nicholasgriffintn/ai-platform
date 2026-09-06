@@ -69,7 +69,7 @@ export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, st
   usage_limits: "Stopped at the usage limit",
   token_budget: "Reached its token budget",
   missing_capability: "Needs a capability it does not have",
-  dispatch_failed: "Could not start the agent run",
+  dispatch_failed: "Could not start the teammate run",
   run_failed: "The run failed",
   dependencies_unmet: "Waiting on another task",
 };

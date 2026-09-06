@@ -11,19 +11,19 @@ function teammateItem(
   availabilityReason: string,
 ): AssistantActionItem {
   return {
-    id: "agent:researcher",
-    kind: "agent",
+    id: "teammate:researcher",
+    kind: "teammate",
     label: "Researcher",
     description: "Digs through sources.",
     searchText: ["Researcher"],
     capability: {
       id: "researcher",
-      kind: "agent",
+      kind: "teammate",
       name: "Researcher",
       availability,
       availabilityReason,
       launch: { method: "conversation", action: "ask_agent" },
-      executionMode: "agent",
+      executionMode: "teammate",
       authRequirement: "signed_in",
       authState: "signed_in",
       operationAccess: "read",
@@ -31,7 +31,7 @@ function teammateItem(
       requiredModelCapabilities: [],
       requiredConnectors: [],
       savedState: { supported: true },
-      tags: ["agent"],
+      tags: ["teammate"],
     },
     launch: {
       kind: "conversation" as const,
@@ -95,13 +95,13 @@ describe("capability controls", () => {
 });
 
 describe("teammate capability card", () => {
-  it("starts a conversation with an agent the scope can run", () => {
+  it("starts a conversation with an teammate the scope can run", () => {
     const onOpen = vi.fn();
 
     render(
       <CapabilityCard
         item={teammateItem("available", "Teammate is ready to run.")}
-        kind="agent"
+        kind="teammate"
         onOpen={onOpen}
       />,
     );
@@ -111,11 +111,11 @@ describe("teammate capability card", () => {
     expect(onOpen).toHaveBeenCalledTimes(1);
   });
 
-  it("explains why an unavailable agent cannot be run instead of offering the action", () => {
+  it("explains why an unavailable teammate cannot be run instead of offering the action", () => {
     render(
       <CapabilityCard
         item={teammateItem("unavailable", "These tools are not available here: sandbox.")}
-        kind="agent"
+        kind="teammate"
         onOpen={vi.fn()}
       />,
     );
@@ -131,7 +131,7 @@ describe("teammate capability card", () => {
     render(
       <CapabilityCard
         item={teammateItem("available", "Teammate is ready to run.")}
-        kind="agent"
+        kind="teammate"
         onOpen={vi.fn()}
         authoredCapability={{ canManage: true, isDeleting: false, onDelete, onEdit }}
       />,
@@ -151,7 +151,7 @@ describe("teammate capability card", () => {
     render(
       <CapabilityCard
         item={teammateItem("available", "Teammate is ready to run.")}
-        kind="agent"
+        kind="teammate"
         onOpen={vi.fn()}
         authoredCapability={{ canManage: true, isDeleting: false, onDelete: vi.fn(), onShare }}
       />,
@@ -167,7 +167,7 @@ describe("teammate capability card", () => {
     render(
       <CapabilityCard
         item={teammateItem("available", "Teammate is ready to run.")}
-        kind="agent"
+        kind="teammate"
         onOpen={vi.fn()}
         authoredCapability={{
           canManage: true,
@@ -184,11 +184,11 @@ describe("teammate capability card", () => {
     expect(screen.queryByRole("menuitem", { name: "Share teammate" })).toBeNull();
   });
 
-  it("withholds edit and delete from a viewer who cannot manage the agent", () => {
+  it("withholds edit and delete from a viewer who cannot manage the teammate", () => {
     render(
       <CapabilityCard
         item={teammateItem("available", "Teammate is ready to run.")}
-        kind="agent"
+        kind="teammate"
         onOpen={vi.fn()}
         authoredCapability={{
           canManage: false,

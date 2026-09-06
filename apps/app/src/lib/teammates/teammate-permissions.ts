@@ -22,16 +22,16 @@ export function getTeammatePublishTargets(
 }
 
 export function resolveTeammateManagePermission(
-  agent: TeammateResponse | null,
+  teammate: TeammateResponse | null,
   currentUserId: number | string | undefined,
   workspaces: readonly WorkspaceSummary[],
 ): TeammateManagePermission {
-  if (!agent) {
+  if (!teammate) {
     return { canManage: true, ownerLabel: "you" };
   }
 
-  if (agent.owner_scope_type === "workspace") {
-    const workspace = workspaces.find((entry) => entry.id === agent.owner_scope_id);
+  if (teammate.owner_scope_type === "workspace") {
+    const workspace = workspaces.find((entry) => entry.id === teammate.owner_scope_id);
     const ownerLabel = workspace?.name ?? "another workspace";
 
     if (workspace && canManageWorkspace(workspace)) {
@@ -41,17 +41,17 @@ export function resolveTeammateManagePermission(
     return {
       canManage: false,
       ownerLabel,
-      reason: `${ownerLabel} owns this agent. You can use it, but only the workspace's owners and admins can change or delete it.`,
+      reason: `${ownerLabel} owns this teammate. You can use it, but only the workspace's owners and admins can change or delete it.`,
     };
   }
 
-  if (areUserIdsEqual(agent.user_id, currentUserId)) {
+  if (areUserIdsEqual(teammate.user_id, currentUserId)) {
     return { canManage: true, ownerLabel: "you" };
   }
 
   return {
     canManage: false,
     ownerLabel: "someone else",
-    reason: "This agent belongs to someone else, so it cannot be changed here.",
+    reason: "This teammate belongs to someone else, so it cannot be changed here.",
   };
 }

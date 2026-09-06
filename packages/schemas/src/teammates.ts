@@ -28,17 +28,17 @@ export const fewShotExampleSchema = z.object({
 });
 
 export const createTeammateSchema = z.object({
-  name: z.string().meta({ description: "Name of the agent" }),
+  name: z.string().meta({ description: "Name of the teammate" }),
   kind: teammateKindSchema.optional().meta({
     description: "Whether this teammate works as a colleague or as a bot",
   }),
-  description: z.string().optional().meta({ description: "Optional agent description" }),
+  description: z.string().optional().meta({ description: "Optional teammate description" }),
   avatar_url: z.url().nullable().optional().meta({ description: "Optional avatar image URL" }),
   servers: z
     .array(mcpServerSchema)
     .optional()
     .meta({ description: "List of MCP server configurations" }),
-  model: z.string().optional().meta({ description: "Model ID to use with this agent" }),
+  model: z.string().optional().meta({ description: "Model ID to use with this teammate" }),
   temperature: z
     .number()
     .min(0)
@@ -50,24 +50,24 @@ export const createTeammateSchema = z.object({
     .int()
     .positive()
     .optional()
-    .meta({ description: "Maximum number of steps for the agent" }),
-  system_prompt: z.string().optional().meta({ description: "System prompt for the agent" }),
+    .meta({ description: "Maximum number of steps for the teammate" }),
+  system_prompt: z.string().optional().meta({ description: "System prompt for the teammate" }),
   few_shot_examples: z
     .array(fewShotExampleSchema)
     .optional()
-    .meta({ description: "Few-shot examples for the agent" }),
+    .meta({ description: "Few-shot examples for the teammate" }),
   enabled_tools: toolIdsSchema.optional().meta({
-    description: "Tools enabled by default for this agent",
+    description: "Tools enabled by default for this teammate",
   }),
   skill_ids: teammateSkillIdsSchema.optional().meta({
-    description: "Skills this agent loads, named as the skill catalogue names them",
+    description: "Skills this teammate loads, named as the skill catalogue names them",
   }),
   mode: agentModeSchema.nullable().optional().meta({
-    description: "Agent mode this agent runs in; null lets the caller's mode win",
+    description: "Teammate mode this teammate runs in; null lets the caller's mode win",
   }),
   workspace_id: z.string().min(1).optional().meta({
     description:
-      "Workspace that will own the agent; omit to create it in the caller's personal scope",
+      "Workspace that will own the teammate; omit to create it in the caller's personal scope",
   }),
 });
 
@@ -81,7 +81,7 @@ export const updateTeammateSchema = z
       .optional()
       .meta({ description: "New avatar URL, or null to remove the existing one" }),
     servers: z.array(mcpServerSchema).optional().meta({ description: "Updated MCP servers list" }),
-    model: z.string().optional().meta({ description: "Model ID to use with this agent" }),
+    model: z.string().optional().meta({ description: "Model ID to use with this teammate" }),
     temperature: z
       .number()
       .min(0)
@@ -93,20 +93,20 @@ export const updateTeammateSchema = z
       .int()
       .positive()
       .optional()
-      .meta({ description: "Maximum number of steps for the agent" }),
-    system_prompt: z.string().optional().meta({ description: "System prompt for the agent" }),
+      .meta({ description: "Maximum number of steps for the teammate" }),
+    system_prompt: z.string().optional().meta({ description: "System prompt for the teammate" }),
     few_shot_examples: z
       .array(fewShotExampleSchema)
       .optional()
-      .meta({ description: "Few-shot examples for the agent" }),
+      .meta({ description: "Few-shot examples for the teammate" }),
     enabled_tools: toolIdsSchema.optional().meta({
-      description: "Tools enabled by default for this agent",
+      description: "Tools enabled by default for this teammate",
     }),
     skill_ids: teammateSkillIdsSchema.optional().meta({
-      description: "Updated skills this agent loads",
+      description: "Updated skills this teammate loads",
     }),
     mode: agentModeSchema.nullable().optional().meta({
-      description: "Updated agent mode; null lets the caller's mode win",
+      description: "Updated teammate mode; null lets the caller's mode win",
     }),
     kind: teammateKindSchema.optional().meta({
       description: "Updated teammate kind",
@@ -122,7 +122,7 @@ export const publishTeammateToWorkspaceSchema = z.object({
   workspace_id: z
     .string()
     .min(1)
-    .meta({ description: "Workspace that will own the published copy of the agent" }),
+    .meta({ description: "Workspace that will own the published copy of the teammate" }),
 });
 
 export const teammateResponseSchema = z.object({
@@ -130,7 +130,7 @@ export const teammateResponseSchema = z.object({
   user_id: z.number().int(),
   owner_scope_type: teammateOwnerScopeTypeSchema,
   owner_scope_id: z.string(),
-  derived_from_agent_id: z.string().nullable(),
+  derived_from_teammate_id: z.string().nullable(),
   kind: teammateKindSchema,
   name: z.string(),
   description: z.string(),

@@ -40,11 +40,11 @@ export async function createTeammateCompletion({
 
   serviceContext.ensureDatabase();
 
-  const agent = await requireTeammateAccess(serviceContext, teammateId, "read", user?.id);
+  const teammate = await requireTeammateAccess(serviceContext, teammateId, "read", user?.id);
 
-  const functionSchemas = await buildTeammateCompletionTools(agent, serviceContext);
+  const functionSchemas = await buildTeammateCompletionTools(teammate, serviceContext);
 
-  const modelToUse = agent.model || body.model;
+  const modelToUse = teammate.model || body.model;
   const modelDetails = await findModelConfig(modelToUse || "", env, body.provider);
 
   if (!modelDetails) {
@@ -54,11 +54,11 @@ export async function createTeammateCompletion({
   const formattedTools = formatToolCalls(modelDetails.provider, functionSchemas);
 
   const requestParams = prepareTeammateCompletionRequest({
-    agent,
+    teammate,
     body,
     modelProvider: modelDetails.provider,
     formattedTools,
-    persona: buildTeammatePersona(agent),
+    persona: buildTeammatePersona(teammate),
   });
 
   const response = await handleCreateChatCompletions({

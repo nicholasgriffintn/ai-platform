@@ -20,10 +20,10 @@ function isModelSelectable(model: string, models: ModelConfig): boolean {
 }
 
 export function createTeammateEditorValue(
-  agent: TeammateResponse | null,
+  teammate: TeammateResponse | null,
   models: ModelConfig,
 ): TeammateEditorValue {
-  if (!agent) {
+  if (!teammate) {
     return {
       name: "",
       kind: DEFAULT_TEAMMATE_KIND,
@@ -41,27 +41,27 @@ export function createTeammateEditorValue(
     };
   }
 
-  const model = agent.model ?? "";
-  const maxSteps = getFiniteNumberOrFallback(agent.max_steps, DEFAULT_TEAMMATE_MAX_STEPS);
+  const model = teammate.model ?? "";
+  const maxSteps = getFiniteNumberOrFallback(teammate.max_steps, DEFAULT_TEAMMATE_MAX_STEPS);
 
   return {
-    name: agent.name,
-    kind: agent.kind,
-    description: agent.description,
-    avatarUrl: agent.avatar_url ?? "",
-    systemPrompt: agent.system_prompt ?? "",
-    examples: (agent.few_shot_examples ?? []).map((example) => ({
+    name: teammate.name,
+    kind: teammate.kind,
+    description: teammate.description,
+    avatarUrl: teammate.avatar_url ?? "",
+    systemPrompt: teammate.system_prompt ?? "",
+    examples: (teammate.few_shot_examples ?? []).map((example) => ({
       id: generateId(),
       input: example.input,
       output: example.output,
     })),
-    mode: agent.mode,
+    mode: teammate.mode,
     model: isModelSelectable(model, models) ? model : "",
-    temperature: getNumberInputValue(agent.temperature),
+    temperature: getNumberInputValue(teammate.temperature),
     maxSteps: maxSteps > 0 ? maxSteps : DEFAULT_TEAMMATE_MAX_STEPS,
-    toolIds: agent.enabled_tools ?? [],
-    skillIds: agent.skill_ids,
-    servers: agent.servers.map((server) => ({
+    toolIds: teammate.enabled_tools ?? [],
+    skillIds: teammate.skill_ids,
+    servers: teammate.servers.map((server) => ({
       id: generateId(),
       url: server.url,
       type: server.type ?? "sse",
@@ -92,7 +92,7 @@ export function toTeammateFormData(value: TeammateEditorValue): TeammateFormData
 
 export function validateTeammateEditorValue(value: TeammateEditorValue): string | null {
   if (!value.name.trim()) {
-    return "Give the agent a name.";
+    return "Give the teammate a name.";
   }
 
   if (value.servers.some((server) => !server.url.trim())) {

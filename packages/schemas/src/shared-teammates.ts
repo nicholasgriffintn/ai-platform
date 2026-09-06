@@ -17,26 +17,32 @@ export const sharedTeammateSummarySchema = z.object({
 export type SharedTeammateSummary = z.infer<typeof sharedTeammateSummarySchema>;
 
 export const shareTeammateSchema = z.object({
-  agent_id: z.string().meta({ description: "ID of the agent to share" }),
-  name: z.string().meta({ description: "Public name for the shared agent" }),
+  agent_id: z.string().meta({ description: "ID of the teammate to share" }),
+  name: z.string().meta({ description: "Public name for the shared teammate" }),
   description: z
     .string()
     .optional()
-    .meta({ description: "Public description for the shared agent" }),
-  avatar_url: z.url().optional().meta({ description: "Avatar URL for the shared agent" }),
-  category: z.string().optional().meta({ description: "Category for the shared agent" }),
-  tags: z.array(z.string()).optional().meta({ description: "Tags for the shared agent" }),
+    .meta({ description: "Public description for the shared teammate" }),
+  avatar_url: z.url().optional().meta({ description: "Avatar URL for the shared teammate" }),
+  category: z.string().optional().meta({ description: "Category for the shared teammate" }),
+  tags: z.array(z.string()).optional().meta({ description: "Tags for the shared teammate" }),
 });
 
 export const updateSharedTeammateSchema = z.object({
-  name: z.string().optional().meta({ description: "Updated name for the shared agent" }),
+  name: z.string().optional().meta({ description: "Updated name for the shared teammate" }),
   description: z
     .string()
     .optional()
-    .meta({ description: "Updated description for the shared agent" }),
-  avatar_url: z.url().optional().meta({ description: "Updated avatar URL for the shared agent" }),
-  category: z.string().optional().meta({ description: "Updated category for the shared agent" }),
-  tags: z.array(z.string()).optional().meta({ description: "Updated tags for the shared agent" }),
+    .meta({ description: "Updated description for the shared teammate" }),
+  avatar_url: z
+    .url()
+    .optional()
+    .meta({ description: "Updated avatar URL for the shared teammate" }),
+  category: z.string().optional().meta({ description: "Updated category for the shared teammate" }),
+  tags: z
+    .array(z.string())
+    .optional()
+    .meta({ description: "Updated tags for the shared teammate" }),
 });
 
 export const rateTeammateSchema = z.object({
@@ -48,7 +54,7 @@ export const sharedTeammateFiltersSchema = z.object({
   category: z.string().optional().meta({ description: "Filter by category" }),
   tags: z.array(z.string()).optional().meta({ description: "Filter by tags" }),
   search: z.string().optional().meta({ description: "Search query" }),
-  featured: z.boolean().optional().meta({ description: "Show only featured agents" }),
+  featured: z.boolean().optional().meta({ description: "Show only featured teammates" }),
   limit: z
     .int()
     .positive()
@@ -71,7 +77,7 @@ export const featuredTeammatesSchema = z.object({
     .max(50)
     .prefault(10)
     .optional()
-    .meta({ description: "Number of featured agents to return" }),
+    .meta({ description: "Number of featured teammates to return" }),
 });
 
 export const teammateRatingsSchema = z.object({
@@ -85,10 +91,10 @@ export const teammateRatingsSchema = z.object({
 });
 
 export const setTeammateFeaturedSchema = z.object({
-  featured: z.boolean().meta({ description: "Whether to feature the agent" }),
+  featured: z.boolean().meta({ description: "Whether to feature the teammate" }),
 });
 
 export const moderateTeammateSchema = z.object({
-  is_public: z.boolean().meta({ description: "Whether the agent should be public" }),
+  is_public: z.boolean().meta({ description: "Whether the teammate should be public" }),
   reason: z.string().optional().meta({ description: "Reason for moderation action" }),
 });

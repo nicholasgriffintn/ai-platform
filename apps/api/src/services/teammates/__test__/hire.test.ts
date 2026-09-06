@@ -11,13 +11,13 @@ const OWNER_ID = 7;
 function createContext() {
   const currentUser = { id: OWNER_ID, plan_id: "pro" };
   const repositories = {
-    agents: {
+    teammates: {
       createTeammate: vi.fn(async (record: Record<string, unknown>) => ({
         id: "teammate-1",
         user_id: OWNER_ID,
         owner_scope_type: "user",
         owner_scope_id: String(OWNER_ID),
-        derived_from_agent_id: null,
+        derived_from_teammate_id: null,
         kind: record.kind ?? "colleague",
         name: record.name,
         description: record.description,
@@ -63,7 +63,7 @@ describe("hireTeammate", () => {
 
     await hireTeammate(context, hireTeammateSchema.parse({ role_slug: "research-analyst" }));
 
-    expect(repositories.agents.createTeammate).toHaveBeenCalledWith(
+    expect(repositories.teammates.createTeammate).toHaveBeenCalledWith(
       expect.objectContaining({
         name: role?.title,
         kind: "colleague",
@@ -79,7 +79,7 @@ describe("hireTeammate", () => {
 
     await hireTeammate(context, hireTeammateSchema.parse({ role_slug: "daily-briefer" }));
 
-    const record = repositories.agents.createTeammate.mock.calls[0]?.[0] as {
+    const record = repositories.teammates.createTeammate.mock.calls[0]?.[0] as {
       kind: string;
       enabledTools: string[];
     };
@@ -102,7 +102,7 @@ describe("hireTeammate", () => {
       }),
     );
 
-    const record = repositories.agents.createTeammate.mock.calls[0]?.[0] as {
+    const record = repositories.teammates.createTeammate.mock.calls[0]?.[0] as {
       name: string;
       systemPrompt: string;
     };
@@ -119,7 +119,7 @@ describe("hireTeammate", () => {
       hireTeammateSchema.parse({ job_description: "Watch our changelog.", name: "Changelog" }),
     );
 
-    const record = repositories.agents.createTeammate.mock.calls[0]?.[0] as {
+    const record = repositories.teammates.createTeammate.mock.calls[0]?.[0] as {
       name: string;
       systemPrompt: string;
       enabledTools: string[];
@@ -139,7 +139,7 @@ describe("hireTeammate", () => {
     ).catch((thrown: unknown) => thrown);
 
     expect((error as AssistantError).statusCode).toBe(400);
-    expect(repositories.agents.createTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.createTeammate).not.toHaveBeenCalled();
   });
 
   it("refuses an unknown role", async () => {
@@ -150,6 +150,6 @@ describe("hireTeammate", () => {
     );
 
     expect((error as AssistantError).statusCode).toBe(400);
-    expect(repositories.agents.createTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.createTeammate).not.toHaveBeenCalled();
   });
 });

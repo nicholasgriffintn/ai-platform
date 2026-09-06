@@ -16,7 +16,7 @@ import {
 
 const OWNER_ID = 7;
 const OTHER_ID = 9;
-const TEAMMATE_ID = "agent-1";
+const TEAMMATE_ID = "teammate-1";
 const WORKSPACE_ID = "workspace-1";
 const PROJECT_ID = "project-1";
 
@@ -36,7 +36,7 @@ function buildStoredTeammate(
     user_id: OWNER_ID,
     owner_scope_type: "user",
     owner_scope_id: String(OWNER_ID),
-    derived_from_agent_id: null,
+    derived_from_teammate_id: null,
     name: "Researcher",
     description: "",
     avatar_url: null,
@@ -57,7 +57,7 @@ function buildStoredTeammate(
 
 function createContext(
   overrides: {
-    agent?: ReturnType<typeof buildStoredTeammate> | null;
+    teammate?: ReturnType<typeof buildStoredTeammate> | null;
     currentUserId?: number;
     role?: "owner" | "admin" | "member" | null;
     workspaces?: { id: string }[];
@@ -71,19 +71,19 @@ function createContext(
     projectCapabilities?: { kind: string; capability_id: string; configuration: null }[];
   } = {},
 ) {
-  const agent = overrides.agent === undefined ? buildStoredTeammate() : overrides.agent;
+  const teammate = overrides.teammate === undefined ? buildStoredTeammate() : overrides.teammate;
   const currentUser = { id: overrides.currentUserId ?? OWNER_ID, plan_id: "pro" };
   const repositories = {
-    agents: {
-      getTeammateById: vi.fn(async () => agent),
+    teammates: {
+      getTeammateById: vi.fn(async () => teammate),
       getTeammatesByIds: vi.fn(async () => overrides.projectTeammates ?? []),
       getTeammatesForScopes: vi.fn(async () => overrides.scopedTeammates ?? []),
       createTeammate: vi.fn(async (record: Record<string, unknown>) => ({
         ...buildStoredTeammate(),
-        id: "agent-copy",
+        id: "teammate-copy",
         owner_scope_type: record.ownerScopeType,
         owner_scope_id: record.ownerScopeId,
-        derived_from_agent_id: record.derivedFromTeammateId ?? null,
+        derived_from_teammate_id: record.derivedFromTeammateId ?? null,
       })),
       updateTeammate: vi.fn(async () => undefined),
       deleteTeammate: vi.fn(async () => undefined),
@@ -106,7 +106,7 @@ function createContext(
       listProjectsWithCapability: vi.fn(async () => overrides.attachedProjects ?? []),
       listProjectsWithFlowStageTeammate: vi.fn(async () => overrides.flowProjects ?? []),
     },
-    sharedAgents: {
+    sharedTeammates: {
       getSharedTeammateByTeammateId: vi.fn(async () => overrides.listing ?? null),
       deleteSharedTeammate: vi.fn(async () => undefined),
       getInstallByTeammateId: vi.fn(async () => overrides.install ?? null),
@@ -125,23 +125,23 @@ function createContext(
   };
 }
 
-describe("agent scope authorisation", () => {
+describe("teammate scope authorisation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("persists clearing an agent's sampling override", async () => {
+  it("persists clearing an teammate's sampling override", async () => {
     const { context, repositories } = createContext();
     const input = updateTeammateSchema.parse({ temperature: null });
 
     await updateTeammate(context, TEAMMATE_ID, input);
 
-    expect(repositories.agents.updateTeammate).toHaveBeenCalledWith(TEAMMATE_ID, {
+    expect(repositories.teammates.updateTeammate).toHaveBeenCalledWith(TEAMMATE_ID, {
       temperature: null,
     });
   });
 
-  it("refuses a personal agent to anyone but its author", async () => {
+  it("refuses a personal teammate to anyone but its author", async () => {
     const { context } = createContext({ currentUserId: OTHER_ID });
 
     const error = await getTeammateById(context, TEAMMATE_ID).catch((thrown: unknown) => thrown);
@@ -149,9 +149,12 @@ describe("agent scope authorisation", () => {
     expect((error as AssistantError).statusCode).toBe(403);
   });
 
-  it("lets any workspace member read a workspace agent", async () => {
+  it("lets any workspace member read a workspace teammate", async () => {
     const { context } = createContext({
-      agent: buildStoredTeammate({ owner_scope_type: "workspace", owner_scope_id: WORKSPACE_ID }),
+      teammate: buildStoredTeammate({
+        owner_scope_type: "workspace",
+        owner_scope_id: WORKSPACE_ID,
+      }),
       currentUserId: OTHER_ID,
       role: "member",
     });
@@ -159,9 +162,12 @@ describe("agent scope authorisation", () => {
     await expect(getTeammateById(context, TEAMMATE_ID)).resolves.toMatchObject({ id: TEAMMATE_ID });
   });
 
-  it("refuses a workspace agent to a non-member", async () => {
+  it("refuses a workspace teammate to a non-member", async () => {
     const { context } = createContext({
-      agent: buildStoredTeammate({ owner_scope_type: "workspace", owner_scope_id: WORKSPACE_ID }),
+      teammate: buildStoredTeammate({
+        owner_scope_type: "workspace",
+        owner_scope_id: WORKSPACE_ID,
+      }),
       currentUserId: OTHER_ID,
       role: null,
     });
@@ -171,9 +177,12 @@ describe("agent scope authorisation", () => {
     expect((error as AssistantError).statusCode).toBe(404);
   });
 
-  it("refuses a plain member updating or deleting a workspace agent", async () => {
+  it("refuses a plain member updating or deleting a workspace teammate", async () => {
     const { context, repositories } = createContext({
-      agent: buildStoredTeammate({ owner_scope_type: "workspace", owner_scope_id: WORKSPACE_ID }),
+      teammate: buildStoredTeammate({
+        owner_scope_type: "workspace",
+        owner_scope_id: WORKSPACE_ID,
+      }),
       currentUserId: OTHER_ID,
       role: "member",
     });
@@ -187,25 +196,28 @@ describe("agent scope authorisation", () => {
 
     expect((updateError as AssistantError).statusCode).toBe(403);
     expect((deleteError as AssistantError).statusCode).toBe(403);
-    expect(repositories.agents.updateTeammate).not.toHaveBeenCalled();
-    expect(repositories.agents.deleteTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.updateTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.deleteTeammate).not.toHaveBeenCalled();
   });
 
-  it("lets a workspace admin update a workspace agent", async () => {
+  it("lets a workspace admin update a workspace teammate", async () => {
     const { context, repositories } = createContext({
-      agent: buildStoredTeammate({ owner_scope_type: "workspace", owner_scope_id: WORKSPACE_ID }),
+      teammate: buildStoredTeammate({
+        owner_scope_type: "workspace",
+        owner_scope_id: WORKSPACE_ID,
+      }),
       currentUserId: OTHER_ID,
       role: "admin",
     });
 
     await updateTeammate(context, TEAMMATE_ID, { name: "Repointed" });
 
-    expect(repositories.agents.updateTeammate).toHaveBeenCalledWith(TEAMMATE_ID, {
+    expect(repositories.teammates.updateTeammate).toHaveBeenCalledWith(TEAMMATE_ID, {
       name: "Repointed",
     });
   });
 
-  it("lists personal agents alongside those of every workspace the person belongs to", async () => {
+  it("lists personal teammates alongside those of every workspace the person belongs to", async () => {
     const { context, repositories } = createContext({
       workspaces: [{ id: WORKSPACE_ID }, { id: "workspace-2" }],
       scopedTeammates: [
@@ -214,13 +226,13 @@ describe("agent scope authorisation", () => {
       ],
     });
 
-    const agents = await getUserTeammates(context);
+    const teammates = await getUserTeammates(context);
 
-    expect(repositories.agents.getTeammatesForScopes).toHaveBeenCalledWith(OWNER_ID, [
+    expect(repositories.teammates.getTeammatesForScopes).toHaveBeenCalledWith(OWNER_ID, [
       WORKSPACE_ID,
       "workspace-2",
     ]);
-    expect(agents).toHaveLength(2);
+    expect(teammates).toHaveLength(2);
   });
 });
 
@@ -233,16 +245,16 @@ describe("listScopedTeammateSummaries", () => {
     const { context, repositories } = createContext({});
 
     await expect(listScopedTeammateSummaries(context)).resolves.toEqual([]);
-    expect(repositories.agents.getTeammatesForScopes).not.toHaveBeenCalled();
+    expect(repositories.teammates.getTeammatesForScopes).not.toHaveBeenCalled();
   });
 
-  it("returns the caller's own agents alongside the workspace agents they can read", async () => {
+  it("returns the caller's own teammates alongside the workspace teammates they can read", async () => {
     const { context } = createContext({
       workspaces: [{ id: WORKSPACE_ID }],
       scopedTeammates: [
         buildStoredTeammate(),
         buildStoredTeammate({
-          id: "agent-2",
+          id: "teammate-2",
           owner_scope_type: "workspace",
           owner_scope_id: WORKSPACE_ID,
         }),
@@ -253,20 +265,20 @@ describe("listScopedTeammateSummaries", () => {
 
     expect(summaries.map((summary) => [summary.id, summary.ownerScopeType])).toEqual([
       [TEAMMATE_ID, "user"],
-      ["agent-2", "workspace"],
+      ["teammate-2", "workspace"],
     ]);
   });
 
-  it("returns only the agents a project has attached", async () => {
+  it("returns only the teammates a project has attached", async () => {
     const { context, repositories } = createContext({
       role: "member",
       projectCapabilities: [
         { kind: "skill", capability_id: "artifacts", configuration: null },
-        { kind: "agent", capability_id: "agent-2", configuration: null },
+        { kind: "teammate", capability_id: "teammate-2", configuration: null },
       ],
       projectTeammates: [
         buildStoredTeammate({
-          id: "agent-2",
+          id: "teammate-2",
           owner_scope_type: "workspace",
           owner_scope_id: WORKSPACE_ID,
         }),
@@ -275,22 +287,22 @@ describe("listScopedTeammateSummaries", () => {
 
     const summaries = await listScopedTeammateSummaries(context, OWNER_ID, PROJECT_ID);
 
-    expect(repositories.agents.getTeammatesByIds).toHaveBeenCalledWith(["agent-2"]);
-    expect(summaries.map((summary) => summary.id)).toEqual(["agent-2"]);
+    expect(repositories.teammates.getTeammatesByIds).toHaveBeenCalledWith(["teammate-2"]);
+    expect(summaries.map((summary) => summary.id)).toEqual(["teammate-2"]);
   });
 
-  it("drops a project agent whose author has left the workspace", async () => {
+  it("drops a project teammate whose author has left the workspace", async () => {
     const { context } = createContext({
       role: "member",
       departedAuthorIds: [OTHER_ID],
-      projectCapabilities: [{ kind: "agent", capability_id: TEAMMATE_ID, configuration: null }],
+      projectCapabilities: [{ kind: "teammate", capability_id: TEAMMATE_ID, configuration: null }],
       projectTeammates: [buildStoredTeammate({ user_id: OTHER_ID })],
     });
 
     await expect(listScopedTeammateSummaries(context, OWNER_ID, PROJECT_ID)).resolves.toEqual([]);
   });
 
-  it("reports the model, skills and tools an agent names that this scope cannot run", async () => {
+  it("reports the model, skills and tools an teammate names that this scope cannot run", async () => {
     const { context } = createContext({
       workspaces: [],
       scopedTeammates: [
@@ -317,19 +329,19 @@ describe("publishTeammateToWorkspace", () => {
     vi.clearAllMocks();
   });
 
-  it("copies the agent into the workspace instead of repointing the personal record", async () => {
+  it("copies the teammate into the workspace instead of repointing the personal record", async () => {
     const { context, repositories } = createContext({ role: "admin" });
 
     const published = await publishTeammateToWorkspace(context, TEAMMATE_ID, WORKSPACE_ID);
 
-    expect(repositories.agents.createTeammate).toHaveBeenCalledWith(
+    expect(repositories.teammates.createTeammate).toHaveBeenCalledWith(
       expect.objectContaining({
         ownerScopeType: "workspace",
         ownerScopeId: WORKSPACE_ID,
         derivedFromTeammateId: TEAMMATE_ID,
       }),
     );
-    expect(repositories.agents.updateTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.updateTeammate).not.toHaveBeenCalled();
     expect(published.id).not.toBe(TEAMMATE_ID);
     expect(published.owner_scope_type).toBe("workspace");
   });
@@ -342,10 +354,10 @@ describe("publishTeammateToWorkspace", () => {
     );
 
     expect((error as AssistantError).statusCode).toBe(403);
-    expect(repositories.agents.createTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.createTeammate).not.toHaveBeenCalled();
   });
 
-  it("refuses to publish an agent the person cannot read", async () => {
+  it("refuses to publish an teammate the person cannot read", async () => {
     const { context, repositories } = createContext({ currentUserId: OTHER_ID, role: "admin" });
 
     const error = await publishTeammateToWorkspace(context, TEAMMATE_ID, WORKSPACE_ID).catch(
@@ -353,7 +365,7 @@ describe("publishTeammateToWorkspace", () => {
     );
 
     expect((error as AssistantError).statusCode).toBe(403);
-    expect(repositories.agents.createTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.createTeammate).not.toHaveBeenCalled();
   });
 });
 
@@ -362,27 +374,27 @@ describe("createTeammate", () => {
     vi.clearAllMocks();
   });
 
-  it("creates a personal agent when no workspace is named", async () => {
+  it("creates a personal teammate when no workspace is named", async () => {
     const { context, repositories } = createContext({});
 
     await createTeammate(context, { name: "Researcher" });
 
-    expect(repositories.agents.createTeammate).toHaveBeenCalledWith(
+    expect(repositories.teammates.createTeammate).toHaveBeenCalledWith(
       expect.objectContaining({ ownerScopeType: "user", ownerScopeId: String(OWNER_ID) }),
     );
   });
 
-  it("creates a workspace agent for an administrator of that workspace", async () => {
+  it("creates a workspace teammate for an administrator of that workspace", async () => {
     const { context, repositories } = createContext({ role: "admin" });
 
     await createTeammate(context, { name: "Researcher", workspace_id: WORKSPACE_ID });
 
-    expect(repositories.agents.createTeammate).toHaveBeenCalledWith(
+    expect(repositories.teammates.createTeammate).toHaveBeenCalledWith(
       expect.objectContaining({ ownerScopeType: "workspace", ownerScopeId: WORKSPACE_ID }),
     );
   });
 
-  it("refuses a plain member creating an agent the workspace would own", async () => {
+  it("refuses a plain member creating an teammate the workspace would own", async () => {
     const { context, repositories } = createContext({ role: "member" });
 
     const error = await createTeammate(context, {
@@ -391,7 +403,7 @@ describe("createTeammate", () => {
     }).catch((thrown: unknown) => thrown);
 
     expect((error as AssistantError).statusCode).toBe(403);
-    expect(repositories.agents.createTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.createTeammate).not.toHaveBeenCalled();
   });
 });
 
@@ -400,7 +412,7 @@ describe("deleteTeammate", () => {
     vi.clearAllMocks();
   });
 
-  it("refuses while a project capability still references the agent", async () => {
+  it("refuses while a project capability still references the teammate", async () => {
     const { context, repositories } = createContext({
       attachedProjects: [{ id: "project-1", name: "Atlas" }],
     });
@@ -410,10 +422,10 @@ describe("deleteTeammate", () => {
     expect(error).toBeInstanceOf(AssistantError);
     expect((error as AssistantError).statusCode).toBe(409);
     expect((error as AssistantError).message).toContain("Atlas");
-    expect(repositories.agents.deleteTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.deleteTeammate).not.toHaveBeenCalled();
   });
 
-  it("refuses while a flow stage still references the agent", async () => {
+  it("refuses while a flow stage still references the teammate", async () => {
     const { context, repositories } = createContext({
       flowProjects: [{ id: "project-2", name: "Beacon" }],
     });
@@ -423,10 +435,10 @@ describe("deleteTeammate", () => {
     expect(error).toBeInstanceOf(AssistantError);
     expect((error as AssistantError).statusCode).toBe(409);
     expect((error as AssistantError).message).toContain("Beacon");
-    expect(repositories.agents.deleteTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.deleteTeammate).not.toHaveBeenCalled();
   });
 
-  it("counts a project holding the agent as both capability and flow stage once", async () => {
+  it("counts a project holding the teammate as both capability and flow stage once", async () => {
     const { context } = createContext({
       attachedProjects: [{ id: "project-3", name: "Cinder" }],
       flowProjects: [{ id: "project-3", name: "Cinder" }],
@@ -437,7 +449,7 @@ describe("deleteTeammate", () => {
     expect((error as AssistantError).message).toContain("1 project:");
   });
 
-  it("unpublishes the shared listing and the install before deleting a shared agent", async () => {
+  it("unpublishes the shared listing and the install before deleting a shared teammate", async () => {
     const { context, repositories } = createContext({
       listing: { id: "shared-1", user_id: OWNER_ID },
       install: { id: "install-1" },
@@ -445,21 +457,24 @@ describe("deleteTeammate", () => {
 
     await expect(deleteTeammate(context, TEAMMATE_ID)).resolves.toEqual({ success: true });
 
-    expect(repositories.sharedAgents.deleteSharedTeammate).toHaveBeenCalledWith(
+    expect(repositories.sharedTeammates.deleteSharedTeammate).toHaveBeenCalledWith(
       OWNER_ID,
       "shared-1",
     );
-    expect(repositories.sharedAgents.uninstallTeammate).toHaveBeenCalledWith(OWNER_ID, TEAMMATE_ID);
-    expect(repositories.agents.deleteTeammate).toHaveBeenCalledWith(TEAMMATE_ID);
+    expect(repositories.sharedTeammates.uninstallTeammate).toHaveBeenCalledWith(
+      OWNER_ID,
+      TEAMMATE_ID,
+    );
+    expect(repositories.teammates.deleteTeammate).toHaveBeenCalledWith(TEAMMATE_ID);
   });
 
-  it("deletes an unreferenced agent without touching the marketplace", async () => {
+  it("deletes an unreferenced teammate without touching the marketplace", async () => {
     const { context, repositories } = createContext({});
 
     await expect(deleteTeammate(context, TEAMMATE_ID)).resolves.toEqual({ success: true });
 
-    expect(repositories.sharedAgents.deleteSharedTeammate).not.toHaveBeenCalled();
-    expect(repositories.sharedAgents.uninstallTeammate).not.toHaveBeenCalled();
-    expect(repositories.agents.deleteTeammate).toHaveBeenCalledWith(TEAMMATE_ID);
+    expect(repositories.sharedTeammates.deleteSharedTeammate).not.toHaveBeenCalled();
+    expect(repositories.sharedTeammates.uninstallTeammate).not.toHaveBeenCalled();
+    expect(repositories.teammates.deleteTeammate).toHaveBeenCalledWith(TEAMMATE_ID);
   });
 });

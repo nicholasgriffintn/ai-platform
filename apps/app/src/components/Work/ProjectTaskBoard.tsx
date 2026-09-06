@@ -33,7 +33,7 @@ export function ProjectTaskBoard({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isFlowOpen, setIsFlowOpen] = useState(false);
   const { projectQuery, workspaceQuery } = useWorkData();
-  const agents = useProjectTaskTeammates(projectQuery.data?.capabilities);
+  const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);
   const capabilityCatalog = useCapabilityCatalog(projectId);
   const skills = projectTaskSkills(projectQuery.data?.capabilities, capabilityCatalog.data?.skills);
   const { tasks, flow, isLoading, error, create, start, accept, saveFlow } =
@@ -122,8 +122,8 @@ export function ProjectTaskBoard({
           }
         />
         <p className="text-muted-foreground mb-6 max-w-3xl text-sm">
-          Route outcomes through specialist agents, watch live work, and step in only when a stage
-          needs review or approval.
+          Route outcomes through specialist teammates, watch live work, and step in only when a
+          stage needs review or approval.
         </p>
 
         {isLoading ? (
@@ -137,7 +137,7 @@ export function ProjectTaskBoard({
             tasks={tasks}
             flow={flow}
             members={members}
-            agents={agents}
+            teammates={teammates}
             pendingTaskIds={pendingTaskIds}
             taskHref={taskHref}
             conversationHref={conversationHref}
@@ -155,7 +155,7 @@ export function ProjectTaskBoard({
         open={isCreateOpen}
         flow={flow}
         members={members}
-        agents={agents}
+        teammates={teammates}
         boardTasks={tasks}
         isSubmitting={create.isPending || start.isPending}
         errorMessage={create.error ? getErrorMessage(create.error, "") : undefined}
@@ -166,7 +166,7 @@ export function ProjectTaskBoard({
       <FlowEditorDialog
         open={isFlowOpen}
         flow={flow}
-        agents={agents}
+        teammates={teammates}
         skills={skills}
         capabilitiesHref={`${basePath}/library`}
         createTeammateHref={getTeammateEditorPath(
@@ -182,7 +182,7 @@ export function ProjectTaskBoard({
             setIsFlowOpen(false);
             toast.success("Teammate pipeline saved");
           } catch (mutationError) {
-            toast.error(getErrorMessage(mutationError, "Unable to save the agent pipeline"));
+            toast.error(getErrorMessage(mutationError, "Unable to save the teammate pipeline"));
           }
         }}
       />

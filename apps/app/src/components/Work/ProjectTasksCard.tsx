@@ -23,7 +23,7 @@ export function ProjectTasksCard({
 }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { projectQuery, workspaceQuery } = useWorkData();
-  const agents = useProjectTaskTeammates(projectQuery.data?.capabilities);
+  const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);
   const { tasks, flow, isLoading, create, start } = useProjectTasks(projectId);
   const boardHref = `/work/${workspaceId}/projects/${projectId}/tasks`;
   const members = (workspaceQuery.data?.members ?? []).map((member) => ({
@@ -62,7 +62,7 @@ export function ProjectTasksCard({
         open={isCreateOpen}
         flow={flow}
         members={members}
-        agents={agents}
+        teammates={teammates}
         boardTasks={tasks}
         isSubmitting={create.isPending || start.isPending}
         errorMessage={create.error ? getErrorMessage(create.error, "") : undefined}

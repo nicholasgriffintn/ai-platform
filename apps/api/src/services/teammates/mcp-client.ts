@@ -5,7 +5,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "services/agents/mcp-client" });
+const logger = getLogger({ prefix: "services/teammates/mcp-client" });
 
 export interface MCPServerConfig {
   url: string;

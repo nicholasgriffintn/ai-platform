@@ -57,7 +57,7 @@ export class TeammateService {
     if (!response.ok) {
       throw await createApiErrorFromResponse(
         response,
-        `Failed to load agent: ${response.statusText}`,
+        `Failed to load teammate: ${response.statusText}`,
       );
     }
 
@@ -85,7 +85,7 @@ export class TeammateService {
     if (!response.ok) {
       throw await createApiErrorFromResponse(
         response,
-        `Failed to publish agent: ${response.statusText}`,
+        `Failed to publish teammate: ${response.statusText}`,
       );
     }
 
@@ -106,7 +106,7 @@ export class TeammateService {
     if (!response.ok) {
       throw await createApiErrorFromResponse(
         response,
-        `Failed to list agents: ${response.statusText}`,
+        `Failed to list teammates: ${response.statusText}`,
       );
     }
 
@@ -167,7 +167,7 @@ export class TeammateService {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to list shared agents: ${response.statusText}`);
+      throw new Error(`Failed to list shared teammates: ${response.statusText}`);
     }
 
     const responseData = await returnFetchedData<SharedTeammateSummary[]>(response);
@@ -184,7 +184,7 @@ export class TeammateService {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to list featured agents: ${response.statusText}`);
+      throw new Error(`Failed to list featured teammates: ${response.statusText}`);
     }
 
     const responseData = await returnFetchedData<SharedTeammateSummary[]>(response);
@@ -201,7 +201,7 @@ export class TeammateService {
     if (!response.ok) {
       throw await createApiErrorFromResponse(
         response,
-        `Failed to install shared agent: ${response.statusText}`,
+        `Failed to install shared teammate: ${response.statusText}`,
       );
     }
 
@@ -219,16 +219,16 @@ export class TeammateService {
     if (!response.ok) {
       throw await createApiErrorFromResponse(
         response,
-        `Failed to check agent sharing: ${response.statusText}`,
+        `Failed to check teammate sharing: ${response.statusText}`,
       );
     }
 
     const responseData = await returnFetchedData<{
       isShared: boolean;
-      sharedAgent: SharedTeammateSummary | null;
+      sharedTeammate: SharedTeammateSummary | null;
     }>(response);
 
-    return responseData?.sharedAgent ?? null;
+    return responseData?.sharedTeammate ?? null;
   }
 
   async shareTeammate(
@@ -256,7 +256,7 @@ export class TeammateService {
     if (!response.ok) {
       throw await createApiErrorFromResponse(
         response,
-        `Failed to share agent: ${response.statusText}`,
+        `Failed to share teammate: ${response.statusText}`,
       );
     }
 
@@ -272,7 +272,7 @@ export class TeammateService {
     if (!response.ok) {
       throw await createApiErrorFromResponse(
         response,
-        `Failed to stop sharing agent: ${response.statusText}`,
+        `Failed to stop sharing teammate: ${response.statusText}`,
       );
     }
 
@@ -285,7 +285,7 @@ export class TeammateService {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to get shared agent categories: ${response.statusText}`);
+      throw new Error(`Failed to get shared teammate categories: ${response.statusText}`);
     }
 
     const responseData = await returnFetchedData<string[]>(response);
@@ -297,7 +297,7 @@ export class TeammateService {
     const response = await fetchApi(`/teammates/shared/tags`, { method: "GET" });
 
     if (!response.ok) {
-      throw new Error(`Failed to get shared agent tags: ${response.statusText}`);
+      throw new Error(`Failed to get shared teammate tags: ${response.statusText}`);
     }
 
     const responseData = await returnFetchedData<string[]>(response);
@@ -321,7 +321,7 @@ export class TeammateService {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to create agent: ${response.statusText}`);
+      throw new Error(`Failed to create teammate: ${response.statusText}`);
     }
 
     return returnFetchedData<TeammateResponse>(response);
@@ -357,7 +357,7 @@ export class TeammateService {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to update agent: ${response.statusText}`);
+      throw new Error(`Failed to update teammate: ${response.statusText}`);
     }
 
     return returnFetchedData<TeammateResponse>(response);
@@ -378,7 +378,7 @@ export class TeammateService {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to delete agent: ${response.statusText}`);
+      throw new Error(`Failed to delete teammate: ${response.statusText}`);
     }
 
     await returnFetchedData<unknown>(response);

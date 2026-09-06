@@ -91,7 +91,7 @@ export const ModelSelector = ({
     selectedTeammateId,
     setSelectedTeammateId,
   } = useChatStore();
-  const { agents } = useTeammates();
+  const { teammates } = useTeammates();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCapability, setSelectedCapability] = useState<ModelModality | null>(null);
@@ -419,11 +419,11 @@ export const ModelSelector = ({
     });
   };
 
-  const selectedTeammate = agents.find((agent) => agent.id === selectedTeammateId);
+  const selectedTeammate = teammates.find((teammate) => teammate.id === selectedTeammateId);
   const isModelLockedByTeammate = Boolean(selectedTeammate?.model);
 
   const currentTeammateModel = selectedTeammateId
-    ? agents.find((agent) => agent.id === selectedTeammateId)?.model
+    ? teammates.find((teammate) => teammate.id === selectedTeammateId)?.model
     : null;
 
   useEffect(() => {

@@ -133,7 +133,7 @@ export async function queueProjectTaskRun(params: {
       taskId: task.id,
       projectId: task.projectId,
       dispatchTaskId,
-      detail: "The agent run could not be added to the execution queue. Try again.",
+      detail: "The teammate run could not be added to the execution queue. Try again.",
     });
     throw error;
   }
@@ -686,7 +686,7 @@ export async function runProjectTaskDispatch(params: {
         },
         tool_choice: "auto",
         metadata: { project_id: claimed.projectId },
-        ...(runtime.agent ? { persona: buildTeammatePersona(runtime.agent) } : {}),
+        ...(runtime.teammate ? { persona: buildTeammatePersona(runtime.teammate) } : {}),
       },
     });
 
@@ -739,7 +739,7 @@ export async function runProjectTaskDispatch(params: {
             goalId,
             actor: "system",
             status: "blocked",
-            reason: `The agent run failed: ${detail}`,
+            reason: `The teammate run failed: ${detail}`,
           });
         }
       } catch (goalError) {
@@ -788,7 +788,7 @@ export async function runProjectTaskDispatch(params: {
       goalId: goal.id,
       actor: "system",
       status: "stalled",
-      reason: "The agent run ended without completing the goal or requesting input.",
+      reason: "The teammate run ended without completing the goal or requesting input.",
     });
   }
 

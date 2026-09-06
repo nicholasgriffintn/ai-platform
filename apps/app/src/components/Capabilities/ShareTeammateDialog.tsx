@@ -3,16 +3,16 @@ import { ShareTeammateModal } from "@ngriffin_uk/polychat-component-account";
 import { useTeammateSharing } from "~/hooks/useSharedTeammates";
 
 interface ShareTeammateDialogProps {
-  agent: { id: string; name: string; description?: string | null } | null;
+  teammate: { id: string; name: string; description?: string | null } | null;
   onClose: () => void;
 }
 
-export function ShareTeammateDialog({ agent, onClose }: ShareTeammateDialogProps) {
-  const sharing = useTeammateSharing(agent?.id ?? null);
+export function ShareTeammateDialog({ teammate, onClose }: ShareTeammateDialogProps) {
+  const sharing = useTeammateSharing(teammate?.id ?? null);
 
   return (
     <ShareTeammateModal
-      agent={agent}
+      teammate={teammate}
       categories={sharing.categories}
       error={sharing.listingError}
       isLoadingListing={sharing.isLoadingListing}
@@ -25,7 +25,7 @@ export function ShareTeammateDialog({ agent, onClose }: ShareTeammateDialogProps
         await sharing.unshareTeammate(sharedTeammateId);
         onClose();
       }}
-      open={agent !== null}
+      open={teammate !== null}
     />
   );
 }

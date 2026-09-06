@@ -1,7 +1,7 @@
 import type { MCPClientManager } from "agents/mcp/client";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { Agent } from "~/lib/database/schema";
+import type { Teammate } from "~/lib/database/schema";
 import { request_approval, ask_user } from "~/services/functions/human_in_the_loop";
 import { registerMCPClient } from "~/services/functions/mcp";
 import {
@@ -18,12 +18,12 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "services/agents/completion-tools" });
+const logger = getLogger({ prefix: "services/teammates/completion-tools" });
 
 const CORE_TEAMMATE_TOOLS: ApiToolDefinition[] = [request_approval, ask_user];
 
 type CompletionTeammate = Pick<
-  Agent,
+  Teammate,
   "id" | "servers" | "system_prompt" | "few_shot_examples" | "skill_ids"
 >;
 
@@ -36,25 +36,25 @@ export type TeammateCompletionToolDefinition =
     };
 
 export async function buildTeammateCompletionTools(
-  agent: CompletionTeammate,
+  teammate: CompletionTeammate,
   context: ServiceContext,
 ): Promise<TeammateCompletionToolDefinition[]> {
-  const mcpFunctions = await setupMCPFunctions(agent, context);
+  const mcpFunctions = await setupMCPFunctions(teammate, context);
 
   return [...CORE_TEAMMATE_TOOLS, ...mcpFunctions];
 }
 
-export function buildTeammatePersona(agent: CompletionTeammate): AssistantPersona {
+export function buildTeammatePersona(teammate: CompletionTeammate): AssistantPersona {
   return {
-    instructions: buildPersonaInstructions(agent),
-    examples: parseFewShotExamples(agent.few_shot_examples),
+    instructions: buildPersonaInstructions(teammate),
+    examples: parseFewShotExamples(teammate.few_shot_examples),
   };
 }
 
-function buildPersonaInstructions(agent: CompletionTeammate): string | undefined {
-  const skillIds = readTeammateSkillIds(agent.skill_ids);
+function buildPersonaInstructions(teammate: CompletionTeammate): string | undefined {
+  const skillIds = readTeammateSkillIds(teammate.skill_ids);
   const sections = [
-    agent.system_prompt?.trim() || undefined,
+    teammate.system_prompt?.trim() || undefined,
     skillIds.length > 0
       ? `Load these skills before you start and follow them: ${skillIds.join(", ")}.`
       : undefined,
@@ -91,17 +91,17 @@ function parseFewShotExamples(rawExamples: unknown): AssistantPersonaExample[] {
   }
 }
 
-async function setupMCPFunctions(agent: CompletionTeammate, context: ServiceContext) {
+async function setupMCPFunctions(teammate: CompletionTeammate, context: ServiceContext) {
   const mcpFunctions: TeammateMCPToolDefinition[] = [];
 
-  if (!agent.servers) {
+  if (!teammate.servers) {
     return mcpFunctions;
   }
 
   let mcp: MCPClientManager | null = null;
 
   try {
-    const serverConfigs = parseMCPServerConfigs(agent.servers);
+    const serverConfigs = parseMCPServerConfigs(teammate.servers);
 
     if (serverConfigs.length === 0) {
       return mcpFunctions;
@@ -113,13 +113,13 @@ async function setupMCPFunctions(agent: CompletionTeammate, context: ServiceCont
 
     const { MCPClientManager } = await import("agents/mcp/client");
 
-    mcp = new MCPClientManager(agent.id, "1.0.0", {
+    mcp = new MCPClientManager(teammate.id, "1.0.0", {
       storage: context.env.MCP_STORAGE,
     });
-    await registerMCPClient(context, agent.id, mcp);
+    await registerMCPClient(context, teammate.id, mcp);
 
     for (const cfg of serverConfigs) {
-      await collectServerTools(agent, mcp, cfg, mcpFunctions);
+      await collectServerTools(teammate, mcp, cfg, mcpFunctions);
     }
   } catch (error) {
     logger.error("Error setting up MCP functions", {
@@ -131,7 +131,7 @@ async function setupMCPFunctions(agent: CompletionTeammate, context: ServiceCont
 }
 
 async function collectServerTools(
-  agent: CompletionTeammate,
+  teammate: CompletionTeammate,
   mcp: MCPClientManager,
   cfg: MCPServerConfig,
   mcpFunctions: TeammateMCPToolDefinition[],
@@ -152,7 +152,7 @@ async function collectServerTools(
     const defs = Object.entries(rawTools);
 
     for (const [name, def] of defs) {
-      const toolDefinition = resolveMCPAIToolDefinition(agent.id, name, def);
+      const toolDefinition = resolveMCPAIToolDefinition(teammate.id, name, def);
 
       if (toolDefinition) {
         mcpFunctions.push(toolDefinition);

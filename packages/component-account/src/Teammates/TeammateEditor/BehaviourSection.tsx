@@ -35,12 +35,12 @@ export function BehaviourSection({ value, disabled, onChange }: BehaviourSection
   return (
     <TeammateEditorSection
       title="Behaviour"
-      description="What the agent is told before anyone speaks to it, and how much rope it gets."
+      description="What the teammate is told before anyone speaks to it, and how much rope it gets."
     >
       <div className="space-y-2">
-        <Label htmlFor="agent-system-prompt">System prompt</Label>
+        <Label htmlFor="teammate-system-prompt">System prompt</Label>
         <Textarea
-          id="agent-system-prompt"
+          id="teammate-system-prompt"
           rows={6}
           value={value.systemPrompt}
           disabled={disabled}
@@ -65,7 +65,7 @@ export function BehaviourSection({ value, disabled, onChange }: BehaviourSection
             >
               <input
                 type="radio"
-                name="agent-mode"
+                name="teammate-mode"
                 className="mt-1"
                 value={option.value}
                 disabled={disabled}
@@ -85,7 +85,7 @@ export function BehaviourSection({ value, disabled, onChange }: BehaviourSection
         <div>
           <Label>Examples</Label>
           <p className="text-xs text-muted-foreground">
-            Optional pairs showing the agent how a good exchange goes.
+            Optional pairs showing the teammate how a good exchange goes.
           </p>
         </div>
 

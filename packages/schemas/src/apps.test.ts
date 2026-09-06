@@ -228,9 +228,9 @@ describe("embedding provider configuration schemas", () => {
   });
 });
 
-describe("agent capability descriptors", () => {
+describe("teammate capability descriptors", () => {
   const baseTeammate: AssistantActionTeammateSource = {
-    id: "agent-1",
+    id: "teammate-1",
     name: "Researcher",
     description: "Reads long documents.",
     avatarUrl: null,
@@ -244,20 +244,20 @@ describe("agent capability descriptors", () => {
     unavailableToolIds: [],
   };
 
-  function describeTeammate(agent: AssistantActionTeammateSource) {
-    const [item] = buildAssistantActionCatalog({ agents: [agent] }).items;
+  function describeTeammate(teammate: AssistantActionTeammateSource) {
+    const [item] = buildAssistantActionCatalog({ teammates: [teammate] }).items;
 
     return item;
   }
 
-  it("reports an agent unavailable and says why when its model cannot be run", () => {
+  it("reports an teammate unavailable and says why when its model cannot be run", () => {
     const item = describeTeammate({ ...baseTeammate, modelAvailable: false });
 
     expect(item.capability.availability).toBe("unavailable");
     expect(item.capability.availabilityReason).toContain("claude-sonnet");
   });
 
-  it("names the skills and tools this scope cannot give the agent", () => {
+  it("names the skills and tools this scope cannot give the teammate", () => {
     const item = describeTeammate({
       ...baseTeammate,
       skillIds: ["artifacts"],
@@ -268,7 +268,7 @@ describe("agent capability descriptors", () => {
     expect(item.capability.availabilityReason).toContain("artifacts");
   });
 
-  it("requires tool calling only from an agent that carries skills or tools", () => {
+  it("requires tool calling only from an teammate that carries skills or tools", () => {
     expect(describeTeammate(baseTeammate).capability.requiredModelCapabilities).toEqual([]);
     expect(
       describeTeammate({ ...baseTeammate, toolIds: ["web_search"] }).capability
@@ -276,7 +276,7 @@ describe("agent capability descriptors", () => {
     ).toEqual(["supportsToolCalls"]);
   });
 
-  it("separates a workspace agent from a personal one by auth and category", () => {
+  it("separates a workspace teammate from a personal one by auth and category", () => {
     const personal = describeTeammate(baseTeammate);
     const workspace = describeTeammate({ ...baseTeammate, ownerScopeType: "workspace" });
 

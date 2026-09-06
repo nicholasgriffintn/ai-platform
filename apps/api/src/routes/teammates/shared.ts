@@ -34,7 +34,7 @@ import {
 import type { IEnv } from "~/types";
 
 const app = new Hono<{ Bindings: IEnv }>();
-const logger = createRouteLogger("agents/shared");
+const logger = createRouteLogger("teammates/shared");
 
 const sharedTeammateIdParamSchema = z.object({ id: z.string().min(1) });
 const teammateIdParamSchema = z.object({ teammateId: z.string().min(1) });
@@ -42,15 +42,15 @@ const setFeaturedBodySchema = z.object({ featured: z.boolean() });
 const moderateBodySchema = z.object({ is_public: z.boolean() });
 
 app.use("/*", async (ctx, next) => {
-  logger.info(`Processing shared agents route: ${ctx.req.method} ${ctx.req.path}`);
+  logger.info(`Processing shared teammates route: ${ctx.req.method} ${ctx.req.path}`);
 
   return next();
 });
 
 addRoute(app, "get", "/", {
-  tags: ["shared-agents"],
-  summary: "Get a list of shared agents",
-  description: "Get a list of shared agents with optional filtering and sorting",
+  tags: ["shared-teammates"],
+  summary: "Get a list of shared teammates",
+  description: "Get a list of shared teammates with optional filtering and sorting",
   querySchema: sharedTeammateFiltersSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext, query }) => {
@@ -67,9 +67,9 @@ addRoute(app, "get", "/", {
 });
 
 addRoute(app, "get", "/featured", {
-  tags: ["shared-agents"],
-  summary: "Get a list of featured agents",
-  description: "Get a list of featured agents",
+  tags: ["shared-teammates"],
+  summary: "Get a list of featured teammates",
+  description: "Get a list of featured teammates",
   querySchema: featuredTeammatesSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext, query }) => {
@@ -78,9 +78,9 @@ addRoute(app, "get", "/featured", {
 });
 
 addRoute(app, "get", "/categories", {
-  tags: ["shared-agents"],
-  summary: "Get a list of agent categories",
-  description: "Get a list of all available agent categories",
+  tags: ["shared-teammates"],
+  summary: "Get a list of teammate categories",
+  description: "Get a list of all available teammate categories",
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext }) => {
     return getSharedTeammateCategories(serviceContext);
@@ -88,9 +88,9 @@ addRoute(app, "get", "/categories", {
 });
 
 addRoute(app, "get", "/tags", {
-  tags: ["shared-agents"],
+  tags: ["shared-teammates"],
   summary: "Get a list of popular tags",
-  description: "Get a list of popular agent tags",
+  description: "Get a list of popular teammate tags",
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext }) => {
     return getSharedTeammatePopularTags(serviceContext);
@@ -98,26 +98,26 @@ addRoute(app, "get", "/tags", {
 });
 
 addRoute(app, "get", "/:id", {
-  tags: ["shared-agents"],
-  summary: "Get a shared agent by ID",
-  description: "Get details of a specific shared agent",
+  tags: ["shared-teammates"],
+  summary: "Get a shared teammate by ID",
+  description: "Get details of a specific shared teammate",
   paramSchema: sharedTeammateIdParamSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext, params, raw }) => {
-    const agent = await getSharedTeammateById(serviceContext, params.id);
+    const teammate = await getSharedTeammateById(serviceContext, params.id);
 
-    if (!agent) {
-      return ResponseFactory.error(raw, "Shared agent not found", 404);
+    if (!teammate) {
+      return ResponseFactory.error(raw, "Shared teammate not found", 404);
     }
 
-    return agent;
+    return teammate;
   },
 });
 
 addRoute(app, "post", "/:id/install", {
-  tags: ["shared-agents"],
-  summary: "Install shared agent",
-  description: "Install a shared agent as a template into your account",
+  tags: ["shared-teammates"],
+  summary: "Install shared teammate",
+  description: "Install a shared teammate as a template into your account",
   auth: true,
   paramSchema: sharedTeammateIdParamSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
@@ -127,9 +127,9 @@ addRoute(app, "post", "/:id/install", {
 });
 
 addRoute(app, "post", "/:id/uninstall", {
-  tags: ["shared-agents"],
-  summary: "Uninstall shared agent",
-  description: "Remove a shared agent template from your account",
+  tags: ["shared-teammates"],
+  summary: "Uninstall shared teammate",
+  description: "Remove a shared teammate template from your account",
   auth: true,
   paramSchema: sharedTeammateIdParamSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
@@ -137,15 +137,15 @@ addRoute(app, "post", "/:id/uninstall", {
     await uninstallSharedTeammate(serviceContext, params.id, user.id);
 
     return {
-      message: "Agent uninstalled successfully",
+      message: "Teammate uninstalled successfully",
     };
   },
 });
 
 addRoute(app, "post", "/:id/rate", {
-  tags: ["shared-agents"],
-  summary: "Rate shared agent",
-  description: "Rate and review a shared agent",
+  tags: ["shared-teammates"],
+  summary: "Rate shared teammate",
+  description: "Rate and review a shared teammate",
   auth: true,
   paramSchema: sharedTeammateIdParamSchema,
   bodySchema: rateTeammateSchema,
@@ -156,9 +156,9 @@ addRoute(app, "post", "/:id/rate", {
 });
 
 addRoute(app, "get", "/:id/ratings", {
-  tags: ["shared-agents"],
-  summary: "Get agent ratings",
-  description: "Get ratings and reviews for a shared agent",
+  tags: ["shared-teammates"],
+  summary: "Get teammate ratings",
+  description: "Get ratings and reviews for a shared teammate",
   paramSchema: sharedTeammateIdParamSchema,
   querySchema: teammateRatingsSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
@@ -168,26 +168,26 @@ addRoute(app, "get", "/:id/ratings", {
 });
 
 addRoute(app, "get", "/check/:teammateId", {
-  tags: ["shared-agents"],
-  summary: "Check if agent is shared",
-  description: "Check if a specific agent is already shared to the marketplace",
+  tags: ["shared-teammates"],
+  summary: "Check if teammate is shared",
+  description: "Check if a specific teammate is already shared to the marketplace",
   auth: true,
   paramSchema: teammateIdParamSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext, params }) => {
-    const sharedAgent = await getSharedTeammateByTeammateId(serviceContext, params.teammateId);
+    const sharedTeammate = await getSharedTeammateByTeammateId(serviceContext, params.teammateId);
 
     return {
-      isShared: !!sharedAgent,
-      sharedAgent: sharedAgent || null,
+      isShared: !!sharedTeammate,
+      sharedTeammate: sharedTeammate || null,
     };
   },
 });
 
 addRoute(app, "post", "/share", {
-  tags: ["shared-agents"],
-  summary: "Share an agent",
-  description: "Share one of your agents",
+  tags: ["shared-teammates"],
+  summary: "Share an teammate",
+  description: "Share one of your teammates",
   auth: true,
   bodySchema: shareTeammateSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
@@ -208,9 +208,9 @@ addRoute(app, "post", "/share", {
 });
 
 addRoute(app, "put", "/:id", {
-  tags: ["shared-agents"],
-  summary: "Update shared agent",
-  description: "Update your shared agent details",
+  tags: ["shared-teammates"],
+  summary: "Update shared teammate",
+  description: "Update your shared teammate details",
   auth: true,
   paramSchema: sharedTeammateIdParamSchema,
   bodySchema: updateSharedTeammateSchema,
@@ -219,15 +219,15 @@ addRoute(app, "put", "/:id", {
     await updateSharedTeammate(serviceContext, params.id, body, user.id);
 
     return {
-      message: "Shared agent updated successfully",
+      message: "Shared teammate updated successfully",
     };
   },
 });
 
 addRoute(app, "delete", "/:id", {
-  tags: ["shared-agents"],
-  summary: "Delete shared agent",
-  description: "Remove your agent from the marketplace",
+  tags: ["shared-teammates"],
+  summary: "Delete shared teammate",
+  description: "Remove your teammate from the marketplace",
   auth: true,
   paramSchema: sharedTeammateIdParamSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
@@ -235,15 +235,15 @@ addRoute(app, "delete", "/:id", {
     await deleteSharedTeammate(serviceContext, params.id, user.id);
 
     return {
-      message: "Shared agent deleted successfully",
+      message: "Shared teammate deleted successfully",
     };
   },
 });
 
 addRoute(app, "post", "/:id/featured", {
-  tags: ["shared-agents"],
+  tags: ["shared-teammates"],
   summary: "Set featured status",
-  description: "Toggle the featured status for a shared agent",
+  description: "Toggle the featured status for a shared teammate",
   auth: true,
   paramSchema: sharedTeammateIdParamSchema,
   bodySchema: setFeaturedBodySchema,
@@ -259,9 +259,9 @@ addRoute(app, "post", "/:id/featured", {
 });
 
 addRoute(app, "post", "/:id/moderate", {
-  tags: ["shared-agents"],
-  summary: "Moderate shared agent",
-  description: "Approve or reject a shared agent listing",
+  tags: ["shared-teammates"],
+  summary: "Moderate shared teammate",
+  description: "Approve or reject a shared teammate listing",
   auth: true,
   paramSchema: sharedTeammateIdParamSchema,
   bodySchema: moderateBodySchema,
@@ -271,7 +271,7 @@ addRoute(app, "post", "/:id/moderate", {
     await moderateSharedTeammate(serviceContext, params.id, body.is_public);
 
     return {
-      message: "Shared agent moderated successfully",
+      message: "Shared teammate moderated successfully",
     };
   },
 });

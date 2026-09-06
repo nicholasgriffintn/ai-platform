@@ -51,11 +51,14 @@ export function useProjectCapabilityCatalog(projectId?: string) {
     [catalogQuery.data?.modelTools],
   );
   const skills = useMemo(() => catalogQuery.data?.skills ?? [], [catalogQuery.data?.skills]);
-  const agents = useMemo(() => catalogQuery.data?.agents ?? [], [catalogQuery.data?.agents]);
+  const teammates = useMemo(
+    () => catalogQuery.data?.teammates ?? [],
+    [catalogQuery.data?.teammates],
+  );
 
   const items = useMemo(() => {
     const baseCatalog = buildAssistantActionCatalog({
-      agents,
+      teammates,
       apps,
       modelTools,
       skills,
@@ -66,7 +69,7 @@ export function useProjectCapabilityCatalog(projectId?: string) {
       ...baseCatalog.items,
       ...recipes.map((recipe) => createRecipeAssistantActionItem(recipe)),
     ];
-  }, [agents, apps, callableTools, recipes, modelTools, skills]);
+  }, [teammates, apps, callableTools, recipes, modelTools, skills]);
 
   return {
     apps,

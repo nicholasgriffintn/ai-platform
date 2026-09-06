@@ -14,7 +14,7 @@ export async function getUserTeammates(context: ServiceContext, userId?: number)
   const workspaces = await context.repositories.workspaces.listWorkspaces(id);
 
   return (
-    await context.repositories.agents.getTeammatesForScopes(
+    await context.repositories.teammates.getTeammatesForScopes(
       id,
       workspaces.map((workspace) => workspace.id),
     )
@@ -55,7 +55,7 @@ export async function createTeammate(
   context.ensureDatabase();
   const currentUser = user ?? context.requireUser();
 
-  const agent = await context.repositories.agents.createTeammate({
+  const teammate = await context.repositories.teammates.createTeammate({
     userId: currentUser.id,
     ...(await resolveNewTeammateOwnerScope(context, currentUser.id, params.workspace_id)),
     kind: params.kind ?? "colleague",
@@ -73,7 +73,7 @@ export async function createTeammate(
     mode: params.mode,
   });
 
-  return normaliseTeammateResponse(agent);
+  return normaliseTeammateResponse(teammate);
 }
 
 export async function updateTeammate(
@@ -86,14 +86,14 @@ export async function updateTeammate(
   const id = userId ?? context.requireUser().id;
 
   await requireTeammateAccess(context, teammateId, "write", id);
-  await context.repositories.agents.updateTeammate(teammateId, updates);
+  await context.repositories.teammates.updateTeammate(teammateId, updates);
 
   return getTeammateById(context, teammateId, id);
 }
 
 async function findProjectsUsingTeammate(context: ServiceContext, teammateId: string) {
   const [attached, inFlows] = await Promise.all([
-    context.repositories.workspaces.listProjectsWithCapability("agent", teammateId),
+    context.repositories.workspaces.listProjectsWithCapability("teammate", teammateId),
     context.repositories.workspaces.listProjectsWithFlowStageTeammate(teammateId),
   ]);
 
@@ -105,19 +105,20 @@ async function unpublishSharedTeammate(
   teammateId: string,
   userId: number,
 ) {
-  const listing = await context.repositories.sharedAgents.getSharedTeammateByTeammateId(teammateId);
+  const listing =
+    await context.repositories.sharedTeammates.getSharedTeammateByTeammateId(teammateId);
 
   if (listing) {
-    await context.repositories.sharedAgents.deleteSharedTeammate(userId, listing.id);
+    await context.repositories.sharedTeammates.deleteSharedTeammate(userId, listing.id);
   }
 
-  const install = await context.repositories.sharedAgents.getInstallByTeammateId(
+  const install = await context.repositories.sharedTeammates.getInstallByTeammateId(
     userId,
     teammateId,
   );
 
   if (install) {
-    await context.repositories.sharedAgents.uninstallTeammate(userId, teammateId);
+    await context.repositories.sharedTeammates.uninstallTeammate(userId, teammateId);
   }
 }
 
@@ -131,7 +132,7 @@ export async function deleteTeammate(context: ServiceContext, teammateId: string
 
   if (projects.length > 0) {
     throw new AssistantError(
-      `This agent is still used by ${projects.length} project${projects.length === 1 ? "" : "s"}: ${projects
+      `This teammate is still used by ${projects.length} project${projects.length === 1 ? "" : "s"}: ${projects
         .map((project) => project.name)
         .join(
           ", ",
@@ -142,7 +143,7 @@ export async function deleteTeammate(context: ServiceContext, teammateId: string
   }
 
   await unpublishSharedTeammate(context, teammateId, id);
-  await context.repositories.agents.deleteTeammate(teammateId);
+  await context.repositories.teammates.deleteTeammate(teammateId);
 
   return { success: true };
 }

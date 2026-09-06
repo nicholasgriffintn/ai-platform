@@ -12,8 +12,8 @@ import { apiService } from "~/lib/api/api-service";
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 
 export const TEAMMATES_QUERY_KEYS = {
-  all: ["agents"],
-  detail: (teammateId: string) => ["agents", teammateId],
+  all: ["teammates"],
+  detail: (teammateId: string) => ["teammates", teammateId],
 } as const;
 
 export function useTeammate(teammateId?: string) {
@@ -49,7 +49,7 @@ export function useTeammates({ enabled = true }: { enabled?: boolean } = {}) {
     enabled: canAccessProFeatures && enabled,
     staleTime: 1000 * 60,
   });
-  const agents = useMemo(
+  const teammates = useMemo(
     () => (canAccessProFeatures && enabled ? (teammatesQuery.data ?? []) : []),
     [canAccessProFeatures, enabled, teammatesQuery.data],
   );
@@ -87,7 +87,7 @@ export function useTeammates({ enabled = true }: { enabled?: boolean } = {}) {
   });
 
   return {
-    agents,
+    teammates,
     isLoadingTeammates: canAccessProFeatures && enabled ? teammatesQuery.isLoading : false,
     errorTeammates: canAccessProFeatures && enabled ? teammatesQuery.error : null,
     createTeammate: createMutation.mutateAsync,

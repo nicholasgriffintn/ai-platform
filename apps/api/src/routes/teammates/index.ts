@@ -29,13 +29,13 @@ import {
 } from "~/services/teammates";
 import type { IEnv } from "~/types";
 
-import sharedAgents from "./shared";
+import sharedTeammates from "./shared";
 
 const app = new Hono<{ Bindings: IEnv }>();
-const logger = createRouteLogger("agents");
+const logger = createRouteLogger("teammates");
 
 app.use("/*", async (ctx, next) => {
-  logger.info(`Processing agents route: ${ctx.req.method} ${ctx.req.path}`);
+  logger.info(`Processing teammates route: ${ctx.req.method} ${ctx.req.path}`);
 
   return next();
 });
@@ -43,9 +43,9 @@ app.use("/*", async (ctx, next) => {
 const teammateIdParamSchema = z.object({ teammateId: z.string().min(1) });
 
 addRoute(app, "get", "/", {
-  tags: ["agents"],
-  summary: "Get all agents",
-  description: "Get all agents for the current user",
+  tags: ["teammates"],
+  summary: "Get all teammates",
+  description: "Get all teammates for the current user",
   auth: true,
   responses: { 200: { description: "Agents", schema: teammateListResponseSchema } },
   handler: async ({ serviceContext }) => {
@@ -54,19 +54,19 @@ addRoute(app, "get", "/", {
 });
 
 addRoute(app, "post", "/", {
-  tags: ["agents"],
-  summary: "Create an agent",
-  description: "Create an agent for the current user",
+  tags: ["teammates"],
+  summary: "Create an teammate",
+  description: "Create an teammate for the current user",
   auth: true,
   bodySchema: createTeammateSchema,
-  responses: { 200: { description: "Created agent", schema: teammateResponseSchema } },
+  responses: { 200: { description: "Created teammate", schema: teammateResponseSchema } },
   handler: async ({ serviceContext, body }) => {
     return createTeammate(serviceContext, body);
   },
 });
 
 addRoute(app, "post", "/hire", {
-  tags: ["agents"],
+  tags: ["teammates"],
   summary: "Hire a teammate",
   description:
     "Create a teammate from a built-in role, a job description, or both. The role supplies the brief, suggested tools and kind.",
@@ -78,22 +78,22 @@ addRoute(app, "post", "/hire", {
   },
 });
 
-app.route("/shared", sharedAgents);
+app.route("/shared", sharedTeammates);
 
 addRoute(app, "get", "/:teammateId", {
-  tags: ["agents"],
-  summary: "Get an agent by ID",
+  tags: ["teammates"],
+  summary: "Get an teammate by ID",
   auth: true,
   paramSchema: teammateIdParamSchema,
-  responses: { 200: { description: "Agent", schema: teammateResponseSchema } },
+  responses: { 200: { description: "Teammate", schema: teammateResponseSchema } },
   handler: async ({ serviceContext, params }) => {
     return getTeammateById(serviceContext, params.teammateId);
   },
 });
 
 addRoute(app, "get", "/:teammateId/servers", {
-  tags: ["agents"],
-  summary: "Get servers for an agent",
+  tags: ["teammates"],
+  summary: "Get servers for an teammate",
   auth: true,
   paramSchema: teammateIdParamSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
@@ -103,48 +103,48 @@ addRoute(app, "get", "/:teammateId/servers", {
 });
 
 addRoute(app, "put", "/:teammateId", {
-  tags: ["agents"],
-  summary: "Update an agent",
+  tags: ["teammates"],
+  summary: "Update an teammate",
   auth: true,
   paramSchema: teammateIdParamSchema,
   bodySchema: updateTeammateSchema,
-  responses: { 200: { description: "Updated agent", schema: teammateResponseSchema } },
+  responses: { 200: { description: "Updated teammate", schema: teammateResponseSchema } },
   handler: async ({ serviceContext, params, body }) => {
     return updateTeammate(serviceContext, params.teammateId, body);
   },
 });
 
 addRoute(app, "delete", "/:teammateId", {
-  tags: ["agents"],
-  summary: "Delete an agent",
+  tags: ["teammates"],
+  summary: "Delete an teammate",
   auth: true,
   paramSchema: teammateIdParamSchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext, params }) => {
     await deleteTeammate(serviceContext, params.teammateId);
 
-    return { message: "Agent deleted successfully" };
+    return { message: "Teammate deleted successfully" };
   },
 });
 
 addRoute(app, "post", "/:teammateId/publish/workspace", {
-  tags: ["agents"],
-  summary: "Publish an agent to a workspace",
+  tags: ["teammates"],
+  summary: "Publish an teammate to a workspace",
   description:
-    "Copy a personal agent into a workspace so the workspace owns it, keeping a link back to the source agent",
+    "Copy a personal teammate into a workspace so the workspace owns it, keeping a link back to the source teammate",
   auth: true,
   paramSchema: teammateIdParamSchema,
   bodySchema: publishTeammateToWorkspaceSchema,
-  responses: { 200: { description: "Published agent", schema: teammateResponseSchema } },
+  responses: { 200: { description: "Published teammate", schema: teammateResponseSchema } },
   handler: async ({ serviceContext, params, body }) => {
     return publishTeammateToWorkspace(serviceContext, params.teammateId, body.workspace_id);
   },
 });
 
 addRoute(app, "post", "/:teammateId/completions", {
-  tags: ["agents"],
+  tags: ["teammates"],
   summary: "Create teammate completion",
-  description: "Run a chat completion against a specific agent",
+  description: "Run a chat completion against a specific teammate",
   paramSchema: teammateIdParamSchema,
   bodySchema: createChatCompletionsJsonSchema,
   middleware: [validateCaptcha],

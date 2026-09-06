@@ -20,7 +20,7 @@ export function SharedTeammatesDialog({ open, onOpenChange }: SharedTeammatesDia
   const filters = useTeammateFilters();
   const [installingTeammateId, setInstallingTeammateId] = useState<string>();
   const {
-    sharedAgents,
+    sharedTeammates,
     isLoadingSharedTeammates,
     featuredTeammates,
     isLoadingFeaturedTeammates,
@@ -52,9 +52,9 @@ export function SharedTeammatesDialog({ open, onOpenChange }: SharedTeammatesDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Shared agents</DialogTitle>
+          <DialogTitle>Shared teammates</DialogTitle>
           <DialogDescription>
-            Install a copy of an agent someone else has published. The copy is yours to edit.
+            Install a copy of an teammate someone else has published. The copy is yours to edit.
           </DialogDescription>
         </DialogHeader>
         <SharedTeammatesBrowser
@@ -71,7 +71,7 @@ export function SharedTeammatesDialog({ open, onOpenChange }: SharedTeammatesDia
           searchTerm={filters.searchTerm}
           selectedCategory={filters.selectedCategory}
           selectedTag={filters.selectedTag}
-          sharedAgents={sharedAgents}
+          sharedTeammates={sharedTeammates}
           tags={tags}
         />
       </DialogContent>

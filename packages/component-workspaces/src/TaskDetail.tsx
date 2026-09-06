@@ -36,7 +36,7 @@ export interface TaskDetailProps {
   plan: ProjectTaskPlanEvidence;
   flow: ProjectFlow | null;
   members: { userId: number; name: string | null }[];
-  agents: { id: string; name: string }[];
+  teammates: { id: string; name: string }[];
   blockedBy: ProjectTask[];
   conversationHref: string | null;
   taskHref: (task: ProjectTask) => string;
@@ -93,7 +93,7 @@ export function TaskDetail({
   plan,
   flow,
   members,
-  agents,
+  teammates,
   blockedBy,
   conversationHref,
   taskHref,
@@ -111,7 +111,7 @@ export function TaskDetail({
   const effectiveFlow = task.flowSnapshot ?? flow;
   const stage = effectiveFlow?.stages.find((candidate) => candidate.id === task.stageId);
   const teammateId = stage?.teammateId ?? task.runner?.teammateId;
-  const agent = agents.find((candidate) => candidate.id === teammateId);
+  const teammate = teammates.find((candidate) => candidate.id === teammateId);
   const isFinished = isTerminalProjectTaskStatus(task.status);
   const hasExecutionEvidence = Boolean(
     task.status === "done" || task.runId || task.completions.length > 0,
@@ -303,7 +303,7 @@ export function TaskDetail({
       <aside className="min-w-0">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
           <Fact label="Owner" value={owner?.name ?? "Nobody yet"} />
-          <Fact label="Active agent" value={agent?.name ?? "Project default"} />
+          <Fact label="Active teammate" value={teammate?.name ?? "Project default"} />
           <Fact label="Stage" value={stage?.name ?? "No pipeline stage"} />
           <Fact
             label="Last activity"
@@ -318,7 +318,7 @@ export function TaskDetail({
           <Aside label="Approval gates">
             {task.requireApprovalFor.length
               ? task.requireApprovalFor.join(", ")
-              : "Use the selected agent and stage policy"}
+              : "Use the selected teammate and stage policy"}
           </Aside>
           <Aside label="Run budget">
             {task.tokenBudget

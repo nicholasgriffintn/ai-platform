@@ -329,13 +329,13 @@ test.describe("Account-owned resources", () => {
     });
   });
 
-  test("creates, edits and deletes an agent", async ({ capabilitiesPage, page }) => {
-    const teammateName = "Release validation agent";
+  test("creates, edits and deletes an teammate", async ({ capabilitiesPage, page }) => {
+    const teammateName = "Release validation teammate";
 
     await capabilitiesPage.open();
     await capabilitiesPage.startNewTeammate();
     await expect(page.getByRole("tab", { name: "Team", exact: true })).toHaveCount(0);
-    await expect(page.getByText("Team agents", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Team teammates", { exact: true })).toHaveCount(0);
     expect(await capabilitiesPage.legacyTeamEndpointStatus()).toBe(404);
     await capabilitiesPage.fillTeammateEditor({
       name: teammateName,
@@ -345,7 +345,7 @@ test.describe("Account-owned resources", () => {
       maxSteps: "7",
     });
     await capabilitiesPage.createTeammate();
-    await expect(page).toHaveURL(/\/chat\/agents\/[^/]+$/);
+    await expect(page).toHaveURL(/\/chat\/teammates\/[^/]+$/);
 
     await capabilitiesPage.reload();
     expect(await capabilitiesPage.readTeammateModelSettings()).toEqual({

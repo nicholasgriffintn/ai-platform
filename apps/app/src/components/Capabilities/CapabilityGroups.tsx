@@ -77,7 +77,7 @@ function resolveAuthoredCapability(
 ): AuthoredCapabilityCardState | undefined {
   const capabilityId = item.capability.id;
 
-  if (itemKind === "agent") {
+  if (itemKind === "teammate") {
     if (!teammateActions.canManage(capabilityId)) {
       return undefined;
     }

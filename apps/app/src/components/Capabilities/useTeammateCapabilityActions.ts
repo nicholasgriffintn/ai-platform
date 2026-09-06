@@ -37,7 +37,7 @@ export function useTeammateCapabilityActions(
   const currentUserId = useChatStore((state) => state.user?.id);
   const workspacesQuery = useWorkspaces();
   const {
-    agents,
+    teammates,
     isLoadingTeammates,
     deleteTeammateAsync,
     deleteTeammateError,
@@ -55,25 +55,30 @@ export function useTeammateCapabilityActions(
   const manageableTeammateIds = useMemo(
     () =>
       new Set(
-        agents
+        teammates
           .filter(
-            (agent) => resolveTeammateManagePermission(agent, currentUserId, workspaces).canManage,
+            (teammate) =>
+              resolveTeammateManagePermission(teammate, currentUserId, workspaces).canManage,
           )
-          .map((agent) => agent.id),
+          .map((teammate) => teammate.id),
       ),
-    [agents, currentUserId, workspaces],
+    [teammates, currentUserId, workspaces],
   );
-  const teammateById = useMemo(() => new Map(agents.map((agent) => [agent.id, agent])), [agents]);
+  const teammateById = useMemo(
+    () => new Map(teammates.map((teammate) => [teammate.id, teammate])),
+    [teammates],
+  );
   const shareableTeammateIds = useMemo(
     () =>
       new Set(
-        agents
+        teammates
           .filter(
-            (agent) => agent.owner_scope_type === "user" && manageableTeammateIds.has(agent.id),
+            (teammate) =>
+              teammate.owner_scope_type === "user" && manageableTeammateIds.has(teammate.id),
           )
-          .map((agent) => agent.id),
+          .map((teammate) => teammate.id),
       ),
-    [agents, manageableTeammateIds],
+    [teammates, manageableTeammateIds],
   );
   const attachableTeammates = useMemo(() => {
     if (!surface.workspaceId) {
@@ -82,13 +87,13 @@ export function useTeammateCapabilityActions(
 
     const attached = new Set(attachedTeammateIds);
 
-    return agents.filter(
-      (agent) =>
-        agent.owner_scope_type === "workspace" &&
-        agent.owner_scope_id === surface.workspaceId &&
-        !attached.has(agent.id),
+    return teammates.filter(
+      (teammate) =>
+        teammate.owner_scope_type === "workspace" &&
+        teammate.owner_scope_id === surface.workspaceId &&
+        !attached.has(teammate.id),
     );
-  }, [agents, attachedTeammateIds, surface.workspaceId]);
+  }, [teammates, attachedTeammateIds, surface.workspaceId]);
 
   const refreshCatalogue = () =>
     queryClient.invalidateQueries({ queryKey: capabilityCatalogQueryKey(surface.projectId) });

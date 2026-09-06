@@ -26,20 +26,20 @@ addRoute(app, "get", "/", {
   tags: ["capabilities"],
   summary: "List capability catalogue",
   description:
-    "Returns the agents, rich experiences, model tools and skills a project or person can enable. Function tools are published by /tools.",
+    "Returns the teammates, rich experiences, model tools and skills a project or person can enable. Function tools are published by /tools.",
   auth: "user-or-anonymous",
   querySchema: z.object({ projectId: z.string().min(1).optional() }),
   responses: {
     200: { description: "Capability catalogue", schema: capabilityCatalogResponseSchema },
   },
   handler: async ({ query, serviceContext, user }) => {
-    const [agents, skills] = await Promise.all([
+    const [teammates, skills] = await Promise.all([
       listScopedTeammateSummaries(serviceContext, user?.id, query.projectId),
       listScopedSkillSummaries(serviceContext, user?.id, query.projectId),
     ]);
 
     return {
-      agents,
+      teammates,
       experiences: getProjectExperienceCatalog(),
       modelTools: MODEL_TOOL_DEFINITIONS,
       skills,

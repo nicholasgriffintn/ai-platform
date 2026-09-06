@@ -34,7 +34,7 @@ function ContextChip({
 }: {
   children: ReactNode;
   className: string;
-  kind: "action" | "agent" | "attachment" | "mode" | "skill";
+  kind: "action" | "teammate" | "attachment" | "mode" | "skill";
 }) {
   return (
     <span
@@ -151,7 +151,7 @@ export function ComposerCommandChips(
       )}
       {shouldShowTeammate && (
         <ContextChip
-          kind="agent"
+          kind="teammate"
           className="border-active-work/45 bg-active-work/12 text-active-work"
         >
           <AtSign className="h-3.5 w-3.5 shrink-0 text-active-work" aria-hidden="true" />
@@ -159,7 +159,7 @@ export function ComposerCommandChips(
           <ChipRemoveButton
             onClick={clearTeammate}
             className="rounded-sm text-active-work hover:text-active-work"
-            label={`Clear ${selectedTeammate.name} agent`}
+            label={`Clear ${selectedTeammate.name} teammate`}
           />
         </ContextChip>
       )}

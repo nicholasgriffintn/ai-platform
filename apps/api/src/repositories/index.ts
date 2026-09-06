@@ -323,11 +323,11 @@ export class RepositoryManager {
     return this.templateRepo;
   }
 
-  public get agents(): TeammateRepository {
+  public get teammates(): TeammateRepository {
     return this.teammateRepo;
   }
 
-  public get sharedAgents(): SharedTeammateRepository {
+  public get sharedTeammates(): SharedTeammateRepository {
     return this.sharedTeammateRepo;
   }
 

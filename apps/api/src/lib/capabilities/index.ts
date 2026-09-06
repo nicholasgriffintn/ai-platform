@@ -12,18 +12,18 @@ export async function validateCapabilityReference(
   capabilityId: string,
   context?: ServiceContext,
 ): Promise<void> {
-  if (kind === "agent") {
+  if (kind === "teammate") {
     const userId = context?.user?.id;
-    const agent =
-      context && userId ? await context.repositories.agents.getTeammateById(capabilityId) : null;
+    const teammate =
+      context && userId ? await context.repositories.teammates.getTeammateById(capabilityId) : null;
 
-    if (!context || !userId || !agent) {
-      throw new AssistantError("Unknown agent", ErrorType.NOT_FOUND, 404);
+    if (!context || !userId || !teammate) {
+      throw new AssistantError("Unknown teammate", ErrorType.NOT_FOUND, 404);
     }
 
-    if (!(await canAccessTeammate(context, agent, "read", userId))) {
+    if (!(await canAccessTeammate(context, teammate, "read", userId))) {
       throw new AssistantError(
-        "You can only attach an agent you can access",
+        "You can only attach an teammate you can access",
         ErrorType.FORBIDDEN,
         403,
       );

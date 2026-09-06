@@ -1,8 +1,8 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { Agent } from "~/lib/database/schema";
+import type { Teammate } from "~/lib/database/schema";
 import type {
   SharedTeammateWithAuthor,
-  SharedAgent,
+  SharedTeammate,
   SharedTeammateFilters,
   CreateSharedTeammateParams,
   TeammateInstall,
@@ -12,7 +12,7 @@ import type {
 const ensureDb = (context: ServiceContext) => {
   context.ensureDatabase();
 
-  return context.repositories.sharedAgents;
+  return context.repositories.sharedTeammates;
 };
 
 export const getSharedTeammates = async (
@@ -39,7 +39,7 @@ export const getSharedTeammateById = async (
 export const getSharedTeammateByTeammateId = async (
   context: ServiceContext,
   teammateId: string,
-): Promise<SharedAgent | null> => {
+): Promise<SharedTeammate | null> => {
   return ensureDb(context).getSharedTeammateByTeammateId(teammateId);
 };
 
@@ -54,7 +54,7 @@ export const installSharedTeammate = async (
   context: ServiceContext,
   sharedTeammateId: string,
   userId?: number,
-): Promise<{ agent: Agent; install: TeammateInstall }> => {
+): Promise<{ teammate: Teammate; install: TeammateInstall }> => {
   const repo = ensureDb(context);
   const id = userId ?? context.requireUser().id;
 
@@ -96,7 +96,9 @@ export const getSharedTeammateRatings = async (
 export const updateSharedTeammate = async (
   context: ServiceContext,
   sharedTeammateId: string,
-  updates: Partial<Pick<SharedAgent, "name" | "description" | "avatar_url" | "category" | "tags">>,
+  updates: Partial<
+    Pick<SharedTeammate, "name" | "description" | "avatar_url" | "category" | "tags">
+  >,
   userId?: number,
 ): Promise<void> => {
   const repo = ensureDb(context);
@@ -147,7 +149,7 @@ export const shareTeammate = async (
   context: ServiceContext,
   params: CreateSharedTeammateParams,
   userId?: number,
-): Promise<SharedAgent> => {
+): Promise<SharedTeammate> => {
   const repo = ensureDb(context);
   const id = userId ?? context.requireUser().id;
 

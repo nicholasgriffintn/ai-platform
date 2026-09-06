@@ -3,16 +3,16 @@ import type { ProjectCapability, SkillSummary } from "@ngriffin_uk/polychat-sche
 import { useTeammates } from "~/hooks/useTeammates";
 
 export function useProjectTaskTeammates(capabilities: ProjectCapability[] | undefined) {
-  const { agents } = useTeammates();
+  const { teammates } = useTeammates();
   const attached = new Set(
     (capabilities ?? [])
-      .filter((capability) => capability.kind === "agent")
+      .filter((capability) => capability.kind === "teammate")
       .map((capability) => capability.capabilityId),
   );
 
-  return (agents ?? [])
-    .filter((agent) => attached.has(agent.id))
-    .map((agent) => ({ id: agent.id, name: agent.name ?? agent.id }));
+  return (teammates ?? [])
+    .filter((teammate) => attached.has(teammate.id))
+    .map((teammate) => ({ id: teammate.id, name: teammate.name ?? teammate.id }));
 }
 
 export function projectTaskSkills(

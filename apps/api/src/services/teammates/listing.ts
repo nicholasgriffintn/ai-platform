@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { Agent } from "~/lib/database/schema";
+import type { Teammate } from "~/lib/database/schema";
 import { findModelConfig } from "~/lib/providers/models";
 import type { ProjectCapabilityRow } from "~/repositories/WorkspaceRepository";
 import { MODEL_TOOL_DEFINITIONS } from "~/services/experiences/config";
@@ -57,10 +57,12 @@ async function resolvePersonalScopeAvailability(
 
 async function resolveExecutableModels(
   context: ServiceContext,
-  agents: readonly TeammateResponse[],
+  teammates: readonly TeammateResponse[],
 ): Promise<ReadonlySet<string>> {
   const pinnedModels = [
-    ...new Set(agents.map((agent) => agent.model).filter((model): model is string => !!model)),
+    ...new Set(
+      teammates.map((teammate) => teammate.model).filter((model): model is string => !!model),
+    ),
   ];
   const resolved = await Promise.all(
     pinnedModels.map(async (model) =>
@@ -72,37 +74,39 @@ async function resolveExecutableModels(
 }
 
 function toTeammateSummary(
-  agent: TeammateResponse,
+  teammate: TeammateResponse,
   availability: TeammateScopeAvailability,
   executableModels: ReadonlySet<string>,
 ): TeammateSummary {
-  const toolIds = filterToolIdsForTeammateKind(agent.kind, agent.enabled_tools) ?? [];
+  const toolIds = filterToolIdsForTeammateKind(teammate.kind, teammate.enabled_tools) ?? [];
 
   return {
-    id: agent.id,
-    name: agent.name,
-    kind: agent.kind,
-    description: agent.description,
-    avatarUrl: agent.avatar_url,
-    model: agent.model,
-    modelAvailable: agent.model ? executableModels.has(agent.model) : true,
-    mode: agent.mode,
-    ownerScopeType: agent.owner_scope_type,
-    skillIds: agent.skill_ids,
+    id: teammate.id,
+    name: teammate.name,
+    kind: teammate.kind,
+    description: teammate.description,
+    avatarUrl: teammate.avatar_url,
+    model: teammate.model,
+    modelAvailable: teammate.model ? executableModels.has(teammate.model) : true,
+    mode: teammate.mode,
+    ownerScopeType: teammate.owner_scope_type,
+    skillIds: teammate.skill_ids,
     toolIds,
-    unavailableSkillIds: agent.skill_ids.filter((skillId) => !availability.skillIds.has(skillId)),
+    unavailableSkillIds: teammate.skill_ids.filter(
+      (skillId) => !availability.skillIds.has(skillId),
+    ),
     unavailableToolIds: toolIds.filter((toolId) => !availability.toolIds.has(toolId)),
   };
 }
 
 async function summarise(
   context: ServiceContext,
-  agents: readonly TeammateResponse[],
+  teammates: readonly TeammateResponse[],
   availability: TeammateScopeAvailability,
 ): Promise<TeammateSummary[]> {
-  const executableModels = await resolveExecutableModels(context, agents);
+  const executableModels = await resolveExecutableModels(context, teammates);
 
-  return agents.map((agent) => toTeammateSummary(agent, availability, executableModels));
+  return teammates.map((teammate) => toTeammateSummary(teammate, availability, executableModels));
 }
 
 async function listProjectTeammates(
@@ -110,7 +114,7 @@ async function listProjectTeammates(
   workspaceId: string,
   teammateIds: string[],
 ): Promise<TeammateResponse[]> {
-  const rows = await context.repositories.agents.getTeammatesByIds(teammateIds);
+  const rows = await context.repositories.teammates.getTeammatesByIds(teammateIds);
   const availableRows = await Promise.all(
     rows.map(async (row) =>
       (await isTeammateAvailableToWorkspace(context, row, workspaceId)) ? row : undefined,
@@ -118,7 +122,7 @@ async function listProjectTeammates(
   );
 
   return availableRows
-    .filter((row): row is Agent => row !== undefined)
+    .filter((row): row is Teammate => row !== undefined)
     .map((row) => normaliseTeammateResponse(row));
 }
 

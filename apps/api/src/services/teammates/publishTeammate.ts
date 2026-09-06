@@ -23,13 +23,13 @@ export async function publishTeammateToWorkspace(
 
   if (isWorkspaceTeammate(source)) {
     throw new AssistantError(
-      "That agent is already owned by a workspace",
+      "That teammate is already owned by a workspace",
       ErrorType.CONFLICT_ERROR,
       409,
     );
   }
 
-  const published = await context.repositories.agents.createTeammate({
+  const published = await context.repositories.teammates.createTeammate({
     userId: id,
     ownerScopeType: "workspace",
     ownerScopeId: workspaceId,

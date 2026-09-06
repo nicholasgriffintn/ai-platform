@@ -6,12 +6,12 @@ import {
   resolveTeammateManagePermission,
 } from "~/lib/teammates/teammate-permissions";
 
-const agent: TeammateResponse = {
-  id: "agent-1",
+const teammate: TeammateResponse = {
+  id: "teammate-1",
   user_id: 7,
   owner_scope_type: "user",
   owner_scope_id: "7",
-  derived_from_agent_id: null,
+  derived_from_teammate_id: null,
   kind: "colleague",
   name: "Researcher",
   description: "",
@@ -44,13 +44,13 @@ function workspace(role: WorkspaceSummary["role"]): WorkspaceSummary {
 }
 
 const workspaceTeammate: TeammateResponse = {
-  ...agent,
+  ...teammate,
   owner_scope_type: "workspace",
   owner_scope_id: "workspace-1",
 };
 
-describe("agent manage permission", () => {
-  it("lets a workspace admin manage a workspace agent", () => {
+describe("teammate manage permission", () => {
+  it("lets a workspace admin manage a workspace teammate", () => {
     expect(
       resolveTeammateManagePermission(workspaceTeammate, 7, [workspace("admin")]),
     ).toMatchObject({
@@ -66,17 +66,17 @@ describe("agent manage permission", () => {
     expect(permission.reason).toContain("Aviary");
   });
 
-  it("refuses a workspace agent whose workspace the viewer cannot see", () => {
+  it("refuses a workspace teammate whose workspace the viewer cannot see", () => {
     expect(resolveTeammateManagePermission(workspaceTeammate, 7, []).canManage).toBe(false);
   });
 
-  it("lets the author manage their own personal agent but nobody else", () => {
-    expect(resolveTeammateManagePermission(agent, 7, []).canManage).toBe(true);
-    expect(resolveTeammateManagePermission(agent, 8, []).canManage).toBe(false);
-    expect(resolveTeammateManagePermission(agent, undefined, []).canManage).toBe(false);
+  it("lets the author manage their own personal teammate but nobody else", () => {
+    expect(resolveTeammateManagePermission(teammate, 7, []).canManage).toBe(true);
+    expect(resolveTeammateManagePermission(teammate, 8, []).canManage).toBe(false);
+    expect(resolveTeammateManagePermission(teammate, undefined, []).canManage).toBe(false);
   });
 
-  it("treats an unsaved agent as the viewer's own", () => {
+  it("treats an unsaved teammate as the viewer's own", () => {
     expect(resolveTeammateManagePermission(null, 7, []).canManage).toBe(true);
   });
 

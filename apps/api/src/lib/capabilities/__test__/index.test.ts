@@ -16,9 +16,9 @@ function createTeammateContext(overrides: {
     user,
     requireUser: () => user,
     repositories: {
-      agents: {
+      teammates: {
         getTeammateById: vi.fn(async () => ({
-          id: "agent-1",
+          id: "teammate-1",
           user_id: 7,
           owner_scope_type: overrides.ownerScopeType,
           owner_scope_id: overrides.ownerScopeId,
@@ -32,8 +32,8 @@ function createTeammateContext(overrides: {
   } as unknown as ServiceContext;
 }
 
-describe("attaching an agent to a project", () => {
-  it("accepts a workspace agent from a workspace the person belongs to", async () => {
+describe("attaching an teammate to a project", () => {
+  it("accepts a workspace teammate from a workspace the person belongs to", async () => {
     const context = createTeammateContext({
       userId: 9,
       ownerScopeType: "workspace",
@@ -41,24 +41,28 @@ describe("attaching an agent to a project", () => {
       role: "member",
     });
 
-    await expect(validateCapabilityReference("agent", "agent-1", context)).resolves.toBeUndefined();
+    await expect(
+      validateCapabilityReference("teammate", "teammate-1", context),
+    ).resolves.toBeUndefined();
   });
 
-  it("refuses an agent the person cannot read", async () => {
+  it("refuses an teammate the person cannot read", async () => {
     const context = createTeammateContext({
       userId: 9,
       ownerScopeType: "user",
       ownerScopeId: "7",
     });
 
-    await expect(validateCapabilityReference("agent", "agent-1", context)).rejects.toMatchObject({
+    await expect(
+      validateCapabilityReference("teammate", "teammate-1", context),
+    ).rejects.toMatchObject({
       statusCode: 403,
     });
   });
 
-  it("refuses an agent when there is no authenticated caller", async () => {
-    await expect(validateCapabilityReference("agent", "agent-1")).rejects.toMatchObject({
-      message: "Unknown agent",
+  it("refuses an teammate when there is no authenticated caller", async () => {
+    await expect(validateCapabilityReference("teammate", "teammate-1")).rejects.toMatchObject({
+      message: "Unknown teammate",
       statusCode: 404,
     });
   });

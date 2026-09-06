@@ -141,7 +141,7 @@ export function getCapabilityOpenPath(
     return null;
   }
 
-  if (item.kind === "agent") {
+  if (item.kind === "teammate") {
     return createTeammateConversationActionPath(getConversationPath(surface), item.capability.id);
   }
 

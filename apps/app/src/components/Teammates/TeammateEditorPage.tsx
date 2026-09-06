@@ -35,20 +35,20 @@ export function TeammateEditorPage({
   if (isAuthenticationError(controller.loadError)) {
     return (
       <SignInEmptyState
-        title="Sign in to configure agents"
-        message="Sign in to build agents and share them with a workspace."
+        title="Sign in to configure teammates"
+        message="Sign in to build teammates and share them with a workspace."
         className="mx-4 my-8 min-h-[300px]"
       />
     );
   }
 
-  if (controller.loadError || (teammateId !== NEW_TEAMMATE_ID && !controller.agent)) {
+  if (controller.loadError || (teammateId !== NEW_TEAMMATE_ID && !controller.teammate)) {
     return (
       <div className="mx-auto max-w-xl px-6 py-16">
         <Card className="p-8 text-center shadow-none">
-          <h1 className="text-2xl font-bold text-foreground">Agent unavailable</h1>
+          <h1 className="text-2xl font-bold text-foreground">Teammate unavailable</h1>
           <p className="text-sm leading-6 text-muted-foreground">
-            This agent no longer exists, or it is not yours to open.
+            This teammate no longer exists, or it is not yours to open.
           </p>
           <BackLink href={backPath} label={backLabel} />
         </Card>
@@ -61,12 +61,12 @@ export function TeammateEditorPage({
       <header className="mb-8 space-y-3">
         <BackLink href={backPath} label={backLabel} />
         <h1 className="text-2xl font-bold text-foreground">
-          {controller.agent ? controller.agent.name : "New teammate"}
+          {controller.teammate ? controller.teammate.name : "New teammate"}
         </h1>
       </header>
 
       <TeammateEditor
-        agent={controller.agent}
+        teammate={controller.teammate}
         models={controller.models}
         tools={controller.tools}
         skills={controller.skills}
@@ -82,12 +82,12 @@ export function TeammateEditorPage({
         onDelete={controller.requestDelete}
       />
 
-      {controller.agent && (
+      {controller.teammate && (
         <ConfirmDeleteModal
           isOpen={controller.deleteRequested}
           onClose={controller.cancelDelete}
           onConfirm={controller.confirmDelete}
-          teammateName={controller.agent.name}
+          teammateName={controller.teammate.name}
           isDeleting={controller.isDeleting}
         />
       )}

@@ -71,7 +71,7 @@ function createContext(
     role?: string;
     memberships?: Record<number, boolean>;
     capabilities?: { kind: string; capability_id: string }[];
-    agent?: Record<string, unknown> | null;
+    teammate?: Record<string, unknown> | null;
     activeCount?: number;
     boardTasks?: unknown[];
   } = {},
@@ -120,8 +120,8 @@ function createContext(
           listProjectCapabilities: vi.fn().mockResolvedValue(overrides.capabilities ?? []),
           updateProject: vi.fn().mockResolvedValue(undefined),
         },
-        agents: {
-          getTeammateById: vi.fn().mockResolvedValue(overrides.agent ?? null),
+        teammates: {
+          getTeammateById: vi.fn().mockResolvedValue(overrides.teammate ?? null),
         },
         projectTasks: {
           getTaskById: vi.fn().mockResolvedValue(task),
@@ -573,7 +573,7 @@ describe("acceptProjectTask", () => {
 });
 
 describe("setProjectFlow", () => {
-  it("refuses a stage naming an agent the project has not attached", async () => {
+  it("refuses a stage naming an teammate the project has not attached", async () => {
     const { context } = createContext({ capabilities: [] });
 
     await expect(
@@ -583,7 +583,7 @@ describe("setProjectFlow", () => {
             id: "build",
             name: "Build",
             instructions: null,
-            teammateId: "agent-1",
+            teammateId: "teammate-1",
             skillIds: [],
             mode: null,
             requiresApprovalFor: [],
@@ -624,13 +624,13 @@ describe("setProjectFlow", () => {
 });
 
 describe("intersectEnabledTools", () => {
-  it("narrows an agent's tools to the project's rather than widening them", () => {
+  it("narrows an teammate's tools to the project's rather than widening them", () => {
     expect(intersectEnabledTools(["web_search"], ["web_search", "run_sandbox_task"])).toEqual([
       "web_search",
     ]);
   });
 
-  it("gives an agent with no declared tools exactly the project's tools", () => {
+  it("gives an teammate with no declared tools exactly the project's tools", () => {
     expect(intersectEnabledTools(["web_search"], null)).toEqual(["web_search"]);
   });
 });
@@ -688,11 +688,11 @@ describe("resolveTaskRuntime", () => {
     expect(runtime.requireApprovalFor).toEqual([]);
   });
 
-  it("runs an attached agent the project's workspace owns", async () => {
+  it("runs an attached teammate the project's workspace owns", async () => {
     const { context } = createContext({
-      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
-      agent: {
-        id: "agent-1",
+      capabilities: [{ kind: "teammate", capability_id: "teammate-1" }],
+      teammate: {
+        id: "teammate-1",
         user_id: 7,
         owner_scope_type: "workspace",
         owner_scope_id: "workspace-1",
@@ -705,19 +705,19 @@ describe("resolveTaskRuntime", () => {
       context,
       task: {
         ...baseTask,
-        runner: { kind: "conversation", teammateId: "agent-1", model: null, mode: null },
+        runner: { kind: "conversation", teammateId: "teammate-1", model: null, mode: null },
       },
       flow: null,
     });
 
-    expect(runtime.agent?.id).toBe("agent-1");
+    expect(runtime.teammate?.id).toBe("teammate-1");
   });
 
-  it("refuses an attached agent that now belongs to another workspace", async () => {
+  it("refuses an attached teammate that now belongs to another workspace", async () => {
     const { context } = createContext({
-      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
-      agent: {
-        id: "agent-1",
+      capabilities: [{ kind: "teammate", capability_id: "teammate-1" }],
+      teammate: {
+        id: "teammate-1",
         user_id: 7,
         owner_scope_type: "workspace",
         owner_scope_id: "workspace-2",
@@ -730,7 +730,7 @@ describe("resolveTaskRuntime", () => {
         context,
         task: {
           ...baseTask,
-          runner: { kind: "conversation", teammateId: "agent-1", model: null, mode: null },
+          runner: { kind: "conversation", teammateId: "teammate-1", model: null, mode: null },
         },
         flow: null,
       }),
@@ -738,7 +738,7 @@ describe("resolveTaskRuntime", () => {
   });
 
   const workspaceTeammate = {
-    id: "agent-1",
+    id: "teammate-1",
     user_id: 7,
     owner_scope_type: "workspace",
     owner_scope_id: "workspace-1",
@@ -746,18 +746,18 @@ describe("resolveTaskRuntime", () => {
   };
   const teammateRunner = {
     kind: "conversation" as const,
-    teammateId: "agent-1",
+    teammateId: "teammate-1",
     model: null,
     mode: null,
   };
 
-  it("withholds a skill the agent asks for but the project has not attached", async () => {
+  it("withholds a skill the teammate asks for but the project has not attached", async () => {
     const { context } = createContext({
       capabilities: [
-        { kind: "agent", capability_id: "agent-1" },
+        { kind: "teammate", capability_id: "teammate-1" },
         { kind: "skill", capability_id: "research" },
       ],
-      agent: { ...workspaceTeammate, skill_ids: ["research", "payroll-export"] },
+      teammate: { ...workspaceTeammate, skill_ids: ["research", "payroll-export"] },
     });
 
     const runtime = await resolveTaskRuntime({
@@ -769,14 +769,14 @@ describe("resolveTaskRuntime", () => {
     expect(runtime.skillIds).toEqual(["research"]);
   });
 
-  it("combines the stage's skills with the agent's inside the project grant", async () => {
+  it("combines the stage's skills with the teammate's inside the project grant", async () => {
     const { context } = createContext({
       capabilities: [
-        { kind: "agent", capability_id: "agent-1" },
+        { kind: "teammate", capability_id: "teammate-1" },
         { kind: "skill", capability_id: "research" },
         { kind: "skill", capability_id: "fact-checking" },
       ],
-      agent: { ...workspaceTeammate, skill_ids: ["fact-checking", "payroll-export"] },
+      teammate: { ...workspaceTeammate, skill_ids: ["fact-checking", "payroll-export"] },
     });
 
     const runtime = await resolveTaskRuntime({
@@ -802,10 +802,10 @@ describe("resolveTaskRuntime", () => {
     expect(buildStageInstructions(runtime)).toContain("research, fact-checking");
   });
 
-  it("lets the stage mode beat the agent's saved mode", async () => {
+  it("lets the stage mode beat the teammate's saved mode", async () => {
     const { context } = createContext({
-      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
-      agent: { ...workspaceTeammate, mode: "plan" },
+      capabilities: [{ kind: "teammate", capability_id: "teammate-1" }],
+      teammate: { ...workspaceTeammate, mode: "plan" },
     });
 
     const runtime = await resolveTaskRuntime({
@@ -817,10 +817,10 @@ describe("resolveTaskRuntime", () => {
     expect(runtime.mode).toBe("build");
   });
 
-  it("falls back to the agent's saved mode when neither the stage nor the runner sets one", async () => {
+  it("falls back to the teammate's saved mode when neither the stage nor the runner sets one", async () => {
     const { context } = createContext({
-      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
-      agent: { ...workspaceTeammate, mode: "plan" },
+      capabilities: [{ kind: "teammate", capability_id: "teammate-1" }],
+      teammate: { ...workspaceTeammate, mode: "plan" },
     });
 
     const runtime = await resolveTaskRuntime({
@@ -832,12 +832,12 @@ describe("resolveTaskRuntime", () => {
     expect(runtime.mode).toBe("plan");
   });
 
-  it("refuses a personal attached agent whose author left the workspace", async () => {
+  it("refuses a personal attached teammate whose author left the workspace", async () => {
     const { context } = createContext({
-      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
+      capabilities: [{ kind: "teammate", capability_id: "teammate-1" }],
       memberships: {},
-      agent: {
-        id: "agent-1",
+      teammate: {
+        id: "teammate-1",
         user_id: 7,
         owner_scope_type: "user",
         owner_scope_id: "7",
@@ -850,7 +850,7 @@ describe("resolveTaskRuntime", () => {
         context,
         task: {
           ...baseTask,
-          runner: { kind: "conversation", teammateId: "agent-1", model: null, mode: null },
+          runner: { kind: "conversation", teammateId: "teammate-1", model: null, mode: null },
         },
         flow: null,
       }),

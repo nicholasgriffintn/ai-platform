@@ -15,8 +15,8 @@ describe("prepareTeammateCompletionRequest", () => {
         temperature,
       });
       const request = prepareTeammateCompletionRequest({
-        agent: {
-          id: "agent-123",
+        teammate: {
+          id: "teammate-123",
           kind: "colleague" as const,
           model: null,
           temperature: null,
@@ -35,15 +35,15 @@ describe("prepareTeammateCompletionRequest", () => {
     },
   );
 
-  it("uses the Chat tool policy for saved-agent Chat runs", () => {
+  it("uses the Chat tool policy for saved-teammate Chat runs", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Convene a council" }],
     });
 
     const request = prepareTeammateCompletionRequest({
-      agent: {
-        id: "agent-123",
+      teammate: {
+        id: "teammate-123",
         kind: "colleague" as const,
         model: null,
         temperature: null,
@@ -59,7 +59,7 @@ describe("prepareTeammateCompletionRequest", () => {
     });
 
     expect(request).toMatchObject({
-      mode: "agent",
+      mode: "teammate",
       tool_policy_mode: "chat",
       max_steps: 20,
     });
@@ -74,15 +74,15 @@ describe("prepareTeammateCompletionRequest", () => {
     ).toMatchObject({ allowed: true, requiresApproval: false });
   });
 
-  it("falls back to the saved agent's tools when the caller sends none", () => {
+  it("falls back to the saved teammate's tools when the caller sends none", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Search for something" }],
     });
 
     const request = prepareTeammateCompletionRequest({
-      agent: {
-        id: "agent-123",
+      teammate: {
+        id: "teammate-123",
         kind: "colleague" as const,
         model: null,
         temperature: null,
@@ -100,7 +100,7 @@ describe("prepareTeammateCompletionRequest", () => {
     expect(request.enabled_tools).toEqual(["web_search"]);
   });
 
-  it("lets the caller's tool selection override the saved agent's", () => {
+  it("lets the caller's tool selection override the saved teammate's", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Search for something" }],
@@ -108,8 +108,8 @@ describe("prepareTeammateCompletionRequest", () => {
     });
 
     const request = prepareTeammateCompletionRequest({
-      agent: {
-        id: "agent-123",
+      teammate: {
+        id: "teammate-123",
         kind: "colleague" as const,
         model: null,
         temperature: null,
@@ -135,8 +135,8 @@ describe("prepareTeammateCompletionRequest", () => {
     });
 
     const request = prepareTeammateCompletionRequest({
-      agent: {
-        id: "agent-123",
+      teammate: {
+        id: "teammate-123",
         kind: "colleague" as const,
         model: null,
         temperature: null,
@@ -154,15 +154,15 @@ describe("prepareTeammateCompletionRequest", () => {
     expect(request.stream).toBe(true);
   });
 
-  it("runs the agent in its saved mode without widening the tool policy", () => {
+  it("runs the teammate in its saved mode without widening the tool policy", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Plan this out" }],
     });
 
     const request = prepareTeammateCompletionRequest({
-      agent: {
-        id: "agent-123",
+      teammate: {
+        id: "teammate-123",
         kind: "colleague" as const,
         model: null,
         temperature: null,
@@ -180,15 +180,15 @@ describe("prepareTeammateCompletionRequest", () => {
     expect(request).toMatchObject({ mode: "plan", tool_policy_mode: "chat" });
   });
 
-  it("ignores a stored mode that is no longer a known agent mode", () => {
+  it("ignores a stored mode that is no longer a known teammate mode", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Carry on" }],
     });
 
     const request = prepareTeammateCompletionRequest({
-      agent: {
-        id: "agent-123",
+      teammate: {
+        id: "teammate-123",
         kind: "colleague" as const,
         model: null,
         temperature: null,
@@ -203,12 +203,12 @@ describe("prepareTeammateCompletionRequest", () => {
       persona: {},
     });
 
-    expect(request.mode).toBe("agent");
+    expect(request.mode).toBe("teammate");
   });
 
-  it("asks for the agent's saved skills through the persona and the skill loader", () => {
-    const agent = {
-      id: "agent-123",
+  it("asks for the teammate's saved skills through the persona and the skill loader", () => {
+    const teammate = {
+      id: "teammate-123",
       kind: "colleague" as const,
       model: null,
       temperature: null,
@@ -226,11 +226,11 @@ describe("prepareTeammateCompletionRequest", () => {
     });
 
     const request = prepareTeammateCompletionRequest({
-      agent,
+      teammate,
       body,
       modelProvider: "mistral",
       formattedTools: [],
-      persona: buildTeammatePersona(agent),
+      persona: buildTeammatePersona(teammate),
     });
 
     expect(request.persona?.instructions).toContain("Answer carefully.");
@@ -238,15 +238,15 @@ describe("prepareTeammateCompletionRequest", () => {
     expect(request.enabled_tools).toEqual(["web_search", "load_skill"]);
   });
 
-  it("leaves the caller's tool selection alone when the agent saved no skills", () => {
+  it("leaves the caller's tool selection alone when the teammate saved no skills", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Search for something" }],
     });
 
     const request = prepareTeammateCompletionRequest({
-      agent: {
-        id: "agent-123",
+      teammate: {
+        id: "teammate-123",
         kind: "colleague" as const,
         model: null,
         temperature: null,
@@ -272,8 +272,8 @@ describe("prepareTeammateCompletionRequest", () => {
     });
 
     const request = prepareTeammateCompletionRequest({
-      agent: {
-        id: "agent-123",
+      teammate: {
+        id: "teammate-123",
         kind: "bot" as const,
         model: null,
         temperature: null,
@@ -301,8 +301,8 @@ describe("prepareTeammateCompletionRequest", () => {
     });
 
     const request = prepareTeammateCompletionRequest({
-      agent: {
-        id: "agent-123",
+      teammate: {
+        id: "teammate-123",
         kind: "bot" as const,
         model: null,
         temperature: null,

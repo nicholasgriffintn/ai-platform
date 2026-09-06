@@ -49,7 +49,7 @@ describe("assistant action launch URL contract", () => {
       recipe_context: "{}",
       action: "setup",
       recipe: "morning-briefing",
-      agent: "researcher",
+      teammate: "researcher",
       view: "compact",
     }).toString();
 
@@ -58,12 +58,12 @@ describe("assistant action launch URL contract", () => {
     );
   });
 
-  it("carries an agent into a conversation and reads it back", () => {
+  it("carries an teammate into a conversation and reads it back", () => {
     const path = createTeammateConversationActionPath("/work/w1/projects/p1/chat", "researcher");
 
-    expect(path).toBe("/work/w1/projects/p1/chat?agent=researcher");
+    expect(path).toBe("/work/w1/projects/p1/chat?teammate=researcher");
     expect(readTeammateConversationLaunchIntent(path.split("?")[1])).toBe("researcher");
-    expect(readTeammateConversationLaunchIntent("agent=%20")).toBe(undefined);
+    expect(readTeammateConversationLaunchIntent("teammate=%20")).toBe(undefined);
   });
 
   it("reads only valid compact recipe actions", () => {

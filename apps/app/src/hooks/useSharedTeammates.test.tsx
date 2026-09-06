@@ -44,8 +44,8 @@ beforeEach(() => {
   mocks.getSharedTeammateListingForTeammate.mockResolvedValue(null);
 });
 
-describe("installing a shared agent", () => {
-  it("refreshes the personal capability library so the installed agent appears", async () => {
+describe("installing a shared teammate", () => {
+  it("refreshes the personal capability library so the installed teammate appears", async () => {
     const queryClient = createQueryClient();
     const invalidate = vi.spyOn(queryClient, "invalidateQueries");
     const { result } = renderHook(() => useSharedTeammates(), {
@@ -81,7 +81,7 @@ describe("installing a shared agent", () => {
   });
 });
 
-describe("sharing an owned agent", () => {
+describe("sharing an owned teammate", () => {
   it("reports the existing listing so the owner can withdraw it", async () => {
     const queryClient = createQueryClient();
 
@@ -91,7 +91,7 @@ describe("sharing an owned agent", () => {
       usage_count: 3,
     });
 
-    const { result } = renderHook(() => useTeammateSharing("agent-1"), {
+    const { result } = renderHook(() => useTeammateSharing("teammate-1"), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -105,7 +105,7 @@ describe("sharing an owned agent", () => {
     await waitFor(() => expect(mocks.getSharedTeammateListingForTeammate).toHaveBeenCalledTimes(2));
   });
 
-  it("does not look up a listing until an agent is chosen", () => {
+  it("does not look up a listing until an teammate is chosen", () => {
     renderHook(() => useTeammateSharing(null), { wrapper: createWrapper(createQueryClient()) });
 
     expect(mocks.getSharedTeammateListingForTeammate).not.toHaveBeenCalled();

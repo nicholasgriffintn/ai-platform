@@ -67,7 +67,7 @@ async function disposeMCPClient(client: RegisteredMCPClient): Promise<void> {
 
 /**
  * Registration is scoped to the in-flight request so concurrent completions on
- * the same agent cannot resolve each other's live MCP sessions.
+ * the same teammate cannot resolve each other's live MCP sessions.
  */
 export const registerMCPClient = async (
   context: ServiceContext,
@@ -128,7 +128,7 @@ export const handleMCPTool = async (
 
     if (!client) {
       throw new AssistantError(
-        `MCP client not found for agent ${shortTeammateId}`,
+        `MCP client not found for teammate ${shortTeammateId}`,
         ErrorType.PARAMS_ERROR,
       );
     }
@@ -137,7 +137,7 @@ export const handleMCPTool = async (
 
     if (!toolsResponse || !Object.keys(toolsResponse).length) {
       throw new AssistantError(
-        `No tools available for agent ${shortTeammateId}`,
+        `No tools available for teammate ${shortTeammateId}`,
         ErrorType.EXTERNAL_API_ERROR,
       );
     }

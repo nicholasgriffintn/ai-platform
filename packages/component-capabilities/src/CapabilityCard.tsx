@@ -1,10 +1,9 @@
 import { Button, Card, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
-import {
-  describeProjectCapabilityKind,
-  type AssistantActionItem,
-  type CapabilityCatalogItem,
-  type ProjectCapabilityKind,
-  type ModelToolDefinition,
+import type {
+  AssistantActionItem,
+  CapabilityCatalogItem,
+  ProjectCapabilityKind,
+  ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   Bot,
@@ -87,7 +86,7 @@ export function CapabilityCard({
       : undefined;
   const openAction = isRunnableTool
     ? { icon: <Play size={15} />, label: "Run" }
-    : kind === "agent"
+    : kind === "teammate"
       ? { icon: <MessageSquare size={15} />, label: "Start chat" }
       : { icon: <ExternalLink size={15} />, label: "Open" };
   const primaryAction = isUnavailable
@@ -146,7 +145,7 @@ export function CapabilityCard({
               <Wrench size={18} />
             ) : kind === "skill" ? (
               <Sparkles size={18} />
-            ) : kind === "agent" ? (
+            ) : kind === "teammate" ? (
               <Bot size={18} />
             ) : (
               <Puzzle size={18} />
@@ -222,8 +221,6 @@ interface CapabilityActionsMenuProps {
 }
 
 function CapabilityActionsMenu({ detach, detachLabel, kind, owner }: CapabilityActionsMenuProps) {
-  const kindLabel = describeProjectCapabilityKind(kind);
-
   if (!detach && !owner) {
     return null;
   }
@@ -244,12 +241,12 @@ function CapabilityActionsMenu({ detach, detachLabel, kind, owner }: CapabilityA
     >
       {owner?.onEdit && (
         <DropdownMenuItem icon={<Pencil size={15} />} onClick={owner.onEdit}>
-          Edit {kindLabel}
+          Edit {kind}
         </DropdownMenuItem>
       )}
       {owner?.onShare && (
         <DropdownMenuItem icon={<Share2 size={15} />} onClick={owner.onShare}>
-          Share {kindLabel}
+          Share {kind}
         </DropdownMenuItem>
       )}
       {detach && (
@@ -267,7 +264,7 @@ function CapabilityActionsMenu({ detach, detachLabel, kind, owner }: CapabilityA
           icon={<Trash2 size={15} />}
           onClick={owner.onDelete}
         >
-          Delete {kindLabel}
+          Delete {kind}
         </DropdownMenuItem>
       )}
     </DropdownMenu>

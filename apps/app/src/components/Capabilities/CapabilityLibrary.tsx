@@ -183,11 +183,11 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
         onOpenChange={authoring.browseSharedTeammates.setOpen}
       />
       <ShareTeammateDialog
-        agent={authoring.shareTeammate.agent}
+        teammate={authoring.shareTeammate.teammate}
         onClose={authoring.shareTeammate.close}
       />
       <AttachTeammateDialog
-        agents={authoring.attachTeammate.agents}
+        teammates={authoring.attachTeammate.teammates}
         error={authoring.attachTeammate.error}
         isLoading={authoring.attachTeammate.isLoading}
         onAttach={authoring.attachTeammate.attach}

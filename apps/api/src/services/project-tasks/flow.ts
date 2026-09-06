@@ -8,7 +8,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { Agent } from "~/lib/database/schema";
+import type { Teammate } from "~/lib/database/schema";
 import { resolveProjectSkillGrants } from "~/services/skills/scope";
 import { assertTeammateAvailableToWorkspace } from "~/services/teammates/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
@@ -16,11 +16,11 @@ import { toStringArray } from "~/utils/arrays";
 import { intersectEnabledTools, intersectGrantedIds } from "~/utils/enabledTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-const DEFAULT_TASK_MODE = "agent";
+const DEFAULT_TASK_MODE = "teammate";
 
 export interface ResolvedTaskRuntime {
   stage: ProjectFlowStage | null;
-  agent: Agent | null;
+  teammate: Teammate | null;
   model: string | null;
   mode: string;
   enabledTools: string[];
@@ -33,24 +33,24 @@ async function resolveProjectTeammate(
   context: ServiceContext,
   projectId: string,
   teammateId: string,
-): Promise<Agent> {
+): Promise<Teammate> {
   const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
   const isAttached = capabilities.some(
-    (capability) => capability.kind === "agent" && capability.capability_id === teammateId,
+    (capability) => capability.kind === "teammate" && capability.capability_id === teammateId,
   );
 
   if (!isAttached) {
     throw new AssistantError(
-      "That agent is not attached to this project",
+      "That teammate is not attached to this project",
       ErrorType.NOT_FOUND,
       404,
     );
   }
 
-  const agent = await context.repositories.agents.getTeammateById(teammateId);
+  const teammate = await context.repositories.teammates.getTeammateById(teammateId);
 
-  if (!agent) {
-    throw new AssistantError("Agent not found", ErrorType.NOT_FOUND, 404);
+  if (!teammate) {
+    throw new AssistantError("Teammate not found", ErrorType.NOT_FOUND, 404);
   }
 
   const project = await context.repositories.workspaces.getProject(projectId);
@@ -59,9 +59,9 @@ async function resolveProjectTeammate(
     throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await assertTeammateAvailableToWorkspace(context, agent, project.workspace_id);
+  await assertTeammateAvailableToWorkspace(context, teammate, project.workspace_id);
 
-  return agent;
+  return teammate;
 }
 
 export function withoutForbiddenTools(
@@ -77,8 +77,11 @@ export function withoutForbiddenTools(
   return tools.filter((tool) => !denied.has(tool));
 }
 
-function resolveRequestedSkillIds(stage: ProjectFlowStage | null, agent: Agent | null): string[] {
-  return [...new Set([...(stage?.skillIds ?? []), ...toStringArray(agent?.skill_ids)])];
+function resolveRequestedSkillIds(
+  stage: ProjectFlowStage | null,
+  teammate: Teammate | null,
+): string[] {
+  return [...new Set([...(stage?.skillIds ?? []), ...toStringArray(teammate?.skill_ids)])];
 }
 
 export async function resolveTaskRuntime(params: {
@@ -94,23 +97,23 @@ export async function resolveTaskRuntime(params: {
   const projectTools = resolveProjectTools(capabilities).enabledTools;
   const projectSkillIds = resolveProjectSkillGrants(capabilities);
   const teammateId = stage?.teammateId ?? task.runner?.teammateId ?? null;
-  const agent = teammateId
+  const teammate = teammateId
     ? await resolveProjectTeammate(context, task.projectId, teammateId)
     : null;
-  const configuredTools = agent
-    ? intersectEnabledTools(projectTools, agent.enabled_tools)
+  const configuredTools = teammate
+    ? intersectEnabledTools(projectTools, teammate.enabled_tools)
     : projectTools;
 
   return {
     stage,
-    agent,
-    model: task.runner?.model ?? agent?.model ?? null,
-    mode: stage?.mode ?? task.runner?.mode ?? agent?.mode ?? DEFAULT_TASK_MODE,
+    teammate,
+    model: task.runner?.model ?? teammate?.model ?? null,
+    mode: stage?.mode ?? task.runner?.mode ?? teammate?.mode ?? DEFAULT_TASK_MODE,
     enabledTools: withoutForbiddenTools(
       [...new Set([...configuredTools, ...PROJECT_TASK_TOOL_IDS])],
       task.constraints?.forbiddenTools,
     ),
-    skillIds: intersectGrantedIds(projectSkillIds, resolveRequestedSkillIds(stage, agent)),
+    skillIds: intersectGrantedIds(projectSkillIds, resolveRequestedSkillIds(stage, teammate)),
     requireApprovalFor: [
       ...new Set([...(stage?.requiresApprovalFor ?? []), ...task.requireApprovalFor]),
     ],

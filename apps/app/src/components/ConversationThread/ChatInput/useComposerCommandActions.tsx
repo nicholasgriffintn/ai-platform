@@ -133,7 +133,7 @@ export function useComposerCommandActions({
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const includeTeammates = assistantActionCatalog?.includeTeammates !== false;
-  const { agents, isLoadingTeammates } = useTeammates({ enabled: includeTeammates });
+  const { teammates, isLoadingTeammates } = useTeammates({ enabled: includeTeammates });
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
   const selectedTools = useToolsStore((state) => state.selectedTools);
@@ -242,7 +242,7 @@ export function useComposerCommandActions({
         icon: <Cpu className="h-4 w-4" aria-hidden="true" />,
         isActive: model === null && modelTier === tier.id,
         disabled: selectedTeammateId !== null,
-        disabledReason: "The selected agent controls the model.",
+        disabledReason: "The selected teammate controls the model.",
         onSelect: () => {
           setModelTier(tier.id);
           selectModelWithDefaults(null);
@@ -263,7 +263,7 @@ export function useComposerCommandActions({
           icon: <Cpu className="h-4 w-4" aria-hidden="true" />,
           isActive: model === modelId,
           disabled: selectedTeammateId !== null,
-          disabledReason: "The selected agent controls the model.",
+          disabledReason: "The selected teammate controls the model.",
           onSelect: () => selectModelWithDefaults(modelId),
         })),
     ],
@@ -628,24 +628,24 @@ export function useComposerCommandActions({
     );
   }, [allowedActionItems, directive]);
 
-  const selectedTeammate = agents.find((agent) => agent.id === selectedTeammateId);
+  const selectedTeammate = teammates.find((teammate) => teammate.id === selectedTeammateId);
 
   const selectTeammate = useCallback(
-    (agent: ComposerTeammateOption) => {
+    (teammate: ComposerTeammateOption) => {
       if (!canUseTeammates) {
         return undefined;
       }
 
-      setSelectedTeammateId(agent.id);
+      setSelectedTeammateId(teammate.id);
       const selection = directive
-        ? replaceComposerDirectiveWithCursor(chatInput, directive, `@${agent.name}`, {
+        ? replaceComposerDirectiveWithCursor(chatInput, directive, `@${teammate.name}`, {
             appendTrailingSpace: true,
           })
-        : appendComposerInlineTokenWithCursor(chatInput, agent.name);
+        : appendComposerInlineTokenWithCursor(chatInput, teammate.name);
 
       setSelectedTeammateTokenPosition(selection.replacementStart);
       setChatMode("agent");
-      selectModelWithDefaults(agent.model ?? defaultModelId ?? null, {
+      selectModelWithDefaults(teammate.model ?? defaultModelId ?? null, {
         ...chatSettings,
         localOnly: false,
       });
@@ -673,12 +673,12 @@ export function useComposerCommandActions({
         return undefined;
       }
 
-      if (item.kind === "agent") {
-        const teammateId = item.id.replace(/^agent:/, "");
-        const agent = agents.find((candidate) => candidate.id === teammateId);
+      if (item.kind === "teammate") {
+        const teammateId = item.id.replace(/^teammate:/, "");
+        const teammate = teammates.find((candidate) => candidate.id === teammateId);
 
-        if (agent) {
-          return selectTeammate(agent);
+        if (teammate) {
+          return selectTeammate(teammate);
         }
 
         return undefined;
@@ -707,7 +707,7 @@ export function useComposerCommandActions({
       return selection;
     },
     [
-      agents,
+      teammates,
       canUseTeammates,
       chatInput,
       directive,
@@ -797,7 +797,7 @@ export function useComposerCommandActions({
 
   return {
     activeSlashCommand,
-    agents,
+    teammates,
     actionItems: allowedActionItems,
     canUseTeammates,
     clearTeammate,

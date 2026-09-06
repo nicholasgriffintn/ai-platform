@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import type { Agent } from "~/lib/database/schema";
+import type { Teammate } from "~/lib/database/schema";
 
 import { normaliseTeammateResponse } from "../teammateResponse";
 
-function buildStoredTeammate(overrides: Partial<Record<keyof Agent, unknown>> = {}): Agent {
+function buildStoredTeammate(overrides: Partial<Record<keyof Teammate, unknown>> = {}): Teammate {
   return {
-    id: "agent-1",
+    id: "teammate-1",
     user_id: 7,
     owner_scope_type: "user",
     owner_scope_id: "7",
-    derived_from_agent_id: null,
+    derived_from_teammate_id: null,
     name: "Researcher",
     description: "",
     avatar_url: null,
@@ -26,7 +26,7 @@ function buildStoredTeammate(overrides: Partial<Record<keyof Agent, unknown>> = 
     created_at: "2026-01-01T00:00:00.000Z",
     updated_at: null,
     ...overrides,
-  } as unknown as Agent;
+  } as unknown as Teammate;
 }
 
 describe("normaliseTeammateResponse", () => {

@@ -212,7 +212,7 @@ class ApiService {
     return formatMessageContent(messageContent);
   }
 
-  // ===== Agent Methods =====
+  // ===== Teammate Methods =====
 
   listTeammates = (): Promise<TeammateResponse[]> => {
     return this.teammateService.listTeammates();

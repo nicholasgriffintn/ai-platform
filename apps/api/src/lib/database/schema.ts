@@ -553,7 +553,7 @@ export const projectCapability = sqliteTable(
     project_id: text()
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
-    kind: text({ enum: ["app", "recipe", "skill", "tool", "agent"] }).notNull(),
+    kind: text({ enum: ["app", "recipe", "skill", "tool", "teammate"] }).notNull(),
     capability_id: text().notNull(),
     configuration: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
     created_by: integer()
@@ -905,7 +905,7 @@ export const message = sqliteTable(
       enum: ["web", "mobile", "api", "tool-run"],
     }),
     mode: text({
-      enum: ["normal", "local", "remote", "no_system", "agent", "plan", "build", "explore"],
+      enum: ["normal", "local", "remote", "no_system", "teammate", "plan", "build", "explore"],
     }),
     log_id: text(),
     data: text({
@@ -1657,8 +1657,8 @@ export const workspaceAuditRecord = sqliteTable(
 
 export type WorkspaceAuditRecord = typeof workspaceAuditRecord.$inferSelect;
 
-export const agents = sqliteTable(
-  "agents",
+export const teammates = sqliteTable(
+  "teammates",
   {
     id: text().primaryKey(),
     user_id: integer()
@@ -1668,7 +1668,7 @@ export const agents = sqliteTable(
       .default("user")
       .notNull(),
     owner_scope_id: text().default("").notNull(),
-    derived_from_agent_id: text(),
+    derived_from_teammate_id: text(),
     kind: text({ enum: ["colleague", "bot"] })
       .default("colleague")
       .notNull(),
@@ -1692,20 +1692,23 @@ export const agents = sqliteTable(
       .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
-    userIdIdx: index("agents_user_id_idx").on(table.user_id),
-    ownerScopeIdx: index("agents_owner_scope_idx").on(table.owner_scope_type, table.owner_scope_id),
+    userIdIdx: index("teammates_user_id_idx").on(table.user_id),
+    ownerScopeIdx: index("teammates_owner_scope_idx").on(
+      table.owner_scope_type,
+      table.owner_scope_id,
+    ),
   }),
 );
 
-export type Agent = typeof agents.$inferSelect;
+export type Teammate = typeof teammates.$inferSelect;
 
-export const sharedAgents = sqliteTable(
-  "shared_agents",
+export const sharedTeammates = sqliteTable(
+  "shared_teammates",
   {
     id: text().primaryKey(),
-    agent_id: text()
+    teammate_id: text()
       .notNull()
-      .references(() => agents.id),
+      .references(() => teammates.id),
     user_id: integer()
       .notNull()
       .references(() => user.id),
@@ -1728,52 +1731,57 @@ export const sharedAgents = sqliteTable(
       .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
-    agentIdIdx: index("shared_agents_agent_id_idx").on(table.agent_id),
-    userIdIdx: index("shared_agents_user_id_idx").on(table.user_id),
-    categoryIdx: index("shared_agents_category_idx").on(table.category),
-    featuredIdx: index("shared_agents_featured_idx").on(table.is_featured),
-    publicIdx: index("shared_agents_public_idx").on(table.is_public),
-    usageIdx: index("shared_agents_usage_idx").on(table.usage_count),
-    ratingIdx: index("shared_agents_rating_idx").on(table.rating_average),
+    teammateIdIdx: index("shared_teammates_teammate_id_idx").on(table.teammate_id),
+    userIdIdx: index("shared_teammates_user_id_idx").on(table.user_id),
+    categoryIdx: index("shared_teammates_category_idx").on(table.category),
+    featuredIdx: index("shared_teammates_featured_idx").on(table.is_featured),
+    publicIdx: index("shared_teammates_public_idx").on(table.is_public),
+    usageIdx: index("shared_teammates_usage_idx").on(table.usage_count),
+    ratingIdx: index("shared_teammates_rating_idx").on(table.rating_average),
   }),
 );
 
-export type SharedAgent = typeof sharedAgents.$inferSelect;
+export type SharedTeammate = typeof sharedTeammates.$inferSelect;
 
-export const agentInstalls = sqliteTable(
-  "agent_installs",
+export const teammateInstalls = sqliteTable(
+  "teammate_installs",
   {
     id: text().primaryKey(),
-    shared_agent_id: text()
+    shared_teammate_id: text()
       .notNull()
-      .references(() => sharedAgents.id),
+      .references(() => sharedTeammates.id),
     user_id: integer()
       .notNull()
       .references(() => user.id),
-    agent_id: text()
+    teammate_id: text()
       .notNull()
-      .references(() => agents.id),
+      .references(() => teammates.id),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
   },
   (table) => ({
-    sharedAgentIdIdx: index("agent_installs_shared_agent_id_idx").on(table.shared_agent_id),
-    userIdIdx: index("agent_installs_user_id_idx").on(table.user_id),
-    agentIdIdx: index("agent_installs_agent_id_idx").on(table.agent_id),
-    uniqueInstall: index("agent_installs_unique_idx").on(table.shared_agent_id, table.user_id),
+    sharedTeammateIdIdx: index("teammate_installs_shared_teammate_id_idx").on(
+      table.shared_teammate_id,
+    ),
+    userIdIdx: index("teammate_installs_user_id_idx").on(table.user_id),
+    teammateIdIdx: index("teammate_installs_teammate_id_idx").on(table.teammate_id),
+    uniqueInstall: index("teammate_installs_unique_idx").on(
+      table.shared_teammate_id,
+      table.user_id,
+    ),
   }),
 );
 
-export type TeammateInstall = typeof agentInstalls.$inferSelect;
+export type TeammateInstall = typeof teammateInstalls.$inferSelect;
 
-export const agentRatings = sqliteTable(
-  "agent_ratings",
+export const teammateRatings = sqliteTable(
+  "teammate_ratings",
   {
     id: text().primaryKey(),
-    shared_agent_id: text()
+    shared_teammate_id: text()
       .notNull()
-      .references(() => sharedAgents.id),
+      .references(() => sharedTeammates.id),
     user_id: integer()
       .notNull()
       .references(() => user.id),
@@ -1787,14 +1795,16 @@ export const agentRatings = sqliteTable(
       .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
-    sharedAgentIdIdx: index("agent_ratings_shared_agent_id_idx").on(table.shared_agent_id),
-    userIdIdx: index("agent_ratings_user_id_idx").on(table.user_id),
-    ratingIdx: index("agent_ratings_rating_idx").on(table.rating),
-    uniqueRating: index("agent_ratings_unique_idx").on(table.shared_agent_id, table.user_id),
+    sharedTeammateIdIdx: index("teammate_ratings_shared_teammate_id_idx").on(
+      table.shared_teammate_id,
+    ),
+    userIdIdx: index("teammate_ratings_user_id_idx").on(table.user_id),
+    ratingIdx: index("teammate_ratings_rating_idx").on(table.rating),
+    uniqueRating: index("teammate_ratings_unique_idx").on(table.shared_teammate_id, table.user_id),
   }),
 );
 
-export type TeammateRating = typeof agentRatings.$inferSelect;
+export type TeammateRating = typeof teammateRatings.$inferSelect;
 
 export const artificialAnalysisModels = sqliteTable(
   "artificial_analysis_models",
