@@ -5,8 +5,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::egress::{DesktopEndpoint, EndpointKind, EndpointTransport};
 
-pub const SIGNED_OUT_ACCOUNT: &str = "device-only";
-
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct LocalConversation {
@@ -311,6 +309,8 @@ impl Store {
 mod tests {
     use super::*;
 
+    const SIGNED_OUT_ACCOUNT: &str = "device-only";
+
     fn store() -> Store {
         Store::open(Connection::open_in_memory().expect("in-memory database")).expect("migrated")
     }
@@ -416,7 +416,9 @@ mod tests {
             .expect("saved");
 
         let first = store.list_conversations("account-1").expect("listed");
-        let signed_out = store.list_conversations(SIGNED_OUT_ACCOUNT).expect("listed");
+        let signed_out = store
+            .list_conversations(SIGNED_OUT_ACCOUNT)
+            .expect("listed");
 
         assert_eq!(first.len(), 1);
         assert_eq!(first[0].id, "a");

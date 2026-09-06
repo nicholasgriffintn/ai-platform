@@ -6,6 +6,7 @@ import type {
 import { formatBytes, formatCompactCount } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useEffect, useState } from "react";
 
+import { Account } from "./Account";
 import { AddEndpoint } from "./AddEndpoint";
 import { Composer } from "./Composer";
 import type { ConnectedDesktopBackend } from "./desktop-backend";
@@ -122,6 +123,7 @@ export function App({ backend }: { backend: ConnectedDesktopBackend }) {
 
   return (
     <main>
+      <Account backend={backend} />
       <h1>Runtimes on this device</h1>
       {error ? <p role="alert">{error}</p> : null}
       <ul>

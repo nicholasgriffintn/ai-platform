@@ -17,7 +17,7 @@ import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleAppleIdentityTokenSignIn } from "~/services/auth/apple";
 import { handleAssistantAuthUiRequest } from "~/services/auth/authUi";
-import { buildMobileRedirectUri, requireMobileRedirectUri } from "~/services/auth/mobile";
+import { buildNativeRedirectUri, requireNativeRedirectUri } from "~/services/auth/native";
 import {
   handleLogout,
   exchangeMobileAuthCode,
@@ -83,16 +83,20 @@ addRoute(app, "get", "/github", {
   handler: async ({ raw }) =>
     (async (c: Context) => {
       const { platform, redirect_uri } = c.req.valid("query" as never) as {
-        platform?: "web" | "mobile";
+        platform?: "web" | "mobile" | "desktop";
         redirect_uri?: string;
       };
-      const mobileRedirectUri =
-        platform === "mobile" ? requireMobileRedirectUri(redirect_uri, "/callback") : undefined;
+      const nativePlatform = platform === "mobile" || platform === "desktop" ? platform : undefined;
+      const nativeRedirectUri = nativePlatform
+        ? requireNativeRedirectUri(redirect_uri, "/callback", nativePlatform)
+        : undefined;
       const serviceContext = getServiceContext(c);
       const github = createAssistantGitHubAuth(serviceContext);
       const githubAuthUrl = await github.providers.github.startAuthorization({
         scopes: ["user:email"],
-        ...(mobileRedirectUri ? { context: { mobileRedirectUri } } : {}),
+        ...(nativeRedirectUri && nativePlatform
+          ? { context: { nativeRedirectUri, nativePlatform } }
+          : {}),
       });
 
       return c.redirect(githubAuthUrl.toString());
@@ -135,10 +139,11 @@ addRoute(app, "get", "/github/callback", {
 
       const { user, token: sessionId } = result.session;
 
-      if (user.continuation?.mobileRedirectUri) {
-        const validatedRedirectUri = requireMobileRedirectUri(
-          user.continuation.mobileRedirectUri,
+      if (user.continuation?.nativeRedirectUri) {
+        const validatedRedirectUri = requireNativeRedirectUri(
+          user.continuation.nativeRedirectUri,
           "/callback",
+          user.continuation.nativePlatform ?? "mobile",
         );
         const { code: mobileCode } = await generateMobileAuthExchangeCode({
           context: serviceContext,
@@ -146,7 +151,7 @@ addRoute(app, "get", "/github/callback", {
           sessionId,
         });
 
-        return c.redirect(buildMobileRedirectUri(validatedRedirectUri, { code: mobileCode }));
+        return c.redirect(buildNativeRedirectUri(validatedRedirectUri, { code: mobileCode }));
       }
 
       c.header("Set-Cookie", createSessionCookie(sessionId));

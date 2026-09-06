@@ -18,7 +18,8 @@
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@tauri-apps/api": "2.9.0",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",

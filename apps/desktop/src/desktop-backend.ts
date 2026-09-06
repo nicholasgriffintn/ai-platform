@@ -11,6 +11,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { createAsyncEventQueue } from "@ngriffin_uk/polychat-utility-core";
 import { Channel, invoke } from "@tauri-apps/api/core";
+import z from "zod/v4";
 
 export type ConnectedDesktopBackend = Pick<
   DesktopBackend,
@@ -24,7 +25,11 @@ export type ConnectedDesktopBackend = Pick<
   | "saveConversation"
   | "listMessages"
   | "appendMessage"
->;
+> & {
+  signIn: () => Promise<void>;
+  signOut: () => Promise<void>;
+  isSignedIn: () => Promise<boolean>;
+};
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
   listEndpoints: async () => desktopEndpointSchema.array().parse(await invoke("list_endpoints")),
@@ -44,6 +49,13 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
   appendMessage: async (message) => {
     await invoke("append_message", { message });
   },
+  signIn: async () => {
+    await invoke("sign_in");
+  },
+  signOut: async () => {
+    await invoke("sign_out");
+  },
+  isSignedIn: async () => z.boolean().parse(await invoke("is_signed_in")),
   probeEndpoint: async (endpointId) =>
     desktopRuntimeReadinessSchema.parse(await invoke("probe_endpoint", { endpointId })),
   discoverModels: async (endpointId) =>

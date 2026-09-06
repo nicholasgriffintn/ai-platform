@@ -56,7 +56,8 @@ export async function resolveGitHubIdentity(
         bio: getStringRecordValue(profile, "bio"),
         twitterUsername: getStringRecordValue(profile, "twitter_username"),
         site: getStringRecordValue(profile, "blog"),
-        mobileRedirectUri: context["mobileRedirectUri"],
+        nativeRedirectUri: context["nativeRedirectUri"],
+        nativePlatform: context["nativePlatform"],
       },
     },
   };
@@ -79,8 +80,11 @@ export async function resolveGitHubUser(
     twitter_username: profile.twitterUsername,
     site: profile.site,
   });
-  const continuation = profile.mobileRedirectUri
-    ? { mobileRedirectUri: profile.mobileRedirectUri }
+  const continuation: AssistantAuthUser["continuation"] = profile.nativeRedirectUri
+    ? {
+        nativeRedirectUri: profile.nativeRedirectUri,
+        nativePlatform: profile.nativePlatform === "desktop" ? "desktop" : "mobile",
+      }
     : undefined;
 
   return {
@@ -114,7 +118,8 @@ function readGitHubProfile(identity: ExternalIdentity) {
     bio: getStringRecordValue(value, "bio"),
     twitterUsername: getStringRecordValue(value, "twitterUsername"),
     site: getStringRecordValue(value, "site"),
-    mobileRedirectUri: getStringRecordValue(value, "mobileRedirectUri"),
+    nativeRedirectUri: getStringRecordValue(value, "nativeRedirectUri"),
+    nativePlatform: getStringRecordValue(value, "nativePlatform"),
   };
 }
 

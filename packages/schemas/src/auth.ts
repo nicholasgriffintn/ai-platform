@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
 export const githubLoginSchema = z.object({
-  platform: z.enum(["web", "mobile"]).optional(),
+  platform: z.enum(["web", "mobile", "desktop"]).optional(),
   redirect_uri: z.string().optional(),
 });
 

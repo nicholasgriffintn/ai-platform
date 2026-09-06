@@ -3,7 +3,9 @@
 mod chat;
 mod discovery;
 mod egress;
+mod link;
 mod runs;
+mod secrets;
 mod store;
 
 use std::time::Duration;
@@ -25,6 +27,11 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(3);
 const DISCOVERY_TIMEOUT: Duration = Duration::from_secs(10);
 const RUN_TIMEOUT: Duration = Duration::from_secs(600);
 const BUILT_IN_APPROVED_AT: &str = "1970-01-01T00:00:00Z";
+const SESSION_SECRET: &str = "session-token";
+const API_BASE_URL: &str = match option_env!("POLYCHAT_API_BASE_URL") {
+    Some(value) => value,
+    None => "https://api.polychat.app",
+};
 
 #[derive(Serialize)]
 #[serde(tag = "status", rename_all = "camelCase")]
@@ -243,6 +250,63 @@ fn append_message(message: LocalMessage, store: State<'_, Store>) -> Result<(), 
 }
 
 #[tauri::command]
+fn is_signed_in() -> Result<bool, String> {
+    Ok(secrets::read(SESSION_SECRET)?.is_some())
+}
+
+#[tauri::command]
+fn sign_out() -> Result<(), String> {
+    secrets::forget(SESSION_SECRET)
+}
+
+#[tauri::command]
+async fn sign_in() -> Result<(), String> {
+    let listener = link::LoopbackListener::bind()?;
+    let redirect_uri = listener.redirect_uri();
+    let authorise = format!(
+        "{API_BASE_URL}/auth/github?platform=desktop&redirect_uri={}",
+        encode_query_value(&redirect_uri)
+    );
+
+    opener::open_browser(&authorise).map_err(|cause| cause.to_string())?;
+
+    let code = tauri::async_runtime::spawn_blocking(move || {
+        listener.wait_for_code(Duration::from_secs(300))
+    })
+    .await
+    .map_err(|cause| cause.to_string())??;
+
+    let response = http_client(REQUEST_TIMEOUT)?
+        .post(format!("{API_BASE_URL}/auth/mobile/exchange"))
+        .json(&serde_json::json!({ "code": code }))
+        .send()
+        .await
+        .map_err(|cause| cause.to_string())?;
+
+    if !response.status().is_success() {
+        return Err(format!(
+            "Sign-in could not be completed: the server answered with status {}",
+            response.status().as_u16()
+        ));
+    }
+
+    let body = response
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|cause| cause.to_string())?;
+    let token = body
+        .get("token")
+        .and_then(serde_json::Value::as_str)
+        .ok_or_else(|| "Sign-in returned no session.".to_string())?;
+
+    secrets::store(SESSION_SECRET, token)
+}
+
+fn encode_query_value(value: &str) -> String {
+    url::form_urlencoded::byte_serialize(value.as_bytes()).collect()
+}
+
+#[tauri::command]
 fn cancel_model_run(run_id: String, registry: State<'_, RunRegistry>) {
     registry.cancel(&run_id);
 }
@@ -388,6 +452,9 @@ fn main() {
             discover_models,
             save_endpoint,
             forget_endpoint,
+            sign_in,
+            sign_out,
+            is_signed_in,
             list_conversations,
             save_conversation,
             list_messages,

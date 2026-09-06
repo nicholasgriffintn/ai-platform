@@ -10,6 +10,8 @@ publish = false
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+opener = { version = "0.7", default-features = false }
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 futures-util = { version = "0.3", default-features = false }
 rusqlite = { version = "0.32", features = ["bundled"] }
 reqwest = { version = "0.12", default-features = false, features = [

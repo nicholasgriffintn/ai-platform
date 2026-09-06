@@ -6,7 +6,10 @@ import type { User } from "~/types";
 
 export interface AssistantAuthUser extends AuthUserWithEmail {
   readonly record: User;
-  readonly continuation?: Readonly<{ mobileRedirectUri?: string }>;
+  readonly continuation?: Readonly<{
+    nativeRedirectUri?: string;
+    nativePlatform?: "mobile" | "desktop";
+  }>;
 }
 
 export function createAssistantUserStore(context: ServiceContext): UserStore<AssistantAuthUser> {

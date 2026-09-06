@@ -631,6 +631,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.8(react@19.2.8)
+      zod:
+        specifier: 'catalog:'
+        version: 4.5.4
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
