@@ -55,6 +55,20 @@ export async function instantiateProjectStarter(
     configuration: Record<string, unknown>;
   }> = [];
 
+  for (const capabilityId of starter.apps) {
+    await validateCapabilityReference("app", capabilityId, context);
+    capabilities.push({ id: generateId(), kind: "app", capabilityId, configuration: {} });
+  }
+
+  for (const toolId of starter.tools) {
+    capabilities.push({
+      id: generateId(),
+      kind: "tool",
+      capabilityId: toolId,
+      configuration: validateProjectToolConfiguration(toolId, {}),
+    });
+  }
+
   for (const teammate of starter.teammates) {
     const hired = await hireTeammate(context, {
       role_slug: teammate.roleSlug,
@@ -67,20 +81,6 @@ export async function instantiateProjectStarter(
       kind: "teammate",
       capabilityId: hired.id,
       configuration: {},
-    });
-  }
-
-  for (const capabilityId of starter.apps) {
-    await validateCapabilityReference("app", capabilityId, context);
-    capabilities.push({ id: generateId(), kind: "app", capabilityId, configuration: {} });
-  }
-
-  for (const toolId of starter.tools) {
-    capabilities.push({
-      id: generateId(),
-      kind: "tool",
-      capabilityId: toolId,
-      configuration: validateProjectToolConfiguration(toolId, {}),
     });
   }
 

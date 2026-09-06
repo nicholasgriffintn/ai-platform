@@ -7,6 +7,7 @@ import {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { SavedMessageRow } from "~/repositories/SavedMessageRepository";
 import { requireConversationAccess } from "~/services/conversations/access";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
 
 const DEFAULT_LIMIT = 25;
@@ -49,6 +50,20 @@ export async function saveMessage(context: ServiceContext, input: SaveMessageInp
   const user = context.requireUser();
 
   await requireConversationAccess(context, input.conversationId);
+
+  if (
+    !(await context.repositories.savedMessages.belongsToConversation(
+      input.messageId,
+      input.conversationId,
+    ))
+  ) {
+    throw new AssistantError(
+      "That message is not part of this conversation",
+      ErrorType.NOT_FOUND,
+      404,
+    );
+  }
+
   await context.repositories.savedMessages.save({
     userId: user.id,
     conversationId: input.conversationId,

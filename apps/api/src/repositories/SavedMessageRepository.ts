@@ -30,6 +30,15 @@ export class SavedMessageRepository extends BaseRepository {
     );
   }
 
+  public async belongsToConversation(messageId: string, conversationId: string): Promise<boolean> {
+    const rows = await this.runQuery<{ id: string }>(
+      "SELECT id FROM message WHERE id = ? AND conversation_id = ? LIMIT 1",
+      [messageId, conversationId],
+    );
+
+    return rows.length > 0;
+  }
+
   public async unsave(userId: number, messageId: string): Promise<void> {
     await this.executeRun("DELETE FROM message_user_state WHERE user_id = ? AND message_id = ?", [
       userId,
@@ -50,7 +59,7 @@ export class SavedMessageRepository extends BaseRepository {
       `SELECT s.*, c.title AS conversation_title, m.content AS message_content
        FROM message_user_state s
        LEFT JOIN conversation c ON c.id = s.conversation_id
-       LEFT JOIN message m ON m.id = s.message_id
+       LEFT JOIN message m ON m.id = s.message_id AND m.conversation_id = s.conversation_id
        WHERE s.user_id = ?
        ORDER BY s.saved_at DESC
        LIMIT ?`,

@@ -5,9 +5,14 @@ import { AssistantError } from "~/utils/errors";
 
 import { instantiateProjectStarter, listProjectStarters } from "../starters";
 
+const validateProjectToolConfiguration = vi.hoisted(() =>
+  vi.fn((_toolId: string, configuration: Record<string, unknown>) => configuration),
+);
+
 vi.mock("~/services/workspaces", () => ({
   getProject: vi.fn(async (_context: unknown, projectId: string) => ({ id: projectId })),
 }));
+vi.mock("~/services/workspaces/projectTools", () => ({ validateProjectToolConfiguration }));
 
 const USER_ID = 4;
 
@@ -65,6 +70,9 @@ function createContext(role = "owner") {
 describe("project starters", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    validateProjectToolConfiguration.mockImplementation(
+      (_toolId: string, configuration: Record<string, unknown>) => configuration,
+    );
   });
 
   it("names the teammates a starter will hire before anyone commits to it", () => {
@@ -112,6 +120,20 @@ describe("project starters", () => {
     await expect(
       instantiateProjectStarter(context, USER_ID, "not-a-starter", "workspace-1"),
     ).rejects.toBeInstanceOf(AssistantError);
+    expect(repositories.workspaces.createProjectWithCapabilities).not.toHaveBeenCalled();
+  });
+
+  it("validates the apps and tools before hiring, so a failure leaves no orphan teammate", async () => {
+    const { context, repositories } = createContext();
+
+    validateProjectToolConfiguration.mockImplementationOnce(() => {
+      throw new AssistantError("Unknown project tool");
+    });
+
+    await expect(
+      instantiateProjectStarter(context, USER_ID, "build-an-internal-tool", "workspace-1"),
+    ).rejects.toBeInstanceOf(AssistantError);
+    expect(repositories.teammates.createTeammate).not.toHaveBeenCalled();
     expect(repositories.workspaces.createProjectWithCapabilities).not.toHaveBeenCalled();
   });
 

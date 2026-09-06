@@ -25,6 +25,7 @@ function createContext() {
       },
     ]),
     listSavedMessageIds: vi.fn(async () => ["message-1"]),
+    belongsToConversation: vi.fn(async () => true),
   };
 
   return {
@@ -37,6 +38,21 @@ function createContext() {
 describe("saved messages", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("refuses a message id from a conversation other than the one checked", async () => {
+    const context = createContext();
+    const savedMessages = context.repositories.savedMessages as unknown as {
+      belongsToConversation: ReturnType<typeof vi.fn>;
+      save: ReturnType<typeof vi.fn>;
+    };
+
+    savedMessages.belongsToConversation.mockResolvedValueOnce(false);
+
+    await expect(
+      saveMessage(context, { conversationId: "conversation-1", messageId: "someone-elses" }),
+    ).rejects.toThrow(/not part of this conversation/);
+    expect(savedMessages.save).not.toHaveBeenCalled();
   });
 
   it("checks conversation access before keeping a message", async () => {

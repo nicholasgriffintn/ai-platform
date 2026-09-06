@@ -17,8 +17,7 @@ import { resolveRequestProjectId } from "./request-context";
 const REPLICATE_CAPABILITY_ID = "featured-replicate";
 const SUGGESTION_LIMIT = 8;
 
-function suggestReplicateModelIds(requested: string): string[] {
-  const available = Object.keys(getProviderModels("replicate"));
+function suggestReplicateModelIds(available: string[], requested: string): string[] {
   const needle = requested.toLowerCase();
   const matching = available.filter((id) => id.toLowerCase().includes(needle));
 
@@ -48,9 +47,11 @@ export const run_prediction: ApiToolDefinition = {
       );
     }
 
-    if (!(args.model_id in getProviderModels("replicate"))) {
+    const availableModelIds = Object.keys(getProviderModels("replicate"));
+
+    if (!availableModelIds.includes(args.model_id)) {
       throw new AssistantError(
-        `No Replicate model called "${args.model_id}". Try one of: ${suggestReplicateModelIds(args.model_id).join(", ")}`,
+        `No Replicate model called "${args.model_id}". Try one of: ${suggestReplicateModelIds(availableModelIds, args.model_id).join(", ")}`,
         ErrorType.PARAMS_ERROR,
         400,
       );
