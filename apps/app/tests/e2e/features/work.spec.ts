@@ -720,16 +720,16 @@ test.describe("Work experience", () => {
       await expect(workPage.getCapabilityAddButton("Article Processor")).toBeVisible();
     });
 
-    test("enables and uploads a podcast project asset", async ({ workPage }) => {
+    test("enables and uploads a recording project asset", async ({ workPage }) => {
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-      await workPage.enableCapabilityAfterReload("Podcast Processor");
-      await workPage.uploadPodcastWithoutOptionalProcessing(
-        "Release validation podcast",
-        "Deterministic podcast project asset.",
+      await workPage.enableCapabilityAfterReload("Recording Processor");
+      await workPage.uploadRecordingWithoutOptionalProcessing(
+        "Release validation recording",
+        "Deterministic recording project asset.",
         createSilentWavFixture(),
       );
-      await workPage.removeCapabilityAfterReload("Podcast Processor");
-      await expect(workPage.getCapabilityAddButton("Podcast Processor")).toBeVisible();
+      await workPage.removeCapabilityAfterReload("Recording Processor");
+      await expect(workPage.getCapabilityAddButton("Recording Processor")).toBeVisible();
     });
 
     test("enables and browses Replicate models and predictions", async ({ page, workPage }) => {

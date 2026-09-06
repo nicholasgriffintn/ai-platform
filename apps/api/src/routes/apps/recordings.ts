@@ -1,9 +1,9 @@
 import {
-  listPodcastsResponseSchema,
-  podcastDetailResponseSchema,
-  podcastGenerateImageSchema,
-  podcastSummarizeSchema,
-  podcastTranscribeSchema,
+  listRecordingsResponseSchema,
+  recordingDetailResponseSchema,
+  recordingGenerateImageSchema,
+  recordingSummariseSchema,
+  recordingTranscribeSchema,
   apiResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -12,12 +12,12 @@ import { z } from "zod/v4";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
-import { handlePodcastGenerateImage } from "~/services/apps/podcast/generate-image";
-import { handlePodcastDetail } from "~/services/apps/podcast/get-details";
-import { handlePodcastList } from "~/services/apps/podcast/list";
-import { handlePodcastSummarise } from "~/services/apps/podcast/summarise";
-import { handlePodcastTranscribe } from "~/services/apps/podcast/transcribe";
-import { handlePodcastUpload } from "~/services/apps/podcast/upload";
+import { handleRecordingGenerateImage } from "~/services/apps/recordings/generate-image";
+import { handleRecordingDetail } from "~/services/apps/recordings/get-details";
+import { handleRecordingList } from "~/services/apps/recordings/list";
+import { handleRecordingSummarise } from "~/services/apps/recordings/summarise";
+import { handleRecordingTranscribe } from "~/services/apps/recordings/transcribe";
+import { handleRecordingUpload } from "~/services/apps/recordings/upload";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,
@@ -26,7 +26,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("apps/podcasts");
+const routeLogger = createRouteLogger("apps/recordings");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);
@@ -34,17 +34,17 @@ app.use("/*", (c, next) => {
   return next();
 });
 
-const podcastParamsSchema = z.object({
+const recordingParamsSchema = z.object({
   id: z.string().min(1),
 });
 
 addRoute(app, "get", "/", {
   tags: ["apps"],
-  description: "List user's podcasts",
+  description: "List user's recordings",
   responses: {
     200: {
-      description: "List of user's podcasts",
-      schema: listPodcastsResponseSchema,
+      description: "List of user's recordings",
+      schema: listRecordingsResponseSchema,
     },
   },
   auth: true,
@@ -56,37 +56,37 @@ addRoute(app, "get", "/", {
         serviceContext,
         query.projectId,
         "app",
-        "featured-podcast-processor",
+        "featured-recording-processor",
       );
 
-      const podcasts = await handlePodcastList({
+      const recordings = await handleRecordingList({
         context: serviceContext,
         user,
         projectId: query.projectId,
       });
 
-      return { podcasts };
+      return { recordings };
     } catch (error) {
       if (error instanceof AssistantError) {
         throw error;
       }
 
-      routeLogger.error("Error fetching podcasts:", {
+      routeLogger.error("Error fetching recordings:", {
         error_message: error instanceof Error ? error.message : "Unknown error",
       });
-      throw new AssistantError("Failed to fetch podcasts", ErrorType.UNKNOWN_ERROR);
+      throw new AssistantError("Failed to fetch recordings", ErrorType.UNKNOWN_ERROR);
     }
   },
 });
 
 addRoute(app, "get", "/:id", {
   tags: ["apps"],
-  description: "Get podcast details",
-  paramSchema: podcastParamsSchema,
+  description: "Get recording details",
+  paramSchema: recordingParamsSchema,
   responses: {
     200: {
-      description: "Podcast details",
-      schema: podcastDetailResponseSchema,
+      description: "Recording details",
+      schema: recordingDetailResponseSchema,
     },
   },
   auth: true,
@@ -98,33 +98,33 @@ addRoute(app, "get", "/:id", {
         serviceContext,
         query.projectId,
         "app",
-        "featured-podcast-processor",
+        "featured-recording-processor",
       );
 
-      const podcast = await handlePodcastDetail({
+      const recording = await handleRecordingDetail({
         context: serviceContext,
-        podcastId: params.id,
+        recordingId: params.id,
         user,
         projectId: query.projectId,
       });
 
-      return { podcast };
+      return { recording };
     } catch (error) {
       if (error instanceof AssistantError) {
         throw error;
       }
 
-      routeLogger.error("Error fetching podcast:", {
+      routeLogger.error("Error fetching recording:", {
         error_message: error instanceof Error ? error.message : "Unknown error",
       });
-      throw new AssistantError("Failed to fetch podcast", ErrorType.UNKNOWN_ERROR);
+      throw new AssistantError("Failed to fetch recording", ErrorType.UNKNOWN_ERROR);
     }
   },
 });
 
 addRoute(app, "post", "/upload", {
   tags: ["apps"],
-  description: "Upload a podcast",
+  description: "Upload a recording",
   responses: {
     200: { description: "Response", schema: apiResponseSchema },
   },
@@ -137,7 +137,7 @@ addRoute(app, "post", "/upload", {
         serviceContext,
         query.projectId,
         "app",
-        "featured-podcast-processor",
+        "featured-recording-processor",
       );
 
       const formData = await raw.req.formData();
@@ -150,7 +150,7 @@ addRoute(app, "post", "/upload", {
         throw new AssistantError("Missing audio file or URL", ErrorType.PARAMS_ERROR);
       }
 
-      const response = await handlePodcastUpload({
+      const response = await handleRecordingUpload({
         context: serviceContext,
         request: {
           audio,
@@ -175,18 +175,18 @@ addRoute(app, "post", "/upload", {
         throw error;
       }
 
-      routeLogger.error("Error uploading podcast:", {
+      routeLogger.error("Error uploading recording:", {
         error_message: error instanceof Error ? error.message : "Unknown error",
       });
-      throw new AssistantError("Failed to upload podcast", ErrorType.UNKNOWN_ERROR);
+      throw new AssistantError("Failed to upload recording", ErrorType.UNKNOWN_ERROR);
     }
   },
 });
 
 addRoute(app, "post", "/transcribe", {
   tags: ["apps"],
-  description: "Transcribe a podcast",
-  bodySchema: podcastTranscribeSchema,
+  description: "Transcribe a recording",
+  bodySchema: recordingTranscribeSchema,
   responses: {
     200: { description: "Response", schema: apiResponseSchema },
   },
@@ -198,13 +198,13 @@ addRoute(app, "post", "/transcribe", {
       serviceContext,
       query.projectId,
       "app",
-      "featured-podcast-processor",
+      "featured-recording-processor",
     );
 
     const newUrl = new URL(raw.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
-    const response = await handlePodcastTranscribe({
+    const response = await handleRecordingTranscribe({
       context: serviceContext,
       request: body,
       user,
@@ -218,8 +218,8 @@ addRoute(app, "post", "/transcribe", {
 
 addRoute(app, "post", "/summarise", {
   tags: ["apps"],
-  description: "Summarise a podcast",
-  bodySchema: podcastSummarizeSchema,
+  description: "Summarise a recording",
+  bodySchema: recordingSummariseSchema,
   responses: {
     200: { description: "Response", schema: apiResponseSchema },
   },
@@ -231,10 +231,10 @@ addRoute(app, "post", "/summarise", {
       serviceContext,
       query.projectId,
       "app",
-      "featured-podcast-processor",
+      "featured-recording-processor",
     );
 
-    const response = await handlePodcastSummarise({
+    const response = await handleRecordingSummarise({
       context: serviceContext,
       request: body,
       user,
@@ -247,8 +247,8 @@ addRoute(app, "post", "/summarise", {
 
 addRoute(app, "post", "/generate-image", {
   tags: ["apps"],
-  description: "Generate an image for a podcast",
-  bodySchema: podcastGenerateImageSchema,
+  description: "Generate an image for a recording",
+  bodySchema: recordingGenerateImageSchema,
   responses: {
     200: { description: "Response", schema: apiResponseSchema },
   },
@@ -260,10 +260,10 @@ addRoute(app, "post", "/generate-image", {
       serviceContext,
       query.projectId,
       "app",
-      "featured-podcast-processor",
+      "featured-recording-processor",
     );
 
-    const response = await handlePodcastGenerateImage({
+    const response = await handleRecordingGenerateImage({
       context: serviceContext,
       request: body,
       user,

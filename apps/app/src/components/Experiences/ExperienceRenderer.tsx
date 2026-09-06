@@ -36,10 +36,10 @@ const NotesExperience = lazy(async () => {
 
   return { default: module.NotesExperience };
 });
-const PodcastsExperience = lazy(async () => {
-  const module = await import("./PodcastsExperience");
+const RecordingsExperience = lazy(async () => {
+  const module = await import("./RecordingsExperience");
 
-  return { default: module.PodcastsExperience };
+  return { default: module.RecordingsExperience };
 });
 const StrudelExperience = lazy(async () => {
   const module = await import("./StrudelExperience");
@@ -86,8 +86,8 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: Experience
     return <ArticlesExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
 
-  if (runtime === "podcasts") {
-    return <PodcastsExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
+  if (runtime === "recordings") {
+    return <RecordingsExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
 
   if (runtime === "notes") {

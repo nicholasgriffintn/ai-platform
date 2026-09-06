@@ -12,26 +12,26 @@ import { TaskService } from "../TaskService";
 import { getNextPollingSchedule } from "./polling";
 
 const logger = getLogger({
-  prefix: "services/tasks/podcast-transcription-polling",
+  prefix: "services/tasks/recording-transcription-polling",
 });
 
-interface PodcastTranscriptionPollingData {
-  podcastId: string;
+interface RecordingTranscriptionPollingData {
+  recordingId: string;
   userId: number;
   projectId?: string;
   startedAt: string;
   pollAttempt?: number;
 }
 
-export class PodcastTranscriptionPollingHandler implements TaskHandler {
+export class RecordingTranscriptionPollingHandler implements TaskHandler {
   public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
     try {
-      const data = message.task_data as PodcastTranscriptionPollingData;
+      const data = message.task_data as RecordingTranscriptionPollingData;
 
-      if (!data.podcastId || !data.userId) {
+      if (!data.recordingId || !data.userId) {
         return {
           status: "error",
-          message: "podcastId and userId are required for podcast polling",
+          message: "recordingId and userId are required for recording polling",
         };
       }
 
@@ -39,14 +39,14 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
       const records = data.projectId
         ? await outputRepo.listProjectOutputGroup(
             data.projectId,
-            "podcasts",
-            data.podcastId,
+            "recordings",
+            data.recordingId,
             "transcribe",
           )
         : await outputRepo.listPersonalOutputGroup(
             data.userId,
-            "podcasts",
-            data.podcastId,
+            "recordings",
+            data.recordingId,
             "transcribe",
           );
       const transcriptionRecord = records[0];
@@ -54,7 +54,7 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
       if (!transcriptionRecord) {
         return {
           status: "error",
-          message: `Podcast transcription ${data.podcastId} not found`,
+          message: `Recording transcription ${data.recordingId} not found`,
         };
       }
 
@@ -63,7 +63,7 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
       if (!transcriptionData) {
         return {
           status: "error",
-          message: "Invalid podcast transcription data",
+          message: "Invalid recording transcription data",
         };
       }
 
@@ -74,9 +74,9 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
       if (!asyncInvocation || transcriptionData.status !== "pending") {
         return {
           status: "success",
-          message: "Podcast transcription is not pending",
+          message: "Recording transcription is not pending",
           data: {
-            podcastId: data.podcastId,
+            recordingId: data.recordingId,
             status: transcriptionData.status,
           },
         };
@@ -100,7 +100,7 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
           model: asyncInvocation.context?.version || "",
           env,
           messages: [],
-          completion_id: data.podcastId,
+          completion_id: data.recordingId,
         },
         data.userId,
       );
@@ -118,8 +118,8 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 
         return {
           status: "success",
-          message: "Podcast transcription completed",
-          data: { podcastId: data.podcastId },
+          message: "Recording transcription completed",
+          data: { recordingId: data.recordingId },
         };
       }
 
@@ -135,9 +135,9 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 
         return {
           status: "success",
-          message: "Podcast transcription failed",
+          message: "Recording transcription failed",
           data: {
-            podcastId: data.podcastId,
+            recordingId: data.recordingId,
             error: transcriptionData.error,
           },
         };
@@ -148,7 +148,7 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
       const taskService = new TaskService(env, taskRepository);
 
       await taskService.enqueueTask({
-        task_type: "podcast_transcription_polling",
+        task_type: "recording_transcription_polling",
         user_id: message.user_id,
         task_data: {
           ...data,
@@ -161,11 +161,11 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 
       return {
         status: "success",
-        message: "Podcast transcription still in progress, re-queued",
-        data: { podcastId: data.podcastId },
+        message: "Recording transcription still in progress, re-queued",
+        data: { recordingId: data.recordingId },
       };
     } catch (error) {
-      logger.error("Podcast transcription polling error:", error);
+      logger.error("Recording transcription polling error:", error);
 
       return {
         status: "error",

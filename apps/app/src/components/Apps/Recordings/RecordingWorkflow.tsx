@@ -1,5 +1,5 @@
 import {
-  PodcastWorkflowStep,
+  RecordingWorkflowStep,
   ProcessingStep,
   ProcessStep,
   ProgressStepper,
@@ -9,11 +9,11 @@ import { useNavigate } from "react-router";
 
 import { useFileUploadAnalytics } from "~/hooks/useFileUploadAnalytics";
 
-import { usePodcastWorkflow } from "./usePodcastWorkflow";
+import { useRecordingWorkflow } from "./useRecordingWorkflow";
 
-export function PodcastWorkflow({ basePath, projectId }: PodcastWorkflowProps) {
+export function RecordingWorkflow({ basePath, projectId }: RecordingWorkflowProps) {
   const navigate = useNavigate();
-  const workflow = usePodcastWorkflow(basePath, projectId);
+  const workflow = useRecordingWorkflow(basePath, projectId);
   const uploaderAnalytics = useFileUploadAnalytics("audioFile");
 
   return (
@@ -25,7 +25,7 @@ export function PodcastWorkflow({ basePath, projectId }: PodcastWorkflowProps) {
         </p>
       )}
 
-      {workflow.currentStep === PodcastWorkflowStep.Upload && (
+      {workflow.currentStep === RecordingWorkflowStep.Upload && (
         <UploadStep
           formData={workflow.formData}
           handleChange={workflow.actions.handleChange}
@@ -37,7 +37,7 @@ export function PodcastWorkflow({ basePath, projectId }: PodcastWorkflowProps) {
         />
       )}
 
-      {workflow.currentStep === PodcastWorkflowStep.Process && (
+      {workflow.currentStep === RecordingWorkflowStep.Process && (
         <ProcessStep
           formData={workflow.formData}
           handleChange={workflow.actions.handleChange}
@@ -46,7 +46,7 @@ export function PodcastWorkflow({ basePath, projectId }: PodcastWorkflowProps) {
         />
       )}
 
-      {workflow.currentStep === PodcastWorkflowStep.Processing && (
+      {workflow.currentStep === RecordingWorkflowStep.Processing && (
         <ProcessingStep
           formData={workflow.formData}
           processingStatus={workflow.processingStatus}
@@ -54,7 +54,7 @@ export function PodcastWorkflow({ basePath, projectId }: PodcastWorkflowProps) {
           processingComplete={workflow.processingComplete}
           handleRetry={workflow.actions.retry}
           setCurrentStep={workflow.setCurrentStep}
-          uploadedPodcastId={workflow.uploadedPodcastId}
+          uploadedRecordingId={workflow.uploadedRecordingId}
           basePath={basePath}
           navigate={navigate}
         />
@@ -63,7 +63,7 @@ export function PodcastWorkflow({ basePath, projectId }: PodcastWorkflowProps) {
   );
 }
 
-interface PodcastWorkflowProps {
+interface RecordingWorkflowProps {
   basePath: string;
   projectId?: string;
 }

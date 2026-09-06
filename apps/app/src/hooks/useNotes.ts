@@ -96,7 +96,7 @@ export const useGenerateNotesFromMedia = (projectId?: string) => {
         | "training"
         | "lecture"
         | "interview"
-        | "podcast"
+        | "recording"
         | "webinar"
         | "tutorial"
         | "video_content"

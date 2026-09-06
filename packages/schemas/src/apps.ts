@@ -62,19 +62,19 @@ export const guessDrawingSchema = z.object({
   }),
 });
 
-export const podcastTranscribeSchema = z.object({
-  podcastId: z.string(),
+export const recordingTranscribeSchema = z.object({
+  recordingId: z.string(),
   numberOfSpeakers: z.number(),
   prompt: z.string(),
 });
 
-export const podcastSummarizeSchema = z.object({
-  podcastId: z.string(),
+export const recordingSummariseSchema = z.object({
+  recordingId: z.string(),
   speakers: z.record(z.string(), z.string()),
 });
 
-export const podcastGenerateImageSchema = z.object({
-  podcastId: z.string(),
+export const recordingGenerateImageSchema = z.object({
+  recordingId: z.string(),
   prompt: z.string().optional(),
 });
 
@@ -400,7 +400,7 @@ export const projectExperienceRuntimeSchema = z.enum([
   "articles",
   "finetuning",
   "notes",
-  "podcasts",
+  "recordings",
   "replicate",
   "strudel",
 ]);
@@ -417,11 +417,21 @@ export const projectExperienceRequirementSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
+export const APP_IOS_DECISIONS = ["native", "results-only", "web-only"] as const;
+
+export const appIosDecisionSchema = z.enum(APP_IOS_DECISIONS);
+
+export type AppIosDecision = z.infer<typeof appIosDecisionSchema>;
+
 export const projectExperienceDefinitionSchema = z.object({
   id: z.string(),
   runtime: projectExperienceRuntimeSchema,
   name: z.string(),
   description: z.string(),
+  when: z.string().describe("When someone should reach for this app."),
+  uses: z.string().describe("What it works from."),
+  produces: z.string().describe("What it leaves behind."),
+  ios: appIosDecisionSchema.describe("How this app behaves on iPhone."),
   icon: z.string().optional(),
   category: z.string().optional(),
   theme: capabilityThemeSchema.optional(),
@@ -795,23 +805,23 @@ export const articleDetailResponseSchema = z.object({
   article: outputSchema,
 });
 
-export const podcastStatusSchema = z.enum([
+export const recordingStatusSchema = z.enum([
   "processing",
   "transcribing",
   "summarizing",
   "complete",
 ]);
 
-export const podcastListItemSchema = z.object({
+export const recordingListItemSchema = z.object({
   id: z.string(),
   title: z.string(),
   createdAt: z.string(),
   imageUrl: z.string().optional(),
   duration: z.number().optional(),
-  status: podcastStatusSchema,
+  status: recordingStatusSchema,
 });
 
-export const podcastTranscriptSegmentSchema = z.object({
+export const recordingTranscriptSegmentSchema = z.object({
   start: z.number().optional(),
   end: z.number().optional(),
   text: z.string(),
@@ -819,37 +829,37 @@ export const podcastTranscriptSegmentSchema = z.object({
   avg_logprob: z.number().optional(),
 });
 
-export const podcastTranscriptDataSchema = z.object({
+export const recordingTranscriptDataSchema = z.object({
   language: z.string().optional(),
-  segments: z.array(podcastTranscriptSegmentSchema),
+  segments: z.array(recordingTranscriptSegmentSchema),
   num_speakers: z.number().optional(),
 });
 
-export const podcastTranscriptSchema = z.union([z.string(), podcastTranscriptDataSchema]);
+export const recordingTranscriptSchema = z.union([z.string(), recordingTranscriptDataSchema]);
 
-export const podcastSchema = podcastListItemSchema.extend({
+export const recordingSchema = recordingListItemSchema.extend({
   description: z.string().optional(),
   audioUrl: z.string().optional(),
-  transcript: podcastTranscriptSchema.optional(),
+  transcript: recordingTranscriptSchema.optional(),
   summary: z.string().optional(),
 });
 
-export const listPodcastsResponseSchema = z.object({
-  podcasts: z.array(podcastListItemSchema),
+export const listRecordingsResponseSchema = z.object({
+  recordings: z.array(recordingListItemSchema),
 });
 
-export const podcastDetailResponseSchema = z.object({
-  podcast: podcastSchema,
+export const recordingDetailResponseSchema = z.object({
+  recording: recordingSchema,
 });
 
-export type PodcastStatus = z.infer<typeof podcastStatusSchema>;
-export type PodcastListItem = z.infer<typeof podcastListItemSchema>;
-export type PodcastTranscriptSegment = z.infer<typeof podcastTranscriptSegmentSchema>;
-export type PodcastTranscriptData = z.infer<typeof podcastTranscriptDataSchema>;
-export type PodcastTranscript = z.infer<typeof podcastTranscriptSchema>;
-export type Podcast = z.infer<typeof podcastSchema>;
-export type ListPodcastsResponse = z.infer<typeof listPodcastsResponseSchema>;
-export type PodcastDetailResponse = z.infer<typeof podcastDetailResponseSchema>;
+export type RecordingStatus = z.infer<typeof recordingStatusSchema>;
+export type RecordingListItem = z.infer<typeof recordingListItemSchema>;
+export type RecordingTranscriptSegment = z.infer<typeof recordingTranscriptSegmentSchema>;
+export type RecordingTranscriptData = z.infer<typeof recordingTranscriptDataSchema>;
+export type RecordingTranscript = z.infer<typeof recordingTranscriptSchema>;
+export type Recording = z.infer<typeof recordingSchema>;
+export type ListRecordingsResponse = z.infer<typeof listRecordingsResponseSchema>;
+export type RecordingDetailResponse = z.infer<typeof recordingDetailResponseSchema>;
 
 export const noteMetadataSchema = z
   .object({
@@ -954,7 +964,7 @@ export const generateNotesFromMediaSchema = z.object({
       "training",
       "lecture",
       "interview",
-      "podcast",
+      "recording",
       "webinar",
       "tutorial",
       "video_content",

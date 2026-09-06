@@ -11,12 +11,12 @@ import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { omitNullishValues } from "~/utils/objects";
 
-const logger = getLogger({ prefix: "services/apps/podcast/transcribe" });
+const logger = getLogger({ prefix: "services/apps/recording/transcribe" });
 
 const MODEL_KEY = "replicate-whisper-large-v3";
 
-export interface IPodcastTranscribeBody {
-  podcastId: string;
+export interface IRecordingTranscribeBody {
+  recordingId: string;
   numberOfSpeakers: number;
   prompt: string;
 }
@@ -24,20 +24,20 @@ export interface IPodcastTranscribeBody {
 interface TranscribeRequest {
   context?: ServiceContext;
   env?: IEnv;
-  request: IPodcastTranscribeBody;
+  request: IRecordingTranscribeBody;
   user: IUser;
   app_url?: string;
   projectId?: string;
 }
 
-export const handlePodcastTranscribe = async (
+export const handleRecordingTranscribe = async (
   req: TranscribeRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
   const { request, context, env, user, app_url, projectId } = req;
 
-  if (!request.podcastId || !request.prompt || !request.numberOfSpeakers) {
+  if (!request.recordingId || !request.prompt || !request.numberOfSpeakers) {
     throw new AssistantError(
-      "Missing podcast id or prompt or number of speakers",
+      "Missing recording id or prompt or number of speakers",
       ErrorType.PARAMS_ERROR,
     );
   }
@@ -56,14 +56,14 @@ export const handlePodcastTranscribe = async (
     const existingTranscriptions = projectId
       ? await repositories.outputs.listProjectOutputGroup(
           projectId,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "transcribe",
         )
       : await repositories.outputs.listPersonalOutputGroup(
           user.id,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "transcribe",
         );
 
@@ -74,7 +74,7 @@ export const handlePodcastTranscribe = async (
 
       return {
         status: "success",
-        content: "Podcast Transcription retrieved from cache",
+        content: "Recording Transcription retrieved from cache",
         data: transcriptionData,
       };
     }
@@ -82,20 +82,20 @@ export const handlePodcastTranscribe = async (
     const uploadData = projectId
       ? await repositories.outputs.listProjectOutputGroup(
           projectId,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "upload",
         )
       : await repositories.outputs.listPersonalOutputGroup(
           user.id,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "upload",
         );
 
     if (uploadData.length === 0) {
       throw new AssistantError(
-        "Podcast upload not found. Please upload audio first",
+        "Recording upload not found. Please upload audio first",
         ErrorType.PARAMS_ERROR,
       );
     }
@@ -139,7 +139,7 @@ export const handlePodcastTranscribe = async (
     });
 
     const transcriptionData = await provider.getResponse({
-      completion_id: request.podcastId,
+      completion_id: request.recordingId,
       app_url,
       model: modelConfig.matchingModel,
       messages: [
@@ -167,10 +167,10 @@ export const handlePodcastTranscribe = async (
     await repositories.outputs.createOutput({
       createdByUserId: user.id,
       projectId,
-      capabilityId: "podcasts",
-      groupId: request.podcastId,
+      capabilityId: "recordings",
+      groupId: request.recordingId,
       kind: "transcribe",
-      title: `Transcript: ${title || "Untitled podcast"}`,
+      title: `Transcript: ${title || "Untitled recording"}`,
       status: isAsync ? "pending" : "ready",
       content: appData,
       provenance: await createExecutionOutputProvenance(serviceContext, {
@@ -183,10 +183,10 @@ export const handlePodcastTranscribe = async (
       const taskService = new TaskService(runtimeEnv, new TaskRepository(runtimeEnv));
 
       await taskService.enqueueTask({
-        task_type: "podcast_transcription_polling",
+        task_type: "recording_transcription_polling",
         user_id: user.id,
         task_data: {
-          podcastId: request.podcastId,
+          recordingId: request.recordingId,
           userId: user.id,
           projectId,
           startedAt: new Date().toISOString(),
@@ -199,14 +199,14 @@ export const handlePodcastTranscribe = async (
     return {
       status: "success",
       content: isAsync
-        ? `Podcast transcription started: ${transcriptionData.id}`
-        : `Podcast transcribed: ${transcriptionData.id}`,
+        ? `Recording transcription started: ${transcriptionData.id}`
+        : `Recording transcribed: ${transcriptionData.id}`,
       data: appData,
     };
   } catch (error) {
-    logger.error("Failed to transcribe podcast:", {
+    logger.error("Failed to transcribe recording:", {
       error_message: error instanceof Error ? error.message : "Unknown error",
     });
-    throw new AssistantError("Failed to transcribe podcast");
+    throw new AssistantError("Failed to transcribe recording");
   }
 };

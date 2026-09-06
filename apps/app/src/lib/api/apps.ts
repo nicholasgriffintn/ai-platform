@@ -1,6 +1,6 @@
 import type {
-  ProcessPodcastParams,
-  UploadPodcastParams,
+  ProcessRecordingParams,
+  UploadRecordingParams,
   UploadResponse,
 } from "@ngriffin_uk/polychat-component-experiences/content";
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
@@ -18,68 +18,68 @@ import type {
   SummariseArticleParams,
   SummariseArticleResponse,
   ListNotesResponse,
-  ListPodcastsResponse,
+  ListRecordingsResponse,
   Note,
   NoteCreateRequest,
   NoteDetailResponse,
   NoteFormatResponse,
   NoteUpdateRequest,
-  Podcast,
-  PodcastDetailResponse,
-  PodcastListItem,
+  Recording,
+  RecordingDetailResponse,
+  RecordingListItem,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service";
 import { fetchApi } from "./fetch-wrapper";
 
-export const fetchPodcasts = async (projectId?: string): Promise<PodcastListItem[]> => {
+export const fetchRecordings = async (projectId?: string): Promise<RecordingListItem[]> => {
   let headers = {};
 
   try {
     headers = await apiService.getHeaders();
   } catch (error) {
-    console.error("Error fetching podcasts:", error);
+    console.error("Error fetching recordings:", error);
   }
 
-  const response = await fetchApi(withProjectScope("/apps/podcasts", projectId), {
+  const response = await fetchApi(withProjectScope("/apps/recordings", projectId), {
     method: "GET",
     headers,
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch podcasts: ${response.statusText}`);
+    throw new Error(`Failed to fetch recordings: ${response.statusText}`);
   }
 
-  const data = await returnFetchedData<ListPodcastsResponse>(response);
+  const data = await returnFetchedData<ListRecordingsResponse>(response);
 
-  return data.podcasts || [];
+  return data.recordings || [];
 };
 
-export const fetchPodcast = async (id: string, projectId?: string): Promise<Podcast> => {
+export const fetchRecording = async (id: string, projectId?: string): Promise<Recording> => {
   let headers = {};
 
   try {
     headers = await apiService.getHeaders();
   } catch (error) {
-    console.error("Error fetching podcast:", error);
+    console.error("Error fetching recording:", error);
   }
 
-  const response = await fetchApi(withProjectScope(`/apps/podcasts/${id}`, projectId), {
+  const response = await fetchApi(withProjectScope(`/apps/recordings/${id}`, projectId), {
     method: "GET",
     headers,
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch podcast: ${response.statusText}`);
+    throw new Error(`Failed to fetch recording: ${response.statusText}`);
   }
 
-  const data = await returnFetchedData<PodcastDetailResponse>(response);
+  const data = await returnFetchedData<RecordingDetailResponse>(response);
 
-  return data.podcast;
+  return data.recording;
 };
 
-export const uploadPodcast = async (
-  params: UploadPodcastParams,
+export const uploadRecording = async (
+  params: UploadRecordingParams,
   projectId?: string,
 ): Promise<UploadResponse> => {
   const formData = new FormData();
@@ -102,35 +102,35 @@ export const uploadPodcast = async (
   try {
     headers = await apiService.getHeaders();
   } catch (error) {
-    console.error("Error uploading podcast:", error);
+    console.error("Error uploading recording:", error);
   }
 
   const filteredHeaders = { ...headers };
 
-  const response = await fetchApi(withProjectScope("/apps/podcasts/upload", projectId), {
+  const response = await fetchApi(withProjectScope("/apps/recordings/upload", projectId), {
     method: "POST",
     body: formData,
     headers: filteredHeaders,
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to upload podcast: ${response.statusText}`);
+    throw new Error(`Failed to upload recording: ${response.statusText}`);
   }
 
   return await returnFetchedData<UploadResponse>(response);
 };
 
-export const processPodcast = async (params: ProcessPodcastParams, projectId?: string) => {
-  const endpoint = withProjectScope(`/apps/podcasts/${params.action}`, projectId);
+export const processRecording = async (params: ProcessRecordingParams, projectId?: string) => {
+  const endpoint = withProjectScope(`/apps/recordings/${params.action}`, projectId);
   const body: Record<string, any> = {
-    podcastId: params.podcastId,
+    recordingId: params.recordingId,
   };
 
   if (params.action === "transcribe") {
     body.numberOfSpeakers = params.numberOfSpeakers || 2;
     body.prompt =
       params.prompt ||
-      `Transcribe this podcast with the following speakers: ${params.speakers ? JSON.stringify(params.speakers) : "Person 1, 2, etc"}`;
+      `Transcribe this recording with the following speakers: ${params.speakers ? JSON.stringify(params.speakers) : "Person 1, 2, etc"}`;
   } else if (params.action === "summarise") {
     body.speakers = params.speakers || {};
   } else if (params.action === "generate-image" && params.prompt) {
@@ -142,7 +142,7 @@ export const processPodcast = async (params: ProcessPodcastParams, projectId?: s
   try {
     headers = await apiService.getHeaders();
   } catch (error) {
-    console.error("Error processing podcast:", error);
+    console.error("Error processing recording:", error);
   }
 
   const response = await fetchApi(endpoint, {
@@ -152,7 +152,7 @@ export const processPodcast = async (params: ProcessPodcastParams, projectId?: s
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to process podcast: ${response.statusText}`);
+    throw new Error(`Failed to process recording: ${response.statusText}`);
   }
 
   return await returnFetchedData<Record<string, any>>(response);
@@ -562,7 +562,7 @@ export const generateNotesFromMedia = async (
       | "training"
       | "lecture"
       | "interview"
-      | "podcast"
+      | "recording"
       | "webinar"
       | "tutorial"
       | "video_content"

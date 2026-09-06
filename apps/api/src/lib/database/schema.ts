@@ -1859,7 +1859,7 @@ export const tasks = sqliteTable(
         "research_polling",
         "replicate_polling",
         "async_message_polling",
-        "podcast_transcription_polling",
+        "recording_transcription_polling",
         "training_quality_scoring",
         "recipe_execution",
         "sandbox_run_dispatch",

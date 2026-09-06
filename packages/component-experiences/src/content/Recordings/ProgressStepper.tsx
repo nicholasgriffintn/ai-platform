@@ -1,7 +1,7 @@
-import { PodcastWorkflowStep } from "./workflow";
+import { RecordingWorkflowStep } from "./workflow";
 
 interface StepperProps {
-  currentStep: PodcastWorkflowStep;
+  currentStep: RecordingWorkflowStep;
 }
 
 export function ProgressStepper({ currentStep }: StepperProps) {
@@ -10,7 +10,7 @@ export function ProgressStepper({ currentStep }: StepperProps) {
       <div className="flex items-center">
         <div
           className={`flex items-center justify-center w-8 h-8 rounded-full ${
-            currentStep >= PodcastWorkflowStep.Upload
+            currentStep >= RecordingWorkflowStep.Upload
               ? "bg-active-work text-canvas"
               : "bg-selection text-muted-foreground"
           }`}
@@ -19,12 +19,12 @@ export function ProgressStepper({ currentStep }: StepperProps) {
         </div>
         <div
           className={`flex-1 h-1 mx-2 ${
-            currentStep >= PodcastWorkflowStep.Process ? "bg-active-work" : "bg-selection"
+            currentStep >= RecordingWorkflowStep.Process ? "bg-active-work" : "bg-selection"
           }`}
         />
         <div
           className={`flex items-center justify-center w-8 h-8 rounded-full ${
-            currentStep >= PodcastWorkflowStep.Process
+            currentStep >= RecordingWorkflowStep.Process
               ? "bg-active-work text-canvas"
               : "bg-selection text-muted-foreground"
           }`}
@@ -33,12 +33,12 @@ export function ProgressStepper({ currentStep }: StepperProps) {
         </div>
         <div
           className={`flex-1 h-1 mx-2 ${
-            currentStep >= PodcastWorkflowStep.Processing ? "bg-active-work" : "bg-selection"
+            currentStep >= RecordingWorkflowStep.Processing ? "bg-active-work" : "bg-selection"
           }`}
         />
         <div
           className={`flex items-center justify-center w-8 h-8 rounded-full ${
-            currentStep >= PodcastWorkflowStep.Processing
+            currentStep >= RecordingWorkflowStep.Processing
               ? "bg-active-work text-canvas"
               : "bg-selection text-muted-foreground"
           }`}

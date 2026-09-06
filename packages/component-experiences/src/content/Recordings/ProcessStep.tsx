@@ -6,10 +6,10 @@ import {
   FormCheckbox,
 } from "@ngriffin_uk/polychat-component-ui";
 
-import type { PodcastFormData } from "./types";
+import type { RecordingFormData } from "./types";
 
 interface ProcessStepProps {
-  formData: PodcastFormData;
+  formData: RecordingFormData;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleProcess: () => void;
   isProcessing: boolean;
@@ -38,10 +38,10 @@ export function ProcessStep({
           </div>
           <div className="ml-3">
             <label htmlFor="transcribe" className="font-medium text-foreground">
-              Transcribe Podcast
+              Transcribe Recording
             </label>
             <p className="text-sm text-muted-foreground">
-              Generate a text transcript of your podcast
+              Generate a text transcript of your recording
             </p>
 
             {formData.transcribe && (
@@ -87,7 +87,7 @@ export function ProcessStep({
               Generate Summary
             </label>
             <p className="text-sm text-muted-foreground">
-              Create a brief summary of your podcast content
+              Create a brief summary of your recording content
             </p>
 
             {formData.summarise && formData.transcribe && (
@@ -134,7 +134,7 @@ export function ProcessStep({
               Generate Cover Image
             </label>
             <p className="text-sm text-muted-foreground">
-              Create a cover image based on your podcast title and description
+              Create a cover image based on your recording title and description
             </p>
           </div>
         </div>
@@ -147,7 +147,7 @@ export function ProcessStep({
               name="imagePrompt"
               value={formData.imagePrompt}
               onChange={handleChange}
-              placeholder="A podcast cover with..."
+              placeholder="A recording cover with..."
               rows={2}
             />
           </div>
@@ -162,7 +162,7 @@ export function ProcessStep({
           disabled={isProcessing}
           isLoading={isProcessing}
         >
-          {isProcessing ? "Processing..." : "Process Podcast"}
+          {isProcessing ? "Processing..." : "Process Recording"}
         </Button>
       </div>
     </div>

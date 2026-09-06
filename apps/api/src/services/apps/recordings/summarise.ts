@@ -7,7 +7,7 @@ import { getLogger } from "~/utils/logger";
 
 import { safeParseJson } from "../../../utils/json";
 
-const logger = getLogger({ prefix: "services/apps/podcast/summarise" });
+const logger = getLogger({ prefix: "services/apps/recording/summarise" });
 
 function generateFullTranscription(
   transcription: {
@@ -30,27 +30,27 @@ function generateFullTranscription(
   return fullTranscription;
 }
 
-export interface IPodcastSummariseBody {
-  podcastId: string;
+export interface IRecordingSummariseBody {
+  recordingId: string;
   speakers: Record<string, string>;
 }
 
 type SummariseRequest = {
   context?: ServiceContext;
   env?: IEnv;
-  request: IPodcastSummariseBody;
+  request: IRecordingSummariseBody;
   user: IUser;
   app_url?: string;
   projectId?: string;
 };
 
-export const handlePodcastSummarise = async (
+export const handleRecordingSummarise = async (
   req: SummariseRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
   const { request, context, env, user, projectId } = req;
 
-  if (!request.podcastId || !request.speakers) {
-    throw new AssistantError("Missing podcast id or speakers", ErrorType.PARAMS_ERROR);
+  if (!request.recordingId || !request.speakers) {
+    throw new AssistantError("Missing recording id or speakers", ErrorType.PARAMS_ERROR);
   }
 
   try {
@@ -67,14 +67,14 @@ export const handlePodcastSummarise = async (
     const existingSummaries = projectId
       ? await repositories.outputs.listProjectOutputGroup(
           projectId,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "summary",
         )
       : await repositories.outputs.listPersonalOutputGroup(
           user.id,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "summary",
         );
 
@@ -94,20 +94,20 @@ export const handlePodcastSummarise = async (
     const transcriptionData = projectId
       ? await repositories.outputs.listProjectOutputGroup(
           projectId,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "transcribe",
         )
       : await repositories.outputs.listPersonalOutputGroup(
           user.id,
-          "podcasts",
-          request.podcastId,
+          "recordings",
+          request.recordingId,
           "transcribe",
         );
 
     if (transcriptionData.length === 0) {
       throw new AssistantError(
-        "Transcription not found. Please transcribe podcast first",
+        "Transcription not found. Please transcribe recording first",
         ErrorType.PARAMS_ERROR,
       );
     }
@@ -133,10 +133,10 @@ export const handlePodcastSummarise = async (
       await repositories.outputs.createOutput({
         createdByUserId: user.id,
         projectId,
-        capabilityId: "podcasts",
-        groupId: request.podcastId,
+        capabilityId: "recordings",
+        groupId: request.recordingId,
         kind: "summary",
-        title: `Summary: ${title || "Untitled podcast"}`,
+        title: `Summary: ${title || "Untitled recording"}`,
         content: appData,
       });
 
@@ -181,10 +181,10 @@ export const handlePodcastSummarise = async (
     await repositories.outputs.createOutput({
       createdByUserId: user.id,
       projectId,
-      capabilityId: "podcasts",
-      groupId: request.podcastId,
+      capabilityId: "recordings",
+      groupId: request.recordingId,
       kind: "summary",
-      title: `Summary: ${title || "Untitled podcast"}`,
+      title: `Summary: ${title || "Untitled recording"}`,
       content: appData,
       provenance: await createExecutionOutputProvenance(serviceContext, {
         modelId: "@cf/facebook/bart-large-cnn",
@@ -198,9 +198,9 @@ export const handlePodcastSummarise = async (
       data: appData,
     };
   } catch (error) {
-    logger.error("Failed to summarize podcast:", {
+    logger.error("Failed to summarize recording:", {
       error_message: error instanceof Error ? error.message : "Unknown error",
     });
-    throw new AssistantError("Failed to summarize podcast");
+    throw new AssistantError("Failed to summarize recording");
   }
 };

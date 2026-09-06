@@ -1,24 +1,24 @@
 import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
 
-export type PodcastProcessingAction = "transcribe" | "summarise" | "generate-image";
+export type RecordingProcessingAction = "transcribe" | "summarise" | "generate-image";
 
 const ACTION_LABELS: Record<string, string> = {
-  transcribe: "Transcribe podcast",
+  transcribe: "Transcribe recording",
   summarise: "Create summary",
   "generate-image": "Generate cover image",
 };
 
-export interface PodcastNextActionCardProps {
+export interface RecordingNextActionCardProps {
   action: string | null;
   onRun: (action: string) => void;
   isRunning?: boolean;
 }
 
-export function PodcastNextActionCard({
+export function RecordingNextActionCard({
   action,
   onRun,
   isRunning = false,
-}: PodcastNextActionCardProps) {
+}: RecordingNextActionCardProps) {
   if (!action) {
     return null;
   }
@@ -30,7 +30,7 @@ export function PodcastNextActionCard({
       <div>
         <p className="text-sm font-medium">Continue processing</p>
         <p className="text-sm text-muted-foreground">
-          {label} to build the next part of this podcast.
+          {label} to build the next part of this recording.
         </p>
       </div>
       <Button variant="primary" isLoading={isRunning} onClick={() => onRun(action)}>
