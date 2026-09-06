@@ -253,6 +253,57 @@ export const projectFlowSchema = z
 
 export type ProjectFlow = z.infer<typeof projectFlowSchema>;
 
+export function createSuggestedProjectFlow(): ProjectFlow {
+  return {
+    stages: [
+      {
+        id: "research",
+        name: "Research",
+        instructions:
+          "Gather the context, constraints and prior art this outcome depends on. Hand off a short brief with sources and any open questions.",
+        agentId: null,
+        skillIds: [],
+        mode: "explore",
+        requiresApprovalFor: [],
+        advance: "on_goal_complete",
+      },
+      {
+        id: "plan",
+        name: "Plan",
+        instructions:
+          "Turn the brief into a concrete plan with scope, steps and acceptance criteria. Call out risks and anything that needs a decision before work starts.",
+        agentId: null,
+        skillIds: [],
+        mode: "plan",
+        requiresApprovalFor: [],
+        advance: "on_human_accept",
+      },
+      {
+        id: "build",
+        name: "Build",
+        instructions:
+          "Carry out the approved plan. Keep changes within its scope and record what was done and how it was checked.",
+        agentId: null,
+        skillIds: [],
+        mode: "build",
+        requiresApprovalFor: [],
+        advance: "on_goal_complete",
+      },
+      {
+        id: "review",
+        name: "Review",
+        instructions:
+          "Check the work against the plan and acceptance criteria. Flag gaps, risks and anything that needs a human decision before it is accepted.",
+        agentId: null,
+        skillIds: [],
+        mode: "explore",
+        requiresApprovalFor: [],
+        advance: "on_human_accept",
+      },
+    ],
+  };
+}
+
 export function findFlowStage(flow: ProjectFlow | null, stageId: string | null) {
   if (!flow || !stageId) {
     return null;

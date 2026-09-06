@@ -3,9 +3,9 @@ import type { ComponentProps, FC } from "react";
 import { Suspense, forwardRef, lazy, useMemo } from "react";
 
 import type { IconType } from "./icon-type";
-import { MODEL_ICONS, PROVIDER_ICONS } from "./iconDefinitions";
 import { ICON_LOADERS } from "./iconLoaders";
 import { getProviderColor } from "./providerColor";
+import { resolveModelIconName, resolveProviderIconName } from "./resolveIconName";
 
 const MissingIcon: IconType = forwardRef(() => null);
 
@@ -54,22 +54,16 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
     ref,
   ) => {
     const { iconName, iconType } = useMemo(() => {
-      const normalizedModelName = modelName.toLowerCase();
+      const modelIcon = resolveModelIconName(modelName);
 
-      for (const [pattern, icon] of Object.entries(MODEL_ICONS)) {
-        if (normalizedModelName.includes(pattern)) {
-          return { iconName: icon, iconType: "model" };
-        }
+      if (modelIcon) {
+        return { iconName: modelIcon, iconType: "model" };
       }
 
-      if (provider) {
-        const normalizedProvider = provider.toLowerCase();
+      const providerIcon = provider ? resolveProviderIconName(provider) : undefined;
 
-        for (const [providerPattern, icon] of Object.entries(PROVIDER_ICONS)) {
-          if (normalizedProvider === providerPattern) {
-            return { iconName: icon, iconType: "provider" };
-          }
-        }
+      if (providerIcon) {
+        return { iconName: providerIcon, iconType: "provider" };
       }
 
       return { iconName: "", iconType: "fallback" };

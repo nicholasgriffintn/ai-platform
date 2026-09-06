@@ -48,14 +48,22 @@ export class WorkbenchPage extends BasePage {
       .filter({ has: this.page.getByText(name, { exact: true }) });
   }
 
+  serviceLog(name: string, stream: "stdout" | "stderr") {
+    const details = this.page.getByRole("group", {
+      name: `Show ${name} ${stream} log`,
+      exact: true,
+    });
+
+    return {
+      toggle: details.getByText(`Show ${name} ${stream} log`, { exact: true }),
+      output: details.getByRole("log", { name: `${name} ${stream} output`, exact: true }),
+    };
+  }
+
   async controlService(name: string, action: "Start" | "Stop" | "Restart") {
     await this.service(name)
       .getByRole("button", { name: `${action} ${name}`, exact: true })
       .click();
-  }
-
-  async openSteering() {
-    await this.page.getByRole("button", { name: "Steer", exact: true }).click();
   }
 
   async resolveApproval(action: "Approve" | "Reject") {
@@ -65,9 +73,13 @@ export class WorkbenchPage extends BasePage {
       .click();
   }
 
+  get composer() {
+    return this.page.getByRole("textbox", { name: "Message input", exact: true });
+  }
+
   async addInstruction(content: string) {
-    await this.page.getByRole("textbox", { name: "Run instruction", exact: true }).fill(content);
-    await this.page.getByRole("button", { name: "Add instruction", exact: true }).click();
+    await this.composer.fill(content);
+    await this.page.getByRole("button", { name: "Send instruction", exact: true }).click();
   }
 
   get previewFrame() {
@@ -76,6 +88,28 @@ export class WorkbenchPage extends BasePage {
 
   async startPreview() {
     await this.page.getByRole("button", { name: "Start preview", exact: true }).click();
+  }
+
+  async reloadPreviewDocument() {
+    const previewFrame = this.page.frames().find((frame) => {
+      const hostname = new URL(frame.url()).hostname;
+
+      return hostname.endsWith(".localhost");
+    });
+
+    if (!previewFrame) {
+      throw new Error("The embedded preview frame is not available");
+    }
+
+    try {
+      return await previewFrame.goto(previewFrame.url());
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("ERR_BLOCKED_BY_RESPONSE")) {
+        return null;
+      }
+
+      throw error;
+    }
   }
 
   async previewViewport(name: "Fit" | "Mobile" | "Tablet" | "Desktop") {

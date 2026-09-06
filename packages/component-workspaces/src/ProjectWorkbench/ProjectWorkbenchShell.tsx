@@ -214,11 +214,15 @@ function RunStatusStrip({
   return (
     <div
       className={cn(
-        "border-border bg-surface flex min-h-11 items-center gap-3 border-b px-3",
+        "border-border flex min-h-11 items-center gap-2 border-b px-2 sm:gap-3 sm:px-3",
         presentation.requiresAttention && "bg-attention/10",
       )}
     >
-      <output aria-live="polite" className="flex min-w-0 flex-1 items-center gap-3">
+      <output
+        aria-live="polite"
+        className="flex min-w-0 flex-1 items-center gap-3"
+        title={statusDetail ? `${presentation.label} · ${statusDetail}` : presentation.label}
+      >
         <span
           aria-hidden="true"
           className={cn(
@@ -227,17 +231,17 @@ function RunStatusStrip({
             presentation.animated && "polychat-motion-active-execution",
           )}
         />
-        <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 max-w-xl items-baseline gap-2">
           <span
             className={cn(
-              "text-sm font-medium",
+              "truncate text-sm font-medium",
               presentation.requiresAttention && "text-attention",
             )}
           >
             {presentation.label}
           </span>
           {statusDetail ? (
-            <span className="text-muted-foreground ml-2 hidden truncate text-xs sm:inline">
+            <span className="text-muted-foreground hidden min-w-0 truncate text-xs sm:inline">
               {statusDetail}
             </span>
           ) : null}
@@ -249,8 +253,11 @@ function RunStatusStrip({
           type="button"
           variant="ghost"
           size="sm"
+          collapseLabel="sm"
+          title="Workbench"
+          aria-label="Workbench"
           icon={<LayoutPanelTop className="size-4" />}
-          className="lg:hidden"
+          className="shrink-0 lg:hidden"
         >
           Workbench
         </Button>

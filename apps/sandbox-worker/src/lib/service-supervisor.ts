@@ -39,6 +39,8 @@ interface ManagedService {
   logCharacters: number;
   logEvents: number;
   logTruncationReported: boolean;
+  stdoutLength: number;
+  stderrLength: number;
   process?: Process;
   startedAt?: string;
   healthyAt?: string;
@@ -170,6 +172,8 @@ export class ProjectServiceSupervisor {
         logCharacters: 0,
         logEvents: 0,
         logTruncationReported: false,
+        stdoutLength: 0,
+        stderrLength: 0,
       };
 
       this.managed.set(definition.name, managed);
@@ -378,6 +382,22 @@ export class ProjectServiceSupervisor {
     await this.options.emit(event);
   }
 
+  private async collectProcessLogs(service: ManagedService): Promise<void> {
+    const logs = await service.process?.getLogs();
+
+    if (!logs) {
+      return;
+    }
+
+    const stdoutOffset = Math.min(service.stdoutLength, logs.stdout.length);
+    const stderrOffset = Math.min(service.stderrLength, logs.stderr.length);
+
+    this.queueLogEvent(service, "stdout", logs.stdout.slice(stdoutOffset));
+    this.queueLogEvent(service, "stderr", logs.stderr.slice(stderrOffset));
+    service.stdoutLength = logs.stdout.length;
+    service.stderrLength = logs.stderr.length;
+  }
+
   private async startManagedService(service: ManagedService): Promise<void> {
     const definition = service.definition;
 
@@ -413,9 +433,10 @@ export class ProjectServiceSupervisor {
         cwd: service.absoluteWorkingDirectory,
         autoCleanup: false,
         processId: `polychat-${definition.name}-${crypto.randomUUID().slice(0, 8)}`,
-        onOutput: (stream, data) => this.queueLogEvent(service, stream, data),
       });
       service.process = process;
+      service.stdoutLength = 0;
+      service.stderrLength = 0;
       const processStatus = await process.getStatus();
 
       if (
@@ -569,7 +590,9 @@ export class ProjectServiceSupervisor {
       return;
     }
 
+    await this.collectProcessLogs(service).catch(() => undefined);
     await process?.kill().catch(() => undefined);
+    await this.collectProcessLogs(service).catch(() => undefined);
 
     if (service.definition.expectedPort !== undefined) {
       await this.options.sandbox
@@ -602,6 +625,7 @@ export class ProjectServiceSupervisor {
     let status: Awaited<ReturnType<Process["getStatus"]>>;
 
     try {
+      await this.collectProcessLogs(service);
       status = await process.getStatus();
     } catch (error) {
       service.observationFailures += 1;

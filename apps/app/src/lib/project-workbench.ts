@@ -27,6 +27,7 @@ export function deriveProjectWorkbenchServices(
       restartCount: evidence.restartCount,
       updatedAt: evidence.stoppedAt ?? evidence.healthyAt ?? evidence.startedAt,
       error: evidence.error,
+      logs: [],
     });
   }
 
@@ -48,6 +49,10 @@ export function deriveProjectWorkbenchServices(
         (event.serviceStatus === "healthy" || event.serviceStatus === "running"
           ? undefined
           : existing?.error),
+      logs:
+        event.type === "service_log" && event.output && event.stream
+          ? [...(existing?.logs ?? []), { stream: event.stream, output: event.output }].slice(-20)
+          : (existing?.logs ?? []),
     });
   }
 

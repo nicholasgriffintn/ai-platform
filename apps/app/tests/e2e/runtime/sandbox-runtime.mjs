@@ -130,6 +130,10 @@ export function resolveSandboxModelTool(body) {
     (message) =>
       typeof message.content === "string" && message.content.includes("wait for controls"),
   );
+  const holdForServiceControls = body.messages?.some(
+    (message) =>
+      typeof message.content === "string" && message.content.includes("during service review"),
+  );
 
   return {
     id: edited ? "e2e-sandbox-finish" : "e2e-sandbox-edit",
@@ -147,7 +151,7 @@ export function resolveSandboxModelTool(body) {
             language: python ? "python" : "javascript",
             code: python
               ? `from pathlib import Path\nwith Path('README.md').open('a') as report:\n    report.write(${JSON.stringify(`\n${content}\n`)})\nprint('E2E_SANDBOX_EDITED')`
-              : `${holdForControls ? "await new Promise(resolve => setTimeout(resolve, 20000)); " : ""}require('node:fs').appendFileSync('README.md', ${JSON.stringify(`\n${content}\n`)}); console.log('E2E_SANDBOX_EDITED');`,
+              : `${holdForControls ? `await new Promise(resolve => setTimeout(resolve, ${holdForServiceControls ? 40000 : 20000})); ` : ""}require('node:fs').appendFileSync('README.md', ${JSON.stringify(`\n${content}\n`)}); console.log('E2E_SANDBOX_EDITED');`,
           }),
         },
   };

@@ -98,13 +98,80 @@ test.describe("Private sandbox previews", () => {
 
     expect(cookie).toMatchObject({ secure: true, httpOnly: true, domain: url.hostname, path: "/" });
     expect(cookie?.partitionKey).toBeTruthy();
+    const securedHeaders = await preview.open(`${url.origin}/private-headers`);
+
+    await expect(preview.serviceHeading).toBeVisible();
+    expect(securedHeaders?.headers()["set-cookie"]).toBeUndefined();
+    expect(securedHeaders?.headers().server).toBeUndefined();
+    expect(securedHeaders?.headers()["x-powered-by"]).toBeUndefined();
+    const safeRedirect = await preview.open(`${url.origin}/local-redirect`);
+
+    expect(safeRedirect?.ok()).toBe(true);
+    expect(new URL(previewTab.url()).origin).toBe(url.origin);
+    await expect(preview.serviceHeading).toBeVisible();
+    const externalRedirect = await preview.open(`${url.origin}/external-redirect`);
+
+    expect(externalRedirect?.status()).toBe(502);
+    expect(externalRedirect?.headers().location).toBeUndefined();
+    await expect(preview.serviceHeading).not.toBeVisible();
+    const undeclaredPortRedirect = await preview.open(`${url.origin}/undeclared-port-redirect`);
+
+    expect(undeclaredPortRedirect?.status()).toBe(502);
+    expect(undeclaredPortRedirect?.headers().location).toBeUndefined();
+    await expect(preview.serviceHeading).not.toBeVisible();
     const replay = await preview.open(access.url);
 
     expect(replay?.status()).toBeGreaterThanOrEqual(400);
     await expect(preview.serviceHeading).not.toBeVisible();
     await preview.open(url.origin);
     await expect(preview.serviceHeading).toBeVisible();
+    const socket = await previewTab.evaluateHandle(
+      (origin) =>
+        new Promise<WebSocket>((resolve, reject) => {
+          const websocket = new WebSocket(origin.replace(/^http/, "ws") + "/socket");
+          const timeout = window.setTimeout(
+            () => reject(new Error("Preview WebSocket did not echo before revocation")),
+            5_000,
+          );
+
+          websocket.addEventListener("open", () => websocket.send("before-revocation"));
+          websocket.addEventListener("message", (event) => {
+            if (event.data === "before-revocation") {
+              window.clearTimeout(timeout);
+              resolve(websocket);
+            }
+          });
+          websocket.addEventListener("error", () => {
+            window.clearTimeout(timeout);
+            reject(new Error("Preview WebSocket failed before revocation"));
+          });
+        }),
+      url.origin,
+    );
+
     await sandbox.revokePreview(run.runId, access.previewId);
+    const socketClosure = await socket.evaluate(
+      (websocket) =>
+        new Promise<{ code: number; reason: string }>((resolve, reject) => {
+          const timeout = window.setTimeout(
+            () => reject(new Error("Preview WebSocket remained open after revocation")),
+            5_000,
+          );
+
+          websocket.addEventListener("message", () => {
+            window.clearTimeout(timeout);
+            reject(new Error("Preview WebSocket transferred data after revocation"));
+          });
+          websocket.addEventListener("close", (event) => {
+            window.clearTimeout(timeout);
+            resolve({ code: event.code, reason: event.reason });
+          });
+          websocket.send("after-revocation");
+        }),
+    );
+
+    expect(socketClosure).toEqual({ code: 1008, reason: "Preview access ended" });
+    await socket.dispose();
     const revoked = await preview.open(url.origin);
 
     expect(revoked?.status()).toBeGreaterThanOrEqual(400);
@@ -149,9 +216,24 @@ test.describe("Private sandbox previews", () => {
     await expect(workbench.panel).toContainText("Keep the preview heading readable.");
     await workbench.reload();
     await expect(workbench.panel).toContainText("Keep the preview heading readable.");
+    const terminalAccess = await sandbox.preview(run.runId, "fixture");
+
+    if (!terminalAccess.url) {
+      throw new Error("The terminal revocation check did not receive preview access");
+    }
+
+    const terminalTab = await context.newPage();
+    const terminalPreview = new SandboxPreviewPage(terminalTab);
+
+    await terminalPreview.open(terminalAccess.url);
+    await expect(terminalPreview.serviceHeading).toBeVisible();
     await workbench.control("Cancel");
     await expect
       .poll(async () => (await sandbox.latestRun())?.status, { timeout: 40_000 })
       .toBe("cancelled");
+    const terminalDenied = await terminalPreview.open(new URL(terminalAccess.url).origin);
+
+    expect(terminalDenied?.status()).toBeGreaterThanOrEqual(400);
+    await expect(terminalPreview.serviceHeading).not.toBeVisible();
   });
 });

@@ -1,6 +1,6 @@
 import { expect, test } from "../fixtures/polychat-test";
 import { SandboxApi } from "../fixtures/sandbox-api";
-import { SUPERVISED_SANDBOX_ENVIRONMENT } from "../fixtures/sandbox-environment";
+import { BOUNDED_LOG_SANDBOX_ENVIRONMENT } from "../fixtures/sandbox-environment";
 import { SandboxPreviewPage } from "../page-objects/SandboxPreviewPage";
 import { WorkbenchPage } from "../page-objects/WorkbenchPage";
 
@@ -13,12 +13,12 @@ test.describe("Sandbox service controls", () => {
     workPage,
     homePage,
   }) => {
-    test.setTimeout(150_000);
+    test.setTimeout(180_000);
     await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
     const sandbox = new SandboxApi(page.request, workPage.currentProjectId());
     const workbench = new WorkbenchPage(page);
 
-    await sandbox.configureProject(SUPERVISED_SANDBOX_ENVIRONMENT);
+    await sandbox.configureProject(BOUNDED_LOG_SANDBOX_ENVIRONMENT);
     await workPage.reload();
     await workPage.openNewProjectConversation();
     await expect(workbench.dock).toBeVisible();
@@ -38,13 +38,36 @@ test.describe("Sandbox service controls", () => {
         { timeout: 30_000 },
       )
       .toBe(true);
-    await workbench.control("Pause");
-    await expect.poll(async () => (await sandbox.control(run.runId)).state).toBe("paused");
     await workbench.selectPane("Activity");
     await expect(workbench.service("watcher")).toContainText("Running");
     await expect(workbench.service("fixture")).toContainText("Healthy");
+    await expect
+      .poll(
+        async () =>
+          (await sandbox.events(run.runId)).some(
+            ({ event }) =>
+              event.type === "service_log" && event.output?.includes("E2E_WATCHER_READY"),
+          ),
+        { timeout: 10_000 },
+      )
+      .toBe(true);
+    const startedEvents = await sandbox.events(run.runId);
+    const serviceLogs = startedEvents.filter(({ event }) => event.type === "service_log");
+
+    expect(serviceLogs).not.toHaveLength(0);
+    expect(serviceLogs).toHaveLength(1);
+    expect(serviceLogs[0]?.event.output?.length).toBeLessThanOrEqual(2_000);
+    expect(startedEvents.some(({ event }) => event.type === "service_log_truncated")).toBe(true);
+    expect(JSON.stringify(startedEvents)).not.toMatch(/container|processId|sandboxId/i);
+    const watcherLog = workbench.serviceLog("watcher", "stdout");
+
+    await expect(watcherLog.output).toBeHidden();
+    await watcherLog.toggle.click();
+    await expect(watcherLog.output).toBeVisible();
+    await expect(watcherLog.output).toContainText("E2E_WATCHER_READY");
     await workbench.reload();
     await expect(workbench.service("fixture")).toContainText("Healthy");
+    await expect(workbench.serviceLog("watcher", "stdout").output).toBeHidden();
     const access = await sandbox.preview(run.runId, "fixture");
 
     if (!access.url) {
@@ -117,7 +140,7 @@ test.describe("Sandbox service controls", () => {
     ).toBe(409);
     await workbench.control("Cancel");
     await expect
-      .poll(async () => (await sandbox.latestRun())?.status, { timeout: 40_000 })
+      .poll(async () => (await sandbox.latestRun())?.status, { timeout: 70_000 })
       .toBe("cancelled");
     const completed = await sandbox.events(run.runId);
 

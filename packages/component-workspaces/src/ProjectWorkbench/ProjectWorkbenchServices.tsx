@@ -2,6 +2,8 @@ import { Badge, Button } from "@ngriffin_uk/polychat-component-ui";
 import type { SandboxServiceAction, SandboxServiceStatus } from "@ngriffin_uk/polychat-schemas";
 import { CirclePlay, RefreshCw, Server, Square } from "lucide-react";
 
+import { ProjectWorkbenchSection } from "./ProjectWorkbenchSection";
+
 export interface ProjectWorkbenchServiceItem {
   name: string;
   status: SandboxServiceStatus;
@@ -9,6 +11,10 @@ export interface ProjectWorkbenchServiceItem {
   restartCount: number;
   updatedAt?: string;
   error?: string;
+  logs: Array<{
+    stream: "stdout" | "stderr";
+    output: string;
+  }>;
 }
 
 export interface ProjectWorkbenchServicesProps {
@@ -83,11 +89,12 @@ export function ProjectWorkbenchServices({
     (!canControl ? "Only the person who started this run can control its services." : undefined);
 
   return (
-    <section aria-label="Project services" className="mb-4 space-y-2">
-      <div className="flex items-center gap-2">
-        <Server className="size-4 text-creative" aria-hidden="true" />
-        <h3 className="text-sm font-medium">Services</h3>
-      </div>
+    <ProjectWorkbenchSection
+      title="Services"
+      label="Project services"
+      icon={Server}
+      className="mb-4"
+    >
       <ul className="space-y-2">
         {services.map((service) => {
           const active = serviceIsActive(service.status);
@@ -152,12 +159,30 @@ export function ProjectWorkbenchServices({
                 </div>
               </div>
               {service.error ? <p className="mt-2 text-xs text-failure">{service.error}</p> : null}
+              {service.logs.map((log, index) => {
+                const label = `Show ${service.name} ${log.stream} log`;
+
+                return (
+                  <details key={`${log.stream}-${index}`} className="mt-2 max-w-full">
+                    <summary className="text-muted-foreground cursor-pointer text-xs">
+                      {label}
+                    </summary>
+                    <pre
+                      role="log"
+                      aria-label={`${service.name} ${log.stream} output`}
+                      className="bg-canvas mt-2 max-h-48 overflow-auto rounded-md p-2 font-mono text-xs whitespace-pre-wrap break-all"
+                    >
+                      {log.output}
+                    </pre>
+                  </details>
+                );
+              })}
             </li>
           );
         })}
       </ul>
       {isUpdating ? <p className="text-xs text-active-work">Updating service…</p> : null}
       {errorMessage ? <p className="text-xs text-failure">{errorMessage}</p> : null}
-    </section>
+    </ProjectWorkbenchSection>
   );
 }

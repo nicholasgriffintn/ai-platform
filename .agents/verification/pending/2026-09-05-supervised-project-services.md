@@ -10,7 +10,7 @@
 
 - [ ] Add a watcher without a port and an HTTP service that depends on it. Start a run and confirm Activity shows both declarations, starts the watcher first, reports the HTTP service healthy and keeps logs collapsed and bounded.
 - [ ] Reload during the run. Confirm service health and restart counts restore from recorded events without exposing a process ID, container address, terminal or undeclared port.
-- [ ] Restart the watcher from Activity. Confirm its active dependant stops first and both return in dependency order. Stop the HTTP service, then start it again and confirm each action appears once.
+- [x] Restart the watcher from Activity. Confirm its active dependant stops first and both return in dependency order. Stop the HTTP service, then start it again and confirm each action appears once.
 - [ ] Open the run as another project member. Confirm health and logs remain readable but service controls are unavailable. Retry one action with the same idempotency key and confirm it is not applied twice.
 - [ ] Configure duplicate ports, a dependency cycle, a directory outside the repository, an inline credential and a command requiring approval. Confirm invalid declarations cannot save or start, and the risky command waits for the initiating runner's approval.
 - [ ] Occupy the declared port before startup and confirm the run fails rather than treating the existing process as healthy. Configure a health path that never succeeds and confirm startup stops at its timeout.
@@ -20,3 +20,5 @@
 **Stop and report if:** a non-runner controls a service, an undeclared port becomes reachable, a process survives the run, output is unbounded or unredacted, or automatic restarts exceed the saved limit.
 
 **Automated evidence:** `features/sandbox-controls.spec.ts` passes completion and cancellation with a watcher and dependent HTTP service. Verify dependency-ordered startup, reverse-order shutdown, stopped terminal Proof and terminal mutation conflicts; repeated cancellation preserves the terminal result.
+
+`features/sandbox-services.spec.ts` confirms dependency-ordered restart, stop and start, exact-once service actions, idempotent replay, rejection of conflicting replay, preview revocation when the service restarts, cancelled terminal state and stopped services after reload. Service output is collected through bounded polling so process teardown does not leave the SDK callback stream open.

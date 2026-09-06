@@ -12,7 +12,7 @@ export const SUPERVISED_SANDBOX_ENVIRONMENT = {
       {
         name: "watcher",
         workingDirectory: ".",
-        command: "node -e 'setInterval(() => {}, 1000)'",
+        command: "node -e \"console.log('E2E_WATCHER_READY'),setInterval(() => {}, 1000)\"",
         dependencies: [],
         startupTimeoutSeconds: 10,
         restartPolicy: { mode: "never", maxRestarts: 0, backoffSeconds: 1 },
@@ -28,5 +28,21 @@ export const SUPERVISED_SANDBOX_ENVIRONMENT = {
         restartPolicy: { mode: "never", maxRestarts: 0, backoffSeconds: 1 },
       },
     ],
+  },
+} satisfies SandboxEnvironmentSetup;
+
+export const BOUNDED_LOG_SANDBOX_ENVIRONMENT = {
+  ...SUPERVISED_SANDBOX_ENVIRONMENT,
+  definition: {
+    ...SUPERVISED_SANDBOX_ENVIRONMENT.definition,
+    services: SUPERVISED_SANDBOX_ENVIRONMENT.definition.services.map((service) =>
+      service.name === "watcher"
+        ? {
+            ...service,
+            command:
+              "node -e \"console.log('E2E_WATCHER_READY' + 'x'.repeat(40000)),setInterval(() => {}, 1000)\"",
+          }
+        : service,
+    ),
   },
 } satisfies SandboxEnvironmentSetup;

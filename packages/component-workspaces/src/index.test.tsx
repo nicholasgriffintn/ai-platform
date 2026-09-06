@@ -1,9 +1,10 @@
-import type {
-  Goal,
-  ProjectFlow,
-  ProjectTask,
-  ProjectTaskActivityTimeline,
-  ProjectTaskPlanEvidence,
+import {
+  type Goal,
+  type ProjectFlow,
+  type ProjectTask,
+  type ProjectTaskActivityTimeline,
+  type ProjectTaskPlanEvidence,
+  projectFlowSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -524,6 +525,44 @@ describe("FlowEditorDialog", () => {
         stages: [expect.objectContaining({ skillIds: ["source-research", "fact-checking"] })],
       }),
     );
+  });
+
+  it("offers the suggested pipeline only until a flow exists and saves it as valid stages", async () => {
+    const onSave = vi.fn<(nextFlow: ProjectFlow) => Promise<void>>(async () => undefined);
+    const props = {
+      open: true,
+      agents: [],
+      skills: [],
+      capabilitiesHref: "/projects/project-1/library",
+      createAgentHref: "/work/workspace-1/projects/project-1/agents/new",
+      onOpenChange: vi.fn(),
+      onSave,
+    };
+
+    const { rerender } = render(<FlowEditorDialog {...props} flow={flow} />);
+
+    expect(screen.queryByRole("button", { name: "Use suggested pipeline" })).toBeNull();
+
+    rerender(<FlowEditorDialog {...props} flow={null} />);
+    fireEvent.click(screen.getByRole("button", { name: "Use suggested pipeline" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save pipeline" }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+
+    const saved = projectFlowSchema.parse(onSave.mock.calls[0]?.[0]);
+
+    expect(saved.stages.map((stage) => stage.name)).toEqual([
+      "Research",
+      "Plan",
+      "Build",
+      "Review",
+    ]);
+    expect(saved.stages.map((stage) => stage.advance)).toEqual([
+      "on_goal_complete",
+      "on_human_accept",
+      "on_goal_complete",
+      "on_human_accept",
+    ]);
   });
 
   it("shows an approval gate a stage still carries after the option was retired", async () => {

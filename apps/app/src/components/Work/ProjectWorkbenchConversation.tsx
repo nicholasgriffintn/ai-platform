@@ -1,9 +1,11 @@
 import { RunChangesView, RunFilesView } from "@ngriffin_uk/polychat-component-content";
 import { RunActivityPanel } from "@ngriffin_uk/polychat-component-conversation";
 import {
+  ProjectWorkbenchApprovals,
   ProjectWorkbenchRunControls,
   ProjectWorkbenchPreview,
   ProjectWorkbenchRunPanel,
+  ProjectWorkbenchSection,
   ProjectWorkbenchServices,
   ProjectWorkbenchShell,
   type ProjectWorkbenchPane,
@@ -11,8 +13,10 @@ import {
 import { buildAgentTraceEntries } from "@ngriffin_uk/polychat-library-chat/agent-trace";
 import { buildRunActivityEntries } from "@ngriffin_uk/polychat-library-chat/run-activity";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import { Activity } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 
+import type { ConversationRunSteering } from "~/components/ConversationThread/ChatInput";
 import { useProjectWorkbenchControls } from "~/hooks/useProjectWorkbenchControls";
 import { useProjectWorkbenchDiff } from "~/hooks/useProjectWorkbenchEvidence";
 import { useProjectWorkbenchPreferences } from "~/hooks/useProjectWorkbenchPreferences";
@@ -29,6 +33,11 @@ import { formatProjectWorkbenchPreviewFeedback } from "~/lib/project-workbench-p
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Message } from "~/types";
 
+export interface ProjectWorkbenchConversationSlots {
+  runSteering?: ConversationRunSteering;
+  composerBanner?: ReactNode;
+}
+
 export function ProjectWorkbenchConversation({
   projectId,
   conversationId,
@@ -44,7 +53,7 @@ export function ProjectWorkbenchConversation({
   conversationIsStreaming: boolean;
   conversationMessages?: Message[];
   task?: ProjectTask;
-  children: ReactNode;
+  children: (slots: ProjectWorkbenchConversationSlots) => ReactNode;
 }) {
   const runsQuery = useProjectWorkbenchRuns({
     projectId,
@@ -58,7 +67,6 @@ export function ProjectWorkbenchConversation({
     runId: runsQuery.currentRun?.runId,
     control: runsQuery.currentControl,
     instructions: runsQuery.currentInstructions,
-    events: runsQuery.currentRun?.events ?? [],
     onChanged: runsQuery.refetch,
   });
   const activityEntries = useMemo(
@@ -85,7 +93,7 @@ export function ProjectWorkbenchConversation({
   const isWorkbenchEligible = hasCodingEnvironment || runsQuery.runs.length > 0;
 
   if (!hasCodingEnvironment && (runsQuery.isLoading || !isWorkbenchEligible)) {
-    return children;
+    return children({});
   }
 
   const presentation = deriveProjectWorkbenchPresentation({
@@ -128,19 +136,35 @@ export function ProjectWorkbenchConversation({
         controlState={controlState}
         canControl={isRunOwner}
         disabledReason={controlsDisabledReason}
-        instructions={controls.instructions}
-        approvals={controls.approvals}
         isSubmittingInstruction={controls.isSubmittingInstruction}
         isUpdatingControl={controls.isUpdatingControl}
-        errorMessage={controlsErrorMessage}
-        onAddInstruction={controls.addInstruction}
         onContinue={controls.continueRun}
         onPause={controls.pauseRun}
         onResume={controls.resumeRun}
         onCancel={controls.cancelRun}
-        onResolveApproval={controls.resolveApproval}
       />
     ) : undefined;
+  const runSteering: ConversationRunSteering | undefined =
+    runsQuery.currentRun && controlState && !runIsTerminal
+      ? {
+          placeholder: "Steer the run with a focused instruction…",
+          disabledReason: !isRunOwner
+            ? "Only the person who started this run can steer it."
+            : controlsDisabledReason,
+          isSubmitting: controls.isSubmittingInstruction,
+          onSubmit: controls.addInstruction,
+        }
+      : undefined;
+  const composerBanner = (
+    <ProjectWorkbenchApprovals
+      approvals={controls.approvals}
+      canControl={isRunOwner && !runIsTerminal}
+      disabledReason={controlsDisabledReason}
+      isUpdating={controls.isSubmittingInstruction}
+      errorMessage={controlsErrorMessage}
+      onResolve={controls.resolveApproval}
+    />
+  );
   const renderPanel = (pane: ProjectWorkbenchPane) => (
     <ProjectWorkbenchRunPanel
       pane={pane}
@@ -160,11 +184,17 @@ export function ProjectWorkbenchConversation({
           errorMessage={controlsErrorMessage}
           onAction={controls.serviceAction}
         />
-        <RunActivityPanel
-          entries={activityEntries}
-          isLoading={runsQuery.isLoading}
-          errorMessage={errorMessage}
-        />
+        <ProjectWorkbenchSection
+          title="Timeline"
+          label="Conversation and run timeline"
+          icon={Activity}
+        >
+          <RunActivityPanel
+            entries={activityEntries}
+            isLoading={runsQuery.isLoading}
+            errorMessage={errorMessage}
+          />
+        </ProjectWorkbenchSection>
       </>
     ),
     preview: (
@@ -218,7 +248,7 @@ export function ProjectWorkbenchConversation({
 
   return (
     <ProjectWorkbenchShell
-      conversation={children}
+      conversation={children({ runSteering, composerBanner })}
       panels={panels}
       status={presentation.status}
       statusDetail={presentation.detail}

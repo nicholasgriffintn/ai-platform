@@ -10,8 +10,8 @@ interface SuggestionItem {
 }
 
 interface EmptyStateProps {
-  /** Display variant - 'empty' for standard empty states, 'welcome' for welcoming first-time users */
-  variant?: "empty" | "welcome";
+  /** Display variant - 'empty' for standard empty states, 'inset' when rendered inside a card that already provides a border, 'welcome' for welcoming first-time users */
+  variant?: "empty" | "inset" | "welcome";
   /** Icon to display (larger in welcome variant) */
   icon?: ReactNode;
   /** Title text or element */
@@ -41,7 +41,7 @@ export const EmptyState = ({
     <div
       className={cn(
         "flex flex-col items-center justify-center text-center",
-        !isWelcome && "border-border bg-surface rounded-xl border",
+        variant === "empty" && "border-border bg-surface rounded-xl border",
         isWelcome ? "px-4 pt-4 pb-2" : "p-8",
         className,
       )}
