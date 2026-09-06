@@ -1,3 +1,12 @@
+export function isLoopbackHostname(hostname: string): boolean {
+  return (
+    hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
+    hostname === "[::1]" ||
+    /^127(?:\.\d{1,3}){3}$/.test(hostname)
+  );
+}
+
 export function readUrlPath(value: string): string {
   const queryIndex = value.indexOf("?");
   const fragmentIndex = value.indexOf("#");

@@ -1,3 +1,4 @@
+import { isLoopbackHostname } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 function hasControlCharacter(value: string): boolean {
@@ -19,6 +20,14 @@ export function isInternalNavigationPath(value: string): boolean {
   );
 }
 
+export function isLoopbackUrl(value: string): boolean {
+  try {
+    return isLoopbackHostname(new URL(value.trim()).hostname);
+  } catch {
+    return false;
+  }
+}
+
 export function isExternalHttpUrl(value: string): boolean {
   try {
     const url = new URL(value.trim());
@@ -31,12 +40,7 @@ export function isExternalHttpUrl(value: string): boolean {
       return false;
     }
 
-    return (
-      url.hostname === "localhost" ||
-      url.hostname.endsWith(".localhost") ||
-      url.hostname === "[::1]" ||
-      /^127(?:\.\d{1,3}){3}$/.test(url.hostname)
-    );
+    return isLoopbackHostname(url.hostname);
   } catch {
     return false;
   }

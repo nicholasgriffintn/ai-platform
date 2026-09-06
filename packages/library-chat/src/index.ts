@@ -11,6 +11,15 @@ export {
 export { getGoalMessageMarker, type GoalMessageMarker } from "./message-goal-status";
 export { resolveConversationStorageMode } from "./conversation-storage-policy";
 export {
+  createFakeDesktopBackend,
+  resolveExecutionHandoff,
+  type DesktopBackend,
+  type DesktopRun,
+  type ExecutionHandoff,
+  type FakeDesktopBackend,
+  type FakeDesktopBackendSeed,
+} from "./desktop-backend";
+export {
   compareConversationsBySort,
   conversationActivityCutoff,
   createConversationId,
