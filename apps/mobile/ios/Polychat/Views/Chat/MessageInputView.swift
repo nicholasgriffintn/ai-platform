@@ -127,9 +127,9 @@ struct MessageInputView: View {
                         Button(action: onStopRun) {
                             Image(systemName: isCancellationPending ? "hourglass" : "stop.fill")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Color(light: .white, dark: .black))
+                                .foregroundColor(Color.polychat.prominentControlForeground)
                                 .frame(width: 38, height: 38)
-                                .background(Color(light: .black, dark: Color.polychat.offWhite))
+                                .background(Color.polychat.prominentControlBackground)
                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
                         .disabled(isCancellationPending)
@@ -138,9 +138,9 @@ struct MessageInputView: View {
                         Button(action: sendMessage) {
                             Image(systemName: "paperplane.fill")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(Color(light: .white, dark: .black))
+                                .foregroundColor(Color.polychat.prominentControlForeground)
                                 .frame(width: 38, height: 38)
-                                .background(canSend ? Color(light: .black, dark: Color.polychat.offWhite) : Color.polychat.zinc500.opacity(0.55))
+                                .background(canSend ? Color.polychat.prominentControlBackground : Color.polychat.zinc500.opacity(0.55))
                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
                         .disabled(!canSend)

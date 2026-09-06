@@ -8,9 +8,9 @@ Separate turn execution from its connection so streaming and buffered calls obey
 
 Run chat turns through `executeAgentLoop` and the API's `runAgentLoop`. A transport resolves one buffered or streamed model response; common finalisation stores messages and tool results. Resolve step budgets in one policy module, apply the goal finish gate to both transports, and capture memories once after the run.
 
-Keep SSE and hand the streaming run to `executionCtx.waitUntil`. Treat a disconnected reader as detachment: stop writing to it, continue finalisation, and release resources from the run's own `finally`. Send heartbeat comments while connected. Web and iOS recover transport failures by polling for the persisted answer; a definitive API error is not a recoverable disconnect.
+Keep SSE and hand the streaming run to `executionCtx.waitUntil`. Treat a disconnected reader as detachment: stop writing to it, continue finalisation, and release resources from the run's own `finally`. Send heartbeat comments while connected. The submitting web or iOS client consumes that live turn through SSE only; a transport failure ends that client stream rather than silently replacing it with polling.
 
-Expose the current coordinator operation through authorised conversation reads. Read operation status before history so an idle result includes completed writes. Restore web activity and poll after a full refresh; bound recovery of a local, not-yet-stored turn to three minutes.
+Expose the current coordinator operation through authorised conversation reads. Read operation status before history so an idle result includes completed writes. When a client later opens a conversation with a detached active run, restore activity from an authorised run snapshot and poll its ordered events until it reaches a waiting or terminal state.
 
 Make Stop explicit through `/chat/completions/:id/cancel` before aborting the fetch. The detached turn watches a timestamped KV cancellation flag. Background execution is not a separate product mode.
 

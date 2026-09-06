@@ -64,7 +64,7 @@ export function TaskActivityTimeline({ timeline, renderDetail }: TaskActivityTim
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   if (timeline.items.length === 0) {
-    return <p className="text-sm text-zinc-500">No activity recorded yet.</p>;
+    return <p className="text-sm text-muted-foreground">No activity recorded yet.</p>;
   }
 
   return (
@@ -77,25 +77,21 @@ export function TaskActivityTimeline({ timeline, renderDetail }: TaskActivityTim
           <li
             key={item.id}
             className={`rounded-lg border p-3 ${
-              item.actionable
-                ? "border-amber-300 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30"
-                : "border-zinc-200 dark:border-zinc-800"
+              item.actionable ? "border-attention/45 bg-attention/12" : "border-border"
             }`}
           >
             <div className="flex items-start gap-2.5">
-              <span className="mt-0.5 text-zinc-500" aria-hidden>
+              <span className="mt-0.5 text-muted-foreground" aria-hidden>
                 <ActivityIcon item={item} />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                    {item.title}
-                  </p>
+                  <p className="text-sm font-medium text-foreground">{item.title}</p>
                   <Badge variant={item.actionable ? "warning" : "outline"}>
                     {STATUS_LABELS[item.status]}
                   </Badge>
                 </div>
-                <p className="mt-0.5 text-[11px] text-zinc-500">
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
                   {formatRelativeTime(item.occurredAt)}
                   {item.runId ? ` · Run ${item.runId}` : " · Proposed plan"}
                 </p>
@@ -123,7 +119,7 @@ export function TaskActivityTimeline({ timeline, renderDetail }: TaskActivityTim
                   </Button>
                 ) : null}
                 {isExpanded ? (
-                  <div className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-2 space-y-2 text-sm text-foreground">
                     {item.detail ? (
                       renderDetail ? (
                         renderDetail(item.detail)

@@ -21,7 +21,6 @@ import { getCatalogueToolName } from "~/utils/toolNames";
 
 import { formatToolCalls } from "../lib/chat/tools/provider-tool-definitions";
 import {
-  hasProviderReasoningOptions,
   resolveReasoningModel,
   shouldSendProviderReasoningEffort,
 } from "../lib/providers/models/reasoning";
@@ -41,89 +40,43 @@ const FLAT_REASONING_EFFORT_PROVIDERS = new Set([
   "vercel",
 ]);
 
-/**
- * Restricts max_tokens to the model's configured maximum
- * @param requestedMaxTokens - The user-requested max tokens
- * @param modelMaxTokens - The model's configured maximum tokens
- * @returns The effective max tokens (never exceeds model limit)
- */
 export function getEffectiveMaxTokens(
   requestedMaxTokens: number | undefined,
   modelMaxTokens: number | undefined,
-  defaultMaxTokens = 8192,
-): number {
-  const requested = requestedMaxTokens ?? defaultMaxTokens;
-
-  if (modelMaxTokens === undefined) {
-    return requested;
+): number | undefined {
+  if (requestedMaxTokens === undefined || modelMaxTokens === undefined) {
+    return requestedMaxTokens;
   }
 
-  return Math.min(requested, modelMaxTokens);
+  return Math.min(requestedMaxTokens, modelMaxTokens);
 }
-
-const MAX_OUTPUT_TOKEN_DEFAULTS = {
-  short: 2_048,
-  normal: 8_192,
-  long: 16_384,
-  reasoning: 32_768,
-} as const;
 
 type OutputTokenRequest = Pick<
   ChatCompletionParameters,
   "conversation_type" | "max_tokens" | "mode" | "options" | "reasoning_effort" | "response_format"
 >;
 
-function requestsStructuredJson(responseFormat: OutputTokenRequest["response_format"]): boolean {
-  return (
-    responseFormat !== undefined &&
-    "type" in responseFormat &&
-    (responseFormat.type === "json_object" || responseFormat.type === "json_schema")
-  );
-}
-
-function usesReasoningDefault(
-  params: OutputTokenRequest,
-  modelConfig: ModelConfigItem | undefined,
-): boolean {
-  if (params.reasoning_effort !== undefined) {
-    return params.reasoning_effort !== "none" && params.reasoning_effort !== "simulated-thinking";
-  }
-
-  return hasProviderReasoningOptions(modelConfig);
-}
-
-export function resolveDefaultMaxOutputTokens(
-  params: OutputTokenRequest,
-  modelConfig: ModelConfigItem | undefined,
-): number {
-  if (requestsStructuredJson(params.response_format)) {
-    return MAX_OUTPUT_TOKEN_DEFAULTS.short;
-  }
-
-  if (usesReasoningDefault(params, modelConfig)) {
-    return MAX_OUTPUT_TOKEN_DEFAULTS.reasoning;
-  }
-
-  if (
-    isAgentExecutionMode(params.mode) ||
-    params.conversation_type === "task" ||
-    params.options?.sandbox?.enabled
-  ) {
-    return MAX_OUTPUT_TOKEN_DEFAULTS.long;
-  }
-
-  return MAX_OUTPUT_TOKEN_DEFAULTS.normal;
-}
-
 export function resolveEffectiveMaxTokens(
   params: OutputTokenRequest,
   modelConfig: ModelConfigItem | undefined,
+): number | undefined {
+  return getEffectiveMaxTokens(params.max_tokens, modelConfig?.maxTokens);
+}
+
+export function resolveRequiredMaxTokens(
+  params: OutputTokenRequest,
+  modelConfig: ModelConfigItem | undefined,
 ): number {
-  return getEffectiveMaxTokens(
-    params.max_tokens,
-    modelConfig?.maxTokens,
-    resolveDefaultMaxOutputTokens(params, modelConfig),
-  );
+  const maxTokens = resolveEffectiveMaxTokens(params, modelConfig) ?? modelConfig?.maxTokens;
+
+  if (maxTokens === undefined) {
+    throw new AssistantError(
+      "The provider requires an output limit, but the model has no declared output capacity",
+      ErrorType.CONFIGURATION_ERROR,
+    );
+  }
+
+  return maxTokens;
 }
 
 /**
@@ -230,7 +183,8 @@ export function calculateReasoningBudget(
     return 0;
   }
 
-  const effectiveMaxTokens = resolveEffectiveMaxTokens(params, modelConfig);
+  const effectiveMaxTokens =
+    resolveEffectiveMaxTokens(params, modelConfig) ?? modelConfig?.maxTokens;
 
   if (!effectiveMaxTokens) {
     return MINIMUM_REASONING_BUDGET;
@@ -358,12 +312,17 @@ export function createCommonParameters(
     commonParams.metadata = params.metadata;
   }
 
-  const effectiveMaxTokens = resolveEffectiveMaxTokens(params, modelConfig);
+  const effectiveMaxTokens =
+    providerName === "anthropic"
+      ? resolveRequiredMaxTokens(params, modelConfig)
+      : resolveEffectiveMaxTokens(params, modelConfig);
 
-  if (providerName === "openai") {
-    commonParams.max_completion_tokens = effectiveMaxTokens;
-  } else {
-    commonParams.max_tokens = effectiveMaxTokens;
+  if (effectiveMaxTokens !== undefined) {
+    if (providerName === "openai") {
+      commonParams.max_completion_tokens = effectiveMaxTokens;
+    } else {
+      commonParams.max_tokens = effectiveMaxTokens;
+    }
   }
 
   if (providerName === "cohere") {

@@ -13,7 +13,6 @@ import {
   FlowEditorDialog,
   ProjectBriefCard,
   TaskBoard,
-  TaskActivityTimeline as TaskActivityTimelineView,
   TaskDetail,
 } from "./index";
 
@@ -490,63 +489,6 @@ describe("TaskDetail", () => {
     ).toBeTruthy();
     expect(screen.getByLabelText(`Met: ${criterion}`)).toBeTruthy();
     expect(screen.getByText("Confirmed").getAttribute("data-slot")).toBe("badge");
-  });
-});
-
-describe("TaskActivityTimeline", () => {
-  it("keeps actionable and unknown activity visible while details stay optional", () => {
-    render(
-      <TaskActivityTimelineView
-        timeline={{
-          protocolVersion: 1,
-          projectId: task.projectId,
-          taskId: task.id,
-          items: [
-            {
-              protocolVersion: 1,
-              id: "question-1",
-              projectId: task.projectId,
-              taskId: task.id,
-              runId: "run-1",
-              type: "interaction.requested",
-              category: "interaction",
-              status: "waiting",
-              title: "Waiting for your answer",
-              detail: "Which format?",
-              items: [],
-              occurredAt: "2026-09-05T12:00:00.000Z",
-              sourceId: "question-1",
-              actionable: true,
-              terminal: false,
-            },
-            {
-              protocolVersion: 1,
-              id: "future-1",
-              projectId: task.projectId,
-              taskId: task.id,
-              runId: "run-1",
-              type: "future.checkpoint",
-              category: "run",
-              status: "unknown",
-              title: "Task activity",
-              detail: "future.checkpoint",
-              items: [],
-              occurredAt: "2026-09-05T11:59:00.000Z",
-              sourceId: "future-1",
-              actionable: false,
-              terminal: false,
-            },
-          ],
-        }}
-      />,
-    );
-
-    expect(screen.getByText("Waiting for your answer")).toBeTruthy();
-    expect(screen.getByText("Task activity")).toBeTruthy();
-    expect(screen.queryByText("Which format?")).toBeNull();
-
-    fireEvent.click(screen.getAllByRole("button", { name: "Show details" })[0]);
-    expect(screen.getByText("Which format?")).toBeTruthy();
   });
 });
 

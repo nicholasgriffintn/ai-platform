@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
 import { conversationTypeSchema } from "./chat";
-import { conversationLabelSchema, conversationSnoozeSchema } from "./conversation-organisation";
+import { conversationGroupSchema, conversationSnoozeSchema } from "./conversation-organisation";
 import { modelTierSchema } from "./model-lineup";
 import { projectFlowSchema } from "./project-tasks";
 import { sandboxEnvironmentCacheSummarySchema } from "./sandbox-cache";
@@ -202,7 +202,7 @@ export const projectConversationSchema = z.object({
   isPinned: z.boolean(),
   isUnread: z.boolean(),
   snooze: conversationSnoozeSchema.nullable(),
-  labels: z.array(conversationLabelSchema),
+  group: conversationGroupSchema.nullable(),
   createdBy: z.object({
     id: z.number().int().positive(),
     name: z.string().nullable(),

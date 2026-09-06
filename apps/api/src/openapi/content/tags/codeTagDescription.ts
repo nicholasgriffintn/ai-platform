@@ -95,8 +95,6 @@ async function getCompletion(beforeCursor, afterCursor) {
 				model: "mistral-codestral-latest",
 				prompt: beforeCursor,
 				suffix: afterCursor,
-				max_tokens: 50,
-				temperature: 0.3,
 				stream: false,
 			}),
 		},

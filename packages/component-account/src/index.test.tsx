@@ -250,7 +250,20 @@ describe("agent editor", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create agent" }));
 
     expect(onSubmit).toHaveBeenCalledOnce();
-    expect(onSubmit.mock.calls[0][0]).toMatchObject({ name: "Scout", mode: "plan" });
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({
+      name: "Scout",
+      mode: "plan",
+      temperature: null,
+    });
+  });
+
+  it("clears a saved temperature override back to automatic sampling", () => {
+    const onSubmit = renderEditor({ agent: { ...personalAgent, temperature: 0.4 } });
+
+    fireEvent.change(screen.getByLabelText("Temperature"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save agent" }));
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ temperature: null }));
   });
 
   it("refuses a name that is only whitespace", () => {

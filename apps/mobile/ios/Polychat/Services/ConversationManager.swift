@@ -18,16 +18,17 @@ class ConversationManager: ObservableObject {
 
     private var apiClient: (any ConversationAPIClient)?
     private var modelsStore: ModelsStore?
-    private var turnRecoveryPolicy = TurnRecoveryPolicy()
+    private var chatRunReplayPolicy = ChatRunReplayPolicy()
+    private var locallyStreamingConversationIds: Set<String> = []
 
     func configure(
         apiClient: any ConversationAPIClient,
         modelsStore: ModelsStore? = nil,
-        turnRecoveryPolicy: TurnRecoveryPolicy = TurnRecoveryPolicy()
+        chatRunReplayPolicy: ChatRunReplayPolicy = ChatRunReplayPolicy()
     ) {
         self.apiClient = apiClient
         self.modelsStore = modelsStore
-        self.turnRecoveryPolicy = turnRecoveryPolicy
+        self.chatRunReplayPolicy = chatRunReplayPolicy
     }
 
     func reset() {
@@ -43,6 +44,7 @@ class ConversationManager: ObservableObject {
         currentTaskActivity = nil
         currentConnectorApproval = nil
         turnActivities = [:]
+        locallyStreamingConversationIds = []
     }
 
     func loadConversations() async {
@@ -194,7 +196,8 @@ class ConversationManager: ObservableObject {
         while !Task.isCancelled {
             guard let apiClient,
                   let conversation = currentConversation,
-                  let run = conversation.latestRun else {
+                  let run = conversation.latestRun,
+                  !locallyStreamingConversationIds.contains(conversation.id) else {
                 return
             }
 
@@ -222,6 +225,16 @@ class ConversationManager: ObservableObject {
                     } else {
                         replayState = outcome.state
                     }
+
+                    if replayState?.snapshot.run.isTerminal == true {
+                        let snapshot = try await apiClient.fetchChatRunSnapshot(id: run.id)
+                        if let currentReplayState = replayState {
+                            replayState = ChatRunReplay.reconcile(
+                                state: currentReplayState,
+                                snapshot: snapshot
+                            )
+                        }
+                    }
                 }
 
                 guard currentConversation?.id == conversation.id,
@@ -243,7 +256,7 @@ class ConversationManager: ObservableObject {
             }
 
             do {
-                try await turnRecoveryPolicy.sleep(turnRecoveryPolicy.pollInterval)
+                try await chatRunReplayPolicy.sleep(chatRunReplayPolicy.pollInterval)
             } catch {
                 return
             }
@@ -630,11 +643,13 @@ class ConversationManager: ObservableObject {
         }
 
         let commandId = UUID().uuidString
-        var observedRun = conversation.latestRun
-        let knownAssistantCount = conversation.messages.filter { $0.role == "assistant" }.count
         var toolActivity = StreamingToolActivity()
+        locallyStreamingConversationIds.insert(conversationId)
         turnActivities[conversationId] = TurnActivityProjection()
-        defer { turnActivities.removeValue(forKey: conversationId) }
+        defer {
+            locallyStreamingConversationIds.remove(conversationId)
+            turnActivities.removeValue(forKey: conversationId)
+        }
 
         let assistantMessageId = UUID().uuidString
         let loadingMessage = ChatMessage(
@@ -755,7 +770,6 @@ class ConversationManager: ObservableObject {
                         )
                     }
                 case .run(let receipt):
-                    observedRun = receipt.run
                     updateRun(receipt.run, conversationId: conversationId)
                 case .toolUseStart(let toolCall):
                     toolActivity.start(toolCall)
@@ -855,27 +869,6 @@ class ConversationManager: ObservableObject {
             removePendingCompactionMessages(conversationId: conversationId)
             removeMessages(conversationId: conversationId, ids: toolActivity.interimMessageIds)
 
-            let recovered = await recoverDetachedTurn(
-                error: error,
-                conversationId: conversationId,
-                commandId: commandId,
-                runId: observedRun?.id,
-                knownAssistantCount: knownAssistantCount,
-                assistantMessageId: finalMessageId,
-                fallbackMessageId: assistantMessageId,
-                modelId: conversation.modelId,
-                streamedContent: streamedContent
-            )
-
-            if recovered {
-                if generateTitle,
-                   let updatedConversation = currentConversation,
-                   updatedConversation.id == conversationId {
-                    await generateTitleIfNeeded(for: updatedConversation)
-                }
-                return
-            }
-
             updateAssistantMessage(
                 conversationId: conversationId,
                 messageId: finalMessageId,
@@ -885,59 +878,6 @@ class ConversationManager: ObservableObject {
                 markLoadedFromAPI: didReceiveStreamEvent
             )
         }
-    }
-
-    private func recoverDetachedTurn(
-        error: Error,
-        conversationId: String,
-        commandId: String,
-        runId: String?,
-        knownAssistantCount: Int,
-        assistantMessageId: String,
-        fallbackMessageId: String,
-        modelId: String?,
-        streamedContent: String
-    ) async -> Bool {
-        guard StreamFailureClassifier.classify(error) == .transport, let apiClient else {
-            return false
-        }
-
-        var projection = turnActivities[conversationId] ?? TurnActivityProjection()
-        projection.markReconnecting()
-        turnActivities[conversationId] = projection
-
-        updateAssistantMessage(
-            conversationId: conversationId,
-            messageId: assistantMessageId,
-            content: streamedContent.isEmpty
-                ? TurnRecoveryStatus.reconnecting
-                : streamedContent + TurnRecoveryStatus.reconnectingNotice,
-            modelId: modelId,
-            fallbackMessageId: fallbackMessageId,
-            markLoadedFromAPI: false
-        )
-
-        let snapshot = await TurnRecovery.recoverDetachedTurn(
-            runId: runId,
-            knownAssistantCount: knownAssistantCount,
-            policy: turnRecoveryPolicy,
-            resolveCommand: {
-                try await apiClient.fetchChatRunCommand(id: commandId).run.id
-            },
-            fetchRun: { runId, recovery in
-                try await apiClient.fetchChatRun(id: runId, recovery: recovery)
-            }
-        )
-
-        guard let snapshot else {
-            return false
-        }
-
-        return applyRunSnapshot(
-            conversationId: conversationId,
-            snapshot: snapshot,
-            placeholderIds: [assistantMessageId, fallbackMessageId]
-        )
     }
 
     func turnActivityLabel(for conversationId: String?) -> String? {

@@ -30,8 +30,12 @@ export function buildAdvanceRunEventSequenceStatement(
 export function buildInsertRunEventStatement(
   database: D1Database,
   event: RunEventWrite,
+  options: { ignoreSequenceConflict?: boolean } = {},
 ): D1PreparedStatement {
   const attemptClause = event.expectedAttempt === undefined ? "" : " AND attempt = ?";
+  const conflictClause = options.ignoreSequenceConflict
+    ? " ON CONFLICT(run_id, sequence) DO NOTHING"
+    : "";
 
   return database
     .prepare(
@@ -40,7 +44,7 @@ export function buildInsertRunEventStatement(
        )
        SELECT ?, id, event_sequence, ?, attempt, ?, ?, ?
        FROM conversation_run
-       WHERE id = ? AND event_sequence > 0${attemptClause}`,
+       WHERE id = ? AND event_sequence > 0${attemptClause}${conflictClause}`,
     )
     .bind(
       event.id,

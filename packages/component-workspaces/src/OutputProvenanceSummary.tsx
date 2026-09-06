@@ -7,7 +7,7 @@ export interface OutputProvenanceSummaryProps {
 export function OutputProvenanceSummary({ provenance }: OutputProvenanceSummaryProps) {
   if (provenance.completeness === "legacy") {
     return (
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="text-xs text-muted-foreground">
         Origin details are unavailable for this legacy output.
       </p>
     );
@@ -19,7 +19,7 @@ export function OutputProvenanceSummary({ provenance }: OutputProvenanceSummaryP
     provenance.approvals.length > 0;
 
   return (
-    <section aria-label="Output provenance" className="text-xs text-zinc-500 dark:text-zinc-400">
+    <section aria-label="Output provenance" className="text-xs text-muted-foreground">
       <p>
         {provenance.origin === "generated" ? "Generated" : "Created"}
         {provenance.model
@@ -36,7 +36,7 @@ export function OutputProvenanceSummary({ provenance }: OutputProvenanceSummaryP
       </p>
       {hasReferences && (
         <details className="mt-1">
-          <summary className="cursor-pointer font-medium text-zinc-600 dark:text-zinc-300">
+          <summary className="cursor-pointer font-medium text-foreground">
             Inspect origin details
           </summary>
           <dl className="mt-1 grid gap-1 pl-3">

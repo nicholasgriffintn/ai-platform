@@ -46,6 +46,7 @@ export function listModelCatalogue() {
     getModels({
       shouldUseCache: false,
       excludeModalities: [...CATALOGUE_EXCLUDED_MODALITIES],
+      chatSurfaceOnly: true,
     }),
   );
 }
@@ -57,6 +58,7 @@ export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> 
   const allModels = getModels({
     shouldUseCache: false,
     excludeModalities: [...CATALOGUE_EXCLUDED_MODALITIES],
+    chatSurfaceOnly: true,
   });
   const filteredModels = await filterModelsForUserAccess(allModels, env, user?.id, {
     shouldUseCache: false,

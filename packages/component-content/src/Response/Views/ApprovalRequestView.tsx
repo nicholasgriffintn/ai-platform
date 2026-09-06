@@ -107,7 +107,7 @@ export function ApprovalRequestView({
       ) : onToolInteraction ? (
         <div className="space-y-2">
           {activeSubmission?.status === "failed" ? (
-            <p role="alert" className="text-xs font-medium text-red-700 dark:text-red-300">
+            <p role="alert" className="text-xs font-medium text-failure">
               Approval was not submitted. Try again.
             </p>
           ) : isSubmitting ? (

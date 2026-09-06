@@ -31,7 +31,7 @@ export function StandardSidebarContent({
       header={header}
       footer={footer}
     >
-      <nav className="space-y-4 px-2 pb-[50px]">
+      <nav aria-label="Primary" className="space-y-4 px-2 pb-[50px]">
         <SidebarNavSection>
           <SidebarNavLink href={homeHref} end icon={<Home size={16} />}>
             Back to Home

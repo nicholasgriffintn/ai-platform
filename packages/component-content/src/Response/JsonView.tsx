@@ -117,7 +117,7 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
             {childCount > MAX_VISIBLE_BRANCH_CHILDREN ? (
               <button
                 type="button"
-                className="my-1 cursor-pointer text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                className="my-1 cursor-pointer text-active-work hover:text-active-work/80"
                 onClick={() =>
                   setFullyExpandedBranches((current) => ({
                     ...current,

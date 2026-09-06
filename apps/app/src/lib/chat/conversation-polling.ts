@@ -1,8 +1,14 @@
+import { isTerminalChatRunStatus } from "@ngriffin_uk/polychat-schemas";
+
 import type { Conversation } from "~/types";
 
 export function getConversationRefetchInterval(
   conversation: Conversation | null | undefined,
 ): number | false {
+  if (conversation?.latest_run && !isTerminalChatRunStatus(conversation.latest_run.status)) {
+    return false;
+  }
+
   if (conversation?.active_operation) {
     return 2_000;
   }

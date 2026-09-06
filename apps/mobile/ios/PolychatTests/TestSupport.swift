@@ -268,8 +268,8 @@ func makeConnectorApprovalMessage() -> ChatMessage {
     )
 }
 
-func makeInstantTurnRecoveryPolicy() -> TurnRecoveryPolicy {
-    TurnRecoveryPolicy(pollInterval: .zero, maxWait: .seconds(2), sleep: { _ in })
+func makeInstantChatRunReplayPolicy() -> ChatRunReplayPolicy {
+    ChatRunReplayPolicy(pollInterval: .zero, sleep: { _ in })
 }
 
 func makeIsolatedUserDefaults() throws -> UserDefaults {
@@ -306,7 +306,6 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var conversationDetail: ConversationDetailResponse?
     var conversationMessagePage: ConversationMessagePageResponse?
     var fetchConversationCallCount = 0
-    var chatRunSnapshot: ChatRunRecoveryResponse?
     var chatRunEventSnapshot: ChatRunSnapshotResponse?
     var chatRunReplayResponse: ChatRunReplayResponse?
     var chatRunCommandReceipt: ChatRunCommandReceipt?
@@ -323,11 +322,8 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var resolveProjectTaskApprovalError: Error?
     var answeredProjectTaskQuestions: [(projectId: String, taskId: String, interactionId: String, answers: [UserQuestionAnswer])] = []
     var resolvedProjectTaskApprovals: [(projectId: String, taskId: String, interactionId: String, resolution: String)] = []
-    var fetchChatRunCallCount = 0
     var fetchChatRunSnapshotCallCount = 0
     var fetchChatRunEventsCallCount = 0
-    var fetchChatRunCommandCallCount = 0
-    var recoveryAttempts: [TurnRecoveryAttemptContext] = []
 
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse {
         throw TestFailure.unexpectedCall
@@ -335,13 +331,9 @@ final class ConversationAPIClientStub: ConversationAPIClient {
 
     func fetchConversation(
         id: String,
-        refreshPending: Bool,
-        recovery: TurnRecoveryAttemptContext?
+        refreshPending: Bool
     ) async throws -> ConversationDetailResponse {
         fetchConversationCallCount += 1
-        if let recovery {
-            recoveryAttempts.append(recovery)
-        }
 
         guard let conversationDetail else {
             throw TestFailure.unexpectedCall
@@ -384,21 +376,6 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         }
     }
 
-    func fetchChatRun(
-        id: String,
-        recovery: TurnRecoveryAttemptContext?
-    ) async throws -> ChatRunRecoveryResponse {
-        fetchChatRunCallCount += 1
-        if let recovery {
-            recoveryAttempts.append(recovery)
-        }
-        guard let chatRunSnapshot else {
-            throw TestFailure.unexpectedCall
-        }
-
-        return chatRunSnapshot
-    }
-
     func fetchChatRunSnapshot(id: String) async throws -> ChatRunSnapshotResponse {
         fetchChatRunSnapshotCallCount += 1
         guard let chatRunEventSnapshot else {
@@ -419,15 +396,6 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         }
 
         return chatRunReplayResponse
-    }
-
-    func fetchChatRunCommand(id: String) async throws -> ChatRunCommandReceipt {
-        fetchChatRunCommandCallCount += 1
-        guard let chatRunCommandReceipt else {
-            throw TestFailure.unexpectedCall
-        }
-
-        return chatRunCommandReceipt
     }
 
     func cancelChatRun(

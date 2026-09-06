@@ -1,5 +1,32 @@
 import Foundation
 
+struct ChatRunReplayPolicy {
+    var pollInterval: Duration = .seconds(2)
+    var sleep: @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+
+    init(
+        pollInterval: Duration = .seconds(2),
+        sleep: @escaping @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+    ) {
+        self.pollInterval = pollInterval
+        self.sleep = sleep
+    }
+}
+
+extension ChatRun {
+    var isTerminal: Bool {
+        ["succeeded", "failed", "cancelled", "interrupted"].contains(status)
+    }
+
+    var isWaiting: Bool {
+        status == "awaiting_input" || status == "awaiting_approval"
+    }
+
+    var isActive: Bool {
+        !isTerminal
+    }
+}
+
 struct ChatRunReplayState: Equatable {
     var cursor: Int
     var snapshot: ChatRunSnapshotResponse
@@ -13,6 +40,24 @@ struct ChatRunReplayOutcome: Equatable {
 
 enum ChatRunReplay {
     static let protocolVersion = 1
+
+    static func reconcile(
+        state: ChatRunReplayState,
+        snapshot: ChatRunSnapshotResponse
+    ) -> ChatRunReplayState {
+        guard snapshot.protocolVersion <= protocolVersion,
+              snapshot.run.id == state.snapshot.run.id,
+              snapshot.cursor >= state.cursor else {
+            return state
+        }
+
+        if state.snapshot.run.isTerminal,
+           snapshot.run.status != state.snapshot.run.status {
+            return state
+        }
+
+        return ChatRunReplayState(cursor: snapshot.cursor, snapshot: snapshot)
+    }
 
     static func apply(
         state: ChatRunReplayState,

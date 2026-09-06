@@ -120,8 +120,7 @@ Respond with only a single number from 1-10 representing the quality score.`;
         env,
         model: modelToUse,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 10,
-        temperature: 0.1,
+        reasoning: { effort: "none" },
       });
 
       const scoreMatch = response.response.match(/(\d+)/);

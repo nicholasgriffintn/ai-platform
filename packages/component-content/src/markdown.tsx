@@ -107,7 +107,7 @@ export interface MarkdownProps {
 
 export function Markdown({ children, className, isStreaming = false }: MarkdownProps) {
   const markdownClassName = useMemo(
-    () => `markdown prose dark:prose-invert prose-zinc ${className || ""}`,
+    () => `max-w-full w-full markdown prose dark:prose-invert prose-zinc ${className || ""}`,
     [className],
   );
   const processedMarkdown = useMemo(

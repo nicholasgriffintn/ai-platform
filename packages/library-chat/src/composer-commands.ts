@@ -46,8 +46,9 @@ export function getComposerDirectiveQuery(
 
   const token = match[2];
   const start = beforeCursor.length - token.length;
-  const tokenSuffix =
-    input.slice(cursorPosition).match(token.startsWith("/") ? /^[^\n]*/ : /^[^\s]*/)?.[0] ?? "";
+  const tokenSuffix = /\s$/.test(token)
+    ? ""
+    : (input.slice(cursorPosition).match(/^[^\s]*/)?.[0] ?? "");
   const directive = {
     trigger: token[0] as ComposerCommandTrigger,
     query: token.slice(1).toLowerCase(),

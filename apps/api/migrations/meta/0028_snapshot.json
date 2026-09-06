@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "85732f56-8bc6-4871-97ae-8b17200e3945",
+  "id": "6b513204-f62b-4398-84dd-fea46d889f7b",
   "prevId": "8430acc9-3ae6-4ffd-9d3b-c701cc54d59f",
   "tables": {
     "activity_record": {
@@ -1742,8 +1742,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "conversation_label": {
-      "name": "conversation_label",
+    "conversation_group": {
+      "name": "conversation_group",
       "columns": {
         "id": {
           "name": "id",
@@ -1797,41 +1797,41 @@
         }
       },
       "indexes": {
-        "conversation_label_personal_name_idx": {
-          "name": "conversation_label_personal_name_idx",
+        "conversation_group_personal_name_idx": {
+          "name": "conversation_group_personal_name_idx",
           "columns": ["owner_user_id", "normalised_name"],
           "isUnique": true,
-          "where": "\"conversation_label\".\"owner_user_id\" IS NOT NULL"
+          "where": "\"conversation_group\".\"owner_user_id\" IS NOT NULL"
         },
-        "conversation_label_project_name_idx": {
-          "name": "conversation_label_project_name_idx",
+        "conversation_group_project_name_idx": {
+          "name": "conversation_group_project_name_idx",
           "columns": ["project_id", "normalised_name"],
           "isUnique": true,
-          "where": "\"conversation_label\".\"project_id\" IS NOT NULL"
+          "where": "\"conversation_group\".\"project_id\" IS NOT NULL"
         }
       },
       "foreignKeys": {
-        "conversation_label_owner_user_id_user_id_fk": {
-          "name": "conversation_label_owner_user_id_user_id_fk",
-          "tableFrom": "conversation_label",
+        "conversation_group_owner_user_id_user_id_fk": {
+          "name": "conversation_group_owner_user_id_user_id_fk",
+          "tableFrom": "conversation_group",
           "tableTo": "user",
           "columnsFrom": ["owner_user_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "conversation_label_project_id_project_id_fk": {
-          "name": "conversation_label_project_id_project_id_fk",
-          "tableFrom": "conversation_label",
+        "conversation_group_project_id_project_id_fk": {
+          "name": "conversation_group_project_id_project_id_fk",
+          "tableFrom": "conversation_group",
           "tableTo": "project",
           "columnsFrom": ["project_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "conversation_label_created_by_user_id_user_id_fk": {
-          "name": "conversation_label_created_by_user_id_user_id_fk",
-          "tableFrom": "conversation_label",
+        "conversation_group_created_by_user_id_user_id_fk": {
+          "name": "conversation_group_created_by_user_id_user_id_fk",
+          "tableFrom": "conversation_group",
           "tableTo": "user",
           "columnsFrom": ["created_by_user_id"],
           "columnsTo": ["id"],
@@ -1842,24 +1842,24 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {
-        "conversation_label_owner_check": {
-          "name": "conversation_label_owner_check",
-          "value": "(\"conversation_label\".\"owner_user_id\" IS NULL) <> (\"conversation_label\".\"project_id\" IS NULL)"
+        "conversation_group_owner_check": {
+          "name": "conversation_group_owner_check",
+          "value": "(\"conversation_group\".\"owner_user_id\" IS NULL) <> (\"conversation_group\".\"project_id\" IS NULL)"
         }
       }
     },
-    "conversation_label_assignment": {
-      "name": "conversation_label_assignment",
+    "conversation_group_membership": {
+      "name": "conversation_group_membership",
       "columns": {
         "conversation_id": {
           "name": "conversation_id",
           "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
-        "label_id": {
-          "name": "label_id",
+        "group_id": {
+          "name": "group_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -1882,34 +1882,34 @@
         }
       },
       "indexes": {
-        "conversation_label_assignment_label_idx": {
-          "name": "conversation_label_assignment_label_idx",
-          "columns": ["label_id"],
+        "conversation_group_membership_group_idx": {
+          "name": "conversation_group_membership_group_idx",
+          "columns": ["group_id"],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "conversation_label_assignment_conversation_id_conversation_id_fk": {
-          "name": "conversation_label_assignment_conversation_id_conversation_id_fk",
-          "tableFrom": "conversation_label_assignment",
+        "conversation_group_membership_conversation_id_conversation_id_fk": {
+          "name": "conversation_group_membership_conversation_id_conversation_id_fk",
+          "tableFrom": "conversation_group_membership",
           "tableTo": "conversation",
           "columnsFrom": ["conversation_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "conversation_label_assignment_label_id_conversation_label_id_fk": {
-          "name": "conversation_label_assignment_label_id_conversation_label_id_fk",
-          "tableFrom": "conversation_label_assignment",
-          "tableTo": "conversation_label",
-          "columnsFrom": ["label_id"],
+        "conversation_group_membership_group_id_conversation_group_id_fk": {
+          "name": "conversation_group_membership_group_id_conversation_group_id_fk",
+          "tableFrom": "conversation_group_membership",
+          "tableTo": "conversation_group",
+          "columnsFrom": ["group_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "conversation_label_assignment_assigned_by_user_id_user_id_fk": {
-          "name": "conversation_label_assignment_assigned_by_user_id_user_id_fk",
-          "tableFrom": "conversation_label_assignment",
+        "conversation_group_membership_assigned_by_user_id_user_id_fk": {
+          "name": "conversation_group_membership_assigned_by_user_id_user_id_fk",
+          "tableFrom": "conversation_group_membership",
           "tableTo": "user",
           "columnsFrom": ["assigned_by_user_id"],
           "columnsTo": ["id"],
@@ -1917,12 +1917,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "conversation_label_assignment_conversation_id_label_id_pk": {
-          "columns": ["conversation_id", "label_id"],
-          "name": "conversation_label_assignment_conversation_id_label_id_pk"
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
@@ -4711,13 +4706,6 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'auto'"
-        },
-        "default_model_tier": {
-          "name": "default_model_tier",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         },
         "coding_enabled": {
           "name": "coding_enabled",

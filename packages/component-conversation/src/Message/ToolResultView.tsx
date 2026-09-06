@@ -93,7 +93,7 @@ export const ToolResultView = ({
         </div>
       )}
       {display.streamPreview ? (
-        <output className="mt-1.5 block text-xs text-zinc-500 dark:text-zinc-400">
+        <output className="mt-1.5 block text-xs text-muted-foreground">
           Showing a bounded live preview. The full stored output is available after this
           conversation refreshes.
         </output>

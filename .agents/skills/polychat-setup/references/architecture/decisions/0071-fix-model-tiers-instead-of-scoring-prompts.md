@@ -1,4 +1,4 @@
-# ADR 0070: Fix model tiers instead of scoring prompts
+# ADR 0071: Fix model tiers instead of scoring prompts
 
 Status: Implemented.
 

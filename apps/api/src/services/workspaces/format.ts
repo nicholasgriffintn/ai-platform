@@ -124,7 +124,7 @@ export function formatProjectCapability(row: ProjectCapabilityRow): ProjectCapab
 }
 
 export function formatProjectConversation(row: ProjectConversationRow): ProjectConversation {
-  const labels = safeParseJson<ProjectConversation["labels"]>(row.labels) ?? [];
+  const group = row.group ? safeParseJson<ProjectConversation["group"]>(row.group) : null;
   const snooze =
     row.snoozed_until && Date.parse(row.snoozed_until) > Date.now()
       ? ({ kind: "until", until: row.snoozed_until } as const)
@@ -143,7 +143,7 @@ export function formatProjectConversation(row: ProjectConversationRow): ProjectC
     isPinned: row.is_pinned === 1,
     isUnread: isConversationUnread(row),
     snooze,
-    labels,
+    group,
     createdBy: {
       id: row.created_by,
       name: row.created_by_name,

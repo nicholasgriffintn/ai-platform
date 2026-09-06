@@ -1,4 +1,4 @@
-import type { ConversationLabel, ConversationSnooze } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationGroup, ConversationSnooze } from "@ngriffin_uk/polychat-schemas";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -17,7 +17,7 @@ export interface ConversationUserStateRow {
   next_response_arrived: number;
 }
 
-export interface ConversationLabelRow {
+export interface ConversationGroupRow {
   id: string;
   owner_user_id: number | null;
   project_id: string | null;
@@ -27,7 +27,7 @@ export interface ConversationLabelRow {
   created_at: string;
 }
 
-function formatLabel(row: ConversationLabelRow): ConversationLabel {
+function formatGroup(row: ConversationGroupRow): ConversationGroup {
   return {
     id: row.id,
     name: row.name,
@@ -93,76 +93,76 @@ export class ConversationOrganisationRepository extends BaseRepository {
     );
   }
 
-  async listLabels(userId: number, projectId: string | null): Promise<ConversationLabel[]> {
+  async listGroups(userId: number, projectId: string | null): Promise<ConversationGroup[]> {
     const rows = projectId
-      ? await this.runQuery<ConversationLabelRow>(
-          `SELECT * FROM conversation_label
+      ? await this.runQuery<ConversationGroupRow>(
+          `SELECT * FROM conversation_group
            WHERE project_id = ?
            ORDER BY normalised_name ASC, id ASC`,
           [projectId],
         )
-      : await this.runQuery<ConversationLabelRow>(
-          `SELECT * FROM conversation_label
+      : await this.runQuery<ConversationGroupRow>(
+          `SELECT * FROM conversation_group
            WHERE owner_user_id = ?
            ORDER BY normalised_name ASC, id ASC`,
           [userId],
         );
 
-    return rows.map(formatLabel);
+    return rows.map(formatGroup);
   }
 
-  async listAssignedLabels(
+  async getConversationGroup(
     conversationId: string,
     userId: number,
     projectId: string | null,
-  ): Promise<ConversationLabel[]> {
-    const scopeClause = projectId ? "label.project_id = ?" : "label.owner_user_id = ?";
+  ): Promise<ConversationGroup | null> {
+    const scopeClause = projectId ? "grp.project_id = ?" : "grp.owner_user_id = ?";
     const scopeValue = projectId ?? userId;
-    const rows = await this.runQuery<ConversationLabelRow>(
-      `SELECT label.*
-       FROM conversation_label label
-       JOIN conversation_label_assignment assignment ON assignment.label_id = label.id
-       WHERE assignment.conversation_id = ? AND ${scopeClause}
-       ORDER BY label.normalised_name ASC, label.id ASC`,
+    const row = await this.runQuery<ConversationGroupRow>(
+      `SELECT grp.*
+       FROM conversation_group grp
+       JOIN conversation_group_membership membership ON membership.group_id = grp.id
+       WHERE membership.conversation_id = ? AND ${scopeClause}`,
       [conversationId, scopeValue],
+      true,
     );
 
-    return rows.map(formatLabel);
+    return row ? formatGroup(row) : null;
   }
 
-  async getLabel(labelId: string): Promise<ConversationLabelRow | null> {
-    return this.runQuery<ConversationLabelRow>(
-      "SELECT * FROM conversation_label WHERE id = ?",
-      [labelId],
+  async getGroup(groupId: string): Promise<ConversationGroupRow | null> {
+    return this.runQuery<ConversationGroupRow>(
+      "SELECT * FROM conversation_group WHERE id = ?",
+      [groupId],
       true,
     );
   }
 
-  async findLabelByName(params: {
+  async findGroupByName(params: {
     userId: number;
     projectId: string | null;
     normalisedName: string;
-  }): Promise<ConversationLabelRow | null> {
+  }): Promise<ConversationGroupRow | null> {
     return params.projectId
-      ? this.runQuery<ConversationLabelRow>(
-          "SELECT * FROM conversation_label WHERE project_id = ? AND normalised_name = ?",
+      ? this.runQuery<ConversationGroupRow>(
+          "SELECT * FROM conversation_group WHERE project_id = ? AND normalised_name = ?",
           [params.projectId, params.normalisedName],
           true,
         )
-      : this.runQuery<ConversationLabelRow>(
-          "SELECT * FROM conversation_label WHERE owner_user_id = ? AND normalised_name = ?",
+      : this.runQuery<ConversationGroupRow>(
+          "SELECT * FROM conversation_group WHERE owner_user_id = ? AND normalised_name = ?",
           [params.userId, params.normalisedName],
           true,
         );
   }
 
-  async createLabel(params: {
+  async createGroup(params: {
     userId: number;
     projectId: string | null;
     name: string;
-  }): Promise<ConversationLabel> {
-    const row = await this.runQuery<ConversationLabelRow>(
-      `INSERT OR IGNORE INTO conversation_label (
+  }): Promise<ConversationGroup> {
+    const row = await this.runQuery<ConversationGroupRow>(
+      `INSERT OR IGNORE INTO conversation_group (
          id, owner_user_id, project_id, name, normalised_name, created_by_user_id
        ) VALUES (?, ?, ?, ?, ?, ?)
        RETURNING *`,
@@ -179,39 +179,41 @@ export class ConversationOrganisationRepository extends BaseRepository {
 
     if (!row) {
       throw new AssistantError(
-        "A label with this name already exists",
+        "A group with this name already exists",
         ErrorType.CONFLICT_ERROR,
         409,
       );
     }
 
-    return formatLabel(row);
+    return formatGroup(row);
   }
 
-  async deleteLabel(labelId: string): Promise<void> {
-    await this.executeRun("DELETE FROM conversation_label WHERE id = ?", [labelId]);
+  async deleteGroup(groupId: string): Promise<void> {
+    await this.executeRun("DELETE FROM conversation_group WHERE id = ?", [groupId]);
   }
 
-  async setLabelAssignment(params: {
+  async setConversationGroup(params: {
     conversationId: string;
-    labelId: string;
+    groupId: string | null;
     userId: number;
-    assigned: boolean;
   }): Promise<void> {
-    if (params.assigned) {
+    if (params.groupId) {
       await this.executeRun(
-        `INSERT OR IGNORE INTO conversation_label_assignment (
-           conversation_id, label_id, assigned_by_user_id
-         ) VALUES (?, ?, ?)`,
-        [params.conversationId, params.labelId, params.userId],
+        `INSERT INTO conversation_group_membership (
+           conversation_id, group_id, assigned_by_user_id
+         ) VALUES (?, ?, ?)
+         ON CONFLICT(conversation_id) DO UPDATE SET
+           group_id = excluded.group_id,
+           assigned_by_user_id = excluded.assigned_by_user_id,
+           created_at = CURRENT_TIMESTAMP`,
+        [params.conversationId, params.groupId, params.userId],
       );
 
       return;
     }
 
-    await this.executeRun(
-      "DELETE FROM conversation_label_assignment WHERE conversation_id = ? AND label_id = ?",
-      [params.conversationId, params.labelId],
-    );
+    await this.executeRun("DELETE FROM conversation_group_membership WHERE conversation_id = ?", [
+      params.conversationId,
+    ]);
   }
 }

@@ -175,7 +175,7 @@ Format as a structured document with clear sections.`;
         env,
         model: modelToUse,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 2000,
+        reasoning: { effort: "none" },
       });
 
       return response.response;

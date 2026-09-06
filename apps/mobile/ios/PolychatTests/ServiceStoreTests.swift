@@ -378,41 +378,6 @@ struct ServiceStoreTests {
     }
 
     @MainActor
-    @Test func conversationManagerRecoversDetachedTurnAfterTransportFailure() async throws {
-        let apiClient = ConversationAPIClientStub()
-        apiClient.streamError = URLError(.networkConnectionLost)
-        apiClient.chatRunCommandReceipt = makeChatRunReceipt(run: makeChatRun())
-        apiClient.chatRunSnapshot = ChatRunRecoveryResponse(
-            run: makeChatRun(status: "succeeded"),
-            messages: [
-                ChatMessage(id: "user-1", role: "user", content: "Search please"),
-                ChatMessage(id: "tool-1", role: "tool", content: "Three results"),
-                ChatMessage(id: "assistant-1", role: "assistant", content: "Recovered answer")
-            ]
-        )
-
-        let manager = ConversationManager()
-        manager.configure(
-            apiClient: apiClient,
-            turnRecoveryPolicy: makeInstantTurnRecoveryPolicy()
-        )
-        _ = manager.startNewConversation()
-
-        try await manager.addMessage(ChatMessage(id: "user-1", role: "user", content: "Search please"))
-
-        let messages = try #require(manager.currentConversation?.messages)
-        #expect(apiClient.fetchChatRunCommandCallCount >= 1)
-        #expect(apiClient.fetchChatRunCallCount >= 1)
-        #expect(apiClient.recoveryAttempts.first?.attempt == 1)
-        #expect(apiClient.recoveryAttempts.first?.knownAssistantCount == 0)
-        #expect(messages.map(\.role) == ["user", "tool", "assistant"])
-        #expect(messages.last?.id == "assistant-1")
-        #expect(messages.last?.textContent == "Recovered answer")
-        #expect(manager.currentConversation?.isLoadedFromAPI == true)
-        #expect(manager.currentConversation?.latestRun?.status == "succeeded")
-    }
-
-    @MainActor
     @Test func conversationManagerAcceptsStopBeforeReportingCancellationComplete() async throws {
         let apiClient = ConversationAPIClientStub()
         let running = makeChatRun(status: "running", attempt: 2)
@@ -456,7 +421,7 @@ struct ServiceStoreTests {
         let manager = ConversationManager()
         manager.configure(
             apiClient: apiClient,
-            turnRecoveryPolicy: makeInstantTurnRecoveryPolicy()
+            chatRunReplayPolicy: makeInstantChatRunReplayPolicy()
         )
         var conversation = makeConversation(
             id: "conversation-1",
@@ -516,7 +481,7 @@ struct ServiceStoreTests {
         let manager = ConversationManager()
         manager.configure(
             apiClient: apiClient,
-            turnRecoveryPolicy: makeInstantTurnRecoveryPolicy()
+            chatRunReplayPolicy: makeInstantChatRunReplayPolicy()
         )
         var conversation = makeConversation(id: "conversation-1")
         conversation.latestRun = makeChatRun(status: "running", attempt: 2)
@@ -525,21 +490,18 @@ struct ServiceStoreTests {
 
         await manager.observeCurrentRun()
 
-        #expect(apiClient.fetchChatRunSnapshotCallCount == 1)
+        #expect(apiClient.fetchChatRunSnapshotCallCount == 2)
         #expect(apiClient.fetchChatRunEventsCallCount == 1)
         #expect(manager.currentConversation?.latestRun?.status == "cancelled")
     }
 
     @MainActor
-    @Test func conversationManagerSurfacesAPIErrorsWithoutRecovery() async throws {
+    @Test func conversationManagerSurfacesStreamErrors() async throws {
         let apiClient = ConversationAPIClientStub()
         apiClient.streamError = APIClientError.httpStatus(500, "Model unavailable")
 
         let manager = ConversationManager()
-        manager.configure(
-            apiClient: apiClient,
-            turnRecoveryPolicy: makeInstantTurnRecoveryPolicy()
-        )
+        manager.configure(apiClient: apiClient)
         _ = manager.startNewConversation()
 
         try await manager.addMessage(ChatMessage(role: "user", content: "Hi"))

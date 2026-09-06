@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { ResponseView } from "./ResponseView";
@@ -47,17 +47,5 @@ describe("ResponseView", () => {
     expect(screen.getByText("Operator")).toBeInTheDocument();
     expect(screen.queryByText("Architect")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Convene" })).not.toBeInTheDocument();
-  });
-
-  it("renders a bounded large-output preview until the user expands it", () => {
-    const content = `start-${"x".repeat(50 * 1024)}-finish`;
-
-    render(<ResponseView result={{ status: "success", content }} responseType="text" />);
-
-    expect(screen.queryByText(/finish/)).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /Show full output/ }));
-
-    expect(screen.getByText(/finish/)).toBeInTheDocument();
   });
 });

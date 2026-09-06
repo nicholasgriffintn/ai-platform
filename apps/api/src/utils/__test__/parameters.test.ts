@@ -9,6 +9,7 @@ import {
   getEffectiveMaxTokens,
   getToolsForProvider,
   resolveEffectiveMaxTokens,
+  resolveRequiredMaxTokens,
   shouldEnableStreaming,
 } from "../parameters";
 
@@ -259,27 +260,27 @@ describe("resolveEffectiveMaxTokens", () => {
     maxTokens: 262_144,
   };
 
-  it("uses the normal chat default when no override is supplied", () => {
-    expect(resolveEffectiveMaxTokens({}, capableModel)).toBe(8_192);
+  it("leaves output length to the provider when no override is supplied", () => {
+    expect(resolveEffectiveMaxTokens({}, capableModel)).toBeUndefined();
   });
 
-  it("uses the short default for structured JSON responses", () => {
+  it("does not shorten structured JSON responses", () => {
     expect(
       resolveEffectiveMaxTokens({ response_format: { type: "json_object" } }, capableModel),
-    ).toBe(2_048);
+    ).toBeUndefined();
   });
 
-  it("uses the long default for agent and coding work", () => {
-    expect(resolveEffectiveMaxTokens({ mode: "build" }, capableModel)).toBe(16_384);
+  it("does not impose separate limits on agent and coding work", () => {
+    expect(resolveEffectiveMaxTokens({ mode: "build" }, capableModel)).toBeUndefined();
     expect(
       resolveEffectiveMaxTokens(
         { options: { sandbox: { enabled: true, taskType: "feature-implementation" } } },
         capableModel,
       ),
-    ).toBe(16_384);
+    ).toBeUndefined();
   });
 
-  it("uses the reasoning default for reasoning models", () => {
+  it("does not impose a separate limit on reasoning models", () => {
     expect(
       resolveEffectiveMaxTokens(
         {},
@@ -291,13 +292,46 @@ describe("resolveEffectiveMaxTokens", () => {
           },
         },
       ),
-    ).toBe(32_768);
+    ).toBeUndefined();
   });
 
   it("allows explicit values above the defaults and clamps only to the model limit", () => {
     expect(resolveEffectiveMaxTokens({ max_tokens: 131_072 }, capableModel)).toBe(131_072);
-    expect(getEffectiveMaxTokens(524_288, capableModel.maxTokens, 8_192)).toBe(262_144);
+    expect(getEffectiveMaxTokens(524_288, capableModel.maxTokens)).toBe(262_144);
   });
+
+  it("does not invent a limit when the model's output capacity is unknown", () => {
+    expect(resolveEffectiveMaxTokens({}, undefined)).toBeUndefined();
+    expect(resolveEffectiveMaxTokens({ max_tokens: 5000 }, undefined)).toBe(5000);
+  });
+
+  it("uses the declared capacity only when a provider requires an output limit", () => {
+    expect(resolveRequiredMaxTokens({}, capableModel)).toBe(capableModel.maxTokens);
+    expect(resolveRequiredMaxTokens({ max_tokens: 1000 }, capableModel)).toBe(1000);
+    expect(() => resolveRequiredMaxTokens({}, undefined)).toThrow("no declared output capacity");
+  });
+
+  it.each(["openai", "workers-ai", "mistral", "bedrock"])(
+    "omits unsolicited generation settings for %s",
+    (provider) => {
+      const body = createCommonParameters(
+        {
+          env: createTestEnv(),
+          model: "test-model",
+          messages: [{ role: "user", content: "Answer" }],
+        },
+        capableModel,
+        provider,
+      );
+
+      expect(body).not.toHaveProperty("max_tokens");
+      expect(body).not.toHaveProperty("max_completion_tokens");
+      expect(body).not.toHaveProperty("temperature");
+      expect(body).not.toHaveProperty("top_p");
+      expect(body).not.toHaveProperty("frequency_penalty");
+      expect(body).not.toHaveProperty("presence_penalty");
+    },
+  );
 });
 
 describe("createSamplingParameters", () => {

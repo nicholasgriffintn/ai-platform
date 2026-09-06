@@ -336,26 +336,12 @@ final class APIClient: ObservableObject {
 
     func fetchConversation(
         id: String,
-        refreshPending: Bool = true,
-        recovery: TurnRecoveryAttemptContext? = nil
+        refreshPending: Bool = true
     ) async throws -> ConversationDetailResponse {
         var queryItems = [URLQueryItem(name: "message_limit", value: "100")]
 
         if refreshPending {
             queryItems.insert(URLQueryItem(name: "refresh_pending", value: "true"), at: 0)
-        }
-
-        if let recovery {
-            queryItems.append(contentsOf: [
-                URLQueryItem(name: "recovery_platform", value: "ios"),
-                URLQueryItem(name: "recovery_attempt", value: String(recovery.attempt)),
-                URLQueryItem(name: "recovery_elapsed_ms", value: String(recovery.elapsedMs)),
-                URLQueryItem(
-                    name: "recovery_known_assistant_count",
-                    value: String(recovery.knownAssistantCount)
-                ),
-                URLQueryItem(name: "recovery_final_attempt", value: String(recovery.finalAttempt))
-            ])
         }
 
         return try await send(
@@ -380,32 +366,6 @@ final class APIClient: ObservableObject {
         )
     }
 
-    func fetchChatRun(
-        id: String,
-        recovery: TurnRecoveryAttemptContext? = nil
-    ) async throws -> ChatRunRecoveryResponse {
-        var queryItems: [URLQueryItem] = []
-
-        if let recovery {
-            queryItems = [
-                URLQueryItem(name: "recovery_platform", value: "ios"),
-                URLQueryItem(name: "recovery_attempt", value: String(recovery.attempt)),
-                URLQueryItem(name: "recovery_elapsed_ms", value: String(recovery.elapsedMs)),
-                URLQueryItem(
-                    name: "recovery_known_assistant_count",
-                    value: String(recovery.knownAssistantCount)
-                ),
-                URLQueryItem(name: "recovery_final_attempt", value: String(recovery.finalAttempt))
-            ]
-        }
-
-        return try await send(
-            path: "/chat/runs/\(id)",
-            method: "GET",
-            queryItems: queryItems
-        )
-    }
-
     func fetchChatRunSnapshot(id: String) async throws -> ChatRunSnapshotResponse {
         try await send(path: "/chat/runs/\(id)/snapshot", method: "GET")
     }
@@ -423,15 +383,6 @@ final class APIClient: ObservableObject {
                 URLQueryItem(name: "limit", value: String(limit))
             ]
         )
-    }
-
-    func fetchChatRunCommand(id: String) async throws -> ChatRunCommandReceipt {
-        let response: ChatRunCommandReceiptResponse = try await send(
-            path: "/chat/run-commands/\(id)",
-            method: "GET"
-        )
-
-        return response.run
     }
 
     func cancelChatRun(

@@ -1,10 +1,9 @@
-import {
-  chatRunCommandInputSchema,
-  type ChatContextSnapshot,
-  type ChatRetrySnapshot,
-  type ChatRun,
-  type ChatRunCommandReceipt,
-  type ChatRunStatus,
+import type {
+  ChatContextSnapshot,
+  ChatRetrySnapshot,
+  ChatRun,
+  ChatRunCommandReceipt,
+  ChatRunStatus,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
@@ -19,6 +18,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { isRecord } from "~/utils/objects";
 
+import { buildChatRunCommandPayload } from "./command-payload";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
 
 function readInteractionId(options: CoreChatOptions): string | undefined {
@@ -38,7 +38,7 @@ function readStageId(options: CoreChatOptions): string | null {
 async function commandDigest(options: CoreChatOptions, runId?: string): Promise<string> {
   return sha256Hex(
     canonicalJson({
-      input: options.command_payload ?? chatRunCommandInputSchema.parse(options),
+      input: options.command_payload ?? buildChatRunCommandPayload(options),
       internal: {
         conversationHistoryWriteMode: options.conversation_history_write_mode,
         conversationType: options.conversation_type,

@@ -15,7 +15,8 @@ import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation } from "~/types";
 
-const REPLAY_INTERVAL_MS = 2_000;
+const INITIAL_REPLAY_INTERVAL_MS = 2_000;
+const MAX_REPLAY_INTERVAL_MS = 30_000;
 
 export function useChatRunReplay(
   conversationId: string | undefined,
@@ -26,15 +27,30 @@ export function useChatRunReplay(
   const userId = useChatStore((state) => state.user?.id);
   const statesRef = useRef<Record<string, ChatRunReplayState>>({});
   const snapshotOnlyRef = useRef<Record<string, boolean>>({});
+  const latestRunRef = useRef(latestRun);
+  const latestRunId = latestRun?.id;
+  const latestRunStatus = latestRun?.status;
 
   useEffect(() => {
-    if (!enabled || !conversationId || !latestRun) {
+    latestRunRef.current = latestRun;
+  }, [latestRun]);
+
+  useEffect(() => {
+    if (
+      !enabled ||
+      !conversationId ||
+      !latestRunId ||
+      !latestRunStatus ||
+      isTerminalChatRunStatus(latestRunStatus)
+    ) {
       return undefined;
     }
 
     let disposed = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const runId = latestRun.id;
+    let replayIntervalMs = INITIAL_REPLAY_INTERVAL_MS;
+    const abortController = new AbortController();
+    const runId = latestRunId;
 
     const publish = (snapshot: AuthoritativeChatRunSnapshot) => {
       updateConversationInChatCaches<Conversation>(
@@ -46,22 +62,26 @@ export function useChatRunReplay(
       );
     };
 
-    const schedule = (run: ChatRun) => {
+    const schedule = (run: ChatRun, progressed: boolean) => {
       if (!disposed && !isTerminalChatRunStatus(run.status)) {
-        timer = setTimeout(() => void synchronise(), REPLAY_INTERVAL_MS);
+        replayIntervalMs = progressed
+          ? INITIAL_REPLAY_INTERVAL_MS
+          : Math.min(replayIntervalMs * 2, MAX_REPLAY_INTERVAL_MS);
+        timer = setTimeout(() => void synchronise(), replayIntervalMs);
       }
     };
 
     const synchronise = async () => {
       try {
         if (snapshotOnlyRef.current[runId]) {
-          const legacy = await apiService.getChatRun(runId);
+          const legacy = await apiService.getChatRun(runId, abortController.signal);
 
           if (disposed) {
             return;
           }
 
           const currentCursor = statesRef.current[runId]?.cursor ?? 0;
+          const previousRun = statesRef.current[runId]?.snapshot.run;
           const snapshot: AuthoritativeChatRunSnapshot = {
             protocolVersion: 1,
             cursor: currentCursor,
@@ -69,7 +89,11 @@ export function useChatRunReplay(
           };
 
           publish(snapshot);
-          schedule(snapshot.run);
+          schedule(
+            snapshot.run,
+            previousRun?.status !== snapshot.run.status ||
+              previousRun?.updatedAt !== snapshot.run.updatedAt,
+          );
 
           return;
         }
@@ -77,7 +101,7 @@ export function useChatRunReplay(
         let state = statesRef.current[runId];
 
         if (!state) {
-          const snapshot = await apiService.getChatRunSnapshot(runId);
+          const snapshot = await apiService.getChatRunSnapshot(runId, abortController.signal);
 
           if (disposed) {
             return;
@@ -86,12 +110,19 @@ export function useChatRunReplay(
           state = { cursor: snapshot.cursor, snapshot };
           statesRef.current[runId] = state;
           publish(snapshot);
-          schedule(snapshot.run);
+          schedule(snapshot.run, true);
 
           return;
         }
 
-        const replay = await apiService.getChatRunEvents(runId, state.cursor);
+        const previousCursor = state.cursor;
+        const previousUpdatedAt = state.snapshot.run.updatedAt;
+        const replay = await apiService.getChatRunEvents(
+          runId,
+          state.cursor,
+          undefined,
+          abortController.signal,
+        );
 
         if (disposed) {
           return;
@@ -104,7 +135,7 @@ export function useChatRunReplay(
             snapshotOnlyRef.current[runId] = true;
           }
 
-          const snapshot = await apiService.getChatRunSnapshot(runId);
+          const snapshot = await apiService.getChatRunSnapshot(runId, abortController.signal);
 
           if (disposed) {
             return;
@@ -115,11 +146,32 @@ export function useChatRunReplay(
           state = outcome.state;
         }
 
+        if (isTerminalChatRunStatus(state.snapshot.run.status)) {
+          const snapshot = await apiService.getChatRunSnapshot(runId, abortController.signal);
+
+          if (disposed) {
+            return;
+          }
+
+          state = { cursor: snapshot.cursor, snapshot };
+        }
+
         statesRef.current[runId] = state;
         publish(state.snapshot);
-        schedule(state.snapshot.run);
+        schedule(
+          state.snapshot.run,
+          state.cursor !== previousCursor || state.snapshot.run.updatedAt !== previousUpdatedAt,
+        );
       } catch {
-        schedule(statesRef.current[runId]?.snapshot.run ?? latestRun);
+        if (disposed || abortController.signal.aborted) {
+          return;
+        }
+
+        const currentRun = statesRef.current[runId]?.snapshot.run ?? latestRunRef.current;
+
+        if (currentRun?.id === runId) {
+          schedule(currentRun, false);
+        }
       }
     };
 
@@ -127,9 +179,10 @@ export function useChatRunReplay(
 
     return () => {
       disposed = true;
+      abortController.abort();
       if (timer) {
         clearTimeout(timer);
       }
     };
-  }, [conversationId, enabled, latestRun, queryClient, userId]);
+  }, [conversationId, enabled, latestRunId, latestRunStatus, queryClient, userId]);
 }

@@ -105,7 +105,7 @@ describe("handleGetChatRun", () => {
     });
   });
 
-  it("anchors a snapshot cursor before rereading authoritative state and messages", async () => {
+  it("anchors a snapshot cursor before reading authoritative state and messages", async () => {
     const context = createContext(personalRun);
 
     await expect(handleGetChatRunSnapshot(context, personalRun.id)).resolves.toMatchObject({
@@ -114,11 +114,11 @@ describe("handleGetChatRun", () => {
       run: personalRun,
       messages: [expect.objectContaining({ id: "assistant-1" })],
     });
-    expect(context.repositories.conversationRuns.getById).toHaveBeenCalledTimes(2);
+    expect(context.repositories.conversationRuns.getById).toHaveBeenCalledOnce();
     expect(
       vi.mocked(context.repositories.conversationRuns.getEventCursor).mock.invocationCallOrder[0],
     ).toBeLessThan(
-      vi.mocked(context.repositories.conversationRuns.getById).mock.invocationCallOrder[1] ?? 0,
+      vi.mocked(context.repositories.conversationRuns.getById).mock.invocationCallOrder[0] ?? 0,
     );
   });
 });

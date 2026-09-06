@@ -24,7 +24,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0048: Supervise declared project services within a coding run](decisions/0048-supervise-declared-project-services.md).
 - [0049: Gate sandbox previews through current project authority](decisions/0049-gate-sandbox-previews-through-current-project-authority.md).
 - [0050: Derive global Attention from authoritative work state](decisions/0050-derive-global-attention-from-authoritative-work-state.md).
-- [0051: Separate personal conversation state from project labels](decisions/0051-separate-personal-conversation-state-from-project-labels.md).
+- [0051: Separate personal conversation state from project groups](decisions/0051-separate-personal-conversation-state-from-project-groups.md).
 - [0052: Keep repeatable scheduling in recipes](decisions/0052-keep-repeatable-scheduling-in-recipes.md).
 - [0053: Deliver mobile Work notifications without moving authority](decisions/0053-deliver-mobile-work-notifications-without-moving-authority.md).
 - [0054: Ship a house type pairing through font tokens](decisions/0054-house-type-pairing.md).
@@ -43,13 +43,14 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0067: Attribute run usage and settle reservations once](decisions/0067-attribute-run-usage-and-settle-reservations-once.md).
 - [0068: Bound live streams and page durable history](decisions/0068-bound-live-streams-and-page-durable-history.md).
 - [0069: Share model definitions across provider offerings](decisions/0069-share-model-definitions-across-provider-offerings.md).
-- [0070: Fix model tiers instead of scoring prompts](decisions/0070-fix-model-tiers-instead-of-scoring-prompts.md).
+- [0070: Use automatic generation settings](decisions/0070-use-automatic-generation-settings.md).
+- [0071: Fix model tiers instead of scoring prompts](decisions/0071-fix-model-tiers-instead-of-scoring-prompts.md).
 
 ## Accepted designs awaiting implementation
 
 - [0038: Scope future model lifecycle to a provider surface](decisions/0038-provider-surface-model-lifecycle.md).
 - [0040: Resolve future provider governance before execution](decisions/0040-provider-execution-governance-policy.md).
 
-Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0071.
+Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0072.
 
 Add a record only for a durable trade-off that code alone cannot explain. State the problem, decision, implementation status and consequence; update this index. Keep rollout plans and copied schemas out of ADRs.

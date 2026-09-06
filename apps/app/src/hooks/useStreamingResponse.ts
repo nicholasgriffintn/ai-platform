@@ -5,7 +5,6 @@ import {
   normalizeMessage,
 } from "@ngriffin_uk/polychat-library-chat/messages";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
-import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { updateConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import {
   chatRunCommandReceiptSchema,
@@ -24,9 +23,10 @@ import { CHATS_QUERY_KEY } from "~/constants";
 import { GOAL_QUERY_KEY } from "~/hooks/useGoal";
 import { USAGE_QUERY_KEYS } from "~/hooks/useUsage";
 import { apiService } from "~/lib/api/api-service";
+import { resolveAcceptedRunCommand } from "~/lib/chat/run-command";
 import { createStreamProgressCoalescer } from "~/lib/chat/stream-progress-coalescer";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
-import { recoverDetachedTurn, resolveAcceptedRunCommand } from "~/lib/chat/turn-recovery";
+import { getErrorMessage } from "~/lib/errors";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
@@ -76,9 +76,6 @@ export function useStreamingResponse(
     (state) => state.completeStreamActivityMessage,
   );
   const endStreamActivity = useStreamActivityStore((state) => state.endStreamActivity);
-  const markStreamActivityReconnecting = useStreamActivityStore(
-    (state) => state.markStreamActivityReconnecting,
-  );
   const recordStreamActivityState = useStreamActivityStore(
     (state) => state.recordStreamActivityState,
   );
@@ -163,6 +160,7 @@ export function useStreamingResponse(
       messages?: Message[];
       toolResponses?: Message[];
       titled?: boolean;
+      errorPresentation?: "run";
     }> => {
       const requestSignal =
         useStreamActivityStore.getState().streams[conversationId]?.controller?.signal ??
@@ -186,12 +184,8 @@ export function useStreamingResponse(
       let messageWriteQueue: Promise<unknown> = Promise.resolve();
       const pendingMessageTasks: Promise<unknown>[] = [];
       let serverTitle = "";
-      const knownMessageIds = new Set(
-        messages.map((message) => message.id).filter((id): id is string => Boolean(id)),
-      );
       const assistantMessageData = options?.assistantMessageData;
       let shouldRefreshStoredConversation = false;
-      let acceptedRunId: string | undefined;
       const commandId = effectiveRequestOptions?.command_id ?? crypto.randomUUID();
 
       pendingCommandIdsRef.current[conversationId] = commandId;
@@ -475,7 +469,6 @@ export function useStreamingResponse(
               const receipt = chatRunCommandReceiptSchema.safeParse(data?.receipt);
 
               if (receipt.success) {
-                acceptedRunId = receipt.data.run.id;
                 observedRunsRef.current[conversationId] = {
                   id: receipt.data.run.id,
                   attempt: receipt.data.run.attempt,
@@ -605,91 +598,35 @@ export function useStreamingResponse(
           return { status: "error" as const, response: "Request aborted" };
         }
 
-        if (isLocal || !storageMode.shouldSyncRemote || error instanceof ApiError) {
-          throw error;
-        }
-
-        updateStreamLoadingMessage(conversationId, "Reconnecting to the response...");
-        markStreamActivityReconnecting(conversationId);
-        updateLoading("stream-response", undefined, "Reconnecting to the response...");
-
-        const recovered = await recoverDetachedTurn({
-          runId: acceptedRunId,
-          resolveCommand: async () => (await apiService.getChatRunCommand(commandId)).run.id,
-          fetchRun: (runId, recovery) =>
-            apiService.getChatRun(runId, {
-              ...recovery,
-              knownAssistantCount: messages.filter((message) => message.role === "assistant")
-                .length,
+        if (storageMode.shouldSyncRemote && observedRunsRef.current[conversationId]) {
+          markConversationRemoteAvailable(conversationId);
+          updateConversationInChatCaches<Conversation>(
+            queryClient,
+            conversationId,
+            (conversation) => ({
+              ...conversation,
+              messages: conversation.messages.filter(
+                (message) => message.id !== placeholderMessage.id,
+              ),
             }),
-          signal: requestSignal,
-        });
-
-        if (!recovered) {
-          throw error;
-        }
-
-        const recoveredMessages = recovered.messages.filter(
-          (message) => message.role !== "user" && !knownMessageIds.has(message.id),
-        );
-
-        updateConversationInChatCaches<Conversation>(
-          queryClient,
-          conversationId,
-          (conversation) => ({ ...conversation, latest_run: recovered.run }),
-          CHATS_QUERY_KEY,
-          getLocalChatScope(user?.id),
-        );
-        observedRunsRef.current[conversationId] = {
-          id: recovered.run.id,
-          attempt: recovered.run.attempt,
-          status: recovered.run.status,
-        };
-
-        const recoveredAssistantMessage = recoveredMessages.find(
-          (message) => message.role === "assistant",
-        );
-
-        if (!recoveredAssistantMessage) {
-          await messageWriteQueue;
+            CHATS_QUERY_KEY,
+            getLocalChatScope(user?.id),
+          );
           await queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, conversationId] });
 
           return {
-            status: "success" as const,
-            response: recovered.run.terminalReason ?? recovered.run.status,
-            messages: recoveredMessages,
-            toolResponses: recoveredMessages.filter((message) => message.role === "tool"),
-            titled: Boolean(serverTitle),
+            status: "error" as const,
+            response: getErrorMessage(error, "The task could not finish"),
+            errorPresentation: "run" as const,
           };
         }
 
-        markConversationRemoteAvailable(conversationId);
-        completeStreamActivityMessage(conversationId, recoveredAssistantMessage.id);
-
-        const updatedAssistantMessage = withAssistantMessageData(recoveredAssistantMessage);
-
-        await messageWriteQueue;
-        await updateAssistantMessage(
-          conversationId,
-          updatedAssistantMessage.content,
-          updatedAssistantMessage.reasoning?.content,
-          updatedAssistantMessage,
-          { messageId: (activeAssistantMessage || placeholderMessage).id },
-        );
-        await queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, conversationId] });
-        await queryClient.invalidateQueries({ queryKey: [GOAL_QUERY_KEY, conversationId] });
-        if (isAuthenticated) {
-          await queryClient.invalidateQueries({ queryKey: USAGE_QUERY_KEYS.balance });
+        throw error;
+      } finally {
+        if (pendingCommandIdsRef.current[conversationId] === commandId) {
+          delete pendingCommandIdsRef.current[conversationId];
+          delete observedRunsRef.current[conversationId];
         }
-
-        return {
-          status: "success",
-          response: getMessageTextContent(updatedAssistantMessage),
-          message: updatedAssistantMessage,
-          messages: [updatedAssistantMessage],
-          toolResponses: recoveredMessages.filter((message) => message.role === "tool"),
-          titled: Boolean(serverTitle),
-        };
       }
     },
     [
@@ -718,7 +655,6 @@ export function useStreamingResponse(
       recordStreamActivityText,
       recordStreamActivityToolResult,
       recordTurnActivity,
-      markStreamActivityReconnecting,
       updateStreamLoadingMessage,
       user?.id,
     ],

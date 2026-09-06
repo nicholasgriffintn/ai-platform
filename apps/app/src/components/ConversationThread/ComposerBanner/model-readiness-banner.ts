@@ -35,12 +35,7 @@ export function buildModelReadinessBanner(
   }
 
   if (!isReadinessFresh(readiness, now)) {
-    return {
-      id: `model-readiness-stale:${model.id || requestedModelId}`,
-      tone: "warning",
-      title: "Model readiness needs refreshing",
-      message: "Open the model selector or retry sending to refresh account and provider access.",
-    };
+    return null;
   }
 
   if (readiness.state === "ready") {

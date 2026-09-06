@@ -143,7 +143,7 @@ export async function executeRecipeInvocationChat(params: {
       enabled_tools: params.invocation.enabledTools,
       approved_tools: params.invocation.enabledTools,
       tool_choice: "auto",
-      temperature: 0.4,
+      reasoning: { effort: "none" },
       metadata: params.projectId ? { project_id: params.projectId } : undefined,
       options: buildRecipeExecutionOptions(params),
     },
