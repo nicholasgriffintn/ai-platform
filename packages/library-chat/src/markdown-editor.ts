@@ -1,3 +1,5 @@
+import { trimTrailingCharacter } from "@ngriffin_uk/polychat-utility-core";
+
 export type MarkdownEditAction = "bold" | "italic" | "heading" | "bullet-list" | "quote";
 
 export interface MarkdownEditResult {
@@ -37,16 +39,22 @@ export function applyMarkdownEdit(
 
 export function extractMarkdownOutline(content: string): MarkdownOutlineItem[] {
   return content.split("\n").flatMap((line, index) => {
-    const match = /^(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line);
+    const match = /^(#{1,6})\s+(.*)$/u.exec(line);
 
     if (!match) {
+      return [];
+    }
+
+    const title = trimTrailingCharacter(match[2].trimEnd(), "#").trimEnd();
+
+    if (!title) {
       return [];
     }
 
     return [
       {
         level: match[1].length,
-        title: match[2].trim(),
+        title,
         line: index + 1,
       },
     ];

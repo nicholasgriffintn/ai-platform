@@ -13,6 +13,7 @@ import {
   parseRecordValue,
   reverseCopy,
   slugify,
+  trimTrailingCharacter,
   sortCopy,
 } from "./index";
 
@@ -96,6 +97,24 @@ describe("slugify", () => {
     const started = Date.now();
 
     expect(slugify(`${"-".repeat(50_000)}x`)).toBe("x");
+    expect(Date.now() - started).toBeLessThan(1_000);
+  });
+});
+
+describe("trimTrailingCharacter", () => {
+  it("removes only the trailing run of the given character", () => {
+    expect(trimTrailingCharacter("Heading ###", "#")).toBe("Heading ");
+    expect(trimTrailingCharacter("### Heading", "#")).toBe("### Heading");
+  });
+
+  it("returns nothing when the value is only that character", () => {
+    expect(trimTrailingCharacter("####", "#")).toBe("");
+  });
+
+  it("stays linear on a long trailing run", () => {
+    const started = Date.now();
+
+    expect(trimTrailingCharacter(`x${"#".repeat(200_000)}`, "#")).toBe("x");
     expect(Date.now() - started).toBeLessThan(1_000);
   });
 });

@@ -87,3 +87,13 @@ export function slugify(value: string, maxLength?: number): string {
 
   return bounded.replace(/^-|-$/gu, "");
 }
+
+export function trimTrailingCharacter(value: string, character: string): string {
+  let end = value.length;
+
+  while (end > 0 && value[end - 1] === character) {
+    end -= 1;
+  }
+
+  return end === value.length ? value : value.slice(0, end);
+}
