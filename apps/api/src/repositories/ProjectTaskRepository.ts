@@ -36,6 +36,7 @@ export interface CreateProjectTaskParams {
   stageId?: string | null;
   flowSnapshot?: ProjectFlow | null;
   tokenBudget?: number | null;
+  originConversationId?: string | null;
   position: number;
 }
 
@@ -103,6 +104,7 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     assigneeUserId: row.assignee_user_id,
     runnerIdentityUserId: row.runner_identity_user_id,
     conversationId: row.conversation_id,
+    originConversationId: row.origin_conversation_id,
     goalId: row.goal_id,
     dispatchTaskId: row.dispatch_task_id,
     runId: row.run_id,
@@ -142,6 +144,7 @@ export class ProjectTaskRepository extends BaseRepository {
         stage_id: params.stageId ?? null,
         flow_snapshot: params.flowSnapshot ?? null,
         token_budget: params.tokenBudget ?? null,
+        origin_conversation_id: params.originConversationId ?? null,
         position: params.position,
       },
       {

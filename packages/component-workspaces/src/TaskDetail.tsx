@@ -39,6 +39,7 @@ export interface TaskDetailProps {
   teammates: { id: string; name: string }[];
   blockedBy: ProjectTask[];
   conversationHref: string | null;
+  originConversationHref: string | null;
   taskHref: (task: ProjectTask) => string;
   runHref: (conversationId: string, runId: string) => string;
   outputHref: (outputId: string) => string;
@@ -96,6 +97,7 @@ export function TaskDetail({
   teammates,
   blockedBy,
   conversationHref,
+  originConversationHref,
   taskHref,
   runHref,
   outputHref,
@@ -183,6 +185,13 @@ export function TaskDetail({
             </ButtonLink>
           ) : null}
         </div>
+
+        {originConversationHref ? (
+          <p className="text-muted-foreground text-sm">
+            Filed from{" "}
+            <TextLink href={originConversationHref}>the conversation it came from</TextLink>.
+          </p>
+        ) : null}
 
         <section className="space-y-3">
           <h2 className="text-sm font-semibold text-foreground">Done when</h2>
