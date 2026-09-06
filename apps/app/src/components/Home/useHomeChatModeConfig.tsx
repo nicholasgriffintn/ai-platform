@@ -31,6 +31,7 @@ import {
   buildConversationModeMetadata,
   getConversationModeMetadata,
 } from "~/lib/home-chat-modes/conversation-mode";
+import { PLACE_PATHS } from "~/lib/navigation/places";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ModelSelectionChangeHandler } from "~/types";
 
@@ -448,7 +449,7 @@ export function useHomeChatModeConfig(): {
       return {
         activeModeId: effectiveActiveModeId,
         modeConfig: {
-          assistantActionRoutes: { recipes: "/chat/capabilities" },
+          assistantActionRoutes: { recipes: PLACE_PATHS.library },
           analyticsSource: "live",
           welcomeTitle: "Start a live session",
           welcomeDescription:
@@ -476,7 +477,7 @@ export function useHomeChatModeConfig(): {
     return {
       activeModeId: effectiveActiveModeId,
       modeConfig: {
-        assistantActionRoutes: { recipes: "/chat/capabilities" },
+        assistantActionRoutes: { recipes: PLACE_PATHS.library },
         modeControls,
         onModelChange: handleModelChange,
       },

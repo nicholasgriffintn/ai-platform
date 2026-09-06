@@ -3,6 +3,7 @@ import { StandardSidebarContent as ControlledStandardSidebarContent } from "@ngr
 import { useUIStore } from "~/state/stores/uiStore";
 
 import { DiscoverSidebarSection } from "./DiscoverSidebarSection";
+import { PlacesSidebarSection } from "./PlacesSidebarSection";
 import { SidebarFooter } from "./SidebarFooter";
 import { SidebarHeader } from "./SidebarHeader";
 
@@ -23,6 +24,7 @@ export function StandardSidebarContent() {
       sidebarVisible={sidebarVisible}
       onClose={() => setSidebarVisible(false)}
     >
+      <PlacesSidebarSection onNavigate={closeOnMobile} />
       <DiscoverSidebarSection onNavigate={closeOnMobile} />
     </ControlledStandardSidebarContent>
   );

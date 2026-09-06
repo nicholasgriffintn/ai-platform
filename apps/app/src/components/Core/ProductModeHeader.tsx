@@ -1,4 +1,4 @@
-import { ProductHeaderShell } from "@ngriffin_uk/polychat-component-navigation";
+import { ProductHeaderShell, ProductModeSwitch } from "@ngriffin_uk/polychat-component-navigation";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useHeaderScrollEdge } from "@ngriffin_uk/polychat-utility-react";
 import { Cloud, CloudOff, Menu, PanelLeftOpen } from "lucide-react";
@@ -6,6 +6,7 @@ import { type ReactNode, useRef } from "react";
 import { useLocation } from "react-router";
 
 import { useTrackEvent } from "~/hooks/use-track-event";
+import { getProductMode, isProductModeRoute, PLACE_PATHS } from "~/lib/navigation/places";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
@@ -25,6 +26,7 @@ export function ProductModeHeader({
   showSidebarToggle = true,
 }: ProductModeHeaderProps) {
   const { pathname } = useLocation();
+  const showProductModeSwitch = isProductModeRoute(pathname);
   const headerRef = useRef<HTMLElement>(null);
   const isScrolled = useHeaderScrollEdge(headerRef, pathname);
   const { trackEvent } = useTrackEvent();
@@ -71,6 +73,15 @@ export function ProductModeHeader({
           ) : null}
           {context ? <div className="min-w-0 flex-1">{context}</div> : null}
         </>
+      }
+      center={
+        showProductModeSwitch ? (
+          <ProductModeSwitch
+            activeMode={getProductMode(pathname)}
+            className="w-auto shrink-0 @min-[40rem]:w-44"
+            destinations={{ chat: PLACE_PATHS.chat, work: PLACE_PATHS.work }}
+          />
+        ) : null
       }
       end={
         <>

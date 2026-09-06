@@ -12,6 +12,7 @@ export default [
   ]),
   route("/attention", "pages/attention.tsx"),
   route("/files/*", "pages/files.tsx"),
+  route("/teammates", "pages/teammates.tsx"),
   route("/work", "pages/work/layout.tsx", [
     index("pages/work/index.tsx"),
     route("attention", "pages/work/attention.tsx"),

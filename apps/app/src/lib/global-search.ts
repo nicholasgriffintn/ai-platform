@@ -6,7 +6,11 @@ import type {
   ProjectExperienceDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { getCapabilityOpenPath, PERSONAL_SURFACE } from "~/lib/capability-surfaces";
+import {
+  getCapabilityLibraryPath,
+  getCapabilityOpenPath,
+  PERSONAL_SURFACE,
+} from "~/lib/capability-surfaces";
 import { getPersonalConversationPath, getProjectConversationPath } from "~/lib/conversation-route";
 
 export type GlobalSearchResultKind = SearchResultKind;
@@ -135,7 +139,9 @@ export function buildGlobalSearchResults({
     kind: "capability",
     title: capability.label,
     description: capabilityDescription(capability),
-    href: getCapabilityOpenPath(capability, PERSONAL_SURFACE, experiences) ?? "/chat/capabilities",
+    href:
+      getCapabilityOpenPath(capability, PERSONAL_SURFACE, experiences) ??
+      getCapabilityLibraryPath(PERSONAL_SURFACE),
     searchText: [
       capability.label,
       capability.description,

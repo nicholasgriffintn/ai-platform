@@ -23,6 +23,7 @@ import {
 } from "~/lib/conversation-route";
 import { buildConversationSections } from "~/lib/conversation-sections";
 import { getProjectFilesPath } from "~/lib/files-route";
+import { PLACE_PATHS } from "~/lib/navigation/places";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -132,8 +133,10 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
       footer={<SidebarFooter />}
     >
       <WorkSidebarNav
-        workspacesHref="/work"
-        attentionHref="/work/attention"
+        workspacesHref={PLACE_PATHS.work}
+        attentionHref={PLACE_PATHS.attention}
+        filesHref={PLACE_PATHS.files}
+        teammatesHref={PLACE_PATHS.library}
         workspace={
           workspace
             ? {

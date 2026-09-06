@@ -5,7 +5,7 @@ export * from "./Conversations/ConversationListActions";
 export * from "./Conversations/ConversationListControls";
 export * from "./Conversations/ConversationStorageNotice";
 export * from "./NavbarSidebarToggle";
-export * from "./Rail/ProductRail";
+export * from "./ProductModeSwitch";
 export * from "./Search/SearchDialog";
 export * from "./Sidebar/MoreOptionsDropdown";
 export * from "./Sidebar/SidebarFooter";

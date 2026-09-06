@@ -1,4 +1,5 @@
 import { PageShell } from "~/components/Core/PageShell";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { AttentionPage } from "~/components/Work/AttentionPage";
 
 export function meta() {
@@ -13,7 +14,12 @@ export function meta() {
 
 export default function GlobalAttentionPage() {
   return (
-    <PageShell title="Attention" fullBleed displayNavBar={false}>
+    <PageShell
+      title="Attention"
+      sidebarContent={<StandardSidebarContent />}
+      fullBleed
+      displayNavBar={false}
+    >
       <div className="flex h-full min-h-0 flex-col overflow-hidden">
         <div data-header-scroll-source className="min-h-0 flex-1 overflow-y-auto">
           <AttentionPage />

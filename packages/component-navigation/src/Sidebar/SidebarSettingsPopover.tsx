@@ -255,10 +255,10 @@ export function SidebarSettingsPopover({
                   Account
                 </PopoverLink>
                 <PopoverLink href={links.customisation} icon={<Wrench className="h-4 w-4" />}>
-                  Customisation
+                  Appearance and pet
                 </PopoverLink>
                 <PopoverLink href={links.providers} icon={<KeyRound className="h-4 w-4" />}>
-                  Providers and keys
+                  Models and keys
                 </PopoverLink>
                 <PopoverLink href={links.billing} icon={<WalletCards className="h-4 w-4" />}>
                   Billing

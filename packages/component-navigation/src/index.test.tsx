@@ -9,7 +9,7 @@ import {
   ConversationListControls,
   ConversationListItemActions,
   DEFAULT_CONVERSATION_LIST_FILTERS,
-  ProductRail,
+  ProductModeSwitch,
   SidebarSettingsPopover,
 } from "./index";
 
@@ -104,24 +104,13 @@ describe("SidebarSettingsPopover", () => {
   });
 });
 
-describe("ProductRail", () => {
-  it("marks the active place, renders badges and links to host-resolved destinations", () => {
-    render(
-      <ProductRail
-        items={[
-          { id: "chat", label: "Chat", icon: <span />, href: "/chat" },
-          { id: "work", label: "Work", icon: <span />, href: "/work", isActive: true },
-          { id: "attention", label: "Attention", icon: <span />, href: "/attention", badge: 3 },
-        ]}
-        footerItems={[{ id: "poly", label: "Poly", icon: <span />, onClick: vi.fn() }]}
-      />,
-    );
+describe("ProductModeSwitch", () => {
+  it("marks the active mode and links to host-resolved destinations", () => {
+    render(<ProductModeSwitch activeMode="work" destinations={{ chat: "/chat", work: "/work" }} />);
 
     expect(screen.getByRole("link", { name: "Work" }).getAttribute("aria-current")).toBe("page");
     expect(screen.getByRole("link", { name: "Chat" }).getAttribute("aria-current")).toBeNull();
     expect(screen.getByRole("link", { name: "Chat" }).getAttribute("href")).toBe("/chat");
-    expect(screen.getByLabelText("3 waiting")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Poly" })).toBeTruthy();
   });
 
   it("renders through the host link component when one is provided", () => {
@@ -134,7 +123,7 @@ describe("ProductRail", () => {
 
     render(
       <LinkProvider Link={HostLink}>
-        <ProductRail items={[{ id: "chat", label: "Chat", icon: <span />, href: "/chat" }]} />
+        <ProductModeSwitch activeMode="chat" destinations={{ chat: "/chat", work: "/work" }} />
       </LinkProvider>,
     );
 

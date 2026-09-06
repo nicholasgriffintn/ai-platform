@@ -17,7 +17,7 @@ export class CapabilitiesPage extends BasePage {
   }
 
   async open() {
-    await this.navigate("/chat/capabilities");
+    await this.navigate("/teammates");
     await this.page.getByRole("heading", { name: "Teammates & tools", level: 1 }).waitFor();
   }
 

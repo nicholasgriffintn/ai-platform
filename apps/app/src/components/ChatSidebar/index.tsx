@@ -34,6 +34,7 @@ import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection";
+import { PlacesSidebarSection } from "../Sidebar/PlacesSidebarSection";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
 
@@ -310,6 +311,9 @@ export const ChatSidebar = ({
                   Search
                 </SidebarNavButton>
               </SidebarNavSection>
+              <div className="mt-3">
+                <PlacesSidebarSection onNavigate={closeOnMobile} />
+              </div>
               {!isAuthenticated && (
                 <div className="mt-4">
                   <DiscoverSidebarSection onNavigate={closeOnMobile} />

@@ -1,7 +1,6 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import React, { Suspense, lazy } from "react";
 
-import { AppRail } from "~/components/Core/AppRail";
 import { ChatNavbar } from "~/components/Navbar";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
@@ -45,7 +44,6 @@ export function ProductShell({
   bgClassName,
 }: ProductShellProps) {
   const {
-    isMobile,
     sidebarVisible,
     showKeyboardShortcuts,
     setShowKeyboardShortcuts,
@@ -76,7 +74,6 @@ export function ProductShell({
       <div
         className={cn(
           "flex h-dvh w-full max-w-full overflow-hidden",
-          isMobile ? "flex-col" : "flex-row",
           bgClassName ?? "bg-background",
         )}
       >
@@ -86,12 +83,6 @@ export function ProductShell({
         >
           Skip to main content
         </a>
-
-        {!isMobile && (
-          <div className="shrink-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]">
-            <AppRail orientation="vertical" />
-          </div>
-        )}
 
         <div className="relative flex min-h-0 w-full flex-1 flex-row overflow-hidden">
           {sidebarContent && (
@@ -118,12 +109,6 @@ export function ProductShell({
             </main>
           </div>
         </div>
-
-        {isMobile && (
-          <div className="shrink-0 pb-[env(safe-area-inset-bottom)]">
-            <AppRail orientation="horizontal" />
-          </div>
-        )}
       </div>
 
       {showKeyboardShortcuts && (

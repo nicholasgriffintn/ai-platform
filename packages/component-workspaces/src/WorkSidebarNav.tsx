@@ -13,6 +13,7 @@ import {
   Settings2,
   SquarePen,
   Users,
+  UsersRound,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -51,6 +52,8 @@ export interface WorkSidebarProject {
 export interface WorkSidebarNavProps {
   workspacesHref: string;
   attentionHref: string;
+  filesHref: string;
+  teammatesHref: string;
   workspace?: WorkSidebarWorkspace;
   activeProjectId?: string;
   project?: WorkSidebarProject;
@@ -64,6 +67,8 @@ export interface WorkSidebarNavProps {
 export function WorkSidebarNav({
   workspacesHref,
   attentionHref,
+  filesHref,
+  teammatesHref,
   workspace,
   activeProjectId,
   project,
@@ -80,11 +85,20 @@ export function WorkSidebarNav({
         <SidebarNavButton icon={<Search size={17} />} onClick={onSearch} shortcut="⌘K">
           Search
         </SidebarNavButton>
-        <NavLink href={workspacesHref} end className={linkClass} onClick={onNavigate}>
-          <LayoutDashboard size={17} /> Workspaces
-        </NavLink>
         <NavLink href={attentionHref} className={linkClass} onClick={onNavigate}>
           <BellRing size={17} /> Attention
+        </NavLink>
+        <NavLink href={filesHref} className={linkClass} onClick={onNavigate}>
+          <FolderOpen size={17} /> Files
+        </NavLink>
+        <NavLink href={teammatesHref} className={linkClass} onClick={onNavigate}>
+          <UsersRound size={17} /> Teammates
+        </NavLink>
+      </div>
+
+      <div className="space-y-1">
+        <NavLink href={workspacesHref} end className={linkClass} onClick={onNavigate}>
+          <LayoutDashboard size={17} /> Workspaces
         </NavLink>
       </div>
 

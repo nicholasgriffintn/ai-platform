@@ -8,6 +8,7 @@ import {
   createAgentConversationActionPath,
   createRecipeManagementActionPath,
 } from "./assistant-action-launch";
+import { PLACE_PATHS } from "./navigation/places";
 
 /**
  * Where a set of capability surfaces lives. Work nests them under a project; Chat nests them
@@ -53,7 +54,7 @@ export function getExperiencesPath(surface: CapabilitySurface): string {
 }
 
 export function getCapabilityLibraryPath(surface: CapabilitySurface): string {
-  return `${surface.basePath}/capabilities`;
+  return surface.projectId ? `${surface.basePath}/library` : PLACE_PATHS.library;
 }
 
 export function getExperiencePath(
