@@ -23,6 +23,8 @@ const notes: ProjectExperienceDefinition = {
   uses: "What you write.",
   produces: "A note you can search.",
   ios: "native",
+  scope: "any",
+  scopeReason: null,
   requirement: { kind: "capability", capabilityKind: "app", capabilityId: "featured-note-taker" },
 };
 
@@ -35,6 +37,8 @@ const savedOutputs: ProjectExperienceDefinition = {
   uses: "A description of the sound.",
   produces: "A pattern you can play.",
   ios: "results-only",
+  scope: "any",
+  scopeReason: null,
   requirement: { kind: "capability_kind", capabilityKind: "app" },
 };
 

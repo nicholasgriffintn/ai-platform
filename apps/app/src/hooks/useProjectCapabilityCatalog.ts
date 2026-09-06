@@ -42,8 +42,12 @@ export function useProjectCapabilityCatalog(projectId?: string) {
     [catalogQuery.data?.experiences],
   );
   const apps = useMemo(
-    () => experiences.map(toEnableableApp).filter((app) => app !== null),
-    [experiences],
+    () =>
+      experiences
+        .filter((experience) => !projectId || experience.scope !== "personal")
+        .map(toEnableableApp)
+        .filter((app) => app !== null),
+    [experiences, projectId],
   );
   const recipes = useMemo(() => recipesQuery.data?.recipes ?? [], [recipesQuery.data?.recipes]);
   const modelTools = useMemo(

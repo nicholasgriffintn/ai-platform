@@ -424,6 +424,12 @@ export const appIosDecisionSchema = z.enum(APP_IOS_DECISIONS);
 
 export type AppIosDecision = z.infer<typeof appIosDecisionSchema>;
 
+export const APP_SCOPES = ["any", "personal"] as const;
+
+export const appScopeSchema = z.enum(APP_SCOPES);
+
+export type AppScope = z.infer<typeof appScopeSchema>;
+
 export const projectExperienceDefinitionSchema = z.object({
   id: z.string(),
   runtime: projectExperienceRuntimeSchema,
@@ -433,6 +439,11 @@ export const projectExperienceDefinitionSchema = z.object({
   uses: z.string().describe("What it works from."),
   produces: z.string().describe("What it leaves behind."),
   ios: appIosDecisionSchema.describe("How this app behaves on iPhone."),
+  scope: appScopeSchema.describe("Whether this app can be enabled in a project."),
+  scopeReason: z
+    .string()
+    .nullable()
+    .describe("Why a personal-only app cannot be enabled in a project."),
   icon: z.string().optional(),
   category: z.string().optional(),
   theme: capabilityThemeSchema.optional(),

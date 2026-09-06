@@ -113,7 +113,14 @@ function ExperienceList({ experiences }: { experiences: ProjectExperienceDefinit
           title={experience.name}
           description={experience.description}
           badges={
-            experience.category ? <Badge variant="outline">{experience.category}</Badge> : undefined
+            <>
+              {experience.category ? <Badge variant="outline">{experience.category}</Badge> : null}
+              {experience.scope === "personal" ? (
+                <Badge variant="outline" title={experience.scopeReason ?? undefined}>
+                  Personal only
+                </Badge>
+              ) : null}
+            </>
           }
         />
       ))}
