@@ -9,7 +9,7 @@ export const ASSISTANT_ACTION_ITEM_GROUPS: Array<{
 }> = [
   {
     kinds: ["installed_recipe", "recipe"],
-    label: "Recipes",
+    label: "Automations",
     emptyLabel: "recipes",
     icon: ScrollText,
   },

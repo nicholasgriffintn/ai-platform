@@ -189,12 +189,6 @@
       "types": "./dist/weather.d.ts",
       "import": "./dist/weather.js",
       "require": "./dist/weather.cjs"
-    },
-    "./dictation": {
-      "polychat-source": "./src/dictation.ts",
-      "types": "./dist/dictation.d.ts",
-      "import": "./dist/dictation.js",
-      "require": "./dist/dictation.cjs"
     }
   },
   "publishConfig": {

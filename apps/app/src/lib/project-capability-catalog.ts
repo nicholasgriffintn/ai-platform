@@ -12,14 +12,14 @@ export interface ProjectCapabilityKindGroup {
 }
 
 const KIND_LABELS: Record<ProjectCapabilityKind, string> = {
+  teammate: "Teammates",
   app: "Apps",
-  recipe: "Recipes",
+  recipe: "Automations",
   skill: "Skills",
   tool: "Tools",
-  teammate: "Teammates",
 };
 
-const KIND_ORDER: ProjectCapabilityKind[] = ["app", "recipe", "skill", "tool", "teammate"];
+const KIND_ORDER: ProjectCapabilityKind[] = ["teammate", "app", "recipe", "skill", "tool"];
 
 export function getProjectCapabilityKind(item: AssistantActionItem): ProjectCapabilityKind | null {
   if (item.kind === "app") {

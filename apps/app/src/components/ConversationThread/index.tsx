@@ -19,7 +19,6 @@ import {
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { isCompactConversationCommand } from "@ngriffin_uk/polychat-library-chat/compaction-command";
-import { cleanDictatedText } from "@ngriffin_uk/polychat-library-chat/dictation";
 import { resolveGoalSubmission } from "@ngriffin_uk/polychat-library-chat/goal-command";
 
 import "~/styles/scrollbar.css";
@@ -154,7 +153,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   } = useChatStore();
   const { currentConversationId, startNewConversation } = useConversationScope();
   const { composerInput, setComposerInput } = useComposerDraft();
-  const dictationMode = useChatStore((state) => state.dictationMode);
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const { data: currentConversation, isLoading: isConversationLoading } = useChat(
@@ -712,16 +710,13 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         content: string;
       };
     }) => {
-      const cleaned = cleanDictatedText(data.response.content, dictationMode);
-
-      setComposerInput(cleaned);
+      setComposerInput(data.response.content);
       trackFeatureUsage("transcription_used", {
         conversation_id: currentConversationId || "new",
-        content_length: cleaned.length,
-        dictation_mode: dictationMode,
+        content_length: data.response.content.length,
       });
     },
-    [currentConversationId, dictationMode, trackFeatureUsage, setComposerInput],
+    [currentConversationId, trackFeatureUsage, setComposerInput],
   );
 
   const handleToolInteraction = useCallback<ToolInteractionHandler>(

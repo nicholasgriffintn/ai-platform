@@ -16,7 +16,6 @@ export default defineConfig({
     "src/messages.ts",
     "src/provider-messages.ts",
     "src/composer-commands.ts",
-    "src/dictation.ts",
     "src/tool-results.ts",
     "src/weather.ts",
     "src/message-utils.ts",

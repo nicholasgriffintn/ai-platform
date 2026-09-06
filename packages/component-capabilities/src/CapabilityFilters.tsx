@@ -17,11 +17,11 @@ export interface CapabilityFiltersProps {
 
 const capabilityFilters: Array<{ label: string; value: CapabilityFilter }> = [
   { label: "Configured", value: "configured" },
+  { label: "Teammates", value: "teammate" },
   { label: "Apps", value: "app" },
-  { label: "Recipes", value: "recipe" },
+  { label: "Automations", value: "recipe" },
   { label: "Skills", value: "skill" },
   { label: "Tools", value: "tool" },
-  { label: "Teammates", value: "teammate" },
 ];
 
 export function CapabilityFilters({

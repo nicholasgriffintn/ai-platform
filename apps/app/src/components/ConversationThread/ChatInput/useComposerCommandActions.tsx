@@ -14,7 +14,6 @@ import {
   removeComposerDirective,
   replaceComposerDirectiveWithCursor,
 } from "@ngriffin_uk/polychat-library-chat/composer-commands";
-import { DICTATION_MODE_OPTIONS } from "@ngriffin_uk/polychat-library-chat/dictation";
 import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
 import type { ModelToolId } from "@ngriffin_uk/polychat-library-chat/model-tools";
 import {
@@ -50,7 +49,6 @@ import {
   Layers,
   Link,
   ListFilter,
-  Mic,
   Search,
   Target,
   Terminal,
@@ -132,8 +130,6 @@ export function useComposerCommandActions({
     setUseMultiModel,
     useMultiModel,
   } = useChatStore();
-  const dictationMode = useChatStore((state) => state.dictationMode);
-  const setDictationMode = useChatStore((state) => state.setDictationMode);
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const includeTeammates = assistantActionCatalog?.includeTeammates !== false;
@@ -382,19 +378,6 @@ export function useComposerCommandActions({
       })),
     [chatSettings, reasoningOptions, selectedReasoning, setChatSettings],
   );
-  const dictationCommands = useMemo<ComposerCommandAction[]>(
-    () =>
-      DICTATION_MODE_OPTIONS.map((option) => ({
-        id: `dictation-${option.id}`,
-        label: `Dictation: ${option.label}`,
-        description: option.description,
-        command: `dictation ${option.id}`,
-        icon: <Mic className="h-4 w-4" aria-hidden="true" />,
-        isActive: dictationMode === option.id,
-        onSelect: () => setDictationMode(option.id),
-      })),
-    [dictationMode, setDictationMode],
-  );
   const toolCommands = useMemo<ComposerCommandAction[]>(
     () =>
       modelToolOptions.map((tool) => {
@@ -430,16 +413,6 @@ export function useComposerCommandActions({
         icon: <Brain className="h-4 w-4" aria-hidden="true" />,
         isActive: false,
         options: reasoningCommands,
-        onSelect: () => undefined,
-      },
-      {
-        id: "dictation-options",
-        label: "Dictation",
-        description: "Choose how spoken input is cleaned up before it reaches the composer.",
-        command: "dictation",
-        icon: <Mic className="h-4 w-4" aria-hidden="true" />,
-        isActive: false,
-        options: dictationCommands,
         onSelect: () => undefined,
       },
       {
@@ -482,7 +455,6 @@ export function useComposerCommandActions({
     return commands;
   }, [
     chatMode,
-    dictationCommands,
     includeSettingCommands,
     isPro,
     model,

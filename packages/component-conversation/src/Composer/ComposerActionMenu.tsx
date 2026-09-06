@@ -249,7 +249,7 @@ export function ComposerActionMenu({
           ) : null}
 
           {(canUploadFiles || canAttachSources) &&
-          (capabilityGroups.length > 0 || toolGroup || tools || autoPlayResponses) ? (
+          (capabilityGroups.length > 0 || toolGroup || tools) ? (
             <OptionsMenuSeparator />
           ) : null}
 

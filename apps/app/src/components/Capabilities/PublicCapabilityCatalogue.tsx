@@ -23,7 +23,7 @@ const CATALOGUE_SECTIONS = [
   { id: "experiences", label: "Experiences" },
   { id: "model-tools", label: "Model tools" },
   { id: "tools", label: "Function tools" },
-  { id: "recipes", label: "Recipes" },
+  { id: "recipes", label: "Automations" },
   { id: "yours", label: "Curated by you" },
 ] as const;
 
@@ -266,7 +266,7 @@ export function PublicCapabilityCatalogue() {
             id="recipes"
             headingId="capabilities-recipes-title"
             eyebrow="Templates"
-            title="Recipes"
+            title="Automations"
             lede="One-tap setups that connect your services and run on a schedule or an event. Install one and it becomes yours to configure."
           >
             {isLoading ? <CatalogueSkeletonGrid count={6} /> : <RecipeList recipes={recipes} />}

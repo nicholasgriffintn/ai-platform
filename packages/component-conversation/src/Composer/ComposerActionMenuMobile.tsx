@@ -207,7 +207,8 @@ export function ComposerActionMenuMobile({
         />
       ) : null}
 
-      {(canUploadFiles || canAttachSources) && (groups.length > 0 || tools || autoPlayResponses) ? (
+      {(canUploadFiles || canAttachSources) &&
+      (groups.length > 0 || tools || (isLoadingActions && groups.length === 0)) ? (
         <OptionsMenuSeparator />
       ) : null}
 

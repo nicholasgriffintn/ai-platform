@@ -61,7 +61,7 @@ describe("capability controls", () => {
     );
 
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "weather" } });
-    fireEvent.click(screen.getByRole("button", { name: "Recipes" }));
+    fireEvent.click(screen.getByRole("button", { name: "Automations" }));
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "Research" } });
 
     expect(onQueryChange).toHaveBeenCalledWith("weather");
