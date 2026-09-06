@@ -21,6 +21,7 @@ export default [
     route(":workspaceId/members", "pages/work/members.tsx"),
     route(":workspaceId/governance", "pages/work/governance.tsx"),
     route(":workspaceId/projects/:projectId", "pages/work/project.tsx"),
+    route(":workspaceId/projects/:projectId/settings", "pages/work/project-settings.tsx"),
     route(":workspaceId/projects/:projectId/chat/:conversationId?", "pages/work/project-chat.tsx"),
     route(":workspaceId/projects/:projectId/experiences", "pages/work/project-experiences.tsx"),
     route(
