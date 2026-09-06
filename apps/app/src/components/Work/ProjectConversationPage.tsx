@@ -30,9 +30,11 @@ import { useWorkData } from "./WorkDataContext";
 export function ProjectConversationPage({
   workspaceId,
   projectId,
+  conversationId,
 }: {
   workspaceId: string;
   projectId: string;
+  conversationId?: string;
 }) {
   const { projectQuery } = useWorkData();
   const { data: project } = projectQuery;
@@ -260,6 +262,7 @@ export function ProjectConversationPage({
     >
       <ConversationPage
         embedded
+        pathConversationId={conversationId}
         title={project?.name ?? "Project conversation"}
         modeConfig={{
           contextAttachments: isNewConversation ? projectSources.attachments : [],

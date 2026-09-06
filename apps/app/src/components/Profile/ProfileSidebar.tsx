@@ -14,43 +14,53 @@ import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab";
 import { ProfilePetsTab } from "./Tabs/ProfilePetsTab";
 import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab";
 import { ProfileSandboxTab } from "./Tabs/ProfileSandboxTab";
-import { ProfileSourcesTab } from "./Tabs/ProfileSourcesTab";
-import { ProfileTasksTab } from "./Tabs/ProfileTasksTab";
 
 interface ProfileSidebarItem {
   id: string;
   label: string;
+  group: string;
   pageTitle?: string;
   component: React.FC;
 }
 
+const ACCOUNT_GROUP = "Account";
+const APPEARANCE_GROUP = "Appearance and pet";
+const MODELS_GROUP = "Models and keys";
+const ADVANCED_GROUP = "Advanced";
+
 export const profileSidebarItems: ProfileSidebarItem[] = [
-  { id: "account", label: "Account", component: ProfileAccountTab },
-  { id: "passkeys", label: "Passkeys", component: ProfilePasskeysTab },
+  { id: "account", label: "Account", group: ACCOUNT_GROUP, component: ProfileAccountTab },
+  { id: "passkeys", label: "Passkeys", group: ACCOUNT_GROUP, component: ProfilePasskeysTab },
+  { id: "billing", label: "Billing", group: ACCOUNT_GROUP, component: ProfileBillingTab },
+  {
+    id: "history",
+    label: "Chat history",
+    group: ACCOUNT_GROUP,
+    component: ProfileHistoryTab,
+  },
   {
     id: "customisation",
     label: "Customisation",
+    group: APPEARANCE_GROUP,
     pageTitle: "Customise Chat",
     component: ProfileCustomisationTab,
   },
   {
     id: "pets",
     label: "Pets",
+    group: APPEARANCE_GROUP,
     pageTitle: "Your pet",
     component: ProfilePetsTab,
   },
-  { id: "history", label: "Chat History", component: ProfileHistoryTab },
   {
     id: "providers",
     label: "Providers",
+    group: MODELS_GROUP,
     pageTitle: "Available Providers",
     component: ProfileProvidersTab,
   },
-  { id: "sandbox", label: "Sandbox", component: ProfileSandboxTab },
-  { id: "billing", label: "Billing", component: ProfileBillingTab },
-  { id: "api-keys", label: "API Keys", component: ProfileApiKeysTab },
-  { id: "tasks", label: "Tasks", component: ProfileTasksTab },
-  { id: "sources", label: "Sources", component: ProfileSourcesTab },
+  { id: "api-keys", label: "API keys", group: MODELS_GROUP, component: ProfileApiKeysTab },
+  { id: "sandbox", label: "Sandbox", group: ADVANCED_GROUP, component: ProfileSandboxTab },
 ];
 
 interface ProfileSidebarProps {
@@ -64,7 +74,7 @@ export function ProfileSidebar({ activeItemId, onSelectItem }: ProfileSidebarPro
 
   return (
     <AccountSidebarShell
-      sections={profileSidebarItems.map(({ id, label }) => ({ id, label }))}
+      sections={profileSidebarItems.map(({ id, label, group }) => ({ id, label, group }))}
       activeSectionId={activeItemId}
       onSelectSection={onSelectItem}
       homeHref="/"

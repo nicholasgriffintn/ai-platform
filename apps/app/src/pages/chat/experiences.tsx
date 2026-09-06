@@ -1,9 +1,10 @@
-import { PersonalExperiences } from "~/components/Chat/PersonalExperiences";
+import { AppsPage } from "~/components/Apps/AppsPage";
+import { PERSONAL_SURFACE } from "~/lib/capability-surfaces";
 
 export function meta() {
-  return [{ title: "Your experiences - Polychat" }];
+  return [{ title: "Apps - Polychat" }];
 }
 
-export default function PersonalExperiencesPage() {
-  return <PersonalExperiences />;
+export default function PersonalAppsPage() {
+  return <AppsPage surface={PERSONAL_SURFACE} />;
 }

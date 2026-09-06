@@ -78,6 +78,7 @@ export * from "./council";
 export * from "./cron";
 export * from "./goals";
 export * from "./internal-service-auth";
+export * from "./meta-assistant";
 export * from "./thread-operations";
 export * from "./edit";
 export * from "./embeddings";

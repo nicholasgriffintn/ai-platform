@@ -12,7 +12,7 @@ import type { ReactNode } from "react";
 
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { useResponsiveSidebar } from "~/hooks/useResponsiveSidebar";
-import { SidebarLayout } from "~/layouts/SidebarLayout";
+import { ProductShell } from "~/layouts/ProductShell";
 
 interface PageShellProps {
   title?: string;
@@ -71,7 +71,7 @@ function PageShellRoot({
 
   return (
     <PageShellHeaderContext.Provider value={headerContext}>
-      <SidebarLayout
+      <ProductShell
         sidebarContent={sidebarContent}
         displayNavBar={displayNavBar ?? !header}
         bgClassName={bgClassName}
@@ -91,7 +91,7 @@ function PageShellRoot({
         >
           {children}
         </PageShellFrame>
-      </SidebarLayout>
+      </ProductShell>
     </PageShellHeaderContext.Provider>
   );
 }

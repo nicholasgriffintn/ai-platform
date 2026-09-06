@@ -1,6 +1,7 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import React, { Suspense, lazy } from "react";
 
+import { AppRail } from "~/components/Core/AppRail";
 import { ChatNavbar } from "~/components/Navbar";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
@@ -22,7 +23,13 @@ const KeyboardShortcutsHelp = lazy(() =>
   })),
 );
 
-interface SidebarLayoutProps {
+const MetaAssistantOverlay = lazy(() =>
+  import("~/components/MetaAssistant/MetaAssistantOverlay").then((mod) => ({
+    default: mod.MetaAssistantOverlay,
+  })),
+);
+
+interface ProductShellProps {
   children: React.ReactNode;
   sidebarContent: React.ReactNode;
   showSidebarToggleInNavbar?: boolean;
@@ -30,19 +37,22 @@ interface SidebarLayoutProps {
   bgClassName?: string;
 }
 
-export function SidebarLayout({
+export function ProductShell({
   children,
   sidebarContent,
   showSidebarToggleInNavbar = true,
   displayNavBar = true,
   bgClassName,
-}: SidebarLayoutProps) {
+}: ProductShellProps) {
   const {
+    isMobile,
     sidebarVisible,
     showKeyboardShortcuts,
     setShowKeyboardShortcuts,
     showLoginModal,
     setShowLoginModal,
+    showMetaAssistant,
+    setShowMetaAssistant,
   } = useUIStore();
   const showSearch = useChatStore((state) => state.showSearch);
   const setShowSearch = useChatStore((state) => state.setShowSearch);
@@ -66,6 +76,7 @@ export function SidebarLayout({
       <div
         className={cn(
           "flex h-dvh w-full max-w-full overflow-hidden",
+          isMobile ? "flex-col" : "flex-row",
           bgClassName ?? "bg-background",
         )}
       >
@@ -76,18 +87,24 @@ export function SidebarLayout({
           Skip to main content
         </a>
 
-        <div className="flex flex-row w-full overflow-hidden relative">
+        {!isMobile && (
+          <div className="shrink-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]">
+            <AppRail orientation="vertical" />
+          </div>
+        )}
+
+        <div className="relative flex min-h-0 w-full flex-1 flex-row overflow-hidden">
           {sidebarContent && (
             <div className="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]">
               {enhancedSidebarContent}
             </div>
           )}
 
-          <div className="flex flex-col min-w-0 flex-1 h-full pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pr-[env(safe-area-inset-right)]">
+          <div className="flex h-full min-w-0 flex-1 flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pr-[env(safe-area-inset-right)]">
             {displayNavBar && (
               <ChatNavbar showSidebarToggle={showSidebarToggleInNavbar && !sidebarVisible} />
             )}
-            <main id={MAIN_CONTENT_ID} tabIndex={-1} className="flex-1 overflow-auto w-full">
+            <main id={MAIN_CONTENT_ID} tabIndex={-1} className="w-full flex-1 overflow-auto">
               {children}
               {showLoginModal && (
                 <Suspense fallback={null}>
@@ -101,6 +118,12 @@ export function SidebarLayout({
             </main>
           </div>
         </div>
+
+        {isMobile && (
+          <div className="shrink-0 pb-[env(safe-area-inset-bottom)]">
+            <AppRail orientation="horizontal" />
+          </div>
+        )}
       </div>
 
       {showKeyboardShortcuts && (
@@ -113,6 +136,11 @@ export function SidebarLayout({
         </Suspense>
       )}
       {showSearch && <SearchDialog isOpen onClose={() => setShowSearch(false)} />}
+      {showMetaAssistant && (
+        <Suspense fallback={null}>
+          <MetaAssistantOverlay open onClose={() => setShowMetaAssistant(false)} />
+        </Suspense>
+      )}
     </>
   );
 }

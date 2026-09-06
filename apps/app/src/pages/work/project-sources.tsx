@@ -1,14 +1,9 @@
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 
-import { PageShell } from "~/components/Core/PageShell";
-import { SourcesLibrary } from "~/components/Profile/Tabs/ProfileSourcesTab";
+import { getProjectFilesPath } from "~/lib/files-route";
 
 export default function ProjectSourcesPage() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { workspaceId = "", projectId = "" } = useParams();
 
-  return projectId ? (
-    <PageShell.Content className="max-w-6xl">
-      <SourcesLibrary projectId={projectId} title="Sources" />
-    </PageShell.Content>
-  ) : null;
+  return <Navigate to={getProjectFilesPath(workspaceId, projectId, "given")} replace />;
 }

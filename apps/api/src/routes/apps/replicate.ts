@@ -18,6 +18,7 @@ import { getReplicatePredictionDetails } from "~/services/apps/replicate/get-det
 import { listReplicatePredictions } from "~/services/apps/replicate/list";
 import {
   projectScopeQuerySchema,
+  requireOptionalProjectCapabilityAccess,
   requireProjectCapabilityAccess,
 } from "~/services/workspaces/access";
 import { AssistantError } from "~/utils/errors";
@@ -170,14 +171,12 @@ addRoute(app, "get", "/predictions", {
   querySchema: projectScopeQuerySchema,
   handler: async ({ query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-replicate",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-replicate",
+      );
 
       const predictions = await listReplicatePredictions({
         context: serviceContext,
@@ -210,14 +209,12 @@ addRoute(app, "get", "/predictions/:id", {
   querySchema: projectScopeQuerySchema,
   handler: async ({ params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-replicate",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-replicate",
+      );
 
       const prediction = await getReplicatePredictionDetails({
         context: serviceContext,
@@ -251,14 +248,12 @@ addRoute(app, "post", "/execute", {
   querySchema: projectScopeQuerySchema,
   handler: async ({ body, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-replicate",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-replicate",
+      );
 
       const result = await executeReplicateModel({
         context: serviceContext,

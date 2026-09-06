@@ -7,7 +7,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { getCapabilityOpenPath, PERSONAL_SURFACE } from "~/lib/capability-surfaces";
-import { getPersonalConversationPath } from "~/lib/conversation-route";
+import { getPersonalConversationPath, getProjectConversationPath } from "~/lib/conversation-route";
 
 export type GlobalSearchResultKind = SearchResultKind;
 
@@ -87,7 +87,11 @@ export function buildGlobalSearchResults({
             ? `${conversation.project.name} · ${conversation.project.workspaceName}${conversation.isUnread ? " · Unread" : ""}${conversation.snooze ? " · Snoozed" : ""}`
             : `Personal chat${conversation.isUnread ? " · Unread" : ""}${conversation.snooze ? " · Snoozed" : ""}`,
           href: conversation.project
-            ? `/work/${conversation.project.workspaceId}/projects/${conversation.project.id}/chat?completion_id=${encodeURIComponent(conversation.id)}`
+            ? getProjectConversationPath(
+                conversation.project.workspaceId,
+                conversation.project.id,
+                conversation.id,
+              )
             : getPersonalConversationPath(conversation.id),
           searchText: `${conversation.title ?? ""} ${conversation.project?.name ?? ""} ${conversation.project?.workspaceName ?? ""} ${conversation.labels.map((label) => label.name).join(" ")}`,
           updatedAt: conversation.updatedAt,

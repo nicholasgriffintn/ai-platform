@@ -7,13 +7,21 @@ import {
 import { ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
 import { useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 
 import { ConversationOrganisationDialog } from "~/components/ConversationOrganisationDialog";
 import { SidebarFooter } from "~/components/Sidebar/SidebarFooter";
 import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
 import { useTaskAttention } from "~/hooks/useProjectTasks";
 import { buildConversationGroups } from "~/lib/conversation-groups";
+import {
+  getProjectBasePath,
+  getProjectChatPath,
+  getProjectConversationPath,
+  isProjectConversationPath,
+  resolveProjectConversationId,
+} from "~/lib/conversation-route";
+import { getProjectFilesPath } from "~/lib/files-route";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -40,8 +48,8 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const { data: workspace } = workspaceQuery;
   const { data: project } = projectQuery;
   const [conversationToOrganise, setConversationToOrganise] = useState<string | null>(null);
-  const { pathname } = useLocation();
-  const [searchParams] = useSearchParams();
+  const { pathname, search } = useLocation();
+  const { conversationId: pathConversationId } = useParams<"conversationId">();
   const navigate = useNavigate();
   const {
     clearCurrentConversation,
@@ -49,7 +57,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     setCurrentConversationId,
     setShowSearch,
   } = useChatStore();
-  const routedConversationId = searchParams.get("completion_id") ?? undefined;
+  const routedConversationId = resolveProjectConversationId(pathConversationId, search);
   const activeConversationId =
     routedConversationId ??
     project?.conversations.find((conversation) => conversation.id === currentConversationId)?.id;
@@ -58,8 +66,9 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const projectAttentionCount = projectId
     ? attentionItems.filter((item) => item.projectId === projectId).length
     : 0;
-  const projectBasePath = `/work/${workspaceId ?? ""}/projects/${projectId ?? ""}`;
-  const projectChatPath = `${projectBasePath}/chat`;
+  const projectBasePath = getProjectBasePath(workspaceId ?? "", projectId ?? "");
+  const projectChatPath = getProjectChatPath(workspaceId ?? "", projectId ?? "");
+  const isConversationRoute = isProjectConversationPath(pathname);
   const {
     confirmDeleteConversation,
     conversationToDelete,
@@ -101,7 +110,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     }
 
     setCurrentConversationId(conversationId);
-    void navigate(`${projectChatPath}?completion_id=${encodeURIComponent(conversationId)}`);
+    void navigate(getProjectConversationPath(workspaceId ?? "", projectId ?? "", conversationId));
     closeOnMobile();
   };
 
@@ -146,9 +155,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
           projectId && workspaceId
             ? {
                 newConversationHref: projectChatPath,
-                experiencesHref: `${projectBasePath}/experiences`,
-                outputsHref: `${projectBasePath}/outputs`,
-                sourcesHref: `${projectBasePath}/sources`,
+                filesHref: getProjectFilesPath(workspaceId, projectId),
                 tasksHref: `${projectBasePath}/tasks`,
                 attentionCount: projectAttentionCount,
                 activityHref: `${projectBasePath}/activity`,
@@ -170,7 +177,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                       <ConversationList
                         groups={conversationGroups}
                         activeConversationId={activeConversationId}
-                        isConversationRoute={pathname === projectChatPath}
+                        isConversationRoute={isConversationRoute}
                         onSelect={selectConversation}
                         onEditTitle={(conversationId, currentTitle) => {
                           void editConversationTitle(conversationId, currentTitle);
@@ -181,7 +188,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                     </ConversationListSection>
                   </div>
                 ),
-                isConversationRoute: pathname === projectChatPath,
+                isConversationRoute,
                 activeConversationId,
               }
             : undefined

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { useProjectTask, useProjectTasks } from "~/hooks/useProjectTasks";
+import { getProjectConversationPath } from "~/lib/conversation-route";
 import { getErrorMessage } from "~/lib/errors";
 
 import { useProjectTaskAgents } from "./useProjectTaskAgents";
@@ -105,7 +106,9 @@ export function ProjectTaskDetail({
           agents={agents}
           blockedBy={tasks.filter((candidate) => task.dependsOnTaskIds.includes(candidate.id))}
           conversationHref={
-            task.conversationId ? `${basePath}/chat?completion_id=${task.conversationId}` : null
+            task.conversationId
+              ? getProjectConversationPath(workspaceId, projectId, task.conversationId)
+              : null
           }
           taskHref={(candidate) => `${basePath}/tasks/${candidate.id}`}
           isBusy={isBusy}

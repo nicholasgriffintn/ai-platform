@@ -6,20 +6,11 @@ import {
   ConversationListSection,
   ConversationStorageNotice,
   SidebarNavButton,
-  SidebarNavLink,
   SidebarNavSection,
 } from "@ngriffin_uk/polychat-component-navigation";
 import { Button, ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
-import {
-  Grid2X2,
-  Image as ImageIcon,
-  Loader2,
-  MessageCircle,
-  Search,
-  Settings2,
-  SquarePen,
-} from "lucide-react";
+import { Image as ImageIcon, Loader2, MessageCircle, Search, SquarePen } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
@@ -316,24 +307,6 @@ export const ChatSidebar = ({
                 >
                   Search
                 </SidebarNavButton>
-                {isAuthenticated && (
-                  <>
-                    <SidebarNavLink
-                      href="/chat/experiences"
-                      icon={<Grid2X2 size={16} />}
-                      onClick={closeOnMobile}
-                    >
-                      Experiences
-                    </SidebarNavLink>
-                    <SidebarNavLink
-                      href="/chat/capabilities"
-                      icon={<Settings2 size={16} />}
-                      onClick={closeOnMobile}
-                    >
-                      Capabilities
-                    </SidebarNavLink>
-                  </>
-                )}
               </SidebarNavSection>
             </div>
             <ConversationListSection

@@ -84,7 +84,7 @@ export function getExperienceBackLink(
   const segments = subpath.split("/").filter(Boolean);
 
   if (segments.length === 0) {
-    return { to: getExperiencesPath(surface), label: "Back to experiences" };
+    return { to: getExperiencesPath(surface), label: "Back to apps" };
   }
 
   const parent = segments.slice(0, -1).join("/");

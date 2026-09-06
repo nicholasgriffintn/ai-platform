@@ -41,11 +41,6 @@ const PodcastsExperience = lazy(async () => {
 
   return { default: module.PodcastsExperience };
 });
-const ResponsesExperience = lazy(async () => {
-  const module = await import("./ResponsesExperience");
-
-  return { default: module.ResponsesExperience };
-});
 const StrudelExperience = lazy(async () => {
   const module = await import("./StrudelExperience");
 
@@ -101,10 +96,6 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: Experience
 
   if (runtime === "strudel") {
     return <StrudelExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
-  }
-
-  if (runtime === "responses") {
-    return <ResponsesExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
 
   return <EmptyState title="Experience unavailable" message="This experience is not supported." />;

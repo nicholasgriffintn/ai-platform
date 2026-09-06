@@ -83,3 +83,16 @@ export async function requireProjectCapabilityAccess(
     );
   }
 }
+
+export async function requireOptionalProjectCapabilityAccess(
+  context: ServiceContext,
+  projectId: string | undefined,
+  kind: ProjectCapabilityKind,
+  capabilityId: string,
+): Promise<void> {
+  if (!projectId) {
+    return;
+  }
+
+  await requireProjectCapabilityAccess(context, projectId, kind, capabilityId);
+}

@@ -19,7 +19,7 @@ import {
 import { useRunnableTool } from "~/hooks/useRunnableTools";
 import { isAuthenticationError } from "~/lib/errors";
 
-export function ResponsesExperience({ basePath, projectId, subpath }: ExperienceProps) {
+export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryProps) {
   const [copiedOutputId, setCopiedOutputId] = useState<string | null>(null);
   const [shareError, setShareError] = useState<{ outputId: string; message: string } | null>(null);
   const mintedShareTokens = useRef(new Map<string, string>());
@@ -131,8 +131,8 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
     return (
       <EmptyState
         icon={<Puzzle size={24} className="text-muted-foreground" />}
-        title="Nothing saved yet"
-        message="Run an experience or tool and its result lands here."
+        title="Nothing made yet"
+        message="Ask a teammate or run an app and the result lands here."
       />
     );
   }
@@ -151,7 +151,7 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
   );
 }
 
-interface ExperienceProps {
+interface OutputsLibraryProps {
   basePath: string;
   projectId?: string;
   subpath: string;

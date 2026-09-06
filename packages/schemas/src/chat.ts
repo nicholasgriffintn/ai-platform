@@ -107,7 +107,7 @@ export const conversationSortBySchema = z.enum(["updated", "created", "title"]);
 
 export const conversationActivityWindowSchema = z.enum(["all", "today", "week", "month"]);
 
-export const conversationTypeSchema = z.enum(["chat", "task"]);
+export const conversationTypeSchema = z.enum(["chat", "task", "meta"]);
 
 export type ConversationArchiveFilter = z.infer<typeof conversationArchiveFilterSchema>;
 export type ConversationSortBy = z.infer<typeof conversationSortBySchema>;

@@ -17,6 +17,7 @@ import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
 import { useProjectTasks } from "~/hooks/useProjectTasks";
 import { getAgentEditorPath, getProjectSurface } from "~/lib/capability-surfaces";
+import { getProjectConversationPath } from "~/lib/conversation-route";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
 import { projectTaskSkills, useProjectTaskAgents } from "./useProjectTaskAgents";
@@ -62,7 +63,9 @@ export function ProjectTaskBoard({
 
   const taskHref = (task: ProjectTask) => `${basePath}/tasks/${task.id}`;
   const conversationHref = (task: ProjectTask) =>
-    task.conversationId ? `${basePath}/chat?completion_id=${task.conversationId}` : null;
+    task.conversationId
+      ? getProjectConversationPath(workspaceId, projectId, task.conversationId)
+      : null;
 
   const runTask = async (task: ProjectTask) => {
     try {

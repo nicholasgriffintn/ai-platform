@@ -13,6 +13,7 @@ interface ConversationPageProps {
   embedded?: boolean;
   title: string;
   modeConfig?: ConversationThreadModeConfig;
+  pathConversationId?: string;
   sidebarContent?: ReactNode;
 }
 
@@ -20,9 +21,10 @@ export function ConversationPage({
   embedded = false,
   title,
   modeConfig,
+  pathConversationId,
   sidebarContent,
 }: ConversationPageProps) {
-  const effectiveModeConfig = useConversationLaunchModeConfig(modeConfig);
+  const effectiveModeConfig = useConversationLaunchModeConfig(modeConfig, pathConversationId);
 
   const content = (
     <div className="flex h-full min-h-0 flex-col overflow-hidden">

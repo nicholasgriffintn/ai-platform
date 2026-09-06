@@ -20,6 +20,7 @@ import { handlePodcastTranscribe } from "~/services/apps/podcast/transcribe";
 import { handlePodcastUpload } from "~/services/apps/podcast/upload";
 import {
   projectScopeQuerySchema,
+  requireOptionalProjectCapabilityAccess,
   requireProjectCapabilityAccess,
 } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -52,14 +53,12 @@ addRoute(app, "get", "/", {
   middleware: [requirePlan("pro")],
   handler: async ({ query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-podcast-processor",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-podcast-processor",
+      );
 
       const podcasts = await handlePodcastList({
         context: serviceContext,
@@ -96,14 +95,12 @@ addRoute(app, "get", "/:id", {
   middleware: [requirePlan("pro")],
   handler: async ({ params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-podcast-processor",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-podcast-processor",
+      );
 
       const podcast = await handlePodcastDetail({
         context: serviceContext,
@@ -137,14 +134,12 @@ addRoute(app, "post", "/upload", {
   middleware: [requirePlan("pro")],
   handler: async ({ query, raw, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-podcast-processor",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-podcast-processor",
+      );
 
       const formData = await raw.req.formData();
       const title = formData.get("title") as string;
@@ -200,14 +195,12 @@ addRoute(app, "post", "/transcribe", {
   querySchema: projectScopeQuerySchema,
   middleware: [requirePlan("pro")],
   handler: async ({ body, query, raw, serviceContext, user }) => {
-    if (query.projectId) {
-      await requireProjectCapabilityAccess(
-        serviceContext,
-        query.projectId,
-        "app",
-        "featured-podcast-processor",
-      );
-    }
+    await requireOptionalProjectCapabilityAccess(
+      serviceContext,
+      query.projectId,
+      "app",
+      "featured-podcast-processor",
+    );
 
     const newUrl = new URL(raw.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
@@ -235,14 +228,12 @@ addRoute(app, "post", "/summarise", {
   querySchema: projectScopeQuerySchema,
   middleware: [requirePlan("pro")],
   handler: async ({ body, query, serviceContext, user }) => {
-    if (query.projectId) {
-      await requireProjectCapabilityAccess(
-        serviceContext,
-        query.projectId,
-        "app",
-        "featured-podcast-processor",
-      );
-    }
+    await requireOptionalProjectCapabilityAccess(
+      serviceContext,
+      query.projectId,
+      "app",
+      "featured-podcast-processor",
+    );
 
     const response = await handlePodcastSummarise({
       context: serviceContext,
@@ -266,14 +257,12 @@ addRoute(app, "post", "/generate-image", {
   querySchema: projectScopeQuerySchema,
   middleware: [requirePlan("pro")],
   handler: async ({ body, query, serviceContext, user }) => {
-    if (query.projectId) {
-      await requireProjectCapabilityAccess(
-        serviceContext,
-        query.projectId,
-        "app",
-        "featured-podcast-processor",
-      );
-    }
+    await requireOptionalProjectCapabilityAccess(
+      serviceContext,
+      query.projectId,
+      "app",
+      "featured-podcast-processor",
+    );
 
     const response = await handlePodcastGenerateImage({
       context: serviceContext,

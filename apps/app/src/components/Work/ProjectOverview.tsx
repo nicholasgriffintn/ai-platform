@@ -13,6 +13,7 @@ import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useTemplateMutations } from "~/hooks/useGovernance";
 import { useArchiveProject } from "~/hooks/useWorkspaces";
+import { getProjectConversationPath } from "~/lib/conversation-route";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
 import { ProjectBriefCard } from "./ProjectBriefCard";
@@ -131,7 +132,7 @@ export function ProjectOverview({
                 title: conversation.title,
                 messageCount: conversation.messageCount,
                 createdByName: conversation.createdBy.name,
-                href: `/work/${workspaceId}/projects/${projectId}/chat?completion_id=${conversation.id}`,
+                href: getProjectConversationPath(workspaceId, projectId, conversation.id),
               }))}
             />
           </section>

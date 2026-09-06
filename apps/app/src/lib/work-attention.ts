@@ -5,6 +5,8 @@ import {
   type WorkAttentionQuery,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { getProjectConversationPath } from "./conversation-route";
+
 const DEFAULT_LIMIT = 25;
 
 export function readWorkAttentionQuery(searchParams: URLSearchParams): WorkAttentionQuery {
@@ -48,6 +50,6 @@ export function workAttentionItemHref(item: WorkAttentionItem): string {
   }
 
   return item.conversationId
-    ? `${projectPath}/chat?completion_id=${encodeURIComponent(item.conversationId)}`
+    ? getProjectConversationPath(item.workspaceId, item.projectId, item.conversationId)
     : `${projectPath}/activity`;
 }

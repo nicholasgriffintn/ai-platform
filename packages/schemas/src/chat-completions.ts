@@ -8,6 +8,7 @@ import {
 } from "./apps";
 import { conversationChannelRequestOptionsSchema } from "./chat-mode";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts";
+import { metaAssistantRequestSchema } from "./meta-assistant";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { sandboxRequestOptionsSchema } from "./sandbox";
 import { messageSchema } from "./shared";
@@ -574,6 +575,11 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   store: z.boolean().optional().describe("Whether to store the conversation and response."),
   completion_id: z.string().optional().describe("Existing or new completion ID."),
   platform: z.string().min(1).optional().describe("Client platform sending the request."),
+  meta_assistant: metaAssistantRequestSchema
+    .optional()
+    .describe(
+      "Marks the request as the signed-in user's meta assistant conversation, which only receives product-operating tools, and carries the client's current UI context.",
+    ),
   options: chatRequestOptionsSchema
     .optional()
     .describe("Grouped feature settings that are not model generation controls."),

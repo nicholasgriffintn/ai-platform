@@ -1,11 +1,14 @@
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 
-import { ProjectOutputs } from "~/components/Work/ProjectOutputs";
+import { getProjectFilesPath } from "~/lib/files-route";
 
 export default function ProjectOutputsPage() {
-  const { workspaceId, projectId, "*": subpath = "" } = useParams();
+  const { workspaceId = "", projectId = "", "*": subpath = "" } = useParams();
 
-  return workspaceId && projectId ? (
-    <ProjectOutputs workspaceId={workspaceId} projectId={projectId} subpath={subpath} />
-  ) : null;
+  return (
+    <Navigate
+      to={getProjectFilesPath(workspaceId, projectId, "made", subpath || undefined)}
+      replace
+    />
+  );
 }

@@ -27,6 +27,7 @@ import {
 } from "~/services/apps/notes/list";
 import {
   projectScopeQuerySchema,
+  requireOptionalProjectCapabilityAccess,
   requireProjectCapabilityAccess,
 } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -58,14 +59,12 @@ addRoute(app, "get", "/", {
   middleware: [requirePlan("pro")],
   handler: async ({ query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-note-taker",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-note-taker",
+      );
 
       const notes = await listNotes({
         context: serviceContext,
@@ -100,14 +99,12 @@ addRoute(app, "get", "/:id", {
   middleware: [requirePlan("pro")],
   handler: async ({ params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-note-taker",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-note-taker",
+      );
 
       const note = await getNote({
         context: serviceContext,
@@ -149,14 +146,12 @@ addRoute(app, "post", "/", {
   middleware: [requirePlan("pro")],
   handler: async ({ body, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-note-taker",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-note-taker",
+      );
 
       const note = await createNote({
         context: serviceContext,
@@ -198,14 +193,12 @@ addRoute(app, "put", "/:id", {
   middleware: [requirePlan("pro")],
   handler: async ({ body, params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-note-taker",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-note-taker",
+      );
 
       const note = await updateNote({
         context: serviceContext,
@@ -243,14 +236,12 @@ addRoute(app, "delete", "/:id", {
   middleware: [requirePlan("pro")],
   handler: async ({ params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-note-taker",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-note-taker",
+      );
 
       await deleteNote({
         context: serviceContext,
@@ -295,14 +286,12 @@ addRoute(app, "post", "/:id/format", {
   middleware: [requirePlan("pro")],
   handler: async ({ body, params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-note-taker",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-note-taker",
+      );
 
       const result = await formatNote({
         context: serviceContext,
@@ -347,14 +336,12 @@ addRoute(app, "post", "/generate-from-media", {
   middleware: [requirePlan("pro")],
   handler: async ({ body, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-note-taker",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-note-taker",
+      );
 
       const result = await generateNotesFromMedia({
         context: serviceContext,

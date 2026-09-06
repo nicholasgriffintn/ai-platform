@@ -402,7 +402,6 @@ export const projectExperienceRuntimeSchema = z.enum([
   "notes",
   "podcasts",
   "replicate",
-  "responses",
   "strudel",
 ]);
 
@@ -428,7 +427,6 @@ export const projectExperienceDefinitionSchema = z.object({
   theme: capabilityThemeSchema.optional(),
   tags: z.array(z.string()).optional(),
   type: toolFunctionTypeSchema.optional(),
-  href: z.string().optional(),
   requirement: projectExperienceRequirementSchema,
 });
 

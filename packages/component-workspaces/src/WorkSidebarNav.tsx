@@ -5,12 +5,10 @@ import {
   BellRing,
   ChevronRight,
   ClipboardList,
-  Database,
   FolderKanban,
-  Grid2X2,
+  FolderOpen,
   LayoutDashboard,
   ListChecks,
-  PanelsTopLeft,
   Search,
   Settings2,
   SquarePen,
@@ -39,9 +37,7 @@ export interface WorkSidebarWorkspace {
 
 export interface WorkSidebarProject {
   newConversationHref: string;
-  experiencesHref: string;
-  outputsHref: string;
-  sourcesHref: string;
+  filesHref: string;
   tasksHref: string;
   activityHref: string;
   capabilitiesHref: string;
@@ -158,15 +154,6 @@ export function WorkSidebarNav({
           >
             <SquarePen size={16} /> New conversation
           </Link>
-          <NavLink href={project.experiencesHref} className={linkClass} onClick={onNavigate}>
-            <Grid2X2 size={16} /> Experiences
-          </NavLink>
-          <NavLink href={project.outputsHref} className={linkClass} onClick={onNavigate}>
-            <PanelsTopLeft size={16} /> Outputs
-          </NavLink>
-          <NavLink href={project.sourcesHref} className={linkClass} onClick={onNavigate}>
-            <Database size={16} /> Sources
-          </NavLink>
           <NavLink href={project.tasksHref} className={linkClass} onClick={onNavigate}>
             <ListChecks size={16} /> Tasks
             {project.attentionCount ? (
@@ -179,11 +166,14 @@ export function WorkSidebarNav({
               </Badge>
             ) : null}
           </NavLink>
+          <NavLink href={project.filesHref} className={linkClass} onClick={onNavigate}>
+            <FolderOpen size={16} /> Files
+          </NavLink>
           <NavLink href={project.activityHref} className={linkClass} onClick={onNavigate}>
             <Activity size={16} /> Activity
           </NavLink>
           <NavLink href={project.capabilitiesHref} className={linkClass} onClick={onNavigate}>
-            <Settings2 size={16} /> Capabilities
+            <Settings2 size={16} /> Teammates &amp; tools
           </NavLink>
           {project.conversationList}
         </div>

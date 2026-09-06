@@ -11,15 +11,12 @@ import {
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { SourceKind } from "@ngriffin_uk/polychat-schemas";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
+import { MemorySynthesisPanel } from "~/components/Profile/MemorySynthesisPanel";
 import { API_BASE_URL } from "~/constants";
 import { useSourceCollections, useSourceMutations, useSources } from "~/hooks/useSources";
-
-import { MemorySynthesisPanel } from "../MemorySynthesisPanel";
 
 const sourceKinds: Array<{ value: "" | SourceKind; label: string }> = [
   { value: "", label: "All sources" },
@@ -33,10 +30,10 @@ const sourceKinds: Array<{ value: "" | SourceKind; label: string }> = [
 
 interface SourcesLibraryProps {
   projectId?: string;
-  title?: string;
+  createRequestKey?: number;
 }
 
-export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryProps) {
+export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryProps) {
   const [kind, setKind] = useState<"" | SourceKind>("");
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [isCreateSourceOpen, setIsCreateSourceOpen] = useState(false);
@@ -60,26 +57,14 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
   const mutations = useSourceMutations();
   const selectedCollection = collections?.find((collection) => collection.id === collectionId);
 
+  useEffect(() => {
+    if (createRequestKey) {
+      setIsCreateSourceOpen(true);
+    }
+  }, [createRequestKey]);
+
   return (
-    <ProfileTab
-      title={title}
-      actions={
-        projectId
-          ? []
-          : [
-              {
-                label: "Add source",
-                icon: <Plus size={16} />,
-                onClick: () => setIsCreateSourceOpen(true),
-              },
-            ]
-      }
-      description={
-        projectId
-          ? "Memories and sources available to this project."
-          : "Files, memories, links, repositories, and connected records available to Polychat."
-      }
-    >
+    <>
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside>
           <SourceCollectionList
@@ -244,10 +229,6 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
           setCollectionIdToDelete(null);
         }}
       />
-    </ProfileTab>
+    </>
   );
-}
-
-export function ProfileSourcesTab() {
-  return <SourcesLibrary />;
 }

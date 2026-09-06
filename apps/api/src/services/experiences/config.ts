@@ -22,19 +22,9 @@ export interface ExperienceDefinition {
   tags?: string[];
   type?: "normal" | "premium" | "byok";
   capabilityId?: string;
-  href?: string;
 }
 
 export const EXPERIENCES: ExperienceDefinition[] = [
-  {
-    id: "responses",
-    runtime: "responses",
-    name: "Saved outputs",
-    description: "Review everything the enabled experiences and tools have produced.",
-    category: "Results",
-    icon: "puzzle",
-    theme: "slate",
-  },
   {
     id: "strudel",
     runtime: "strudel",
@@ -46,7 +36,6 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     category: "AI Generation",
     theme: "indigo",
     tags: ["music", "audio", "generation"],
-    href: "/apps/strudel",
     type: "normal",
   },
   {
@@ -59,7 +48,6 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     category: "AI Generation",
     theme: "violet",
     tags: ["media", "multi-modal", "generation"],
-    href: "/apps/replicate",
     type: "byok",
   },
   {
@@ -72,7 +60,6 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     category: "AI Operations",
     theme: "slate",
     tags: ["training", "models", "deployments"],
-    href: "/apps/finetuning",
     type: "premium",
   },
   {
@@ -85,7 +72,6 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     category: "Media",
     theme: "emerald",
     tags: ["audio", "workflow"],
-    href: "/apps/podcasts",
     type: "premium",
   },
   {
@@ -98,7 +84,6 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     category: "Text",
     theme: "cyan",
     tags: ["analysis", "summarisation"],
-    href: "/apps/articles",
     type: "premium",
   },
   {
@@ -111,7 +96,6 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     category: "Productivity",
     theme: "amber",
     tags: ["notes", "workspace"],
-    href: "/apps/notes",
     type: "premium",
   },
 ];

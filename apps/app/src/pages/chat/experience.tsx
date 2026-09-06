@@ -1,15 +1,20 @@
 import { useParams } from "react-router";
 
-import { PersonalExperienceRoute } from "~/components/Chat/PersonalExperienceRoute";
+import { AppRoute } from "~/components/Apps/AppRoute";
+import { PERSONAL_SURFACE } from "~/lib/capability-surfaces";
 
 export function meta() {
-  return [{ title: "Experience - Polychat" }];
+  return [{ title: "App - Polychat" }];
 }
 
-export default function PersonalExperiencePage() {
+export default function PersonalAppPage() {
   const params = useParams();
 
   return (
-    <PersonalExperienceRoute experienceId={params.experienceId ?? ""} subpath={params["*"] ?? ""} />
+    <AppRoute
+      surface={PERSONAL_SURFACE}
+      experienceId={params.experienceId ?? ""}
+      subpath={params["*"] ?? ""}
+    />
   );
 }
