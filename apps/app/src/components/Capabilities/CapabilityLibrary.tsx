@@ -12,11 +12,12 @@ import {
 import { SearchX } from "lucide-react";
 
 import { AddSkillDialog } from "~/components/Capabilities/AddSkillDialog";
-import { AttachAgentDialog } from "~/components/Capabilities/AttachAgentDialog";
+import { AttachTeammateDialog } from "~/components/Capabilities/AttachTeammateDialog";
 import { CapabilityAddMenu } from "~/components/Capabilities/CapabilityAddMenu";
 import { CapabilityGroups } from "~/components/Capabilities/CapabilityGroups";
-import { ShareAgentDialog } from "~/components/Capabilities/ShareAgentDialog";
-import { SharedAgentsDialog } from "~/components/Capabilities/SharedAgentsDialog";
+import { HireTeammateDialog } from "~/components/Capabilities/HireTeammateDialog";
+import { SharedTeammatesDialog } from "~/components/Capabilities/SharedTeammatesDialog";
+import { ShareTeammateDialog } from "~/components/Capabilities/ShareTeammateDialog";
 import { useCapabilityAuthoring } from "~/components/Capabilities/useCapabilityAuthoring";
 import {
   useCapabilityLibraryController,
@@ -81,21 +82,21 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 
         {hasAuthenticationError ? (
           <SignInEmptyState
-            title="Sign in to manage capabilities"
-            message="Sign in to choose which experiences, recipes, skills, and tools you can use."
+            title="Sign in to manage your teammates"
+            message="Sign in to choose the teammates, apps, automations, skills and tools you use."
             className="min-h-[300px]"
           />
         ) : isLoading ? (
           <CardGridLoadingSkeleton count={6} label="Loading capabilities" />
         ) : controller.scopeError || controller.catalog.error ? (
           <EmptyState
-            title="Capabilities unavailable"
+            title="Teammates unavailable"
             message={(controller.scopeError ?? controller.catalog.error)?.message ?? "Try again."}
           />
         ) : controller.catalog.groups.length === 0 ? (
           <EmptyState
             icon={<SearchX size={24} className="text-muted-foreground" />}
-            title="No matching capabilities"
+            title="Nothing matches"
             message="Try another search, type, or category."
             className="min-h-[240px]"
           />
@@ -117,7 +118,7 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
             toolById={controller.catalog.toolById}
             toolConfigurationById={controller.toolConfigurationById}
             surface={controller.surface}
-            agentActions={authoring.agentActions}
+            teammateActions={authoring.teammateActions}
             authoredSkillActions={authoring.authoredSkillActions}
           />
         )}
@@ -169,19 +170,30 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
         onOpenChange={authoring.addSkill.setOpen}
         projectId={controller.surface.projectId}
       />
-      <SharedAgentsDialog
-        open={authoring.browseSharedAgents.open}
-        onOpenChange={authoring.browseSharedAgents.setOpen}
+      <HireTeammateDialog
+        open={authoring.hireTeammate.open}
+        onOpenChange={authoring.hireTeammate.setOpen}
+        onHire={authoring.hireTeammate.hire}
+        isHiring={authoring.hireTeammate.isHiring}
+        error={authoring.hireTeammate.error}
+        workspaceId={controller.surface.workspaceId}
       />
-      <ShareAgentDialog agent={authoring.shareAgent.agent} onClose={authoring.shareAgent.close} />
-      <AttachAgentDialog
-        agents={authoring.attachAgent.agents}
-        error={authoring.attachAgent.error}
-        isLoading={authoring.attachAgent.isLoading}
-        onAttach={authoring.attachAgent.attach}
-        onOpenChange={authoring.attachAgent.setOpen}
-        open={authoring.attachAgent.open}
-        pendingAgentId={pendingAddCapabilityId}
+      <SharedTeammatesDialog
+        open={authoring.browseSharedTeammates.open}
+        onOpenChange={authoring.browseSharedTeammates.setOpen}
+      />
+      <ShareTeammateDialog
+        teammate={authoring.shareTeammate.teammate}
+        onClose={authoring.shareTeammate.close}
+      />
+      <AttachTeammateDialog
+        teammates={authoring.attachTeammate.teammates}
+        error={authoring.attachTeammate.error}
+        isLoading={authoring.attachTeammate.isLoading}
+        onAttach={authoring.attachTeammate.attach}
+        onOpenChange={authoring.attachTeammate.setOpen}
+        open={authoring.attachTeammate.open}
+        pendingTeammateId={pendingAddCapabilityId}
       />
       <ConfirmationDialog
         open={authoring.deletion.pending !== null}

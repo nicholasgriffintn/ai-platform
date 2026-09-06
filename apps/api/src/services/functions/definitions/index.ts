@@ -3,25 +3,32 @@ import type { RecipeConnectorProvider, ToolPermission } from "@ngriffin_uk/polyc
 import { resolveToolPermissions } from "~/lib/permissions/PermissionChecker";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { analyse_article } from "./analyse_article";
 import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
 import { run_council, select_council_members } from "./council";
+import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
 import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
+import { generate_pattern } from "./generate_pattern";
 import { get_note } from "./get_note";
 import { complete_goal, set_goal } from "./goal";
 import { get_hacker_news_stories } from "./hacker_news";
 import { ask_user, request_approval } from "./human_in_the_loop";
 import { create_image } from "./image";
+import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
 import { search_memories, store_memory } from "./memory";
+import { metaToolDescriptors } from "./meta";
 import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
 import { run_pashi_tools, search_pashi_tools } from "./pashi";
+import { process_recording } from "./process_recording";
 import { create_task, get_task, list_tasks, update_task } from "./projectTasks";
+import { propose_skill_revision } from "./propose_skill_revision";
 import { create_qr_code } from "./qr";
 import { configure_recipe } from "./recipes/configure_recipe";
 import { get_recipe } from "./recipes/get_recipe";
@@ -31,7 +38,9 @@ import {
   createUseRecipeConnectorInputSchema,
 } from "./recipes/use_recipe_connector";
 import { research } from "./research";
+import { run_prediction } from "./run_prediction";
 import { run_sandbox_task } from "./sandbox";
+import { save_skill } from "./save_skill";
 import { capture_screenshot } from "./screenshot";
 import { search_documents } from "./search_documents";
 import { second_opinion } from "./second_opinion";
@@ -42,6 +51,7 @@ import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
+import { write_document } from "./write_document";
 
 export type { FunctionToolDescriptor } from "./types";
 
@@ -59,6 +69,7 @@ const descriptors: FunctionToolDescriptor[] = [
   next_edit_completion,
   apply_edit_completion,
   web_search,
+  write_document,
   create_qr_code,
   search_pashi_tools,
   run_pashi_tools,
@@ -68,7 +79,10 @@ const descriptors: FunctionToolDescriptor[] = [
   extract_content,
   search_memories,
   store_memory,
+  analyse_article,
+  create_automation,
   create_note,
+  generate_pattern,
   get_note,
   extract_text_from_document,
   use_recipe_connector,
@@ -86,7 +100,11 @@ const descriptors: FunctionToolDescriptor[] = [
   discover_capabilities,
   set_goal,
   complete_goal,
+  list_saved_messages,
   load_skill,
+  process_recording,
+  propose_skill_revision,
+  save_skill,
   run_council,
   select_council_members,
   second_opinion,
@@ -94,6 +112,8 @@ const descriptors: FunctionToolDescriptor[] = [
   request_approval,
   ask_user,
   run_sandbox_task,
+  run_prediction,
+  ...metaToolDescriptors,
 ];
 
 export function requireToolPermissions(name: string, permissions?: string[]): ToolPermission[] {

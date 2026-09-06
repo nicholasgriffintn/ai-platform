@@ -15,7 +15,7 @@ export type ShareableContentType =
   | "app"
   | "note"
   | "article"
-  | "podcast"
+  | "recording"
   | "drawing";
 
 export interface ShareDialogLabels {

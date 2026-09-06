@@ -473,10 +473,12 @@ export function UserSettingsForm({
               }
             >
               <option value="built-in">Built-in</option>
+              <option value="documents">Documents</option>
               <option value="hindsight">Hindsight</option>
               <option value="honcho">Honcho</option>
             </FormSelect>
             <p className="text-sm text-muted-foreground">
+              Documents keeps memories as files you can read and edit under Files &rsaquo; Memory.
               Hindsight and Honcho require a connected API key in Providers.
             </p>
           </div>

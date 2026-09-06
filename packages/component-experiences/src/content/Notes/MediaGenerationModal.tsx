@@ -27,7 +27,7 @@ type NoteType =
   | "training"
   | "lecture"
   | "interview"
-  | "podcast"
+  | "recording"
   | "webinar"
   | "tutorial"
   | "video_content"
@@ -133,7 +133,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                 "training",
                 "lecture",
                 "interview",
-                "podcast",
+                "recording",
                 "webinar",
                 "tutorial",
                 "video_content",

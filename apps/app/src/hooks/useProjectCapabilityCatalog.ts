@@ -27,7 +27,6 @@ function toEnableableApp(experience: ProjectExperienceDefinition) {
     theme: experience.theme,
     tags: experience.tags,
     type: experience.type,
-    href: experience.href,
     kind: "frontend" as const,
     featured: true,
   };
@@ -43,8 +42,12 @@ export function useProjectCapabilityCatalog(projectId?: string) {
     [catalogQuery.data?.experiences],
   );
   const apps = useMemo(
-    () => experiences.map(toEnableableApp).filter((app) => app !== null),
-    [experiences],
+    () =>
+      experiences
+        .filter((experience) => !projectId || experience.scope !== "personal")
+        .map(toEnableableApp)
+        .filter((app) => app !== null),
+    [experiences, projectId],
   );
   const recipes = useMemo(() => recipesQuery.data?.recipes ?? [], [recipesQuery.data?.recipes]);
   const modelTools = useMemo(
@@ -52,11 +55,14 @@ export function useProjectCapabilityCatalog(projectId?: string) {
     [catalogQuery.data?.modelTools],
   );
   const skills = useMemo(() => catalogQuery.data?.skills ?? [], [catalogQuery.data?.skills]);
-  const agents = useMemo(() => catalogQuery.data?.agents ?? [], [catalogQuery.data?.agents]);
+  const teammates = useMemo(
+    () => catalogQuery.data?.teammates ?? [],
+    [catalogQuery.data?.teammates],
+  );
 
   const items = useMemo(() => {
     const baseCatalog = buildAssistantActionCatalog({
-      agents,
+      teammates,
       apps,
       modelTools,
       skills,
@@ -67,7 +73,7 @@ export function useProjectCapabilityCatalog(projectId?: string) {
       ...baseCatalog.items,
       ...recipes.map((recipe) => createRecipeAssistantActionItem(recipe)),
     ];
-  }, [agents, apps, callableTools, recipes, modelTools, skills]);
+  }, [teammates, apps, callableTools, recipes, modelTools, skills]);
 
   return {
     apps,

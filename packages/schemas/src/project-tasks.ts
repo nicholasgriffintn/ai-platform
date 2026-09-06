@@ -69,7 +69,7 @@ export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, st
   usage_limits: "Stopped at the usage limit",
   token_budget: "Reached its token budget",
   missing_capability: "Needs a capability it does not have",
-  dispatch_failed: "Could not start the agent run",
+  dispatch_failed: "Could not start the teammate run",
   run_failed: "The run failed",
   dependencies_unmet: "Waiting on another task",
 };
@@ -128,7 +128,7 @@ export type ProjectTaskConstraints = z.infer<typeof projectTaskConstraintsSchema
 
 export const projectTaskRunnerSchema = z.object({
   kind: projectTaskRunnerKindSchema,
-  agentId: z.string().min(1).nullable().default(null),
+  teammateId: z.string().min(1).nullable().default(null),
   model: z.string().min(1).nullable().default(null),
   mode: agentModeSchema.nullable().default(null),
 });
@@ -182,6 +182,7 @@ export const projectTaskSchema = z.object({
   assigneeUserId: z.number().int().positive().nullable(),
   runnerIdentityUserId: z.number().int().positive().nullable(),
   conversationId: z.string().nullable(),
+  originConversationId: z.string().nullable(),
   goalId: z.string().nullable(),
   dispatchTaskId: z.string().nullable(),
   runId: z.string().nullable().optional(),
@@ -228,7 +229,7 @@ export const projectFlowStageSchema = z
       .regex(/^[a-z0-9][a-z0-9_-]*$/, "Stage ids are lowercase, and use - or _ as separators"),
     name: z.string().trim().min(1).max(60),
     instructions: z.string().trim().max(2000).nullable().default(null),
-    agentId: z.string().trim().min(1).nullable().default(null),
+    teammateId: z.string().trim().min(1).nullable().default(null),
     skillIds: z.array(z.string().trim().min(1)).default([]),
     mode: agentModeSchema.nullable().default(null),
     requiresApprovalFor: z.array(toolPermissionSchema).default([]),
@@ -261,7 +262,7 @@ export function createSuggestedProjectFlow(): ProjectFlow {
         name: "Research",
         instructions:
           "Gather the context, constraints and prior art this outcome depends on. Hand off a short brief with sources and any open questions.",
-        agentId: null,
+        teammateId: null,
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
@@ -272,7 +273,7 @@ export function createSuggestedProjectFlow(): ProjectFlow {
         name: "Plan",
         instructions:
           "Turn the brief into a concrete plan with scope, steps and acceptance criteria. Call out risks and anything that needs a decision before work starts.",
-        agentId: null,
+        teammateId: null,
         skillIds: [],
         mode: "plan",
         requiresApprovalFor: [],
@@ -283,7 +284,7 @@ export function createSuggestedProjectFlow(): ProjectFlow {
         name: "Build",
         instructions:
           "Carry out the approved plan. Keep changes within its scope and record what was done and how it was checked.",
-        agentId: null,
+        teammateId: null,
         skillIds: [],
         mode: "build",
         requiresApprovalFor: [],
@@ -294,7 +295,7 @@ export function createSuggestedProjectFlow(): ProjectFlow {
         name: "Review",
         instructions:
           "Check the work against the plan and acceptance criteria. Flag gaps, risks and anything that needs a human decision before it is accepted.",
-        agentId: null,
+        teammateId: null,
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
@@ -383,6 +384,7 @@ const taskWorkItemFields = {
   runner: projectTaskRunnerSchema.nullable(),
   stageId: z.string().trim().min(1).max(40).nullable(),
   tokenBudget: z.number().int().positive().max(10_000_000).nullable(),
+  originConversationId: z.string().min(1).nullable(),
 };
 
 export const createProjectTaskSchema = z

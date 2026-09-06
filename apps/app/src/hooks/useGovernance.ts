@@ -1,11 +1,17 @@
-import type { CreateTemplateInput, WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
+import type {
+  CreateTemplateInput,
+  ProjectDetail,
+  WorkspaceRole,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   createTemplate,
   deleteTemplate,
+  instantiateProjectStarter,
   instantiateTemplate,
   leaveWorkspace,
+  listProjectStarters,
   listWorkspaceAudit,
   listWorkspaceTemplates,
   removeWorkspaceMember,
@@ -31,10 +37,18 @@ export function useWorkspaceTemplates(workspaceId: string, enabled = true) {
   });
 }
 
+export function useProjectStarters(enabled = true) {
+  return useQuery({ queryKey: ["project-starters"], queryFn: listProjectStarters, enabled });
+}
+
 export function useTemplateMutations(workspaceId: string) {
   const queryClient = useQueryClient();
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ["workspace-templates", workspaceId] });
+  const cacheCreatedProject = (project: ProjectDetail) => {
+    queryClient.setQueryData([...projectQueryKey(project.id), project.workspaceId], project);
+    void queryClient.invalidateQueries({ queryKey: workspaceQueryKey(workspaceId) });
+  };
 
   return {
     create: useMutation({
@@ -44,10 +58,11 @@ export function useTemplateMutations(workspaceId: string) {
     remove: useMutation({ mutationFn: deleteTemplate, onSuccess: invalidate }),
     instantiate: useMutation({
       mutationFn: (templateId: string) => instantiateTemplate(templateId, workspaceId),
-      onSuccess: (project) => {
-        queryClient.setQueryData([...projectQueryKey(project.id), project.workspaceId], project);
-        void queryClient.invalidateQueries({ queryKey: workspaceQueryKey(workspaceId) });
-      },
+      onSuccess: cacheCreatedProject,
+    }),
+    startFromStarter: useMutation({
+      mutationFn: (starterSlug: string) => instantiateProjectStarter(starterSlug, workspaceId),
+      onSuccess: cacheCreatedProject,
     }),
   };
 }

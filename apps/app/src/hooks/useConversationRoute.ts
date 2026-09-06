@@ -10,11 +10,15 @@ import { useChatStore } from "~/state/stores/chatStore";
 
 import { useChat } from "./useChat";
 
+export type ConversationRouteSurface =
+  | { kind: "personal" }
+  | { kind: "project"; workspaceId: string; projectId: string };
+
 export function useConversationRoute({
   surface,
   pathConversationId,
 }: {
-  surface: "personal" | "project";
+  surface: ConversationRouteSurface;
   pathConversationId?: string;
 }) {
   const location = useLocation();
@@ -34,20 +38,12 @@ export function useConversationRoute({
     }
 
     const path =
-      surface === "project"
-        ? getProjectConversationPath(location.pathname, location.search, conversationId)
+      surface.kind === "project"
+        ? `${getProjectConversationPath(surface.workspaceId, surface.projectId, conversationId)}${location.search}`
         : `${getPersonalConversationPath(conversationId)}${location.search}`;
 
     void navigate(path, {
       replace: true,
     });
-  }, [
-    conversationId,
-    hasUserMessage,
-    location.pathname,
-    location.search,
-    navigate,
-    pathConversationId,
-    surface,
-  ]);
+  }, [conversationId, hasUserMessage, location.search, navigate, pathConversationId, surface]);
 }

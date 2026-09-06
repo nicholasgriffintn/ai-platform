@@ -6,6 +6,7 @@ import type { AssistantPersona, IBody, IUser, IUserSettings } from "~/types";
 import { trimTemplateWhitespace } from "~/utils/strings";
 
 import { getTextToImageSystemPrompt } from "./image";
+import { returnMetaAssistantPrompt } from "./meta-assistant";
 import { returnSandboxPrompt } from "./sandbox";
 import type { PromptMemoryPolicy } from "./sections/session-config";
 import { returnStandardPrompt } from "./standard";
@@ -29,6 +30,16 @@ export async function getSystemPrompt(options: SystemPromptOptions): Promise<str
   const supportsToolCalls = modelConfig?.supportsToolCalls || false;
   const memoryPolicy = options.memory ?? resolveMemoryPolicy({ user, userSettings });
   const modelMetadata = modelConfig ? { modelId: model, modelConfig } : { modelId: model };
+
+  if (request.meta_assistant) {
+    return trimTemplateWhitespace(
+      returnMetaAssistantPrompt({
+        uiContext: request.meta_assistant.ui_context,
+        user,
+        userSettings,
+      }),
+    );
+  }
 
   if (request.options?.sandbox?.enabled) {
     return trimTemplateWhitespace(returnSandboxPrompt(request, userSettings, modelMetadata));

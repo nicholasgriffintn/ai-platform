@@ -9,8 +9,8 @@ import {
   createRecipeAssistantActionLaunch,
   loadAssistantActionRequestOptions,
   parseAssistantActionLaunchState,
-  createAgentConversationActionPath,
-  readAgentConversationLaunchIntent,
+  createTeammateConversationActionPath,
+  readTeammateConversationLaunchIntent,
   readRecipeConversationLaunchIntent,
   removeConsumedAssistantActionLaunchParams,
 } from "../assistant-action-launch";
@@ -49,7 +49,7 @@ describe("assistant action launch URL contract", () => {
       recipe_context: "{}",
       action: "setup",
       recipe: "morning-briefing",
-      agent: "researcher",
+      teammate: "researcher",
       view: "compact",
     }).toString();
 
@@ -58,12 +58,12 @@ describe("assistant action launch URL contract", () => {
     );
   });
 
-  it("carries an agent into a conversation and reads it back", () => {
-    const path = createAgentConversationActionPath("/work/w1/projects/p1/chat", "researcher");
+  it("carries an teammate into a conversation and reads it back", () => {
+    const path = createTeammateConversationActionPath("/work/w1/projects/p1/chat", "researcher");
 
-    expect(path).toBe("/work/w1/projects/p1/chat?agent=researcher");
-    expect(readAgentConversationLaunchIntent(path.split("?")[1])).toBe("researcher");
-    expect(readAgentConversationLaunchIntent("agent=%20")).toBe(undefined);
+    expect(path).toBe("/work/w1/projects/p1/chat?teammate=researcher");
+    expect(readTeammateConversationLaunchIntent(path.split("?")[1])).toBe("researcher");
+    expect(readTeammateConversationLaunchIntent("teammate=%20")).toBe(undefined);
   });
 
   it("reads only valid compact recipe actions", () => {
@@ -129,12 +129,12 @@ describe("assistant action launch URL contract", () => {
   it("creates recipe management links without discarding existing route state", () => {
     expect(
       createRecipeManagementActionPath(
-        "/work/workspace-1/projects/project-1/library?view=installed",
+        "/work/workspace-1/projects/project-1/teammates?view=installed",
         "configure",
         "daily briefing",
       ),
     ).toBe(
-      "/work/workspace-1/projects/project-1/library?view=installed&action=configure&recipe=daily+briefing",
+      "/work/workspace-1/projects/project-1/teammates?view=installed&action=configure&recipe=daily+briefing",
     );
   });
 

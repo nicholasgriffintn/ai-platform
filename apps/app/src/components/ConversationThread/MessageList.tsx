@@ -37,12 +37,14 @@ import { useCanAccessProFeatures } from "~/hooks/useCanAccessProFeatures";
 import { useChat, useLoadEarlierChatMessages } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
+import { useSavedMessages } from "~/hooks/useSavedMessages";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import {
   useIsLoading,
   useLoadingMessage,
   useLoadingProgress,
 } from "~/state/contexts/LoadingContext";
+import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { Message } from "~/types";
@@ -62,8 +64,8 @@ interface MessageListProps {
   ) => void;
   messages?: Message[];
   isSharedView?: boolean;
-  onBranch?: (messageId: string, modelId?: string) => void;
-  isBranching?: boolean;
+  onStartThread?: (messageId: string, modelId?: string) => void;
+  isStartingThread?: boolean;
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
   hideInlineUserQuestions?: boolean;
@@ -87,13 +89,15 @@ export const MessageList = ({
   onArtifactOpen,
   messages: propMessages,
   isSharedView = false,
-  onBranch,
-  isBranching = false,
+  onStartThread,
+  isStartingThread = false,
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
   hideInlineUserQuestions = false,
 }: MessageListProps) => {
-  const { chatMode, currentConversationId } = useChatStore();
+  const chatMode = useChatStore((state) => state.chatMode);
+  const { currentConversationId } = useConversationScope();
+  const savedMessages = useSavedMessages(Boolean(currentConversationId));
 
   const { data: conversation, isLoading: isLoadingConversation } = useChat(
     !isSharedView ? currentConversationId : undefined,
@@ -307,8 +311,15 @@ export const MessageList = ({
                             }
                           }}
                           onCancelEdit={stopEditingMessage}
-                          onBranch={onBranch}
-                          isBranching={isBranching}
+                          onStartThread={onStartThread}
+                          isStartingThread={isStartingThread}
+                          isSaved={savedMessages.savedIds.has(message.id)}
+                          onToggleSaved={
+                            currentConversationId
+                              ? (messageId, isSaved) =>
+                                  savedMessages.toggle(currentConversationId, messageId, isSaved)
+                              : undefined
+                          }
                           onRequestSecondOpinion={
                             canAccessProFeatures ? onRequestSecondOpinion : undefined
                           }

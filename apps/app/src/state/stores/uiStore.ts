@@ -25,6 +25,12 @@ export interface UIStore {
   setShowLoginModal: (showLoginModal: boolean) => void;
   showKeyboardShortcuts: boolean;
   setShowKeyboardShortcuts: (showKeyboardShortcuts: boolean) => void;
+  showMetaAssistant: boolean;
+  setShowMetaAssistant: (showMetaAssistant: boolean) => void;
+  showProjectPicker: boolean;
+  setShowProjectPicker: (showProjectPicker: boolean) => void;
+  metaAssistantConversationId: string | undefined;
+  setMetaAssistantConversationId: (conversationId: string | undefined) => void;
   chatConversationListFilters: ConversationListFilters;
   setChatConversationListFilters: (filters: Partial<ConversationListFilters>) => void;
   resetChatConversationListFilters: () => void;
@@ -46,6 +52,13 @@ export const useUIStore = create<UIStore>()(
       setShowLoginModal: (showLoginModal) => set({ showLoginModal }),
       showKeyboardShortcuts: false,
       setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
+      showMetaAssistant: false,
+      setShowMetaAssistant: (showMetaAssistant) => set({ showMetaAssistant }),
+      showProjectPicker: false,
+      setShowProjectPicker: (showProjectPicker) => set({ showProjectPicker }),
+      metaAssistantConversationId: undefined,
+      setMetaAssistantConversationId: (metaAssistantConversationId) =>
+        set({ metaAssistantConversationId }),
       chatConversationListFilters: DEFAULT_CONVERSATION_LIST_FILTERS,
       setChatConversationListFilters: (filters) =>
         set((state) => ({
@@ -68,6 +81,8 @@ export const useUIStore = create<UIStore>()(
           isMobile: _m,
           isMobileLoading: _l,
           sidebarVisible: _s,
+          showMetaAssistant: _a,
+          showProjectPicker: _p,
           chatConversationListFilters,
           workConversationListFilters,
           ...rest

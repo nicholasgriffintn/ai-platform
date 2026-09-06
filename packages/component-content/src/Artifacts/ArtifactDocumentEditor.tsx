@@ -7,6 +7,7 @@ import {
 } from "@ngriffin_uk/polychat-library-chat/markdown-editor";
 import { measureTextareaSelectionActionPosition } from "@ngriffin_uk/polychat-library-chat/textarea-selection-position";
 import { getCharCount, getWordCount } from "@ngriffin_uk/polychat-utility-core";
+import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
 import {
   Bold,
   Download,
@@ -17,6 +18,8 @@ import {
   MessageSquarePlus,
   Pencil,
   Quote,
+  Save,
+  Wand2,
 } from "lucide-react";
 import {
   type ReactNode,
@@ -35,11 +38,25 @@ import { buildArtifactDownload, createArtifactSelectionAttachment } from "./arti
 interface ArtifactDocumentEditorProps {
   artifact: ArtifactProps;
   onAddSelectionToChat?: (attachment: AttachmentData) => void;
+  onSave?: (content: string) => Promise<void>;
+  isSaving?: boolean;
+  saveErrorMessage?: string;
+  onDownload?: () => void;
+  onRewrite?: () => Promise<string>;
+  isRewriting?: boolean;
+  rewriteErrorMessage?: string;
 }
 
 export const ArtifactDocumentEditor = ({
   artifact,
   onAddSelectionToChat,
+  onSave,
+  isSaving,
+  saveErrorMessage,
+  onDownload,
+  onRewrite,
+  isRewriting,
+  rewriteErrorMessage,
 }: ArtifactDocumentEditorProps) => {
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLTextAreaElement>(null);
@@ -154,16 +171,16 @@ export const ArtifactDocumentEditor = ({
   }, []);
 
   const handleDownload = useCallback(() => {
-    const download = buildArtifactDownload(artifact, content);
-    const blob = new Blob([download.content], { type: download.mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    if (onDownload) {
+      onDownload();
 
-    link.href = url;
-    link.download = download.filename;
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [artifact, content]);
+      return;
+    }
+
+    const download = buildArtifactDownload(artifact, content);
+
+    downloadTextFile(download.filename, download.content, download.mimeType);
+  }, [artifact, content, onDownload]);
 
   return (
     <div className="flex h-full flex-col bg-surface-elevated text-foreground">
@@ -235,10 +252,49 @@ export const ArtifactDocumentEditor = ({
           <span>{documentStats.characters} chars</span>
         </div>
 
+        {onRewrite ? (
+          <Button
+            size="xs"
+            variant="outline"
+            isLoading={isRewriting}
+            onClick={() => {
+              void onRewrite().then((rewritten) => {
+                setContent(rewritten);
+                setActiveView("edit");
+              });
+            }}
+            icon={<Wand2 size={13} />}
+          >
+            Rewrite
+          </Button>
+        ) : null}
+
+        {onSave ? (
+          <Button
+            size="xs"
+            variant="outline"
+            isLoading={isSaving}
+            disabled={content === artifact.content}
+            onClick={() => void onSave(content)}
+            icon={<Save size={13} />}
+          >
+            Save
+          </Button>
+        ) : null}
+
         <Button size="xs" onClick={handleDownload} icon={<Download size={13} />}>
           Download
         </Button>
       </div>
+
+      {(saveErrorMessage ?? rewriteErrorMessage) ? (
+        <p
+          role="alert"
+          className="border-b border-border bg-surface px-3 py-2 text-xs text-failure"
+        >
+          {saveErrorMessage ?? rewriteErrorMessage}
+        </p>
+      ) : null}
 
       {outline.length > 0 && (
         <nav

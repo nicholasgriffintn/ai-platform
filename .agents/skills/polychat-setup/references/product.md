@@ -4,10 +4,27 @@ Polychat combines personal **Chat** with collaborative **Work**. Start with the 
 
 Chat is conversation-first, with personal capabilities and rich experiences below `/chat`. Work organises projects inside workspaces, with shared conversations, instructions, sources, outputs and selected capabilities. Work access requires the appropriate plan and current workspace membership. There is no third global Apps or Recipes mode.
 
+## Move around
+
+Switch between Chat and Work with the toggle at the top of the page. Every sidebar starts with New chat and Search, then the same places: Attention, Files and Teammates. New chat follows the mode you are in: in Chat it opens a fresh personal conversation; inside a project it starts one there; elsewhere in Work it asks which workspace and project the conversation belongs to. Chat and Work keep their own sidebars for conversations and projects; a project's sidebar offers a new conversation, Tasks, Files, Activity and Teammates and tools. Apps open from the library, from deep links or from the composer rather than from a sidebar item.
+
+When a conversation works something out that you will want again, ask for it to be saved as a skill. Polychat agrees the name and the instructions with you, then writes a skill you load by name later: into the project when the conversation belongs to one, and into your own library otherwise. Poly cannot do this; it only operates the product.
+
+In a project conversation, the composer carries an **As task** toggle. Turn it on and what you type is filed as a project task rather than asked now, and the task remembers the conversation it came from so you can get back to the thinking behind it. Coding conversations keep their task-type control instead.
+
+A project opens on its conversations, with Chat, Tasks and Files as tabs across the top and a gear beside them. Everything that configures the project, the brief, the model tier, what it knows, what runs on a schedule, its coding environment and its attached teammates and tools, lives behind that gear rather than filling the page you land on.
+
+Memory can be kept as documents rather than as a hidden store. Choose **Documents** as your memory provider and everything Polychat remembers lands in Files under Memory, as plain text you can read, edit and delete, with every save kept as a revision. A project's memory belongs to the project, and a personal memory to you.
+
+**Files** holds everything you have given Polychat (sources, memories, links, repositories, connected records) under Given and everything it has made under Made, personally or per project. **Attention** collects project work that needs you across every workspace together with your own background tasks. Settings groups into Account, Appearance and pet, Models and keys and Advanced.
+
+**Poly** opens from the Ask Poly button at the foot of every sidebar, or with the ⌘J shortcut, over whatever you are looking at. It is your own assistant for operating Polychat: ask it to find a conversation, open a project, archive, pin, snooze or rename a conversation, or summarise the thread you have open. It knows what you are looking at, re-checks your access before every action and cannot approve tool requests, run connectors or act for anyone else. It needs a signed-in account with cloud storage. Poly keeps its own thread and its own draft, so nothing you type there touches the conversation underneath, and it always arrives as Pip whichever pet you have chosen elsewhere. Start it again from New conversation in its header.
+
 ## Choose how work runs
 
 - Use a conversation for interactive work, an experience for a richer workflow, a recipe for reusable configured work, and a project task/flow for durable agent execution and hand-offs.
-- Configure skills and saved agents in the capability library. Skills supply instructions; agents supply personas and capability requests. Their runner still needs access to everything they use.
+- Configure skills and teammates in the library. Skills supply instructions; teammates supply a brief and capability requests. Their runner still needs access to everything they use.
+- Hire a teammate from a built-in role, describe the job in your own words, or do both: the role fills in the brief, the suggested tools and the mode, and you can change any of it afterwards. Every teammate is a **colleague** or a **bot**. A colleague can file tasks and add to your memory; a bot answers and reports, and the server refuses those writes whatever its tool list says. Reads run on their own, and anything that writes to another system waits for your approval.
 - Keep connector installations and credentials attributable to the person running the work. Project membership does not grant another member's external account.
 - Use the project's **Default model tier** for project conversations and coding runs. Explicit request tiers or models override it; it is not a spending cap.
 - Treat **sources** as durable inputs and **outputs** as durable results. Project scope adds collaboration; conversation links add provenance.
@@ -22,7 +39,7 @@ Changing models affects the next run and keeps compatible attachments and the co
 
 ## Find conversations and results
 
-Conversation lists can group ordinary chats and task conversations. In a saved remote conversation, **Branches** opens related threads without copying history. Personal branches remain owner-scoped; project branches remain within the same membership-authorised project. Local-only and iOS navigation do not gain this web branch browser.
+Conversation lists can group ordinary chats and task conversations. In a saved remote conversation, **Threads** opens related threads without copying history, and any reply can start one. Personal threads remain owner-scoped; project threads remain within the same membership-authorised project. Local-only and iOS navigation do not gain this web thread browser.
 
 Each accepted stored task has one run identity and an authoritative state that is separate from the conversation and its visible assistant messages. Web and iOS preserve that identity, while repeated submissions are only safely deduplicated when they reuse the same command identity. Queue-dispatched project tasks continue independently of the request that starts them. Personal stored Chat remains best-effort after a connection loss, and local-only Chat remains private to the device with no server recovery.
 

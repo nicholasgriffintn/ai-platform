@@ -4,6 +4,7 @@ import type {
   AuthoredSkillImportInput,
   AuthoredSkillPromotionInput,
   AuthoredSkillRollbackInput,
+  AuthoredSkillState,
   AuthoredSkillVersionedDocument,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -22,6 +23,7 @@ import {
 } from "./management-policy";
 import {
   getStoredSkillHistory,
+  getStoredSkillState,
   getStoredSkillVersion,
   importStoredSkillRevision,
   promoteStoredSkillDraft,
@@ -132,6 +134,20 @@ export async function savePersonalSkillDraft(
   }
 
   return saved;
+}
+
+export async function getPersonalSkillState(
+  context: ServiceContext,
+  userId: number,
+  skillId: string,
+): Promise<AuthoredSkillState> {
+  const state = await getStoredSkillState(context, personalSkillScope(userId), skillId);
+
+  if (!state) {
+    throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  return state;
 }
 
 export async function promotePersonalSkillDraft(

@@ -1,4 +1,5 @@
 import { USER_QUESTION_MAX_OPTIONS } from "@ngriffin_uk/polychat-schemas";
+import { slugify } from "@ngriffin_uk/polychat-utility-core";
 
 import { isRecord } from "~/utils/objects";
 
@@ -21,12 +22,7 @@ function questionId(value: unknown, prompt: string, index: number): string {
     return value;
   }
 
-  const fromPrompt = prompt
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60)
-    .replace(/-+$/g, "");
+  const fromPrompt = slugify(prompt, 60);
 
   return fromPrompt || `question-${index + 1}`;
 }

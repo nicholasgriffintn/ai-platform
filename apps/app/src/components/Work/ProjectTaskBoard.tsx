@@ -11,15 +11,17 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { NEW_AGENT_ID } from "~/components/Agents/useAgentEditorController";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
+import { NEW_TEAMMATE_ID } from "~/components/Teammates/useTeammateEditorController";
 import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
 import { useProjectTasks } from "~/hooks/useProjectTasks";
-import { getAgentEditorPath, getProjectSurface } from "~/lib/capability-surfaces";
+import { getTeammateEditorPath, getProjectSurface } from "~/lib/capability-surfaces";
+import { getProjectConversationPath } from "~/lib/conversation-route";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
-import { projectTaskSkills, useProjectTaskAgents } from "./useProjectTaskAgents";
+import { ProjectHomeHeader } from "./ProjectHomeHeader";
+import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates";
 import { useWorkData } from "./WorkDataContext";
 
 export function ProjectTaskBoard({
@@ -32,7 +34,7 @@ export function ProjectTaskBoard({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isFlowOpen, setIsFlowOpen] = useState(false);
   const { projectQuery, workspaceQuery } = useWorkData();
-  const agents = useProjectTaskAgents(projectQuery.data?.capabilities);
+  const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);
   const capabilityCatalog = useCapabilityCatalog(projectId);
   const skills = projectTaskSkills(projectQuery.data?.capabilities, capabilityCatalog.data?.skills);
   const { tasks, flow, isLoading, error, create, start, accept, saveFlow } =
@@ -62,7 +64,9 @@ export function ProjectTaskBoard({
 
   const taskHref = (task: ProjectTask) => `${basePath}/tasks/${task.id}`;
   const conversationHref = (task: ProjectTask) =>
-    task.conversationId ? `${basePath}/chat?completion_id=${task.conversationId}` : null;
+    task.conversationId
+      ? getProjectConversationPath(workspaceId, projectId, task.conversationId)
+      : null;
 
   const runTask = async (task: ProjectTask) => {
     try {
@@ -101,9 +105,10 @@ export function ProjectTaskBoard({
   return (
     <>
       <PageShell.Content className="max-w-6xl">
-        <PageShell.Header
-          title="Tasks"
-          actionContent={
+        <ProjectHomeHeader
+          workspaceId={workspaceId}
+          projectId={projectId}
+          actions={
             <Button
               variant="primary"
               size="sm"
@@ -119,8 +124,8 @@ export function ProjectTaskBoard({
           }
         />
         <p className="text-muted-foreground mb-6 max-w-3xl text-sm">
-          Route outcomes through specialist agents, watch live work, and step in only when a stage
-          needs review or approval.
+          Route outcomes through specialist teammates, watch live work, and step in only when a
+          stage needs review or approval.
         </p>
 
         {isLoading ? (
@@ -134,7 +139,7 @@ export function ProjectTaskBoard({
             tasks={tasks}
             flow={flow}
             members={members}
-            agents={agents}
+            teammates={teammates}
             pendingTaskIds={pendingTaskIds}
             taskHref={taskHref}
             conversationHref={conversationHref}
@@ -152,7 +157,7 @@ export function ProjectTaskBoard({
         open={isCreateOpen}
         flow={flow}
         members={members}
-        agents={agents}
+        teammates={teammates}
         boardTasks={tasks}
         isSubmitting={create.isPending || start.isPending}
         errorMessage={create.error ? getErrorMessage(create.error, "") : undefined}
@@ -163,12 +168,12 @@ export function ProjectTaskBoard({
       <FlowEditorDialog
         open={isFlowOpen}
         flow={flow}
-        agents={agents}
+        teammates={teammates}
         skills={skills}
-        capabilitiesHref={`${basePath}/library`}
-        createAgentHref={getAgentEditorPath(
+        capabilitiesHref={`${basePath}/teammates`}
+        createTeammateHref={getTeammateEditorPath(
           getProjectSurface(workspaceId, projectId),
-          NEW_AGENT_ID,
+          NEW_TEAMMATE_ID,
         )}
         isSaving={saveFlow.isPending}
         errorMessage={saveFlow.error ? getErrorMessage(saveFlow.error, "") : undefined}
@@ -177,9 +182,9 @@ export function ProjectTaskBoard({
           try {
             await saveFlow.mutateAsync(nextFlow);
             setIsFlowOpen(false);
-            toast.success("Agent pipeline saved");
+            toast.success("Teammate pipeline saved");
           } catch (mutationError) {
-            toast.error(getErrorMessage(mutationError, "Unable to save the agent pipeline"));
+            toast.error(getErrorMessage(mutationError, "Unable to save the teammate pipeline"));
           }
         }}
       />

@@ -1,6 +1,6 @@
 import {
-  setAgentFeaturedSchema,
-  moderateAgentSchema,
+  setTeammateFeaturedSchema,
+  moderateTeammateSchema,
   apiResponseSchema,
   createTaskResponseSchema,
   planCreditsUpdateSchema,
@@ -14,10 +14,10 @@ import { addRoute } from "~/lib/http/routeBuilder";
 import { requireAdmin, requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
-  setAgentFeaturedStatus,
-  moderateAgent,
-  getAllSharedAgentsForAdmin,
-} from "~/services/admin/sharedAgents";
+  setTeammateFeaturedStatus,
+  moderateTeammate,
+  getAllSharedTeammatesForAdmin,
+} from "~/services/admin/sharedTeammates";
 import { updatePlanCredits } from "~/services/plans";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
@@ -31,7 +31,7 @@ app.use("/*", async (ctx, next) => {
   return next();
 });
 
-const sharedAgentParamsSchema = z.object({
+const sharedTeammateParamsSchema = z.object({
   id: z.string().min(1),
 });
 
@@ -92,22 +92,22 @@ addRoute(app, "put", "/plans/:id/credits", {
     updatePlanCredits(serviceContext.env, params.id, body),
 });
 
-addRoute(app, "put", "/shared-agents/:id/featured", {
+addRoute(app, "put", "/shared-teammates/:id/featured", {
   tags: ["admin"],
-  summary: "Set agent featured status",
-  description: "Mark an agent as featured or unfeatured (admin only)",
-  bodySchema: setAgentFeaturedSchema,
-  paramSchema: sharedAgentParamsSchema,
+  summary: "Set teammate featured status",
+  description: "Mark an teammate as featured or unfeatured (admin only)",
+  bodySchema: setTeammateFeaturedSchema,
+  paramSchema: sharedTeammateParamsSchema,
   auth: true,
   responses: {
     "200": { description: "Success", schema: apiResponseSchema },
   },
   middleware: [requireStrictAdmin],
   handler: async ({ body, params, raw, serviceContext, user }) => {
-    const result = await setAgentFeaturedStatus({
+    const result = await setTeammateFeaturedStatus({
       context: serviceContext,
       env: serviceContext.env,
-      agentId: params.id,
+      teammateId: params.id,
       featured: body.featured,
       moderator: user,
     });
@@ -120,41 +120,41 @@ addRoute(app, "put", "/shared-agents/:id/featured", {
   },
 });
 
-addRoute(app, "get", "/shared-agents", {
+addRoute(app, "get", "/shared-teammates", {
   tags: ["admin"],
-  summary: "Get all shared agents for admin review",
-  description: "Get all shared agents including non-public ones (admin only)",
+  summary: "Get all shared teammates for admin review",
+  description: "Get all shared teammates including non-public ones (admin only)",
   responses: {
     "200": { description: "Success", schema: apiResponseSchema },
   },
   auth: true,
   middleware: [requireAdmin],
-  handler: async ({ serviceContext }) => getAllSharedAgentsForAdmin({ context: serviceContext }),
+  handler: async ({ serviceContext }) => getAllSharedTeammatesForAdmin({ context: serviceContext }),
 });
 
-addRoute(app, "put", "/shared-agents/:id/moderate", {
+addRoute(app, "put", "/shared-teammates/:id/moderate", {
   tags: ["admin"],
-  summary: "Moderate shared agent",
-  description: "Approve or reject a shared agent (admin only)",
-  bodySchema: moderateAgentSchema,
-  paramSchema: sharedAgentParamsSchema,
+  summary: "Moderate shared teammate",
+  description: "Approve or reject a shared teammate (admin only)",
+  bodySchema: moderateTeammateSchema,
+  paramSchema: sharedTeammateParamsSchema,
   auth: true,
   responses: {
     "200": { description: "Success", schema: apiResponseSchema },
   },
   middleware: [requireAdmin],
   handler: async ({ body, params, raw, serviceContext, user }) => {
-    const result = await moderateAgent({
+    const result = await moderateTeammate({
       context: serviceContext,
       env: serviceContext.env,
-      agentId: params.id,
+      teammateId: params.id,
       isPublic: body.is_public,
       reason: body.reason,
       moderator: user,
     });
 
     if (!result.success) {
-      return ResponseFactory.error(raw, result.error || "Failed to moderate agent", 400);
+      return ResponseFactory.error(raw, result.error || "Failed to moderate teammate", 400);
     }
 
     return result.data;

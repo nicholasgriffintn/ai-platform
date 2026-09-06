@@ -42,7 +42,7 @@ class ChatExecutionRequest {
       analyticsTrackingEnabled: prepared.userSettings?.tracking_enabled ?? null,
       disable_functions: chatOptions.disable_functions,
       completion_id: chatOptions.completion_id,
-      conversation_type: chatOptions.conversation_type,
+      conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
       messages: toProviderMessages(messages),
       message: prepared.messageWithContext,
       mode: prepared.currentMode,

@@ -135,8 +135,8 @@ export function replaceComposerDirectiveWithCursor(
     typeof cursorOffsetOrOptions === "number"
       ? { cursorOffset: cursorOffsetOrOptions }
       : (cursorOffsetOrOptions ?? {});
-  const before = input.slice(0, directive.start).replace(/\s+$/, "");
-  const after = input.slice(directive.end).replace(/^\s+/, "");
+  const before = input.slice(0, directive.start).trimEnd();
+  const after = input.slice(directive.end).trimStart();
   const value = replacement.trim();
   const replacementStart = before.length + (before && value ? 1 : 0);
   const replacementEnd = replacementStart + value.length;
@@ -171,7 +171,7 @@ export function appendComposerInlineTokenWithCursor(
   label: string,
   tokenText = getComposerInlineTokenText(label),
 ): ComposerDirectiveReplacement {
-  const before = input.replace(/\s+$/, "");
+  const before = input.trimEnd();
   const replacementStart = before ? before.length + 1 : 0;
   const replacementEnd = replacementStart + tokenText.length;
   const nextInput = before ? `${before} ${tokenText} ` : `${tokenText} `;

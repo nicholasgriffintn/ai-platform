@@ -1,0 +1,212 @@
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { createExecutionOutputProvenance } from "~/lib/provenance/output";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { getModelConfigByModel } from "~/lib/providers/models";
+import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
+import { TaskRepository } from "~/repositories/TaskRepository";
+import { TaskService } from "~/services/tasks/TaskService";
+import type { IEnv, IFunctionResponse, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { safeParseJson } from "~/utils/json";
+import { getLogger } from "~/utils/logger";
+import { omitNullishValues } from "~/utils/objects";
+
+const logger = getLogger({ prefix: "services/apps/recording/transcribe" });
+
+const MODEL_KEY = "replicate-whisper-large-v3";
+
+export interface IRecordingTranscribeBody {
+  recordingId: string;
+  numberOfSpeakers: number;
+  prompt: string;
+}
+
+interface TranscribeRequest {
+  context?: ServiceContext;
+  env?: IEnv;
+  request: IRecordingTranscribeBody;
+  user: IUser;
+  app_url?: string;
+  projectId?: string;
+}
+
+export const handleRecordingTranscribe = async (
+  req: TranscribeRequest,
+): Promise<IFunctionResponse | IFunctionResponse[]> => {
+  const { request, context, env, user, app_url, projectId } = req;
+
+  if (!request.recordingId || !request.prompt || !request.numberOfSpeakers) {
+    throw new AssistantError(
+      "Missing recording id or prompt or number of speakers",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
+  try {
+    if (!user?.id) {
+      throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
+    }
+
+    const serviceContext = resolveServiceContext({ context, env, user });
+
+    serviceContext.ensureDatabase();
+    const repositories = serviceContext.repositories;
+    const runtimeEnv = serviceContext.env;
+
+    const existingTranscriptions = projectId
+      ? await repositories.outputs.listProjectOutputGroup(
+          projectId,
+          "recordings",
+          request.recordingId,
+          "transcribe",
+        )
+      : await repositories.outputs.listPersonalOutputGroup(
+          user.id,
+          "recordings",
+          request.recordingId,
+          "transcribe",
+        );
+
+    if (existingTranscriptions.length > 0) {
+      const transcriptionData = safeParseJson<Record<string, any>>(
+        existingTranscriptions[0].content,
+      )?.transcriptionData;
+
+      return {
+        status: "success",
+        content: "Recording Transcription retrieved from cache",
+        data: transcriptionData,
+      };
+    }
+
+    const uploadData = projectId
+      ? await repositories.outputs.listProjectOutputGroup(
+          projectId,
+          "recordings",
+          request.recordingId,
+          "upload",
+        )
+      : await repositories.outputs.listPersonalOutputGroup(
+          user.id,
+          "recordings",
+          request.recordingId,
+          "upload",
+        );
+
+    if (uploadData.length === 0) {
+      throw new AssistantError(
+        "Recording upload not found. Please upload audio first",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const parsedUploadData = safeParseJson<Record<string, any>>(uploadData[0].content) ?? {};
+    const title = parsedUploadData.title;
+    const description = parsedUploadData.description;
+    const audioUrl = parsedUploadData.audioUrl;
+
+    const modelConfig = await getModelConfigByModel(MODEL_KEY);
+
+    if (!modelConfig) {
+      throw new AssistantError(
+        `Model configuration not found for ${MODEL_KEY}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const provider = getChatProvider(modelConfig.provider || "replicate", {
+      env: runtimeEnv,
+      user,
+    });
+
+    const prompt = `${request.prompt} <title>${title}</title> <description>${description}</description>`;
+
+    const replicatePayload = omitNullishValues({
+      file: audioUrl,
+      prompt,
+      language: "en",
+      num_speakers: request.numberOfSpeakers,
+      transcript_output_format: "segments_only",
+      group_segments: true,
+      translate: false,
+      offset_seconds: 0,
+    });
+
+    validateReplicatePayload({
+      payload: replicatePayload,
+      schema: modelConfig.inputSchema,
+      modelName: modelConfig.name || MODEL_KEY,
+    });
+
+    const transcriptionData = await provider.getResponse({
+      completion_id: request.recordingId,
+      app_url,
+      model: modelConfig.matchingModel,
+      messages: [
+        {
+          role: "user",
+          content: [{ ...replicatePayload, type: "text" }],
+        },
+      ],
+      env: runtimeEnv,
+      context: serviceContext,
+    });
+
+    const isAsync = transcriptionData?.status === "in_progress";
+
+    const appData = {
+      title,
+      description,
+      numberOfSpeakers: request.numberOfSpeakers,
+      prompt: request.prompt,
+      transcriptionData,
+      status: isAsync ? "pending" : "complete",
+      createdAt: new Date().toISOString(),
+    };
+
+    await repositories.outputs.createOutput({
+      createdByUserId: user.id,
+      projectId,
+      capabilityId: "recordings",
+      groupId: request.recordingId,
+      kind: "transcribe",
+      title: `Transcript: ${title || "Untitled recording"}`,
+      status: isAsync ? "pending" : "ready",
+      content: appData,
+      provenance: await createExecutionOutputProvenance(serviceContext, {
+        modelId: modelConfig.matchingModel,
+        provider: modelConfig.provider || "replicate",
+      }),
+    });
+
+    if (isAsync) {
+      const taskService = new TaskService(runtimeEnv, new TaskRepository(runtimeEnv));
+
+      await taskService.enqueueTask({
+        task_type: "recording_transcription_polling",
+        user_id: user.id,
+        task_data: {
+          recordingId: request.recordingId,
+          userId: user.id,
+          projectId,
+          startedAt: new Date().toISOString(),
+          pollAttempt: 0,
+        },
+        priority: 6,
+      });
+    }
+
+    return {
+      status: "success",
+      content: isAsync
+        ? `Recording transcription started: ${transcriptionData.id}`
+        : `Recording transcribed: ${transcriptionData.id}`,
+      data: appData,
+    };
+  } catch (error) {
+    logger.error("Failed to transcribe recording:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
+    throw new AssistantError("Failed to transcribe recording");
+  }
+};

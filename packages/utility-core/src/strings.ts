@@ -77,3 +77,23 @@ export function escapeHtml(value: string): string {
       })[character] ?? character,
   );
 }
+
+export function slugify(value: string, maxLength?: number): string {
+  const collapsed = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gu, "-");
+  const bounded = maxLength === undefined ? collapsed : collapsed.slice(0, maxLength);
+
+  return bounded.replace(/^-|-$/gu, "");
+}
+
+export function trimTrailingCharacter(value: string, character: string): string {
+  let end = value.length;
+
+  while (end > 0 && value[end - 1] === character) {
+    end -= 1;
+  }
+
+  return end === value.length ? value : value.slice(0, end);
+}

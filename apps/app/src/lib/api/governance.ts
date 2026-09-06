@@ -2,6 +2,7 @@ import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import type {
   CreateTemplateInput,
   ProjectDetail,
+  ProjectStarterSummary,
   Template,
   WorkspaceAuditRecord,
   WorkspaceDetail,
@@ -47,6 +48,20 @@ export async function instantiateTemplate(
   workspaceId: string,
 ): Promise<ProjectDetail> {
   return request(`/templates/${encodeURIComponent(templateId)}/instantiate`, {
+    method: "POST",
+    body: { workspaceId },
+  });
+}
+
+export async function listProjectStarters(): Promise<ProjectStarterSummary[]> {
+  return (await request<{ starters: ProjectStarterSummary[] }>("/templates/starters")).starters;
+}
+
+export async function instantiateProjectStarter(
+  starterSlug: string,
+  workspaceId: string,
+): Promise<ProjectDetail> {
+  return request(`/templates/starters/${encodeURIComponent(starterSlug)}/instantiate`, {
     method: "POST",
     body: { workspaceId },
   });

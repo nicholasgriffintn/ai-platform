@@ -796,6 +796,9 @@ importers:
       '@ngriffin_uk/polychat-library-chat':
         specifier: workspace:^
         version: link:../library-chat
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core

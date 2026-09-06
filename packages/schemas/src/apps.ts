@@ -1,10 +1,11 @@
 import z from "zod/v4";
 
-import { agentSummarySchema } from "./agents";
+import { documentMetadataSchema } from "./documents";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json";
 import { externalHttpUrlSchema } from "./navigation";
 import { outputSchema } from "./outputs";
 import { skillSummarySchema } from "./skills";
+import { teammateSummarySchema } from "./teammates";
 
 export const weatherQuerySchema = z.object({
   longitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),
@@ -62,19 +63,19 @@ export const guessDrawingSchema = z.object({
   }),
 });
 
-export const podcastTranscribeSchema = z.object({
-  podcastId: z.string(),
+export const recordingTranscribeSchema = z.object({
+  recordingId: z.string(),
   numberOfSpeakers: z.number(),
   prompt: z.string(),
 });
 
-export const podcastSummarizeSchema = z.object({
-  podcastId: z.string(),
+export const recordingSummariseSchema = z.object({
+  recordingId: z.string(),
   speakers: z.record(z.string(), z.string()),
 });
 
-export const podcastGenerateImageSchema = z.object({
-  podcastId: z.string(),
+export const recordingGenerateImageSchema = z.object({
+  recordingId: z.string(),
   prompt: z.string().optional(),
 });
 
@@ -235,7 +236,7 @@ export const assistantCapabilityKindSchema = z.enum([
   "dynamic_app",
   "frontend_app",
   "connector",
-  "agent",
+  "teammate",
   "skill",
   "tool",
 ]);
@@ -265,7 +266,7 @@ export const assistantCapabilityExecutionModeSchema = z.enum([
   "navigation",
   "connector_operation",
   "tool",
-  "agent",
+  "teammate",
 ]);
 
 export const assistantCapabilityAuthRequirementSchema = z.enum([
@@ -398,11 +399,11 @@ export const capabilityThemeSchema = z.enum(capabilityThemes);
 
 export const projectExperienceRuntimeSchema = z.enum([
   "articles",
+  "image-studio",
   "finetuning",
   "notes",
-  "podcasts",
+  "recordings",
   "replicate",
-  "responses",
   "strudel",
 ]);
 
@@ -418,17 +419,37 @@ export const projectExperienceRequirementSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
+export const APP_IOS_DECISIONS = ["native", "results-only", "web-only"] as const;
+
+export const appIosDecisionSchema = z.enum(APP_IOS_DECISIONS);
+
+export type AppIosDecision = z.infer<typeof appIosDecisionSchema>;
+
+export const APP_SCOPES = ["any", "personal"] as const;
+
+export const appScopeSchema = z.enum(APP_SCOPES);
+
+export type AppScope = z.infer<typeof appScopeSchema>;
+
 export const projectExperienceDefinitionSchema = z.object({
   id: z.string(),
   runtime: projectExperienceRuntimeSchema,
   name: z.string(),
   description: z.string(),
+  when: z.string().describe("When someone should reach for this app."),
+  uses: z.string().describe("What it works from."),
+  produces: z.string().describe("What it leaves behind."),
+  ios: appIosDecisionSchema.describe("How this app behaves on iPhone."),
+  scope: appScopeSchema.describe("Whether this app can be enabled in a project."),
+  scopeReason: z
+    .string()
+    .nullable()
+    .describe("Why a personal-only app cannot be enabled in a project."),
   icon: z.string().optional(),
   category: z.string().optional(),
   theme: capabilityThemeSchema.optional(),
   tags: z.array(z.string()).optional(),
   type: toolFunctionTypeSchema.optional(),
-  href: z.string().optional(),
   requirement: projectExperienceRequirementSchema,
 });
 
@@ -527,7 +548,7 @@ export const renderableToolSchema = z.object({
 });
 
 export const capabilityCatalogResponseSchema = z.object({
-  agents: z.array(agentSummarySchema),
+  teammates: z.array(teammateSummarySchema),
   experiences: z.array(projectExperienceDefinitionSchema),
   modelTools: z.array(modelToolDefinitionSchema),
   skills: z.array(skillSummarySchema),
@@ -797,23 +818,23 @@ export const articleDetailResponseSchema = z.object({
   article: outputSchema,
 });
 
-export const podcastStatusSchema = z.enum([
+export const recordingStatusSchema = z.enum([
   "processing",
   "transcribing",
   "summarizing",
   "complete",
 ]);
 
-export const podcastListItemSchema = z.object({
+export const recordingListItemSchema = z.object({
   id: z.string(),
   title: z.string(),
   createdAt: z.string(),
   imageUrl: z.string().optional(),
   duration: z.number().optional(),
-  status: podcastStatusSchema,
+  status: recordingStatusSchema,
 });
 
-export const podcastTranscriptSegmentSchema = z.object({
+export const recordingTranscriptSegmentSchema = z.object({
   start: z.number().optional(),
   end: z.number().optional(),
   text: z.string(),
@@ -821,60 +842,39 @@ export const podcastTranscriptSegmentSchema = z.object({
   avg_logprob: z.number().optional(),
 });
 
-export const podcastTranscriptDataSchema = z.object({
+export const recordingTranscriptDataSchema = z.object({
   language: z.string().optional(),
-  segments: z.array(podcastTranscriptSegmentSchema),
+  segments: z.array(recordingTranscriptSegmentSchema),
   num_speakers: z.number().optional(),
 });
 
-export const podcastTranscriptSchema = z.union([z.string(), podcastTranscriptDataSchema]);
+export const recordingTranscriptSchema = z.union([z.string(), recordingTranscriptDataSchema]);
 
-export const podcastSchema = podcastListItemSchema.extend({
+export const recordingSchema = recordingListItemSchema.extend({
   description: z.string().optional(),
   audioUrl: z.string().optional(),
-  transcript: podcastTranscriptSchema.optional(),
+  transcript: recordingTranscriptSchema.optional(),
   summary: z.string().optional(),
 });
 
-export const listPodcastsResponseSchema = z.object({
-  podcasts: z.array(podcastListItemSchema),
+export const listRecordingsResponseSchema = z.object({
+  recordings: z.array(recordingListItemSchema),
 });
 
-export const podcastDetailResponseSchema = z.object({
-  podcast: podcastSchema,
+export const recordingDetailResponseSchema = z.object({
+  recording: recordingSchema,
 });
 
-export type PodcastStatus = z.infer<typeof podcastStatusSchema>;
-export type PodcastListItem = z.infer<typeof podcastListItemSchema>;
-export type PodcastTranscriptSegment = z.infer<typeof podcastTranscriptSegmentSchema>;
-export type PodcastTranscriptData = z.infer<typeof podcastTranscriptDataSchema>;
-export type PodcastTranscript = z.infer<typeof podcastTranscriptSchema>;
-export type Podcast = z.infer<typeof podcastSchema>;
-export type ListPodcastsResponse = z.infer<typeof listPodcastsResponseSchema>;
-export type PodcastDetailResponse = z.infer<typeof podcastDetailResponseSchema>;
+export type RecordingStatus = z.infer<typeof recordingStatusSchema>;
+export type RecordingListItem = z.infer<typeof recordingListItemSchema>;
+export type RecordingTranscriptSegment = z.infer<typeof recordingTranscriptSegmentSchema>;
+export type RecordingTranscriptData = z.infer<typeof recordingTranscriptDataSchema>;
+export type RecordingTranscript = z.infer<typeof recordingTranscriptSchema>;
+export type Recording = z.infer<typeof recordingSchema>;
+export type ListRecordingsResponse = z.infer<typeof listRecordingsResponseSchema>;
+export type RecordingDetailResponse = z.infer<typeof recordingDetailResponseSchema>;
 
-export const noteMetadataSchema = z
-  .object({
-    summary: z.string().optional(),
-    tags: z.array(z.string()).optional(),
-    keyTopics: z.array(z.string()).optional(),
-    wordCount: z.number().optional(),
-    readingTime: z.number().optional(),
-    contentType: z.string().optional(),
-    sentiment: z.string().optional(),
-    sourceType: z.string().optional(),
-    themeMode: z.string().optional(),
-    fontFamily: z.string().optional(),
-    fontSize: z.number().optional(),
-    tabSource: z
-      .object({
-        title: z.string().optional(),
-        url: z.string().optional(),
-        timestamp: z.string().optional(),
-      })
-      .optional(),
-  })
-  .catchall(z.unknown());
+export const noteMetadataSchema = documentMetadataSchema;
 
 export const noteSchema = z.object({
   id: z.string(),
@@ -956,7 +956,7 @@ export const generateNotesFromMediaSchema = z.object({
       "training",
       "lecture",
       "interview",
-      "podcast",
+      "recording",
       "webinar",
       "tutorial",
       "video_content",
@@ -1127,7 +1127,9 @@ export const recipeConfigurationFieldSchema = z.object({
 export const recipeChatRequestOptionsSchema = z.object({
   id: z.string(),
   installationId: z.string().optional(),
-  channel: z.enum(["web", "ios", "sms", "scheduled", "event", "tool"]).optional(),
+  channel: z
+    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .optional(),
   allowedConnectorProviders: z.array(recipeConnectorProviderSchema).optional(),
   allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
   configuration: recipeConfigurationRecordSchema.optional(),
@@ -1157,7 +1159,7 @@ export const assistantRecipesResponseSchema = z.object({
 });
 
 export const assistantRecipeInstallRequestSchema = z.object({
-  channel: z.enum(["web", "ios", "sms"]).default("web"),
+  channel: z.enum(["web", "ios", "sms", "slack", "telegram"]).default("web"),
   projectId: z.string().min(1).optional(),
   triggers: z.lazy(() => z.array(recipeInstallationTriggerSchema)).optional(),
   configuration: z.lazy(() => recipeConfigurationSchema).optional(),
@@ -1280,7 +1282,7 @@ export const recipeInstallationTriggerSchema = z
       .regex(/^[\d*/, -]+ [\d*/, -]+ [\d*/, -]+ [\d*/, -]+ [\d*/, -]+$/)
       .optional(),
     prompt: z.string().optional(),
-    notificationChannel: z.enum(["sms"]).optional(),
+    notificationChannel: z.enum(["sms", "slack", "telegram"]).optional(),
     notificationTarget: z.string().optional(),
   })
   .superRefine((trigger, ctx) => {
@@ -1371,7 +1373,9 @@ export const recipeComposioTriggersResponseSchema = z.object({
 export const recipeInvocationRequestSchema = z.object({
   input: z.string().optional(),
   projectId: z.string().min(1).optional(),
-  channel: z.enum(["web", "ios", "sms", "scheduled", "event", "tool"]).default("web"),
+  channel: z
+    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .default("web"),
 });
 
 export const recipeInvocationResponseSchema = z.object({
@@ -1379,7 +1383,9 @@ export const recipeInvocationResponseSchema = z.object({
   recipeTitle: z.string().optional(),
   installationId: z.string().optional(),
   projectId: z.string().nullable().optional(),
-  channel: z.enum(["web", "ios", "sms", "scheduled", "event", "tool"]).default("web"),
+  channel: z
+    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .default("web"),
   status: z.enum(["ready", "queued", "blocked", "not_installed"]),
   conversationStarter: z.string(),
   messageUrl: z.string(),

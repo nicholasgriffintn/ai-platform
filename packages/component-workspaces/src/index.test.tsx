@@ -58,7 +58,7 @@ const flow: ProjectFlow = {
       id: "research",
       name: "Research",
       instructions: null,
-      agentId: "agent-research",
+      teammateId: "teammate-research",
       skillIds: [],
       mode: "explore",
       requiresApprovalFor: [],
@@ -68,7 +68,7 @@ const flow: ProjectFlow = {
       id: "publish",
       name: "Publish",
       instructions: null,
-      agentId: "agent-publish",
+      teammateId: "teammate-publish",
       skillIds: [],
       mode: "build",
       requiresApprovalFor: ["write"],
@@ -79,6 +79,7 @@ const flow: ProjectFlow = {
 
 const task: ProjectTask = {
   id: "task-1",
+  originConversationId: null,
   projectId: "project-1",
   workspaceId: "workspace-1",
   objective: "Prepare the release note",
@@ -143,7 +144,7 @@ describe("TaskBoard", () => {
         tasks={[{ ...task, status: "backlog", stageId: "research" }]}
         flow={flow}
         members={[]}
-        agents={[]}
+        teammates={[]}
         taskHref={() => "/tasks/task-1"}
         conversationHref={() => null}
         onStartTask={vi.fn()}
@@ -188,7 +189,7 @@ describe("TaskBoard", () => {
         ]}
         flow={flow}
         members={[]}
-        agents={[]}
+        teammates={[]}
         taskHref={(item) => `/tasks/${item.id}`}
         conversationHref={() => null}
         onStartTask={vi.fn()}
@@ -226,7 +227,7 @@ describe("TaskBoard", () => {
     expect(screen.getByText("1 of 3")).toBeTruthy();
   });
 
-  it("shows the configured agent pipeline and recovers queued work without a dispatch", () => {
+  it("shows the configured teammate pipeline and recovers queued work without a dispatch", () => {
     const onStartTask = vi.fn();
 
     render(
@@ -234,9 +235,9 @@ describe("TaskBoard", () => {
         tasks={[task]}
         flow={flow}
         members={[]}
-        agents={[
-          { id: "agent-research", name: "Researcher" },
-          { id: "agent-publish", name: "Publisher" },
+        teammates={[
+          { id: "teammate-research", name: "Researcher" },
+          { id: "teammate-publish", name: "Publisher" },
         ]}
         taskHref={() => "/tasks/task-1"}
         conversationHref={() => null}
@@ -260,13 +261,13 @@ describe("TaskBoard", () => {
     expect(onStartTask).toHaveBeenCalledWith(task);
   });
 
-  it("offers acceptance without retry after an agent succeeds", () => {
+  it("offers acceptance without retry after an teammate succeeds", () => {
     render(
       <TaskBoard
         tasks={[{ ...task, status: "review" }]}
         flow={flow}
         members={[]}
-        agents={[]}
+        teammates={[]}
         taskHref={() => "/tasks/task-1"}
         conversationHref={() => null}
         onStartTask={vi.fn()}
@@ -296,7 +297,7 @@ describe("TaskBoard", () => {
         ]}
         flow={flow}
         members={[]}
-        agents={[]}
+        teammates={[]}
         taskHref={() => "/tasks/task-1"}
         conversationHref={() => "/chat?completion_id=conversation-1"}
         onStartTask={vi.fn()}
@@ -320,7 +321,7 @@ describe("TaskBoard", () => {
         tasks={[{ ...task, status: "done", conversationId: "conversation-1" }]}
         flow={flow}
         members={[]}
-        agents={[]}
+        teammates={[]}
         taskHref={() => "/tasks/task-1"}
         conversationHref={() => "/chat?completion_id=conversation-1"}
         onStartTask={vi.fn()}
@@ -343,7 +344,7 @@ describe("TaskBoard", () => {
 });
 
 describe("TaskDetail", () => {
-  it("uses the host content renderer for agent progress", () => {
+  it("uses the host content renderer for teammate progress", () => {
     const renderProgressSummary = vi.fn((summary: string) => <strong>Rendered: {summary}</strong>);
     const goal: Goal = {
       id: "goal-1",
@@ -404,9 +405,10 @@ describe("TaskDetail", () => {
         plan={emptyPlan}
         flow={flow}
         members={[]}
-        agents={[]}
+        teammates={[]}
         blockedBy={[]}
         conversationHref={null}
+        originConversationHref={null}
         taskHref={() => "/tasks/task-1"}
         runHref={() => "/chat?run_id=run-1"}
         outputHref={() => "/outputs/output-1"}
@@ -466,9 +468,10 @@ describe("TaskDetail", () => {
         plan={{ ...emptyPlan, status: "completed" }}
         flow={flow}
         members={[]}
-        agents={[]}
+        teammates={[]}
         blockedBy={[]}
         conversationHref="/chat?completion_id=conversation-2"
+        originConversationHref={null}
         taskHref={() => "/tasks/task-1"}
         runHref={() => "/chat?run_id=run-1"}
         outputHref={() => "/outputs/output-1"}
@@ -501,19 +504,19 @@ describe("FlowEditorDialog", () => {
       <FlowEditorDialog
         open
         flow={{ stages: [flow.stages[0]] }}
-        agents={[{ id: "agent-research", name: "Researcher" }]}
+        teammates={[{ id: "teammate-research", name: "Researcher" }]}
         skills={[
           { id: "source-research", name: "Source research" },
           { id: "fact-checking", name: "Fact checking" },
         ]}
-        capabilitiesHref="/projects/project-1/library"
-        createAgentHref="/work/workspace-1/projects/project-1/agents/new"
+        capabilitiesHref="/projects/project-1/teammates"
+        createTeammateHref="/work/workspace-1/projects/project-1/teammates/new"
         onOpenChange={vi.fn()}
         onSave={onSave}
       />,
     );
 
-    const heading = screen.getByRole("heading", { name: "Configure the agent pipeline" });
+    const heading = screen.getByRole("heading", { name: "Configure the teammate pipeline" });
 
     await waitFor(() => expect(document.activeElement).toBe(heading));
     fireEvent.click(screen.getByRole("checkbox", { name: "Source research" }));
@@ -531,10 +534,10 @@ describe("FlowEditorDialog", () => {
     const onSave = vi.fn<(nextFlow: ProjectFlow) => Promise<void>>(async () => undefined);
     const props = {
       open: true,
-      agents: [],
+      teammates: [],
       skills: [],
-      capabilitiesHref: "/projects/project-1/library",
-      createAgentHref: "/work/workspace-1/projects/project-1/agents/new",
+      capabilitiesHref: "/projects/project-1/teammates",
+      createTeammateHref: "/work/workspace-1/projects/project-1/teammates/new",
       onOpenChange: vi.fn(),
       onSave,
     };
@@ -572,10 +575,10 @@ describe("FlowEditorDialog", () => {
       <FlowEditorDialog
         open
         flow={{ stages: [{ ...flow.stages[0], requiresApprovalFor: ["delegate"] }] }}
-        agents={[]}
+        teammates={[]}
         skills={[]}
-        capabilitiesHref="/projects/project-1/library"
-        createAgentHref="/work/workspace-1/projects/project-1/agents/new"
+        capabilitiesHref="/projects/project-1/teammates"
+        createTeammateHref="/work/workspace-1/projects/project-1/teammates/new"
         onOpenChange={vi.fn()}
         onSave={onSave}
       />,
@@ -604,7 +607,7 @@ describe("CreateTaskDialog", () => {
         open
         flow={flow}
         members={[]}
-        agents={[]}
+        teammates={[]}
         boardTasks={[]}
         onOpenChange={vi.fn()}
         onSubmit={onSubmit}

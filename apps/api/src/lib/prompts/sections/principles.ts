@@ -3,14 +3,14 @@ import { APP_NAME } from "~/constants/app";
 import { PromptBuilder } from "../builder";
 
 interface AssistantPrinciplesOptions {
-  isAgent: boolean;
+  isTeammate: boolean;
   supportsToolCalls?: boolean;
   simulatedThinking?: boolean;
   preferredLanguage?: string | null;
 }
 
 export function buildAssistantPrinciplesSection({
-  isAgent,
+  isTeammate,
   supportsToolCalls,
   simulatedThinking,
   preferredLanguage,
@@ -33,7 +33,7 @@ export function buildAssistantPrinciplesSection({
   addRule(
     "Proactively suggest useful next steps or related insights when they meaningfully help the user.",
   );
-  if (supportsToolCalls || isAgent) {
+  if (supportsToolCalls || isTeammate) {
     addRule(
       "Prefer the lightest available tool that can complete the task. Verify volatile facts such as news, prices, laws, schedules, and software versions with an available current source, and stop using tools once the answer is supported. Summarise tool outcomes only when it helps the user act.",
     );

@@ -5,16 +5,14 @@ import {
   BellRing,
   ChevronRight,
   ClipboardList,
-  Database,
   FolderKanban,
-  Grid2X2,
+  FolderOpen,
   LayoutDashboard,
   ListChecks,
-  PanelsTopLeft,
   Search,
-  Settings2,
   SquarePen,
   Users,
+  UsersRound,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -39,12 +37,10 @@ export interface WorkSidebarWorkspace {
 
 export interface WorkSidebarProject {
   newConversationHref: string;
-  experiencesHref: string;
-  outputsHref: string;
-  sourcesHref: string;
+  filesHref: string;
   tasksHref: string;
   activityHref: string;
-  capabilitiesHref: string;
+  teammatesHref: string;
   conversationList?: ReactNode;
   attentionCount?: number;
   /** True while the project chat route is open, which decides conversation highlighting. */
@@ -62,6 +58,7 @@ export interface WorkSidebarNavProps {
   workspaceShortcuts?: Array<{ id: string; name: string; href: string }>;
   onSearch: () => void;
   onNavigate: () => void;
+  onNewChat: () => void;
   onNewConversation: () => void;
 }
 
@@ -74,6 +71,7 @@ export function WorkSidebarNav({
   workspaceShortcuts,
   onSearch,
   onNavigate,
+  onNewChat,
   onNewConversation,
 }: WorkSidebarNavProps) {
   const linkClass = sidebarNavLinkClass;
@@ -81,14 +79,20 @@ export function WorkSidebarNav({
   return (
     <nav className="space-y-5 p-2 pb-8">
       <div className="space-y-1">
+        <SidebarNavButton icon={<SquarePen size={17} />} onClick={onNewChat}>
+          New chat
+        </SidebarNavButton>
         <SidebarNavButton icon={<Search size={17} />} onClick={onSearch} shortcut="⌘K">
           Search
         </SidebarNavButton>
-        <NavLink href={workspacesHref} end className={linkClass} onClick={onNavigate}>
-          <LayoutDashboard size={17} /> Workspaces
-        </NavLink>
         <NavLink href={attentionHref} className={linkClass} onClick={onNavigate}>
           <BellRing size={17} /> Attention
+        </NavLink>
+      </div>
+
+      <div className="space-y-1">
+        <NavLink href={workspacesHref} end className={linkClass} onClick={onNavigate}>
+          <LayoutDashboard size={17} /> Workspaces
         </NavLink>
       </div>
 
@@ -158,15 +162,6 @@ export function WorkSidebarNav({
           >
             <SquarePen size={16} /> New conversation
           </Link>
-          <NavLink href={project.experiencesHref} className={linkClass} onClick={onNavigate}>
-            <Grid2X2 size={16} /> Experiences
-          </NavLink>
-          <NavLink href={project.outputsHref} className={linkClass} onClick={onNavigate}>
-            <PanelsTopLeft size={16} /> Outputs
-          </NavLink>
-          <NavLink href={project.sourcesHref} className={linkClass} onClick={onNavigate}>
-            <Database size={16} /> Sources
-          </NavLink>
           <NavLink href={project.tasksHref} className={linkClass} onClick={onNavigate}>
             <ListChecks size={16} /> Tasks
             {project.attentionCount ? (
@@ -179,11 +174,14 @@ export function WorkSidebarNav({
               </Badge>
             ) : null}
           </NavLink>
+          <NavLink href={project.filesHref} className={linkClass} onClick={onNavigate}>
+            <FolderOpen size={16} /> Files
+          </NavLink>
           <NavLink href={project.activityHref} className={linkClass} onClick={onNavigate}>
             <Activity size={16} /> Activity
           </NavLink>
-          <NavLink href={project.capabilitiesHref} className={linkClass} onClick={onNavigate}>
-            <Settings2 size={16} /> Capabilities
+          <NavLink href={project.teammatesHref} className={linkClass} onClick={onNavigate}>
+            <UsersRound size={16} /> Teammates
           </NavLink>
           {project.conversationList}
         </div>

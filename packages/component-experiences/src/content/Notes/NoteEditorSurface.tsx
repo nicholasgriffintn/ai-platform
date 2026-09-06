@@ -11,6 +11,7 @@ export interface NoteEditorSurfaceProps {
   isSaving: boolean;
   metadataPanel?: ReactNode;
   hasMetadata?: boolean;
+  leading?: ReactNode;
   children?: ReactNode;
 }
 
@@ -23,6 +24,7 @@ export function NoteEditorSurface({
   isSaving,
   metadataPanel,
   hasMetadata = false,
+  leading,
   children,
 }: NoteEditorSurfaceProps) {
   const [showMetadata, setShowMetadata] = useState(false);
@@ -42,17 +44,19 @@ export function NoteEditorSurface({
         <span className="sr-only">{isSaving ? "Saving..." : "All changes saved"}</span>
       </output>
 
+      {leading}
+
       {hasMetadata && (
-        <div className="border-b">
+        <div className="border-b border-current/15">
           <div className="px-4 py-2">
             <button
               type="button"
               onClick={() => setShowMetadata(!showMetadata)}
-              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium text-current/75 transition-colors hover:bg-current/10 hover:text-current"
             >
               <Hash size={14} />
               Metadata
-              <span className="text-xs">({showMetadata ? "hide" : "show"})</span>
+              <span className="text-xs text-current/70">({showMetadata ? "hide" : "show"})</span>
             </button>
           </div>
           {showMetadata && <div className="px-4 pb-4">{metadataPanel}</div>}

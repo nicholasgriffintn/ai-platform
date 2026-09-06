@@ -258,46 +258,46 @@ export async function sendTrialEndingEmail(env: IEnv, email: string): Promise<vo
   }
 }
 
-export interface AgentModerationNotification {
-  agentName: string;
-  agentId: string;
+export interface TeammateModerationNotification {
+  teammateName: string;
+  teammateId: string;
   isApproved: boolean;
   reason?: string;
   moderatorName?: string;
 }
 
-export interface AgentFeaturedNotification {
-  agentName: string;
-  agentId: string;
+export interface TeammateFeaturedNotification {
+  teammateName: string;
+  teammateId: string;
   isFeatured: boolean;
   moderatorName?: string;
 }
 
-export async function sendAgentModerationNotification(
+export async function sendTeammateModerationNotification(
   env: IEnv,
   userEmail: string,
   userName: string,
-  notification: AgentModerationNotification,
+  notification: TeammateModerationNotification,
 ): Promise<void> {
-  const { agentName, isApproved, reason, moderatorName } = notification;
+  const { teammateName, isApproved, reason, moderatorName } = notification;
 
   const subject = isApproved
-    ? `🎉 Your agent "${agentName}" has been approved for the marketplace`
-    : `📝 Your agent "${agentName}" needs attention`;
+    ? `🎉 Your teammate "${teammateName}" has been approved for the marketplace`
+    : `📝 Your teammate "${teammateName}" needs attention`;
 
   const status = isApproved ? "approved" : "requires changes";
   const statusEmoji = isApproved ? "✅" : "⚠️";
 
   const template = createEmailTemplate({
     subject,
-    title: `Your Agent ${isApproved ? "has been Approved" : "Requires Changes"} ${statusEmoji}`,
+    title: `Your Teammate ${isApproved ? "has been Approved" : "Requires Changes"} ${statusEmoji}`,
     content: `
-      <p><strong>Your agent "${agentName}" has been reviewed and ${status} for the ${APP_NAME} marketplace.</strong></p>
+      <p><strong>Your teammate "${teammateName}" has been reviewed and ${status} for the ${APP_NAME} marketplace.</strong></p>
       ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
       ${
         isApproved
-          ? "<p>🎉 Your agent is now live and available for other users to discover and install!</p>"
-          : "<p>Please review the feedback and make any necessary changes, then resubmit your agent.</p>"
+          ? "<p>🎉 Your teammate is now live and available for other users to discover and install!</p>"
+          : "<p>Please review the feedback and make any necessary changes, then resubmit your teammate.</p>"
       }
       ${moderatorName ? `<p><em>Reviewed by: ${moderatorName}</em></p>` : ""}
     `,
@@ -307,33 +307,33 @@ export async function sendAgentModerationNotification(
 
   try {
     await sendEmail(env, userEmail, template.subject, template.bodyText, template.bodyHtml);
-    logger.info(`Sent moderation notification to ${userEmail} for agent ${agentName}`);
+    logger.info(`Sent moderation notification to ${userEmail} for teammate ${teammateName}`);
   } catch (error) {
     logger.error(`Failed to send moderation notification to ${userEmail}:`, error);
     throw error;
   }
 }
 
-export async function sendAgentFeaturedNotification(
+export async function sendTeammateFeaturedNotification(
   env: IEnv,
   userEmail: string,
   userName: string,
-  notification: AgentFeaturedNotification,
+  notification: TeammateFeaturedNotification,
 ): Promise<void> {
-  const { agentName, isFeatured, moderatorName } = notification;
+  const { teammateName, isFeatured, moderatorName } = notification;
 
   if (!isFeatured) {
     return;
   }
 
-  const subject = `🌟 Your agent "${agentName}" has been featured!`;
+  const subject = `🌟 Your teammate "${teammateName}" has been featured!`;
 
   const template = createEmailTemplate({
     subject,
-    title: "🌟 Your Agent has been Featured!",
+    title: "🌟 Your Teammate has been Featured!",
     content: `
-      <p><strong>🎉 Congratulations! Your agent "${agentName}" has been selected as a featured agent on the ${APP_NAME} marketplace.</strong></p>
-      <p>Featured agents get premium placement and increased visibility to help more users discover your creation.</p>
+      <p><strong>🎉 Congratulations! Your teammate "${teammateName}" has been selected as a featured teammate on the ${APP_NAME} marketplace.</strong></p>
+      <p>Featured teammates get premium placement and increased visibility to help more users discover your creation.</p>
       ${moderatorName ? `<p><em>Selected by: ${moderatorName}</em></p>` : ""}
       <p><strong>Keep up the great work!</strong></p>
     `,
@@ -343,7 +343,7 @@ export async function sendAgentFeaturedNotification(
 
   try {
     await sendEmail(env, userEmail, template.subject, template.bodyText, template.bodyHtml);
-    logger.info(`Sent featured notification to ${userEmail} for agent ${agentName}`);
+    logger.info(`Sent featured notification to ${userEmail} for teammate ${teammateName}`);
   } catch (error) {
     logger.error(`Failed to send featured notification to ${userEmail}:`, error);
     throw error;

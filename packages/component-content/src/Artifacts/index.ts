@@ -2,6 +2,7 @@ export * from "./artifact";
 export * from "./artifact-actions";
 export * from "./artifact-kinds";
 export * from "./ArtifactDocumentEditor";
+export * from "./DocumentMetadataPanel";
 export * from "./ArtifactCallout";
 export * from "./ArtifactInlinePreview";
 export * from "./Sandbox";

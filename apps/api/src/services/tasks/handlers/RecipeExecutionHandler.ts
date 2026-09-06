@@ -23,7 +23,7 @@ interface RecipeExecutionTaskData {
   recipeId: string;
   projectId?: string | null;
   input?: string;
-  channel?: "web" | "ios" | "sms" | "scheduled" | "event" | "tool";
+  channel?: "web" | "ios" | "sms" | "slack" | "telegram" | "scheduled" | "event" | "tool";
   configuration?: RecipeConfiguration;
   notificationChannel?: "sms";
   notificationTarget?: string;

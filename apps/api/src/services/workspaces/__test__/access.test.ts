@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
 import {
+  requireOptionalProjectCapabilityAccess,
   requireProjectAccess,
   requireProjectCapabilityAccess,
   requireWorkAccess,
@@ -115,6 +116,45 @@ describe("requireProjectCapabilityAccess", () => {
         "project-1",
         "app",
         "featured-note-taker",
+      ),
+    ).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("refuses a project request from someone with no membership", async () => {
+    const context = createContext("featured-recording-processor");
+
+    (
+      context.repositories.workspaces.getMembership as unknown as { mockResolvedValue: Function }
+    ).mockResolvedValue(null);
+
+    await expect(
+      requireProjectCapabilityAccess(context, "project-1", "app", "featured-recording-processor"),
+    ).rejects.toMatchObject({ statusCode: 404 });
+  });
+});
+
+describe("requireOptionalProjectCapabilityAccess", () => {
+  it("lets a personal request through without touching project membership", async () => {
+    const context = createContext("featured-recording-processor");
+
+    await expect(
+      requireOptionalProjectCapabilityAccess(
+        context,
+        undefined,
+        "app",
+        "featured-recording-processor",
+      ),
+    ).resolves.toBeUndefined();
+    expect(context.repositories.workspaces.getMembership).not.toHaveBeenCalled();
+  });
+
+  it("applies the project rules as soon as a project is named", async () => {
+    await expect(
+      requireOptionalProjectCapabilityAccess(
+        createContext("featured-strudel"),
+        "project-1",
+        "app",
+        "featured-recording-processor",
       ),
     ).rejects.toMatchObject({ statusCode: 404 });
   });

@@ -8,7 +8,7 @@ export interface DiscoverSection {
 export const DISCOVER_SECTIONS: readonly DiscoverSection[] = [
   { id: "chat-and-work", label: "Chat and Work" },
   { id: "models", label: "Models" },
-  { id: "capabilities", label: "Capabilities" },
+  { id: "teammates", label: "Teammates" },
   { id: "pets", label: "Pets" },
   { id: "pricing", label: "Pricing" },
   { id: "keys", label: "Your keys" },

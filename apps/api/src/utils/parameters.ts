@@ -1,5 +1,5 @@
 import {
-  agentControlToolDefinitions,
+  teammateControlToolDefinitions,
   FINISH_TOOL_NAME,
 } from "@ngriffin_uk/polychat-library-tool-runtime";
 import {
@@ -9,6 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { clampNumber } from "@ngriffin_uk/polychat-utility-core";
 
+import { filterToolsForConversationType } from "~/lib/chat/policy/meta-assistant";
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
@@ -373,6 +374,7 @@ export function getToolsForProvider(
     | "tool_policy_mode"
     | "conversation_type"
     | "require_approval_for"
+    | "denied_tools"
     | "enforce_mode_tool_policy"
   >,
   modelConfig: any,
@@ -393,10 +395,13 @@ export function getToolsForProvider(
     const toolPolicyMode = params.tool_policy_mode ?? params.mode;
     const enabledTools = resolveEnabledFunctionToolNames(params.enabled_tools, user);
     let tools: any[] = [];
-    const availableTools = listFunctionToolDefinitions({
-      connectedConnectorProviders: params.connectedConnectorProviders,
-      selectedConnectorProvider: params.options?.connector?.provider,
-    });
+    const availableTools = filterToolsForConversationType(
+      listFunctionToolDefinitions({
+        connectedConnectorProviders: params.connectedConnectorProviders,
+        selectedConnectorProvider: params.options?.connector?.provider,
+      }),
+      params.conversation_type,
+    );
 
     if (params.tools) {
       const providedTools = params.tools;
@@ -417,6 +422,7 @@ export function getToolsForProvider(
               toolType: func.type,
               toolPermissions: func.permissions,
               requireApprovalFor: params.require_approval_for,
+              deniedTools: params.denied_tools,
               enforceModePolicy: params.enforce_mode_tool_policy,
             }).allowed,
         );
@@ -435,6 +441,7 @@ export function getToolsForProvider(
               toolType: func.type,
               toolPermissions: func.permissions,
               requireApprovalFor: params.require_approval_for,
+              deniedTools: params.denied_tools,
               enforceModePolicy: params.enforce_mode_tool_policy,
             }).allowed,
         );
@@ -445,8 +452,8 @@ export function getToolsForProvider(
     if (isAgentExecutionMode(params.mode)) {
       const controlTools =
         params.conversation_type === "task"
-          ? agentControlToolDefinitions.filter((tool) => tool.function.name !== FINISH_TOOL_NAME)
-          : agentControlToolDefinitions;
+          ? teammateControlToolDefinitions.filter((tool) => tool.function.name !== FINISH_TOOL_NAME)
+          : teammateControlToolDefinitions;
 
       tools = [...tools, ...formatToolCalls(providerName, controlTools)];
     }

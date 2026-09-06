@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
   cn,
+  useMediaQuery,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
   Activity,
@@ -19,9 +20,11 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { KeyboardEvent, ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useWorkbenchDockResize } from "./useWorkbenchDockResize";
+
+const DOCK_MEDIA_QUERY = "(min-width: 1024px)";
 
 export const PROJECT_WORKBENCH_PANES = [
   "activity",
@@ -280,6 +283,14 @@ export function ProjectWorkbenchShell({
   runControls,
 }: ProjectWorkbenchShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const hasDock = useMediaQuery(DOCK_MEDIA_QUERY);
+
+  useEffect(() => {
+    if (hasDock) {
+      setMobileOpen(false);
+    }
+  }, [hasDock]);
+
   const { containerRef, resizeHandleProps } = useWorkbenchDockResize({
     width: dockWidth,
     minWidth: MIN_DOCK_WIDTH,

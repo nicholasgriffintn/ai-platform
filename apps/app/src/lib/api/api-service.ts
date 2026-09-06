@@ -1,11 +1,12 @@
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
-  AgentResponse,
-  CreateAgentInput,
-  SharedAgentSummary,
+  TeammateResponse,
+  CreateTeammateInput,
+  HireTeammateInput,
+  SharedTeammateSummary,
   ModelConfig,
   Tool,
-  UpdateAgentInput,
+  UpdateTeammateInput,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { useChatStore } from "~/state/stores/chatStore";
@@ -18,7 +19,6 @@ import type {
   Message,
 } from "~/types";
 
-import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
 import {
   ChatService,
@@ -28,6 +28,7 @@ import {
 } from "./services/chat-service";
 import { ResearchService } from "./services/research-service";
 import { SubscriptionService } from "./services/subscription-service";
+import { TeammateService } from "./services/teammate-service";
 import { UploadService, type UploadFileOptions } from "./services/upload-service";
 import type { ProviderSetting } from "./services/user-service";
 import { UserService } from "./services/user-service";
@@ -43,7 +44,7 @@ class ApiService {
 
   private chatService: ChatService;
   private audioService: AudioService;
-  private agentService: AgentService;
+  private teammateService: TeammateService;
   private userService: UserService;
   private subscriptionService: SubscriptionService;
   private uploadService: UploadService;
@@ -52,7 +53,7 @@ class ApiService {
   private constructor() {
     this.chatService = new ChatService(getHeaders);
     this.audioService = new AudioService(getHeaders);
-    this.agentService = new AgentService(getHeaders);
+    this.teammateService = new TeammateService(getHeaders);
     this.userService = new UserService(getHeaders);
     this.subscriptionService = new SubscriptionService();
     this.uploadService = new UploadService(getHeaders);
@@ -211,21 +212,24 @@ class ApiService {
     return formatMessageContent(messageContent);
   }
 
-  // ===== Agent Methods =====
+  // ===== Teammate Methods =====
 
-  listAgents = (): Promise<AgentResponse[]> => {
-    return this.agentService.listAgents();
+  listTeammates = (): Promise<TeammateResponse[]> => {
+    return this.teammateService.listTeammates();
   };
 
-  getAgent = (agentId: string): Promise<AgentResponse> => {
-    return this.agentService.getAgent(agentId);
+  getTeammate = (teammateId: string): Promise<TeammateResponse> => {
+    return this.teammateService.getTeammate(teammateId);
   };
 
-  publishAgentToWorkspace = (agentId: string, workspaceId: string): Promise<AgentResponse> => {
-    return this.agentService.publishAgentToWorkspace(agentId, workspaceId);
+  publishTeammateToWorkspace = (
+    teammateId: string,
+    workspaceId: string,
+  ): Promise<TeammateResponse> => {
+    return this.teammateService.publishTeammateToWorkspace(teammateId, workspaceId);
   };
 
-  listSharedAgents = (params?: {
+  listSharedTeammates = (params?: {
     category?: string;
     tags?: string[];
     search?: string;
@@ -233,55 +237,68 @@ class ApiService {
     limit?: number;
     offset?: number;
     sort_by?: string;
-  }): Promise<SharedAgentSummary[]> => {
-    return this.agentService.listSharedAgents(params);
+  }): Promise<SharedTeammateSummary[]> => {
+    return this.teammateService.listSharedTeammates(params);
   };
 
-  listFeaturedSharedAgents = (limit = 10): Promise<SharedAgentSummary[]> => {
-    return this.agentService.listFeaturedSharedAgents(limit);
+  listFeaturedSharedTeammates = (limit = 10): Promise<SharedTeammateSummary[]> => {
+    return this.teammateService.listFeaturedSharedTeammates(limit);
   };
 
-  installSharedAgent = (sharedAgentId: string): Promise<unknown> => {
-    return this.agentService.installSharedAgent(sharedAgentId);
+  installSharedTeammate = (sharedTeammateId: string): Promise<unknown> => {
+    return this.teammateService.installSharedTeammate(sharedTeammateId);
   };
 
-  getSharedAgentListingForAgent = (agentId: string): Promise<SharedAgentSummary | null> => {
-    return this.agentService.getSharedAgentListingForAgent(agentId);
+  getSharedTeammateListingForTeammate = (
+    teammateId: string,
+  ): Promise<SharedTeammateSummary | null> => {
+    return this.teammateService.getSharedTeammateListingForTeammate(teammateId);
   };
 
-  shareAgent = (
-    agentId: string,
+  shareTeammate = (
+    teammateId: string,
     name: string,
     description?: string | null,
     avatarUrl?: string | null,
     category?: string | null,
     tags?: string[] | null,
   ): Promise<unknown> => {
-    return this.agentService.shareAgent(agentId, name, description, avatarUrl, category, tags);
+    return this.teammateService.shareTeammate(
+      teammateId,
+      name,
+      description,
+      avatarUrl,
+      category,
+      tags,
+    );
   };
 
-  unshareAgent = (sharedAgentId: string): Promise<void> => {
-    return this.agentService.unshareAgent(sharedAgentId);
+  unshareTeammate = (sharedTeammateId: string): Promise<void> => {
+    return this.teammateService.unshareTeammate(sharedTeammateId);
   };
 
   getSharedCategories = (): Promise<string[]> => {
-    return this.agentService.getSharedCategories();
+    return this.teammateService.getSharedCategories();
   };
 
   getSharedTags = (): Promise<string[]> => {
-    return this.agentService.getSharedTags();
+    return this.teammateService.getSharedTags();
   };
 
-  createAgent = (data: CreateAgentInput): Promise<AgentResponse> => {
-    return this.agentService.createAgent(data);
+  hireTeammate = (data: HireTeammateInput): Promise<TeammateResponse> => {
+    return this.teammateService.hireTeammate(data);
   };
 
-  updateAgent = (agentId: string, data: UpdateAgentInput): Promise<AgentResponse> => {
-    return this.agentService.updateAgent(agentId, data);
+  createTeammate = (data: CreateTeammateInput): Promise<TeammateResponse> => {
+    return this.teammateService.createTeammate(data);
   };
 
-  deleteAgent = (agentId: string): Promise<void> => {
-    return this.agentService.deleteAgent(agentId);
+  updateTeammate = (teammateId: string, data: UpdateTeammateInput): Promise<TeammateResponse> => {
+    return this.teammateService.updateTeammate(teammateId, data);
+  };
+
+  deleteTeammate = (teammateId: string): Promise<void> => {
+    return this.teammateService.deleteTeammate(teammateId);
   };
 
   // ===== User/Settings Methods =====

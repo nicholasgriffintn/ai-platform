@@ -13,11 +13,11 @@ import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes";
 import { usePersonalSkills } from "./useSkills";
 
 export function useAssistantActionCatalog({
-  includeAgents = true,
+  includeTeammates = true,
   modelTools = [],
   projectId,
 }: {
-  includeAgents?: boolean;
+  includeTeammates?: boolean;
   modelTools?: readonly ModelToolDefinition[];
   projectId?: string;
 } = {}): AssistantActionCatalog {
@@ -50,15 +50,15 @@ export function useAssistantActionCatalog({
     projectId,
   ]);
 
-  const agents = useMemo(
-    () => (includeAgents ? (capabilityCatalog.data?.agents ?? []) : []),
-    [capabilityCatalog.data?.agents, includeAgents],
+  const teammates = useMemo(
+    () => (includeTeammates ? (capabilityCatalog.data?.teammates ?? []) : []),
+    [capabilityCatalog.data?.teammates, includeTeammates],
   );
 
   return useMemo(
     () =>
       buildAssistantActionCatalog({
-        agents,
+        teammates,
         connectors: connectorsData?.connectors ?? [],
         installations: installationsData?.installations ?? [],
         modelTools,
@@ -66,7 +66,7 @@ export function useAssistantActionCatalog({
         skills,
       }),
     [
-      agents,
+      teammates,
       connectorsData?.connectors,
       installationsData?.installations,
       modelTools,

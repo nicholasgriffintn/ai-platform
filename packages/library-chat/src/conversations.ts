@@ -4,6 +4,7 @@ import type {
   ConversationActivityWindow,
   ConversationListOptions,
   ConversationSortBy,
+  ConversationType,
 } from "./conversation-types";
 
 export type { ConversationListOptions };
@@ -34,7 +35,7 @@ export function conversationActivityCutoff(
 
 export interface ConversationSummary {
   id?: string;
-  type?: "chat" | "task";
+  type?: ConversationType;
   title: string;
   created_at?: string;
   updated_at?: string;

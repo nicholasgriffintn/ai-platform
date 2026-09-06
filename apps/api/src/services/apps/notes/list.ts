@@ -1,28 +1,35 @@
-import type {
-  Note,
-  NoteCreateRequest,
-  NoteFormatResponse,
-  NoteUpdateRequest,
+import {
+  deriveDocumentStatistics,
+  type Note,
+  type NoteCreateRequest,
+  type NoteFormatResponse,
+  type NoteUpdateRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel } from "~/lib/providers/models";
 import type { OutputRecord } from "~/repositories/OutputRepository";
 import { sanitiseInput } from "~/utils/sanitise";
 
 const NOTE_OUTPUT_KIND = "note";
 
+import { describeDocument, formatDocumentBody } from "~/services/documents";
 import { requireOutputRecordAccess } from "~/services/outputs/access";
-import type { ChatRole, IEnv, IUser } from "~/types";
+import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 import { isRecord } from "~/utils/objects";
 
 import { safeParseJson } from "../../../utils/json";
 
-const logger = getLogger();
+function readNoteMetadata(value: unknown): Record<string, unknown> | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const { tabSource, ...rest } = value;
+
+  return isRecord(tabSource) ? { ...rest, capturedFrom: tabSource } : value;
+}
 
 function mapOutputToNote(entry: OutputRecord): Note {
   const data = safeParseJson<Record<string, unknown>>(entry.content) ?? {};
@@ -33,7 +40,7 @@ function mapOutputToNote(entry: OutputRecord): Note {
     content: typeof data.content === "string" ? data.content : "",
     createdAt: entry.created_at,
     updatedAt: entry.updated_at ?? entry.created_at,
-    metadata: isRecord(data.metadata) ? data.metadata : undefined,
+    metadata: readNoteMetadata(data.metadata),
   };
 }
 
@@ -189,48 +196,14 @@ export async function updateNote({
   const sanitisedContent = sanitiseInput(data.content);
 
   const incomingMetadata = isRecord(data.metadata) ? data.metadata : {};
-  const hasExistingMetadata = existingMetadata && Object.keys(existingMetadata).length > 0;
-  const shouldRegenerateMetadata = Boolean(data.options?.refreshMetadata) || !hasExistingMetadata;
-
-  const wordCount = sanitisedContent.split(/\s+/).length;
-  const existingReadingTime =
-    typeof existingMetadata.readingTime === "number" ? existingMetadata.readingTime : 1;
-  const readingTime = wordCount ? Math.max(1, Math.ceil(wordCount / 200)) : existingReadingTime;
-
-  let mergedMetadata = {
-    ...existingMetadata,
-    ...incomingMetadata,
-  };
-
-  if (shouldRegenerateMetadata) {
-    const generatedMetadata = await generateNoteMetadata(
-      serviceContext,
-      user,
-      sanitisedTitle,
-      sanitisedContent,
-      mergedMetadata,
-    );
-
-    mergedMetadata = {
-      ...mergedMetadata,
-      wordCount,
-      tags: mergedMetadata.tags || [],
-      summary: mergedMetadata.summary || "",
-      keyTopics: mergedMetadata.keyTopics || [],
-      readingTime: readingTime,
-      contentType: mergedMetadata.contentType || "text",
-      ...generatedMetadata,
-    };
-  }
-
-  mergedMetadata = {
-    ...mergedMetadata,
-    wordCount,
-    tags: mergedMetadata.tags || [],
-    summary: mergedMetadata.summary || "",
-    keyTopics: mergedMetadata.keyTopics || [],
-    readingTime: readingTime,
-    contentType: mergedMetadata.contentType || "text",
+  const hasExistingMetadata = Object.keys(existingMetadata).length > 0;
+  const shouldRedescribe = data.options?.refreshMetadata === true || !hasExistingMetadata;
+  const carried = { ...existingMetadata, ...incomingMetadata };
+  const mergedMetadata = {
+    ...(shouldRedescribe
+      ? await generateNoteMetadata(serviceContext, user, sanitisedTitle, sanitisedContent, carried)
+      : carried),
+    ...deriveDocumentStatistics(sanitisedContent),
   };
 
   const finalData = {
@@ -301,102 +274,17 @@ export async function formatNote({
   const serviceContext = resolveServiceContext({ context, env, user });
 
   serviceContext.ensureDatabase();
-  const runtimeEnv = serviceContext.env;
 
-  const note = await getNote({
-    context: serviceContext,
-    userId: user.id,
-    noteId,
-    projectId,
-  });
+  const note = await getNote({ context: serviceContext, userId: user.id, noteId, projectId });
 
-  const promptText = `Transform and enhance my notes using these guidelines:
-
-1. ORGANIZATION:
-   - Identify the main topic and create a concise title if none exists
-   - Organize related bullet points under appropriate headings
-   - Create a logical flow between sections with smooth transitions
-   - Format lists, tables, and other structured elements consistently
-
-2. CONTENT ENHANCEMENT:
-   - Expand abbreviated points into complete sentences where appropriate
-   - Maintain key information while eliminating redundancies
-   - Add brief introductory and concluding paragraphs if appropriate
-   - Preserve my original voice and terminology
-
-3. INSIGHT EXTRACTION:
-   - Highlight key points, conclusions, and important information
-   - Identify and separate action items or tasks into a dedicated "To-Do" section
-   - Extract dates and deadlines into a "Timeline" section if applicable
-   - Flag areas that need further development or clarification
-
-4. SUMMARIZATION:
-   - Generate a concise summary (3-5 sentences) at the beginning
-   - For longer notes, add section summaries where appropriate
-
-5. CONNECTIONS:
-   - Suggest related topics or concepts based on the content
-   - Identify potential knowledge gaps that could be explored further
-   - Propose questions that would help expand the topic
-
-6. FORMATTING:
-   - Apply consistent styling to headings, lists, and emphasis
-   - Preserve any specialized terminology or jargon
-   - Adjust tone if specified (professional, academic, casual)
-
-Maintain the original meaning and intent of my notes while improving structure, clarity, and completeness. Focus on making the content more useful and actionable.
-
-Here is the note to format:
-
-${note.content}`;
-
-  try {
-    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(
-      runtimeEnv,
+  return {
+    content: await formatDocumentBody({
+      context: serviceContext,
       user,
-    );
-    const provider = getChatProvider(providerToUse, { env: runtimeEnv, user });
-
-    const messages = [
-      {
-        role: "system" as ChatRole,
-        content: promptText,
-      },
-    ];
-
-    if (prompt) {
-      const sanitisedPrompt = sanitiseInput(prompt);
-
-      messages.push({
-        role: "user",
-        content: sanitisedPrompt,
-      });
-    }
-
-    const aiResult = await provider.getResponse(
-      {
-        model: modelToUse,
-        env: runtimeEnv,
-        context: serviceContext,
-        messages,
-        reasoning: { effort: "none" },
-      },
-      user.id,
-    );
-
-    const content =
-      aiResult?.response ||
-      (Array.isArray(aiResult.choices) && aiResult.choices[0]?.message?.content) ||
-      (typeof aiResult === "string" ? aiResult : JSON.stringify(aiResult));
-
-    return { content };
-  } catch (error) {
-    if (error instanceof AssistantError) {
-      throw error;
-    }
-
-    throw new AssistantError("Error formatting note with AI", ErrorType.EXTERNAL_API_ERROR);
-  }
+      body: note.content,
+      prompt,
+    }),
+  };
 }
 
 async function generateNoteMetadata(
@@ -406,54 +294,5 @@ async function generateNoteMetadata(
   content: string,
   existingMetadata?: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  const env = context.env;
-  const tabSource = isRecord(existingMetadata?.tabSource) ? existingMetadata.tabSource : undefined;
-  const tabSourceText = tabSource
-    ? `\n\nNote: This content was captured from tab audio recording:
-- URL: ${typeof tabSource.url === "string" ? tabSource.url : "Unknown"}  
-- Page Title: ${typeof tabSource.title === "string" ? tabSource.title : "Unknown"}
-- Captured: ${typeof tabSource.timestamp === "string" ? tabSource.timestamp : "Unknown"}`
-    : "";
-
-  const prompt = `Analyze this note and generate metadata in JSON format. Include:
-- tags: array of relevant tags (max 8)  
-- summary: brief 1-2 sentence summary
-- keyTopics: array of main topics/keywords (max 5)
-- wordCount: number of words
-- readingTime: estimated reading time in minutes
-- contentType: "text", "list", "outline", or "mixed"
-- sentiment: "positive", "neutral", or "negative" based on the tone
-${tabSource ? '- sourceType: "tab_recording" since this was captured from a tab' : '- sourceType: "manual" since this was manually written'}
-
-Title: ${title}
-Content: ${content}${tabSourceText}
-
-Return only valid JSON without any markdown formatting.`;
-
-  try {
-    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
-    const provider = getChatProvider(providerToUse, { env, user });
-
-    const aiResult = await provider.getResponse(
-      {
-        model: modelToUse,
-        env,
-        context,
-        messages: [{ role: "user", content: prompt }],
-        reasoning: { effort: "none" },
-      },
-      user.id,
-    );
-
-    const response =
-      aiResult?.response ||
-      (Array.isArray(aiResult.choices) && aiResult.choices[0]?.message?.content) ||
-      (typeof aiResult === "string" ? aiResult : "{}");
-
-    return safeParseJson<Record<string, unknown>>(response) ?? {};
-  } catch (error) {
-    logger.error("Error generating note metadata", { error });
-  }
-
-  return {};
+  return describeDocument({ context, user, title, body: content, existing: existingMetadata });
 }

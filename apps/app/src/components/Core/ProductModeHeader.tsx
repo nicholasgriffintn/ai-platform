@@ -6,7 +6,7 @@ import { type ReactNode, useRef } from "react";
 import { useLocation } from "react-router";
 
 import { useTrackEvent } from "~/hooks/use-track-event";
-import { isProductModeRoute } from "~/lib/navigation/product-mode";
+import { getProductMode, isProductModeRoute, MODE_BASE_PATHS } from "~/lib/navigation/places";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
@@ -77,9 +77,9 @@ export function ProductModeHeader({
       center={
         showProductModeSwitch ? (
           <ProductModeSwitch
-            activeMode={pathname.startsWith("/work") ? "work" : "chat"}
+            activeMode={getProductMode(pathname)}
             className="w-auto shrink-0 @min-[40rem]:w-44"
-            destinations={{ chat: "/chat", work: "/work" }}
+            destinations={{ chat: MODE_BASE_PATHS.chat, work: MODE_BASE_PATHS.work }}
           />
         ) : null
       }

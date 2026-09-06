@@ -1,13 +1,14 @@
 import {
   conversationModeMetadataSchema,
   type ConversationModeMetadata,
+  type InboundChannelId,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatMode, ChatRequestOptions } from "~/types";
 
 const AGENT_EXECUTION_MODES = new Set<ChatMode>(["agent", "plan", "build", "explore"]);
 
-export type ChatConversationMode = "sms";
+export type ChatConversationMode = InboundChannelId;
 
 export function isAgentExecutionMode(mode: ChatMode | null | undefined): boolean {
   return typeof mode === "string" && AGENT_EXECUTION_MODES.has(mode);

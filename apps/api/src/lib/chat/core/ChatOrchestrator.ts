@@ -328,6 +328,7 @@ export class ChatOrchestrator {
         ...chatOptions,
         approved_tools,
         enabled_tools,
+        conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
         options: prepared.requestOptions,
       },
       input: messageWithContext,

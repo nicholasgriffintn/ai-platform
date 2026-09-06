@@ -18,6 +18,7 @@ import {
 import { createConversationId } from "~/lib/conversations";
 import { getErrorMessage } from "~/lib/errors";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
+import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";
@@ -45,7 +46,9 @@ export function useChatManager(
   const beginStreamActivity = useStreamActivityStore((state) => state.beginStreamActivity);
   const endStreamActivity = useStreamActivityStore((state) => state.endStreamActivity);
 
-  const { currentConversationId, model, startNewConversation } = useChatStore();
+  const model = useChatStore((state) => state.model);
+  const { currentConversationId, startNewConversation, getCurrentConversationId } =
+    useConversationScope();
 
   const { webLLMService } = useWebLLMInitialization(apiModels);
   const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
@@ -135,12 +138,12 @@ export function useChatManager(
 
   const {
     editingMessageId,
-    isBranching,
+    isStartingThread,
     retryMessage,
     updateUserMessage,
     startEditingMessage,
     stopEditingMessage,
-    branchConversation,
+    startConversationThread,
     isRequestingSecondOpinion,
     requestSecondOpinion,
   } = useConversationActions(streamResponse, generateConversationTitle, requestOptions);
@@ -164,7 +167,7 @@ export function useChatManager(
       const currentModel = normalizeSelectedModel(model);
 
       try {
-        let conversationId = useChatStore.getState().currentConversationId;
+        let conversationId = getCurrentConversationId();
 
         if (!conversationId) {
           conversationId = createConversationId();
@@ -221,6 +224,7 @@ export function useChatManager(
     [
       model,
       startNewConversation,
+      getCurrentConversationId,
       queryClient,
       cancelConversationQueries,
       streamResponse,
@@ -338,7 +342,7 @@ export function useChatManager(
     assistantResponseRef,
     assistantReasoningRef,
     editingMessageId,
-    isBranching,
+    isStartingThread,
     compactConversation,
     sendMessage,
     respondToExistingConversation,
@@ -350,7 +354,7 @@ export function useChatManager(
     updateUserMessage,
     startEditingMessage,
     stopEditingMessage,
-    branchConversation,
+    startConversationThread,
     isRequestingSecondOpinion,
     requestSecondOpinion,
   };

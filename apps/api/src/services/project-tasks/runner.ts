@@ -12,7 +12,6 @@ import {
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { finishUsageReservation } from "~/lib/usage/reservations";
-import { buildAgentPersona } from "~/services/agents/completion-tools";
 import { scheduleComposioConnectorRunCleanup } from "~/services/apps/connectors/composio-run";
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
@@ -26,6 +25,7 @@ import {
 } from "~/services/tasks/task-execution-lease";
 import type { TaskExecutionLease } from "~/services/tasks/TaskHandler";
 import { TaskService } from "~/services/tasks/TaskService";
+import { buildTeammatePersona } from "~/services/teammates/completion-tools";
 import { parseProjectFlow } from "~/services/workspaces/format";
 import type { IEnv, Message } from "~/types";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
@@ -103,7 +103,7 @@ export async function queueProjectTaskRun(params: {
     dispatchTaskId,
     runner: task.runner ?? {
       kind: "conversation",
-      agentId: null,
+      teammateId: null,
       model: null,
       mode: null,
     },
@@ -133,7 +133,7 @@ export async function queueProjectTaskRun(params: {
       taskId: task.id,
       projectId: task.projectId,
       dispatchTaskId,
-      detail: "The agent run could not be added to the execution queue. Try again.",
+      detail: "The teammate run could not be added to the execution queue. Try again.",
     });
     throw error;
   }
@@ -686,7 +686,7 @@ export async function runProjectTaskDispatch(params: {
         },
         tool_choice: "auto",
         metadata: { project_id: claimed.projectId },
-        ...(runtime.agent ? { persona: buildAgentPersona(runtime.agent) } : {}),
+        ...(runtime.teammate ? { persona: buildTeammatePersona(runtime.teammate) } : {}),
       },
     });
 
@@ -739,7 +739,7 @@ export async function runProjectTaskDispatch(params: {
             goalId,
             actor: "system",
             status: "blocked",
-            reason: `The agent run failed: ${detail}`,
+            reason: `The teammate run failed: ${detail}`,
           });
         }
       } catch (goalError) {
@@ -788,7 +788,7 @@ export async function runProjectTaskDispatch(params: {
       goalId: goal.id,
       actor: "system",
       status: "stalled",
-      reason: "The agent run ended without completing the goal or requesting input.",
+      reason: "The teammate run ended without completing the goal or requesting input.",
     });
   }
 

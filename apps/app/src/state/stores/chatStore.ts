@@ -28,6 +28,7 @@ export interface ChatStore {
   isComposingGoal: boolean;
   setCurrentConversationId: (id: string | undefined) => void;
   startNewConversation: (id?: string) => string;
+  markConversationLocallyCreated: (id: string) => void;
   markConversationRemoteAvailable: (id: string) => void;
   clearCurrentConversation: () => void;
   setComposingGoal: (composing: boolean) => void;
@@ -58,10 +59,10 @@ export interface ChatStore {
   setModelTier: (tier: ModelTier | null) => void;
   useMultiModel: boolean;
   setUseMultiModel: (useMultiModel: boolean) => void;
-  selectedAgentId: string | null;
-  setSelectedAgentId: (agentId: string | null) => void;
-  selectedAgentTokenPosition: number | null;
-  setSelectedAgentTokenPosition: (position: number | null) => void;
+  selectedTeammateId: string | null;
+  setSelectedTeammateId: (teammateId: string | null) => void;
+  selectedTeammateTokenPosition: number | null;
+  setSelectedTeammateTokenPosition: (position: number | null) => void;
   selectedAssistantAction: AssistantActionSelection | null;
   setSelectedAssistantAction: (action: ChatStore["selectedAssistantAction"]) => void;
   chatSettings: ChatSettings;
@@ -102,6 +103,10 @@ export const useChatStore = create<ChatStore>()(
 
         return conversationId;
       },
+      markConversationLocallyCreated: (id: string) =>
+        set((state) => ({
+          locallyCreatedConversationIds: { ...state.locallyCreatedConversationIds, [id]: true },
+        })),
       markConversationRemoteAvailable: (id: string) =>
         set((state) => {
           if (!state.locallyCreatedConversationIds[id]) {
@@ -141,10 +146,11 @@ export const useChatStore = create<ChatStore>()(
       setModelTier: (modelTier) => set({ modelTier }),
       useMultiModel: false,
       setUseMultiModel: (useMultiModel) => set({ useMultiModel }),
-      selectedAgentId: null,
-      setSelectedAgentId: (agentId) => set({ selectedAgentId: agentId }),
-      selectedAgentTokenPosition: null,
-      setSelectedAgentTokenPosition: (position) => set({ selectedAgentTokenPosition: position }),
+      selectedTeammateId: null,
+      setSelectedTeammateId: (teammateId) => set({ selectedTeammateId: teammateId }),
+      selectedTeammateTokenPosition: null,
+      setSelectedTeammateTokenPosition: (position) =>
+        set({ selectedTeammateTokenPosition: position }),
       selectedAssistantAction: null,
       setSelectedAssistantAction: (action) => set({ selectedAssistantAction: action }),
       chatSettings: defaultSettings,
@@ -210,7 +216,7 @@ export const useChatStore = create<ChatStore>()(
         modelTier: state.modelTier,
         useMultiModel: state.useMultiModel,
         chatSettings: state.chatSettings,
-        selectedAgentId: state.selectedAgentId,
+        selectedTeammateId: state.selectedTeammateId,
       }),
     },
   ),

@@ -242,7 +242,7 @@ export const groupAppsByCategory = (apps: AppListItem[]): [string, AppListItem[]
   }
 
   const categoryPriority: Record<string, number> = {
-    "Agents & Delegation": 1,
+    "Teammates & Delegation": 1,
     "Research & Retrieval": 2,
     "Content Generation": 3,
     "Code Assistance": 4,

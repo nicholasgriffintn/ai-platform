@@ -5,10 +5,10 @@ import type {
 import { describe, expect, it } from "vitest";
 
 import {
+  getAppBackLink,
+  getAppPath,
   getCapabilityOpenPath,
-  getExperienceBackLink,
   getEnabledExperiences,
-  getExperiencePath,
   getProjectSurface,
   PERSONAL_SURFACE,
   type EnabledCapability,
@@ -19,14 +19,26 @@ const notes: ProjectExperienceDefinition = {
   runtime: "notes",
   name: "Note Taker",
   description: "Take notes",
+  when: "Something is worth keeping.",
+  uses: "What you write.",
+  produces: "A note you can search.",
+  ios: "native",
+  scope: "any",
+  scopeReason: null,
   requirement: { kind: "capability", capabilityKind: "app", capabilityId: "featured-note-taker" },
 };
 
 const savedOutputs: ProjectExperienceDefinition = {
-  id: "responses",
-  runtime: "responses",
-  name: "Saved outputs",
-  description: "Review outputs",
+  id: "strudel",
+  runtime: "strudel",
+  name: "Strudel",
+  description: "Music patterns",
+  when: "You want a playable pattern.",
+  uses: "A description of the sound.",
+  produces: "A pattern you can play.",
+  ios: "results-only",
+  scope: "any",
+  scopeReason: null,
   requirement: { kind: "capability_kind", capabilityKind: "app" },
 };
 
@@ -41,19 +53,19 @@ function capability(overrides: Partial<EnabledCapability> = {}): EnabledCapabili
   };
 }
 
-function agentItem(availability: "available" | "unavailable"): AssistantActionItem {
+function teammateItem(availability: "available" | "unavailable"): AssistantActionItem {
   return {
-    kind: "agent",
+    kind: "teammate",
     capability: { id: "researcher", availability },
-    metadata: { agentId: "researcher" },
+    metadata: { teammateId: "researcher" },
   } as unknown as AssistantActionItem;
 }
 
 describe("capability surfaces", () => {
   it("builds the same paths for either scope from its base", () => {
-    expect(getExperiencePath(PERSONAL_SURFACE, "notes")).toBe("/chat/experiences/notes");
-    expect(getExperiencePath(getProjectSurface("w1", "p1"), "notes")).toBe(
-      "/work/w1/projects/p1/experiences/notes",
+    expect(getAppPath(PERSONAL_SURFACE, "notes")).toBe("/chat/apps/notes");
+    expect(getAppPath(getProjectSurface("w1", "p1"), "notes")).toBe(
+      "/work/w1/projects/p1/apps/notes",
     );
   });
 
@@ -66,31 +78,33 @@ describe("capability surfaces", () => {
     expect(getEnabledExperiences([], [savedOutputs])).toEqual([]);
   });
 
-  it("steps back one level rather than jumping to the hub", () => {
-    expect(getExperienceBackLink(PERSONAL_SURFACE, "strudel", "", "Strudel")).toEqual({
-      to: "/chat/experiences",
-      label: "Back to experiences",
+  it("returns to the teammates library from the top of an app, not to a separate list", () => {
+    expect(getAppBackLink(PERSONAL_SURFACE, "strudel", "", "Strudel")).toEqual({
+      to: "/chat/teammates",
+      label: "Back to teammates",
     });
-    expect(getExperienceBackLink(PERSONAL_SURFACE, "strudel", "pattern-1", "Strudel")).toEqual({
-      to: "/chat/experiences/strudel",
+    expect(getAppBackLink(getProjectSurface("w1", "p1"), "strudel", "", "Strudel")).toEqual({
+      to: "/work/w1/projects/p1/teammates",
+      label: "Back to teammates",
+    });
+  });
+
+  it("steps back one level rather than jumping to the library", () => {
+    expect(getAppBackLink(PERSONAL_SURFACE, "strudel", "pattern-1", "Strudel")).toEqual({
+      to: "/chat/apps/strudel",
       label: "Back to Strudel",
     });
-    expect(
-      getExperienceBackLink(PERSONAL_SURFACE, "replicate", "predictions/run-1", "Replicate"),
-    ).toEqual({ to: "/chat/experiences/replicate/predictions", label: "Back" });
+    expect(getAppBackLink(PERSONAL_SURFACE, "replicate", "predictions/run-1", "Replicate")).toEqual(
+      { to: "/chat/apps/replicate/predictions", label: "Back" },
+    );
   });
 
   it("steps back within a project the same way", () => {
     expect(
-      getExperienceBackLink(
-        getProjectSurface("w1", "p1"),
-        "responses",
-        "output-1",
-        "Saved outputs",
-      ),
+      getAppBackLink(getProjectSurface("w1", "p1"), "strudel", "pattern-1", "Strudel"),
     ).toEqual({
-      to: "/work/w1/projects/p1/experiences/responses",
-      label: "Back to Saved outputs",
+      to: "/work/w1/projects/p1/apps/strudel",
+      label: "Back to Strudel",
     });
   });
 
@@ -110,16 +124,16 @@ describe("capability surfaces", () => {
     expect(getCapabilityOpenPath(modelTool, PERSONAL_SURFACE, [])).toBeNull();
   });
 
-  it("starts a conversation with an available agent in either scope", () => {
-    const agent = agentItem("available");
+  it("starts a conversation with an available teammate in either scope", () => {
+    const teammate = teammateItem("available");
 
-    expect(getCapabilityOpenPath(agent, PERSONAL_SURFACE, [])).toBe("/chat?agent=researcher");
-    expect(getCapabilityOpenPath(agent, getProjectSurface("w1", "p1"), [])).toBe(
-      "/work/w1/projects/p1/chat?agent=researcher",
+    expect(getCapabilityOpenPath(teammate, PERSONAL_SURFACE, [])).toBe("/chat?teammate=researcher");
+    expect(getCapabilityOpenPath(teammate, getProjectSurface("w1", "p1"), [])).toBe(
+      "/work/w1/projects/p1/chat?teammate=researcher",
     );
   });
 
   it("offers no way in to a capability the scope cannot run", () => {
-    expect(getCapabilityOpenPath(agentItem("unavailable"), PERSONAL_SURFACE, [])).toBeNull();
+    expect(getCapabilityOpenPath(teammateItem("unavailable"), PERSONAL_SURFACE, [])).toBeNull();
   });
 });

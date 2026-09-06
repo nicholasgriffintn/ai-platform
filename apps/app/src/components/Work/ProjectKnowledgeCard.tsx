@@ -6,6 +6,7 @@ import {
   useSetProjectContextSources,
   useSources,
 } from "~/hooks/useSources";
+import { getProjectFilesPath } from "~/lib/files-route";
 
 export function ProjectKnowledgeCard({
   workspaceId,
@@ -32,7 +33,7 @@ export function ProjectKnowledgeCard({
       contextCandidates={(allSources.data ?? []).filter(
         (source) => source.kind !== "memory" && source.status === "available",
       )}
-      sourcesHref={`/work/${workspaceId}/projects/${projectId}/sources`}
+      sourcesHref={getProjectFilesPath(workspaceId, projectId, "given")}
       isSavingContext={setContext.isPending}
       onSaveContext={async (sourceIds) => {
         await setContext.mutateAsync(sourceIds);

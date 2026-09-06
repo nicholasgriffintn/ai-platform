@@ -8,9 +8,9 @@ vi.mock("~/services/apps/embeddings/delete", () => ({ deleteEmbedding }));
 vi.mock("~/services/apps/embeddings/insert", () => ({ insertEmbedding }));
 vi.mock("~/services/apps/embeddings/query", () => ({ queryEmbeddings }));
 
-import { generateNotesFromMedia } from "~/services/apps/notes/generate-from-media";
 import { maybeVectorizeExtractedContent } from "~/services/apps/retrieval/lib/content-extract/vectorize";
 import type { ContentExtractResult } from "~/services/apps/retrieval/types/content-extract";
+import { generateDocumentFromMedia } from "~/services/documents";
 
 import { create_note } from "../create_note";
 import { get_note } from "../get_note";
@@ -205,12 +205,12 @@ describe("unsupported project embedding paths", () => {
     "rejects unsupported video search for personal and project requests",
     async (projectId) => {
       await expect(
-        generateNotesFromMedia({
+        generateDocumentFromMedia({
           context: projectRequest.context,
           user: projectRequest.user,
           url: "https://example.com/video.mp4",
           outputs: ["concise_summary"],
-          noteType: "general",
+          documentType: "general",
           enableVideoSearch: true,
           projectId,
         }),

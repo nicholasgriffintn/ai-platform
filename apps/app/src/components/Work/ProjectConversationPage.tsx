@@ -21,21 +21,29 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
+import { ProjectFileAsTaskControl } from "./ProjectFileAsTaskControl";
 import { ProjectWorkbenchConversation } from "./ProjectWorkbenchConversation";
+import { useFileMessageAsTask } from "./useFileMessageAsTask";
 import { useWorkData } from "./WorkDataContext";
 
 export function ProjectConversationPage({
   workspaceId,
   projectId,
+  conversationId,
 }: {
   workspaceId: string;
   projectId: string;
+  conversationId?: string;
 }) {
-  useConversationRoute({ surface: "project" });
+  useConversationRoute({
+    surface: { kind: "project", workspaceId, projectId },
+    pathConversationId: conversationId,
+  });
   const { projectQuery } = useWorkData();
   const { data: project } = projectQuery;
   const queryClient = useQueryClient();
   const currentConversationId = useChatStore((state) => state.currentConversationId);
+  const fileAsTask = useFileMessageAsTask({ projectId, conversationId: currentConversationId });
   const model = useChatStore((state) => state.model);
   const { data: models } = useModels();
   const sourceCapabilities = useMemo(() => {
@@ -57,9 +65,9 @@ export function ProjectConversationPage({
     enabled: isNewConversation,
   });
   const setChatMode = useChatStore((state) => state.setChatMode);
-  const setSelectedAgentId = useChatStore((state) => state.setSelectedAgentId);
-  const setSelectedAgentTokenPosition = useChatStore(
-    (state) => state.setSelectedAgentTokenPosition,
+  const setSelectedTeammateId = useChatStore((state) => state.setSelectedTeammateId);
+  const setSelectedTeammateTokenPosition = useChatStore(
+    (state) => state.setSelectedTeammateTokenPosition,
   );
   const setSelectedAssistantAction = useChatStore((state) => state.setSelectedAssistantAction);
   const isStreamLoading = useStreamActivityStore((state) =>
@@ -135,10 +143,15 @@ export function ProjectConversationPage({
 
   useEffect(() => {
     setChatMode("remote");
-    setSelectedAgentId(null);
-    setSelectedAgentTokenPosition(null);
+    setSelectedTeammateId(null);
+    setSelectedTeammateTokenPosition(null);
     setSelectedAssistantAction(null);
-  }, [setChatMode, setSelectedAgentId, setSelectedAgentTokenPosition, setSelectedAssistantAction]);
+  }, [
+    setChatMode,
+    setSelectedTeammateId,
+    setSelectedTeammateTokenPosition,
+    setSelectedAssistantAction,
+  ]);
 
   useEffect(() => {
     if (!projectSources.error) {
@@ -181,6 +194,7 @@ export function ProjectConversationPage({
       {({ runSteering, composerBanner }) => (
         <ConversationPage
           embedded
+          pathConversationId={conversationId}
           title={project?.name ?? "Project conversation"}
           modeConfig={{
             contextAttachments: isNewConversation ? projectSources.attachments : [],
@@ -189,7 +203,7 @@ export function ProjectConversationPage({
               recipes: recipeManagementPath,
             },
             assistantActionCatalog: {
-              includeAgents: false,
+              includeTeammates: false,
               includeTools: false,
               projectId,
             },
@@ -216,7 +230,16 @@ export function ProjectConversationPage({
                 isDisabled={isStreamLoading}
                 onChange={handleTaskTypeChange}
               />
-            ) : undefined,
+            ) : (
+              <ProjectFileAsTaskControl
+                isEnabled={fileAsTask.isEnabled}
+                isDisabled={isStreamLoading || fileAsTask.isFiling}
+                onChange={fileAsTask.setIsEnabled}
+              />
+            ),
+            ...(fileAsTask.isEnabled && !codingEnvironment
+              ? { onFileAsTask: fileAsTask.file }
+              : {}),
             requestOptions: {
               metadata: { project_id: projectId },
               ...(codingEnvironment

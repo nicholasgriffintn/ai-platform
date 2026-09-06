@@ -1,9 +1,12 @@
 import {
   authoredSkillDocumentSchema,
+  DOCUMENT_CAPABILITY_ID,
+  DOCUMENT_OUTPUT_KIND,
+  outputSchema,
   authoredSkillHistoryResponseSchema,
   authoredSkillVersionedDocumentSchema,
   chatRunCommandReceiptResponseSchema,
-  conversationBranchesResponseSchema,
+  conversationThreadsResponseSchema,
   getChatCompletionResponseSchema,
   usageBalanceResponseSchema,
   usageEventsResponseSchema,
@@ -435,19 +438,59 @@ export class PolychatApi {
     await requireSuccessfulResponse(response, "Update conversation");
   }
 
-  async getConversationBranches(conversationId: string) {
+  async getConversationThreads(conversationId: string) {
     const response = await this.request.get(
-      `${API_BASE_URL}/chat/completions/${conversationId}/branches`,
+      `${API_BASE_URL}/chat/completions/${conversationId}/threads`,
     );
 
-    await requireSuccessfulResponse(response, "Load conversation branches");
+    await requireSuccessfulResponse(response, "Load conversation threads");
 
-    return conversationBranchesResponseSchema.parse(await response.json());
+    return conversationThreadsResponseSchema.parse(await response.json());
   }
 
-  async conversationBranchesStatus(conversationId: string): Promise<number> {
+  async conversationThreadsStatus(conversationId: string): Promise<number> {
     return (
-      await this.request.get(`${API_BASE_URL}/chat/completions/${conversationId}/branches`)
+      await this.request.get(`${API_BASE_URL}/chat/completions/${conversationId}/threads`)
     ).status();
+  }
+
+  async writeDocumentOutput(title: string, body: string) {
+    const response = await this.request.post(`${API_BASE_URL}/outputs`, {
+      headers: BROWSER_REQUEST_HEADERS,
+      data: {
+        capabilityId: DOCUMENT_CAPABILITY_ID,
+        kind: DOCUMENT_OUTPUT_KIND,
+        title,
+        status: "ready",
+        content: { format: "markdown", body },
+      },
+    });
+
+    await requireSuccessfulResponse(response, "Write document output");
+
+    return outputSchema.parse(await response.json());
+  }
+
+  async getOutput(outputId: string) {
+    const response = await this.request.get(`${API_BASE_URL}/outputs/${outputId}`, {
+      headers: BROWSER_REQUEST_HEADERS,
+    });
+
+    await requireSuccessfulResponse(response, "Load output");
+
+    return outputSchema.parse(await response.json());
+  }
+
+  async exportOutputDocument(outputId: string) {
+    const response = await this.request.get(`${API_BASE_URL}/outputs/${outputId}/export`, {
+      headers: BROWSER_REQUEST_HEADERS,
+    });
+
+    return {
+      status: response.status(),
+      contentType: response.headers()["content-type"] ?? "",
+      contentDisposition: response.headers()["content-disposition"] ?? "",
+      body: await response.text(),
+    };
   }
 }

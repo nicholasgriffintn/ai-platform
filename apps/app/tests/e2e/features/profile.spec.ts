@@ -9,13 +9,11 @@ const PROFILE_TABS = [
   ["passkeys", "Passkeys"],
   ["customisation", "Customise Chat"],
   ["pets", "Your pet"],
-  ["history", "Chat History"],
+  ["history", "Chat history"],
   ["providers", "Available Providers"],
   ["sandbox", "Sandbox"],
   ["billing", "Billing"],
-  ["api-keys", "API Keys"],
-  ["tasks", "Tasks"],
-  ["sources", "Sources"],
+  ["api-keys", "API keys"],
 ] as const;
 
 test.describe("Profile experience", () => {
@@ -331,38 +329,38 @@ test.describe("Account-owned resources", () => {
     });
   });
 
-  test("creates, edits and deletes an agent", async ({ capabilitiesPage, page }) => {
-    const agentName = "Release validation agent";
+  test("creates, edits and deletes an teammate", async ({ capabilitiesPage, page }) => {
+    const teammateName = "Release validation teammate";
 
     await capabilitiesPage.open();
-    await capabilitiesPage.startNewAgent();
+    await capabilitiesPage.startNewTeammate();
     await expect(page.getByRole("tab", { name: "Team", exact: true })).toHaveCount(0);
-    await expect(page.getByText("Team agents", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Team teammates", { exact: true })).toHaveCount(0);
     expect(await capabilitiesPage.legacyTeamEndpointStatus()).toBe(404);
-    await capabilitiesPage.fillAgentEditor({
-      name: agentName,
+    await capabilitiesPage.fillTeammateEditor({
+      name: teammateName,
       description: "Checks release readiness.",
       systemPrompt: "Answer release questions concisely.",
       temperature: "0.2",
       maxSteps: "7",
     });
-    await capabilitiesPage.createAgent();
-    await expect(page).toHaveURL(/\/chat\/agents\/[^/]+$/);
+    await capabilitiesPage.createTeammate();
+    await expect(page).toHaveURL(/\/chat\/teammates\/[^/]+$/);
 
     await capabilitiesPage.reload();
-    expect(await capabilitiesPage.readAgentModelSettings()).toEqual({
+    expect(await capabilitiesPage.readTeammateModelSettings()).toEqual({
       temperature: "0.2",
       maxSteps: "7",
     });
 
-    await capabilitiesPage.updateAgentDescription("Checks release readiness. Updated.");
+    await capabilitiesPage.updateTeammateDescription("Checks release readiness. Updated.");
     await capabilitiesPage.open();
-    await expect(capabilitiesPage.capabilityCard(agentName)).toContainText(
+    await expect(capabilitiesPage.capabilityCard(teammateName)).toContainText(
       "Checks release readiness. Updated.",
     );
 
-    await capabilitiesPage.deleteAgentFromLibrary(agentName);
-    await expect(page.getByText(agentName, { exact: true })).toHaveCount(0);
+    await capabilitiesPage.deleteTeammateFromLibrary(teammateName);
+    await expect(page.getByText(teammateName, { exact: true })).toHaveCount(0);
   });
 
   test("keeps credit-accounting tasks out of the account task list", async ({

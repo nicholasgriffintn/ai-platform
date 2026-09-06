@@ -34,6 +34,7 @@ export * from "./PetPerch";
 export * from "./ScrollButton";
 export * from "./ToolToggleMenu";
 export * from "./InlineSettingSelect";
+export * from "./InlineSettingToggle";
 export * from "./CompactionStatusRow";
 export * from "./GoalStatusCard";
 export * from "./GoalStatusRow";
@@ -54,4 +55,4 @@ export * from "./ConversationColumn";
 export * from "./Live/LiveStatusHeader";
 export { ResolvedToolCallsProvider, useResolvedToolCallIds } from "./Message/ResolvedToolCalls";
 
-export * from "./ConversationBranchesButton";
+export * from "./ConversationThreadsButton";

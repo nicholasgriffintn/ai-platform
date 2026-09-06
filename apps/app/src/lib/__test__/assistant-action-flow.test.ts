@@ -157,7 +157,7 @@ describe("assistant action flow", () => {
           delivery: "submit",
           input: "@Morning Briefing",
           item: recipeItem,
-          recipeManagementPath: "/work/workspace-1/projects/project-1/library",
+          recipeManagementPath: "/work/workspace-1/projects/project-1/teammates",
           selectedTools: [],
           verb: scheduleVerb,
         },
@@ -170,7 +170,7 @@ describe("assistant action flow", () => {
     ).resolves.toEqual({
       kind: "navigation",
       input: "@Morning Briefing",
-      path: "/work/workspace-1/projects/project-1/library?action=schedule&recipe=morning-briefing",
+      path: "/work/workspace-1/projects/project-1/teammates?action=schedule&recipe=morning-briefing",
     });
     expect(installRecipe).not.toHaveBeenCalled();
     expect(invokeRecipe).not.toHaveBeenCalled();

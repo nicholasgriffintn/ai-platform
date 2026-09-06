@@ -86,7 +86,7 @@ export function CapabilityCard({
       : undefined;
   const openAction = isRunnableTool
     ? { icon: <Play size={15} />, label: "Run" }
-    : kind === "agent"
+    : kind === "teammate"
       ? { icon: <MessageSquare size={15} />, label: "Start chat" }
       : { icon: <ExternalLink size={15} />, label: "Open" };
   const primaryAction = isUnavailable
@@ -145,7 +145,7 @@ export function CapabilityCard({
               <Wrench size={18} />
             ) : kind === "skill" ? (
               <Sparkles size={18} />
-            ) : kind === "agent" ? (
+            ) : kind === "teammate" ? (
               <Bot size={18} />
             ) : (
               <Puzzle size={18} />

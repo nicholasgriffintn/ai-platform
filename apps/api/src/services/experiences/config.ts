@@ -1,4 +1,6 @@
 import type {
+  AppIosDecision,
+  AppScope,
   AppTheme,
   ProjectExperienceDefinition,
   ProjectExperienceRuntime,
@@ -16,50 +18,69 @@ export interface ExperienceDefinition {
   runtime: ProjectExperienceRuntime;
   name: string;
   description: string;
+  when: string;
+  uses: string;
+  produces: string;
+  ios: AppIosDecision;
+  scope?: AppScope;
+  scopeReason?: string;
   category: string;
   icon?: string;
   theme?: AppTheme;
   tags?: string[];
   type?: "normal" | "premium" | "byok";
   capabilityId?: string;
-  href?: string;
 }
 
 export const EXPERIENCES: ExperienceDefinition[] = [
-  {
-    id: "responses",
-    runtime: "responses",
-    name: "Saved outputs",
-    description: "Review everything the enabled experiences and tools have produced.",
-    category: "Results",
-    icon: "puzzle",
-    theme: "slate",
-  },
   {
     id: "strudel",
     runtime: "strudel",
     capabilityId: "featured-strudel",
     name: "Strudel Music Patterns",
+    category: "Creative",
+    when: "You want a playable music pattern rather than a rendered audio file.",
+    uses: "A description of the sound, or a pattern you already have.",
+    produces: "A Strudel pattern you can play, edit and hand back into a conversation.",
+    ios: "results-only",
     description:
       "Create and generate music patterns with AI using Strudel's powerful code-based music creation tool",
     icon: "music",
-    category: "AI Generation",
     theme: "indigo",
     tags: ["music", "audio", "generation"],
-    href: "/apps/strudel",
     type: "normal",
+  },
+  {
+    id: "image-studio",
+    runtime: "image-studio",
+    capabilityId: "featured-image-studio",
+    name: "Image Studio",
+    category: "Creative",
+    when: "You want to make or refine an image and compare a few attempts.",
+    uses: "A description, and any reference image or sketch you give it.",
+    produces: "Images kept as results you can attach back into a conversation.",
+    ios: "results-only",
+    description:
+      "Generate images across models, sketch a starting point, and keep the versions worth keeping",
+    icon: "image",
+    theme: "rose",
+    tags: ["image", "generation", "sketch"],
+    type: "premium",
   },
   {
     id: "replicate",
     runtime: "replicate",
     capabilityId: "featured-replicate",
     name: "Replicate Predictions",
+    category: "Creative",
+    when: "A model on Replicate does the job better than anything built in.",
+    uses: "Your own Replicate key and a model from their catalogue.",
+    produces: "Images, video or audio kept as durable results.",
+    ios: "results-only",
     description: "Generate images, videos, audio, and more with state-of-the-art AI models",
     icon: "sparkles",
-    category: "AI Generation",
     theme: "violet",
     tags: ["media", "multi-modal", "generation"],
-    href: "/apps/replicate",
     type: "byok",
   },
   {
@@ -67,25 +88,34 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     runtime: "finetuning",
     capabilityId: "featured-finetuning",
     name: "Training",
+    category: "Engineering",
+    when: "You are training or deploying a model, not using one.",
+    uses: "Examples you have gathered and a provider that supports training.",
+    produces: "A trained model and its deployment, with the job visible in Attention.",
+    ios: "web-only",
+    scope: "personal",
+    scopeReason:
+      "Training runs on your own provider credentials and deploys to your own account, so it stays with you rather than with a project.",
     description: "Train, inspect, and deploy provider-backed models from the API model catalogue",
     icon: "hammer",
-    category: "AI Operations",
     theme: "slate",
     tags: ["training", "models", "deployments"],
-    href: "/apps/finetuning",
     type: "premium",
   },
   {
-    id: "podcasts",
-    runtime: "podcasts",
-    capabilityId: "featured-podcast-processor",
-    name: "Podcast Processor",
-    description: "Upload and process your podcast to get transcription, summary, and cover image",
+    id: "recordings",
+    runtime: "recordings",
+    capabilityId: "featured-recording-processor",
+    name: "Recording Processor",
+    category: "Research",
+    when: "You need to know what was said in something you recorded.",
+    uses: "An audio recording you have uploaded, and how many people speak in it.",
+    produces: "A transcript, a summary and a cover image, all kept as results.",
+    ios: "results-only",
+    description: "Upload and process your recording to get transcription, summary, and cover image",
     icon: "mic",
-    category: "Media",
     theme: "emerald",
     tags: ["audio", "workflow"],
-    href: "/apps/podcasts",
     type: "premium",
   },
   {
@@ -93,12 +123,15 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     runtime: "articles",
     capabilityId: "featured-article-processor",
     name: "Article Processor",
+    category: "Research",
+    when: "You want to know what an article says and how far to trust it.",
+    uses: "The article text, or a link you extract first.",
+    produces: "An analysis and a summary kept as results.",
+    ios: "results-only",
     description: "Analyse and summarise articles to get insights and summaries",
     icon: "newspaper",
-    category: "Text",
     theme: "cyan",
     tags: ["analysis", "summarisation"],
-    href: "/apps/articles",
     type: "premium",
   },
   {
@@ -106,12 +139,15 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     runtime: "notes",
     capabilityId: "featured-note-taker",
     name: "Note Taker",
+    category: "Documentation",
+    when: "Something in a conversation is worth keeping past the conversation.",
+    uses: "What you write, or audio and video you hand it.",
+    produces: "A note you can search and pull back into any later conversation.",
+    ios: "native",
     description: "Take notes and save them for later",
     icon: "notebook-pen",
-    category: "Productivity",
     theme: "amber",
     tags: ["notes", "workspace"],
-    href: "/apps/notes",
     type: "premium",
   },
 ];
@@ -135,7 +171,7 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
   },
   {
     capability: "supportsImageGenerationTool",
-    category: "Media",
+    category: "AI Generation",
     command: "image generation",
     description: "Let supported models generate images as a response tool.",
     id: "image_generation",
@@ -196,24 +232,34 @@ export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
       runtime,
       name,
       description,
+      when,
+      uses,
+      produces,
+      ios,
+      scope,
+      scopeReason,
       icon,
       category,
       theme,
       tags,
       type,
-      href,
       capabilityId,
     }) => ({
       id,
       runtime,
       name,
       description,
+      when,
+      uses,
+      produces,
+      ios,
+      scope: scope ?? "any",
+      scopeReason: scopeReason ?? null,
       icon,
       category,
       theme,
       tags,
       type,
-      href,
       requirement: capabilityId
         ? { kind: "capability" as const, capabilityKind: "app" as const, capabilityId }
         : { kind: "capability_kind" as const, capabilityKind: "app" as const },

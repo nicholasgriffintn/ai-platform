@@ -1,17 +1,19 @@
+import { DocumentMetadataPanel } from "@ngriffin_uk/polychat-component-content";
 import {
   AIFormattingModal,
   NoteEditorSurface,
   NoteEditorToolbar,
-  NoteMetadata,
   TranscriptionOverlay,
   MediaGenerationModal,
 } from "@ngriffin_uk/polychat-component-experiences/content";
+import { Link } from "@ngriffin_uk/polychat-component-ui";
 import type { NoteMetadata as NoteMetadataType } from "@ngriffin_uk/polychat-schemas";
 import {
   formatTextWithSpacing,
   getCharCount,
   getWordCount,
 } from "@ngriffin_uk/polychat-utility-core";
+import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -34,6 +36,8 @@ interface NoteEditorProps {
     options?: { refreshMetadata?: boolean },
   ) => Promise<string>;
   onDelete?: () => Promise<void>;
+  backHref?: string;
+  backLabel?: string;
   onToggleFullBleed?: () => void;
   isFullBleed?: boolean;
   initialThemeMode?: string;
@@ -51,6 +55,8 @@ export function NoteEditor({
   initialMetadata,
   onSave,
   onDelete,
+  backHref,
+  backLabel,
   onToggleFullBleed,
   isFullBleed = false,
   initialThemeMode = "sepia",
@@ -260,9 +266,22 @@ export function NoteEditor({
       fontSize={fontSize}
       isSaving={isSaving}
       hasMetadata={!!currentMetadata && Object.keys(currentMetadata).length > 0}
+      leading={
+        backHref ? (
+          <div className="border-b border-current/15 px-4 py-2">
+            <Link
+              href={backHref}
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-current/75 no-underline transition-colors hover:bg-current/10 hover:text-current hover:!no-underline"
+            >
+              <ArrowLeft size={15} />
+              {backLabel ?? "Back"}
+            </Link>
+          </div>
+        ) : null
+      }
       metadataPanel={
         currentMetadata ? (
-          <NoteMetadata
+          <DocumentMetadataPanel
             metadata={currentMetadata}
             onMetadataUpdate={handleMetadataUpdate}
             isEditable={!!noteId}

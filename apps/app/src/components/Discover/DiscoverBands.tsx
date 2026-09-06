@@ -2,12 +2,12 @@ import { cn } from "@ngriffin_uk/polychat-component-ui";
 
 import { SectionNav } from "~/components/Core/SectionNav";
 
-import { CapabilitiesBand } from "./bands/CapabilitiesBand";
 import { ChatAndWorkBand } from "./bands/ChatAndWorkBand";
 import { KeysBand } from "./bands/KeysBand";
 import { ModelsBand } from "./bands/ModelsBand";
 import { PetsBand } from "./bands/PetsBand";
 import { PricingBand } from "./bands/PricingBand";
+import { TeammatesBand } from "./bands/TeammatesBand";
 import { DISCOVER_SECTIONS } from "./discover-sections";
 
 export interface DiscoverBandsProps {
@@ -34,7 +34,7 @@ export function DiscoverBands({ variant }: DiscoverBandsProps) {
       )}
       <ChatAndWorkBand />
       <ModelsBand />
-      <CapabilitiesBand />
+      <TeammatesBand />
       <PetsBand />
       <PricingBand />
       <KeysBand />

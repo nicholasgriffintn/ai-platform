@@ -42,6 +42,7 @@
     "@babel/standalone": "8.0.4",
     "@ngriffin_uk/polychat-component-ui": "workspace:^",
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-react": "workspace:^",
     "lucide-react": "1.37.0",

@@ -1,16 +1,16 @@
-import type { AgentSummary } from "@ngriffin_uk/polychat-schemas";
+import type { TeammateSummary } from "@ngriffin_uk/polychat-schemas";
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useAssistantActionCatalog } from "./useAssistantActionCatalog";
 
 const mocks = vi.hoisted(() => ({
-  agents: [] as AgentSummary[],
+  teammates: [] as TeammateSummary[],
 }));
 
 vi.mock("./useCapabilityCatalog", () => ({
   useCapabilityCatalog: () => ({
-    data: { agents: mocks.agents, experiences: [], modelTools: [], skills: [] },
+    data: { teammates: mocks.teammates, experiences: [], modelTools: [], skills: [] },
   }),
 }));
 
@@ -32,9 +32,11 @@ vi.mock("~/state/stores/chatStore", () => ({
     selector({ isAuthenticated: true, isAuthenticationLoading: false }),
 }));
 
-function agentSummary(overrides: Partial<AgentSummary> & { id: string }): AgentSummary {
+function teammateSummary(overrides: Partial<TeammateSummary> & { id: string }): TeammateSummary {
   return {
-    name: `Agent ${overrides.id}`,
+    name: `Teammate ${overrides.id}`,
+    kind: "colleague",
+    scorecard: { good: 0, bad: 0 },
     description: "",
     avatarUrl: null,
     model: null,
@@ -49,30 +51,36 @@ function agentSummary(overrides: Partial<AgentSummary> & { id: string }): AgentS
   };
 }
 
-describe("assistant action catalogue agents", () => {
+describe("assistant action catalogue teammates", () => {
   beforeEach(() => {
-    mocks.agents = [];
+    mocks.teammates = [];
   });
 
-  it("offers the scoped agents the server listed, keyed so the composer can resolve them", () => {
-    mocks.agents = [
-      agentSummary({ id: "researcher", ownerScopeType: "workspace" }),
-      agentSummary({ id: "planner" }),
+  it("offers the scoped teammates the server listed, keyed so the composer can resolve them", () => {
+    mocks.teammates = [
+      teammateSummary({ id: "researcher", ownerScopeType: "workspace" }),
+      teammateSummary({ id: "planner" }),
     ];
 
     const { result } = renderHook(() => useAssistantActionCatalog());
-    const agentItems = result.current.items.filter((item) => item.kind === "agent");
+    const teammateItems = result.current.items.filter((item) => item.kind === "teammate");
 
-    expect(agentItems.map((item) => item.id)).toEqual(["agent:researcher", "agent:planner"]);
-    expect(agentItems.map((item) => item.metadata?.agentId)).toEqual(["researcher", "planner"]);
-    expect(agentItems.map((item) => item.metadata?.category)).toEqual(["Workspace", "Personal"]);
+    expect(teammateItems.map((item) => item.id)).toEqual([
+      "teammate:researcher",
+      "teammate:planner",
+    ]);
+    expect(teammateItems.map((item) => item.metadata?.teammateId)).toEqual([
+      "researcher",
+      "planner",
+    ]);
+    expect(teammateItems.map((item) => item.metadata?.category)).toEqual(["Workspace", "Personal"]);
   });
 
-  it("offers no agents at all when the surface excludes them", () => {
-    mocks.agents = [agentSummary({ id: "planner" })];
+  it("offers no teammates at all when the surface excludes them", () => {
+    mocks.teammates = [teammateSummary({ id: "planner" })];
 
-    const { result } = renderHook(() => useAssistantActionCatalog({ includeAgents: false }));
+    const { result } = renderHook(() => useAssistantActionCatalog({ includeTeammates: false }));
 
-    expect(result.current.items.some((item) => item.kind === "agent")).toBe(false);
+    expect(result.current.items.some((item) => item.kind === "teammate")).toBe(false);
   });
 });

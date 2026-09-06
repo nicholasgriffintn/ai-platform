@@ -5,6 +5,8 @@ import {
   type ProjectTaskStageEvidence,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { TaskCreditSummary } from "./TaskCreditSummary";
+
 const STATUS_LABELS: Record<ProjectTaskStageEvidence["status"], string> = {
   proposed: "Proposed",
   executing: "Executing",
@@ -48,6 +50,9 @@ export function TaskStageEvidence({
         <p className="mt-1 text-xs text-muted-foreground">
           Proposed stages become completed only when an exact run leaves a durable result.
         </p>
+        <div className="mt-2">
+          <TaskCreditSummary plan={plan} />
+        </div>
       </div>
       <ol className="space-y-3">
         {plan.stages.map((stage) => (

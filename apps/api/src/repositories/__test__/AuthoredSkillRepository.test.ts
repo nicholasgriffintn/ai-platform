@@ -117,6 +117,7 @@ beforeEach(() => {
       project_id text NOT NULL REFERENCES project(id) ON DELETE CASCADE,
       kind text NOT NULL,
       capability_id text NOT NULL,
+      excluded integer DEFAULT 0 NOT NULL,
       configuration text DEFAULT '{}' NOT NULL,
       created_by integer NOT NULL REFERENCES user(id),
       created_at text DEFAULT CURRENT_TIMESTAMP NOT NULL

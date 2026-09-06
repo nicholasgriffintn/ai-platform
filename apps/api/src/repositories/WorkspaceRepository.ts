@@ -352,7 +352,9 @@ export class WorkspaceRepository extends BaseRepository {
         .prepare(`DELETE FROM template WHERE project_id IN (${projectIds})`)
         .bind(workspaceId),
       database
-        .prepare("DELETE FROM agents WHERE owner_scope_type = 'workspace' AND owner_scope_id = ?")
+        .prepare(
+          "DELETE FROM teammates WHERE owner_scope_type = 'workspace' AND owner_scope_id = ?",
+        )
         .bind(workspaceId),
       database.prepare("DELETE FROM workspace WHERE id = ?").bind(workspaceId),
     ]);
@@ -774,7 +776,7 @@ export class WorkspaceRepository extends BaseRepository {
     );
   }
 
-  async listProjectsWithFlowStageAgent(agentId: string): Promise<ProjectReferenceRow[]> {
+  async listProjectsWithFlowStageTeammate(teammateId: string): Promise<ProjectReferenceRow[]> {
     return this.runQuery<ProjectReferenceRow>(
       `SELECT p.id, p.name
 			 FROM project p
@@ -783,10 +785,10 @@ export class WorkspaceRepository extends BaseRepository {
 				AND json_valid(p.flow)
 				AND EXISTS (
 					SELECT 1 FROM json_each(p.flow, '$.stages') stage
-					WHERE json_extract(stage.value, '$.agentId') = ?
+					WHERE json_extract(stage.value, '$.teammateId') = ?
 				)
 			 ORDER BY p.name`,
-      [agentId],
+      [teammateId],
     );
   }
 
@@ -795,8 +797,9 @@ export class WorkspaceRepository extends BaseRepository {
     projectId: string;
     kind: ProjectCapabilityKind;
     capabilityId: string;
-    configuration: Record<string, unknown>;
+    configuration?: Record<string, unknown>;
     createdBy: number;
+    excluded?: boolean;
   }): Promise<void> {
     const database = this.env.DB;
 
@@ -808,17 +811,18 @@ export class WorkspaceRepository extends BaseRepository {
       scope: { type: "project", id: params.projectId },
       capabilityKind: params.kind,
       capabilityId: params.capabilityId,
-      configuration: params.configuration,
+      configuration: params.configuration ?? {},
       createdBy: params.createdBy,
     });
     const results = await database.batch([
       database
         .prepare(
           `INSERT INTO project_capability
-						(id, project_id, kind, capability_id, configuration, created_by)
-					 VALUES (?, ?, ?, ?, ?, ?)
+						(id, project_id, kind, capability_id, configuration, created_by, excluded)
+					 VALUES (?, ?, ?, ?, ?, ?, ?)
 					 ON CONFLICT(project_id, kind, capability_id) DO UPDATE SET
-						created_by = project_capability.created_by
+						created_by = project_capability.created_by,
+						excluded = excluded.excluded
 					 WHERE project_capability.kind = 'tool'
 						OR project_capability.created_by = excluded.created_by`,
         )
@@ -829,6 +833,7 @@ export class WorkspaceRepository extends BaseRepository {
           params.capabilityId,
           JSON.stringify({}),
           params.createdBy,
+          params.excluded ? 1 : 0,
         ),
       database.prepare(configurationStatement.query).bind(...configurationStatement.values),
     ]);
@@ -840,6 +845,25 @@ export class WorkspaceRepository extends BaseRepository {
         403,
       );
     }
+  }
+
+  async removeProjectCapabilityByCapabilityId(
+    projectId: string,
+    kind: ProjectCapabilityKind,
+    capabilityId: string,
+  ): Promise<void> {
+    const database = this.env.DB;
+
+    if (!database) {
+      return;
+    }
+
+    await database
+      .prepare(
+        "DELETE FROM project_capability WHERE project_id = ? AND kind = ? AND capability_id = ?",
+      )
+      .bind(projectId, kind, capabilityId)
+      .run();
   }
 
   async removeProjectCapability(projectId: string, capabilityId: string): Promise<void> {

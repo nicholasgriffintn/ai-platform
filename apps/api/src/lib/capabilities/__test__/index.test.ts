@@ -4,7 +4,7 @@ import { validateCapabilityReference } from "~/lib/capabilities";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { assistantRecipes } from "~/services/apps/recipes/catalog";
 
-function createAgentContext(overrides: {
+function createTeammateContext(overrides: {
   userId: number;
   ownerScopeType: "user" | "workspace";
   ownerScopeId: string;
@@ -16,9 +16,9 @@ function createAgentContext(overrides: {
     user,
     requireUser: () => user,
     repositories: {
-      agents: {
-        getAgentById: vi.fn(async () => ({
-          id: "agent-1",
+      teammates: {
+        getTeammateById: vi.fn(async () => ({
+          id: "teammate-1",
           user_id: 7,
           owner_scope_type: overrides.ownerScopeType,
           owner_scope_id: overrides.ownerScopeId,
@@ -32,33 +32,37 @@ function createAgentContext(overrides: {
   } as unknown as ServiceContext;
 }
 
-describe("attaching an agent to a project", () => {
-  it("accepts a workspace agent from a workspace the person belongs to", async () => {
-    const context = createAgentContext({
+describe("attaching an teammate to a project", () => {
+  it("accepts a workspace teammate from a workspace the person belongs to", async () => {
+    const context = createTeammateContext({
       userId: 9,
       ownerScopeType: "workspace",
       ownerScopeId: "workspace-1",
       role: "member",
     });
 
-    await expect(validateCapabilityReference("agent", "agent-1", context)).resolves.toBeUndefined();
+    await expect(
+      validateCapabilityReference("teammate", "teammate-1", context),
+    ).resolves.toBeUndefined();
   });
 
-  it("refuses an agent the person cannot read", async () => {
-    const context = createAgentContext({
+  it("refuses an teammate the person cannot read", async () => {
+    const context = createTeammateContext({
       userId: 9,
       ownerScopeType: "user",
       ownerScopeId: "7",
     });
 
-    await expect(validateCapabilityReference("agent", "agent-1", context)).rejects.toMatchObject({
+    await expect(
+      validateCapabilityReference("teammate", "teammate-1", context),
+    ).rejects.toMatchObject({
       statusCode: 403,
     });
   });
 
-  it("refuses an agent when there is no authenticated caller", async () => {
-    await expect(validateCapabilityReference("agent", "agent-1")).rejects.toMatchObject({
-      message: "Unknown agent",
+  it("refuses an teammate when there is no authenticated caller", async () => {
+    await expect(validateCapabilityReference("teammate", "teammate-1")).rejects.toMatchObject({
+      message: "Unknown teammate",
       statusCode: 404,
     });
   });
@@ -87,5 +91,18 @@ describe("project capability references", () => {
 
   it("leaves tool validation to the configuration boundary", async () => {
     await expect(validateCapabilityReference("tool", "web_fetch")).resolves.toBeUndefined();
+  });
+
+  it("refuses a personal-only app in a project, and says why", async () => {
+    await expect(validateCapabilityReference("app", "featured-finetuning")).rejects.toMatchObject({
+      statusCode: 400,
+      message: expect.stringContaining("your own provider credentials"),
+    });
+  });
+
+  it("still accepts an app that projects are allowed to enable", async () => {
+    await expect(
+      validateCapabilityReference("app", "featured-note-taker"),
+    ).resolves.toBeUndefined();
   });
 });

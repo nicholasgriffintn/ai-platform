@@ -36,9 +36,10 @@ export interface TaskDetailProps {
   plan: ProjectTaskPlanEvidence;
   flow: ProjectFlow | null;
   members: { userId: number; name: string | null }[];
-  agents: { id: string; name: string }[];
+  teammates: { id: string; name: string }[];
   blockedBy: ProjectTask[];
   conversationHref: string | null;
+  originConversationHref: string | null;
   taskHref: (task: ProjectTask) => string;
   runHref: (conversationId: string, runId: string) => string;
   outputHref: (outputId: string) => string;
@@ -93,9 +94,10 @@ export function TaskDetail({
   plan,
   flow,
   members,
-  agents,
+  teammates,
   blockedBy,
   conversationHref,
+  originConversationHref,
   taskHref,
   runHref,
   outputHref,
@@ -110,8 +112,8 @@ export function TaskDetail({
   const owner = members.find((member) => member.userId === task.assigneeUserId);
   const effectiveFlow = task.flowSnapshot ?? flow;
   const stage = effectiveFlow?.stages.find((candidate) => candidate.id === task.stageId);
-  const agentId = stage?.agentId ?? task.runner?.agentId;
-  const agent = agents.find((candidate) => candidate.id === agentId);
+  const teammateId = stage?.teammateId ?? task.runner?.teammateId;
+  const teammate = teammates.find((candidate) => candidate.id === teammateId);
   const isFinished = isTerminalProjectTaskStatus(task.status);
   const hasExecutionEvidence = Boolean(
     task.status === "done" || task.runId || task.completions.length > 0,
@@ -183,6 +185,13 @@ export function TaskDetail({
             </ButtonLink>
           ) : null}
         </div>
+
+        {originConversationHref ? (
+          <p className="text-muted-foreground text-sm">
+            Filed from{" "}
+            <TextLink href={originConversationHref}>the conversation it came from</TextLink>.
+          </p>
+        ) : null}
 
         <section className="space-y-3">
           <h2 className="text-sm font-semibold text-foreground">Done when</h2>
@@ -303,7 +312,7 @@ export function TaskDetail({
       <aside className="min-w-0">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
           <Fact label="Owner" value={owner?.name ?? "Nobody yet"} />
-          <Fact label="Active agent" value={agent?.name ?? "Project default"} />
+          <Fact label="Active teammate" value={teammate?.name ?? "Project default"} />
           <Fact label="Stage" value={stage?.name ?? "No pipeline stage"} />
           <Fact
             label="Last activity"
@@ -318,7 +327,7 @@ export function TaskDetail({
           <Aside label="Approval gates">
             {task.requireApprovalFor.length
               ? task.requireApprovalFor.join(", ")
-              : "Use the selected agent and stage policy"}
+              : "Use the selected teammate and stage policy"}
           </Aside>
           <Aside label="Run budget">
             {task.tokenBudget

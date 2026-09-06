@@ -32,7 +32,7 @@ function stage(advance: ProjectFlowStage["advance"]): ProjectFlowStage {
     id: "review",
     name: "Review",
     instructions: null,
-    agentId: null,
+    teammateId: null,
     skillIds: [],
     mode: null,
     requiresApprovalFor: [],

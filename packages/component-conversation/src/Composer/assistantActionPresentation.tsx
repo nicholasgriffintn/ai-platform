@@ -9,18 +9,19 @@ export const ASSISTANT_ACTION_ITEM_GROUPS: Array<{
 }> = [
   {
     kinds: ["installed_recipe", "recipe"],
-    label: "Recipes",
+    label: "Automations",
     emptyLabel: "recipes",
     icon: ScrollText,
   },
   { kinds: ["skill"], label: "Skills", emptyLabel: "skills", icon: BookOpen },
-  { kinds: ["agent"], label: "Agents", emptyLabel: "agents", icon: Bot },
+  { kinds: ["teammate"], label: "Teammates", emptyLabel: "teammates", icon: Bot },
   { kinds: ["connector"], label: "Connectors", emptyLabel: "connectors", icon: Plug },
   { kinds: ["tool"], label: "Tools", emptyLabel: "tools", icon: Wrench },
 ];
 
-export const ASSISTANT_ACTION_ITEM_SCOPE_LABEL = "Recipes, skills, agents, connectors, and tools";
-export const ASSISTANT_ACTION_ITEM_EMPTY_LABEL = "recipes, skills, agents, connectors, or tools";
+export const ASSISTANT_ACTION_ITEM_SCOPE_LABEL =
+  "Recipes, skills, teammates, connectors, and tools";
+export const ASSISTANT_ACTION_ITEM_EMPTY_LABEL = "recipes, skills, teammates, connectors, or tools";
 
 export function groupAssistantActionItems(items: AssistantActionItem[]) {
   return ASSISTANT_ACTION_ITEM_GROUPS.map((group) => ({

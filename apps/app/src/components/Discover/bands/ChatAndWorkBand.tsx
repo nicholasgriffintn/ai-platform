@@ -59,17 +59,17 @@ export function ChatAndWorkBand() {
           summary="Personal, quick, and kept. Every conversation stays where you left it."
           points={[
             "Pick a model per message, or a tier and let the lineup choose.",
-            "Branch a reply and compare the answers side by side.",
+            "Start a thread from a reply and compare the answers side by side.",
             "Sources, notes and saved outputs travel with the thread.",
           ]}
         />
         <ProductCard
           icon={<Users size={16} />}
           name="Work"
-          summary="Shared workspaces with projects, tasks and the agents that run them."
+          summary="Shared workspaces with projects, tasks and the teammates that run them."
           points={[
             "Invite people to a workspace and scope what each project can reach.",
-            "Hand a task to an agent and review the run before it lands.",
+            "Hand a task to a teammate and review the run before it lands.",
             "Governance and usage sit beside the work, not in another tab.",
           ]}
         />

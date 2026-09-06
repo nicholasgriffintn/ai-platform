@@ -22,7 +22,7 @@ import { savePattern } from "~/services/apps/strudel/save";
 import { updatePattern } from "~/services/apps/strudel/update";
 import {
   projectScopeQuerySchema,
-  requireProjectCapabilityAccess,
+  requireOptionalProjectCapabilityAccess,
 } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -54,14 +54,12 @@ addRoute(app, "get", "/", {
   querySchema: projectScopeQuerySchema,
   handler: async ({ query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-strudel",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-strudel",
+      );
 
       const patterns = await listPatterns({
         context: serviceContext,
@@ -98,14 +96,12 @@ addRoute(app, "get", "/:id", {
   querySchema: projectScopeQuerySchema,
   handler: async ({ params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-strudel",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-strudel",
+      );
 
       const pattern = await getPatternDetails({
         context: serviceContext,
@@ -142,14 +138,12 @@ addRoute(app, "post", "/generate", {
   querySchema: projectScopeQuerySchema,
   handler: async ({ body, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-strudel",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-strudel",
+      );
 
       const response = await generateStrudelCode({
         context: serviceContext,
@@ -195,14 +189,12 @@ addRoute(app, "post", "/", {
   querySchema: projectScopeQuerySchema,
   handler: async ({ body, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-strudel",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-strudel",
+      );
 
       const pattern = await savePattern({
         context: serviceContext,
@@ -240,14 +232,12 @@ addRoute(app, "put", "/:id", {
   querySchema: projectScopeQuerySchema,
   handler: async ({ body, params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-strudel",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-strudel",
+      );
 
       const pattern = await updatePattern({
         context: serviceContext,
@@ -285,14 +275,12 @@ addRoute(app, "delete", "/:id", {
   querySchema: projectScopeQuerySchema,
   handler: async ({ params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-strudel",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-strudel",
+      );
 
       await deletePattern({
         context: serviceContext,

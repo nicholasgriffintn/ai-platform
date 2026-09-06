@@ -1,10 +1,44 @@
 import { SidebarFooter as ControlledSidebarFooter } from "@ngriffin_uk/polychat-component-navigation";
+import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { Feather } from "lucide-react";
+
+import { useTrackEvent } from "~/hooks/use-track-event";
+import { useUIStore } from "~/state/stores/uiStore";
 
 import { SidebarSettingsPopover } from "./SidebarSettingsPopover";
 
 export function SidebarFooter() {
+  const { trackEvent } = useTrackEvent();
+  const showMetaAssistant = useUIStore((state) => state.showMetaAssistant);
+  const setShowMetaAssistant = useUIStore((state) => state.setShowMetaAssistant);
+
   return (
     <ControlledSidebarFooter>
+      <button
+        type="button"
+        aria-pressed={showMetaAssistant}
+        className={cn(
+          "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus:ring-sidebar-ring border-sidebar-border flex w-full min-w-0 items-center justify-between gap-3 rounded-none border-b px-3 py-3 text-left transition-colors focus:ring-2 focus:ring-inset focus:outline-none",
+          showMetaAssistant ? "bg-sidebar-accent text-sidebar-accent-foreground" : "bg-sidebar",
+        )}
+        onClick={() => {
+          trackEvent({
+            name: "open_meta_assistant",
+            category: "navigation",
+            label: "sidebar_footer",
+            value: 1,
+          });
+          setShowMetaAssistant(true);
+        }}
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="bg-selection text-foreground flex h-7 w-7 shrink-0 items-center justify-center rounded-md">
+            <Feather className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <span className="min-w-0 truncate text-sm font-medium">Ask Poly</span>
+        </span>
+        <kbd className="text-muted-foreground shrink-0 text-[10px] font-medium">⌘J</kbd>
+      </button>
       <SidebarSettingsPopover />
     </ControlledSidebarFooter>
   );

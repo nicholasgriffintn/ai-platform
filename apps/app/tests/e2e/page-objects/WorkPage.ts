@@ -61,17 +61,15 @@ export class WorkPage extends BasePage {
   }
 
   async openProjectSurface(
-    name:
-      | "People"
-      | "Governance"
-      | "Experiences"
-      | "Outputs"
-      | "Sources"
-      | "Activity"
-      | "Capabilities",
+    name: "People" | "Governance" | "Files" | "Activity" | "Teammates & tools",
   ) {
     await this.clickElement(this.page.getByRole("link", { name, exact: true }));
-    const heading = name === "People" ? "People & access" : name;
+    const heading =
+      name === "People"
+        ? "People & access"
+        : name === "Teammates & tools"
+          ? "Teammates & tools"
+          : name;
 
     await this.page.getByRole("heading", { name: heading, exact: true }).first().waitFor();
   }
@@ -211,7 +209,17 @@ export class WorkPage extends BasePage {
     await member.waitFor({ state: "detached" });
   }
 
+  async openProjectSettings() {
+    if (await this.page.getByRole("link", { name: "Back to project" }).isVisible()) {
+      return;
+    }
+
+    await this.clickElement(this.page.getByRole("link", { name: "Project settings" }));
+    await this.page.getByRole("link", { name: "Back to project" }).waitFor();
+  }
+
   async updateProjectBrief(instructions: string) {
+    await this.openProjectSettings();
     await this.page.getByRole("button", { name: "Edit project brief" }).click();
     await this.page.getByLabel("Project brief", { exact: true }).fill(instructions);
     await this.page.getByRole("button", { name: "Save brief" }).click();
@@ -219,6 +227,7 @@ export class WorkPage extends BasePage {
   }
 
   async setProjectRoutingPreference(tier: "" | "low" | "medium" | "high" | "ultra") {
+    await this.openProjectSettings();
     await this.page.getByLabel("Project default", { exact: true }).selectOption(tier);
     await this.page.getByRole("button", { name: "Save preference" }).click();
     await this.page.getByRole("button", { name: "Save preference" }).waitFor({ state: "hidden" });
@@ -316,7 +325,7 @@ export class WorkPage extends BasePage {
   }
 
   private async openCapability(name: string) {
-    await this.openProjectSurface("Capabilities");
+    await this.openProjectSurface("Teammates & tools");
     await this.capabilitySearch().fill(name);
 
     return this.capabilityCard(name);
@@ -390,7 +399,7 @@ export class WorkPage extends BasePage {
   }
 
   async configureMcpTool(label: string, serverUrl: string) {
-    await this.openProjectSurface("Capabilities");
+    await this.openProjectSurface("Teammates & tools");
     await this.capabilitySearch().fill("MCP");
     const card = this.page
       .getByRole("heading", { name: "MCP", exact: true })
@@ -421,7 +430,7 @@ export class WorkPage extends BasePage {
   }
 
   async configureFileSearchTool(vectorStoreIds: string[]) {
-    await this.openProjectSurface("Capabilities");
+    await this.openProjectSurface("Teammates & tools");
     await this.capabilitySearch().fill("File search");
     const card = this.page
       .getByRole("heading", { name: "File search", exact: true })
@@ -732,38 +741,45 @@ export class WorkPage extends BasePage {
     await this.page.getByRole("heading", { name: "Report Content", exact: true }).waitFor();
   }
 
-  async uploadPodcastWithoutOptionalProcessing(title: string, description: string, audio: Buffer) {
+  async uploadRecordingWithoutOptionalProcessing(
+    title: string,
+    description: string,
+    audio: Buffer,
+  ) {
     await this.openProjectSurface("Experiences");
-    await this.page.getByRole("link", { name: /Podcast Processor/ }).click();
-    await this.page.getByRole("heading", { name: "Podcast Processor", exact: true }).waitFor();
-    await this.page.getByRole("link", { name: "New podcast", exact: true }).click();
-    await this.page.getByLabel("Podcast Title *", { exact: true }).fill(title);
+    await this.page.getByRole("link", { name: /Recording Processor/ }).click();
+    await this.page.getByRole("heading", { name: "Recording Processor", exact: true }).waitFor();
+    await this.page.getByRole("link", { name: "New recording", exact: true }).click();
+    await this.page.getByLabel("Recording Title *", { exact: true }).fill(title);
     await this.page.getByLabel("Description", { exact: true }).fill(description);
     await this.page.locator('input[type="file"]#audioFile').setInputFiles({
-      name: "release-podcast.wav",
+      name: "release-recording.wav",
       mimeType: "audio/wav",
       buffer: audio,
     });
     const uploadResponse = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "POST" && response.url().includes("/apps/podcasts/upload"),
+        response.request().method() === "POST" &&
+        response.url().includes("/apps/recordings/upload"),
     );
 
     await this.page.getByRole("button", { name: "Upload & Continue" }).click();
     const response = await uploadResponse;
 
     if (!response.ok()) {
-      throw new Error(`Podcast upload failed with ${response.status()}: ${await response.text()}`);
+      throw new Error(
+        `Recording upload failed with ${response.status()}: ${await response.text()}`,
+      );
     }
 
     await this.page.getByRole("heading", { name: "Processing Options" }).waitFor();
-    for (const option of ["Transcribe Podcast", "Generate Summary", "Generate Cover Image"]) {
+    for (const option of ["Transcribe Recording", "Generate Summary", "Generate Cover Image"]) {
       await this.page.getByLabel(option, { exact: true }).uncheck();
     }
 
-    await this.page.getByRole("button", { name: "Process Podcast" }).click();
+    await this.page.getByRole("button", { name: "Process Recording" }).click();
     await this.page.getByText(description, { exact: true }).waitFor();
-    await this.page.getByRole("button", { name: "Transcribe podcast" }).waitFor();
+    await this.page.getByRole("button", { name: "Transcribe recording" }).waitFor();
   }
 
   async browseReplicateModelsAndPredictions(modelName: string) {
@@ -797,7 +813,7 @@ export class WorkPage extends BasePage {
   }
 
   async executeQrToolAndOpenSavedOutput(payload: string) {
-    await this.openProjectSurface("Capabilities");
+    await this.openProjectSurface("Teammates & tools");
     await this.capabilitySearch().fill("Create Qr Code");
     const card = this.capabilityCard("Create Qr Code");
 

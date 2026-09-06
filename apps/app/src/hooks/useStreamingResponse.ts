@@ -30,6 +30,7 @@ import { getErrorMessage } from "~/lib/errors";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
+import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUsageStore } from "~/state/stores/usageStore";
@@ -65,7 +66,7 @@ export function useStreamingResponse(
     localOnlyMode,
     useMultiModel,
     modelTier,
-    selectedAgentId,
+    selectedTeammateId,
     markConversationRemoteAvailable,
     setModel,
     user,
@@ -89,7 +90,7 @@ export function useStreamingResponse(
   const updateStreamLoadingMessage = useStreamActivityStore(
     (state) => state.updateStreamLoadingMessage,
   );
-  const currentConversationId = useChatStore((state) => state.currentConversationId);
+  const { currentConversationId } = useConversationScope();
   const currentStream = useStreamActivityStore((state) =>
     currentConversationId ? state.streams[currentConversationId] : undefined,
   );
@@ -520,7 +521,8 @@ export function useStreamingResponse(
             assistantMessage = await apiService.streamChatCompletions({
               chatSettings,
               completionId: conversationId,
-              endpoint: chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
+              endpoint:
+                chatMode === "agent" ? `/teammates/${selectedTeammateId}/completions` : undefined,
               messages: normalizedMessages,
               mode: chatMode,
               model: modelToSend,
@@ -642,7 +644,7 @@ export function useStreamingResponse(
       addAssistantMessage,
       useMultiModel,
       modelTier,
-      selectedAgentId,
+      selectedTeammateId,
       apiModels,
       updateLoading,
       webLLMService,

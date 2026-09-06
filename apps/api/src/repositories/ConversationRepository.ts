@@ -1,5 +1,5 @@
 import type {
-  ConversationBranch,
+  ConversationThread,
   ConversationArchiveFilter,
   ConversationSortBy,
   ConversationType,
@@ -100,21 +100,21 @@ export class ConversationRepository extends BaseRepository {
            AND related.id != c.id
            AND related.project_id IS c.project_id
            AND (c.project_id IS NOT NULL OR related.user_id = c.user_id)
-       ) AS has_branches
+       ) AS has_threads
        FROM conversation c WHERE c.id = ?`,
       [conversationId],
       true,
     );
 
-    return conversation ? { ...conversation, has_branches: conversation.has_branches === 1 } : null;
+    return conversation ? { ...conversation, has_threads: conversation.has_threads === 1 } : null;
   }
 
-  public async listConversationBranches(
+  public async listConversationThreads(
     conversationId: string,
     userId: number,
     projectId: string | null,
     limit: number,
-  ): Promise<Array<Omit<ConversationBranch, "is_archived"> & { is_archived: number }>> {
+  ): Promise<Array<Omit<ConversationThread, "is_archived"> & { is_archived: number }>> {
     return this.runQuery(
       `WITH RECURSIVE scoped AS (
          SELECT id, parent_conversation_id FROM conversation
@@ -174,6 +174,7 @@ export class ConversationRepository extends BaseRepository {
     const whereClauses = [
       "c.user_id = ?",
       "c.project_id IS NULL",
+      "c.type != 'meta'",
       `NOT (
         COALESCE(datetime(state.snoozed_until) > datetime('now'), 0)
         OR (
@@ -322,7 +323,7 @@ export class ConversationRepository extends BaseRepository {
     options: SetConversationsArchivedOptions,
   ): Promise<number> {
     const { archived, query, updatedAfter } = options;
-    const whereClauses = ["user_id = ?", "project_id IS NULL", "is_archived = ?"];
+    const whereClauses = ["user_id = ?", "project_id IS NULL", "type != 'meta'", "is_archived = ?"];
     const values: unknown[] = [archived ? 1 : 0, userId, archived ? 0 : 1];
 
     const trimmedQuery = query?.trim();
@@ -466,6 +467,7 @@ export class ConversationRepository extends BaseRepository {
 			 LEFT JOIN conversation_user_state state
          ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.is_archived = 0
+			   AND c.type != 'meta'
 			   AND (
 			     (c.project_id IS NULL AND c.user_id = ?)
 			     OR (

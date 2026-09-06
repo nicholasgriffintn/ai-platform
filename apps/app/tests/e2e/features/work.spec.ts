@@ -87,23 +87,23 @@ test.describe("Work experience", () => {
       workPage,
     }) => {
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-      await workPage.openProjectSurface("Capabilities");
+      await workPage.openProjectSurface("Teammates & tools");
       await capabilitiesPage.openAddMenuWithKeyboard();
 
-      await expect(capabilitiesPage.addMenuItem("New agent")).toContainText(
+      await expect(capabilitiesPage.addMenuItem("New teammate")).toContainText(
         "Configure a persona, its model, tools and skills",
       );
-      await expect(capabilitiesPage.addMenuItem("Attach an agent")).toContainText(
-        "Bring in an agent this workspace already owns",
+      await expect(capabilitiesPage.addMenuItem("Attach an teammate")).toContainText(
+        "Bring in an teammate this workspace already owns",
       );
       await expect(capabilitiesPage.addMenuItem("Add a skill")).toContainText(
-        "Upload an Agent Skills document",
+        "Upload an Teammate Skills document",
       );
-      await expect(capabilitiesPage.addMenuItem("Browse shared agents")).toHaveCount(0);
-      await expect(capabilitiesPage.addMenuItem("New agent")).toBeFocused();
+      await expect(capabilitiesPage.addMenuItem("Browse shared teammates")).toHaveCount(0);
+      await expect(capabilitiesPage.addMenuItem("New teammate")).toBeFocused();
 
       await capabilitiesPage.moveAddMenuSelection();
-      await expect(capabilitiesPage.addMenuItem("Attach an agent")).toBeFocused();
+      await expect(capabilitiesPage.addMenuItem("Attach an teammate")).toBeFocused();
       await capabilitiesPage.moveAddMenuSelection();
       await expect(capabilitiesPage.addMenuItem("Add a skill")).toBeFocused();
       await capabilitiesPage.selectAddMenuItemWithKeyboard();
@@ -112,10 +112,10 @@ test.describe("Work experience", () => {
 
       await capabilitiesPage.open();
       await capabilitiesPage.openAddMenuWithKeyboard();
-      await expect(capabilitiesPage.addMenuItem("Browse shared agents")).toContainText(
-        "Install an agent someone has published",
+      await expect(capabilitiesPage.addMenuItem("Browse shared teammates")).toContainText(
+        "Install an teammate someone has published",
       );
-      await expect(capabilitiesPage.addMenuItem("Attach an agent")).toHaveCount(0);
+      await expect(capabilitiesPage.addMenuItem("Attach an teammate")).toHaveCount(0);
       await capabilitiesPage.closeAddMenuWithKeyboard();
       await expect(capabilitiesPage.addMenu).toBeFocused();
     });
@@ -191,13 +191,7 @@ test.describe("Work experience", () => {
         ],
       });
 
-      for (const surface of [
-        "Experiences",
-        "Outputs",
-        "Sources",
-        "Activity",
-        "Capabilities",
-      ] as const) {
+      for (const surface of ["Files", "Activity", "Teammates & tools"] as const) {
         await test.step(surface, async () => {
           await workPage.openProjectSurface(surface);
           await captureVisualSnapshots(
@@ -265,7 +259,7 @@ test.describe("Work experience", () => {
       await homePage.waitForChatResponse(0);
       await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
       await homePage.hoverConversation(/Use the project instructions|Release validation chat/);
-      await workPage.openProjectSurface("Sources");
+      await workPage.openProjectSurface("Files");
       await expect(page.getByText("release-work-context.md", { exact: true })).toBeVisible();
       await captureVisualSnapshots(page, "release-work-project-conversation", {
         ...DEFAULT_VISUAL_CHECKPOINTS,
@@ -726,16 +720,16 @@ test.describe("Work experience", () => {
       await expect(workPage.getCapabilityAddButton("Article Processor")).toBeVisible();
     });
 
-    test("enables and uploads a podcast project asset", async ({ workPage }) => {
+    test("enables and uploads a recording project asset", async ({ workPage }) => {
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-      await workPage.enableCapabilityAfterReload("Podcast Processor");
-      await workPage.uploadPodcastWithoutOptionalProcessing(
-        "Release validation podcast",
-        "Deterministic podcast project asset.",
+      await workPage.enableCapabilityAfterReload("Recording Processor");
+      await workPage.uploadRecordingWithoutOptionalProcessing(
+        "Release validation recording",
+        "Deterministic recording project asset.",
         createSilentWavFixture(),
       );
-      await workPage.removeCapabilityAfterReload("Podcast Processor");
-      await expect(workPage.getCapabilityAddButton("Podcast Processor")).toBeVisible();
+      await workPage.removeCapabilityAfterReload("Recording Processor");
+      await expect(workPage.getCapabilityAddButton("Recording Processor")).toBeVisible();
     });
 
     test("enables and browses Replicate models and predictions", async ({ page, workPage }) => {

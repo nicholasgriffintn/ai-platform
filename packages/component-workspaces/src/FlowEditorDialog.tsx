@@ -25,10 +25,10 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 export interface FlowEditorDialogProps {
   open: boolean;
   flow: ProjectFlow | null;
-  agents: { id: string; name: string }[];
+  teammates: { id: string; name: string }[];
   skills: { id: string; name: string }[];
   capabilitiesHref: string;
-  createAgentHref: string;
+  createTeammateHref: string;
   isSaving?: boolean;
   errorMessage?: string;
   onOpenChange: (open: boolean) => void;
@@ -55,7 +55,7 @@ function newStage(): ProjectFlowStage {
     id: `stage-${crypto.randomUUID().slice(0, 8)}`,
     name: "",
     instructions: null,
-    agentId: null,
+    teammateId: null,
     skillIds: [],
     mode: "build",
     requiresApprovalFor: [],
@@ -66,10 +66,10 @@ function newStage(): ProjectFlowStage {
 export function FlowEditorDialog({
   open,
   flow,
-  agents,
+  teammates,
   skills,
   capabilitiesHref,
-  createAgentHref,
+  createTeammateHref,
   isSaving = false,
   errorMessage,
   onOpenChange,
@@ -130,23 +130,23 @@ export function FlowEditorDialog({
         <form onSubmit={(event) => void submit(event)} className="space-y-5">
           <DialogHeader>
             <DialogTitle ref={titleRef} tabIndex={-1} className="outline-none">
-              Configure the agent pipeline
+              Configure the teammate pipeline
             </DialogTitle>
             <DialogDescription>
-              Route each stage through an attached agent, the skills it needs, and a clear hand-off
-              policy.
+              Route each stage through an attached teammate, the skills it needs, and a clear
+              hand-off policy.
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface-elevated p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-foreground">
-                {agents.length} attached agent{agents.length === 1 ? "" : "s"} · {skills.length}{" "}
-                attached skill{skills.length === 1 ? "" : "s"}
+                {teammates.length} attached teammate{teammates.length === 1 ? "" : "s"} ·{" "}
+                {skills.length} attached skill{skills.length === 1 ? "" : "s"}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Add agents and skills through project Capabilities, where you can also build a new
-                agent for this project.
+                Add teammates and skills through project Capabilities, where you can also build a
+                new teammate for this project.
               </p>
               {isNewFlow ? (
                 <p className="mt-0.5 text-xs text-muted-foreground">
@@ -168,13 +168,13 @@ export function FlowEditorDialog({
                 </Button>
               ) : null}
               <ButtonLink
-                href={createAgentHref}
+                href={createTeammateHref}
                 variant="ghost"
                 size="sm"
                 icon={<Plus size={13} />}
                 className="no-underline hover:!no-underline"
               >
-                New agent
+                New teammate
               </ButtonLink>
               <ButtonLink
                 href={capabilitiesHref}
@@ -247,16 +247,16 @@ export function FlowEditorDialog({
                         required
                       />
                       <FormSelect
-                        label="Agent"
-                        value={stage.agentId ?? ""}
+                        label="Teammate"
+                        value={stage.teammateId ?? ""}
                         onChange={(event) =>
-                          updateStage(index, { agentId: event.target.value || null })
+                          updateStage(index, { teammateId: event.target.value || null })
                         }
                       >
                         <option value="">Project default</option>
-                        {agents.map((agent) => (
-                          <option key={agent.id} value={agent.id}>
-                            {agent.name}
+                        {teammates.map((teammate) => (
+                          <option key={teammate.id} value={teammate.id}>
+                            {teammate.name}
                           </option>
                         ))}
                       </FormSelect>
@@ -326,7 +326,7 @@ export function FlowEditorDialog({
                         updateStage(index, { mode: mode.success ? mode.data : null });
                       }}
                     >
-                      <option value="">Agent default</option>
+                      <option value="">Teammate default</option>
                       <option value="explore">Explore</option>
                       <option value="plan">Plan</option>
                       <option value="build">Build</option>

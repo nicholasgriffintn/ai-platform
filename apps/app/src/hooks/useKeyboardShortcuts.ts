@@ -7,8 +7,14 @@ import { useUIStore } from "~/state/stores/uiStore";
 type ShortcutHandler = (e: KeyboardEvent) => void;
 
 export function useKeyboardShortcuts() {
-  const { setSidebarVisible, sidebarVisible, showKeyboardShortcuts, setShowKeyboardShortcuts } =
-    useUIStore();
+  const {
+    setSidebarVisible,
+    sidebarVisible,
+    showKeyboardShortcuts,
+    setShowKeyboardShortcuts,
+    showMetaAssistant,
+    setShowMetaAssistant,
+  } = useUIStore();
   const { clearCurrentConversation, setShowSearch, localOnlyMode, setLocalOnlyMode } =
     useChatStore();
 
@@ -33,6 +39,10 @@ export function useKeyboardShortcuts() {
       "toggle-local-only-mode": (e) => {
         e.preventDefault();
         setLocalOnlyMode(!localOnlyMode);
+      },
+      "toggle-meta-assistant": (e) => {
+        e.preventDefault();
+        setShowMetaAssistant(!showMetaAssistant);
       },
     };
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -68,6 +78,8 @@ export function useKeyboardShortcuts() {
     setShowSearch,
     localOnlyMode,
     setLocalOnlyMode,
+    showMetaAssistant,
+    setShowMetaAssistant,
   ]);
 
   return {};

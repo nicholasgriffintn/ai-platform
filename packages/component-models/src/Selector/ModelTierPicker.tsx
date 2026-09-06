@@ -229,10 +229,10 @@ export function ModelTierPicker({
           const tagline = tier
             ? getModelTierDefinition(tier).tagline
             : "Project or account default";
-          const hasAgent = Boolean(
+          const hasTeammate = Boolean(
             resolveTierRole(record, runtime, tier ?? DEFAULT_MODEL_TIER, "agent"),
           );
-          const isChoiceDisabled = disabled || !hasAgent;
+          const isChoiceDisabled = disabled || !hasTeammate;
 
           return (
             <button

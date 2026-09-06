@@ -4,25 +4,28 @@ Use this map to locate current responsibilities. Read the relevant [ADR](decisio
 
 ## Vocabulary
 
-| Term                           | Meaning                                                                                                                                             |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chat / Work                    | Personal conversation and collaborative workspace modes sharing one conversation runtime.                                                           |
-| Workspace                      | Membership and role boundary for collaborative work. Work requires its account entitlement as well as membership.                                   |
-| Project                        | Shared instructions, conversations, context, capabilities and tasks inside a workspace.                                                             |
-| Project Workbench              | Responsive presentation of a coding-enabled project conversation in Work; not a mode, route, runtime or persisted resource.                         |
-| Capability                     | An app, recipe, skill, connector, agent or tool. Configuration, enablement and authorisation are distinct.                                          |
-| Experience / app               | A rich workflow from `/capabilities`; an experience with an owning capability is presented as an app. `apps/*` instead means deployable workspaces. |
-| Scope                          | Personal or project ownership passed to shared components and services. Agents additionally support workspace ownership.                            |
-| Source / output                | Durable input / result. A project ID makes the resource collaborative; a conversation link adds provenance.                                         |
-| Provider connection            | A person's external authority. Work does not inherit another member's credentials.                                                                  |
-| Skill / agent                  | Loadable instructions / a saved persona with capability requests. Neither grants execution permission.                                              |
-| Task / flow                    | Durable project work with its own conversation and goal / ordered execution stages. Distinct from the internal `tasks` queue.                       |
-| Attention / inbox              | Current task state needing a person's awareness / its per-person read and dismissal projection. Neither grants task authority.                      |
-| Activity / audit               | User-visible execution history / immutable workspace governance history retained after deletion.                                                    |
-| Attention                      | Global, membership-filtered projection of actionable, active, failed and recent task or run state; not stored workflow state.                       |
-| Conversation organisation      | Per-user pin, unread and snooze state plus a single personal or project-scoped group per conversation; never access or execution authority.         |
-| Recipe schedule                | Repeatable recipe installation trigger whose occurrences run as tasks and produce attributable conversations.                                       |
-| Credit / reserve / reservation | Metered allowance / plan grace beyond the allowance / held estimate for work not yet settled.                                                       |
+| Term                           | Meaning                                                                                                                                                  |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chat / Work                    | Personal conversation and collaborative workspace modes sharing one conversation runtime.                                                                |
+| Workspace                      | Membership and role boundary for collaborative work. Work requires its account entitlement as well as membership.                                        |
+| Project                        | Shared instructions, conversations, context, capabilities and tasks inside a workspace.                                                                  |
+| Project Workbench              | Responsive presentation of a coding-enabled project conversation in Work; not a mode, route, runtime or persisted resource.                              |
+| Capability                     | An app, recipe, skill, connector, agent or tool. Configuration, enablement and authorisation are distinct.                                               |
+| Experience / App               | A rich workflow from `/capabilities`, shown to people as an App and opened through one scoped `AppRoute`. `apps/*` instead means deployable workspaces.  |
+| Place                          | A shared destination every sidebar links to under Search: Attention, Files and Teammates. Chat and Work stay the header toggle; places are not features. |
+| Files                          | The user-facing name for Sources (Given) and Outputs (Made) in one place, personally or per project. Records keep their own names.                       |
+| Poly / meta scope              | The per-user meta assistant: a `meta` conversation that only receives product-operating tools and re-authorises every reference it acts on.              |
+| Scope                          | Personal or project ownership passed to shared components and services. Agents additionally support workspace ownership.                                 |
+| Source / output                | Durable input / result. A project ID makes the resource collaborative; a conversation link adds provenance.                                              |
+| Provider connection            | A person's external authority. Work does not inherit another member's credentials.                                                                       |
+| Skill / agent                  | Loadable instructions / a saved persona with capability requests. Neither grants execution permission.                                                   |
+| Task / flow                    | Durable project work with its own conversation and goal / ordered execution stages. Distinct from the internal `tasks` queue.                            |
+| Attention / inbox              | Current task state needing a person's awareness / its per-person read and dismissal projection. Neither grants task authority.                           |
+| Activity / audit               | User-visible execution history / immutable workspace governance history retained after deletion.                                                         |
+| Attention                      | Global, membership-filtered projection of actionable, active, failed and recent task or run state; not stored workflow state.                            |
+| Conversation organisation      | Per-user pin, unread and snooze state plus a single personal or project-scoped group per conversation; never access or execution authority.              |
+| Recipe schedule                | Repeatable recipe installation trigger whose occurrences run as tasks and produce attributable conversations.                                            |
+| Credit / reserve / reservation | Metered allowance / plan grace beyond the allowance / held estimate for work not yet settled.                                                            |
 
 ## Deployables and shared packages
 
@@ -52,6 +55,7 @@ Paths below are relative to `apps/api/src`.
 | Model lineup and tiers                   | `packages/schemas/src/model-lineup.ts`; `lib/chat/policy/model-access.ts`, `project-model-tier.ts`, `system-models.ts` |
 | Media model defaults                     | `packages/schemas/src/model-defaults.ts` at repository root                                                            |
 | Tool catalogue / execution               | `services/functions/definitions/` / `services/functions/index.ts`                                                      |
+| Meta assistant scope and tools           | `lib/chat/policy/meta-assistant.ts`, `services/functions/meta.ts`, `lib/prompts/meta-assistant.ts`                     |
 | Skills and revisions                     | `services/skills/`, `AuthoredSkillRepository`; built-ins in `data-model/skills/`                                       |
 | Agent access and request assembly        | `services/agents/access.ts`, `services/agents/completion-request.ts`                                                   |
 | Project task dispatch and interaction    | `services/project-tasks/`, `ProjectTaskRepository`                                                                     |
@@ -97,6 +101,8 @@ Each project task is a stable plan and snapshots its selected saved flow before 
 Model and capability catalogue responses carry short-lived, versioned readiness facts with distinct ready, setup, unavailable and unknown states. They explain likely account, plan, credential and policy blockers but never authorise execution; model selection and capability execution re-check current server authority. Web and iOS preserve an invalid saved selection instead of substituting another model. A model change targets the next run, retains compatible attachments and stored conversation history, and clears model-specific response settings. Active runs and their approvals or questions block a change, incompatible attachments must be removed, and one-turn image generation with existing history requires a new conversation. Branches and multi-model responses remain the comparison mechanisms so alternatives keep separate model, run and usage identity. See [ADR 0062](decisions/0062-expire-readiness-and-make-model-handoffs-explicit.md).
 
 Managed tool selection starts small and activates eligible tools after discovery or skill loading. Project grants constrain that activation. Saved agents layer personas into the generated prompt and request tools/skills within the runner's scope. Project tasks use the same engine, with exact dispatch and run identity plus durable question, approval and stage-completion records.
+
+Multi-model deliberation runs on one shared, linear context. `lib/chat/panel.ts` drives both the council and second opinions: members speak one at a time, each reads the transcript of everything said before it, and a concluding turn reads the whole transcript and writes the result. Members never share a mutable scratchpad and never observe one another except through that transcript, so a turn's inputs stay reconstructible from the record. Routing can queue a later speaker but cannot rewrite what an earlier one said. A member's failure is logged and skipped rather than retried in place, and every turn's usage is attributed to the runner. Extend multi-teammate work the same way: give each participant the same readable context and merge the results, rather than letting participants write to shared state.
 
 ## Project Workbench boundary
 
@@ -197,6 +203,8 @@ Credit admission reads persisted plan allowances; missing allowances refuse work
 The API model catalogue separates **families**, shared **model definitions** and provider **offerings** under `apps/api/src/data-model/models/`. Each family has one JSON file containing its description, defaults and model definitions; each provider has one JSON definition. `lib/providers/models/catalogue-definition.mts` validates and resolves family → model → provider → offering precedence, and `catalogue.ts` supplies the catalogue and provider views. `scripts/sync-models-dev/` owns conversion, upstream metadata, explicit execution corrections and generated imports. Keep current public IDs and provider ordering stable; see [ADR 0069](decisions/0069-share-model-definitions-across-provider-offerings.md) and [catalogue operations](../operations/model-catalogue.md).
 
 ## Web boundaries
+
+`apps/app/src/layouts/ProductShell.tsx` renders every product route: the sidebar, the content column and the search, shortcut and Poly overlays, while `components/Core/ProductModeHeader.tsx` carries the Chat and Work toggle. `components/Sidebar/PlacesSidebarSection.tsx` supplies the Attention, Files and Teammates links to the Chat and standard sidebars and `WorkSidebarNav` takes the same hrefs; `components/Sidebar/SidebarFooter.tsx` hosts the Ask Poly button above settings. `lib/navigation/places.ts` owns place paths, active-place resolution and the product-mode check; `lib/conversation-route.ts` owns personal and project conversation paths, and `lib/files-route.ts` owns the Given and Made tabs. Legacy `completion_id` query links redirect to path form. `state/conversation-scope.tsx` lets a subtree run the shared `ConversationThread` against its own conversation id, which is how `components/MetaAssistant/MetaAssistantOverlay.tsx` hosts Poly over the open page; the thread, its manager and streaming hooks read the id through that scope rather than the store directly.
 
 `apps/app/src/lib/api/fetch-wrapper.ts` owns credentials, CSRF, timeouts and API error handling. React Query hooks own remote/local coordination and invalidation; the authenticated store owns hydrated user/settings state. `lib/local/local-chat-service.ts` owns local conversation persistence.
 

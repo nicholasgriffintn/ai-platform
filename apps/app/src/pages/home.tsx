@@ -6,7 +6,7 @@ export function meta() {
     {
       name: "description",
       content:
-        "Ask any model, keep every conversation, and bring your team into Work when a question becomes a project. One perch for chat, agents and shared projects.",
+        "Ask any model, keep every conversation, and bring your team into Work when a question becomes a project. One perch for chat, teammates and shared projects.",
     },
   ];
 }

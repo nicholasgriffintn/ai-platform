@@ -38,14 +38,15 @@ export const useCreateNote = (projectId?: string) => {
   });
 };
 
-export const useUpdateNote = (id: string, projectId?: string) => {
+export const useUpdateNote = (projectId?: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: NoteUpdateRequest) => updateNote({ id, ...data }, projectId),
-    onSuccess: (note) => {
+    mutationFn: ({ id, ...data }: NoteUpdateRequest & { id: string }) =>
+      updateNote({ id, ...data }, projectId),
+    onSuccess: (note, variables) => {
       void queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
-      queryClient.setQueryData(["note", projectId, id], note);
+      queryClient.setQueryData(["note", projectId, variables.id], note);
     },
   });
 };
@@ -96,7 +97,7 @@ export const useGenerateNotesFromMedia = (projectId?: string) => {
         | "training"
         | "lecture"
         | "interview"
-        | "podcast"
+        | "recording"
         | "webinar"
         | "tutorial"
         | "video_content"

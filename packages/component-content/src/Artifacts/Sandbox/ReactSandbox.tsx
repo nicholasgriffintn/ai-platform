@@ -10,8 +10,7 @@ export const removeDefaultExport = (
   modifiedInput: string;
   exportedName: string | null;
 } => {
-  const defaultExportWithDeclarationRegex =
-    /export\s+default\s+function\s+([A-Za-z0-9_]+)\s*\([^)]*\)\s*{[^}]*}/;
+  const defaultExportWithDeclarationRegex = /export\s+default\s+function\s+([A-Za-z0-9_]+)/;
 
   const defaultExportRegex = /export\s+default\s+([A-Za-z0-9_]+);?/;
 

@@ -1,7 +1,6 @@
 import type { IEnv } from "~/types";
 
 import { ActivityRepository } from "./ActivityRepository";
-import { AgentRepository } from "./AgentRepository";
 import { AnonymousUserRepository } from "./AnonymousUserRepository";
 import { ApiKeyRepository } from "./ApiKeyRepository";
 import { ArtificialAnalysisRepository } from "./ArtificialAnalysisRepository";
@@ -11,6 +10,7 @@ import { AuthChallengeRepository } from "./AuthChallengeRepository";
 import { AuthoredSkillRepository } from "./AuthoredSkillRepository";
 import { BaseRepository } from "./BaseRepository";
 import { CapabilityConfigurationRepository } from "./CapabilityConfigurationRepository";
+import { ChannelBindingRepository } from "./ChannelBindingRepository";
 import { ComposioConnectorSessionRepository } from "./ComposioConnectorSessionRepository";
 import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprovalRepository";
 import { ConversationOrganisationRepository } from "./ConversationOrganisationRepository";
@@ -19,6 +19,7 @@ import { ConversationRunRepository } from "./ConversationRunRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { GoalRepository } from "./GoalRepository";
 import { InfraCostDailyRepository } from "./InfraCostDailyRepository";
+import { MemoryDocumentRepository } from "./MemoryDocumentRepository";
 import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
 import { MobilePushRepository } from "./MobilePushRepository";
@@ -28,11 +29,14 @@ import { PlanRepository } from "./PlanRepository";
 import { ProjectTaskRepository } from "./ProjectTaskRepository";
 import { ProviderConnectionRepository } from "./ProviderConnectionRepository";
 import { RecipeComposioTriggerRepository } from "./RecipeComposioTriggerRepository";
+import { SavedMessageRepository } from "./SavedMessageRepository";
 import { SessionRepository } from "./SessionRepository";
-import { SharedAgentRepository } from "./SharedAgentRepository";
+import { SharedTeammateRepository } from "./SharedTeammateRepository";
 import { SourceRepository } from "./SourceRepository";
 import { TaskNotificationRepository } from "./TaskNotificationRepository";
 import { TaskRepository } from "./TaskRepository";
+import { TeammateFeedbackRepository } from "./TeammateFeedbackRepository";
+import { TeammateRepository } from "./TeammateRepository";
 import { TemplateRepository } from "./TemplateRepository";
 import { TrainingExampleRepository } from "./TrainingExampleRepository";
 import { UsageBalanceRepository } from "./UsageBalanceRepository";
@@ -45,7 +49,7 @@ import { WebAuthnRepository } from "./WebAuthnRepository";
 import { WorkspaceRepository } from "./WorkspaceRepository";
 
 export {
-  AgentRepository,
+  TeammateRepository,
   ActivityRepository,
   AttentionRepository,
   AnonymousUserRepository,
@@ -85,7 +89,7 @@ export {
   ProjectTaskRepository,
   ProviderConnectionRepository,
   RecipeComposioTriggerRepository,
-  SharedAgentRepository,
+  SharedTeammateRepository,
   SourceRepository,
   WorkspaceRepository,
 };
@@ -93,7 +97,7 @@ export {
 export class RepositoryManager {
   private activityRepo: ActivityRepository;
   private attentionRepo: AttentionRepository;
-  private agentRepo: AgentRepository;
+  private teammateRepo: TeammateRepository;
   private planRepo: PlanRepository;
   private projectTaskRepo: ProjectTaskRepository;
   private userRepo: UserRepository;
@@ -120,12 +124,16 @@ export class RepositoryManager {
   private artificialAnalysisRepo: ArtificialAnalysisRepository;
   private authChallengeRepo: AuthChallengeRepository;
   private authoredSkillRepo: AuthoredSkillRepository;
+  private channelBindingRepo: ChannelBindingRepository;
+  private teammateFeedbackRepo: TeammateFeedbackRepository;
+  private memoryDocumentRepo: MemoryDocumentRepository;
+  private savedMessageRepo: SavedMessageRepository;
   private auditRepo: AuditRepository;
   private oauthStateRepo: OAuthStateRepository;
   private outputRepo: OutputRepository;
   private providerConnectionRepo: ProviderConnectionRepository;
   private recipeComposioTriggerRepo: RecipeComposioTriggerRepository;
-  private sharedAgentRepo: SharedAgentRepository;
+  private sharedTeammateRepo: SharedTeammateRepository;
   private sourceRepo: SourceRepository;
   private taskRepo: TaskRepository;
   private taskNotificationRepo: TaskNotificationRepository;
@@ -137,7 +145,7 @@ export class RepositoryManager {
   constructor(env: IEnv) {
     this.activityRepo = new ActivityRepository(env);
     this.attentionRepo = new AttentionRepository(env);
-    this.agentRepo = new AgentRepository(env);
+    this.teammateRepo = new TeammateRepository(env);
     this.planRepo = new PlanRepository(env);
     this.projectTaskRepo = new ProjectTaskRepository(env);
     this.userRepo = new UserRepository(env);
@@ -164,12 +172,16 @@ export class RepositoryManager {
     this.artificialAnalysisRepo = new ArtificialAnalysisRepository(env);
     this.authChallengeRepo = new AuthChallengeRepository(env);
     this.authoredSkillRepo = new AuthoredSkillRepository(env);
+    this.channelBindingRepo = new ChannelBindingRepository(env);
+    this.teammateFeedbackRepo = new TeammateFeedbackRepository(env);
+    this.memoryDocumentRepo = new MemoryDocumentRepository(env);
+    this.savedMessageRepo = new SavedMessageRepository(env);
     this.auditRepo = new AuditRepository(env);
     this.oauthStateRepo = new OAuthStateRepository(env);
     this.outputRepo = new OutputRepository(env);
     this.providerConnectionRepo = new ProviderConnectionRepository(env);
     this.recipeComposioTriggerRepo = new RecipeComposioTriggerRepository(env);
-    this.sharedAgentRepo = new SharedAgentRepository(env);
+    this.sharedTeammateRepo = new SharedTeammateRepository(env);
     this.sourceRepo = new SourceRepository(env);
     this.taskRepo = new TaskRepository(env);
     this.taskNotificationRepo = new TaskNotificationRepository(env);
@@ -221,6 +233,22 @@ export class RepositoryManager {
 
   public get authoredSkills(): AuthoredSkillRepository {
     return this.authoredSkillRepo;
+  }
+
+  public get teammateFeedback(): TeammateFeedbackRepository {
+    return this.teammateFeedbackRepo;
+  }
+
+  public get channelBindings(): ChannelBindingRepository {
+    return this.channelBindingRepo;
+  }
+
+  public get memoryDocuments(): MemoryDocumentRepository {
+    return this.memoryDocumentRepo;
+  }
+
+  public get savedMessages(): SavedMessageRepository {
+    return this.savedMessageRepo;
   }
 
   public get audit(): AuditRepository {
@@ -323,12 +351,12 @@ export class RepositoryManager {
     return this.templateRepo;
   }
 
-  public get agents(): AgentRepository {
-    return this.agentRepo;
+  public get teammates(): TeammateRepository {
+    return this.teammateRepo;
   }
 
-  public get sharedAgents(): SharedAgentRepository {
-    return this.sharedAgentRepo;
+  public get sharedTeammates(): SharedTeammateRepository {
+    return this.sharedTeammateRepo;
   }
 
   public get sources(): SourceRepository {

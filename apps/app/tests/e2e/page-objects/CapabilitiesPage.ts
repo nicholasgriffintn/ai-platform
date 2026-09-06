@@ -3,7 +3,7 @@ import type { Locator, Page } from "@playwright/test";
 import { E2E_API_BASE_URL } from "../support/environment";
 import { BasePage } from "./BasePage";
 
-export interface AgentModelSettings {
+export interface TeammateModelSettings {
   temperature: string;
   maxSteps: string;
 }
@@ -17,8 +17,8 @@ export class CapabilitiesPage extends BasePage {
   }
 
   async open() {
-    await this.navigate("/chat/capabilities");
-    await this.page.getByRole("heading", { name: "Capabilities", level: 1 }).waitFor();
+    await this.navigate("/chat/teammates");
+    await this.page.getByRole("heading", { name: "Teammates & tools", level: 1 }).waitFor();
   }
 
   capabilityCard(name: string) {
@@ -34,7 +34,7 @@ export class CapabilitiesPage extends BasePage {
   async openAddMenuWithKeyboard() {
     await this.addMenu.focus();
     await this.addMenu.press("Enter");
-    await this.addMenuItem("New agent").waitFor();
+    await this.addMenuItem("New teammate").waitFor();
   }
 
   async moveAddMenuSelection() {
@@ -51,20 +51,20 @@ export class CapabilitiesPage extends BasePage {
 
   async closeAddMenuWithKeyboard() {
     await this.page.keyboard.press("Escape");
-    await this.addMenuItem("New agent").waitFor({ state: "hidden" });
+    await this.addMenuItem("New teammate").waitFor({ state: "hidden" });
   }
 
   async legacyTeamEndpointStatus() {
-    return (await this.page.request.get(`${E2E_API_BASE_URL}/agents/teams`)).status();
+    return (await this.page.request.get(`${E2E_API_BASE_URL}/teammates/teams`)).status();
   }
 
-  async startNewAgent() {
+  async startNewTeammate() {
     await this.clickElement(this.addMenu);
-    await this.clickElement(this.page.getByRole("menuitem", { name: /^New agent/ }));
-    await this.page.getByRole("heading", { name: "New agent", level: 1 }).waitFor();
+    await this.clickElement(this.page.getByRole("menuitem", { name: /^New teammate/ }));
+    await this.page.getByRole("heading", { name: "New teammate", level: 1 }).waitFor();
   }
 
-  async fillAgentEditor(settings: {
+  async fillTeammateEditor(settings: {
     name: string;
     description: string;
     systemPrompt: string;
@@ -87,42 +87,46 @@ export class CapabilitiesPage extends BasePage {
     await this.fillInput(this.page.getByLabel("Max steps", { exact: true }), settings.maxSteps);
   }
 
-  async createAgent() {
+  async createTeammate() {
     const created = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/agents"),
+        new URL(response.url()).pathname.endsWith("/teammates"),
     );
 
-    await this.clickElement(this.page.getByRole("button", { name: "Create agent", exact: true }));
+    await this.clickElement(
+      this.page.getByRole("button", { name: "Create teammate", exact: true }),
+    );
     const response = await created;
 
     if (!response.ok()) {
-      throw new Error(`Agent creation failed with ${response.status()}: ${await response.text()}`);
+      throw new Error(
+        `Teammate creation failed with ${response.status()}: ${await response.text()}`,
+      );
     }
 
-    await this.page.getByRole("button", { name: "Delete agent", exact: true }).waitFor();
+    await this.page.getByRole("button", { name: "Delete teammate", exact: true }).waitFor();
   }
 
-  async readAgentModelSettings(): Promise<AgentModelSettings> {
+  async readTeammateModelSettings(): Promise<TeammateModelSettings> {
     return {
       temperature: await this.page.getByLabel("Temperature", { exact: true }).inputValue(),
       maxSteps: await this.page.getByLabel("Max steps", { exact: true }).inputValue(),
     };
   }
 
-  async updateAgentDescription(description: string) {
+  async updateTeammateDescription(description: string) {
     const saved = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "PUT" && /\/agents\/[^/]+$/.test(response.url()),
+        response.request().method() === "PUT" && /\/teammates\/[^/]+$/.test(response.url()),
     );
 
     await this.fillInput(this.page.getByLabel("Description", { exact: true }), description);
-    await this.clickElement(this.page.getByRole("button", { name: "Save agent", exact: true }));
+    await this.clickElement(this.page.getByRole("button", { name: "Save teammate", exact: true }));
     const response = await saved;
 
     if (!response.ok()) {
-      throw new Error(`Agent update failed with ${response.status()}: ${await response.text()}`);
+      throw new Error(`Teammate update failed with ${response.status()}: ${await response.text()}`);
     }
   }
 
@@ -132,16 +136,20 @@ export class CapabilitiesPage extends BasePage {
     );
   }
 
-  async editAgentFromLibrary(name: string) {
+  async editTeammateFromLibrary(name: string) {
     await this.openCapabilityActions(name);
-    await this.clickElement(this.page.getByRole("menuitem", { name: "Edit agent", exact: true }));
-    await this.page.getByRole("button", { name: "Delete agent", exact: true }).waitFor();
+    await this.clickElement(
+      this.page.getByRole("menuitem", { name: "Edit teammate", exact: true }),
+    );
+    await this.page.getByRole("button", { name: "Delete teammate", exact: true }).waitFor();
   }
 
-  async deleteAgentFromLibrary(name: string) {
+  async deleteTeammateFromLibrary(name: string) {
     await this.openCapabilityActions(name);
-    await this.clickElement(this.page.getByRole("menuitem", { name: "Delete agent", exact: true }));
-    const confirmation = this.page.getByRole("dialog", { name: "Delete agent" });
+    await this.clickElement(
+      this.page.getByRole("menuitem", { name: "Delete teammate", exact: true }),
+    );
+    const confirmation = this.page.getByRole("dialog", { name: "Delete teammate" });
 
     await confirmation.getByRole("button", { name: "Delete", exact: true }).click();
     await confirmation.waitFor({ state: "hidden" });

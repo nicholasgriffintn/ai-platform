@@ -1,6 +1,8 @@
 import z from "zod/v4";
 
 export const SKILL_LOAD_TOOL_NAME = "load_skill";
+export const SKILL_SAVE_TOOL_NAME = "save_skill";
+export const SKILL_REVISE_TOOL_NAME = "propose_skill_revision";
 
 export const skillCategorySchema = z.enum([
   "Output",
@@ -106,6 +108,42 @@ export const authoredSkillInputSchema = z.object({
     .max(128 * 1024),
   resources: z.array(authoredSkillResourceSchema).max(32).optional(),
 });
+
+export const saveSkillInputSchema = z.object({
+  name: skillIdSchema.describe("Kebab-case name for the skill, which is how it is loaded later."),
+  description: z
+    .string()
+    .trim()
+    .min(1)
+    .max(1024)
+    .describe("One line saying when this skill should be used, read before the instructions are."),
+  instructions: z
+    .string()
+    .trim()
+    .min(1)
+    .max(64 * 1024)
+    .describe("The playbook itself, in Markdown, written for whoever runs it next."),
+});
+
+export type SaveSkillInput = z.infer<typeof saveSkillInputSchema>;
+
+export const proposeSkillRevisionInputSchema = z.object({
+  name: skillIdSchema.describe("The skill being corrected."),
+  instructions: z
+    .string()
+    .trim()
+    .min(1)
+    .max(64 * 1024)
+    .describe("The full corrected playbook, not a diff or a note about what changed."),
+  changeNote: z
+    .string()
+    .trim()
+    .min(1)
+    .max(500)
+    .describe("One line saying what was wrong and what you changed, for the person reviewing it."),
+});
+
+export type ProposeSkillRevisionInput = z.infer<typeof proposeSkillRevisionInputSchema>;
 
 export const authoredSkillChangeNoteSchema = z.string().trim().min(1).max(1024);
 

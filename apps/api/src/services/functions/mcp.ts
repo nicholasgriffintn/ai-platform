@@ -1,6 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
-import { parseMCPToolName, toMCPAgentKey } from "~/services/agents/mcp-client";
+import { parseMCPToolName, toMCPTeammateKey } from "~/services/teammates/mcp-client";
 import type { IFunctionResponse } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -67,15 +67,15 @@ async function disposeMCPClient(client: RegisteredMCPClient): Promise<void> {
 
 /**
  * Registration is scoped to the in-flight request so concurrent completions on
- * the same agent cannot resolve each other's live MCP sessions.
+ * the same teammate cannot resolve each other's live MCP sessions.
  */
 export const registerMCPClient = async (
   context: ServiceContext,
-  agentId: string,
+  teammateId: string,
   client: RegisteredMCPClient,
 ): Promise<void> => {
   const clients = ensureMCPClients(context);
-  const key = toMCPAgentKey(agentId);
+  const key = toMCPTeammateKey(teammateId);
   const previous = clients.get(key);
 
   clients.set(key, client);
@@ -123,12 +123,12 @@ export const handleMCPTool = async (
       throw new AssistantError(`Invalid MCP tool format: ${functionName}`, ErrorType.PARAMS_ERROR);
     }
 
-    const { shortAgentId } = mcpToolName;
-    const client = findMCPClients(request.context)?.get(shortAgentId);
+    const { shortTeammateId } = mcpToolName;
+    const client = findMCPClients(request.context)?.get(shortTeammateId);
 
     if (!client) {
       throw new AssistantError(
-        `MCP client not found for agent ${shortAgentId}`,
+        `MCP client not found for teammate ${shortTeammateId}`,
         ErrorType.PARAMS_ERROR,
       );
     }
@@ -137,7 +137,7 @@ export const handleMCPTool = async (
 
     if (!toolsResponse || !Object.keys(toolsResponse).length) {
       throw new AssistantError(
-        `No tools available for agent ${shortAgentId}`,
+        `No tools available for teammate ${shortTeammateId}`,
         ErrorType.EXTERNAL_API_ERROR,
       );
     }

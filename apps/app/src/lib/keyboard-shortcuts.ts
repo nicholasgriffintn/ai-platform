@@ -4,6 +4,7 @@ export type AppKeyboardShortcutId =
   | "toggle-sidebar"
   | "toggle-keyboard-shortcuts"
   | "toggle-local-only-mode"
+  | "toggle-meta-assistant"
   | "dictate"
   | "live";
 
@@ -56,6 +57,12 @@ const actionableShortcuts: Record<AppKeyboardShortcutId, AppKeyboardShortcut> = 
     keys: ["⌘/Ctrl", "L"],
     match: { key: "l", modifier: "primary" },
   },
+  "toggle-meta-assistant": {
+    id: "toggle-meta-assistant",
+    description: "Ask Poly",
+    keys: ["⌘/Ctrl", "J"],
+    match: { key: "j", modifier: "primary" },
+  },
   dictate: {
     id: "dictate",
     description: "Start or stop dictating",
@@ -105,6 +112,7 @@ export const APP_KEYBOARD_SHORTCUT_SECTIONS: AppKeyboardShortcutSection[] = [
       actionableShortcuts.search,
       actionableShortcuts["new-chat"],
       actionableShortcuts["toggle-sidebar"],
+      actionableShortcuts["toggle-meta-assistant"],
       actionableShortcuts["toggle-local-only-mode"],
       actionableShortcuts["toggle-keyboard-shortcuts"],
       { id: "close", description: "Close panels or stop generation", keys: ["Esc"] },

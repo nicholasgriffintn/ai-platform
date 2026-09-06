@@ -1,14 +1,11 @@
-import {
-  Button,
-  cn,
-  Link,
-  SidebarBackdrop,
-  useOverlayDismiss,
-} from "@ngriffin_uk/polychat-component-ui";
+import { cn, Link, SidebarBackdrop, useOverlayDismiss } from "@ngriffin_uk/polychat-component-ui";
 import { Home, Loader2, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { AccountNavigation, type AccountSection } from "./AccountNavigation";
+
+const accountSidebarRowClass =
+  "text-muted-foreground hover:text-foreground flex w-full items-center gap-2 rounded-lg p-2 text-left text-sm transition-colors";
 
 export interface AccountSidebarShellProps {
   sections: AccountSection[];
@@ -61,50 +58,34 @@ export function AccountSidebarShell({
             <div className="bg-surface border-border sticky top-0 z-10 w-full border-r border-b">
               {header}
             </div>
-            <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 pb-[50px]">
-              <ul className="space-y-1">
-                <li>
-                  <Link
-                    href={homeHref}
-                    className={cn(
-                      "block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out",
-                      "text-muted-foreground hover:text-foreground",
-                      "no-underline",
-                      "flex items-center",
-                    )}
-                  >
-                    <Home className="mr-2 h-5 w-5 flex-shrink-0" />
-                    <span>Back to Home</span>
-                  </Link>
-                </li>
-                <li>
-                  <AccountNavigation
-                    sections={sections}
-                    activeSectionId={activeSectionId}
-                    onSelect={(section) => onSelectSection(section.id)}
-                  />
-                </li>
-                {isAuthenticated && (
-                  <li className="mt-4">
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={onLogout}
-                      disabled={isLoggingOut}
-                      className="w-full"
-                      icon={
-                        isLoggingOut ? (
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin flex-shrink-0" />
-                        ) : (
-                          <LogOut className="mr-2 h-5 w-5 flex-shrink-0" />
-                        )
-                      }
-                    >
-                      <span>Logout</span>
-                    </Button>
-                  </li>
-                )}
-              </ul>
+            <nav className="flex flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden px-2 pt-2 pb-[50px]">
+              <Link href={homeHref} className={cn(accountSidebarRowClass, "no-underline")}>
+                <Home className="h-4 w-4 flex-shrink-0" />
+                <span className="min-w-0 flex-1 truncate">Back to Home</span>
+              </Link>
+              <AccountNavigation
+                sections={sections}
+                activeSectionId={activeSectionId}
+                onSelect={(section) => onSelectSection(section.id)}
+              />
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  disabled={isLoggingOut}
+                  className={cn(
+                    accountSidebarRowClass,
+                    "hover:text-failure mt-auto disabled:cursor-not-allowed disabled:opacity-50",
+                  )}
+                >
+                  {isLoggingOut ? (
+                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                  ) : (
+                    <LogOut className="h-4 w-4 flex-shrink-0" />
+                  )}
+                  <span className="min-w-0 flex-1 truncate">Logout</span>
+                </button>
+              )}
             </nav>
             <div className="border-border bg-surface sticky bottom-0 overflow-visible border-t border-r">
               {footer}

@@ -7,6 +7,7 @@ import type {
   ConversationType,
   MessageRole as SchemaMessageRole,
   MessagePart as SchemaMessagePart,
+  MetaAssistantRequest,
   RecipeConnectorProvider,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
@@ -192,6 +193,7 @@ export interface AssistantPersona {
 export interface IBody {
   completion_id: string;
   conversation_type?: ConversationType;
+  meta_assistant?: MetaAssistantRequest;
   input: ChatInput;
   attachments?: Attachment[];
   date: string;
@@ -208,6 +210,7 @@ export interface IBody {
   connector_approval_id?: string;
   tool_permissions_map?: Record<string, string[]>;
   require_approval_for?: ToolPermission[];
+  denied_tools?: string[];
   verbosity?: VerbosityLevel;
   role?: ChatRole;
   run_id?: string;
@@ -308,6 +311,8 @@ type InternalExecutionParams = {
   body?: Record<string, any>;
   // Tool permissions this turn must seek approval for.
   require_approval_for?: ToolPermission[];
+  // Tools this turn must refuse outright, whatever the mode allows.
+  denied_tools?: string[];
   // Permission policy can differ from the execution mode that controls the agent loop.
   tool_policy_mode?: AgentMode;
   // Internal Work-task runs use the stage policy instead of the interactive mode defaults.

@@ -1,4 +1,4 @@
-export * from "./agents";
+export * from "./teammates";
 export * from "./agent-modes";
 export * from "./analytics";
 export * from "./assistant-actions";
@@ -36,7 +36,7 @@ export {
   readAssistantActionRequestOptions,
 } from "./assistant-actions";
 export type {
-  AssistantActionAgentSource,
+  AssistantActionTeammateSource,
   AssistantActionCatalog,
   AssistantActionCatalogSources,
   AssistantActionContextPayload,
@@ -70,6 +70,9 @@ export * from "./chat";
 export * from "./chat-context";
 export * from "./chat-retries";
 export * from "./chat-runs";
+export * from "./automations";
+export * from "./channels";
+export * from "./documents";
 export * from "./chat-mode";
 export * from "./chat-stream";
 export * from "./capability-discovery";
@@ -79,9 +82,13 @@ export * from "./conversation-replacement";
 export * from "./conversation-organisation";
 export * from "./conversation-title";
 export * from "./council";
+export * from "./credit-bands";
 export * from "./cron";
 export * from "./goals";
 export * from "./internal-service-auth";
+export * from "./memory-documents";
+export * from "./saved-messages";
+export * from "./meta-assistant";
 export * from "./thread-operations";
 export * from "./edit";
 export * from "./embeddings";
@@ -109,6 +116,7 @@ export * from "./outputs";
 export * from "./ocr";
 export * from "./ocr-batch";
 export * from "./pets";
+export * from "./project-starters";
 export * from "./project-tasks";
 export * from "./provenance";
 export * from "./user-questions";
@@ -128,7 +136,8 @@ export * from "./sandbox-cache";
 export * from "./sandbox-services";
 export * from "./sandbox-preview";
 export * from "./search";
-export * from "./shared-agents";
+export * from "./shared-teammates";
+export * from "./teammate-roles";
 export * from "./shared";
 export * from "./sources";
 export * from "./stripe";
@@ -149,4 +158,4 @@ export * from "./research";
 export * from "./recipe-trigger-configuration";
 export * from "./strudel";
 
-export * from "./conversation-branches";
+export * from "./conversation-threads";

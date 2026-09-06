@@ -11,7 +11,7 @@ export default function ProjectToolPage() {
 
   return (
     <ToolRunner
-      backPath={`/work/${workspaceId}/projects/${projectId}/library`}
+      backPath={`/work/${workspaceId}/projects/${projectId}/teammates`}
       projectId={projectId}
       toolId={toolId}
     />

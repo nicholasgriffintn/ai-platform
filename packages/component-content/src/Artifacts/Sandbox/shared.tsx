@@ -14,14 +14,53 @@ const ARTIFACT_SANDBOX_CSP = [
   "navigate-to 'none'",
 ].join("; ");
 
+function findHeadTagEnd(documentContent: string): number {
+  const lowered = documentContent.toLowerCase();
+  let searchFrom = 0;
+
+  while (searchFrom < lowered.length) {
+    const start = lowered.indexOf("<head", searchFrom);
+
+    if (start === -1) {
+      return -1;
+    }
+
+    const afterName = start + "<head".length;
+    const next = lowered[afterName];
+
+    if (next === ">") {
+      return afterName + 1;
+    }
+
+    if (next !== undefined && /\s/u.test(next)) {
+      const close = lowered.indexOf(">", afterName);
+
+      if (close !== -1) {
+        return close + 1;
+      }
+
+      return -1;
+    }
+
+    searchFrom = afterName;
+  }
+
+  return -1;
+}
+
 export function hardenSandboxDocument(documentContent: string | null): string | undefined {
   if (!documentContent) {
     return undefined;
   }
 
   const policy = `<meta http-equiv="Content-Security-Policy" content="${ARTIFACT_SANDBOX_CSP}">`;
+  const headEnd = findHeadTagEnd(documentContent);
 
-  return documentContent.replace(/<head(\s[^>]*)?>/i, (head) => `${head}${policy}`);
+  if (headEnd === -1) {
+    return documentContent;
+  }
+
+  return `${documentContent.slice(0, headEnd)}${policy}${documentContent.slice(headEnd)}`;
 }
 
 export function LoadingIndicator() {

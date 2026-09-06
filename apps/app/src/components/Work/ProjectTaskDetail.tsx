@@ -8,9 +8,10 @@ import { toast } from "sonner";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { useProjectTask, useProjectTasks } from "~/hooks/useProjectTasks";
+import { getProjectConversationPath } from "~/lib/conversation-route";
 import { getErrorMessage } from "~/lib/errors";
 
-import { useProjectTaskAgents } from "./useProjectTaskAgents";
+import { useProjectTaskTeammates } from "./useProjectTaskTeammates";
 import { useWorkData } from "./WorkDataContext";
 
 export function ProjectTaskDetail({
@@ -25,7 +26,7 @@ export function ProjectTaskDetail({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const navigate = useNavigate();
   const { projectQuery, workspaceQuery } = useWorkData();
-  const agents = useProjectTaskAgents(projectQuery.data?.capabilities);
+  const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);
   const { tasks, flow, isLoading, error, start, accept, update, remove } =
     useProjectTasks(projectId);
   const detailQuery = useProjectTask(projectId, taskId);
@@ -106,10 +107,17 @@ export function ProjectTaskDetail({
           plan={plan}
           flow={flow}
           members={workspaceQuery.data?.members ?? []}
-          agents={agents}
+          teammates={teammates}
           blockedBy={tasks.filter((candidate) => task.dependsOnTaskIds.includes(candidate.id))}
           conversationHref={
-            task.conversationId ? `${basePath}/chat?completion_id=${task.conversationId}` : null
+            task.conversationId
+              ? getProjectConversationPath(workspaceId, projectId, task.conversationId)
+              : null
+          }
+          originConversationHref={
+            task.originConversationId
+              ? getProjectConversationPath(workspaceId, projectId, task.originConversationId)
+              : null
           }
           taskHref={(candidate) => `${basePath}/tasks/${candidate.id}`}
           runHref={(conversationId, runId) =>

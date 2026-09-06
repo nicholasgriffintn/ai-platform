@@ -24,7 +24,7 @@ import { summariseArticle, cleanupArticleSession } from "~/services/apps/article
 import { extractContent } from "~/services/apps/retrieval/content-extract";
 import {
   projectScopeQuerySchema,
-  requireProjectCapabilityAccess,
+  requireOptionalProjectCapabilityAccess,
 } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -59,14 +59,12 @@ addRoute(app, "get", "/", {
   middleware: [requirePlan("pro")],
   handler: async ({ query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-article-processor",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-article-processor",
+      );
 
       const response = await listArticles({
         context: serviceContext,
@@ -113,14 +111,12 @@ addRoute(app, "get", "/sources", {
   querySchema: projectScopeQuerySchema,
   middleware: [requirePlan("pro")],
   handler: async ({ query, raw, serviceContext, user }) => {
-    if (query.projectId) {
-      await requireProjectCapabilityAccess(
-        serviceContext,
-        query.projectId,
-        "app",
-        "featured-article-processor",
-      );
-    }
+    await requireOptionalProjectCapabilityAccess(
+      serviceContext,
+      query.projectId,
+      "app",
+      "featured-article-processor",
+    );
 
     const url = new URL(raw.req.url);
     const ids = url.searchParams.getAll("ids[]");
@@ -177,14 +173,12 @@ addRoute(app, "get", "/:id", {
   middleware: [requirePlan("pro")],
   handler: async ({ params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-article-processor",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-article-processor",
+      );
 
       const response = await getArticleDetails({
         context: serviceContext,
@@ -233,14 +227,12 @@ addRoute(app, "post", "/analyse", {
   middleware: [requirePlan("pro")],
   handler: async ({ body, query, raw, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-article-processor",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-article-processor",
+      );
 
       const completion_id = generateId();
       const newUrl = new URL(raw.req.url);
@@ -298,14 +290,12 @@ addRoute(app, "post", "/summarise", {
   middleware: [requirePlan("pro")],
   handler: async ({ body, query, raw, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-article-processor",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-article-processor",
+      );
 
       const completion_id = generateId();
       const newUrl = new URL(raw.req.url);
@@ -369,14 +359,12 @@ addRoute(app, "post", "/generate-report", {
   middleware: [requirePlan("pro")],
   handler: async ({ body, query, raw, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-article-processor",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-article-processor",
+      );
 
       const completion_id = generateId();
       const newUrl = new URL(raw.req.url);
@@ -432,14 +420,12 @@ addRoute(app, "post", "/prepare-rerun/:itemId", {
   middleware: [requirePlan("pro")],
   handler: async ({ params, query, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-article-processor",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-article-processor",
+      );
 
       await cleanupArticleSession(serviceContext, user.id, params.itemId, query.projectId);
 
@@ -492,14 +478,12 @@ addRoute(app, "post", "/extract-content", {
   middleware: [requirePlan("pro")],
   handler: async ({ body, query, raw, serviceContext, user }) => {
     try {
-      if (query.projectId) {
-        await requireProjectCapabilityAccess(
-          serviceContext,
-          query.projectId,
-          "app",
-          "featured-article-processor",
-        );
-      }
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-article-processor",
+      );
 
       const extractResult = await extractContent(
         {

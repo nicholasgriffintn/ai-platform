@@ -1,5 +1,5 @@
 import {
-  conversationBranchesResponseSchema,
+  conversationThreadsResponseSchema,
   cancelChatCompletionResponseSchema,
   compactChatCompletionResponseSchema,
   goalResponseSchema,
@@ -72,12 +72,12 @@ import { handleCancelChatCompletion } from "~/services/completions/cancelChatCom
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCompactChatCompletion } from "~/services/completions/compactChatCompletion";
-import { getConversationBranches } from "~/services/completions/conversationBranches";
 import {
   handleGetConversationGoal,
   handleSetConversationGoal,
   handleUpdateConversationGoal,
 } from "~/services/completions/conversationGoal";
+import { getConversationBranches } from "~/services/completions/conversationThreads";
 import { handleCountTokens } from "~/services/completions/countTokens";
 import { handleCreateApplyEditCompletions } from "~/services/completions/createApplyEditCompletions";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
@@ -513,13 +513,13 @@ addRoute(app, "post", "/runs/:run_id/cancel", {
     handleCancelChatRun(serviceContext, params.run_id, body),
 });
 
-addRoute(app, "get", "/completions/:completion_id/branches", {
+addRoute(app, "get", "/completions/:completion_id/threads", {
   auth: true,
   tags: ["chat"],
   summary: "List the authorised conversation branch family",
   paramSchema: getChatCompletionParamsSchema,
   responses: {
-    200: { description: "Conversation branches", schema: conversationBranchesResponseSchema },
+    200: { description: "Conversation threads", schema: conversationThreadsResponseSchema },
   },
   handler: ({ serviceContext, params }) =>
     getConversationBranches(serviceContext, params.completion_id),

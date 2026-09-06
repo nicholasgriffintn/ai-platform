@@ -44,7 +44,7 @@ interface ComposerActionMenuMobileProps {
   onAttachSource: (sourceId: string) => void;
   onSelectActionItem: (item: AssistantActionItem) => void;
   onUploadClick: () => void;
-  selectedAgentId?: string;
+  selectedTeammateId?: string;
   sourceScopeLabel: string;
   sources: SourceSummary[];
   tools?: ReactNode;
@@ -84,7 +84,7 @@ export function ComposerActionMenuMobile({
   onAttachSource,
   onSelectActionItem,
   onUploadClick,
-  selectedAgentId,
+  selectedTeammateId,
   sourceScopeLabel,
   sources,
   tools,
@@ -173,7 +173,7 @@ export function ComposerActionMenuMobile({
                 icon={<AssistantActionItemIcon item={item} />}
                 label={item.label}
                 description={describeAssistantActionItem(item)}
-                isActive={item.id === `agent:${selectedAgentId}`}
+                isActive={item.id === `teammate:${selectedTeammateId}`}
               />
             </OptionsMenuAction>
           ))
@@ -207,7 +207,8 @@ export function ComposerActionMenuMobile({
         />
       ) : null}
 
-      {(canUploadFiles || canAttachSources) && (groups.length > 0 || tools || autoPlayResponses) ? (
+      {(canUploadFiles || canAttachSources) &&
+      (groups.length > 0 || tools || (isLoadingActions && groups.length === 0)) ? (
         <OptionsMenuSeparator />
       ) : null}
 

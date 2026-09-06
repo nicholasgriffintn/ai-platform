@@ -25,7 +25,7 @@ export default defineConfig({
     "src/run-activity.ts",
     "src/textarea-selection-position.ts",
     "src/opinion.ts",
-    "src/branching.ts",
+    "src/threading.ts",
     "src/message-compaction-status.ts",
     "src/conversations.ts",
     "src/model-selection.ts",

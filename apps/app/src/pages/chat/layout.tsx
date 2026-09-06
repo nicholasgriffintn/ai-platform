@@ -1,15 +1,24 @@
 import { Outlet, useLocation, useParams } from "react-router";
 
-import { ChatPageShell } from "~/components/Chat/ChatPageShell";
+import { ChatSidebar } from "~/components/ChatSidebar";
+import { PageShell } from "~/components/Core/PageShell";
 
 export default function ChatLayout() {
   const { pathname } = useLocation();
   const { completionId } = useParams<"completionId">();
   const isConversation = pathname === "/chat" || Boolean(completionId);
 
+  if (isConversation) {
+    return <Outlet />;
+  }
+
   return (
-    <ChatPageShell isConversation={isConversation}>
-      <Outlet />
-    </ChatPageShell>
+    <PageShell title="Chat" sidebarContent={<ChatSidebar />} fullBleed displayNavBar={false}>
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+        <div data-header-scroll-source className="min-h-0 flex-1 overflow-y-auto">
+          <Outlet />
+        </div>
+      </div>
+    </PageShell>
   );
 }

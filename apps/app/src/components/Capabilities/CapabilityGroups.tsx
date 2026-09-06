@@ -51,7 +51,7 @@ interface CapabilityGroupsProps {
   toolConfigurationById: Map<string, Record<string, unknown>>;
   surface: CapabilitySurface;
   authoredSkillActions: AuthoredSkillActions;
-  agentActions: AgentCardActions;
+  teammateActions: TeammateCardActions;
 }
 
 export interface AuthoredSkillActions {
@@ -60,35 +60,35 @@ export interface AuthoredSkillActions {
   pendingSkillId?: string;
 }
 
-export interface AgentCardActions {
-  canManage: (agentId: string) => boolean;
-  canShare: (agentId: string) => boolean;
-  onDelete: (agentId: string, label: string) => void;
-  onEdit: (agentId: string) => void;
-  onShare: (agentId: string) => void;
-  pendingAgentId?: string;
+export interface TeammateCardActions {
+  canManage: (teammateId: string) => boolean;
+  canShare: (teammateId: string) => boolean;
+  onDelete: (teammateId: string, label: string) => void;
+  onEdit: (teammateId: string) => void;
+  onShare: (teammateId: string) => void;
+  pendingTeammateId?: string;
 }
 
 function resolveAuthoredCapability(
   item: AssistantActionItem,
   itemKind: ProjectCapabilityKind,
-  agentActions: AgentCardActions,
+  teammateActions: TeammateCardActions,
   authoredSkillActions: AuthoredSkillActions,
 ): AuthoredCapabilityCardState | undefined {
   const capabilityId = item.capability.id;
 
-  if (itemKind === "agent") {
-    if (!agentActions.canManage(capabilityId)) {
+  if (itemKind === "teammate") {
+    if (!teammateActions.canManage(capabilityId)) {
       return undefined;
     }
 
     return {
       canManage: true,
-      isDeleting: agentActions.pendingAgentId === capabilityId,
-      onDelete: () => agentActions.onDelete(capabilityId, item.label),
-      onEdit: () => agentActions.onEdit(capabilityId),
-      onShare: agentActions.canShare(capabilityId)
-        ? () => agentActions.onShare(capabilityId)
+      isDeleting: teammateActions.pendingTeammateId === capabilityId,
+      onDelete: () => teammateActions.onDelete(capabilityId, item.label),
+      onEdit: () => teammateActions.onEdit(capabilityId),
+      onShare: teammateActions.canShare(capabilityId)
+        ? () => teammateActions.onShare(capabilityId)
         : undefined,
     };
   }
@@ -122,7 +122,7 @@ export function CapabilityGroups({
   toolConfigurationById,
   surface,
   authoredSkillActions,
-  agentActions,
+  teammateActions,
 }: CapabilityGroupsProps) {
   const navigate = useNavigate();
 
@@ -233,7 +233,7 @@ export function CapabilityGroups({
                       authoredCapability={resolveAuthoredCapability(
                         item,
                         itemKind,
-                        agentActions,
+                        teammateActions,
                         authoredSkillActions,
                       )}
                       skill={

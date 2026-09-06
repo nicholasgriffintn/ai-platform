@@ -20,7 +20,7 @@ const QUERY_PARAM = "query";
 const ENABLED_TOOLS_PARAM = "enabled_tools";
 const RECIPE_ACTION_PARAM = "action";
 const RECIPE_ID_PARAM = "recipe";
-const AGENT_ID_PARAM = "agent";
+const TEAMMATE_ID_PARAM = "teammate";
 const ASSISTANT_ACTION_LAUNCH_PARAMS = [
   ACTION_CONTEXT_PARAM,
   LEGACY_RECIPE_CONTEXT_PARAM,
@@ -29,7 +29,7 @@ const ASSISTANT_ACTION_LAUNCH_PARAMS = [
   ENABLED_TOOLS_PARAM,
   RECIPE_ACTION_PARAM,
   RECIPE_ID_PARAM,
-  AGENT_ID_PARAM,
+  TEAMMATE_ID_PARAM,
 ] as const;
 
 export type RecipeManagementAction = "configure" | "schedule";
@@ -77,20 +77,40 @@ export function readRecipeConversationLaunchIntent(
   return { action, recipeId };
 }
 
-export function createAgentConversationActionPath(
+export function createTeammateConversationActionPath(
   conversationPath: string,
-  agentId: string,
+  teammateId: string,
 ): string {
   const [path, search = ""] = conversationPath.split("?");
   const params = new URLSearchParams(search);
 
-  params.set(AGENT_ID_PARAM, agentId);
+  params.set(TEAMMATE_ID_PARAM, teammateId);
 
   return `${path}?${params.toString()}`;
 }
 
-export function readAgentConversationLaunchIntent(search: string): string | undefined {
-  return new URLSearchParams(search).get(AGENT_ID_PARAM)?.trim() || undefined;
+export function createConversationLaunchPath(
+  conversationPath: string,
+  launch: { query?: string; teammateId?: string },
+): string {
+  const [path, search = ""] = conversationPath.split("?");
+  const params = new URLSearchParams(search);
+
+  if (launch.teammateId) {
+    params.set(TEAMMATE_ID_PARAM, launch.teammateId);
+  }
+
+  if (launch.query) {
+    params.set(QUERY_PARAM, launch.query);
+  }
+
+  const query = params.toString();
+
+  return query ? `${path}?${query}` : path;
+}
+
+export function readTeammateConversationLaunchIntent(search: string): string | undefined {
+  return new URLSearchParams(search).get(TEAMMATE_ID_PARAM)?.trim() || undefined;
 }
 
 type AppAssistantActionLaunchSource = Pick<

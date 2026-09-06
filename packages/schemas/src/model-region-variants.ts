@@ -12,7 +12,7 @@ const BEDROCK_REGION_LABELS = {
 } as const;
 const BEDROCK_REGION_ORDER = ["default", "global", "us", "eu", "jp", "au"] as const;
 const BEDROCK_REGION_PREFIX_REGEX = /^(global|us|eu|jp|au)\./;
-const REGION_SUFFIX_REGEX = /\s+\((Global|US|EU|JP|AU)\)$/i;
+const REGION_SUFFIX_REGEX = /\s\((Global|US|EU|JP|AU)\)$/i;
 const REGION_VENDOR_PREFIX_REGEX = /^(Global|US|EU|JP|AU)\s+Anthropic\s+/i;
 
 type BedrockRegionCode = keyof typeof BEDROCK_REGION_LABELS;

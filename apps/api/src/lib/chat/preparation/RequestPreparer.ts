@@ -1,5 +1,6 @@
 import type {
   ChatHostedToolSettings,
+  ConversationType,
   Goal,
   ModelConfigInfo,
   ModelConfigItem,
@@ -9,6 +10,11 @@ import type {
 
 import { mergeEnabledGoalToolNames } from "~/lib/chat/policy/goal-tools";
 import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/lib/chat/policy/memory";
+import {
+  getMetaAssistantToolNames,
+  type MetaAssistantScope,
+  resolveMetaAssistantScope,
+} from "~/lib/chat/policy/meta-assistant";
 import type { ConversationWriteFence } from "~/lib/conversation/write-fence";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
@@ -80,6 +86,7 @@ export interface PreparedRequest {
   messageWithContext: string;
   userSettings: any;
   currentMode: ChatMode;
+  conversationType?: ConversationType;
   isProUser: boolean;
   enabledTools: string[];
   activeGoal: Goal | null;
@@ -101,6 +108,7 @@ interface RequestScope {
   database: Database;
   repositories: RepositoryManager;
   projectContext: ProjectChatContext | null;
+  metaAssistant: MetaAssistantScope | null;
   memoryScope: MemoryScope;
   isProUser: boolean;
   platform: Platform;
@@ -123,16 +131,31 @@ export class RequestPreparer {
     const user = options.context?.user;
     const database = options.context?.database ?? new Database(this.env);
     const repositories = options.context?.repositories ?? database.repositories;
-    const projectContext = options.context
-      ? await resolveProjectChatContext(options.context, options)
+    const metaAssistant = options.context
+      ? await resolveMetaAssistantScope(options, repositories)
       : null;
+    const projectContext =
+      options.context && !metaAssistant
+        ? await resolveProjectChatContext(options.context, options)
+        : null;
+    const scopedOptions: CoreChatOptions = metaAssistant
+      ? {
+          ...options,
+          conversation_type: "meta",
+          store: true,
+          system_prompt: undefined,
+          persona: undefined,
+          metadata: undefined,
+        }
+      : { ...options, ...applyProjectCodingEnvironment(options, projectContext) };
 
     return {
-      options: { ...options, ...applyProjectCodingEnvironment(options, projectContext) },
+      options: scopedOptions,
       user,
       database,
       repositories,
       projectContext,
+      metaAssistant,
       memoryScope: projectContext
         ? { type: "project", projectId: projectContext.projectId }
         : { type: "personal" },
@@ -159,6 +182,10 @@ export class RequestPreparer {
   }
 
   private resolveRequestTools(scope: RequestScope) {
+    if (scope.metaAssistant) {
+      return getMetaAssistantToolNames();
+    }
+
     return resolveRequestFunctionToolNames({
       projectTools: scope.projectContext?.enabledTools,
       requestedToolNames: scope.options.enabled_tools,
@@ -283,7 +310,9 @@ export class RequestPreparer {
         connectedConnectorProvidersPromise,
       ]);
 
-    const memoryPolicy = resolveMemoryPolicy({ user, userSettings, store: scope.options.store });
+    const memoryPolicy = scope.metaAssistant
+      ? resolveMemoryPolicy({ user, userSettings, store: false })
+      : resolveMemoryPolicy({ user, userSettings, store: scope.options.store });
     const primaryModel = primaryModelConfig.matchingModel;
     const primaryProvider = primaryModelConfig.provider;
 
@@ -333,7 +362,8 @@ export class RequestPreparer {
       scopedSkillCatalogPromise,
     ]);
     const enabledTools = this.resolveRequestTools(scope);
-    const hasFixedToolScope = isRecipeExecutionRequest(scope.options);
+    const hasFixedToolScope =
+      isRecipeExecutionRequest(scope.options) || Boolean(scope.metaAssistant);
     const skills: readonly SkillAvailability[] = hasFixedToolScope
       ? []
       : await listSkillAvailability(
@@ -386,6 +416,7 @@ export class RequestPreparer {
       messageWithContext,
       userSettings,
       currentMode: mode,
+      conversationType: scope.options.conversation_type,
       isProUser: scope.isProUser,
       enabledTools: hasFixedToolScope
         ? [...(enabledTools ?? [])]

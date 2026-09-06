@@ -18,7 +18,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
   const { completionId } = useParams<"completionId">();
   const modeConfig = useConversationLaunchModeConfig(urlModeConfig, completionId);
 
-  useConversationRoute({ surface: "personal", pathConversationId: completionId });
+  useConversationRoute({ surface: { kind: "personal" }, pathConversationId: completionId });
 
   const user = useChatStore((state) => state.user);
   const userSettings = useChatStore((state) => state.userSettings);

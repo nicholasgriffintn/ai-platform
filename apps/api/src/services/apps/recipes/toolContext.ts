@@ -2,6 +2,7 @@ import {
   parseChatRequestOptions,
   readRecipeChatRequestOptions,
   type ConversationChannelRequestOptions,
+  type InboundChannelId,
 } from "@ngriffin_uk/polychat-schemas";
 
 export interface ActiveRecipeSetup {
@@ -53,7 +54,7 @@ export function getActiveRecipeSetup(options: unknown): ActiveRecipeSetup | unde
   };
 }
 
-export function getTriggerRecipeChannel(options: unknown): "sms" | "tool" {
+export function getTriggerRecipeChannel(options: unknown): InboundChannelId | "tool" {
   return parseChatRequestOptions(options)?.channel?.id ?? "tool";
 }
 

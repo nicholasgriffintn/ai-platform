@@ -5,9 +5,10 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import {
-  createAgentConversationActionPath,
+  createTeammateConversationActionPath,
   createRecipeManagementActionPath,
 } from "./assistant-action-launch";
+import { getPlacePaths } from "./navigation/places";
 
 /**
  * Where a set of capability surfaces lives. Work nests them under a project; Chat nests them
@@ -36,62 +37,57 @@ export interface EnabledCapability {
 
 export const PERSONAL_SURFACE: CapabilitySurface = { basePath: "/chat" };
 
+export interface AppProjectScope {
+  name?: string;
+  capabilities?: EnabledCapability[];
+  isLoading: boolean;
+  error?: Error | null;
+}
+
 export function getProjectSurface(workspaceId: string, projectId: string): CapabilitySurface {
   return { basePath: `/work/${workspaceId}/projects/${projectId}`, projectId, workspaceId };
 }
 
-export function getAgentEditorPath(surface: CapabilitySurface, agentId: string): string {
-  return `${surface.basePath}/agents/${agentId}`;
+export function getTeammateEditorPath(surface: CapabilitySurface, teammateId: string): string {
+  return `${surface.basePath}/teammates/${teammateId}`;
 }
 
 export function getConversationPath(surface: CapabilitySurface): string {
   return surface.projectId ? `${surface.basePath}/chat` : surface.basePath;
 }
 
-export function getExperiencesPath(surface: CapabilitySurface): string {
-  return `${surface.basePath}/experiences`;
-}
-
 export function getCapabilityLibraryPath(surface: CapabilitySurface): string {
-  return `${surface.basePath}/capabilities`;
+  return surface.projectId ? `${surface.basePath}/teammates` : getPlacePaths("chat").teammates;
 }
 
-export function getExperiencePath(
-  surface: CapabilitySurface,
-  experienceId: string,
-  suffix?: string,
-): string {
-  const base = `${getExperiencesPath(surface)}/${experienceId}`;
+export function getAppPath(surface: CapabilitySurface, appId: string, suffix?: string): string {
+  const base = `${surface.basePath}/apps/${appId}`;
 
   return suffix ? `${base}/${suffix.replace(/^\/+/, "")}` : base;
 }
 
-export interface ExperienceBackLink {
+export interface AppBackLink {
   to: string;
   label: string;
 }
 
-/**
- * Walk one level up rather than jumping straight back to the hub, so a pattern returns to its
- * list and a prediction returns to the prediction list.
- */
-export function getExperienceBackLink(
+export function getAppBackLink(
   surface: CapabilitySurface,
-  experienceId: string,
+  appId: string,
   subpath: string,
-  experienceName?: string,
-): ExperienceBackLink {
+  appName?: string,
+): AppBackLink {
   const segments = subpath.split("/").filter(Boolean);
 
   if (segments.length === 0) {
-    return { to: getExperiencesPath(surface), label: "Back to experiences" };
+    return { to: getCapabilityLibraryPath(surface), label: "Back to teammates" };
   }
 
   const parent = segments.slice(0, -1).join("/");
 
   return {
-    to: getExperiencePath(surface, experienceId, parent || undefined),
-    label: parent ? "Back" : `Back to ${experienceName ?? "list"}`,
+    to: getAppPath(surface, appId, parent || undefined),
+    label: parent ? "Back" : `Back to ${appName ?? "list"}`,
   };
 }
 
@@ -101,17 +97,17 @@ export function getToolRunPath(surface: CapabilitySurface, toolId: string): stri
 
 export function getAppOpenPath(
   surface: CapabilitySurface,
-  appId: string,
-  experiences: ProjectExperienceDefinition[],
+  capabilityId: string,
+  apps: ProjectExperienceDefinition[],
 ): string {
-  const experience = experiences.find(
+  const app = apps.find(
     (candidate) =>
       candidate.requirement.kind === "capability" &&
       candidate.requirement.capabilityKind === "app" &&
-      candidate.requirement.capabilityId === appId,
+      candidate.requirement.capabilityId === capabilityId,
   );
 
-  return experience ? getExperiencePath(surface, experience.id) : getExperiencesPath(surface);
+  return app ? getAppPath(surface, app.id) : getCapabilityLibraryPath(surface);
 }
 
 function capabilityEnablesExperience(
@@ -140,8 +136,8 @@ export function getCapabilityOpenPath(
     return null;
   }
 
-  if (item.kind === "agent") {
-    return createAgentConversationActionPath(getConversationPath(surface), item.capability.id);
+  if (item.kind === "teammate") {
+    return createTeammateConversationActionPath(getConversationPath(surface), item.capability.id);
   }
 
   if (item.kind === "recipe" || item.kind === "installed_recipe") {

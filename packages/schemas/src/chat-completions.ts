@@ -9,6 +9,7 @@ import {
 import { conversationChannelRequestOptionsSchema } from "./chat-mode";
 import { chatRunCommandIdSchema, chatRunCommandReceiptSchema, chatRunIdSchema } from "./chat-runs";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts";
+import { metaAssistantRequestSchema } from "./meta-assistant";
 import { modelTierSchema } from "./model-lineup";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { sandboxRequestOptionsSchema } from "./sandbox";
@@ -300,7 +301,7 @@ export const chatToolChoiceSchema = z.union([
   }),
 ]);
 
-const agentCompletionOptionsSchema = z.object({
+const teammateCompletionOptionsSchema = z.object({
   minToolCalls: z
     .number()
     .int()
@@ -336,7 +337,7 @@ export const chatRequestOptionsSchema = z
     connector: connectorChatRequestOptionsSchema
       .optional()
       .describe("The exact connector selected for this chat turn."),
-    agent: agentCompletionOptionsSchema
+    agent: teammateCompletionOptionsSchema
       .optional()
       .describe("Settings for agent mode, which enables multi-step reasoning and tool usage."),
     sandbox: sandboxRequestOptionsSchema
@@ -581,6 +582,11 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .describe("Idempotency key for accepting this user command."),
   run_id: chatRunIdSchema.optional().describe("Existing waiting run resumed by this command."),
   platform: z.string().min(1).optional().describe("Client platform sending the request."),
+  meta_assistant: metaAssistantRequestSchema
+    .optional()
+    .describe(
+      "Marks the request as the signed-in user's meta assistant conversation, which only receives product-operating tools, and carries the client's current UI context.",
+    ),
   options: chatRequestOptionsSchema
     .optional()
     .describe("Grouped feature settings that are not model generation controls."),

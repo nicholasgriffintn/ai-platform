@@ -8,7 +8,7 @@ import {
   loadAssistantActionRequestOptions,
   parseAssistantActionLaunchState,
   createRecipeAssistantActionLaunch,
-  readAgentConversationLaunchIntent,
+  readTeammateConversationLaunchIntent,
   readRecipeConversationLaunchIntent,
   removeConsumedAssistantActionLaunchParams,
 } from "~/lib/assistant-action-launch";
@@ -34,7 +34,7 @@ export function useConversationLaunchModeConfig(
     initializeStore,
     setChatInput,
     setChatMode,
-    setSelectedAgentId,
+    setSelectedTeammateId,
     startNewConversation,
   } = useChatStore();
   const { setSelectedTools } = useToolsStore();
@@ -50,7 +50,7 @@ export function useConversationLaunchModeConfig(
       const completionId = resolvePersonalConversationId(pathConversationId, location.search);
       const urlLaunch = parseAssistantActionLaunchState(location.search);
       const recipeIntent = readRecipeConversationLaunchIntent(location.search);
-      const launchAgentId = readAgentConversationLaunchIntent(location.search);
+      const launchTeammateId = readTeammateConversationLaunchIntent(location.search);
 
       if (!completionId) {
         clearCurrentConversation();
@@ -61,8 +61,8 @@ export function useConversationLaunchModeConfig(
         return;
       }
 
-      if (launchAgentId) {
-        setSelectedAgentId(launchAgentId);
+      if (launchTeammateId) {
+        setSelectedTeammateId(launchTeammateId);
         setChatMode("agent");
       }
 
@@ -113,7 +113,7 @@ export function useConversationLaunchModeConfig(
           recipeLaunch?.requestOptions ?? loadAssistantActionRequestOptions(urlLaunch),
       });
 
-      if (recipeLaunch || urlLaunch.autoSubmit || launchAgentId) {
+      if (recipeLaunch || urlLaunch.autoSubmit || launchTeammateId) {
         const query = removeConsumedAssistantActionLaunchParams(location.search);
         const historyState =
           window.history.state && typeof window.history.state === "object"
@@ -146,7 +146,7 @@ export function useConversationLaunchModeConfig(
     pathConversationId,
     setChatInput,
     setChatMode,
-    setSelectedAgentId,
+    setSelectedTeammateId,
     setSelectedTools,
     startNewConversation,
     invokeRecipe.mutateAsync,

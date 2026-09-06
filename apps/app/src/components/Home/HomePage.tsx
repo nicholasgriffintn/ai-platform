@@ -8,6 +8,7 @@ import { ChatSidebar } from "~/components/ChatSidebar";
 import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
+import { useComposerPrefill } from "~/hooks/useComposerPrefill";
 
 import { HomeConversationThread } from "./HomeConversationThread";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
@@ -16,6 +17,8 @@ export function HomePage() {
   const [isCanvasMode, setIsCanvasMode] = useState(false);
   const { modeConfig } = useHomeChatModeConfig();
   const canvas = useCanvasStudio({ enabled: isCanvasMode });
+
+  useComposerPrefill();
 
   return (
     <PageShell

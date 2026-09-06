@@ -49,10 +49,47 @@ function cleanPath(value: string): string {
   return unquoted.replace(/^[ab]\//, "");
 }
 
-function readDiffHeader(line: string): { oldPath: string; path: string } | null {
-  const match = /^diff --git a\/(.+?) b\/(.+)$/.exec(line);
+const DIFF_HEADER_PREFIX = "diff --git a/";
+const DIFF_HEADER_SEPARATOR = " b/";
 
-  return match ? { oldPath: cleanPath(match[1] ?? ""), path: cleanPath(match[2] ?? "") } : null;
+function readDiffHeader(line: string): { oldPath: string; path: string } | null {
+  if (!line.startsWith(DIFF_HEADER_PREFIX)) {
+    return null;
+  }
+
+  const rest = line.slice(DIFF_HEADER_PREFIX.length);
+  const separator = rest.indexOf(DIFF_HEADER_SEPARATOR, 1);
+
+  if (separator === -1 || separator + DIFF_HEADER_SEPARATOR.length >= rest.length) {
+    return null;
+  }
+
+  return {
+    oldPath: cleanPath(rest.slice(0, separator)),
+    path: cleanPath(rest.slice(separator + DIFF_HEADER_SEPARATOR.length)),
+  };
+}
+
+const TEST_SEGMENTS = new Set(["__tests__", "test", "tests", "spec", "specs"]);
+
+function basename(path: string): string {
+  return path.slice(path.lastIndexOf("/") + 1);
+}
+
+function isConfigurationPath(path: string): boolean {
+  const name = basename(path);
+
+  return name === "package.json" || name.includes("config");
+}
+
+function isTestPath(path: string): boolean {
+  const name = basename(path);
+
+  if (name.includes(".test.") || name.includes(".spec.")) {
+    return true;
+  }
+
+  return path.split("/").some((segment) => TEST_SEGMENTS.has(segment.split(".")[0] ?? segment));
 }
 
 function reviewPriority(file: DiffFile): number {
@@ -61,13 +98,13 @@ function reviewPriority(file: DiffFile): number {
   if (
     path.includes("/schema") ||
     path.startsWith("schema") ||
-    /(^|\/)(package\.json|[^/]*config[^/]*|[^/]*\.config\.[^/]+)$/.test(path) ||
+    isConfigurationPath(path) ||
     path.includes("migration")
   ) {
     return 0;
   }
 
-  if (/(^|\/)(__tests__|tests?|specs?)(\/|\.|$)|\.(test|spec)\.[^/]+$/.test(path)) {
+  if (isTestPath(path)) {
     return 2;
   }
 

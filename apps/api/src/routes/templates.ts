@@ -1,7 +1,9 @@
 import {
   createTemplateSchema,
+  instantiateProjectStarterSchema,
   instantiateProjectTemplateSchema,
   projectDetailSchema,
+  projectStarterListResponseSchema,
   templateListQuerySchema,
   templateListResponseSchema,
   templateSchema,
@@ -19,9 +21,33 @@ import {
   listTemplates,
   updateTemplate,
 } from "~/services/templates";
+import { instantiateProjectStarter, listProjectStarters } from "~/services/templates/starters";
 
 const app = new Hono();
 const params = z.object({ templateId: z.string().min(1) });
+const starterParams = z.object({ starterSlug: z.string().min(1) });
+
+addRoute(app, "get", "/starters", {
+  tags: ["templates"],
+  auth: true,
+  responses: { 200: { description: "Project starters", schema: projectStarterListResponseSchema } },
+  handler: async () => listProjectStarters(),
+});
+addRoute(app, "post", "/starters/:starterSlug/instantiate", {
+  tags: ["templates"],
+  auth: true,
+  paramSchema: starterParams,
+  bodySchema: instantiateProjectStarterSchema,
+  responses: { 200: { description: "Created project", schema: projectDetailSchema } },
+  handler: ({ body, params, serviceContext, user }) =>
+    instantiateProjectStarter(
+      serviceContext,
+      user.id,
+      params.starterSlug,
+      body.workspaceId,
+      body.name,
+    ),
+});
 
 addRoute(app, "get", "/", {
   tags: ["templates"],

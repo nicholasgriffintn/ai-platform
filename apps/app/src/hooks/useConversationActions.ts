@@ -1,8 +1,8 @@
-import {
-  createBranchConversation,
-  getBranchPoint,
-} from "@ngriffin_uk/polychat-library-chat/branching";
 import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
+import {
+  createConversationThread,
+  getThreadPoint,
+} from "@ngriffin_uk/polychat-library-chat/threading";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -11,7 +11,9 @@ import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { getComposerDraftAfterRetry } from "~/lib/chat/retry-composer";
 import { createConversationId } from "~/lib/conversations";
+import { useComposerDraft } from "~/state/composer-draft";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
+import { useConversationScope } from "~/state/conversation-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";
 
@@ -39,23 +41,17 @@ export function useConversationActions(
   requestOptions?: ChatRequestOptions,
 ) {
   const queryClient = useQueryClient();
-  const {
-    chatInput,
-    currentConversationId,
-    model,
-    isAuthenticated,
-    isPro,
-    setChatInput,
-    setCurrentConversationId,
-  } = useChatStore();
+  const { model, isAuthenticated, isPro } = useChatStore();
+  const { currentConversationId, setCurrentConversationId } = useConversationScope();
+  const { composerInput, setComposerInput } = useComposerDraft();
 
   const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
   const { startLoading, stopLoading } = useLoadingActions();
 
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [isBranching, setIsBranching] = useState(false);
+  const [isStartingThread, setIsStartingThread] = useState(false);
   const [isRequestingSecondOpinion, setIsRequestingSecondOpinion] = useState(false);
-  const branchInFlightRef = useRef(false);
+  const threadInFlightRef = useRef(false);
   const secondOpinionInFlightRef = useRef(false);
 
   const generateResponseWithLoading = useCallback(
@@ -107,7 +103,7 @@ export function useConversationActions(
         messagesToRetry = conversation.messages.slice(0, messageIndex + 1);
       }
 
-      setChatInput(getComposerDraftAfterRetry(chatInput, messagesToRetry));
+      setComposerInput(getComposerDraftAfterRetry(composerInput, messagesToRetry));
 
       try {
         await updateConversation(currentConversationId, (prev) => ({
@@ -130,8 +126,8 @@ export function useConversationActions(
       currentConversationId,
       updateConversation,
       generateResponseWithLoading,
-      chatInput,
-      setChatInput,
+      composerInput,
+      setComposerInput,
     ],
   );
 
@@ -200,9 +196,9 @@ export function useConversationActions(
     setEditingMessageId(null);
   }, []);
 
-  const branchConversation = useCallback(
+  const startConversationThread = useCallback(
     async (messageId: string, selectedModelId?: string) => {
-      if (branchInFlightRef.current) {
+      if (threadInFlightRef.current) {
         return;
       }
 
@@ -212,71 +208,71 @@ export function useConversationActions(
       ]);
 
       if (!conversation?.messages || !currentConversationId) {
-        toast.error("Unable to branch: conversation not found");
+        toast.error("Unable to start a thread: conversation not found");
 
         return;
       }
 
-      const branchPoint = getBranchPoint(conversation.messages, messageId);
+      const threadPoint = getThreadPoint(conversation.messages, messageId);
 
-      if (!branchPoint) {
-        toast.error("Unable to branch: message not found");
+      if (!threadPoint) {
+        toast.error("Unable to start a thread: message not found");
 
         return;
       }
 
       try {
-        branchInFlightRef.current = true;
-        setIsBranching(true);
+        threadInFlightRef.current = true;
+        setIsStartingThread(true);
 
         const newConversationId = createConversationId();
         const shouldStore = determineStorageMode().shouldSyncRemote;
-        let branchConversation = createBranchConversation({
+        let startConversationThread = createConversationThread({
           conversation,
           conversationId: newConversationId,
           isLocalOnly: !shouldStore,
-          messages: branchPoint.messages,
+          messages: threadPoint.messages,
           parentConversationId: currentConversationId,
           parentMessageId: messageId,
         });
 
         if (shouldStore) {
           const storedBranchConversation = await apiService.updateConversation(newConversationId, {
-            title: branchConversation.title,
-            messages: branchPoint.messages,
+            title: startConversationThread.title,
+            messages: threadPoint.messages,
             parent_conversation_id: currentConversationId,
             parent_message_id: messageId,
           });
 
-          branchConversation = {
-            ...branchConversation,
+          startConversationThread = {
+            ...startConversationThread,
             ...storedBranchConversation,
             id: storedBranchConversation.id || newConversationId,
             messages: storedBranchConversation.messages.length
               ? storedBranchConversation.messages
-              : branchPoint.messages,
+              : threadPoint.messages,
             parent_conversation_id: currentConversationId,
             parent_message_id: messageId,
             isLocalOnly: false,
           };
         }
 
-        await updateConversation(newConversationId, () => branchConversation);
+        await updateConversation(newConversationId, () => startConversationThread);
         queryClient.setQueryData<Conversation>(
           [CHATS_QUERY_KEY, currentConversationId],
           (parent) => (parent && shouldStore ? { ...parent, has_branches: true } : parent),
         );
         void queryClient.invalidateQueries({
-          queryKey: ["conversation-branches"],
+          queryKey: ["conversation-threads"],
           refetchType: "none",
         });
         setCurrentConversationId(newConversationId);
 
-        if (branchPoint.shouldGenerateResponse) {
+        if (threadPoint.shouldGenerateResponse) {
           const result = await generateResponseWithLoading(
-            branchConversation.messages,
+            startConversationThread.messages,
             newConversationId,
-            "Generating branched response...",
+            "Answering in the new thread...",
             undefined,
             {
               generateTitle: false,
@@ -285,20 +281,23 @@ export function useConversationActions(
           );
 
           if (result.status === "success" && result.message) {
-            generateTitle(newConversationId, branchConversation.messages, result.message).catch(
-              (err) =>
-                console.error("Background title generation failed for branched conversation:", err),
+            generateTitle(
+              newConversationId,
+              startConversationThread.messages,
+              result.message,
+            ).catch((err) =>
+              console.error("Background title generation failed for a new thread:", err),
             );
           }
         }
 
-        toast.success("Conversation branched successfully!");
+        toast.success("Thread started");
       } catch (error) {
-        console.error("Error branching conversation:", error);
-        toast.error("Failed to branch conversation");
+        console.error("Error starting a thread:", error);
+        toast.error("Unable to start a thread");
       } finally {
-        branchInFlightRef.current = false;
-        setIsBranching(false);
+        threadInFlightRef.current = false;
+        setIsStartingThread(false);
       }
     },
     [
@@ -392,13 +391,13 @@ export function useConversationActions(
 
   return {
     editingMessageId,
-    isBranching,
+    isStartingThread,
     isRequestingSecondOpinion,
     retryMessage,
     updateUserMessage,
     startEditingMessage,
     stopEditingMessage,
-    branchConversation,
+    startConversationThread,
     requestSecondOpinion,
   };
 }

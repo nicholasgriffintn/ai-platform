@@ -1,0 +1,130 @@
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { StorageService, type StoredSourceFileResult } from "~/lib/storage";
+import type { IEnv, IFunctionResponse, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
+import { sanitiseInput } from "~/utils/sanitise";
+
+export type UploadRequest = {
+  context?: ServiceContext;
+  env?: IEnv;
+  request: {
+    audio?: File;
+    audioUrl?: string;
+    title?: string;
+    description?: string;
+  };
+  user: IUser;
+  projectId?: string;
+};
+
+interface IRecordingUploadResponse extends IFunctionResponse {
+  completion_id?: string;
+}
+
+export const handleRecordingUpload = async (
+  req: UploadRequest,
+): Promise<IRecordingUploadResponse> => {
+  const { env, context, request, user, projectId } = req;
+
+  if (!user?.id) {
+    throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
+  }
+
+  const serviceContext = resolveServiceContext({ context, env, user });
+
+  serviceContext.ensureDatabase();
+  const repositories = serviceContext.repositories;
+  const recordingId = generateId();
+
+  const sanitisedTitle = sanitiseInput(request.title);
+  const sanitisedDescription = sanitiseInput(request.description);
+
+  if (!request.audioUrl) {
+    const recordingAudioKey = `recordings/${recordingId}/recording.mp3`;
+
+    if (!request.audio) {
+      throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
+    }
+
+    let storedAudio: StoredSourceFileResult;
+    let audioByteSize = 0;
+
+    try {
+      const arrayBuffer = await request.audio.arrayBuffer();
+
+      audioByteSize = arrayBuffer.byteLength;
+
+      storedAudio = await StorageService.forPrivateAssets(serviceContext).storeSourceFile({
+        key: recordingAudioKey,
+        data: arrayBuffer,
+        createdByUserId: user.id,
+        projectId,
+        title: sanitisedTitle || request.audio.name || "Recording recording",
+        mimeType: "audio/mpeg",
+        filename: "recording.mp3",
+        byteSize: audioByteSize,
+      });
+    } catch {
+      throw new AssistantError("Failed to upload recording", ErrorType.UNKNOWN_ERROR);
+    }
+
+    const appData = {
+      title: sanitisedTitle || "Untitled Recording",
+      description: sanitisedDescription,
+      audioSourceId: storedAudio.sourceId,
+      audioUrl: storedAudio.url,
+      audioKey: recordingAudioKey,
+      status: "ready",
+      createdAt: new Date().toISOString(),
+    };
+
+    const output = await repositories.outputs.createOutput({
+      createdByUserId: user.id,
+      projectId,
+      capabilityId: "recordings",
+      groupId: recordingId,
+      kind: "upload",
+      title: appData.title,
+      content: appData,
+      storageKey: recordingAudioKey,
+      mimeType: "audio/mpeg",
+      filename: "recording.mp3",
+      byteSize: audioByteSize,
+    });
+
+    await repositories.outputs.attachSources(output.id, [storedAudio.sourceId]);
+
+    return {
+      status: "success",
+      content: `Recording Upload: [Listen Here](${storedAudio.url})`,
+      completion_id: recordingId,
+      data: appData,
+    };
+  }
+
+  const appData = {
+    title: sanitisedTitle || "Untitled Recording",
+    description: sanitisedDescription,
+    audioUrl: request.audioUrl,
+    status: "ready",
+    createdAt: new Date().toISOString(),
+  };
+
+  await repositories.outputs.createOutput({
+    createdByUserId: user.id,
+    projectId,
+    capabilityId: "recordings",
+    groupId: recordingId,
+    kind: "upload",
+    title: appData.title,
+    content: appData,
+  });
+
+  return {
+    status: "success",
+    content: `Recording Upload: [Listen Here](${request.audioUrl})`,
+    completion_id: recordingId,
+    data: appData,
+  };
+};
