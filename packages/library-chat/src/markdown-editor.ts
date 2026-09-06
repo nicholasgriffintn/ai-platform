@@ -37,15 +37,33 @@ export function applyMarkdownEdit(
   }
 }
 
+const MAX_HEADING_LEVEL = 6;
+
+function countLeadingHashes(line: string): number {
+  let count = 0;
+
+  while (count < line.length && line[count] === "#") {
+    count += 1;
+  }
+
+  return count;
+}
+
 export function extractMarkdownOutline(content: string): MarkdownOutlineItem[] {
   return content.split("\n").flatMap((line, index) => {
-    const match = /^(#{1,6})\s+(.*)$/u.exec(line);
+    const level = countLeadingHashes(line);
 
-    if (!match) {
+    if (level === 0 || level > MAX_HEADING_LEVEL) {
       return [];
     }
 
-    const title = trimTrailingCharacter(match[2].trimEnd(), "#").trimEnd();
+    const rest = line.slice(level);
+
+    if (rest === rest.trimStart()) {
+      return [];
+    }
+
+    const title = trimTrailingCharacter(rest.trim(), "#").trimEnd();
 
     if (!title) {
       return [];
@@ -53,7 +71,7 @@ export function extractMarkdownOutline(content: string): MarkdownOutlineItem[] {
 
     return [
       {
-        level: match[1].length,
+        level,
         title,
         line: index + 1,
       },
