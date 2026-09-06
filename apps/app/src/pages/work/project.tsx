@@ -1,6 +1,6 @@
 import { useParams } from "react-router";
 
-import { ProjectOverview } from "~/components/Work/ProjectOverview";
+import { ProjectHome } from "~/components/Work/ProjectHome";
 
 export function meta() {
   return [{ title: "Project - Polychat" }];
@@ -9,5 +9,5 @@ export function meta() {
 export default function ProjectPage() {
   const { workspaceId = "", projectId = "" } = useParams();
 
-  return <ProjectOverview workspaceId={workspaceId} projectId={projectId} />;
+  return <ProjectHome workspaceId={workspaceId} projectId={projectId} />;
 }
