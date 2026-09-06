@@ -1,0 +1,81 @@
+name: Desktop
+
+on:
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - ".github/actions/desktop-rust/action.yml"
+      - ".github/workflows/desktop.yml"
+      - ".github/workflows/desktop-build.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: Core and renderer
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: "pnpm"
+
+      - name: Prepare the Rust toolchain
+        uses: ./.github/actions/desktop-rust
+        with:
+          components: clippy rustfmt
+          cache-key: core
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace packages
+        run: pnpm build:packages
+
+      - name: Typecheck the renderer
+        run: pnpm --filter @assistant/desktop typecheck
+
+      - name: Test the renderer
+        run: pnpm --filter @assistant/desktop test
+
+      - name: Build the renderer
+        run: pnpm --filter @assistant/desktop build
+
+      - name: Check Rust formatting
+        working-directory: apps/desktop/src-tauri
+        run: cargo fmt --check
+
+      - name: Lint the Rust core
+        working-directory: apps/desktop/src-tauri
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Test the Rust core
+        working-directory: apps/desktop/src-tauri
+        run: cargo test --all-features
+
+  bundle:
+    name: Bundle
+    needs: core
+    uses: ./.github/workflows/desktop-build.yml
+    secrets: inherit

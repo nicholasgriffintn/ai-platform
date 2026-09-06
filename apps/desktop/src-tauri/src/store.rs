@@ -571,10 +571,20 @@ mod tests {
         let store = store();
 
         store
-            .save_local_chat("user-1", "chat-1", "{\"id\":\"chat-1\"}", "2026-01-01T00:00:00Z")
+            .save_local_chat(
+                "user-1",
+                "chat-1",
+                "{\"id\":\"chat-1\"}",
+                "2026-01-01T00:00:00Z",
+            )
             .expect("saved");
         store
-            .save_local_chat("user-2", "chat-2", "{\"id\":\"chat-2\"}", "2026-01-02T00:00:00Z")
+            .save_local_chat(
+                "user-2",
+                "chat-2",
+                "{\"id\":\"chat-2\"}",
+                "2026-01-02T00:00:00Z",
+            )
             .expect("saved");
 
         assert_eq!(
@@ -593,10 +603,20 @@ mod tests {
         let store = store();
 
         store
-            .save_local_chat("user-1", "chat-1", "{\"title\":\"first\"}", "2026-01-01T00:00:00Z")
+            .save_local_chat(
+                "user-1",
+                "chat-1",
+                "{\"title\":\"first\"}",
+                "2026-01-01T00:00:00Z",
+            )
             .expect("saved");
         store
-            .save_local_chat("user-1", "chat-1", "{\"title\":\"second\"}", "2026-01-03T00:00:00Z")
+            .save_local_chat(
+                "user-1",
+                "chat-1",
+                "{\"title\":\"second\"}",
+                "2026-01-03T00:00:00Z",
+            )
             .expect("saved");
 
         assert_eq!(
@@ -604,7 +624,9 @@ mod tests {
             vec!["{\"title\":\"second\"}".to_string()]
         );
 
-        store.delete_local_chat("user-1", "chat-1").expect("deleted");
+        store
+            .delete_local_chat("user-1", "chat-1")
+            .expect("deleted");
 
         assert!(store.list_local_chats("user-1").expect("listed").is_empty());
     }

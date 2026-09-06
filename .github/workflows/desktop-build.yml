@@ -1,0 +1,171 @@
+name: Desktop build
+
+on:
+  workflow_call:
+    inputs:
+      retention-days:
+        description: How long to keep the packaged archives.
+        type: number
+        default: 7
+    secrets:
+      TAURI_SIGNING_PRIVATE_KEY:
+        description: Update-signing key. Without it the build produces installers but no update artefacts.
+        required: false
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD:
+        description: Passphrase for the update-signing key.
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    name: Bundle (${{ matrix.label }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: macos-universal
+            runner: macos-latest
+            rust-targets: aarch64-apple-darwin x86_64-apple-darwin
+            tauri-args: --target universal-apple-darwin --bundles app
+          - label: linux-x86_64
+            runner: ubuntu-latest
+            rust-targets: ""
+            tauri-args: --bundles appimage,deb
+          - label: windows-x86_64
+            runner: windows-latest
+            rust-targets: ""
+            tauri-args: --bundles nsis,msi
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            fuse3
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: "pnpm"
+
+      - name: Prepare the Rust toolchain
+        uses: ./.github/actions/desktop-rust
+        with:
+          targets: ${{ matrix.rust-targets }}
+          cache-key: ${{ matrix.label }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace packages
+        run: pnpm build:packages
+
+      - name: Decide whether updates can be signed
+        id: signing
+        shell: bash
+        env:
+          SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [ -n "$SIGNING_KEY" ]; then
+            echo "config=--config src-tauri/tauri.updater.conf.json" >> "$GITHUB_OUTPUT"
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "config=" >> "$GITHUB_OUTPUT"
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build the desktop bundle
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: >
+          pnpm --filter @assistant/desktop tauri build
+          ${{ matrix.tauri-args }}
+          ${{ steps.signing.outputs.config }}
+
+      - name: Package the bundle
+        shell: bash
+        env:
+          LABEL: ${{ matrix.label }}
+          SIGNED: ${{ steps.signing.outputs.enabled }}
+        run: |
+          set -euo pipefail
+
+          version="$(node -p "require('./apps/desktop/package.json').version")"
+          target="apps/desktop/src-tauri/target"
+          staging="build-staging"
+          output="dist-release"
+          name="polychat-desktop-${version}-${LABEL}"
+
+          mkdir -p "$staging" "$output"
+
+          copy_update_artefact() {
+            if [ "$SIGNED" != "true" ]; then
+              return
+            fi
+
+            cp "$1" "$output/$2"
+            cp "$1.sig" "$output/$2.sig"
+          }
+
+          case "$RUNNER_OS" in
+            macOS)
+              bundle="$target/universal-apple-darwin/release/bundle"
+              ditto -c -k --sequesterRsrc --keepParent \
+                "$bundle/macos/Polychat.app" "$output/$name.zip"
+              copy_update_artefact "$bundle/macos/Polychat.app.tar.gz" "$name.app.tar.gz"
+              ;;
+            Linux)
+              bundle="$target/release/bundle"
+              cp "$bundle"/appimage/*.AppImage "$staging"/
+              cp "$bundle"/deb/*.deb "$staging"/
+              (cd "$staging" && zip -r -j "../$output/$name.zip" .)
+              copy_update_artefact "$(ls "$bundle"/appimage/*.AppImage)" "$name.AppImage"
+              ;;
+            Windows)
+              bundle="$target/release/bundle"
+              cp "$bundle"/nsis/*-setup.exe "$staging"/
+              cp "$bundle"/msi/*.msi "$staging"/
+              (cd "$staging" && 7z a "../$output/$name.zip" ./*)
+              copy_update_artefact "$(ls "$bundle"/nsis/*-setup.exe)" "$name-setup.exe"
+              ;;
+          esac
+
+          ls -l "$output"
+
+      - name: Test the packaged window
+        if: runner.os == 'Linux'
+        continue-on-error: true
+        shell: bash
+        env:
+          POLYCHAT_DESKTOP_BINARY: ${{ github.workspace }}/apps/desktop/src-tauri/target/release/polychat-desktop
+          WEBKIT_DISABLE_COMPOSITING_MODE: "1"
+          WEBKIT_DISABLE_DMABUF_RENDERER: "1"
+        run: |
+          set -euo pipefail
+
+          sudo apt-get install --no-install-recommends --yes webkit2gtk-driver xvfb
+          cargo install tauri-driver --version "^2" --locked
+          timeout 10m xvfb-run --auto-servernum pnpm --filter @assistant/desktop test:e2e
+
+      - name: Upload the packaged bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-${{ matrix.label }}
+          path: dist-release/*
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}

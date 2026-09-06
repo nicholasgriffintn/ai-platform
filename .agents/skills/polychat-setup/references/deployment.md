@@ -11,4 +11,6 @@ Deployment and remote migrations require explicit authority. Keep preview and pr
 5. Confirm external callbacks, webhooks, origins, DNS and signing configuration. Follow the relevant connector, billing or training guide when those systems are enabled.
 6. Work through pending verification against the deployed product and preserve unchecked or failed items as [verification](verification.md) describes.
 
+Application releases are separate from Worker deployment: see [releases](operations/releases.md) for how changesets version and publish the web, iOS and desktop applications.
+
 Record deployed versions, resource names, domains, migrations and remaining external actions, never secret values. If the verification queue is empty despite intervening changes, reconstruct it from the deployment boundary before treating the release as checked.

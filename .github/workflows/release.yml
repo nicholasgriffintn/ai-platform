@@ -1,0 +1,139 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Version packages
+    runs-on: ubuntu-latest
+    outputs:
+      pending: ${{ steps.changesets.outputs.hasChangesets }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Open or update the version pull request
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset:version
+          title: "chore: version packages"
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+
+  plan:
+    name: Plan app releases
+    needs: version
+    if: needs.version.outputs.pending == 'false'
+    runs-on: ubuntu-latest
+    outputs:
+      any: ${{ steps.plan.outputs.any }}
+      desktop: ${{ steps.plan.outputs.desktop }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+
+      - name: Decide which applications release
+        id: plan
+        run: node scripts/app-releases.mjs
+
+  desktop:
+    name: Desktop
+    needs: plan
+    if: needs.plan.outputs.desktop == 'true'
+    uses: ./.github/workflows/desktop-build.yml
+    secrets: inherit
+    with:
+      retention-days: 30
+
+  publish:
+    name: Publish GitHub releases
+    needs: [plan, desktop]
+    if: |
+      always()
+      && needs.plan.result == 'success'
+      && needs.plan.outputs.any == 'true'
+      && needs.desktop.result != 'failure'
+      && needs.desktop.result != 'cancelled'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+
+      - name: Collect release notes
+        id: plan
+        run: node scripts/app-releases.mjs --notes-dir "$RUNNER_TEMP/release-notes"
+
+      - name: Download the desktop archives
+        if: needs.plan.outputs.desktop == 'true'
+        uses: actions/download-artifact@v7
+        with:
+          pattern: desktop-*
+          merge-multiple: true
+          path: dist-release
+
+      - name: Create the releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASES: ${{ steps.plan.outputs.releases }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          printf '%s' "$RELEASES" | jq -r '.[] | @base64' | while read -r encoded; do
+            entry="$(printf '%s' "$encoded" | base64 --decode)"
+            identifier="$(jq -r '.id' <<<"$entry")"
+            tag="$(jq -r '.tag' <<<"$entry")"
+            title="$(jq -r '.title + " " + .version' <<<"$entry")"
+            notes="$(jq -r '.notesFile' <<<"$entry")"
+
+            assets=()
+
+            if [ "$identifier" = "desktop" ]; then
+              for artefact in dist-release/*; do
+                assets+=("$artefact")
+              done
+            fi
+
+            gh release create "$tag" \
+              --title "$title" \
+              --notes-file "$notes" \
+              "${assets[@]}"
+          done

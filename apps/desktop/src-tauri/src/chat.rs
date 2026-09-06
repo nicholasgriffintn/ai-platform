@@ -209,7 +209,7 @@ mod tests {
         );
     }
 
-                #[test]
+    #[test]
     fn asks_each_vendor_at_its_own_path_with_its_own_output_limit() {
         let ollama = endpoint("ollama");
         let lmstudio = endpoint("lmstudio");

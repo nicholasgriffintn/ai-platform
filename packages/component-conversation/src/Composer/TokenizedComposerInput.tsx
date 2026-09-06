@@ -292,6 +292,29 @@ function setCursorAfterToken(element: HTMLElement, tokenId: string) {
   return true;
 }
 
+function scrollCaretIntoView(element: HTMLElement) {
+  const selection = window.getSelection();
+
+  if (!selection || selection.rangeCount === 0 || !element.contains(selection.anchorNode)) {
+    return;
+  }
+
+  const caret = selection.getRangeAt(0).getBoundingClientRect();
+  const view = element.getBoundingClientRect();
+
+  if (caret.height === 0 && caret.top === 0) {
+    element.scrollTop = element.scrollHeight;
+
+    return;
+  }
+
+  if (caret.bottom > view.bottom) {
+    element.scrollTop += caret.bottom - view.bottom;
+  } else if (caret.top < view.top) {
+    element.scrollTop -= view.top - caret.top;
+  }
+}
+
 function normaliseTokens(value: string, tokens: ComposerInputToken[]) {
   return [...tokens]
     .map((token) => ({
@@ -452,6 +475,7 @@ export const TokenizedComposerInput = forwardRef<
         }
 
         onCursorPositionChange(getCursorPosition(editable));
+        scrollCaretIntoView(editable);
       }
     }, [expectedTokenSignature, onCursorPositionChange, orderedTokens, value]);
 
@@ -480,6 +504,10 @@ export const TokenizedComposerInput = forwardRef<
       event.preventDefault();
       insertTextAtSelection(event.clipboardData.getData("text/plain"));
       emitCurrentState();
+
+      if (editableRef.current) {
+        scrollCaretIntoView(editableRef.current);
+      }
     };
 
     return (
@@ -511,7 +539,7 @@ export const TokenizedComposerInput = forwardRef<
           aria-disabled={disabled}
           contentEditable={!disabled}
           suppressContentEditableWarning
-          className="min-h-[36px] w-full bg-transparent text-base leading-6 break-words whitespace-pre-wrap outline-none"
+          className="max-h-[min(18rem,40dvh)] min-h-[36px] w-full overflow-y-auto bg-transparent text-base leading-6 break-words whitespace-pre-wrap outline-none"
           onInput={(event) =>
             emitCurrentState(
               event.nativeEvent instanceof InputEvent && event.nativeEvent.isComposing,

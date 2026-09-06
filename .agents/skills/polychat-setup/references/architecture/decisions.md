@@ -52,6 +52,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0076: Give the desktop shell a core that owns egress](decisions/0076-desktop-core-owns-egress.md).
 - [0077: Separate model runtimes from agent runtimes](decisions/0077-separate-model-runtimes-from-agent-runtimes.md).
 - [0078: Share one connected navigation shell between web and desktop](decisions/0078-share-one-connected-navigation-shell.md).
+- [0078: Release applications from changesets and hand out builds through the API](decisions/0078-release-applications-from-changesets.md).
 
 ## Accepted designs awaiting implementation
 

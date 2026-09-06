@@ -14,6 +14,7 @@ export * from "./connectors";
 export * from "./conversation-organisation";
 export * from "./conversation-response";
 export * from "./conversation-threads";
+export * from "./desktop-downloads";
 export * from "./drawings";
 export * from "./fetch-wrapper";
 export * from "./global-search";

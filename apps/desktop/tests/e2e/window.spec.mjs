@@ -44,33 +44,22 @@ describe("the packaged window", { skip: !APPLICATION }, () => {
     driver?.kill();
   });
 
-  it("opens with both loopback runtimes listed", async () => {
-    const items = await browser.$$("main ul li");
-
-    assert.ok(items.length >= 2, "expected the seeded runtimes to be listed");
-
-    const text = await browser.$("main").getText();
-
-    assert.match(text, /Ollama/);
-    assert.match(text, /LM Studio/);
+  it("renders the packaged renderer rather than an empty window", async () => {
+    await browser.waitUntil(async () => (await browser.$("main").getText()).trim().length > 0, {
+      timeout: 15_000,
+      timeoutMsg: "the window never rendered any content",
+    });
   });
 
-  it("reports a runtime that is not running rather than pretending it is", async () => {
-    const check = await browser.$("main ul li button");
+  it("gates on sign-in with a control the packaged build can actually work", async () => {
+    const signIn = await browser.$("main button");
 
-    await check.click();
+    await signIn.waitForDisplayed({
+      timeout: 15_000,
+      timeoutMsg: "the welcome screen never offered a sign-in control",
+    });
 
-    await browser.waitUntil(
-      async () => /Not running|Ready/.test(await browser.$("main").getText()),
-      { timeout: 15_000, timeoutMsg: "readiness never resolved" },
-    );
-  });
-
-  it("offers sign-in while signed out and keeps device models usable", async () => {
-    const text = await browser.$("section").getText();
-
-    assert.match(text, /Not signed in|Signed in/);
-    assert.match(text, /Models on this device still work|Cloud models are available/);
+    assert.ok(await signIn.isEnabled(), "expected the sign-in control to be interactive");
   });
 
   it("refuses to reach a runtime directly from the window", async () => {
