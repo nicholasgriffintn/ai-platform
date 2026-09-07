@@ -11,6 +11,66 @@ export class ProjectTasksPage extends BasePage {
     await this.page.getByRole("heading", { name: "Work queue", exact: true }).waitFor();
   }
 
+  get emptyQueue() {
+    return this.page
+      .getByText("The queue is empty", { exact: true })
+      .locator("xpath=ancestor::div[1]");
+  }
+
+  get noMatches() {
+    return this.page
+      .getByText("No work matches", { exact: true })
+      .locator("xpath=ancestor::div[1]");
+  }
+
+  private pipelineDialog() {
+    return this.page.getByRole("dialog", { name: "Configure the teammate pipeline" });
+  }
+
+  private stageFieldValues(label: string) {
+    return this.pipelineDialog()
+      .getByLabel(label, { exact: true })
+      .evaluateAll((fields) =>
+        fields.map((field) => (field as HTMLInputElement | HTMLSelectElement).value),
+      );
+  }
+
+  stageNames() {
+    return this.stageFieldValues("Stage name");
+  }
+
+  stageModes() {
+    return this.stageFieldValues("Operating mode");
+  }
+
+  stageHandoffs() {
+    return this.stageFieldValues("When the goal completes");
+  }
+
+  suggestedPipelineButton() {
+    return this.pipelineDialog().getByRole("button", {
+      name: "Use suggested pipeline",
+      exact: true,
+    });
+  }
+
+  async useSuggestedPipeline() {
+    await this.suggestedPipelineButton().click();
+  }
+
+  async closePipeline() {
+    await this.page.keyboard.press("Escape");
+    await this.pipelineDialog().waitFor({ state: "hidden" });
+  }
+
+  async filterQueueTo(status: string) {
+    await this.page.getByLabel("Filter work by status", { exact: true }).selectOption(status);
+  }
+
+  async borderWidthOf(locator: import("@playwright/test").Locator) {
+    return locator.evaluate((element) => window.getComputedStyle(element).borderTopWidth);
+  }
+
   async createBacklogTask(objective: string) {
     await this.page.getByRole("button", { name: "Add a task", exact: true }).first().click();
     const dialog = this.page.getByRole("dialog", { name: "Add work to the teammate queue" });

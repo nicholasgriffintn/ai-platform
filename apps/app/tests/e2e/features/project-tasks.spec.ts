@@ -48,6 +48,47 @@ test.describe("Project task evidence", () => {
     await expect(page.getByRole("link", { name: objective, exact: true })).toHaveCount(0);
   });
 
+  test("keeps the empty queue flush in its card and starts a pipeline from the suggestion", async ({
+    page,
+    workPage,
+  }) => {
+    const tasks = new ProjectTasksPage(page);
+
+    await workPage.open();
+    await workPage.openWorkspace("Release Workspace");
+    await workPage.createProject(
+      "Release queue project",
+      "Validates the empty queue and the suggested pipeline.",
+      "Keep release answers concise.",
+    );
+    await tasks.openBoard();
+
+    await expect(tasks.emptyQueue).toBeVisible();
+    expect(await tasks.borderWidthOf(tasks.emptyQueue)).toBe("0px");
+
+    await tasks.configurePipeline();
+    await tasks.useSuggestedPipeline();
+    expect(await tasks.stageNames()).toEqual(["Research", "Plan", "Build", "Review"]);
+    expect(await tasks.stageModes()).toEqual(["explore", "plan", "build", "explore"]);
+    expect(await tasks.stageHandoffs()).toEqual([
+      "on_goal_complete",
+      "on_human_accept",
+      "on_goal_complete",
+      "on_human_accept",
+    ]);
+    await tasks.savePipeline();
+
+    await tasks.configurePipeline();
+    expect(await tasks.stageNames()).toEqual(["Research", "Plan", "Build", "Review"]);
+    await expect(tasks.suggestedPipelineButton()).toHaveCount(0);
+    await tasks.closePipeline();
+
+    await tasks.createBacklogTask("Filter this queued outcome out");
+    await tasks.filterQueueTo("done");
+    await expect(tasks.noMatches).toBeVisible();
+    expect(await tasks.borderWidthOf(tasks.noMatches)).toBe("0px");
+  });
+
   test("continues a queued task after its initiating page closes and recovers the exact waiting run", async ({
     page,
     workPage,
