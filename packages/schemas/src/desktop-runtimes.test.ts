@@ -51,7 +51,7 @@ describe("desktopEndpointSchema", () => {
     const result = desktopEndpointSchema.safeParse({
       ...base,
       kind: "agent",
-      vendor: "openclaw",
+      vendor: "codex",
       url: "http://10.0.0.4:18789",
       transport: "network",
     });
@@ -63,7 +63,7 @@ describe("desktopEndpointSchema", () => {
     const overHttps = desktopEndpointSchema.safeParse({
       ...base,
       kind: "agent",
-      vendor: "hermes",
+      vendor: "opencode",
       url: "https://nest.local:18789",
       transport: "network",
     });
@@ -71,7 +71,7 @@ describe("desktopEndpointSchema", () => {
     const withPairing = desktopEndpointSchema.safeParse({
       ...base,
       kind: "agent",
-      vendor: "hermes",
+      vendor: "opencode",
       url: "http://10.0.0.4:18789",
       transport: "network",
       pairingSecretStored: true,
@@ -85,7 +85,7 @@ describe("desktopEndpointSchema", () => {
     const result = desktopEndpointSchema.safeParse({
       ...base,
       kind: "agent",
-      vendor: "openclaw",
+      vendor: "codex",
       url: "http://127.0.0.1:18789",
       transport: "loopback",
     });

@@ -1,5 +1,10 @@
 import z from "zod/v4";
 
+import {
+  agentWorkspaceRequirementSchema,
+  permissionModeSchema,
+  providerCapabilitiesSchema,
+} from "./providers.js";
 import { decodeReadiness, readinessSchema } from "./readiness.js";
 import { reasoningEffortSchema } from "./reasoning.js";
 
@@ -122,10 +127,19 @@ export const modelServiceTierSchema = z.enum(["default", "fast"]);
 const modelStatusSchema = z.enum(["alpha", "beta", "deprecated"]);
 
 export const modelConfigItemSchema = z.object({
+  kind: z.enum(["model", "agent"]).default("model"),
   id: z.string().optional(),
   matchingModel: z.string(),
   name: z.string().optional(),
   provider: z.string(),
+  agent: z
+    .object({
+      capabilities: providerCapabilitiesSchema,
+      workspace: agentWorkspaceRequirementSchema,
+      permissionModes: z.array(permissionModeSchema),
+    })
+    .strict()
+    .optional(),
   family: z.string().optional(),
   status: modelStatusSchema.optional(),
   openWeights: z.boolean().optional(),
@@ -351,7 +365,7 @@ export type ModelStatus = z.infer<typeof modelStatusSchema>;
 export type ModelReasoningConfig = z.infer<typeof modelReasoningConfigSchema>;
 export type ModelVerbosityConfig = z.infer<typeof modelVerbosityConfigSchema>;
 export type ModelServiceTier = z.infer<typeof modelServiceTierSchema>;
-export type ModelConfigItem = z.infer<typeof modelConfigItemSchema>;
+export type ModelConfigItem = z.input<typeof modelConfigItemSchema>;
 export type ModelConfig = Record<string, ModelConfigItem>;
 export type ArtificialAnalysisScores = z.infer<typeof artificialAnalysisScoresSchema>;
 export type ArtificialAnalysisModel = z.infer<typeof artificialAnalysisModelSchema>;

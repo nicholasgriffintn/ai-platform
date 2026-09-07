@@ -16,7 +16,15 @@ export const MODEL_RUNTIME_VENDORS = ["ollama", "lmstudio", "llamacpp"] as const
 export const modelRuntimeVendorSchema = z.enum(MODEL_RUNTIME_VENDORS);
 export type ModelRuntimeVendor = z.infer<typeof modelRuntimeVendorSchema>;
 
-export const AGENT_RUNTIME_VENDORS = ["openclaw", "hermes"] as const;
+export const AGENT_RUNTIME_VENDORS = [
+  "claude-code",
+  "codex",
+  "cursor",
+  "grok",
+  "opencode",
+  "antigravity",
+  "polychat-sandbox",
+] as const;
 export const agentRuntimeVendorSchema = z.enum(AGENT_RUNTIME_VENDORS);
 export type AgentRuntimeVendor = z.infer<typeof agentRuntimeVendorSchema>;
 
