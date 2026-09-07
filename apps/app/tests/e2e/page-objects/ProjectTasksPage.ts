@@ -47,6 +47,10 @@ export class ProjectTasksPage extends BasePage {
     return this.stageFieldValues("When the goal completes");
   }
 
+  stageTeammates() {
+    return this.stageFieldValues("Teammate");
+  }
+
   suggestedPipelineButton() {
     return this.pipelineDialog().getByRole("button", {
       name: "Use suggested pipeline",

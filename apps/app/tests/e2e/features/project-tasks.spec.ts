@@ -70,6 +70,7 @@ test.describe("Project task evidence", () => {
     await tasks.useSuggestedPipeline();
     expect(await tasks.stageNames()).toEqual(["Research", "Plan", "Build", "Review"]);
     expect(await tasks.stageModes()).toEqual(["explore", "plan", "build", "explore"]);
+    expect(await tasks.stageTeammates()).toEqual(["", "", "", ""]);
     expect(await tasks.stageHandoffs()).toEqual([
       "on_goal_complete",
       "on_human_accept",
