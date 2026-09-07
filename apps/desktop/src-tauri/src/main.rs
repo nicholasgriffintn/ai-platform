@@ -36,11 +36,19 @@ const CANCEL_POLL: Duration = Duration::from_millis(200);
 const MAX_JSON_BODY: usize = 8 * 1024 * 1024;
 const BUILT_IN_APPROVED_AT: &str = "1970-01-01T00:00:00Z";
 const SESSION_SECRET: &str = "session-token";
+const DEFAULT_TOKEN_LIFETIME_SECONDS: u32 = 15 * 60;
 const API_BASE_URL: &str = match option_env!("POLYCHAT_API_BASE_URL") {
     Some(value) => value,
     None if cfg!(debug_assertions) => "http://localhost:8787",
     None => "https://api.polychat.app",
 };
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SessionToken {
+    token: String,
+    expires_in: u32,
+}
 
 #[derive(Serialize)]
 #[serde(tag = "status", rename_all = "camelCase")]
@@ -131,13 +139,13 @@ async fn stream_lines(
     registry: &RunRegistry,
     mut parse: impl FnMut(&str) -> StreamChunk,
     emit: &impl Fn(StreamEvent),
-) -> Result<&'static str, String> {
+) -> &'static str {
     let mut stream = response.bytes_stream();
     let mut reader = LineReader::default();
 
     loop {
         let Some(piece) = next_piece(&mut stream, run_id, registry).await else {
-            return Ok("cancelled");
+            return "cancelled";
         };
 
         let piece = match piece {
@@ -149,9 +157,9 @@ async fn stream_lines(
                     message: cause.to_string(),
                 });
 
-                return Ok("interrupted");
+                return "interrupted";
             }
-            None => return Ok("complete"),
+            None => return "complete",
         };
 
         reader.push(&piece);
@@ -163,7 +171,7 @@ async fn stream_lines(
                 message: "The runtime sent a single line too large to read.".to_string(),
             });
 
-            return Ok("interrupted");
+            return "interrupted";
         }
 
         while let Some(line) = reader.next_line() {
@@ -172,7 +180,7 @@ async fn stream_lines(
                     run_id: run_id.to_string(),
                     delta,
                 }),
-                StreamChunk::Done => return Ok("complete"),
+                StreamChunk::Done => return "complete",
                 StreamChunk::Ignored => {}
             }
         }
@@ -290,8 +298,8 @@ fn forget_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<(), S
 
 #[tauri::command]
 async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<Readiness, String> {
-    let target = match authorised_endpoint(&store, &endpoint_id) {
-        Ok((_, target)) => target,
+    let (endpoint, target) = match authorised_endpoint(&store, &endpoint_id) {
+        Ok(resolved) => resolved,
         Err(detail) => {
             return Ok(Readiness::Unreachable {
                 checked_at: timestamp(),
@@ -300,8 +308,10 @@ async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<
         }
     };
 
-    let client = match http_client(REQUEST_TIMEOUT) {
-        Ok(client) => client,
+    let request = http_client(REQUEST_TIMEOUT)
+        .and_then(|client| with_pairing(client.get(target), &endpoint));
+    let request = match request {
+        Ok(request) => request,
         Err(detail) => {
             return Ok(Readiness::Unreachable {
                 checked_at: timestamp(),
@@ -310,7 +320,7 @@ async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<
         }
     };
 
-    Ok(match client.get(target).send().await {
+    Ok(match request.send().await {
         Ok(response) if matches!(response.status().as_u16(), 401 | 403) => {
             Readiness::Unauthorised {
                 checked_at: timestamp(),
@@ -345,8 +355,7 @@ async fn discover_models(
         .join(discovery::models_path(&endpoint))
         .map_err(|cause| cause.to_string())?;
 
-    let response = http_client(DISCOVERY_TIMEOUT)?
-        .get(target)
+    let response = with_pairing(http_client(DISCOVERY_TIMEOUT)?.get(target), &endpoint)?
         .send()
         .await
         .map_err(|cause| cause.to_string())?;
@@ -420,7 +429,7 @@ fn delete_all_local_chats(scope: String, store: State<'_, Store>) -> Result<(), 
 }
 
 #[tauri::command]
-async fn access_token() -> Result<String, String> {
+async fn access_token() -> Result<SessionToken, String> {
     let Some(session) = secrets::read(SESSION_SECRET)? else {
         return Err("Sign in before using Polychat.".to_string());
     };
@@ -444,14 +453,30 @@ async fn access_token() -> Result<String, String> {
         return Err(sign_in_failure(status, &detail));
     }
 
-    response
+    let body = response
         .json::<serde_json::Value>()
         .await
-        .map_err(|cause| cause.to_string())?
-        .get("token")
-        .and_then(serde_json::Value::as_str)
-        .map(str::to_string)
-        .ok_or_else(|| "Polychat returned no access token.".to_string())
+        .map_err(|cause| cause.to_string())?;
+
+    read_session_token(&body).ok_or_else(|| "Polychat returned no access token.".to_string())
+}
+
+fn read_session_token(body: &serde_json::Value) -> Option<SessionToken> {
+    let token = body.get("token").and_then(serde_json::Value::as_str)?;
+
+    if token.is_empty() {
+        return None;
+    }
+
+    Some(SessionToken {
+        token: token.to_string(),
+        expires_in: body
+            .get("expires_in")
+            .and_then(serde_json::Value::as_u64)
+            .and_then(|seconds| u32::try_from(seconds).ok())
+            .filter(|seconds| *seconds > 0)
+            .unwrap_or(DEFAULT_TOKEN_LIFETIME_SECONDS),
+    })
 }
 
 #[tauri::command]
@@ -630,6 +655,12 @@ async fn start_agent_run(
         .join(&agents::prompt_path(&endpoint, &session_native_id))
         .map_err(|cause| cause.to_string())?;
     let host = executing_host(&endpoint);
+    let attempt = with_pairing(
+        streaming_client()?
+            .post(target)
+            .json(&agents::prompt_body(&prompt)),
+        &endpoint,
+    )?;
 
     let emit = |event: StreamEvent| {
         let _ = on_event.send(event);
@@ -643,15 +674,7 @@ async fn start_agent_run(
         at: timestamp(),
     });
 
-    let response = match with_pairing(
-        streaming_client()?
-            .post(target)
-            .json(&agents::prompt_body(&prompt)),
-        &endpoint,
-    )?
-    .send()
-    .await
-    {
+    let response = match attempt.send().await {
         Ok(response) => response,
         Err(cause) => {
             registry.forget(&run_id);
@@ -803,6 +826,12 @@ async fn start_model_run(
     let target = base
         .join(chat::chat_path(&endpoint))
         .map_err(|cause| cause.to_string())?;
+    let attempt = with_pairing(
+        streaming_client()?
+            .post(target)
+            .json(&chat::chat_body(&endpoint, &request)),
+        &endpoint,
+    )?;
 
     let emit = |event: StreamEvent| {
         let _ = on_event.send(event);
@@ -820,12 +849,7 @@ async fn start_model_run(
         state: "loading-model".to_string(),
     });
 
-    let response = match streaming_client()?
-        .post(target)
-        .json(&chat::chat_body(&endpoint, &request))
-        .send()
-        .await
-    {
+    let response = match attempt.send().await {
         Ok(response) => response,
         Err(cause) => {
             registry.forget(&run_id);
@@ -869,7 +893,7 @@ async fn start_model_run(
         |line| chat::parse_stream_line(&endpoint, line),
         &emit,
     )
-    .await?;
+    .await;
 
     registry.forget(&run_id);
     emit(StreamEvent::Finished {
@@ -929,6 +953,32 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reads_the_lifetime_the_api_reports_with_a_token() {
+        let token = read_session_token(&serde_json::json!({
+            "token": "jwt-value",
+            "expires_in": 900,
+            "token_type": "Bearer"
+        }))
+        .expect("a token");
+
+        assert_eq!(token.token, "jwt-value");
+        assert_eq!(token.expires_in, 900);
+    }
+
+    #[test]
+    fn falls_back_to_the_documented_lifetime_when_the_api_omits_one() {
+        let token = read_session_token(&serde_json::json!({ "token": "jwt-value" })).expect("token");
+
+        assert_eq!(token.expires_in, DEFAULT_TOKEN_LIFETIME_SECONDS);
+    }
+
+    #[test]
+    fn refuses_a_response_carrying_no_usable_token() {
+        assert!(read_session_token(&serde_json::json!({ "expires_in": 900 })).is_none());
+        assert!(read_session_token(&serde_json::json!({ "token": "" })).is_none());
+    }
 
     #[test]
     fn identifies_itself_to_the_api_as_a_desktop_client() {

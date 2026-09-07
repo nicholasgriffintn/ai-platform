@@ -5,6 +5,7 @@ import {
   internalNavigationPathSchema,
   isExternalHttpUrl,
   isInternalNavigationPath,
+  isSameOrigin,
 } from "./navigation";
 
 describe("navigation contracts", () => {
@@ -38,4 +39,22 @@ describe("navigation contracts", () => {
     "rejects unsafe external URL %s",
     (url) => expect(isExternalHttpUrl(url)).toBe(false),
   );
+});
+
+describe("isSameOrigin", () => {
+  it("reads two spellings of the same origin as one", () => {
+    expect(isSameOrigin("https://api.polychat.app", "https://api.polychat.app/")).toBe(true);
+    expect(isSameOrigin("http://localhost:8787/auth", " http://localhost:8787")).toBe(true);
+  });
+
+  it("separates origins that differ by scheme, host or port", () => {
+    expect(isSameOrigin("https://api.polychat.app", "http://api.polychat.app")).toBe(false);
+    expect(isSameOrigin("http://localhost:8787", "http://localhost:5173")).toBe(false);
+    expect(isSameOrigin("https://api.polychat.app", "https://staging.polychat.app")).toBe(false);
+  });
+
+  it("refuses a value that is not a URL rather than guessing", () => {
+    expect(isSameOrigin("", "https://api.polychat.app")).toBe(false);
+    expect(isSameOrigin("api.polychat.app", "https://api.polychat.app")).toBe(false);
+  });
 });
