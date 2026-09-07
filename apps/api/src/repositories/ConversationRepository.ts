@@ -3,8 +3,10 @@ import type {
   ConversationArchiveFilter,
   ConversationSortBy,
   ConversationType,
+  ListedConversationType,
   ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
+import { LISTED_CONVERSATION_TYPES } from "@ngriffin_uk/polychat-schemas";
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
@@ -13,6 +15,10 @@ import { escapeSqlLikePattern } from "~/utils/sql";
 import { BaseRepository } from "./BaseRepository";
 
 export type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
+
+const listedConversationTypesSql = LISTED_CONVERSATION_TYPES.map(
+  (type: ListedConversationType) => `'${type}'`,
+).join(", ");
 
 export interface GetUserConversationsOptions {
   archiveFilter?: ConversationArchiveFilter;
@@ -138,6 +144,7 @@ export class ConversationRepository extends BaseRepository {
       `WITH RECURSIVE scoped AS (
          SELECT id, parent_conversation_id FROM conversation
          WHERE project_id IS ? AND (? IS NOT NULL OR user_id = ?)
+           AND type IN (${listedConversationTypesSql})
        ), family(id, parent_conversation_id) AS (
          SELECT id, parent_conversation_id FROM scoped WHERE id = ?
          UNION
@@ -193,7 +200,7 @@ export class ConversationRepository extends BaseRepository {
     const whereClauses = [
       "c.user_id = ?",
       "c.project_id IS NULL",
-      "c.type != 'meta'",
+      `c.type IN (${listedConversationTypesSql})`,
       `NOT (
         COALESCE(datetime(state.snoozed_until) > datetime('now'), 0)
         OR (
@@ -360,7 +367,12 @@ export class ConversationRepository extends BaseRepository {
     options: SetConversationsArchivedOptions,
   ): Promise<number> {
     const { archived, query, updatedAfter } = options;
-    const whereClauses = ["user_id = ?", "project_id IS NULL", "type != 'meta'", "is_archived = ?"];
+    const whereClauses = [
+      "user_id = ?",
+      "project_id IS NULL",
+      `type IN (${listedConversationTypesSql})`,
+      "is_archived = ?",
+    ];
     const values: unknown[] = [archived ? 1 : 0, userId, archived ? 0 : 1];
 
     const trimmedQuery = query?.trim();
@@ -506,7 +518,7 @@ export class ConversationRepository extends BaseRepository {
 			 LEFT JOIN conversation_user_state state
          ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.is_archived = 0
-			   AND c.type != 'meta'
+			   AND c.type IN (${listedConversationTypesSql})
 			   AND (
 			     (c.project_id IS NULL AND c.user_id = ?)
 			     OR (

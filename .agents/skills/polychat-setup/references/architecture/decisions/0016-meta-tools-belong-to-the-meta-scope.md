@@ -14,6 +14,8 @@ The meta scope receives only the meta tool group and no world-facing tools, skil
 
 Meta conversations are excluded from personal conversation lists, global search and bulk archive. The web renders Poly through the shared `ConversationThread` inside a conversation scope, so the open page keeps its own conversation while the overlay runs another.
 
+Delegate conversations are also excluded from user-facing conversation lists, project lists and branch families. The listed conversation set is explicitly `chat` and `task`; global search may still surface delegate conversations when their parent context is useful.
+
 ## Consequences
 
 Poly cannot approve tool requests, run connectors or act for other members, by design. A second persisted conversation per person exists outside the visible lists. Tool availability is decided per request from the conversation type, so a client cannot opt a normal chat into meta tools by naming them in `enabled_tools`.

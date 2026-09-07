@@ -60,6 +60,7 @@ describe("ConversationRepository", () => {
     expect(result.conversations).toHaveLength(1);
     expect(calls[0]?.query).toContain("c.title LIKE ? ESCAPE '\\'");
     expect(calls[0]?.query).toContain("c.is_archived = 1");
+    expect(calls[0]?.query).toContain("c.type IN ('chat', 'task')");
     expect(calls[0]?.query).not.toContain("content LIKE");
     expect(calls[0]?.params).toEqual([123, 123, "%50\\%\\_plan%"]);
     expect(calls[1]?.query).toContain(
@@ -133,6 +134,7 @@ describe("ConversationRepository", () => {
     });
 
     expect(calls[0]?.query).toContain("project_id IS NULL");
+    expect(calls[0]?.query).toContain("type IN ('chat', 'task')");
     expect(calls[0]?.query).toContain("is_archived = ?");
     expect(calls[0]?.params).toEqual([1, 123, 0, "%50\\%\\_plan%", "2026-06-01T00:00:00.000Z"]);
   });

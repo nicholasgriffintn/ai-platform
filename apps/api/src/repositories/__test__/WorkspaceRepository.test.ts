@@ -3,6 +3,26 @@ import { describe, expect, it, vi } from "vitest";
 import { WorkspaceRepository } from "../WorkspaceRepository";
 
 describe("WorkspaceRepository", () => {
+  it("lists only user-facing project conversation types", async () => {
+    const calls: { params: unknown[]; query: string }[] = [];
+    const database = {
+      prepare: vi.fn((query: string) => ({
+        bind: (...params: unknown[]) => ({
+          all: vi.fn(async () => {
+            calls.push({ query, params });
+            return { results: [] };
+          }),
+        }),
+      })),
+    };
+    const repository = new WorkspaceRepository({ DB: database } as any);
+
+    await repository.listProjectConversations("project-1", 123);
+
+    expect(calls[0]?.query).toContain("c.type IN ('chat', 'task')");
+    expect(calls[0]?.params).toEqual([123, "project-1"]);
+  });
+
   it("uses ownership only for personal conversations and membership for project conversations", async () => {
     const calls: { params: unknown[]; query: string }[] = [];
     const database = {

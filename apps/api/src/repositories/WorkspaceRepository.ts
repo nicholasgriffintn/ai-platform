@@ -5,7 +5,10 @@ import type {
   ProjectCodingEnvironment,
   WorkspaceRole,
 } from "@ngriffin_uk/polychat-schemas";
-import { sandboxDeliveryPolicyCreatesCommit } from "@ngriffin_uk/polychat-schemas";
+import {
+  LISTED_CONVERSATION_TYPES,
+  sandboxDeliveryPolicyCreatesCommit,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { escapeSqlLikePattern } from "~/utils/sql";
@@ -13,6 +16,8 @@ import { escapeSqlLikePattern } from "~/utils/sql";
 import { BaseRepository } from "./BaseRepository";
 import { buildCapabilityConfigurationUpsert } from "./CapabilityConfigurationRepository";
 import { buildOwnedProjectCapabilityConfigurationUpsert } from "./projectCapabilityConfigurationStatements";
+
+const listedConversationTypesSql = LISTED_CONVERSATION_TYPES.map((type) => `'${type}'`).join(", ");
 
 export interface WorkspaceRow {
   id: string;
@@ -926,6 +931,7 @@ export class WorkspaceRepository extends BaseRepository {
 			 LEFT JOIN conversation_user_state state
          ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.project_id = ? AND c.is_archived = 0
+        AND c.type IN (${listedConversationTypesSql})
         AND NOT (
           COALESCE(datetime(state.snoozed_until) > datetime('now'), 0)
           OR (

@@ -118,7 +118,10 @@ export const conversationSortBySchema = z.enum(["updated", "created", "title"]);
 
 export const conversationActivityWindowSchema = z.enum(["all", "today", "week", "month"]);
 
-export const conversationTypeSchema = z.enum(["chat", "task", "meta"]);
+export const conversationTypeSchema = z.enum(["chat", "task", "meta", "delegate"]);
+
+export const LISTED_CONVERSATION_TYPES = ["chat", "task"] as const;
+export type ListedConversationType = (typeof LISTED_CONVERSATION_TYPES)[number];
 
 export type ConversationArchiveFilter = z.infer<typeof conversationArchiveFilterSchema>;
 export type ConversationSortBy = z.infer<typeof conversationSortBySchema>;

@@ -757,7 +757,7 @@ export const conversation = sqliteTable(
     user_id: integer()
       .notNull()
       .references(() => user.id),
-    type: text({ enum: ["chat", "task", "meta"] })
+    type: text({ enum: ["chat", "task", "meta", "delegate"] })
       .notNull()
       .default("chat"),
     title: text().default("New Conversation"),
