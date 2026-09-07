@@ -1,6 +1,9 @@
-import { PageShell, StandardSidebarContent } from "@ngriffin_uk/polychat-component-shell";
+import {
+  PageShell,
+  PublicAppsCatalogue,
+  StandardSidebarContent,
+} from "@ngriffin_uk/polychat-component-shell";
 
-import { PublicAppsCatalogue } from "~/components/Capabilities/PublicAppsCatalogue";
 export function meta() {
   return [
     { title: "Apps and teammates - Polychat" },

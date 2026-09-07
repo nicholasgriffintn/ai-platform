@@ -2,6 +2,7 @@ import {
   CapabilityDiscoveryList,
   RecipeConfigurationDialog,
 } from "@ngriffin_uk/polychat-component-capabilities";
+import { ConnectorSetupDialogs, useRecipeWorkflows } from "@ngriffin_uk/polychat-component-shell";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
@@ -20,9 +21,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { Plug } from "lucide-react";
-
-import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
-import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
 
 function getMissingConnectors(
   recipe: AssistantRecipe,
