@@ -130,8 +130,6 @@ export const ArtifactDocumentEditor = ({
       createArtifactSelectionAttachment({
         artifact,
         selectedText: selection.text,
-        selectionStart: selection.start,
-        selectionEnd: selection.end,
       }),
     );
     setSelection(null);

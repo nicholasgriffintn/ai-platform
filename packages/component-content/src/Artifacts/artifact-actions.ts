@@ -26,27 +26,24 @@ export function buildArtifactDownload(
 export function createArtifactSelectionAttachment({
   artifact,
   selectedText,
-  selectionStart,
-  selectionEnd,
 }: {
   artifact: ArtifactProps;
   selectedText: string;
-  selectionStart: number;
-  selectionEnd: number;
 }): AttachmentData {
   const title = artifact.title || artifact.identifier || "Artifact";
 
   return {
-    type: "artifact_selection",
+    type: "selection",
     name: `selection from ${title}`,
-    artifact: {
-      identifier: artifact.identifier,
-      type: artifact.type,
-      title: artifact.title,
+    selection: {
+      source: {
+        kind: "artifact",
+        identifier: artifact.identifier,
+        type: artifact.type,
+        ...(artifact.title ? { title: artifact.title } : {}),
+      },
+      selectedText: selectedText.trim(),
     },
-    selectedText: selectedText.trim(),
-    selectionStart,
-    selectionEnd,
   };
 }
 

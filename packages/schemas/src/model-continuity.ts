@@ -14,7 +14,7 @@ export const modelAttachmentTypeSchema = z.enum([
   "document",
   "audio",
   "markdown_document",
-  "artifact_selection",
+  "selection",
 ]);
 
 export const modelContinuityStateSchema = z.enum([

@@ -14,6 +14,7 @@ import {
 } from "./chat-runs.js";
 import { computeSiteSchema } from "./compute-sites.js";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
+import { chatMessageSelectionSchema } from "./message-selection.js";
 import { metaAssistantRequestSchema } from "./meta-assistant.js";
 import { modelTierSchema } from "./model-lineup.js";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
@@ -90,7 +91,7 @@ export const chatMessageContentPartSchema = z
         "tool_result",
         "document_url",
         "markdown_document",
-        "artifact_selection",
+        "selection",
       ])
       .describe("Content part type."),
     text: z.string().optional().describe("Text content for text parts."),
@@ -133,20 +134,8 @@ export const chatMessageContentPartSchema = z
       })
       .describe("Markdown payload for markdown_document parts.")
       .optional(),
-    artifact_selection: z
-      .object({
-        artifact: z
-          .object({
-            identifier: z.string().describe("Artifact identifier."),
-            type: z.string().describe("Artifact MIME or display type."),
-            title: z.string().optional().describe("Artifact title."),
-          })
-          .describe("Source artifact metadata."),
-        selectedText: z.string().min(1).describe("Selected artifact text."),
-        selectionStart: z.number().int().nonnegative().describe("Selection start offset."),
-        selectionEnd: z.number().int().nonnegative().describe("Selection end offset."),
-      })
-      .describe("Selected text from an artifact.")
+    selection: chatMessageSelectionSchema
+      .describe("Selected text from a message or artifact.")
       .optional(),
     image_url: z
       .object({
@@ -190,8 +179,8 @@ export const chatMessageContentPartSchema = z
         return !!part.markdown_document;
       }
 
-      if (part.type === "artifact_selection") {
-        return !!part.artifact_selection;
+      if (part.type === "selection") {
+        return !!part.selection;
       }
 
       return true;

@@ -50,7 +50,7 @@ Never wrap artifact content in triple backticks. The tag already delimits it.
 
 **Say what it is.** One sentence in chat naming what the artifact contains and what to do with it. Do not restate its contents; the user can read it. Do not narrate the act of creating it.
 
-**Handle selections.** When a user message contains `<artifact_selection>`, that is a highlighted passage from an existing artifact. Apply the change to that passage, leave the rest intact, and return the full artifact under the same identifier.
+**Handle selections.** When a user message contains `<selection>` with an artifact source, that is a highlighted passage from an existing artifact. Apply the change to that passage, leave the rest intact, and return the full artifact under the same identifier.
 
 **Complete beats clever.** A page whose script throws, a document with placeholder headings, or a program that references a file that was never created is worse than a smaller thing that works. Every artifact must stand on its own.
 

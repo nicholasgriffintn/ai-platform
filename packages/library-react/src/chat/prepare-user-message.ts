@@ -73,15 +73,10 @@ export function prepareUserMessage(
           name: attachment.name,
         },
       });
-    } else if (attachment.type === "artifact_selection" && attachment.selectedText) {
+    } else if (attachment.type === "selection" && attachment.selection.selectedText) {
       contentItems.push({
-        type: "artifact_selection",
-        artifact_selection: {
-          artifact: attachment.artifact,
-          selectedText: attachment.selectedText,
-          selectionStart: attachment.selectionStart,
-          selectionEnd: attachment.selectionEnd,
-        },
+        type: "selection",
+        selection: attachment.selection,
       });
     }
   }

@@ -40,6 +40,47 @@ describe("OpenAI Responses history formatting", () => {
     ]);
   });
 
+  it("expands a message selection as explicitly quoted input", () => {
+    expect(
+      MessageFormatter.formatOpenAIResponsesInput([
+        {
+          role: "user",
+          content: [
+            {
+              type: "selection",
+              selection: {
+                source: { kind: "message", messageId: "assistant-1", role: "assistant" },
+                selectedText: "A saved excerpt.",
+                comment: "Explain this.",
+              },
+            },
+          ],
+        },
+      ]),
+    ).toEqual([
+      {
+        type: "message",
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text: [
+              "<selection>",
+              '<source kind="message" message_id="assistant-1" role="assistant" />',
+              "<selected_text>",
+              "A saved excerpt.",
+              "</selected_text>",
+              "<comment>",
+              "Explain this.",
+              "</comment>",
+              "</selection>",
+            ].join("\n"),
+          },
+        ],
+      },
+    ]);
+  });
+
   it("preserves explicit prompt cache breakpoints on input content", () => {
     expect(
       MessageFormatter.formatOpenAIResponsesInput([

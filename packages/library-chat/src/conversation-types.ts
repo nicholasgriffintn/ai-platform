@@ -18,6 +18,7 @@ import type {
   ReasoningEffort,
   ThreadOperation,
   RunProvenance,
+  ChatMessageSelection,
 } from "@ngriffin_uk/polychat-schemas";
 
 export type ChatRole = SchemaMessageRole;
@@ -57,7 +58,7 @@ export interface MessageContent {
     | "artifact"
     | "document_url"
     | "markdown_document"
-    | "artifact_selection"
+    | "selection"
     | "thinking";
   source_id?: string;
   text?: string;
@@ -83,16 +84,7 @@ export interface MessageContent {
     markdown: string;
     name?: string;
   };
-  artifact_selection?: {
-    artifact: {
-      identifier: string;
-      type: string;
-      title?: string;
-    };
-    selectedText: string;
-    selectionStart: number;
-    selectionEnd: number;
-  };
+  selection?: ChatMessageSelection;
   artifact?: {
     identifier: string;
     type: string;

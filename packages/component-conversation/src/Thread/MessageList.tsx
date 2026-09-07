@@ -35,6 +35,7 @@ import {
   getAvailableModels,
   getModelByReference,
 } from "@ngriffin_uk/polychat-schemas";
+import type { ChatMessageSelection } from "@ngriffin_uk/polychat-schemas";
 import { Ghost, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { VList, type VListHandle } from "virtua";
@@ -66,6 +67,7 @@ interface MessageListProps {
   isStartingThread?: boolean;
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
+  onQuoteSelection?: (selection: ChatMessageSelection) => void;
   hideInlineUserQuestions?: boolean;
   retention?: ConversationRetention;
 }
@@ -92,6 +94,7 @@ export const MessageList = ({
   isStartingThread = false,
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
+  onQuoteSelection,
   hideInlineUserQuestions = false,
   retention = "kept",
 }: MessageListProps) => {
@@ -337,6 +340,7 @@ export const MessageList = ({
                           onRequestSecondOpinion={
                             canAccessProFeatures ? onRequestSecondOpinion : undefined
                           }
+                          onQuoteSelection={onQuoteSelection}
                           isRequestingSecondOpinion={isRequestingSecondOpinion}
                           isArchivedByCompaction={
                             latestCompactionMarkerIndex !== -1 &&

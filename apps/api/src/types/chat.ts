@@ -11,6 +11,7 @@ import type {
   MetaAssistantRequest,
   RecipeConnectorProvider,
   RunProvenance,
+  ChatMessageSelection,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -31,7 +32,7 @@ export type ContentType =
   | "thinking"
   | "document_url"
   | "markdown_document"
-  | "artifact_selection"
+  | "selection"
   | "file"
   | "tool_result";
 export type ChatRole = SchemaMessageRole;
@@ -68,16 +69,7 @@ export type MessageContent = {
     markdown: string;
     name?: string;
   };
-  artifact_selection?: {
-    artifact: {
-      identifier: string;
-      type: string;
-      title?: string;
-    };
-    selectedText: string;
-    selectionStart: number;
-    selectionEnd: number;
-  };
+  selection?: ChatMessageSelection;
   thinking?: string;
   signature?: string;
   image?: number[] | string;

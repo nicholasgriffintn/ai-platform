@@ -1,3 +1,4 @@
+import { chatMessageSelectionSchema } from "@ngriffin_uk/polychat-schemas";
 import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
 
 import { estimateMessageTokens } from "~/lib/messageTokens";
@@ -43,8 +44,12 @@ export class MessageFormatter {
         return content.content;
       }
 
-      if (content.type === "artifact_selection") {
-        return MessageFormatter.formatArtifactSelectionText(content as MessageContent);
+      if (content.type === "selection" && content.selection) {
+        const parsedSelection = chatMessageSelectionSchema.safeParse(content.selection);
+
+        return parsedSelection.success
+          ? MessageFormatter.formatSelectionText(parsedSelection.data)
+          : "";
       }
 
       return JSON.stringify(content);
@@ -363,25 +368,24 @@ export class MessageFormatter {
     };
   }
 
-  private static formatArtifactSelectionText(part: MessageContent): string {
-    const selection = part.artifact_selection;
-
-    if (!selection?.selectedText) {
-      return "";
+  private static formatSelectionText(selection: NonNullable<MessageContent["selection"]>): string {
+    if (!selection.source) {
+      return selection.selectedText;
     }
 
-    const title = selection.artifact.title
-      ? ` title="${escapeHtml(selection.artifact.title)}"`
-      : "";
+    const sourceAttributes =
+      selection.source.kind === "message"
+        ? `kind="message" message_id="${escapeHtml(selection.source.messageId)}" role="${selection.source.role}"${selection.source.runId ? ` run_id="${escapeHtml(selection.source.runId)}"` : ""}`
+        : `kind="artifact" identifier="${escapeHtml(selection.source.identifier)}" type="${escapeHtml(selection.source.type)}"${selection.source.title ? ` title="${escapeHtml(selection.source.title)}"` : ""}`;
 
     return [
-      "<artifact_selection>",
-      `<artifact identifier="${escapeHtml(selection.artifact.identifier)}" type="${escapeHtml(selection.artifact.type)}"${title} />`,
-      `<range start="${selection.selectionStart}" end="${selection.selectionEnd}" />`,
+      "<selection>",
+      `<source ${sourceAttributes} />`,
       "<selected_text>",
       selection.selectedText,
       "</selected_text>",
-      "</artifact_selection>",
+      ...(selection.comment ? ["<comment>", selection.comment, "</comment>"] : []),
+      "</selection>",
     ].join("\n");
   }
 
@@ -398,10 +402,10 @@ export class MessageFormatter {
       };
     }
 
-    if (item.type === "artifact_selection") {
+    if (item.type === "selection" && item.selection) {
       return {
         type: "text",
-        text: MessageFormatter.formatArtifactSelectionText(item),
+        text: MessageFormatter.formatSelectionText(item.selection),
       };
     }
 
@@ -442,10 +446,10 @@ export class MessageFormatter {
               };
             }
 
-            return item.type === "artifact_selection"
+            return item.type === "selection" && item.selection
               ? {
                   type: "text",
-                  text: MessageFormatter.formatArtifactSelectionText(item),
+                  text: MessageFormatter.formatSelectionText(item.selection),
                 }
               : item;
           });
@@ -470,12 +474,12 @@ export class MessageFormatter {
                 (item) =>
                   typeof item === "object" &&
                   "type" in item &&
-                  (item.type === "text" || item.type === "artifact_selection"),
+                  (item.type === "text" || (item.type === "selection" && item.selection)),
               )
               .map((item) =>
                 typeof item === "object" && "text" in item
                   ? item.text
-                  : MessageFormatter.formatArtifactSelectionText(item),
+                  : MessageFormatter.formatSelectionText(item.selection),
               )
               .join("\n"),
             image: MessageFormatter.getBase64FromUrl(imageItem.image_url.url),
@@ -487,12 +491,12 @@ export class MessageFormatter {
             (item) =>
               typeof item === "object" &&
               "type" in item &&
-              (item.type === "text" || item.type === "artifact_selection"),
+              (item.type === "text" || (item.type === "selection" && item.selection)),
           )
           .map((item) =>
             typeof item === "object" && "text" in item
               ? item.text
-              : MessageFormatter.formatArtifactSelectionText(item),
+              : MessageFormatter.formatSelectionText(item.selection),
           )
           .join("\n");
       }
@@ -507,10 +511,10 @@ export class MessageFormatter {
               item.type !== "thinking",
           )
           .map((item) =>
-            item.type === "artifact_selection"
+            item.type === "selection" && item.selection
               ? {
                   type: "text",
-                  text: MessageFormatter.formatArtifactSelectionText(item),
+                  text: MessageFormatter.formatSelectionText(item.selection),
                 }
               : item,
           );
@@ -919,8 +923,8 @@ export class MessageFormatter {
       return null;
     }
 
-    if (item.type === "artifact_selection") {
-      return { text: MessageFormatter.formatArtifactSelectionText(item) };
+    if (item.type === "selection" && item.selection) {
+      return { text: MessageFormatter.formatSelectionText(item.selection) };
     }
 
     if (item.type === "thinking") {
@@ -988,9 +992,9 @@ export class MessageFormatter {
       return null;
     }
 
-    if (item.type === "artifact_selection") {
+    if (item.type === "selection" && item.selection) {
       return MessageFormatter.createAnthropicTextBlock(
-        MessageFormatter.formatArtifactSelectionText(item),
+        MessageFormatter.formatSelectionText(item.selection),
       );
     }
 
@@ -1014,8 +1018,8 @@ export class MessageFormatter {
       return null;
     }
 
-    if (item.type === "artifact_selection") {
-      return { text: MessageFormatter.formatArtifactSelectionText(item) };
+    if (item.type === "selection" && item.selection) {
+      return { text: MessageFormatter.formatSelectionText(item.selection) };
     }
 
     if (item.type === "thinking") {

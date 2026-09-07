@@ -259,25 +259,30 @@ const renderDocumentContent = (
   );
 };
 
-const renderArtifactSelectionContent = (
-  selection: NonNullable<MessageContentType["artifact_selection"]>,
+const renderSelectionContent = (
+  selection: NonNullable<MessageContentType["selection"]>,
   index?: number,
 ): ReactNode => {
-  const title = selection.artifact.title || selection.artifact.identifier;
-  const byteCount = new Blob([selection.selectedText]).size;
+  const source =
+    selection.source.kind === "message"
+      ? "message"
+      : selection.source.title || selection.source.identifier;
 
   return (
     <div
-      key={`artifact-selection-${index ?? 0}`}
-      className="flex items-center gap-3 rounded-lg border border-border bg-surface p-3 text-sm shadow-sm"
+      key={`selection-${index ?? 0}`}
+      className="rounded-lg border border-border bg-surface p-3 text-sm shadow-sm"
     >
-      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-active-work/12 text-active-work">
-        <FileText className="h-4 w-4" aria-hidden="true" />
+      <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
+        <FileText className="h-4 w-4 text-active-work" aria-hidden="true" />
+        Quote from {source}
       </div>
-      <div className="min-w-0">
-        <div className="truncate font-medium text-foreground">selection from {title}</div>
-        <div className="text-xs text-muted-foreground">Text · {byteCount} B</div>
-      </div>
+      <blockquote className="border-l-2 border-active-work/40 pl-3 text-muted-foreground">
+        {selection.selectedText}
+      </blockquote>
+      {selection.comment ? (
+        <p className="mt-2 text-xs text-muted-foreground">{selection.comment}</p>
+      ) : null}
     </div>
   );
 };
@@ -593,8 +598,8 @@ export const MessageContent = memo((props: MessageContentProps) => {
                 );
               }
 
-              if (item.type === "artifact_selection" && item.artifact_selection) {
-                return renderArtifactSelectionContent(item.artifact_selection, i);
+              if (item.type === "selection" && item.selection) {
+                return renderSelectionContent(item.selection, i);
               }
 
               return null;

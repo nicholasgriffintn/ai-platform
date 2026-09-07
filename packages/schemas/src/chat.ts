@@ -28,6 +28,11 @@ export {
   parseChatRequestOptions,
   readRecipeChatRequestOptions,
 } from "./chat-completions.js";
+export {
+  chatMessageSelectionSchema,
+  chatMessageSelectionSourceSchema,
+} from "./message-selection.js";
+export type { ChatMessageSelection, ChatMessageSelectionSource } from "./message-selection.js";
 export type {
   ChatCompletionRequestBody,
   ChatCompletionResponseBody,

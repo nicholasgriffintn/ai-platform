@@ -10,7 +10,7 @@ import {
   isHiddenToolResultPart,
 } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
-import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import type { ChatMessageSelection, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { Target } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -19,6 +19,7 @@ import { EditableMessageContent } from "./EditableMessageContent.js";
 import { MessageActions } from "./MessageActions.js";
 import { MessageContent } from "./MessageContent.js";
 import { MessageProvenanceMark } from "./MessageProvenanceMark.js";
+import { MessageSelectionQuote } from "./MessageSelectionQuote.js";
 import { useResolvedToolCallIds } from "./ResolvedToolCalls.js";
 import { ToolMessage } from "./ToolMessage.js";
 
@@ -40,7 +41,7 @@ const hasRenderableContentItem = (
     (item.type === "audio_url" && Boolean(item.audio_url?.url)) ||
     (item.type === "input_audio" && Boolean(item.input_audio?.data)) ||
     (item.type === "artifact" && Boolean(item.artifact)) ||
-    (item.type === "artifact_selection" && Boolean(item.artifact_selection))
+    (item.type === "selection" && Boolean(item.selection))
   );
 };
 
@@ -125,6 +126,7 @@ export const ChatMessageView = ({
   copied,
   onCopy,
   onSubmitFeedback,
+  onQuoteSelection,
   renderModelSelector,
 }: {
   conversationId?: string;
@@ -159,6 +161,7 @@ export const ChatMessageView = ({
   copied: boolean;
   onCopy: (value: string) => void;
   onSubmitFeedback?: (value: 1 | -1) => Promise<void>;
+  onQuoteSelection?: (selection: ChatMessageSelection) => void;
   renderModelSelector: (args: {
     onModelSelect: (modelId: string) => void;
     onCancel: () => void;
@@ -266,6 +269,15 @@ export const ChatMessageView = ({
                   onCancel={onCancelEdit}
                   isUpdating={isRetrying}
                 />
+              ) : onQuoteSelection ? (
+                <MessageSelectionQuote message={message} onQuote={onQuoteSelection}>
+                  <MessageContent
+                    message={message}
+                    isGenerating={isGenerating}
+                    onArtifactOpen={onArtifactOpen}
+                    onToolInteraction={onToolInteraction}
+                  />
+                </MessageSelectionQuote>
               ) : (
                 <MessageContent
                   message={message}

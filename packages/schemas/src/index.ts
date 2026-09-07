@@ -98,6 +98,7 @@ export * from "./embeddings.js";
 export * from "./fim.js";
 export * from "./magicLink.js";
 export * from "./message-parts.js";
+export * from "./message-selection.js";
 export * from "./model-lineup.js";
 export * from "./article-reports.js";
 export * from "./chat-modes.js";

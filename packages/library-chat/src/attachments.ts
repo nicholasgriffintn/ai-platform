@@ -1,3 +1,5 @@
+import type { ChatMessageSelection } from "@ngriffin_uk/polychat-schemas";
+
 interface AttachmentReference {
   sourceId?: string;
 }
@@ -13,10 +15,7 @@ export type AttachmentData =
       markdown: string;
     } & AttachmentReference)
   | {
-      type: "artifact_selection";
+      type: "selection";
       name: string;
-      artifact: { identifier: string; type: string; title?: string };
-      selectedText: string;
-      selectionStart: number;
-      selectionEnd: number;
+      selection: ChatMessageSelection;
     };

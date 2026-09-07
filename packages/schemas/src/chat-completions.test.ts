@@ -145,7 +145,7 @@ describe("chat completions schema", () => {
     }
   });
 
-  it("accepts artifact selection message content parts", () => {
+  it("accepts artifact selection content through the selection contract", () => {
     expect(
       createChatCompletionsJsonSchema.parse({
         model: "gpt-5",
@@ -155,16 +155,15 @@ describe("chat completions schema", () => {
             content: [
               { type: "text", text: "Make this firmer" },
               {
-                type: "artifact_selection",
-                artifact_selection: {
-                  artifact: {
+                type: "selection",
+                selection: {
+                  source: {
+                    kind: "artifact",
                     identifier: "launch-plan",
                     type: "text/markdown",
                     title: "Launch plan",
                   },
                   selectedText: "This paragraph needs work.",
-                  selectionStart: 12,
-                  selectionEnd: 38,
                 },
               },
             ],
@@ -177,8 +176,9 @@ describe("chat completions schema", () => {
           content: [
             { type: "text" },
             {
-              type: "artifact_selection",
-              artifact_selection: {
+              type: "selection",
+              selection: {
+                source: { kind: "artifact", identifier: "launch-plan" },
                 selectedText: "This paragraph needs work.",
               },
             },
@@ -186,6 +186,68 @@ describe("chat completions schema", () => {
         },
       ],
     });
+  });
+
+  it("accepts message selection parts with an optional comment", () => {
+    expect(
+      createChatCompletionsJsonSchema.parse({
+        model: "gpt-5",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "selection",
+                selection: {
+                  source: {
+                    kind: "message",
+                    messageId: "assistant-1",
+                    role: "assistant",
+                    runId: "run_1",
+                  },
+                  selectedText: "This needs a citation.",
+                  comment: "Please verify this claim.",
+                },
+              },
+            ],
+          },
+        ],
+      }),
+    ).toMatchObject({
+      messages: [
+        {
+          content: [
+            {
+              type: "selection",
+              selection: {
+                source: { kind: "message", messageId: "assistant-1" },
+                selectedText: "This needs a citation.",
+                comment: "Please verify this claim.",
+              },
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("rejects the retired artifact selection content part", () => {
+    expect(
+      createChatCompletionsJsonSchema.safeParse({
+        model: "gpt-5",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "artifact_selection",
+                artifact_selection: { selectedText: "retired" },
+              },
+            ],
+          },
+        ],
+      }).success,
+    ).toBe(false);
   });
 
   it("accepts custom conversation mode and platform strings", () => {

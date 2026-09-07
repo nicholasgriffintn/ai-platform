@@ -108,7 +108,7 @@ function getAttachmentIconAndLabel(attachment: AttachmentData) {
     };
   }
 
-  if (attachment.type === "artifact_selection") {
+  if (attachment.type === "selection") {
     return {
       preview: <FileText className="h-3.5 w-3.5" aria-hidden="true" />,
       label: attachment.name,

@@ -62,8 +62,8 @@ type ChatRequestContent =
       markdown_document: NonNullable<MessageContent["markdown_document"]>;
     }
   | {
-      type: "artifact_selection";
-      artifact_selection: NonNullable<MessageContent["artifact_selection"]>;
+      type: "selection";
+      selection: NonNullable<MessageContent["selection"]>;
     };
 
 const chatRequestContentTypes = new Set([
@@ -72,7 +72,7 @@ const chatRequestContentTypes = new Set([
   "input_audio",
   "document_url",
   "markdown_document",
-  "artifact_selection",
+  "selection",
 ]);
 
 function serialiseCitationForConversationUpdate(citation: unknown): string | null {
@@ -259,10 +259,10 @@ function toChatRequestContentPart(part: MessageContent): ChatRequestContent | nu
     };
   }
 
-  if (part.type === "artifact_selection" && part.artifact_selection?.selectedText) {
+  if (part.type === "selection" && part.selection?.selectedText) {
     return {
-      type: "artifact_selection",
-      artifact_selection: part.artifact_selection,
+      type: "selection",
+      selection: part.selection,
     };
   }
 

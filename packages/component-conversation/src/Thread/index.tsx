@@ -48,6 +48,7 @@ import type {
   ConversationModeMetadata,
   PetConversationState,
   UserQuestionSet,
+  ChatMessageSelection,
   ModelSelectionChangeHandler,
   ModelSelectorScope,
 } from "@ngriffin_uk/polychat-schemas";
@@ -300,18 +301,30 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     setAutoPlayResponsesEnabled(!autoPlayResponsesEnabled);
   }, [autoPlayResponsesEnabled, stopPlayback]);
 
-  const handleAddArtifactSelectionToChat = useCallback(
+  const handleAddSelectionToChat = useCallback(
     (attachment: AttachmentData) => {
       setArtifactContextAttachments((currentAttachments) => [...currentAttachments, attachment]);
       chatInputRef.current?.focus();
 
-      trackFeatureUsage("add_artifact_selection_to_chat", {
+      trackFeatureUsage("add_selection_to_chat", {
         conversation_id: currentConversationId || "none",
         artifact_type: currentArtifact?.type || "unknown",
       });
     },
     [currentArtifact?.type, currentConversationId, trackFeatureUsage],
   );
+
+  const handleQuoteSelection = useCallback((selection: ChatMessageSelection) => {
+    setArtifactContextAttachments((currentAttachments) => [
+      ...currentAttachments,
+      {
+        type: "selection",
+        name: "Quoted response",
+        selection,
+      },
+    ]);
+    chatInputRef.current?.focus();
+  }, []);
 
   const handleRemoveArtifactContextAttachment = useCallback((indexToRemove: number) => {
     setArtifactContextAttachments((currentAttachments) =>
@@ -873,6 +886,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
             isStartingThread={isStartingThread}
             onRequestSecondOpinion={requestSecondOpinion}
             isRequestingSecondOpinion={isRequestingSecondOpinion}
+            onQuoteSelection={handleQuoteSelection}
           />
         </ConversationMessageColumn>
       )}
@@ -982,7 +996,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         artifact={currentArtifact}
         artifacts={currentArtifacts}
         onClose={handlePanelClose}
-        onAddSelectionToChat={handleAddArtifactSelectionToChat}
+        onAddSelectionToChat={handleAddSelectionToChat}
         isVisible={isPanelVisible}
         isCombined={isCombinedPanel}
       />

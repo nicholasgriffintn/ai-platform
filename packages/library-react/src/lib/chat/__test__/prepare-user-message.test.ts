@@ -74,16 +74,17 @@ describe("prepareUserMessage", () => {
       "Make this firmer",
       [
         {
-          type: "artifact_selection",
+          type: "selection",
           name: "selection from Launch plan",
-          artifact: {
-            identifier: "launch-plan",
-            type: "text/markdown",
-            title: "Launch plan",
+          selection: {
+            source: {
+              kind: "artifact",
+              identifier: "launch-plan",
+              type: "text/markdown",
+              title: "Launch plan",
+            },
+            selectedText: "This paragraph needs work.",
           },
-          selectedText: "This paragraph needs work.",
-          selectionStart: 12,
-          selectionEnd: 38,
         },
       ],
       "model-1",
@@ -92,16 +93,49 @@ describe("prepareUserMessage", () => {
     expect(message.content).toEqual([
       { type: "text", text: "Make this firmer" },
       {
-        type: "artifact_selection",
-        artifact_selection: {
-          artifact: {
+        type: "selection",
+        selection: {
+          source: {
+            kind: "artifact",
             identifier: "launch-plan",
             type: "text/markdown",
             title: "Launch plan",
           },
           selectedText: "This paragraph needs work.",
-          selectionStart: 12,
-          selectionEnd: 38,
+        },
+      },
+    ]);
+  });
+
+  it("builds message selection content with its durable source", () => {
+    const message = prepareUserMessage("Check this", [
+      {
+        type: "selection",
+        name: "Quoted response",
+        selection: {
+          source: {
+            kind: "message",
+            messageId: "assistant-1",
+            role: "assistant",
+            runId: "run_1",
+          },
+          selectedText: "A quoted response.",
+        },
+      },
+    ]);
+
+    expect(message.content).toEqual([
+      { type: "text", text: "Check this" },
+      {
+        type: "selection",
+        selection: {
+          source: {
+            kind: "message",
+            messageId: "assistant-1",
+            role: "assistant",
+            runId: "run_1",
+          },
+          selectedText: "A quoted response.",
         },
       },
     ]);
