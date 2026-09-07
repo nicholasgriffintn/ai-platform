@@ -5,13 +5,13 @@ import {
   useModelCatalogue,
   useModels,
   formatProviderLabel,
-  getLineupModelsByRuntime,
   resolveLineupHeadline,
   toModelRecordById,
   type LineupEntryView,
 } from "@ngriffin_uk/polychat-library-react";
 import {
   formatReasoningLabel,
+  getLineupModelsByRuntime,
   MODEL_LINEUP_RUNTIME_DEFINITIONS,
   MODEL_TIER_DEFINITIONS,
   MODEL_TIER_LINEUP,

@@ -273,6 +273,7 @@ export function UserSettingsForm({
               value={formData.default_model_tier}
               onChange={(event) => {
                 const value = modelTierSchema.safeParse(event.target.value);
+
                 updateFormData({
                   default_model_tier: value.success ? value.data : "",
                 });
@@ -304,6 +305,7 @@ export function UserSettingsForm({
               value={formData.default_compute_site}
               onChange={(event) => {
                 const value = computeSiteSchema.safeParse(event.target.value);
+
                 updateFormData({
                   default_compute_site: value.success ? value.data : "",
                 });

@@ -8,6 +8,7 @@ import {
   SidebarNavSection,
 } from "@ngriffin_uk/polychat-component-navigation";
 import { ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
+import { shouldExplainStorage } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
   buildConversationSections,
@@ -65,7 +66,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
   } = useChatStore();
   const { determineStorageMode } = useConversationStorage();
   const storageMode = determineStorageMode(currentConversationId);
-  const storageNoticeReason = storageMode.retention === "temporary" ? storageMode.reason : null;
+  const storageNoticeReason = shouldExplainStorage(storageMode) ? storageMode.reason : null;
 
   const {
     data: conversations,

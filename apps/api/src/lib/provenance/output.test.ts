@@ -20,6 +20,7 @@ function contextForRun(initiatorUserId = 42): ServiceContext {
           id: "run-1",
           attempt: 3,
           initiatorUserId,
+          trigger: "user",
           projectId: null,
           context: {
             model: "original-model",

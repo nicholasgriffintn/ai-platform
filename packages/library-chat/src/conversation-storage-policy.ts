@@ -58,3 +58,7 @@ export function resolveConversationStorageMode(
     isProjectScoped,
   };
 }
+
+export function shouldExplainStorage(mode: ConversationStorageMode): boolean {
+  return mode.retention === "temporary" || mode.reason === "device_default";
+}

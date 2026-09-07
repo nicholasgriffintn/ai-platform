@@ -242,7 +242,7 @@ describe("ConversationStorageNotice", () => {
     ["default", "Temporary by default. Change this in Settings."],
     ["signed_out", "Not signed in, so this stays on this device."],
     ["plan", "Stored history is part of Pro. This stays on this device."],
-    ["device_default", "Runs on this Mac, so nothing is kept by default. Keep this chat"],
+    ["device_default", "Answered on this machine. The transcript is still saved to Polychat."],
   ] as const)("uses the %s retention explanation", (reason, copy) => {
     render(<ConversationStorageNotice reason={reason} />);
 

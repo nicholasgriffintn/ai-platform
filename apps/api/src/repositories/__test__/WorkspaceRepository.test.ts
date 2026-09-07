@@ -10,6 +10,7 @@ describe("WorkspaceRepository", () => {
         bind: (...params: unknown[]) => ({
           all: vi.fn(async () => {
             calls.push({ query, params });
+
             return { results: [] };
           }),
         }),

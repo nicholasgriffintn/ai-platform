@@ -29,8 +29,6 @@ function buildMessagesToStore({
   lastMessage,
   finalMessage,
   primaryModel,
-  modelId,
-  modelTier,
   platform,
   mode,
 }: Omit<StoreUserTurnParams, "conversationManager">): Message[] {

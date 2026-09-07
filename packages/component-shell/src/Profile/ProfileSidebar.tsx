@@ -70,6 +70,7 @@ export function extendProfileSidebarItems(
 
   for (const item of additionalItems) {
     const groupIndex = items.map(({ group }) => group).lastIndexOf(item.group);
+
     items.splice(groupIndex === -1 ? items.length : groupIndex + 1, 0, item);
   }
 

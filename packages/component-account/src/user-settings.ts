@@ -50,7 +50,7 @@ export interface UserSettings {
   pet_model_overrides?: PetModelOverrides;
 }
 
-type UserSettingsFormData = Omit<
+export type UserSettingsFormData = Omit<
   Partial<UserSettings>,
   "default_model_tier" | "default_model_id" | "default_compute_site"
 > & {
@@ -63,12 +63,19 @@ export function prepareUserSettingsPayload(
   settings: Partial<UserSettingsFormData>,
 ): Partial<UserSettings> {
   const { default_model_id, default_model_tier, default_compute_site, ...rest } = settings;
-  const payload: Partial<UserSettings> = {
-    ...rest,
-    default_model_id: default_model_id || null,
-    default_model_tier: default_model_tier || null,
-    default_compute_site: default_compute_site || null,
-  };
+  const payload: Partial<UserSettings> = { ...rest };
+
+  if (default_model_id !== undefined) {
+    payload.default_model_id = default_model_id || null;
+  }
+
+  if (default_model_tier !== undefined) {
+    payload.default_model_tier = default_model_tier || null;
+  }
+
+  if (default_compute_site !== undefined) {
+    payload.default_compute_site = default_compute_site || null;
+  }
 
   if (payload.embedding_provider !== "s3vectors") {
     delete payload.s3vectors_bucket_name;
@@ -79,7 +86,7 @@ export function prepareUserSettingsPayload(
   return payload;
 }
 
-export function buildUserSettingsFormData(userSettings: UserSettings | null) {
+export function buildUserSettingsFormData(userSettings: UserSettings | null): UserSettingsFormData {
   const transcriptionSettings = resolveTranscriptionSettings(
     userSettings?.transcription_provider,
     userSettings?.transcription_model,
@@ -118,8 +125,8 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null) {
     speech_model: speechSettings.speech_model,
     search_provider: userSettings?.search_provider || "",
     sandbox_model: userSettings?.sandbox_model || "",
-    default_model_tier: userSettings?.default_model_tier ?? null,
+    default_model_tier: userSettings?.default_model_tier ?? "",
     default_model_id: userSettings?.default_model_id || "",
-    default_compute_site: userSettings?.default_compute_site ?? null,
+    default_compute_site: userSettings?.default_compute_site ?? "",
   };
 }

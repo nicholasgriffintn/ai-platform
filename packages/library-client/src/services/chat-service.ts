@@ -23,6 +23,7 @@ import {
   chatRunRecoveryResponseSchema,
   chatRunReplayResponseSchema,
   chatRunSnapshotResponseSchema,
+  chatRunCommandReceiptSchema,
   conversationGroupSchema,
   type ChatCompletionResponseBody,
   type ChatRun,
@@ -883,7 +884,7 @@ export class ChatService {
         onStateChange("run", {
           type: "state",
           state: "run",
-          receipt: data.run satisfies ChatRunCommandReceipt,
+          receipt: chatRunCommandReceiptSchema.parse(data.run),
         });
       }
 

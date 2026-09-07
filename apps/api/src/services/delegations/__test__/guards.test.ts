@@ -38,6 +38,7 @@ describe("checkDelegationSpawn", () => {
 
   it("refuses fan-out after counting live children", async () => {
     const toolContext = context();
+
     toolContext.request.context.repositories.delegations.countLiveForParent.mockResolvedValue(3);
 
     const result = await checkDelegationSpawn(toolContext);

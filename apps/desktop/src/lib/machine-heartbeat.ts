@@ -134,15 +134,13 @@ export function createMachineHeartbeatScheduler(options: {
     } finally {
       active = null;
 
-      if (!running) {
-        return;
-      }
-
-      if (pending) {
-        pending = false;
-        void run();
-      } else {
-        schedule();
+      if (running) {
+        if (pending) {
+          pending = false;
+          void run();
+        } else {
+          schedule();
+        }
       }
     }
   };

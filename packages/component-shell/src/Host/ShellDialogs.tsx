@@ -1,6 +1,6 @@
 import type { ModelSource } from "@ngriffin_uk/polychat-component-models";
-import { useUIStore } from "@ngriffin_uk/polychat-library-react";
 import {
+  useUIStore,
   appendOnboardingSeen,
   hasLegacyProviderSetupDismissal,
   MODEL_SOURCES_ONBOARDING_KEYS,

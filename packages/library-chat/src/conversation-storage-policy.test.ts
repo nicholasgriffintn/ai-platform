@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveConversationStorageMode } from "./conversation-storage-policy.js";
+import {
+  resolveConversationStorageMode,
+  shouldExplainStorage,
+} from "./conversation-storage-policy.js";
 
 const signedInPro = {
   isAuthenticated: true,
@@ -81,5 +84,29 @@ describe("resolveConversationStorageMode", () => {
       reason: "chosen",
       isProjectScoped: true,
     });
+  });
+});
+
+describe("shouldExplainStorage", () => {
+  it("explains a conversation answered on this machine even though it is kept", () => {
+    const mode = resolveConversationStorageMode({ ...signedInPro, runsOnDevice: true });
+
+    expect(mode.retention).toBe("kept");
+    expect(shouldExplainStorage(mode)).toBe(true);
+  });
+
+  it("explains every conversation that is not kept", () => {
+    for (const state of [
+      { ...signedInPro, isAuthenticated: false },
+      { ...signedInPro, isPro: false },
+      { ...signedInPro, temporaryChat: true },
+      { ...signedInPro, temporaryChatsDefault: true },
+    ]) {
+      expect(shouldExplainStorage(resolveConversationStorageMode(state))).toBe(true);
+    }
+  });
+
+  it("stays quiet about an ordinary kept conversation", () => {
+    expect(shouldExplainStorage(resolveConversationStorageMode(signedInPro))).toBe(false);
   });
 });

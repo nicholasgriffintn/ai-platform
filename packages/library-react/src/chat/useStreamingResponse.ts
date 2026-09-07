@@ -203,6 +203,7 @@ export function useStreamingResponse(
       const effectiveModelId = computeSiteResolution.modelId;
 
       const fallbackNoticeKey = `${conversationId}:${computeSite}`;
+
       if (
         computeSiteResolution.reason &&
         !computeSiteFallbackNoticeRef.current.has(fallbackNoticeKey)

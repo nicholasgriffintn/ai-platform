@@ -30,7 +30,23 @@ Add model and provider icons through `packages/component-models/src/ModelIcon`: 
 
 ## Validation
 
-Run the narrowest relevant checks. Root `check`, `typecheck`, `test` and `release:check` are broad CI workflows.
+**Run root `pnpm typecheck` and root `pnpm check` before every commit. Narrow checks do not replace them.** A filtered typecheck compiles one package against its dependencies' published types, so it misses errors that only appear when a dependent is rebuilt from source; scoped `oxlint` only sees the paths you name. Both routinely pass while the root run fails, and skipping them is the most common way a change reaches CI broken.
+
+```sh
+pnpm typecheck
+pnpm check
+```
+
+**Read the exit code, not the output.** Piping a command into `tail` or `head` replaces its exit status with the pager's, so a failing run looks like a passing one:
+
+```sh
+pnpm typecheck > /tmp/tc.log 2>&1; echo "TYPECHECK=$?"   # correct
+pnpm typecheck 2>&1 | tail -20                            # wrong, always reports success
+```
+
+`pnpm check` is `lint` then `format:check`. It reports warnings and errors together and only **errors** fail it — grep for `: error` rather than reading the tail. `pnpm exec oxlint --fix <paths>` resolves most stylistic ones.
+
+Use the narrower checks below as the fast inner loop while iterating, then run the root pair before committing. `release:check` stays a CI workflow; do not run it locally.
 
 ```sh
 pnpm exec vp run --filter=@ngriffin_uk/polychat-schemas build
