@@ -133,10 +133,8 @@ export default {
 
     const executeTask = async (emitEvent?: (event: TaskEvent) => Promise<void> | void) => {
       const startedAtMs = Date.now();
-      let terminalEventEmitted = false;
 
       const emitTerminalEvent = async (result: TaskResult) => {
-        terminalEventEmitted = true;
         const inspectionWindowSeconds = params.inspectionWindowSeconds ?? 0;
         const inspectionExpiresAt =
           inspectionWindowSeconds > 0
