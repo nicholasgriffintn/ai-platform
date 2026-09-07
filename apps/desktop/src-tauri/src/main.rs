@@ -706,12 +706,12 @@ async fn start_agent_run(
 
     let response = match attempt.send().await {
         Ok(response) => response,
-        Err(cause) => {
+        Err(_cause) => {
             registry.forget(&run_id);
             emit(StreamEvent::Failed {
                 run_id: run_id.clone(),
                 failure: "unreachable".to_string(),
-                message: transport_failure(&endpoint.label, &cause),
+                message: format!("{} is unreachable", endpoint.label),
             });
 
             return Ok(());
