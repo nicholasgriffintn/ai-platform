@@ -5,6 +5,7 @@ import { PolychatApi } from "../fixtures/polychat-api";
 import type { UsageLedgerSeed } from "../fixtures/polychat-test";
 import { expect, provisionPersonaSession, test } from "../fixtures/polychat-test";
 import { E2E_APP_BASE_URL } from "../support/environment";
+import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
 const MODEL = "GPT OSS 120B";
 
@@ -99,6 +100,7 @@ test.describe("Credit billing", () => {
 
       await pricingPage.open();
       expect(await pricingPage.planOrder()).toEqual(["Free", "Pro"]);
+      await captureVisualSnapshots(page, "release-billing-plan-ladder", DEFAULT_VISUAL_CHECKPOINTS);
 
       await expect(pricingPage.planCard("Free")).toContainText("150 credits every month");
       await expect(pricingPage.planCard("Free")).toContainText("plus a 50 credit reserve");
@@ -420,6 +422,11 @@ test.describe("Credit billing", () => {
       );
       await expect(billingPage.creditState).toHaveText("On track");
       await expect(billingPage.creditsFigure("Reserve")).toHaveText("150");
+      await captureVisualSnapshots(
+        page,
+        "release-billing-pro-on-track",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
       await expect(billingPage.overageToggle).toBeVisible();
       await expect(billingPage.overageToggle).not.toBeChecked();
 
@@ -449,6 +456,11 @@ test.describe("Credit billing", () => {
       );
       await expect(billingPage.creditState).toHaveText("In reserve");
       await expect(billingPage.creditsFigure("Reserve remaining")).toHaveText("140");
+      await captureVisualSnapshots(
+        page,
+        "release-billing-pro-in-reserve",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
 
       await homePage.navigate("/chat");
       await homePage.selectModel(MODEL);
@@ -457,16 +469,29 @@ test.describe("Credit billing", () => {
       await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
       await expect(homePage.composerBanner("into your reserve")).toBeVisible();
       await expect(page.getByText(/This month's credits are fully spent/)).toHaveCount(0);
+      await captureVisualSnapshots(page, "release-billing-reserve-composer-banner", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        fullPage: false,
+      });
 
       await billingState.set({ spentCredits: 1650, subscribed: true, ledger: PRO_LEDGER });
       await billingPage.open();
       await expect(billingPage.creditState).toHaveText("Out of credits");
+      await captureVisualSnapshots(
+        page,
+        "release-billing-pro-out-of-credits",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
 
       await homePage.navigate("/chat");
       await homePage.selectModel(MODEL);
       await homePage.sendMessage("Pro release turn past the reserve");
       await expect(page.getByText(/This month's credits are fully spent/).first()).toBeVisible();
       await expect(page.getByText("E2E response:")).toHaveCount(0);
+      await captureVisualSnapshots(page, "release-billing-spent-composer-block", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        fullPage: false,
+      });
     });
   });
 

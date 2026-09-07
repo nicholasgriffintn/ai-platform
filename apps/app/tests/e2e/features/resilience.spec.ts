@@ -1,4 +1,5 @@
 import { expect, test } from "../fixtures/polychat-test";
+import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
 test.describe("Recovery and unavailable states", () => {
   for (const persona of ["free", "pro"] as const) {
@@ -31,6 +32,10 @@ test.describe("Recovery and unavailable states", () => {
 
       await expect(page.getByText("Task failed", { exact: true })).toBeVisible();
       await expect(page.getByText(/Deterministic provider failure/)).toBeVisible();
+      await captureVisualSnapshots(page, "release-resilience-provider-failure", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        fullPage: false,
+      });
       await expect(appPage.notification(/Deterministic provider failure/)).toHaveCount(0);
       const stored = await polychatApi.getConversation(completionId);
 
@@ -76,6 +81,11 @@ test.describe("Recovery and unavailable states", () => {
           page.getByRole("heading", { name: "Shared Conversation Not Available" }),
         ).toBeVisible();
         await expect(page.getByText(/not found or is no longer available/i)).toBeVisible();
+        await captureVisualSnapshots(
+          page,
+          `release-resilience-shared-conversation-missing-${persona}`,
+          DEFAULT_VISUAL_CHECKPOINTS,
+        );
         await appPage.followLink("Return Home");
         await expect(homePage.chatInput).toBeEditable();
 
@@ -83,6 +93,11 @@ test.describe("Recovery and unavailable states", () => {
         await expect(
           page.getByRole("heading", { name: "Shared output unavailable" }),
         ).toBeVisible();
+        await captureVisualSnapshots(
+          page,
+          `release-resilience-shared-output-missing-${persona}`,
+          DEFAULT_VISUAL_CHECKPOINTS,
+        );
         await appPage.followLink("Return home");
         await expect(homePage.chatInput).toBeEditable();
       });
@@ -104,6 +119,11 @@ test.describe("Recovery and unavailable states", () => {
         await expect(
           page.getByText("Shared release conversation response", { exact: true }),
         ).toBeVisible();
+        await captureVisualSnapshots(
+          page,
+          `release-resilience-shared-conversation-${persona}`,
+          DEFAULT_VISUAL_CHECKPOINTS,
+        );
         await appPage.followLink("New Chat");
         await expect(homePage.chatInput).toBeEditable();
       });
@@ -123,6 +143,11 @@ test.describe("Recovery and unavailable states", () => {
         await expect(
           page.getByText("Public release output content", { exact: false }),
         ).toBeVisible();
+        await captureVisualSnapshots(
+          page,
+          `release-resilience-shared-output-${persona}`,
+          DEFAULT_VISUAL_CHECKPOINTS,
+        );
       });
     });
   }
@@ -136,10 +161,20 @@ test.describe("Recovery and unavailable states", () => {
     }) => {
       await homePage.navigate("/work/missing-workspace");
       await expect(page.getByText("Workspace not found", { exact: true })).toBeVisible();
+      await captureVisualSnapshots(
+        page,
+        "release-resilience-workspace-missing",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
       await expect(page.getByRole("link", { name: "Chat", exact: true })).toBeVisible();
 
       await homePage.navigate("/work/e2e-workspace-0/projects/missing-project");
       await expect(page.getByText("Project not found", { exact: true })).toBeVisible();
+      await captureVisualSnapshots(
+        page,
+        "release-resilience-project-missing",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
       await expect(page.getByRole("link", { name: "Chat", exact: true })).toBeVisible();
     });
   });

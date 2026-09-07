@@ -1,4 +1,5 @@
 import { expect, test } from "../fixtures/polychat-test";
+import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
 test.describe("Authentication experience", () => {
   test.describe("logged out", () => {
@@ -28,6 +29,10 @@ test.describe("Authentication experience", () => {
         "href",
         "/privacy",
       );
+      await captureVisualSnapshots(page, "release-auth-sign-in-methods", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        fullPage: false,
+      });
     });
 
     test("validates an email without submitting an authentication request", async ({
@@ -44,6 +49,10 @@ test.describe("Authentication experience", () => {
       await expect(page.getByRole("dialog")).toContainText(
         "Check your email for a magic link to sign in.",
       );
+      await captureVisualSnapshots(page, "release-auth-magic-link-sent", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        fullPage: false,
+      });
     });
 
     test("starts GitHub authorisation", async ({ authPage, externalServices, page }) => {
@@ -57,6 +66,11 @@ test.describe("Authentication experience", () => {
     test("rejects an invalid magic-link callback", async ({ homePage, page }) => {
       await homePage.navigate("/auth/verify-magic-link?token=invalid");
       await expect(page.getByText("Verification Failed", { exact: true })).toBeVisible();
+      await captureVisualSnapshots(
+        page,
+        "release-auth-magic-link-rejected",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
     });
   });
 
@@ -73,6 +87,11 @@ test.describe("Authentication experience", () => {
         await expect(authPage.isLoggedIn()).resolves.toBe(true);
         await profilePage.logout();
         await expect(page.getByText("Sign in to view your profile", { exact: true })).toBeVisible();
+        await captureVisualSnapshots(
+          page,
+          `release-auth-signed-out-profile-${persona}`,
+          DEFAULT_VISUAL_CHECKPOINTS,
+        );
         await expect(authPage.isLoggedIn()).resolves.toBe(false);
       });
     });
