@@ -17,7 +17,7 @@ export function CreditLadder() {
         Every line draws at the vendor's actual rate. Work falls into three bands, and you see which
         one a task reached while it is still running.
       </p>
-      <ol className="mt-5 space-y-4">
+      <ol aria-label="Credit bands" className="mt-5 space-y-4">
         {CREDIT_BANDS.map((band, index) => (
           <li key={band.id} className="space-y-1.5">
             <div className="flex items-baseline justify-between gap-4 text-sm">

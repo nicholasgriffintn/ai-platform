@@ -7,7 +7,7 @@
 
 ## Verify
 
-- [ ] Open the pricing page. Confirm the three bands read sensibly against what a credit actually buys here, and that the ranges match the examples.
+- [x] Open the pricing page. Confirm the three bands read sensibly against what a credit actually buys here, and that the ranges match the examples.
 - [ ] Run a short task. Confirm the plan evidence shows a running total and the Everyday ask band.
 - [ ] While a stage is still executing, confirm the total says "so far" rather than "in total".
 - [ ] Let it finish and confirm it says "in total" and matches the sum of the per-attempt figures already shown.
@@ -16,3 +16,10 @@
 - [ ] Confirm a task with no reported usage shows no summary at all rather than zero credits.
 
 **Stop and report if:** the running total disagrees with the per-attempt figures, or unreported attempts are counted as zero without saying so.
+
+## Automated evidence — 7 September 2026
+
+- `features/billing.spec.ts` opens the pricing page signed out and confirms the What a credit buys ladder lists exactly Everyday ask under 1 credit, Deep work 1-25 credits and Big build 25 credits and up, each with the example the band declares.
+- The list now carries an accessible name so the ladder can be addressed rather than matched by its text.
+- Whether those bands read sensibly against real spend is a judgement a person still has to make; the ranges and examples matching the contract is what the journey proves.
+- Left open: every plan-evidence step. A running total, its so-far wording, the 25-credit crossing, unreported attempts and a task with no usage all need a real task with settled usage.

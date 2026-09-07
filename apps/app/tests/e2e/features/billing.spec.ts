@@ -106,6 +106,17 @@ test.describe("Credit billing", () => {
       await expect(pricingPage.planCard("Pro")).toContainText("1,500 credits every month");
       await expect(pricingPage.planCard("Pro")).toContainText("plus a 150 credit reserve");
 
+      const ladder = page.getByRole("list", { name: "Credit bands" });
+
+      await expect(page.getByText("What a credit buys", { exact: true })).toBeVisible();
+      await expect(ladder.getByRole("listitem")).toHaveText([
+        /Everyday ask\s*Under 1 credits/,
+        /Deep work\s*1–25 credits/,
+        /Big build\s*25 credits and up/,
+      ]);
+      await expect(ladder).toContainText("For example: a quick question.");
+      await expect(ladder).toContainText("For example: a long teammate task.");
+
       const checkoutAttempts: string[] = [];
 
       page.on("request", (request) => {
