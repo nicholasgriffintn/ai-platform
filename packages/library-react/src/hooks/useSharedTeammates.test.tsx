@@ -5,9 +5,9 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { capabilityCatalogQueryKey } from "./useCapabilityCatalog";
-import { useTeammateSharing, useSharedTeammates } from "./useSharedTeammates";
-import { TEAMMATES_QUERY_KEYS } from "./useTeammates";
+import { capabilityCatalogQueryKey } from "./useCapabilityCatalog.js";
+import { useTeammateSharing, useSharedTeammates } from "./useSharedTeammates.js";
+import { TEAMMATES_QUERY_KEYS } from "./useTeammates.js";
 
 const mocks = vi.hoisted(() => ({
   getSharedTeammateListingForTeammate: vi.fn(),

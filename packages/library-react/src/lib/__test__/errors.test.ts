@@ -1,7 +1,7 @@
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { describe, expect, it } from "vitest";
 
-import { getErrorMessage, isAuthenticationError } from "../../errors";
+import { getErrorMessage, isAuthenticationError } from "../../errors.js";
 
 describe("error helpers", () => {
   it("returns useful messages from unknown errors", () => {

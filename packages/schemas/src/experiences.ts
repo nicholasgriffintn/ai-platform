@@ -1,3 +1,3 @@
-export * from "./experiences/canvas";
-export * from "./experiences/drawing";
-export * from "./experiences/recordings";
+export * from "./experiences/canvas.js";
+export * from "./experiences/drawing.js";
+export * from "./experiences/recordings.js";

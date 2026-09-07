@@ -21,8 +21,8 @@ import {
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { Plug } from "lucide-react";
 
-import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs";
-import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows";
+import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs.js";
+import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
 
 function getMissingConnectors(
   recipe: AssistantRecipe,

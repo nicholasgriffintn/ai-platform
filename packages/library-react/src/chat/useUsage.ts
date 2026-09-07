@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-library-client";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { getNextUsageEventsPageParam } from "../chat/usage-ledger";
+import { getNextUsageEventsPageParam } from "../chat/usage-ledger.js";
 
 export const USAGE_QUERY_KEYS = {
   balance: ["usage", "balance"] as const,

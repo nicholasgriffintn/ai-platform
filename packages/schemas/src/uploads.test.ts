@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { markdownConversionOptionsSchema } from "./uploads";
+import { markdownConversionOptionsSchema } from "./uploads.js";
 
 describe("markdownConversionOptionsSchema", () => {
   it("accepts Cloudflare plain-text output requests", () => {

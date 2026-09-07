@@ -6,7 +6,7 @@ import {
   isExternalHttpUrl,
   isInternalNavigationPath,
   isSameOrigin,
-} from "./navigation";
+} from "./navigation.js";
 
 describe("navigation contracts", () => {
   it.each(["/work/project-1/chat", "/profile?tab=providers"])(

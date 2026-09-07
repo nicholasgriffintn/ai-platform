@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiKeyService } from "./api-key";
-import { fetchApi } from "./fetch-wrapper";
-import { createApiErrorFromResponse } from "./http";
+import { apiKeyService } from "./api-key.js";
+import { fetchApi } from "./fetch-wrapper.js";
+import { createApiErrorFromResponse } from "./http.js";
 
 function stubFetch() {
   const fetchSpy = vi.fn(async () => new Response("{}", { status: 200 }));

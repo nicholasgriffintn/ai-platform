@@ -16,6 +16,11 @@
       "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./discover-bands": {
+      "polychat-source": "./src/Discover/DiscoverBands.tsx",
+      "types": "./dist/Discover/DiscoverBands.d.ts",
+      "import": "./dist/Discover/DiscoverBands.js"
     }
   },
   "publishConfig": {

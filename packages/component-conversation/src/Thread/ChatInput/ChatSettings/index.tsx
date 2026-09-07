@@ -17,7 +17,7 @@ import {
 import type { ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
 import { useMemo, useState } from "react";
 
-import { ChatSettingsPanel } from "../../../Composer/ChatSettingsPanel";
+import { ChatSettingsPanel } from "../../../Composer/ChatSettingsPanel.js";
 
 interface ChatSettingsProps {
   isDisabled?: boolean;

@@ -2,7 +2,7 @@ import { getNotificationInstallationId } from "@ngriffin_uk/polychat-library-cli
 import { useTaskNotifications } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 
-import type { TaskNotificationChannel } from "./task-notification-channel";
+import type { TaskNotificationChannel } from "./task-notification-channel.js";
 
 export function useWebPushTaskNotificationChannel(): TaskNotificationChannel {
   const { settings, permission, registrationError, isUpdating, enable, disable } =

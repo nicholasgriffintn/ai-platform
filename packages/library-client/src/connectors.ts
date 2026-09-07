@@ -7,9 +7,9 @@ import type {
   RecipeConnectorStartResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service";
-import { fetchApiOrThrow } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
+import { apiService } from "./api-service.js";
+import { fetchApiOrThrow } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
 
 async function getAuthHeaders() {
   try {

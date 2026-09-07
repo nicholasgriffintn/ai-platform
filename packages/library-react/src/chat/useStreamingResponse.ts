@@ -32,20 +32,20 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import { toast } from "sonner";
 
-import { streamDeviceModelRun } from "../chat/device-run";
-import { resolveAcceptedRunCommand } from "../chat/run-command";
-import { createStreamProgressCoalescer } from "../chat/stream-progress-coalescer";
-import { getChatStreamLoadingMessage } from "../chat/stream-state";
-import { normaliseUsageLimits } from "../chat/usage-limits";
-import { GOAL_QUERY_KEY } from "../chat/useGoal";
-import { USAGE_QUERY_KEYS } from "../chat/useUsage";
-import { updateConversationInChatCaches } from "../conversation-cache";
-import { getErrorMessage } from "../errors";
-import { useConversationScope } from "../state/conversation-scope";
-import { useLoadingActions } from "../state/LoadingContext";
-import { useUsageStore } from "../state/usageStore";
-import { useMessageOperations } from "./useMessageOperations";
-import { useModels } from "./useModels";
+import { streamDeviceModelRun } from "../chat/device-run.js";
+import { resolveAcceptedRunCommand } from "../chat/run-command.js";
+import { createStreamProgressCoalescer } from "../chat/stream-progress-coalescer.js";
+import { getChatStreamLoadingMessage } from "../chat/stream-state.js";
+import { normaliseUsageLimits } from "../chat/usage-limits.js";
+import { GOAL_QUERY_KEY } from "../chat/useGoal.js";
+import { USAGE_QUERY_KEYS } from "../chat/useUsage.js";
+import { updateConversationInChatCaches } from "../conversation-cache.js";
+import { getErrorMessage } from "../errors.js";
+import { useConversationScope } from "../state/conversation-scope.js";
+import { useLoadingActions } from "../state/LoadingContext.js";
+import { useUsageStore } from "../state/usageStore.js";
+import { useMessageOperations } from "./useMessageOperations.js";
+import { useModels } from "./useModels.js";
 
 export interface StreamResponseOptions {
   assistantMessageData?: Partial<Message>;

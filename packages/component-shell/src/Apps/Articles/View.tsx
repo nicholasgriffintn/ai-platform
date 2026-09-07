@@ -5,8 +5,8 @@ import {
 } from "@ngriffin_uk/polychat-component-experiences/content";
 import type { ArticleReportItem } from "@ngriffin_uk/polychat-schemas";
 
-import { ArticleSourceArticles } from "./ArticleSourceArticles";
-import { RerunReportButton } from "./RerunReportButton";
+import { ArticleSourceArticles } from "./ArticleSourceArticles.js";
+import { RerunReportButton } from "./RerunReportButton.js";
 
 export function ArticleView({
   report,

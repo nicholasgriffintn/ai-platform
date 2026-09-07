@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { getOutputHistory, restoreOutputRevision } from "./outputs";
+import { getOutputHistory, restoreOutputRevision } from "./outputs.js";
 
 describe("output revision api", () => {
   afterEach(() => {

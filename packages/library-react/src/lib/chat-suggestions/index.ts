@@ -4,13 +4,13 @@ import {
   CAPABILITY_SUGGESTIONS,
   EVERYDAY_SUGGESTIONS,
   FOCUS_SUGGESTIONS,
-} from "./catalog";
+} from "./catalog.js";
 import type {
   ChatSuggestion,
   ChatSuggestionContext,
   ChatSuggestionDefinition,
   ChatSuggestionTier,
-} from "./types";
+} from "./types.js";
 
 export const CHAT_SUGGESTION_COUNT = 4;
 
@@ -138,4 +138,4 @@ export function createChatSuggestions(
   return selected;
 }
 
-export * from "./types";
+export * from "./types.js";

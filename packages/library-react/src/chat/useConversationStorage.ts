@@ -8,9 +8,9 @@ import { CHATS_QUERY_KEY, useChatStore } from "@ngriffin_uk/polychat-library-cli
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
-import { upsertConversationInChatCaches } from "../conversation-cache";
-import { localChatService } from "../index";
-import { useSelectedModelRunsOnDevice } from "./useSelectedModelRunsOnDevice";
+import { upsertConversationInChatCaches } from "../conversation-cache.js";
+import { localChatService } from "../index.js";
+import { useSelectedModelRunsOnDevice } from "./useSelectedModelRunsOnDevice.js";
 
 /**
  * Hook for managing conversation storage across local and remote storage.

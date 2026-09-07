@@ -1,6 +1,6 @@
 import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
 
-import type { ChatSuggestion } from "../lib/chat-suggestions";
+import type { ChatSuggestion } from "../lib/chat-suggestions/index.js";
 
 export interface ProjectCodingPresentation {
   title: string;

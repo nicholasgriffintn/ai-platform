@@ -32,10 +32,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
-import { ConnectorSetupDialogs } from "../../Connectors/ConnectorSetupDialogs";
-import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel";
-import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
-import { ProfileTab } from "../ProfileTabLayout";
+import { ConnectorSetupDialogs } from "../../Connectors/ConnectorSetupDialogs.js";
+import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel.js";
+import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal.js";
+import { ProfileTab } from "../ProfileTabLayout.js";
 
 interface ProviderModalState {
   open: boolean;

@@ -20,15 +20,15 @@ import {
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { getConversationRefetchInterval } from "../chat/conversation-polling";
-import { recoverUnacknowledgedConversation } from "../chat/pending-conversation";
-import { createTemporaryConversationTitle } from "../chat/title-source";
+import { getConversationRefetchInterval } from "../chat/conversation-polling.js";
+import { recoverUnacknowledgedConversation } from "../chat/pending-conversation.js";
+import { createTemporaryConversationTitle } from "../chat/title-source.js";
 import {
   removeConversationFromChatCaches,
   updateConversationInChatCaches,
-} from "../conversation-cache";
-import { localChatService } from "../index";
-import { useConversationStorage } from "./useConversationStorage";
+} from "../conversation-cache.js";
+import { localChatService } from "../index.js";
+import { useConversationStorage } from "./useConversationStorage.js";
 
 const DEFAULT_CHAT_LIST_LIMIT = 30;
 const CHAT_LIST_STALE_TIME = 2 * 60 * 1000;

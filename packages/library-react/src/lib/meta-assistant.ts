@@ -6,15 +6,15 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { matchPath } from "react-router";
 
-import { createConversationLaunchPath } from "./assistant-action-launch";
-import { getPersonalConversationPath, getProjectConversationPath } from "./conversation-route";
+import { createConversationLaunchPath } from "./assistant-action-launch.js";
+import { getPersonalConversationPath, getProjectConversationPath } from "./conversation-route.js";
 import {
   getActivePlace,
   getPlacePaths,
   getProductMode,
   MODE_BASE_PATHS,
   PROFILE_PATH,
-} from "./navigation/places";
+} from "./navigation/places.js";
 
 const PROJECT_CONVERSATION_PATTERN = "/work/:workspaceId/projects/:projectId/chat/:conversationId?";
 const PROJECT_PATTERN = "/work/:workspaceId/projects/:projectId/*";

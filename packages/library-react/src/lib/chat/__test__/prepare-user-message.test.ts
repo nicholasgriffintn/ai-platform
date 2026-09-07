@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { prepareUserMessage } from "../../../chat/prepare-user-message";
+import { prepareUserMessage } from "../../../chat/prepare-user-message.js";
 
 describe("prepareUserMessage", () => {
   it("builds a text message with conversation mode metadata", () => {

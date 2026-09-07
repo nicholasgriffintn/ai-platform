@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
 
-import { useAuthStatus } from "../hooks/useAuth";
+import { useAuthStatus } from "../hooks/useAuth.js";
 
 export const PET_TRAVEL_MS = 900;
 

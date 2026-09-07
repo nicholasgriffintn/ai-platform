@@ -8,7 +8,7 @@ import {
   parseChatStreamSseBuffer,
   type ChatStreamUpdate,
   type ParsedChatStreamSseEvent,
-} from "./chat-stream";
+} from "./chat-stream.js";
 
 interface ConformanceExpectation {
   eventTypes: string[];

@@ -7,14 +7,14 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { lazy, type ReactNode, Suspense } from "react";
 
-import { useShellHost } from "../Host/ShellHostContext";
-import { SearchDialog } from "../Search/SearchDialog";
-import { ChatNavbar } from "./Navbar";
+import { useShellHost } from "../Host/ShellHostContext.js";
+import { SearchDialog } from "../Search/SearchDialog.js";
+import { ChatNavbar } from "./Navbar.js";
 
 export const MAIN_CONTENT_ID = "main-content";
 
 const KeyboardShortcutsHelp = lazy(() =>
-  import("@ngriffin_uk/polychat-component-conversation").then((mod) => ({
+  import("@ngriffin_uk/polychat-component-conversation/keyboard-shortcuts-help").then((mod) => ({
     default: mod.KeyboardShortcutsHelp,
   })),
 );

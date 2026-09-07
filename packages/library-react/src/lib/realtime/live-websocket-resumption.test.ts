@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createRealtimeWebSocketResumptionController } from "./live-websocket-resumption";
+import { createRealtimeWebSocketResumptionController } from "./live-websocket-resumption.js";
 
 describe("realtime WebSocket resumption controller", () => {
   it("starts one reconnect with the latest resumable handle", () => {

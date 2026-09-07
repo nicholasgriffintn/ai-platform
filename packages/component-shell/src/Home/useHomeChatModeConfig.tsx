@@ -34,7 +34,7 @@ import type { HomeChatModeId, ModelSelectionChangeHandler } from "@ngriffin_uk/p
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
-import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls";
+import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls.js";
 
 export function useHomeChatModeConfig(): {
   activeModeId: HomeChatModeId;

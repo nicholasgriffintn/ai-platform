@@ -16,7 +16,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { toast } from "sonner";
 
-import type { ThreadModeConfig } from ".";
+import type { ThreadModeConfig } from "./index.js";
 
 interface ResolvedConversationLaunch {
   autoSubmit?: { input: string; key: string };

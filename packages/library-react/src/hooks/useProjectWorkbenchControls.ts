@@ -13,7 +13,7 @@ import type { ProjectWorkbenchApprovalItem } from "@ngriffin_uk/polychat-utility
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { getErrorMessage } from "../errors";
+import { getErrorMessage } from "../errors.js";
 
 interface InstructionInput {
   kind: SandboxRunInstructionKind;

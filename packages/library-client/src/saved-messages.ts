@@ -1,8 +1,8 @@
 import type { SaveMessageInput, SavedMessage } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service";
-import { fetchApiOrThrow } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
+import { apiService } from "./api-service.js";
+import { fetchApiOrThrow } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
 
 const BASE_PATH = "/chat/saved-messages";
 

@@ -1,7 +1,7 @@
 import { ConnectorAuthConfigModal } from "@ngriffin_uk/polychat-component-account";
 import type { ConnectorSetupController } from "@ngriffin_uk/polychat-library-react";
 
-import { ConnectorApiKeyModal } from "./ConnectorApiKeyModal";
+import { ConnectorApiKeyModal } from "./ConnectorApiKeyModal.js";
 
 export function ConnectorSetupDialogs({ controller }: { controller: ConnectorSetupController }) {
   return (

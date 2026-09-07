@@ -1,8 +1,8 @@
 import { ButtonLink, PageStatus, Pet } from "@ngriffin_uk/polychat-component-ui";
 import { MODE_BASE_PATHS } from "@ngriffin_uk/polychat-library-react";
 
-import { PageShell } from "../Shell/PageShell";
-import { StandardSidebarContent } from "../Sidebar/StandardSidebarContent";
+import { PageShell } from "../Shell/PageShell.js";
+import { StandardSidebarContent } from "../Sidebar/StandardSidebarContent.js";
 
 export function NotFoundPage() {
   return (

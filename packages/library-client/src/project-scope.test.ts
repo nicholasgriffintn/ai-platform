@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { withProjectScope } from "./project-scope";
+import { withProjectScope } from "./project-scope.js";
 
 describe("withProjectScope", () => {
   it("adds an encoded project ID to a path without a query string", () => {

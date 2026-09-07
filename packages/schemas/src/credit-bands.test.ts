@@ -6,8 +6,8 @@ import {
   formatCreditBandRange,
   summariseCreditSpend,
   sumRunCreditMicros,
-} from "./credit-bands";
-import { creditMicrosFromCredits } from "./pricing/constants";
+} from "./credit-bands.js";
+import { creditMicrosFromCredits } from "./pricing/constants.js";
 
 describe("describeCreditBand", () => {
   it("names a small ask an everyday one", () => {

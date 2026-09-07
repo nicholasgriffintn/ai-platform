@@ -11,7 +11,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../../Account/SignInEmptyState";
+import { SignInEmptyState } from "../../Account/SignInEmptyState.js";
 
 interface ReplicateModelDetailProps {
   basePath: string;

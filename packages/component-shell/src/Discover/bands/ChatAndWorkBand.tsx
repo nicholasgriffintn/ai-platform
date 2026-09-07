@@ -2,7 +2,7 @@ import { ButtonLink } from "@ngriffin_uk/polychat-component-ui";
 import { MessageCircle, Users } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { DiscoverBand } from "../DiscoverBand";
+import { DiscoverBand } from "../DiscoverBand.js";
 
 function ProductCard({
   icon,

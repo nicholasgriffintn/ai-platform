@@ -4,7 +4,7 @@ import {
   buildRealtimeSessionPath,
   createRealtimeSession,
   fetchRealtimeLiveProviders,
-} from "./realtime-service";
+} from "./realtime-service.js";
 
 describe("realtime-service", () => {
   afterEach(() => {

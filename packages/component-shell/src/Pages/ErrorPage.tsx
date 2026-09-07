@@ -2,7 +2,7 @@ import { Button, ButtonLink, PetSprite } from "@ngriffin_uk/polychat-component-u
 import { shouldShowDevTools } from "@ngriffin_uk/polychat-library-client";
 import { PET_CLIPS, PET_SHEET_LAYOUT } from "@ngriffin_uk/polychat-schemas";
 
-import { PageShell } from "../Shell/PageShell";
+import { PageShell } from "../Shell/PageShell.js";
 export interface ErrorRouteProps {
   message: string;
   details: string;

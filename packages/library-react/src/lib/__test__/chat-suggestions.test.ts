@@ -5,7 +5,7 @@ import {
   createChatSuggestions,
   EMPTY_CHAT_SUGGESTION_CONTEXT,
   type ChatSuggestionContext,
-} from "../../lib/chat-suggestions";
+} from "../../lib/chat-suggestions/index.js";
 
 function contextWith(overrides: Partial<ChatSuggestionContext> = {}): ChatSuggestionContext {
   return { ...EMPTY_CHAT_SUGGESTION_CONTEXT, ...overrides };

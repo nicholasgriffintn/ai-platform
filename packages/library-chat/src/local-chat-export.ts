@@ -1,5 +1,5 @@
-import type { Conversation } from "./conversation-types";
-import type { LocalChatExport } from "./local-conversation-store";
+import type { Conversation } from "./conversation-types.js";
+import type { LocalChatExport } from "./local-conversation-store.js";
 
 export const LOCAL_CHAT_EXPORT_VERSION = 1 as const;
 

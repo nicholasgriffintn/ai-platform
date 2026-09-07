@@ -10,7 +10,7 @@ import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ComposerCommandAction } from "@ngriffin_uk/polychat-utility-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { ChatSuggestionList } from "../ChatSuggestionList";
+import { ChatSuggestionList } from "../ChatSuggestionList.js";
 
 interface ChatSuggestionsProps {
   setInput: (text: string) => void;

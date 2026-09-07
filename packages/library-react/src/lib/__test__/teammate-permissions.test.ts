@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   getTeammatePublishTargets,
   resolveTeammateManagePermission,
-} from "../../lib/teammates/teammate-permissions";
+} from "../../lib/teammates/teammate-permissions.js";
 
 const teammate: TeammateResponse = {
   id: "teammate-1",

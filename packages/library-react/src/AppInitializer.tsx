@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
-import { useAnalyticsIdentity } from "./hooks/use-analytics-identity";
-import { useAuthStatus } from "./hooks/useAuth";
-import { useResponsiveSidebar } from "./hooks/useResponsiveSidebar";
-import { useApplyTheme } from "./hooks/useTheme";
+import { useAnalyticsIdentity } from "./hooks/use-analytics-identity.js";
+import { useAuthStatus } from "./hooks/useAuth.js";
+import { useResponsiveSidebar } from "./hooks/useResponsiveSidebar.js";
+import { useApplyTheme } from "./hooks/useTheme.js";
 
 export function AppInitializer({ children }: { children: ReactNode }) {
   useAuthStatus();

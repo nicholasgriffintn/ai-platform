@@ -1,5 +1,5 @@
-import type { Conversation, Message } from "./conversation-types";
-import { isCompactionMarkerMessage } from "./message-compaction-status";
+import type { Conversation, Message } from "./conversation-types.js";
+import { isCompactionMarkerMessage } from "./message-compaction-status.js";
 
 export interface BranchPoint {
   message: Message;

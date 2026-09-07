@@ -17,9 +17,9 @@ import { getModelDisplayName, type ModelConfigItem } from "@ngriffin_uk/polychat
 import { formatCompactCount } from "@ngriffin_uk/polychat-utility-core";
 import { useDeferredValue, useMemo, useState } from "react";
 
-import { MODELS_SECTIONS } from "./models-sections";
-import { ModelsSection } from "./ModelsSection";
-import { ProviderMark } from "./ProviderMark";
+import { MODELS_SECTIONS } from "./models-sections.js";
+import { ModelsSection } from "./ModelsSection.js";
+import { ProviderMark } from "./ProviderMark.js";
 
 const PROVIDER_PREVIEW_LIMIT = 9;
 

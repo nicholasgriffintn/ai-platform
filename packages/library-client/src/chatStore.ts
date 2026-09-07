@@ -11,7 +11,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { apiKeyService } from "./api-key";
+import { apiKeyService } from "./api-key.js";
 
 const defaultSettings: ChatSettings = {
   enabled_tools: [],

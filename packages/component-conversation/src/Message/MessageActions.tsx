@@ -28,8 +28,8 @@ import type { ReactNode } from "react";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { MessageInfo } from "./MessageInfo";
-import { MessageStats } from "./MessageStats";
+import { MessageInfo } from "./MessageInfo.js";
+import { MessageStats } from "./MessageStats.js";
 
 export interface MessageActionsProps {
   message: Message;

@@ -12,9 +12,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
-import { PageShell } from "../Shell/PageShell";
-import { useProjectTaskTeammates } from "./useProjectTaskTeammates";
-import { useWorkData } from "./WorkDataContext";
+import { PageShell } from "../Shell/PageShell.js";
+import { useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectTaskDetail({
   workspaceId,

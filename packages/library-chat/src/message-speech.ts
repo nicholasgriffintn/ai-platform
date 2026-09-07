@@ -1,4 +1,4 @@
-import type { Message, MessageData } from "./conversation-types";
+import type { Message, MessageData } from "./conversation-types.js";
 
 export type MessageSpeech = NonNullable<MessageData["speech"]>;
 

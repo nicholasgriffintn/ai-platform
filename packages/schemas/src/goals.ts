@@ -218,5 +218,5 @@ export const goalStatusLabels: Record<GoalStatus, string> = {
   limit_reached: "Goal stopped at your usage limit",
 };
 
-export { goalMarkerEventNames as goalMarkerEvents } from "./message-part-utils";
-export type { GoalMarkerEventName as GoalMarkerEvent } from "./message-part-utils";
+export { goalMarkerEventNames as goalMarkerEvents } from "./message-part-utils.js";
+export type { GoalMarkerEventName as GoalMarkerEvent } from "./message-part-utils.js";

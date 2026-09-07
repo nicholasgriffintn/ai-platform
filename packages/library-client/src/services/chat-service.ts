@@ -46,19 +46,19 @@ import { goalSchema } from "@ngriffin_uk/polychat-schemas/goals";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
 import { isRecord, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
-import { projectChatRequestSettings } from "../chat-request-settings";
+import { projectChatRequestSettings } from "../chat-request-settings.js";
 import {
   createStreamingApiError,
   toAppMessage,
   toCompletionResponseAppMessage,
-} from "../chat-stream-response";
-import type { AppChatRunReplayResponse, AuthoritativeChatRunSnapshot } from "../chat/run-replay";
-import { parseCompactConversationResponse } from "../compact-conversation-response";
-import { normaliseConversationResponse } from "../conversation-response";
-import { fetchApi, fetchApiOrThrow } from "../fetch-wrapper";
-import { ApiError, createApiErrorFromResponse, returnFetchedData } from "../http";
-import { getSandboxTaskToolNames } from "../task-tools";
-import { yieldToMainThread } from "../yield-to-main-thread";
+} from "../chat-stream-response.js";
+import type { AppChatRunReplayResponse, AuthoritativeChatRunSnapshot } from "../chat/run-replay.js";
+import { parseCompactConversationResponse } from "../compact-conversation-response.js";
+import { normaliseConversationResponse } from "../conversation-response.js";
+import { fetchApi, fetchApiOrThrow } from "../fetch-wrapper.js";
+import { ApiError, createApiErrorFromResponse, returnFetchedData } from "../http.js";
+import { getSandboxTaskToolNames } from "../task-tools.js";
+import { yieldToMainThread } from "../yield-to-main-thread.js";
 
 export interface ConversationUpdateRequest {
   archived?: boolean;

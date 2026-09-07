@@ -1,7 +1,7 @@
 import { ArticleAnalysisForm } from "@ngriffin_uk/polychat-component-experiences/content";
 import { useNavigate } from "react-router";
 
-import { useArticleAnalysisSession } from "./useArticleAnalysisSession";
+import { useArticleAnalysisSession } from "./useArticleAnalysisSession.js";
 
 interface ArticleAnalysisSessionProps {
   basePath: string;

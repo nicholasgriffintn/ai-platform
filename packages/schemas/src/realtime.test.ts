@@ -5,7 +5,7 @@ import {
   REALTIME_LIVE_PROVIDER_MANIFEST,
   realtimeLiveProviderManifestItemSchema,
   realtimeLiveProviderManifestResponseSchema,
-} from "./realtime";
+} from "./realtime.js";
 
 describe("legacy realtime provider manifest compatibility", () => {
   it("preserves the original public manifest shape and lookup behaviour", () => {

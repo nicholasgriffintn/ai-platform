@@ -3,7 +3,7 @@ import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { EMPTY_MODEL_CONFIG, runsOnDevice } from "@ngriffin_uk/polychat-schemas";
 
-import { useModels } from "./useModels";
+import { useModels } from "./useModels.js";
 
 /**
  * A conversation answered on this machine keeps its content here, so storage and titling follow

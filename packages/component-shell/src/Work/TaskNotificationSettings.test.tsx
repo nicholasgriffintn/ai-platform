@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { TaskNotificationChannel } from "../Notifications/task-notification-channel";
-import { TaskNotificationSettings } from "./TaskNotificationSettings";
+import type { TaskNotificationChannel } from "../Notifications/task-notification-channel.js";
+import { TaskNotificationSettings } from "./TaskNotificationSettings.js";
 
 const setCategory = vi.fn();
 

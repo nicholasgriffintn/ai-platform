@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveConversationStorageMode } from "./conversation-storage-policy";
+import { resolveConversationStorageMode } from "./conversation-storage-policy.js";
 
 const signedInPro = {
   isAuthenticated: true,

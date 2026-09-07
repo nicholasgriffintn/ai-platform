@@ -14,11 +14,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { getComposerDraftAfterRetry } from "../chat/retry-composer";
-import { useComposerDraft } from "../state/composer-draft";
-import { useConversationScope } from "../state/conversation-scope";
-import { useLoadingActions } from "../state/LoadingContext";
-import { useConversationStorage } from "./useConversationStorage";
+import { getComposerDraftAfterRetry } from "../chat/retry-composer.js";
+import { useComposerDraft } from "../state/composer-draft.js";
+import { useConversationScope } from "../state/conversation-scope.js";
+import { useLoadingActions } from "../state/LoadingContext.js";
+import { useConversationStorage } from "./useConversationStorage.js";
 
 /**
  * Hook for advanced conversation actions like editing, retrying, and branching.

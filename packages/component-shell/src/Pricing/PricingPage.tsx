@@ -11,7 +11,7 @@ import type { Plan } from "@ngriffin_uk/polychat-schemas";
 import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
 import { Check, Loader2 } from "lucide-react";
 
-import { CreditLadder } from "./CreditLadder";
+import { CreditLadder } from "./CreditLadder.js";
 
 const PLAN_FEATURES: Record<string, string[]> = {
   free: [

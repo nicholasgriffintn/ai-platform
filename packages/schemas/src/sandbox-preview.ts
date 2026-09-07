@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { sandboxServiceNameSchema, sandboxServicePortSchema } from "./sandbox-services";
+import { sandboxServiceNameSchema, sandboxServicePortSchema } from "./sandbox-services.js";
 
 export const SANDBOX_PREVIEW_ACCESS_TTL_SECONDS = 5 * 60;
 export const SANDBOX_PREVIEW_BOOTSTRAP_TTL_SECONDS = 60;

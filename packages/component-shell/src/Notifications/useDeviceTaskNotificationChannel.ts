@@ -1,6 +1,6 @@
 import { useTaskNotificationPreferences } from "@ngriffin_uk/polychat-library-react";
 
-import type { TaskNotificationChannel } from "./task-notification-channel";
+import type { TaskNotificationChannel } from "./task-notification-channel.js";
 
 export function useDeviceTaskNotificationChannel(): TaskNotificationChannel {
   const { settings, isUpdating, setEnabled } = useTaskNotificationPreferences();

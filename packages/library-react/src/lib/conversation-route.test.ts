@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { getPersonalConversationPath, resolvePersonalConversationId } from "./conversation-route";
+import {
+  getPersonalConversationPath,
+  resolvePersonalConversationId,
+} from "./conversation-route.js";
 
 describe("personal conversation routes", () => {
   it("builds a path URL for a conversation", () => {

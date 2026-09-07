@@ -5,16 +5,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 
-import { useChat } from "../chat/useChat";
-import { localChatService } from "../local/indexeddb-conversation-store";
+import { useChat } from "../chat/useChat.js";
+import { localChatService } from "../local/indexeddb-conversation-store.js";
 
 vi.mock("@ngriffin_uk/polychat-library-client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-client")>()),
   apiService: { getChat: vi.fn() },
 }));
 
-vi.mock("../local/indexeddb-conversation-store", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../local/indexeddb-conversation-store")>()),
+vi.mock("../local/indexeddb-conversation-store.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../local/indexeddb-conversation-store.js")>()),
   localChatService: { getLocalChat: vi.fn() },
 }));
 

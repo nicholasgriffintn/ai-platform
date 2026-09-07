@@ -27,7 +27,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { ProfileTab } from "../ProfileTabLayout";
+import { ProfileTab } from "../ProfileTabLayout.js";
 
 const IS_DISABLED = import.meta.env.VITE_BILLING_DISABLED === "true";
 

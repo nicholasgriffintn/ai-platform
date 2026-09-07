@@ -5,8 +5,8 @@ const DISMISSED_SUFFIX = ":dismissed";
 const SUGGESTION_COOLDOWN_KEY = `${KEY_PREFIX}suggestion-cooldown-until`;
 const SUGGESTION_COOLDOWN_DAYS = 3;
 
-export type { ComposerBannerDismissalScope as BannerDismissalScope } from "../../Composer/ComposerBannerCard";
-import type { ComposerBannerDismissalScope as BannerDismissalScope } from "../../Composer/ComposerBannerCard";
+export type { ComposerBannerDismissalScope as BannerDismissalScope } from "../../Composer/ComposerBannerCard.js";
+import type { ComposerBannerDismissalScope as BannerDismissalScope } from "../../Composer/ComposerBannerCard.js";
 
 const todayStamp = () => new Date().toISOString().slice(0, 10);
 

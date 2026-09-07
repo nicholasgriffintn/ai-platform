@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 
-import { ocrSchema } from "./ocr";
+import { ocrSchema } from "./ocr.js";
 
 export const MAX_OCR_BATCH_REQUESTS = 25;
 

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect } from "react";
 
-import { useUIStore } from "../state/stores/uiStore";
+import { useUIStore } from "../state/stores/uiStore.js";
 
 const mobileMediaQuery = "(max-width: 768px)";
 

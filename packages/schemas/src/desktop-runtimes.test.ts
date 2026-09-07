@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { desktopEndpointSchema } from "./desktop-runtimes";
+import { desktopEndpointSchema } from "./desktop-runtimes.js";
 
 const base = {
   id: "endpoint-1",

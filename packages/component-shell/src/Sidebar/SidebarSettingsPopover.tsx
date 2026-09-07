@@ -15,7 +15,7 @@ import {
   useUsageStore,
 } from "@ngriffin_uk/polychat-library-react";
 
-import { useShellHost } from "../Host/ShellHostContext";
+import { useShellHost } from "../Host/ShellHostContext.js";
 
 const links: SidebarSettingsLinks = {
   account: PROFILE_PATH,

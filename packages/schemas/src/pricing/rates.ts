@@ -1,4 +1,4 @@
-import { DIRECT_COST_UNIT, type UsageUnit } from "./units";
+import { DIRECT_COST_UNIT, type UsageUnit } from "./units.js";
 
 export const RATE_WILDCARD_RESOURCE = "*";
 

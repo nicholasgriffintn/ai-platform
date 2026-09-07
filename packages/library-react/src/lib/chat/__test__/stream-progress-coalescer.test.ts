@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createStreamProgressCoalescer,
   type FlushScheduler,
-} from "../../../chat/stream-progress-coalescer";
+} from "../../../chat/stream-progress-coalescer.js";
 
 function createManualScheduler() {
   let queued: (() => void) | null = null;

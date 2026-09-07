@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getComposerDraftAfterRetry } from "../../../chat/retry-composer";
+import { getComposerDraftAfterRetry } from "../../../chat/retry-composer.js";
 
 describe("getComposerDraftAfterRetry", () => {
   it("clears the draft restored from the user message being retried", () => {

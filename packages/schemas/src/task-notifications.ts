@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import type { ProjectTaskAttentionKind } from "./project-tasks";
+import type { ProjectTaskAttentionKind } from "./project-tasks.js";
 
 export const TASK_NOTIFICATION_PROTOCOL_VERSION = 1;
 

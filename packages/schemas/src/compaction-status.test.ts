@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { normaliseCompactionStatusMessage } from "./compaction-status";
+import { normaliseCompactionStatusMessage } from "./compaction-status.js";
 
 describe("normaliseCompactionStatusMessage", () => {
   it("uses the completed compaction part label when marker content is blank", () => {

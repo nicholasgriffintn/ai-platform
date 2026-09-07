@@ -13,7 +13,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { projectQueryKey } from "./useWorkspaces";
+import { projectQueryKey } from "./useWorkspaces.js";
 
 const organisationQueryKey = (conversationId: string) => [
   "conversation-organisation",

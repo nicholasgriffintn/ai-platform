@@ -1,8 +1,8 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
 
-import { ConversationSurfaceLayout } from "../ConversationSurfaceLayout";
-import { ConversationThread, type ThreadModeConfig } from "./index";
+import { ConversationSurfaceLayout } from "../ConversationSurfaceLayout.js";
+import { ConversationThread, type ThreadModeConfig } from "./index.js";
 
 export interface ConversationSurfaceProps {
   /** Rendered above the thread, inside the same height context. */

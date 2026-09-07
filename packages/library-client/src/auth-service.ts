@@ -1,10 +1,10 @@
 import type { AnonymousUser, User, UserSettings } from "@ngriffin_uk/polychat-schemas/user-profile";
 
-import { apiKeyService } from "./api-key";
-import { API_BASE_URL } from "./constants";
-import { fetchApi } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
-import { getNotificationInstallationId } from "./installation";
+import { apiKeyService } from "./api-key.js";
+import { API_BASE_URL } from "./constants.js";
+import { fetchApi } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
+import { getNotificationInstallationId } from "./installation.js";
 
 interface MagicLinkSuccessResponse {
   success: boolean;

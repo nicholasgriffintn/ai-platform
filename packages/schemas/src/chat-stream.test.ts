@@ -4,7 +4,7 @@ import {
   createChatStreamAssembler,
   parseChatStreamSseBuffer,
   type ChatStreamUpdate,
-} from "./chat-stream";
+} from "./chat-stream.js";
 
 function collectUpdates(events: unknown[]) {
   const assembler = createChatStreamAssembler({

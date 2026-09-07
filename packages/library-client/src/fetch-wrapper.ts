@@ -1,6 +1,6 @@
-import { API_BASE_URL } from "./constants";
-import { createPolychatClient, type FetchApiOptions } from "./http";
-import { getHeaders } from "./utils/headers";
+import { API_BASE_URL } from "./constants.js";
+import { createPolychatClient, type FetchApiOptions } from "./http.js";
+import { getHeaders } from "./utils/headers.js";
 
 function getCookie(name: string): string | null {
   if (typeof document === "undefined") {

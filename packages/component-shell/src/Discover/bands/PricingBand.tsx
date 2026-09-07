@@ -3,7 +3,7 @@ import { usePlans, formatPlanPrice } from "@ngriffin_uk/polychat-library-react";
 import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo } from "react";
 
-import { DiscoverBand } from "../DiscoverBand";
+import { DiscoverBand } from "../DiscoverBand.js";
 
 export function PricingBand() {
   const { data, isLoading } = usePlans();

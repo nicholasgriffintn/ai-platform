@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import {
   createSourceAttachment,
   type SourceAttachmentCapabilities,
-} from "../lib/sources/attachments";
+} from "../lib/sources/attachments.js";
 
 export function useProjectConversationSources(
   projectId: string,

@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-import { PageShell } from "../Shell/PageShell";
-import { ProjectHomeTabs } from "./ProjectHomeTabs";
-import { useWorkData } from "./WorkDataContext";
+import { PageShell } from "../Shell/PageShell.js";
+import { ProjectHomeTabs } from "./ProjectHomeTabs.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectHomeHeader({
   workspaceId,

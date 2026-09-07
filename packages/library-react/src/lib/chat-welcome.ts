@@ -1,4 +1,4 @@
-import { type FocusRole, resolveFocusRole } from "./focus-role";
+import { type FocusRole, resolveFocusRole } from "./focus-role.js";
 
 export interface ChatWelcome {
   title: string;

@@ -5,8 +5,8 @@ import type {
 } from "@ngriffin_uk/polychat-library-realtime";
 import type { RealtimeLiveProviderCatalogueResponse } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchApiOrThrow } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
+import { fetchApiOrThrow } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
 
 export async function fetchRealtimeLiveProviders(): Promise<RealtimeLiveProviderCatalogueResponse> {
   const response = await fetchApiOrThrow("/realtime/providers");

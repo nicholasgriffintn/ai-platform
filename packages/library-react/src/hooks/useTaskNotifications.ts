@@ -13,7 +13,7 @@ import type {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import { decodeWebPushPublicKey, notificationPermission } from "../lib/notifications/web-push";
+import { decodeWebPushPublicKey, notificationPermission } from "../lib/notifications/web-push.js";
 
 export const TASK_NOTIFICATION_SETTINGS_QUERY_KEY = ["task-notification-settings"] as const;
 

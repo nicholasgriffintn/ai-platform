@@ -6,9 +6,9 @@ import type {
   GuessResponse,
 } from "@ngriffin_uk/polychat-schemas/experiences";
 
-import { apiService } from "./api-service";
-import { fetchApi } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
+import { apiService } from "./api-service.js";
+import { fetchApi } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
 
 export const fetchDrawings = async (): Promise<Drawing[]> => {
   let headers = {};

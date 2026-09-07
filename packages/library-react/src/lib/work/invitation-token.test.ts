@@ -2,7 +2,10 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { clearWorkspaceInvitationToken, consumeWorkspaceInvitationToken } from "./invitation-token";
+import {
+  clearWorkspaceInvitationToken,
+  consumeWorkspaceInvitationToken,
+} from "./invitation-token.js";
 
 describe("workspace invitation token handling", () => {
   afterEach(() => {

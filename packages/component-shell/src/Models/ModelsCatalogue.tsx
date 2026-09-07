@@ -6,9 +6,9 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { useMemo } from "react";
 
-import { ModelLineup } from "./ModelLineup";
-import { MODELS_SECTION_NAV } from "./models-sections";
-import { ProviderCatalogue } from "./ProviderCatalogue";
+import { ModelLineup } from "./ModelLineup.js";
+import { MODELS_SECTION_NAV } from "./models-sections.js";
+import { ProviderCatalogue } from "./ProviderCatalogue.js";
 
 export function ModelsCatalogue() {
   const { data, isLoading, error } = useModelCatalogue();

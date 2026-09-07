@@ -21,7 +21,7 @@ import type { ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
 import { Brain, ListFilter, Zap } from "lucide-react";
 import { useMemo } from "react";
 
-import { InlineSettingSelect } from "../../InlineSettingSelect";
+import { InlineSettingSelect } from "../../InlineSettingSelect.js";
 
 interface InlineResponseControlsProps {
   isDisabled?: boolean;

@@ -2,12 +2,12 @@ import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 
-import { useChat } from "../chat/useChat";
+import { useChat } from "../chat/useChat.js";
 import {
   getPersonalConversationPath,
   getProjectConversationPath,
   resolvePersonalConversationId,
-} from "../lib/conversation-route";
+} from "../lib/conversation-route.js";
 
 export type ConversationRouteSurface =
   | { kind: "personal" }

@@ -3,8 +3,8 @@ import {
   isCompactionMarkerMessage,
   normaliseMessageParts,
   type MessagePart,
-} from "./message-part-utils";
-import type { MessageRole } from "./shared";
+} from "./message-part-utils.js";
+import type { MessageRole } from "./shared.js";
 
 export type ProviderChatMessageRole = Exclude<MessageRole, "compaction" | "goal">;
 export type ProviderChatMessageContent =

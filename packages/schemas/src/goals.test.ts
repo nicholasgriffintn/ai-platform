@@ -5,7 +5,7 @@ import {
   GOAL_STALL_THRESHOLD,
   isTerminalGoalStatus,
   type GoalContinuationInput,
-} from "./goals";
+} from "./goals.js";
 
 function input(overrides: Partial<GoalContinuationInput> = {}): GoalContinuationInput {
   return {

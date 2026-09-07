@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type { Message } from "./conversation-types";
+import type { Message } from "./conversation-types.js";
 import {
   canStartThreadFromMessage,
   createConversationThread,
   createBranchMetadata,
   getThreadPoint,
-} from "./threading";
+} from "./threading.js";
 
 const messages = [
   { id: "user-1", role: "user", content: "Question" },

@@ -10,8 +10,8 @@ import {
   resolveLineupReasoningEffort,
   resolveModelTierAlternate,
   resolveModelTierSelection,
-} from "./model-lineup";
-import type { ModelConfig, ModelConfigItem } from "./models";
+} from "./model-lineup.js";
+import type { ModelConfig, ModelConfigItem } from "./models.js";
 
 function model(id: string, overrides: Partial<ModelConfigItem> = {}): ModelConfigItem {
   return {

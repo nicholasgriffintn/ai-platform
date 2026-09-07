@@ -6,10 +6,10 @@ import {
 import { PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
 
-import { ChatSidebar } from "../Chat/ChatSidebar";
-import { ConversationProductHeader } from "../Header/ConversationProductHeader";
-import { ConversationThreadNavigation } from "../Header/ConversationThreadNavigation";
-import { PageShell } from "../Shell/PageShell";
+import { ChatSidebar } from "../Chat/ChatSidebar.js";
+import { ConversationProductHeader } from "../Header/ConversationProductHeader.js";
+import { ConversationThreadNavigation } from "../Header/ConversationThreadNavigation.js";
+import { PageShell } from "../Shell/PageShell.js";
 interface ConversationPageProps {
   embedded?: boolean;
   title: string;

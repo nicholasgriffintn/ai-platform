@@ -1,8 +1,8 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import type { Message, MessageContent } from "./conversation-types";
-import { normaliseMessageParts } from "./message-parts";
-import { toProviderMessages, type ProviderMessage } from "./provider-messages";
+import type { Message, MessageContent } from "./conversation-types.js";
+import { normaliseMessageParts } from "./message-parts.js";
+import { toProviderMessages, type ProviderMessage } from "./provider-messages.js";
 
 type ChatRequestMessage = {
   id?: string;

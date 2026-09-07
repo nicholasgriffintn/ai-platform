@@ -1,7 +1,7 @@
 import type { DesktopEndpoint } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { findModelRuntimeEndpoint } from "./desktop-execution";
+import { findModelRuntimeEndpoint } from "./desktop-execution.js";
 
 function endpoint(overrides: Partial<DesktopEndpoint>): DesktopEndpoint {
   return {

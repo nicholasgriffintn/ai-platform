@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import type { Conversation } from "./conversation-types";
+import type { Conversation } from "./conversation-types.js";
 import {
   buildLocalChatExport,
   localChatExportFilename,
   readLocalChatExport,
-} from "./local-chat-export";
+} from "./local-chat-export.js";
 
 const conversation = { id: "c1", title: "Kept", messages: [] } as unknown as Conversation;
 

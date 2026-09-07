@@ -1,7 +1,7 @@
 import type { ModelTier } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import type { ChatSettings } from "./conversation-types";
+import type { ChatSettings } from "./conversation-types.js";
 
 const LEGACY_SAMPLING_DEFAULTS: Record<string, number> = {
   temperature: 0.7,

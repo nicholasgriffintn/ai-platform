@@ -15,7 +15,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
+import { useCanAccessProFeatures } from "./useCanAccessProFeatures.js";
 
 export const ASSISTANT_RECIPES_QUERY_KEY = ["assistant-recipes"] as const;
 export const RECIPE_INSTALLATIONS_QUERY_KEY = ["recipe-installations"] as const;

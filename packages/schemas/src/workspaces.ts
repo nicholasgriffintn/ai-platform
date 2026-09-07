@@ -1,16 +1,16 @@
 import z from "zod/v4";
 
-import { conversationTypeSchema } from "./chat";
-import { conversationGroupSchema, conversationSnoozeSchema } from "./conversation-organisation";
-import { modelTierSchema } from "./model-lineup";
-import { projectFlowSchema } from "./project-tasks";
-import { sandboxEnvironmentCacheSummarySchema } from "./sandbox-cache";
+import { conversationTypeSchema } from "./chat.js";
+import { conversationGroupSchema, conversationSnoozeSchema } from "./conversation-organisation.js";
+import { modelTierSchema } from "./model-lineup.js";
+import { projectFlowSchema } from "./project-tasks.js";
+import { sandboxEnvironmentCacheSummarySchema } from "./sandbox-cache.js";
 import {
   DEFAULT_SANDBOX_DELIVERY_POLICY,
   resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicySchema,
-} from "./sandbox-delivery";
-import { sandboxEnvironmentSetupSchema } from "./sandbox-environment";
+} from "./sandbox-delivery.js";
+import { sandboxEnvironmentSetupSchema } from "./sandbox-environment.js";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
 export const projectCapabilityKindSchema = z.enum(["app", "recipe", "skill", "tool", "teammate"]);

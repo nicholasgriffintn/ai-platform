@@ -1,6 +1,6 @@
 import * as z from "zod/v4";
 
-import { resolveModelMakerId } from "./model-makers";
+import { resolveModelMakerId } from "./model-makers.js";
 
 export const PET_FRAME_WIDTH = 192;
 export const PET_FRAME_HEIGHT = 208;

@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
-import { recipeConnectorProviderSchema } from "./apps";
-import { readinessSchema } from "./readiness";
+import { recipeConnectorProviderSchema } from "./apps.js";
+import { readinessSchema } from "./readiness.js";
 
 export const CAPABILITY_DISCOVERY_TOOL_NAME = "discover_capabilities";
 export const CAPABILITY_DISCOVERY_DATA_KEY = "capabilityDiscovery";

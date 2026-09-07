@@ -27,10 +27,10 @@ import type {
   UploadResponse,
 } from "@ngriffin_uk/polychat-schemas/experiences";
 
-import { apiService } from "./api-service";
-import { fetchApi } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
-import { withProjectScope } from "./project-scope";
+import { apiService } from "./api-service.js";
+import { fetchApi } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
+import { withProjectScope } from "./project-scope.js";
 
 export const fetchRecordings = async (projectId?: string): Promise<RecordingListItem[]> => {
   let headers = {};

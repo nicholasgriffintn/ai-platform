@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildConversationSections } from "../conversation-sections";
+import { buildConversationSections } from "../conversation-sections.js";
 
 const now = new Date();
 const daysAgo = (days: number) =>

@@ -1,8 +1,8 @@
 import type { SandboxRunData } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import type { AgentTraceEntry } from "./agent-trace";
-import { buildRunActivityEntries } from "./run-activity";
+import type { AgentTraceEntry } from "./agent-trace.js";
+import { buildRunActivityEntries } from "./run-activity.js";
 
 const traceEntries = [
   { id: "call", type: "tool_call", label: "run_sandbox_task" },

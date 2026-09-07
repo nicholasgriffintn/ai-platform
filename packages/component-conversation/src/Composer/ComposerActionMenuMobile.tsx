@@ -17,8 +17,8 @@ import {
   AssistantActionItemIcon,
   describeAssistantActionItem,
   groupAssistantActionItems,
-} from "./assistantActionPresentation";
-import { composerActionMenuRowClassName, ComposerActionMenuRow } from "./ComposerActionMenuRow";
+} from "./assistantActionPresentation.js";
+import { composerActionMenuRowClassName, ComposerActionMenuRow } from "./ComposerActionMenuRow.js";
 
 type MobileMenuPage =
   | { kind: "sources" }

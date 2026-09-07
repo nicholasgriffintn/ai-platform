@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { buildAgentTraceEntries } from "./agent-trace";
-import type { Message } from "./conversation-types";
+import { buildAgentTraceEntries } from "./agent-trace.js";
+import type { Message } from "./conversation-types.js";
 
 describe("buildAgentTraceEntries", () => {
   it("attributes an authored skill revision to its tool result", () => {

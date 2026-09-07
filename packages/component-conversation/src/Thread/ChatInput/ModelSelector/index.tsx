@@ -52,7 +52,7 @@ import { containsEventTarget } from "@ngriffin_uk/polychat-utility-react";
 import { Loader2 } from "lucide-react";
 import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useModelSelectorLayout } from "./useModelSelectorLayout";
+import { useModelSelectorLayout } from "./useModelSelectorLayout.js";
 
 interface ModelSelectorProps {
   isDisabled?: boolean;

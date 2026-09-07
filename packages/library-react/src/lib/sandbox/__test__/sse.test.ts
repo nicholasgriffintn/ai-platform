@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { parseSseBuffer } from "../sse";
+import { parseSseBuffer } from "../sse.js";
 
 describe("parseSseBuffer", () => {
   it("parses complete SSE data blocks", () => {

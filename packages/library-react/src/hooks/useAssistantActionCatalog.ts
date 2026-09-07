@@ -6,10 +6,10 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
-import { useCapabilityCatalog } from "./useCapabilityCatalog";
-import { useRecipeConnectors } from "./useConnectors";
-import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes";
-import { usePersonalSkills } from "./useSkills";
+import { useCapabilityCatalog } from "./useCapabilityCatalog.js";
+import { useRecipeConnectors } from "./useConnectors.js";
+import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes.js";
+import { usePersonalSkills } from "./useSkills.js";
 
 export function useAssistantActionCatalog({
   includeTeammates = true,

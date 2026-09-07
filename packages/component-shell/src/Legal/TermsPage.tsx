@@ -7,8 +7,8 @@ import {
 } from "@ngriffin_uk/polychat-library-client";
 import { Link } from "react-router";
 
-import { PageShell } from "../Shell/PageShell";
-import { StandardSidebarContent } from "../Sidebar/StandardSidebarContent";
+import { PageShell } from "../Shell/PageShell.js";
+import { StandardSidebarContent } from "../Sidebar/StandardSidebarContent.js";
 export function TermsPage() {
   return (
     <PageShell title="Terms of Service" sidebarContent={<StandardSidebarContent />}>

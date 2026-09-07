@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import type { WorkAttentionFilters } from "@ngriffin_uk/polychat-utility-react";
 
-import { getProjectConversationPath } from "./conversation-route";
+import { getProjectConversationPath } from "./conversation-route.js";
 
 const DEFAULT_LIMIT = 25;
 

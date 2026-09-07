@@ -3,7 +3,7 @@ import {
   CanvasSidebarControls,
 } from "@ngriffin_uk/polychat-component-experiences/media";
 
-import { useCanvasStudio } from "./useCanvasStudio";
+import { useCanvasStudio } from "./useCanvasStudio.js";
 
 export function CanvasStudio() {
   const canvas = useCanvasStudio();

@@ -16,22 +16,22 @@ import type {
   UpdateTeammateInput,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { useChatStore } from "./chatStore";
-import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
+import { useChatStore } from "./chatStore.js";
+import { AudioService, type SpeechGenerationResponse } from "./services/audio-service.js";
 import {
   ChatService,
   type ConversationUpdateRequest,
   type GetChatOptions,
   type StreamChatCompletionsParams,
-} from "./services/chat-service";
-import { ResearchService } from "./services/research-service";
-import { SubscriptionService } from "./services/subscription-service";
-import { TeammateService } from "./services/teammate-service";
-import { UploadService, type UploadFileOptions } from "./services/upload-service";
-import type { ProviderSetting } from "./services/user-service";
-import { UserService } from "./services/user-service";
-import { useToolsStore } from "./toolsStore";
-import { getHeaders } from "./utils/headers";
+} from "./services/chat-service.js";
+import { ResearchService } from "./services/research-service.js";
+import { SubscriptionService } from "./services/subscription-service.js";
+import { TeammateService } from "./services/teammate-service.js";
+import { UploadService, type UploadFileOptions } from "./services/upload-service.js";
+import type { ProviderSetting } from "./services/user-service.js";
+import { UserService } from "./services/user-service.js";
+import { useToolsStore } from "./toolsStore.js";
+import { getHeaders } from "./utils/headers.js";
 
 /**
  * Main API service class that acts as a facade for all domain-specific services.

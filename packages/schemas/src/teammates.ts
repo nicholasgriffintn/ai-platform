@@ -1,9 +1,9 @@
 import z from "zod/v4";
 
-import { agentModeSchema } from "./agent-modes";
-import { skillIdSchema } from "./skills";
-import { teammateKindSchema } from "./teammate-roles";
-import { toolIdsSchema } from "./tool-ids";
+import { agentModeSchema } from "./agent-modes.js";
+import { skillIdSchema } from "./skills.js";
+import { teammateKindSchema } from "./teammate-roles.js";
+import { toolIdsSchema } from "./tool-ids.js";
 
 const teammateSkillIdsSchema = z.array(skillIdSchema);
 

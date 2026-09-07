@@ -17,7 +17,7 @@ import type {
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo, useState } from "react";
 
-import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows";
+import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
 
 export function ProjectSchedulesCard({
   workspaceId,

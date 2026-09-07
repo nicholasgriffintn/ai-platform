@@ -1,6 +1,6 @@
 import type { DesktopEndpoint, ModelRuntimeVendor } from "@ngriffin_uk/polychat-schemas";
 
-import type { DesktopBackend } from "./desktop-backend";
+import type { DesktopBackend } from "./desktop-backend.js";
 
 let backend: DesktopBackend | null = null;
 

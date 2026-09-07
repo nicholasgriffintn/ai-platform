@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { canReplaceStoredConversationMessages } from "./conversation-replacement";
+import { canReplaceStoredConversationMessages } from "./conversation-replacement.js";
 
 describe("canReplaceStoredConversationMessages", () => {
   it("blocks replacing stored messages from compacted visible history", () => {

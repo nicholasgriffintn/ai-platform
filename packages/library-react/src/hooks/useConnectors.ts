@@ -12,7 +12,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
+import { useCanAccessProFeatures } from "./useCanAccessProFeatures.js";
 
 export const RECIPE_CONNECTORS_QUERY_KEY = ["recipe-connectors"] as const;
 export const recipeConnectorAccountsQueryKey = (provider: RecipeConnectorProvider) =>

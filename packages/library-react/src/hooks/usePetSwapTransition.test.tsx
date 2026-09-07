@@ -3,7 +3,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { PET_SWAP_FADE_MS, usePetSwapTransition } from "./usePetSwapTransition";
+import { PET_SWAP_FADE_MS, usePetSwapTransition } from "./usePetSwapTransition.js";
 
 describe("usePetSwapTransition", () => {
   beforeEach(() => {

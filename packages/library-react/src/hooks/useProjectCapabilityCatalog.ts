@@ -5,9 +5,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
-import { useCapabilityCatalog } from "./useCapabilityCatalog";
-import { useAssistantRecipes } from "./useRecipes";
-import { useTools } from "./useTools";
+import { useCapabilityCatalog } from "./useCapabilityCatalog.js";
+import { useAssistantRecipes } from "./useRecipes.js";
+import { useTools } from "./useTools.js";
 
 /**
  * An experience that declares an owning capability is the thing a project or person enables,

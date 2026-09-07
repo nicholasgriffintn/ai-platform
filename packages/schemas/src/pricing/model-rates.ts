@@ -1,7 +1,7 @@
-import type { ModelConfigItem } from "../models";
-import { cacheMultipliersForProvider } from "./cache-multipliers";
-import type { RateEntry } from "./rates";
-import type { UsageUnit } from "./units";
+import type { ModelConfigItem } from "../models.js";
+import { cacheMultipliersForProvider } from "./cache-multipliers.js";
+import type { RateEntry } from "./rates.js";
+import type { UsageUnit } from "./units.js";
 
 export const MODEL_RATES_DEFAULT_EFFECTIVE_FROM = "1970-01-01";
 

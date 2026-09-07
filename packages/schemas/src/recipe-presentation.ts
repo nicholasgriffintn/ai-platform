@@ -5,8 +5,8 @@ import type {
   RecipeInstallation,
   RecipeInstallationTrigger,
   RecipeKind,
-} from "./apps";
-import { isSupportedCronExpression } from "./cron";
+} from "./apps.js";
+import { isSupportedCronExpression } from "./cron.js";
 
 export type RecipeKindFilter = RecipeKind | "all";
 export type ConfigurationFormValues = Record<string, string | boolean>;

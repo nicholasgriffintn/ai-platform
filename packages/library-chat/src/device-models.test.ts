@@ -1,7 +1,7 @@
 import type { DiscoveredModel } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { buildDeviceModels } from "./device-models";
+import { buildDeviceModels } from "./device-models.js";
 
 function discovered(overrides: Partial<DiscoveredModel>): DiscoveredModel {
   return {

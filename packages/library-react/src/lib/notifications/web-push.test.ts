@@ -2,7 +2,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 
-import { decodeWebPushPublicKey, notificationPermission } from "./web-push";
+import { decodeWebPushPublicKey, notificationPermission } from "./web-push.js";
 
 describe("web push lifecycle", () => {
   it("decodes a URL-safe application server key", () => {

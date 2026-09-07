@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
-import { normaliseCompactionStatusMessage } from "./compaction-status";
-import { messagePartsSchema } from "./message-parts";
+import { normaliseCompactionStatusMessage } from "./compaction-status.js";
+import { messagePartsSchema } from "./message-parts.js";
 
 export const messageRoleSchema = z.enum([
   "user",

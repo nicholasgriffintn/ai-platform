@@ -1,4 +1,4 @@
-import type { AgentTraceEntry } from "./agent-trace";
+import type { AgentTraceEntry } from "./agent-trace.js";
 
 export function getAgentTraceTypeLabel(type: AgentTraceEntry["type"]): string {
   switch (type) {

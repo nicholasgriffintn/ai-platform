@@ -24,9 +24,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
-import { MODELS_SECTIONS } from "./models-sections";
-import { ModelsSection } from "./ModelsSection";
-import { ProviderMark } from "./ProviderMark";
+import { MODELS_SECTIONS } from "./models-sections.js";
+import { ModelsSection } from "./ModelsSection.js";
+import { ProviderMark } from "./ProviderMark.js";
 
 const TIER_ACCENT: Record<ModelTier, string> = {
   low: "text-success bg-success/10 border-success/25",

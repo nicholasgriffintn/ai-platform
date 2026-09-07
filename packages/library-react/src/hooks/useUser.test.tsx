@@ -5,9 +5,9 @@ import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MODELS_QUERY_KEY } from "../chat/useModels";
-import { REALTIME_PROVIDERS_QUERY_KEY } from "./useRealtimeProviders";
-import { useUser } from "./useUser";
+import { MODELS_QUERY_KEY } from "../chat/useModels.js";
+import { REALTIME_PROVIDERS_QUERY_KEY } from "./useRealtimeProviders.js";
+import { useUser } from "./useUser.js";
 
 const mocks = vi.hoisted(() => ({
   deleteProviderApiKey: vi.fn(),

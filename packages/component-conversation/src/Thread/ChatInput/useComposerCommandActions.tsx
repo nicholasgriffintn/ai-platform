@@ -66,7 +66,7 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
-import { getComposerCommandMenuState } from "../../Composer/composerCommandNavigation";
+import { getComposerCommandMenuState } from "../../Composer/composerCommandNavigation.js";
 
 const PROJECT_CAPABILITY_KIND_BY_ACTION_KIND: Partial<
   Record<AssistantActionItemKind, ProjectCapabilityKind>

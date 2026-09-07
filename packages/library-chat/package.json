@@ -8,129 +8,109 @@
   ],
   "type": "module",
   "sideEffects": false,
-  "main": "./dist/index.cjs",
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     },
     "./agent-trace": {
       "polychat-source": "./src/agent-trace.ts",
       "types": "./dist/agent-trace.d.ts",
-      "import": "./dist/agent-trace.js",
-      "require": "./dist/agent-trace.cjs"
+      "import": "./dist/agent-trace.js"
     },
     "./agent-trace-display": {
       "polychat-source": "./src/agent-trace-display.ts",
       "types": "./dist/agent-trace-display.d.ts",
-      "import": "./dist/agent-trace-display.js",
-      "require": "./dist/agent-trace-display.cjs"
+      "import": "./dist/agent-trace-display.js"
     },
     "./run-activity": {
       "polychat-source": "./src/run-activity.ts",
       "types": "./dist/run-activity.d.ts",
-      "import": "./dist/run-activity.js",
-      "require": "./dist/run-activity.cjs"
+      "import": "./dist/run-activity.js"
     },
     "./attachments": {
       "polychat-source": "./src/attachments.ts",
       "types": "./dist/attachments.d.ts",
-      "import": "./dist/attachments.js",
-      "require": "./dist/attachments.cjs"
+      "import": "./dist/attachments.js"
     },
     "./threading": {
       "polychat-source": "./src/threading.ts",
       "types": "./dist/threading.d.ts",
-      "import": "./dist/threading.js",
-      "require": "./dist/threading.cjs"
+      "import": "./dist/threading.js"
     },
     "./compaction-command": {
       "polychat-source": "./src/compaction-command.ts",
       "types": "./dist/compaction-command.d.ts",
-      "import": "./dist/compaction-command.js",
-      "require": "./dist/compaction-command.cjs"
+      "import": "./dist/compaction-command.js"
     },
     "./message-goal-status": {
       "polychat-source": "./src/message-goal-status.ts",
       "types": "./dist/message-goal-status.d.ts",
-      "import": "./dist/message-goal-status.js",
-      "require": "./dist/message-goal-status.cjs"
+      "import": "./dist/message-goal-status.js"
     },
     "./goal-command": {
       "polychat-source": "./src/goal-command.ts",
       "types": "./dist/goal-command.d.ts",
-      "import": "./dist/goal-command.js",
-      "require": "./dist/goal-command.cjs"
+      "import": "./dist/goal-command.js"
     },
     "./composer-commands": {
       "polychat-source": "./src/composer-commands.ts",
       "types": "./dist/composer-commands.d.ts",
-      "import": "./dist/composer-commands.js",
-      "require": "./dist/composer-commands.cjs"
+      "import": "./dist/composer-commands.js"
     },
     "./conversation-storage-policy": {
       "polychat-source": "./src/conversation-storage-policy.ts",
       "types": "./dist/conversation-storage-policy.d.ts",
-      "import": "./dist/conversation-storage-policy.js",
-      "require": "./dist/conversation-storage-policy.cjs"
+      "import": "./dist/conversation-storage-policy.js"
     },
     "./conversation-types": {
       "polychat-source": "./src/conversation-types.ts",
       "types": "./dist/conversation-types.d.ts",
-      "import": "./dist/conversation-types.js",
-      "require": "./dist/conversation-types.cjs"
+      "import": "./dist/conversation-types.js"
     },
     "./conversations": {
       "polychat-source": "./src/conversations.ts",
       "types": "./dist/conversations.d.ts",
-      "import": "./dist/conversations.js",
-      "require": "./dist/conversations.cjs"
+      "import": "./dist/conversations.js"
     },
     "./markdown-editor": {
       "polychat-source": "./src/markdown-editor.ts",
       "types": "./dist/markdown-editor.d.ts",
-      "import": "./dist/markdown-editor.js",
-      "require": "./dist/markdown-editor.cjs"
+      "import": "./dist/markdown-editor.js"
     },
     "./message-compaction-status": {
       "polychat-source": "./src/message-compaction-status.ts",
       "types": "./dist/message-compaction-status.d.ts",
-      "import": "./dist/message-compaction-status.js",
-      "require": "./dist/message-compaction-status.cjs"
+      "import": "./dist/message-compaction-status.js"
     },
     "./message-parts": {
       "polychat-source": "./src/message-parts.ts",
       "types": "./dist/message-parts.d.ts",
-      "import": "./dist/message-parts.js",
-      "require": "./dist/message-parts.cjs"
+      "import": "./dist/message-parts.js"
     },
     "./message-speech": {
       "polychat-source": "./src/message-speech.ts",
       "types": "./dist/message-speech.d.ts",
-      "import": "./dist/message-speech.js",
-      "require": "./dist/message-speech.cjs"
+      "import": "./dist/message-speech.js"
     },
     "./message-utils": {
       "polychat-source": "./src/message-utils.ts",
       "types": "./dist/message-utils.d.ts",
-      "import": "./dist/message-utils.js",
-      "require": "./dist/message-utils.cjs"
+      "import": "./dist/message-utils.js"
     },
     "./messages": {
       "polychat-source": "./src/messages.ts",
       "types": "./dist/messages.d.ts",
-      "import": "./dist/messages.js",
-      "require": "./dist/messages.cjs"
+      "import": "./dist/messages.js"
     },
     "./model-selection": {
       "polychat-source": "./src/model-selection.ts",
       "types": "./dist/model-selection.d.ts",
-      "import": "./dist/model-selection.js",
-      "require": "./dist/model-selection.cjs"
+      "import": "./dist/model-selection.js"
     },
     "./model-tools": {
       "polychat-source": "./src/model-tools.ts",
@@ -140,44 +120,37 @@
     "./opinion": {
       "polychat-source": "./src/opinion.ts",
       "types": "./dist/opinion.d.ts",
-      "import": "./dist/opinion.js",
-      "require": "./dist/opinion.cjs"
+      "import": "./dist/opinion.js"
     },
     "./provider-messages": {
       "polychat-source": "./src/provider-messages.ts",
       "types": "./dist/provider-messages.d.ts",
-      "import": "./dist/provider-messages.js",
-      "require": "./dist/provider-messages.cjs"
+      "import": "./dist/provider-messages.js"
     },
     "./response-stats": {
       "polychat-source": "./src/response-stats.ts",
       "types": "./dist/response-stats.d.ts",
-      "import": "./dist/response-stats.js",
-      "require": "./dist/response-stats.cjs"
+      "import": "./dist/response-stats.js"
     },
     "./turn-activity": {
       "polychat-source": "./src/turn-activity.ts",
       "types": "./dist/turn-activity.d.ts",
-      "import": "./dist/turn-activity.js",
-      "require": "./dist/turn-activity.cjs"
+      "import": "./dist/turn-activity.js"
     },
     "./request-options": {
       "polychat-source": "./src/request-options.ts",
       "types": "./dist/request-options.d.ts",
-      "import": "./dist/request-options.js",
-      "require": "./dist/request-options.cjs"
+      "import": "./dist/request-options.js"
     },
     "./textarea-selection-position": {
       "polychat-source": "./src/textarea-selection-position.ts",
       "types": "./dist/textarea-selection-position.d.ts",
-      "import": "./dist/textarea-selection-position.js",
-      "require": "./dist/textarea-selection-position.cjs"
+      "import": "./dist/textarea-selection-position.js"
     },
     "./tool-results": {
       "polychat-source": "./src/tool-results.ts",
       "types": "./dist/tool-results.d.ts",
-      "import": "./dist/tool-results.js",
-      "require": "./dist/tool-results.cjs"
+      "import": "./dist/tool-results.js"
     },
     "./verbosity": {
       "polychat-source": "./src/verbosity.ts",
@@ -187,8 +160,7 @@
     "./weather": {
       "polychat-source": "./src/weather.ts",
       "types": "./dist/weather.d.ts",
-      "import": "./dist/weather.js",
-      "require": "./dist/weather.cjs"
+      "import": "./dist/weather.js"
     }
   },
   "publishConfig": {
@@ -196,7 +168,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
     "@ngriffin_uk/polychat-schemas": "workspace:^",
@@ -205,7 +177,6 @@
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
     "@types/node": "catalog:",
-    "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

@@ -1,10 +1,10 @@
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { apiService } from "./api-service";
-import { useChatStore } from "./chatStore";
-import { ChatService } from "./services/chat-service";
-import { useToolsStore } from "./toolsStore";
+import { apiService } from "./api-service.js";
+import { useChatStore } from "./chatStore.js";
+import { ChatService } from "./services/chat-service.js";
+import { useToolsStore } from "./toolsStore.js";
 
 describe("ApiService chat tool selection", () => {
   afterEach(() => {

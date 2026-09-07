@@ -18,7 +18,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useAuthStatus } from "../hooks/useAuth";
+import { useAuthStatus } from "../hooks/useAuth.js";
 
 export const PET_QUERY_KEYS = {
   all: ["user-pets"],

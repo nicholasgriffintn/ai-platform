@@ -20,6 +20,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./keyboard-shortcuts-help": {
+      "polychat-source": "./src/KeyboardShortcutsHelp.tsx",
+      "types": "./dist/KeyboardShortcutsHelp.d.ts",
+      "import": "./dist/KeyboardShortcutsHelp.js"
+    },
     "./styles.css": {
       "polychat-source": "./src/styles.css",
       "style": "./src/styles.css",
@@ -31,7 +36,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
     "@ngriffin_uk/polychat-component-content": "workspace:^",
@@ -60,7 +65,6 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "tailwindcss": "4.3.3",
-    "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "8.2.2",
     "vitest": "catalog:"

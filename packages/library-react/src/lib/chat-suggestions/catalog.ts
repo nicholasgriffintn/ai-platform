@@ -1,5 +1,5 @@
-import type { FocusRole } from "../../lib/focus-role";
-import type { ChatSuggestionContext, ChatSuggestionDefinition } from "./types";
+import type { FocusRole } from "../../lib/focus-role.js";
+import type { ChatSuggestionContext, ChatSuggestionDefinition } from "./types.js";
 
 export const CAPABILITY_SUGGESTIONS: ChatSuggestionDefinition[] = [
   {

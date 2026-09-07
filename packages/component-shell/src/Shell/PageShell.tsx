@@ -10,8 +10,8 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
 
-import { ProductModeHeader } from "../Header/ProductModeHeader";
-import { ProductShell } from "./ProductShell";
+import { ProductModeHeader } from "../Header/ProductModeHeader.js";
+import { ProductShell } from "./ProductShell.js";
 
 export interface PageShellProps {
   title?: string;

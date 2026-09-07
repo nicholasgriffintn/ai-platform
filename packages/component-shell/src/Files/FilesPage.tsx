@@ -7,10 +7,10 @@ import {
 import { Plus } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
-import { PageShell } from "../Shell/PageShell";
-import { MemoryLibrary } from "./MemoryLibrary";
-import { OutputsLibrary } from "./OutputsLibrary";
-import { SourcesLibrary } from "./SourcesLibrary";
+import { PageShell } from "../Shell/PageShell.js";
+import { MemoryLibrary } from "./MemoryLibrary.js";
+import { OutputsLibrary } from "./OutputsLibrary.js";
+import { SourcesLibrary } from "./SourcesLibrary.js";
 
 const TABS: Array<{ id: FilesTab; label: string; description: string }> = [
   {

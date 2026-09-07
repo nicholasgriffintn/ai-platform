@@ -1,4 +1,4 @@
-import type { Conversation } from "./conversation-types";
+import type { Conversation } from "./conversation-types.js";
 
 export const ANONYMOUS_LOCAL_CHAT_SCOPE = "anonymous";
 

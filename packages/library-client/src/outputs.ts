@@ -7,10 +7,10 @@ import type {
   SharedOutput,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service";
-import { readBoundedTextResponse, type BoundedTextResponse } from "./bounded-response";
-import { fetchApiOrThrow } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
+import { apiService } from "./api-service.js";
+import { readBoundedTextResponse, type BoundedTextResponse } from "./bounded-response.js";
+import { fetchApiOrThrow } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
 
 async function getHeaders(): Promise<Record<string, string>> {
   return apiService.getHeaders();

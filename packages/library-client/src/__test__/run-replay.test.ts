@@ -8,7 +8,7 @@ import {
   type AppChatRunReplayResponse,
   type AuthoritativeChatRunSnapshot,
   type ChatRunReplayState,
-} from "../chat/run-replay";
+} from "../chat/run-replay.js";
 
 function run(status: ChatRunStatus, attempt = 1): ChatRun {
   return {

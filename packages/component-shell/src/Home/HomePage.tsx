@@ -11,13 +11,13 @@ import { useComposerPrefill, useTrackEvent } from "@ngriffin_uk/polychat-library
 import { Image as ImageIcon, MessageCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { useCanvasStudio } from "../Apps/Canvas/useCanvasStudio";
-import { ChatSidebar } from "../Chat/ChatSidebar";
-import { ConversationProductHeader } from "../Header/ConversationProductHeader";
-import { ProductModeHeader } from "../Header/ProductModeHeader";
-import { PageShell } from "../Shell/PageShell";
-import { HomeConversationThread } from "./HomeConversationThread";
-import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
+import { useCanvasStudio } from "../Apps/Canvas/useCanvasStudio.js";
+import { ChatSidebar } from "../Chat/ChatSidebar.js";
+import { ConversationProductHeader } from "../Header/ConversationProductHeader.js";
+import { ProductModeHeader } from "../Header/ProductModeHeader.js";
+import { PageShell } from "../Shell/PageShell.js";
+import { HomeConversationThread } from "./HomeConversationThread.js";
+import { useHomeChatModeConfig } from "./useHomeChatModeConfig.js";
 
 export interface HomePageProps {
   hostModeConfig?: ThreadModeConfig;

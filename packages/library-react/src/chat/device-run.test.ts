@@ -3,7 +3,7 @@ import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-ty
 import type { DesktopEndpoint } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { streamDeviceModelRun } from "./device-run";
+import { streamDeviceModelRun } from "./device-run.js";
 
 const ollamaEndpoint = {
   id: "ollama-local",

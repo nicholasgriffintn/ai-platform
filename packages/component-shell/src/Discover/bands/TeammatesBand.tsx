@@ -2,7 +2,7 @@ import { getIcon } from "@ngriffin_uk/polychat-component-capabilities";
 import { ButtonLink, Skeleton } from "@ngriffin_uk/polychat-component-ui";
 import { usePublicCapabilityCatalogue } from "@ngriffin_uk/polychat-library-react";
 
-import { DiscoverBand } from "../DiscoverBand";
+import { DiscoverBand } from "../DiscoverBand.js";
 
 const APP_LIMIT = 6;
 

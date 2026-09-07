@@ -1,4 +1,4 @@
-import { CitationList } from "./CitationList";
+import { CitationList } from "./CitationList.js";
 
 interface SearchGroundingProps {
   searchGrounding: {

@@ -8,7 +8,7 @@ import {
 import { useFileUploadAnalytics } from "@ngriffin_uk/polychat-library-react";
 import { useNavigate } from "react-router";
 
-import { useRecordingWorkflow } from "./useRecordingWorkflow";
+import { useRecordingWorkflow } from "./useRecordingWorkflow.js";
 
 export function RecordingWorkflow({ basePath, projectId }: RecordingWorkflowProps) {
   const navigate = useNavigate();

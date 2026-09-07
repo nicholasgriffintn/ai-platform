@@ -1,20 +1,24 @@
 import z from "zod/v4";
 
-import { chatRequestModeSchema } from "./agent-modes";
+import { chatRequestModeSchema } from "./agent-modes.js";
 import {
   recipeChatRequestOptionsSchema,
   recipeConnectorProviderSchema,
   type RecipeChatRequestOptions,
-} from "./apps";
-import { conversationChannelRequestOptionsSchema } from "./chat-mode";
-import { chatRunCommandIdSchema, chatRunCommandReceiptSchema, chatRunIdSchema } from "./chat-runs";
-import { hasCompactionPart, messagePartsSchema } from "./message-parts";
-import { metaAssistantRequestSchema } from "./meta-assistant";
-import { modelTierSchema } from "./model-lineup";
-import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
-import { sandboxRequestOptionsSchema } from "./sandbox";
-import { messageSchema } from "./shared";
-import { toolIdsSchema, toolSelectionModeSchema } from "./tools";
+} from "./apps.js";
+import { conversationChannelRequestOptionsSchema } from "./chat-mode.js";
+import {
+  chatRunCommandIdSchema,
+  chatRunCommandReceiptSchema,
+  chatRunIdSchema,
+} from "./chat-runs.js";
+import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
+import { metaAssistantRequestSchema } from "./meta-assistant.js";
+import { modelTierSchema } from "./model-lineup.js";
+import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
+import { sandboxRequestOptionsSchema } from "./sandbox.js";
+import { messageSchema } from "./shared.js";
+import { toolIdsSchema, toolSelectionModeSchema } from "./tools.js";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const promptCacheBreakpointSchema = z

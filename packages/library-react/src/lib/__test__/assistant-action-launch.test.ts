@@ -13,7 +13,7 @@ import {
   readTeammateConversationLaunchIntent,
   readRecipeConversationLaunchIntent,
   removeConsumedAssistantActionLaunchParams,
-} from "../assistant-action-launch";
+} from "../assistant-action-launch.js";
 
 const plannerInvocation = {
   recipeId: "plain-planner",

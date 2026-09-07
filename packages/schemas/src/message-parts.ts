@@ -10,7 +10,7 @@ export {
   isGoalMarkerMessage,
   normaliseCompactionParts,
   normaliseMessageParts,
-} from "./message-part-utils";
+} from "./message-part-utils.js";
 export type {
   CompactionCoverage,
   CompactionMessagePart,
@@ -24,9 +24,9 @@ export type {
   TextMessagePart,
   ToolResultMessagePart,
   ToolUseMessagePart,
-} from "./message-part-utils";
-import { goalMarkerEvents } from "./goals";
-import { compactionPartStatuses, compactionSummaryStrategies } from "./message-part-utils";
+} from "./message-part-utils.js";
+import { goalMarkerEvents } from "./goals.js";
+import { compactionPartStatuses, compactionSummaryStrategies } from "./message-part-utils.js";
 
 const partBaseSchema = z.object({
   id: z.string().optional(),

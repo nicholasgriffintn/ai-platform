@@ -1,7 +1,7 @@
 import type { UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { formatCredits, getBoundedPercentage } from "@ngriffin_uk/polychat-utility-core";
 
-import type { UsageLimits } from "../state/usageStore";
+import type { UsageLimits } from "../state/usageStore.js";
 
 export interface SidebarUsageItem {
   id: string;

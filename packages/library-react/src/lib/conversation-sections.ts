@@ -4,7 +4,7 @@ import type { ConversationGroup, ConversationType } from "@ngriffin_uk/polychat-
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 import type { ConversationSection, ConversationSummary } from "@ngriffin_uk/polychat-utility-react";
 
-import { categorizeItemsByDate, type CategorizedItems } from "./sidebar";
+import { categorizeItemsByDate, type CategorizedItems } from "./sidebar.js";
 
 export interface ConversationSectionSource {
   id?: string;

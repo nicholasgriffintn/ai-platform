@@ -7,12 +7,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { RECIPE_CONNECTORS_QUERY_KEY, useStartRecipeConnector } from "../hooks/useConnectors";
+import { RECIPE_CONNECTORS_QUERY_KEY, useStartRecipeConnector } from "../hooks/useConnectors.js";
 import {
   navigateConnectorAuthPopup,
   openConnectorAuthPopup,
   waitForConnectorAuthPopup,
-} from "../lib/connector-auth-popup";
+} from "../lib/connector-auth-popup.js";
 
 interface ApiKeyDialogState {
   open: boolean;

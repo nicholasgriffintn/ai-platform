@@ -7,8 +7,8 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { ResponseRenderer } from "../Content/ResponseRenderer";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { ResponseRenderer } from "../Content/ResponseRenderer.js";
 
 interface ToolRunnerProps {
   backPath: string;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { flattenConversationThreads, type ConversationThread } from "./conversation-threads";
+import { flattenConversationThreads, type ConversationThread } from "./conversation-threads.js";
 
 const root: ConversationThread = {
   id: "root",

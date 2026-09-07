@@ -2,7 +2,7 @@ import { deviceModelSource } from "@ngriffin_uk/polychat-library-chat";
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useState } from "react";
 
-import { getCachedWebLLMModels, loadWebLLMModels } from "./web-llm-models";
+import { getCachedWebLLMModels, loadWebLLMModels } from "./web-llm-models.js";
 
 interface UseWebLLMModelsOptions {
   enabled?: boolean;

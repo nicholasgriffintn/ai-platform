@@ -1,9 +1,9 @@
 import { ToolResponseType } from "@ngriffin_uk/polychat-schemas";
 import { isRecord, readOptionalString, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 
-import type { Message } from "./conversation-types";
+import type { Message } from "./conversation-types.js";
 
-export { applyToolInteractionResolutions } from "./tool-interaction-resolutions";
+export { applyToolInteractionResolutions } from "./tool-interaction-resolutions.js";
 
 type ToolResultPart = Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>;
 type MessagePart = NonNullable<Message["parts"]>[number];

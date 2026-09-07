@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { projectChatRequestSettings } from "./chat-request-settings";
+import { projectChatRequestSettings } from "./chat-request-settings.js";
 
 describe("chat request settings", () => {
   it("sends an explicitly selected processing tier with generation settings", () => {

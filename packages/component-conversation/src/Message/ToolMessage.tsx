@@ -4,8 +4,8 @@ import { resolveToolMessageDisplay } from "@ngriffin_uk/polychat-library-chat/to
 import { readConnectorApprovalRequest } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { ConnectorApprovalCard } from "./ConnectorApprovalCard";
-import { ToolResultView } from "./ToolResultView";
+import { ConnectorApprovalCard } from "./ConnectorApprovalCard.js";
+import { ToolResultView } from "./ToolResultView.js";
 
 interface ToolMessageProps {
   message: Message;

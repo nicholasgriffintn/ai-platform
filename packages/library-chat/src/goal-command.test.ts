@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { parseGoalCommand, resolveGoalSubmission } from "./goal-command";
-import { createGoalMarkerMessage, getGoalMessageMarker } from "./message-goal-status";
+import { parseGoalCommand, resolveGoalSubmission } from "./goal-command.js";
+import { createGoalMarkerMessage, getGoalMessageMarker } from "./message-goal-status.js";
 
 describe("parseGoalCommand", () => {
   it("reports status for a bare command, whatever the casing or padding", () => {

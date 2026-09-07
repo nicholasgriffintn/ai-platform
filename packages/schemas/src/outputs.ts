@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { outputProvenanceSchema } from "./provenance";
+import { outputProvenanceSchema } from "./provenance.js";
 
 export const outputKindSchema = z
   .string()

@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 
-import { sandboxPreviewFrameSource } from "../preview-origin";
+import { sandboxPreviewFrameSource } from "../preview-origin.js";
 
 it("limits embedded previews to the configured wildcard host and uses HTTPS outside local development", () => {
   expect(sandboxPreviewFrameSource("preview.example.com", false)).toBe(

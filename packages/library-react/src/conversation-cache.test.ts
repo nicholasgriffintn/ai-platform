@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it } from "vitest";
 
-import { upsertConversationInChatCaches } from "./conversation-cache";
+import { upsertConversationInChatCaches } from "./conversation-cache.js";
 
 describe("conversation cache", () => {
   it("creates and updates only the active scoped local conversation list", () => {

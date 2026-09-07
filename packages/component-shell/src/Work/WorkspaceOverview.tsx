@@ -13,11 +13,11 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { PageShell } from "../Shell/PageShell";
-import { CreateProjectDialog } from "./CreateProjectDialog";
-import { InviteMemberDialog } from "./InviteMemberDialog";
-import { useWorkData } from "./WorkDataContext";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
+import { CreateProjectDialog } from "./CreateProjectDialog.js";
+import { InviteMemberDialog } from "./InviteMemberDialog.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
   const { workspaceQuery } = useWorkData();

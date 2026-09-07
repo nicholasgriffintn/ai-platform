@@ -3,8 +3,8 @@ import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { Feather } from "lucide-react";
 
-import { useShellHost } from "../Host/ShellHostContext";
-import { SidebarSettingsPopover } from "./SidebarSettingsPopover";
+import { useShellHost } from "../Host/ShellHostContext.js";
+import { SidebarSettingsPopover } from "./SidebarSettingsPopover.js";
 
 export function SidebarFooter() {
   const { trackEvent } = useTrackEvent();

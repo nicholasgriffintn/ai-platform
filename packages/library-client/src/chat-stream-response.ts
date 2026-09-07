@@ -3,7 +3,7 @@ import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
 import type { ChatCompletionResponseBody, ChatStreamMessage } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { ApiError } from "./http";
+import { ApiError } from "./http.js";
 
 const STREAM_ERROR_STATUS_BY_CODE: Record<string, number> = {
   authentication_error: 401,

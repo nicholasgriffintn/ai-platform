@@ -3,8 +3,8 @@ import { useApiKeys, isAuthenticationError, useUIStore } from "@ngriffin_uk/poly
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { CopyButton } from "../../Content/CopyButton";
-import { ProfileTab } from "../ProfileTabLayout";
+import { CopyButton } from "../../Content/CopyButton.js";
+import { ProfileTab } from "../ProfileTabLayout.js";
 
 export function ProfileApiKeysTab() {
   const {

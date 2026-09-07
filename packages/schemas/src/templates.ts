@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { addProjectCapabilitySchema, createProjectSchema } from "./workspaces";
+import { addProjectCapabilitySchema, createProjectSchema } from "./workspaces.js";
 
 export const templateKindSchema = z.enum(["project", "recipe", "capability"]);
 export const templateStatusSchema = z.enum(["active", "paused", "archived"]);

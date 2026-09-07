@@ -20,13 +20,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { ConversationPage } from "../Conversations/ConversationPage";
-import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
-import { ProjectFileAsTaskControl } from "./ProjectFileAsTaskControl";
-import { ProjectWorkbenchConversation } from "./ProjectWorkbenchConversation";
-import { useFileMessageAsTask } from "./useFileMessageAsTask";
-import { useProjectTaskInteractions } from "./useProjectTaskInteractions";
-import { useWorkData } from "./WorkDataContext";
+import { ConversationPage } from "../Conversations/ConversationPage.js";
+import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl.js";
+import { ProjectFileAsTaskControl } from "./ProjectFileAsTaskControl.js";
+import { ProjectWorkbenchConversation } from "./ProjectWorkbenchConversation.js";
+import { useFileMessageAsTask } from "./useFileMessageAsTask.js";
+import { useProjectTaskInteractions } from "./useProjectTaskInteractions.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectConversationPage({
   workspaceId,

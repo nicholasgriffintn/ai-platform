@@ -7,8 +7,8 @@ import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useCallback } from "react";
 
-import { createTemporaryConversationTitle } from "../chat/title-source";
-import { useConversationStorage } from "./useConversationStorage";
+import { createTemporaryConversationTitle } from "../chat/title-source.js";
+import { useConversationStorage } from "./useConversationStorage.js";
 
 /**
  * Hook for managing message operations within conversations.

@@ -7,8 +7,8 @@ import type {
 import {
   createTeammateConversationActionPath,
   createRecipeManagementActionPath,
-} from "./assistant-action-launch";
-import { getPlacePaths } from "./navigation/places";
+} from "./assistant-action-launch.js";
+import { getPlacePaths } from "./navigation/places.js";
 
 /**
  * Where a set of capability surfaces lives. Work nests them under a project; Chat nests them

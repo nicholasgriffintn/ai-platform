@@ -4,7 +4,7 @@ import {
   isCompactionMarkerMessage,
   normaliseCompactionParts,
   type CompactionMessagePart,
-} from "./message-part-utils";
+} from "./message-part-utils.js";
 
 export { compactionStatusLabels, isCompactionMarkerMessage };
 

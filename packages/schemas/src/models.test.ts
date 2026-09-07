@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { getDefaultModelId } from "./model-selection";
+import { getDefaultModelId } from "./model-selection.js";
 import {
   artificialAnalysisModelsQuerySchema,
   artificialAnalysisModelsResponseSchema,
   modelConfigItemSchema,
-} from "./models";
+} from "./models.js";
 
 describe("model schemas", () => {
   it("accepts the public Artificial Analysis route response shape", () => {

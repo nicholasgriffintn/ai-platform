@@ -1,6 +1,6 @@
 export { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
-import { ApiError } from "./http";
+import { ApiError } from "./http.js";
 
 const AUTHENTICATION_ERROR_MESSAGE = "Authentication failed. Please check your credentials.";
 const AUTHENTICATION_ERROR_PATTERN =

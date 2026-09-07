@@ -1,5 +1,5 @@
-import { PetsPanel } from "../PetsPanel";
-import { ProfileTab } from "../ProfileTabLayout";
+import { PetsPanel } from "../PetsPanel.js";
+import { ProfileTab } from "../ProfileTabLayout.js";
 
 export function ProfilePetsTab() {
   return (

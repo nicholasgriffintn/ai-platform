@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { filterProjectCapabilities } from "../project-capability-catalog";
+import { filterProjectCapabilities } from "../project-capability-catalog.js";
 
 const morningBriefing = {
   id: "morning-briefing",

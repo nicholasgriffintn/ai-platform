@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { useFormatNote } from "./useNotes";
+import { useFormatNote } from "./useNotes.js";
 
 export function useNoteFormatter(noteId: string, projectId?: string) {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);

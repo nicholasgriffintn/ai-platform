@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isModelSelectableForAccount, runsOnDevice } from "./model-selection";
+import { isModelSelectableForAccount, runsOnDevice } from "./model-selection.js";
 
 describe("device models", () => {
   it("treats a model that says nothing as running on the server", () => {

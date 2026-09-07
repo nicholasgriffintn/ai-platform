@@ -1,4 +1,4 @@
-import { sandboxPreviewFrameSource } from "./preview-origin";
+import { sandboxPreviewFrameSource } from "./preview-origin.js";
 
 export const IS_PRODUCTION = import.meta.env.PROD;
 export const IS_DEVELOPMENT = import.meta.env.DEV;

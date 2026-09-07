@@ -1,9 +1,9 @@
 import z from "zod/v4";
 
-import { MODEL_DEFAULTS, type ModelPolicyReference } from "./model-defaults";
-import { isActiveModel, isStealthModel } from "./model-selection";
-import type { ModelConfig, ModelConfigItem, ModelModality } from "./models";
-import type { ReasoningEffort } from "./reasoning";
+import { MODEL_DEFAULTS, type ModelPolicyReference } from "./model-defaults.js";
+import { isActiveModel, isStealthModel } from "./model-selection.js";
+import type { ModelConfig, ModelConfigItem, ModelModality } from "./models.js";
+import type { ReasoningEffort } from "./reasoning.js";
 
 export const MODEL_TIERS = ["low", "medium", "high", "ultra"] as const;
 export const modelTierSchema = z.enum(MODEL_TIERS);

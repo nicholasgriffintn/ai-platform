@@ -6,14 +6,14 @@ import {
 import { getProjectBasePath, isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
 import { ChevronLeft } from "lucide-react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { PageShell } from "../Shell/PageShell";
-import { ProjectBriefCard } from "./ProjectBriefCard";
-import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard";
-import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard";
-import { ProjectRoutingCard } from "./ProjectRoutingCard";
-import { ProjectSchedulesCard } from "./ProjectSchedulesCard";
-import { useWorkData } from "./WorkDataContext";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
+import { ProjectBriefCard } from "./ProjectBriefCard.js";
+import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard.js";
+import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard.js";
+import { ProjectRoutingCard } from "./ProjectRoutingCard.js";
+import { ProjectSchedulesCard } from "./ProjectSchedulesCard.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectSettings({
   workspaceId,

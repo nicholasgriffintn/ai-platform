@@ -1,7 +1,7 @@
 import type { FileWithPreview } from "@ngriffin_uk/polychat-utility-react";
 import { useMemo } from "react";
 
-import { useTrackEvent } from "../hooks/use-track-event";
+import { useTrackEvent } from "../hooks/use-track-event.js";
 
 /**
  * Binds the uploader's product intents to analytics. The render package stays host-neutral and the

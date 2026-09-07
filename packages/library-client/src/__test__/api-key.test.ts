@@ -2,7 +2,7 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { apiKeyService } from "../api-key";
+import { apiKeyService } from "../api-key.js";
 
 describe("apiKeyService", () => {
   beforeEach(() => {

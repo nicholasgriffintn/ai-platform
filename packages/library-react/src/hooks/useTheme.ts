@@ -11,7 +11,7 @@ import {
 import { useMediaQuery } from "@ngriffin_uk/polychat-utility-react";
 import { useEffect } from "react";
 
-import { useThemeStore } from "../state/stores/themeStore";
+import { useThemeStore } from "../state/stores/themeStore.js";
 
 export function useThemePreference(): ThemePreference {
   return useThemeStore((state) => state.preference);

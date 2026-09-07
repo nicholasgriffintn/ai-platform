@@ -1,7 +1,7 @@
 import type { ResearchStatus } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchApi } from "../fetch-wrapper";
-import { returnFetchedData } from "../http";
+import { fetchApi } from "../fetch-wrapper.js";
+import { returnFetchedData } from "../http.js";
 
 export class ResearchService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}

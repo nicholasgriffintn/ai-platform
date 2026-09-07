@@ -4,9 +4,9 @@ import type {
   SkillAvailabilityResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service";
-import { fetchApi } from "./fetch-wrapper";
-import { createApiErrorFromResponse, returnFetchedData } from "./http";
+import { apiService } from "./api-service.js";
+import { fetchApi } from "./fetch-wrapper.js";
+import { createApiErrorFromResponse, returnFetchedData } from "./http.js";
 
 async function readHeaders(): Promise<Record<string, string>> {
   return await apiService.getHeaders();

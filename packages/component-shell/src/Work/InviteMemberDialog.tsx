@@ -1,7 +1,7 @@
 import { InviteMemberDialog as ControlledInviteMemberDialog } from "@ngriffin_uk/polychat-component-workspaces";
 import { useInviteWorkspaceMember } from "@ngriffin_uk/polychat-library-react";
 
-import { CopyButton } from "../Content/CopyButton";
+import { CopyButton } from "../Content/CopyButton.js";
 
 export function InviteMemberDialog({
   workspaceId,

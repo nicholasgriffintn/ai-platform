@@ -12,7 +12,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 
-import { HomeDiscover } from "../Discover/HomeDiscover";
+import { HomeDiscover } from "../Discover/HomeDiscover.js";
 
 interface HomeConversationThreadProps {
   urlModeConfig?: ThreadModeConfig;

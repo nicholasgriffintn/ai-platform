@@ -2,7 +2,7 @@ import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { ModelLineup } from "./ModelLineup";
+import { ModelLineup } from "./ModelLineup.js";
 
 const state = vi.hoisted(() => ({
   isAuthenticated: false,

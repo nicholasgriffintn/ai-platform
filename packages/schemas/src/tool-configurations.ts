@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { modelToolIdSchema } from "./apps";
+import { modelToolIdSchema } from "./apps.js";
 
 export const fileSearchToolConfigurationSchema = z.object({
   vectorStoreIds: z.array(z.string().trim().min(1).max(160)).min(1).max(20),

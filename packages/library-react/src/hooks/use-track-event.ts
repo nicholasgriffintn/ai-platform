@@ -5,8 +5,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas/analytics";
 import { useCallback } from "react";
 
-import { captureClientException, trackClientEvent } from "../lib/analytics/client";
-import { usePostHogClient } from "./use-posthog-client";
+import { captureClientException, trackClientEvent } from "../lib/analytics/client.js";
+import { usePostHogClient } from "./use-posthog-client.js";
 
 export const EventCategory = ANALYTICS_EVENT_CATEGORIES;
 

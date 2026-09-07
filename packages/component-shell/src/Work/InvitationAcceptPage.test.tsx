@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 
-import { InvitationAcceptPage } from "./InvitationAcceptPage";
+import { InvitationAcceptPage } from "./InvitationAcceptPage.js";
 
 vi.mock("@ngriffin_uk/polychat-library-client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-client")>()),

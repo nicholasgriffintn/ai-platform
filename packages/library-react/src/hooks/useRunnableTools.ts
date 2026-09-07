@@ -1,7 +1,7 @@
 import { executeRunnableTool, fetchRunnableTool } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { OUTPUT_QUERY_KEYS } from "../hooks/useOutputs";
+import { OUTPUT_QUERY_KEYS } from "../hooks/useOutputs.js";
 
 export const RUNNABLE_TOOL_QUERY_KEYS = {
   byId: (id: string | null) => ["runnableTool", id],

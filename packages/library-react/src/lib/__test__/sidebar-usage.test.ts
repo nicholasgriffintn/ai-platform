@@ -1,7 +1,7 @@
 import type { UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { getSidebarUsageItems } from "../sidebar-usage";
+import { getSidebarUsageItems } from "../sidebar-usage.js";
 
 function credits(overrides: Partial<UsageCreditsSummary> = {}): UsageCreditsSummary {
   return {

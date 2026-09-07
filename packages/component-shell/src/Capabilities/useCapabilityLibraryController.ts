@@ -31,8 +31,8 @@ import {
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo, useState } from "react";
 
-import { useRecipeActionRequest } from "../Recipes/useRecipeActionRequest";
-import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows";
+import { useRecipeActionRequest } from "../Recipes/useRecipeActionRequest.js";
+import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
 
 export interface PersonalSkillControls {
   byId: Map<string, SkillAvailability>;

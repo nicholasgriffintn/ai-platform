@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   createTemporaryConversationTitle,
   getConversationTitleSourceMessage,
-} from "./title-source";
+} from "./title-source.js";
 
 describe("conversation title source", () => {
   it("uses the first non-compaction user message with text", () => {

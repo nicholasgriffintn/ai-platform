@@ -4,7 +4,7 @@ import {
   listRecipeConnectorAccounts,
   resolveConnectorOperationApproval,
   updateRecipeConnectorAccount,
-} from "./connectors";
+} from "./connectors.js";
 
 describe("connector accounts api", () => {
   afterEach(() => {

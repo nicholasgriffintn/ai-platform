@@ -4,28 +4,28 @@ import type { TeammateSummary } from "@ngriffin_uk/polychat-schemas";
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useAssistantActionCatalog } from "./useAssistantActionCatalog";
+import { useAssistantActionCatalog } from "./useAssistantActionCatalog.js";
 
 const mocks = vi.hoisted(() => ({
   teammates: [] as TeammateSummary[],
 }));
 
-vi.mock("./useCapabilityCatalog", () => ({
+vi.mock("./useCapabilityCatalog.js", () => ({
   useCapabilityCatalog: () => ({
     data: { teammates: mocks.teammates, experiences: [], modelTools: [], skills: [] },
   }),
 }));
 
-vi.mock("./useConnectors", () => ({
+vi.mock("./useConnectors.js", () => ({
   useRecipeConnectors: () => ({ data: undefined }),
 }));
 
-vi.mock("./useRecipes", () => ({
+vi.mock("./useRecipes.js", () => ({
   useAssistantRecipes: () => ({ data: undefined }),
   useRecipeInstallations: () => ({ data: undefined }),
 }));
 
-vi.mock("./useSkills", () => ({
+vi.mock("./useSkills.js", () => ({
   usePersonalSkills: () => ({ query: { data: undefined } }),
 }));
 

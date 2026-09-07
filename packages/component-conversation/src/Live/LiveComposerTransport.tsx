@@ -2,7 +2,7 @@ import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { RealtimeLiveStatus } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import { AudioLines, Loader2, Mic, MicOff, Pause, Video, VideoOff } from "lucide-react";
 
-import { LiveAudioLevelMeter } from "./LiveMediaControls";
+import { LiveAudioLevelMeter } from "./LiveMediaControls.js";
 
 export interface LiveComposerTransportProps {
   inputAudioLevel?: number;

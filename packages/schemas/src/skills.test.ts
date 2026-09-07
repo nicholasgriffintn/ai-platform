@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { authoredSkillProvenanceSchema } from "./skills";
+import { authoredSkillProvenanceSchema } from "./skills.js";
 
 describe("authored skill provenance", () => {
   it("accepts only the bounded public revision identity", () => {

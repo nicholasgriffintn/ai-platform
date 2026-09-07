@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { applySecurityHeaders } from "../security-headers";
+import { applySecurityHeaders } from "../security-headers.js";
 
 const parseCsp = (headers: Headers) =>
   new Map(

@@ -1,13 +1,13 @@
 import { META_NAVIGATION_DATA_KEY } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { getFilesTabPath, getProjectFilesPath, parseFilesSubpath } from "../files-route";
+import { getFilesTabPath, getProjectFilesPath, parseFilesSubpath } from "../files-route.js";
 import {
   buildMetaAssistantUiContext,
   getMetaNavigationHref,
   readMetaNavigationTarget,
-} from "../meta-assistant";
-import { getActivePlace, getPlacePaths, getProductMode } from "../navigation/places";
+} from "../meta-assistant.js";
+import { getActivePlace, getPlacePaths, getProductMode } from "../navigation/places.js";
 
 describe("buildMetaAssistantUiContext", () => {
   it("describes an open project conversation", () => {

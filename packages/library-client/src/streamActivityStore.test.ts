@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { useStreamActivityStore } from "./streamActivityStore";
+import { useStreamActivityStore } from "./streamActivityStore.js";
 
 describe("streamActivityStore", () => {
   beforeEach(() => {

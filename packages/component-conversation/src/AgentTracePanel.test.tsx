@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { AgentTracePanel } from "./AgentTracePanel";
+import { AgentTracePanel } from "./AgentTracePanel.js";
 
 describe("AgentTracePanel", () => {
   it("shows the authored skill revision used by a tool result", () => {

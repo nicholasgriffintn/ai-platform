@@ -1,5 +1,5 @@
-import { creditsFromCreditMicros } from "./pricing/constants";
-import type { ChatRunUsage } from "./usage";
+import { creditsFromCreditMicros } from "./pricing/constants.js";
+import type { ChatRunUsage } from "./usage.js";
 
 export const CREDIT_BAND_IDS = ["everyday", "deep-work", "big-build"] as const;
 

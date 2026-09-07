@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-library-chat/model-tools";
 import { useMemo } from "react";
 
-import { useCapabilityCatalog } from "./useCapabilityCatalog";
+import { useCapabilityCatalog } from "./useCapabilityCatalog.js";
 
 export function useModelToolOptions(
   modelCapabilities: ModelToolModelCapabilities | undefined,

@@ -1,6 +1,6 @@
-import { getCapabilityLibraryPath, PERSONAL_SURFACE } from "./capability-surfaces";
-import { getPersonalFilesPath } from "./files-route";
-import { getPlacePaths } from "./navigation/places";
+import { getCapabilityLibraryPath, PERSONAL_SURFACE } from "./capability-surfaces.js";
+import { getPersonalFilesPath } from "./files-route.js";
+import { getPlacePaths } from "./navigation/places.js";
 
 const RETIRED_PROFILE_TAB_PATHS = new Map<string, string>([
   ["agents", getCapabilityLibraryPath(PERSONAL_SURFACE)],

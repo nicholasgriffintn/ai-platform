@@ -9,10 +9,10 @@ import {
   WebSearchView,
 } from "@ngriffin_uk/polychat-component-content";
 
-import { DocumentSearchView } from "./DocumentSearchView";
-import { ProjectTaskListView } from "./ProjectTaskListView";
-import { ResearchView } from "./ResearchView";
-import { SandboxView } from "./SandboxView";
+import { DocumentSearchView } from "./DocumentSearchView.js";
+import { ProjectTaskListView } from "./ProjectTaskListView.js";
+import { ResearchView } from "./ResearchView.js";
+import { SandboxView } from "./SandboxView.js";
 
 export { DocumentSearchView, ProjectTaskListView, ResearchView, SandboxView };
 

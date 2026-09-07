@@ -9,9 +9,9 @@ import { isStealthModel } from "@ngriffin_uk/polychat-schemas";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useMemo } from "react";
 
-import { isDismissed, useComposerBannerDismissals } from "./dismissal";
-import { buildModelReadinessBanner } from "./model-readiness-banner";
-import { buildUsageBanner } from "./usage-banner";
+import { isDismissed, useComposerBannerDismissals } from "./dismissal.js";
+import { buildModelReadinessBanner } from "./model-readiness-banner.js";
+import { buildUsageBanner } from "./usage-banner.js";
 
 export const STEALTH_MODEL_WARNING =
   "Note: Prompts and completions may be logged by the provider and used to improve the model.";
@@ -22,7 +22,7 @@ const WORK_SUGGESTION_MIN_MESSAGES = 20;
 import type {
   ComposerBannerDescriptor,
   ComposerBannerTone,
-} from "../../Composer/ComposerBannerCard";
+} from "../../Composer/ComposerBannerCard.js";
 
 export type { ComposerBannerDescriptor, ComposerBannerTone };
 

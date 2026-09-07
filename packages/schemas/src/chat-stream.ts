@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { normaliseMessageParts, type MessagePart } from "./message-part-utils";
+import { normaliseMessageParts, type MessagePart } from "./message-part-utils.js";
 
 const turnActivityStepSchema = z.number().int().positive();
 const turnActivityToolSchema = z.object({

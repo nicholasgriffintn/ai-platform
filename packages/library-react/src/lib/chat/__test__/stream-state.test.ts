@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getChatStreamLoadingMessage } from "../../../chat/stream-state";
+import { getChatStreamLoadingMessage } from "../../../chat/stream-state.js";
 
 describe("getChatStreamLoadingMessage", () => {
   it("shows exact retry attempt accounting", () => {

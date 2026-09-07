@@ -13,7 +13,7 @@ import { isTerminalChatRunStatus, type ChatRun } from "@ngriffin_uk/polychat-sch
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
-import { updateConversationInChatCaches } from "../conversation-cache";
+import { updateConversationInChatCaches } from "../conversation-cache.js";
 
 const INITIAL_REPLAY_INTERVAL_MS = 2_000;
 const MAX_REPLAY_INTERVAL_MS = 30_000;

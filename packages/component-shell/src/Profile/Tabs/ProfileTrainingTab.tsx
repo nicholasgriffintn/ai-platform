@@ -1,10 +1,10 @@
 import { ContentLoadingSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import { lazy, Suspense } from "react";
 
-import { ProfileTab } from "../ProfileTabLayout";
+import { ProfileTab } from "../ProfileTabLayout.js";
 
 const TrainingDashboard = lazy(async () => {
-  const module = await import("../../Apps/Training/TrainingDashboard");
+  const module = await import("../../Apps/Training/TrainingDashboard.js");
 
   return { default: module.TrainingDashboard };
 });

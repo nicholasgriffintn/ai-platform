@@ -7,13 +7,13 @@ import type {
   ChatSuggestionConnector,
   ChatSuggestionContext,
   ChatSuggestionRecipe,
-} from "../lib/chat-suggestions";
-import { isSelectableHomeChatModeId } from "../lib/chatModes";
-import type { SelectableHomeChatModeId } from "../lib/chatModes";
-import { resolveFocusRole } from "../lib/focus-role";
-import { useRecipeConnectors } from "./useConnectors";
-import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes";
-import { useTools } from "./useTools";
+} from "../lib/chat-suggestions/index.js";
+import { isSelectableHomeChatModeId } from "../lib/chatModes.js";
+import type { SelectableHomeChatModeId } from "../lib/chatModes.js";
+import { resolveFocusRole } from "../lib/focus-role.js";
+import { useRecipeConnectors } from "./useConnectors.js";
+import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes.js";
+import { useTools } from "./useTools.js";
 
 const MAX_CONNECTOR_SIGNALS = 3;
 const MAX_RECIPE_SIGNALS = 2;

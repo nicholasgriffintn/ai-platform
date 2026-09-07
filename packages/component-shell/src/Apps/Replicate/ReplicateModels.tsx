@@ -11,8 +11,8 @@ import { Sparkles } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../../Account/SignInEmptyState";
-import { AppCard } from "../AppCard";
+import { SignInEmptyState } from "../../Account/SignInEmptyState.js";
+import { AppCard } from "../AppCard.js";
 
 const DEFAULT_CATEGORY = "Creative Tools";
 

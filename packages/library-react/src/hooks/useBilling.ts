@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { USAGE_QUERY_KEYS } from "../chat/useUsage";
+import { USAGE_QUERY_KEYS } from "../chat/useUsage.js";
 
 const PORTAL_AVAILABILITY_KEY = ["stripe", "portal-available"] as const;
 const OVERAGE_AVAILABILITY_KEY = ["stripe", "overage-available"] as const;

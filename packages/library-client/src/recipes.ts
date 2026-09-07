@@ -10,9 +10,9 @@ import type {
   RecipeInstallationsResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service";
-import { fetchApi, fetchApiOrThrow } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
+import { apiService } from "./api-service.js";
+import { fetchApi, fetchApiOrThrow } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
 
 export async function listAssistantRecipes(): Promise<AssistantRecipesResponse> {
   let headers = {};

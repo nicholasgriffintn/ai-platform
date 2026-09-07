@@ -1,23 +1,23 @@
 import z from "zod/v4";
 
-import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
-import { sandboxEnvironmentCacheRecordSchema } from "./sandbox-cache";
-import { sandboxDeliveryPolicySchema } from "./sandbox-delivery";
+import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
+import { sandboxEnvironmentCacheRecordSchema } from "./sandbox-cache.js";
+import { sandboxDeliveryPolicySchema } from "./sandbox-delivery.js";
 import {
   sandboxEnvironmentPreparationModeSchema,
   sandboxEnvironmentPreparationStatusSchema,
   sandboxEnvironmentSetupSchema,
   sandboxPackageManagerRequirementSchema,
   sandboxRuntimeRequirementSchema,
-} from "./sandbox-environment";
+} from "./sandbox-environment.js";
 import {
   sandboxRunServiceEvidenceSchema,
   sandboxServiceActionSchema,
   sandboxServiceNameSchema,
   sandboxServicePortSchema,
   sandboxServiceStatusSchema,
-} from "./sandbox-services";
-export * from "./sandbox-constants";
+} from "./sandbox-services.js";
+export * from "./sandbox-constants.js";
 import {
   SANDBOX_PROMPT_STRATEGIES,
   SANDBOX_RUN_PROOF_MAX_CHANGED_FILES,
@@ -29,8 +29,8 @@ import {
   type SandboxPromptStrategy,
   type SandboxTaskType,
   type SandboxTrustLevel,
-} from "./sandbox-constants";
-import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "./tasks";
+} from "./sandbox-constants.js";
+import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "./tasks.js";
 
 export const sandboxWebhookCommandSchema = z.enum(["implement", "review", "test", "fix"]);
 export const sandboxRepoSchema = z

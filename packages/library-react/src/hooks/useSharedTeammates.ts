@@ -3,8 +3,8 @@ import type { SharedTeammateSummary } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { capabilityCatalogQueryKey } from "./useCapabilityCatalog";
-import { TEAMMATES_QUERY_KEYS } from "./useTeammates";
+import { capabilityCatalogQueryKey } from "./useCapabilityCatalog.js";
+import { TEAMMATES_QUERY_KEYS } from "./useTeammates.js";
 
 export const SHARED_TEAMMATES_QUERY_KEYS = {
   all: ["sharedTeammates"],

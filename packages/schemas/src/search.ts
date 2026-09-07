@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { conversationGroupSchema, conversationSnoozeSchema } from "./conversation-organisation";
+import { conversationGroupSchema, conversationSnoozeSchema } from "./conversation-organisation.js";
 
 export const searchWebSchema = z.object({
   query: z.string(),

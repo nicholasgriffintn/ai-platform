@@ -4,7 +4,7 @@ import type {
 } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
-import { CompactSettingSelect } from "./CompactSettingControls";
+import { CompactSettingSelect } from "./CompactSettingControls.js";
 
 interface HostedToolSettingsProps {
   chatSettings: ChatSettings;

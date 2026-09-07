@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formattedMessageContent } from "./messages";
+import { formattedMessageContent } from "./messages.js";
 
 describe("formattedMessageContent artifacts", () => {
   it("extracts an artifact and its attributes", () => {

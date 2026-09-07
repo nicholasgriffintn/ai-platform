@@ -18,7 +18,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { projectQueryKey, workspaceQueryKey, WORKSPACES_QUERY_KEY } from "./useWorkspaces";
+import { projectQueryKey, workspaceQueryKey, WORKSPACES_QUERY_KEY } from "./useWorkspaces.js";
 
 export function useWorkspaceAudit(workspaceId: string, enabled = true) {
   return useQuery({

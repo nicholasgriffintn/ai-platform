@@ -25,7 +25,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useMemo, useState } from "react";
 
-import { useRecipeComposioTriggers } from "./useRecipeComposioTriggers";
+import { useRecipeComposioTriggers } from "./useRecipeComposioTriggers.js";
 
 interface RecipeEventTriggersDialogProps {
   recipe: AssistantRecipe;

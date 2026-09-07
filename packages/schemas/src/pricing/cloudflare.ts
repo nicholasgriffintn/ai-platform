@@ -1,4 +1,4 @@
-import type { RateEntry } from "./rates";
+import type { RateEntry } from "./rates.js";
 
 export const CLOUDFLARE_VENDOR = "cloudflare";
 

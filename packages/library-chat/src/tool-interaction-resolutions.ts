@@ -1,6 +1,6 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import type { Message } from "./conversation-types";
+import type { Message } from "./conversation-types.js";
 
 const COUNCIL_TOOL_NAME = "select_council_members";
 const LEGACY_COUNCIL_PROMPT_PREFIX = "Convene the council with these members: ";
