@@ -9,6 +9,7 @@ import { apply_edit_completion } from "./apply_edit";
 import { run_council, select_council_members } from "./council";
 import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
+import { delegate } from "./delegate";
 import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
@@ -82,6 +83,7 @@ const descriptors: FunctionToolDescriptor[] = [
   analyse_article,
   create_automation,
   create_note,
+  delegate,
   generate_pattern,
   get_note,
   extract_text_from_document,

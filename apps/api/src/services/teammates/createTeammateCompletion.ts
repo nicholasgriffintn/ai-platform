@@ -1,11 +1,15 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
-import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ChatRunTrigger,
+  ConversationType,
+  ParsedChatCompletionRequestBody,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { formatToolCalls } from "~/lib/chat/tools/provider-tool-definitions";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig, getDefaultChatModel } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
-import type { IEnv, IUser } from "~/types";
+import type { CoreChatOptions, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { requireTeammateAccess } from "./access";
@@ -21,6 +25,10 @@ export async function createTeammateCompletion({
   anonymousUser,
   executionCtx,
   signal,
+  conversationType,
+  trigger,
+  maxStepsOverride,
+  durableExecution,
 }: {
   env: IEnv;
   context?: ServiceContext;
@@ -30,6 +38,10 @@ export async function createTeammateCompletion({
   anonymousUser: any;
   executionCtx?: ExecutionContext;
   signal?: AbortSignal;
+  conversationType?: ConversationType;
+  trigger?: ChatRunTrigger;
+  maxStepsOverride?: number;
+  durableExecution?: CoreChatOptions["durable_execution"];
 }) {
   const serviceContext =
     context ??
@@ -67,11 +79,17 @@ export async function createTeammateCompletion({
     modelProvider: modelDetails.provider,
     formattedTools,
     persona: buildTeammatePersona(teammate),
+    maxStepsOverride,
   });
 
   const response = await handleCreateChatCompletions({
     env: serviceContext.env,
-    request: requestParams,
+    request: {
+      ...requestParams,
+      ...(conversationType ? { conversation_type: conversationType } : {}),
+      ...(trigger ? { trigger } : {}),
+      ...(durableExecution ? { durable_execution: durableExecution } : {}),
+    },
     user,
     anonymousUser,
     context: serviceContext,

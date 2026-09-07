@@ -8,6 +8,7 @@ import { canonicalJson } from "~/utils/canonical-json";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { cancelDelegationTree } from "../delegations/cancel-tree";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
 import { requireChatRunAccess } from "./status";
 
@@ -64,6 +65,10 @@ export async function handleCancelChatRun(
         Date.parse(receipt.run.updatedAt) - Date.parse(receipt.run.cancellationRequestedAt),
       ),
     });
+  }
+
+  if (!receipt.duplicate) {
+    await cancelDelegationTree(context, run.id);
   }
 
   return { run: receipt };

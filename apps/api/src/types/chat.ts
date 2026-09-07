@@ -13,6 +13,7 @@ import type {
   RunProvenance,
   ChatMessageSelection,
   DelegationContext,
+  ChatRunTrigger,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -256,6 +257,7 @@ type InternalExecutionParams = {
   credentialAuthority?: CredentialAuthority;
   // Durable product classification chosen by trusted task and recipe entry points.
   conversation_type?: ConversationType;
+  trigger?: ChatRunTrigger;
   // The persona layered into the generated system prompt, for saved agents.
   persona?: AssistantPersona;
   // Minimum output tokens requested by internal orchestration.
@@ -317,11 +319,16 @@ type InternalExecutionParams = {
   tool_policy_mode?: AgentMode;
   // Internal Work-task runs use the stage policy instead of the interactive mode defaults.
   enforce_mode_tool_policy?: boolean;
-  durable_execution?: {
-    kind: "project_task";
-    dispatchTaskId: string;
-    executionOwnerToken: string;
-  };
+  durable_execution?:
+    | {
+        kind: "project_task";
+        dispatchTaskId: string;
+        executionOwnerToken: string;
+      }
+    | {
+        kind: "delegation";
+        maxCreditMicros: number;
+      };
 };
 
 export type ChatRequestOptions = SchemaChatRequestOptions;

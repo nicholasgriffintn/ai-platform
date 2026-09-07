@@ -26,6 +26,7 @@ export interface TeammateCompletionRequestInput {
   modelProvider: string;
   formattedTools: NonNullable<ChatCompletionParameters["tools"]>;
   persona: AssistantPersona;
+  maxStepsOverride?: number;
 }
 
 type PreparedTeammateCompletionRequest = Omit<ChatCompletionParameters, "env">;
@@ -56,7 +57,11 @@ class TeammateCompletionRequestPreparer {
       stream: this.input.body.stream,
       mode: agentModeSchema.safeParse(this.input.teammate.mode).data ?? "teammate",
       tool_policy_mode: "chat",
-      max_steps: this.input.teammate.max_steps || this.input.body.max_steps || 20,
+      max_steps:
+        this.input.maxStepsOverride ??
+        this.input.teammate.max_steps ??
+        this.input.body.max_steps ??
+        20,
       temperature: this.input.teammate.temperature
         ? Number.parseFloat(this.input.teammate.temperature)
         : this.input.body.temperature,

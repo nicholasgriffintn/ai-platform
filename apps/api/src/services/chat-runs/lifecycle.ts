@@ -46,6 +46,7 @@ async function commandDigest(options: CoreChatOptions, runId?: string): Promise<
         enforceModeToolPolicy: options.enforce_mode_tool_policy,
         persona: options.persona,
         requireApprovalFor: options.require_approval_for,
+        trigger: options.trigger,
         toolPolicyMode: options.tool_policy_mode,
       },
       runId,
@@ -124,6 +125,7 @@ async function buildRunCommand(
     projectId: scope.projectId,
     projectTaskId: scope.projectTask?.id ?? null,
     stageId: readStageId(options) ?? scope.projectTask?.stageId ?? null,
+    ...(options.trigger ? { trigger: options.trigger } : {}),
     ...(requestedRunId ? { runId: requestedRunId } : {}),
   };
 }

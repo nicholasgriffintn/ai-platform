@@ -16,6 +16,7 @@ import {
   requireToolPermissions,
   type FunctionToolCatalogueOptions,
 } from "./definitions";
+import { delegate } from "./delegate";
 import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
@@ -82,6 +83,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   store_memory,
   analyse_article,
   create_automation,
+  delegate,
   create_note,
   generate_pattern,
   get_note,

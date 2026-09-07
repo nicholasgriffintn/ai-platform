@@ -331,7 +331,7 @@ export class RequestPreparer {
       requestCache: scope.options.context?.requestCache,
       writeFence,
       runId,
-      ...(scope.options.durable_execution?.kind === "project_task" && runId
+      ...(runId && scope.options.durable_execution?.kind === "project_task"
         ? {
             durableTurnReservation: {
               kind: "chat_run" as const,
@@ -339,7 +339,16 @@ export class RequestPreparer {
               expiresAt: chatRunReservationExpiresAt(),
             },
           }
-        : {}),
+        : runId && scope.options.durable_execution?.kind === "delegation"
+          ? {
+              durableTurnReservation: {
+                kind: "chat_run" as const,
+                refId: runId,
+                creditMicros: scope.options.durable_execution.maxCreditMicros,
+                expiresAt: chatRunReservationExpiresAt(),
+              },
+            }
+          : {}),
     });
 
     const shouldStoreMessages =

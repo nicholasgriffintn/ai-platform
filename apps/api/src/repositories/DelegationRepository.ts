@@ -119,6 +119,17 @@ export class DelegationRepository extends BaseRepository {
     return rows.map(formatDelegation);
   }
 
+  async listByParentRunId(parentRunId: string): Promise<Delegation[]> {
+    const rows = await this.runQuery<DelegationRow>(
+      `SELECT * FROM delegation
+       WHERE parent_run_id = ?
+       ORDER BY created_at ASC, id ASC`,
+      [parentRunId],
+    );
+
+    return rows.map(formatDelegation);
+  }
+
   async countLiveForParent(parentConversationId: string, parentRunId: string): Promise<number> {
     const row = await this.runQuery<{ count: number }>(
       `SELECT COUNT(*) AS count FROM delegation
@@ -132,6 +143,19 @@ export class DelegationRepository extends BaseRepository {
     return Number(row?.count ?? 0);
   }
 
+  async claimDelegation(id: string): Promise<Delegation | null> {
+    const row = await this.runQuery<DelegationRow>(
+      `UPDATE delegation
+       SET state = 'running', updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND state = 'queued'
+       RETURNING *`,
+      [id],
+      true,
+    );
+
+    return row ? formatDelegation(row) : null;
+  }
+
   async updateState(
     id: string,
     state: DelegationState,
@@ -143,6 +167,22 @@ export class DelegationRepository extends BaseRepository {
        WHERE id = ?
        RETURNING *`,
       [state, result ? JSON.stringify(result) : null, id],
+      true,
+    );
+
+    return row ? formatDelegation(row) : null;
+  }
+
+  async cancelIfLive(id: string): Promise<Delegation | null> {
+    const row = await this.runQuery<DelegationRow>(
+      `UPDATE delegation
+       SET state = 'cancelled',
+           result_json = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')
+       RETURNING *`,
+      [JSON.stringify({ summary: "The parent run was cancelled.", outputIds: [] }), id],
       true,
     );
 

@@ -1,0 +1,91 @@
+import {
+  createChatCompletionsJsonSchema,
+  delegationRunTaskDataSchema,
+} from "@ngriffin_uk/polychat-schemas";
+
+import { createServiceContext } from "~/lib/context/serviceContext";
+import { createTeammateCompletion } from "~/services/teammates/createTeammateCompletion";
+import type { IEnv } from "~/types";
+
+import type { TaskMessage } from "../tasks/TaskService";
+
+export async function runDelegationTask(message: TaskMessage, env: IEnv) {
+  const payload = delegationRunTaskDataSchema.parse(message.task_data);
+  const context = createServiceContext({ env });
+  const delegation = await context.repositories.delegations.claimDelegation(payload.delegationId);
+
+  if (!delegation) {
+    return { status: "skipped" as const, detail: "Delegation is already running or settled" };
+  }
+
+  if (Date.parse(delegation.budget.deadline) <= Date.now()) {
+    await context.repositories.delegations.updateState(delegation.id, "expired", {
+      summary: "The delegation deadline passed before it started.",
+      outputIds: [],
+    });
+
+    return { status: "skipped" as const, detail: "Delegation expired before it started" };
+  }
+
+  const user = await context.repositories.users.getUserById(message.user_id ?? 0);
+
+  if (!user) {
+    await context.repositories.delegations.updateState(delegation.id, "failed", {
+      summary: "The delegating user no longer exists.",
+      outputIds: [],
+    });
+
+    return { status: "error" as const, detail: "Delegating user not found" };
+  }
+
+  const body = createChatCompletionsJsonSchema.parse({
+    completion_id: delegation.childConversationId,
+    command_id: `delegation_run_${delegation.id}`,
+    messages: [{ role: "user", content: delegation.goal }],
+    stream: false,
+    store: true,
+    enabled_tools: payload.enabledTools,
+    delegation_context: {
+      delegationId: delegation.id,
+      depth: delegation.depth,
+      rootConversationId: delegation.parentConversationId,
+    },
+    ...(payload.projectId ? { metadata: { project_id: payload.projectId } } : {}),
+  });
+
+  try {
+    const response = await createTeammateCompletion({
+      env,
+      context: createServiceContext({ env, user }),
+      body,
+      teammateId: delegation.teammateId,
+      user,
+      anonymousUser: undefined,
+      conversationType: "delegate",
+      trigger: "delegation",
+      maxStepsOverride: delegation.budget.maxSteps,
+      durableExecution: {
+        kind: "delegation",
+        maxCreditMicros: delegation.budget.maxCreditMicros,
+      },
+    });
+    const summary =
+      response instanceof Response ? "Delegate run accepted." : "Delegate run completed.";
+
+    await context.repositories.delegations.updateState(delegation.id, "done", {
+      summary,
+      outputIds: [],
+    });
+
+    return { status: "success" as const, detail: summary };
+  } catch (error) {
+    const summary = error instanceof Error ? error.message : "Delegate run failed.";
+
+    await context.repositories.delegations.updateState(delegation.id, "failed", {
+      summary: summary.slice(0, 2000),
+      outputIds: [],
+    });
+
+    return { status: "error" as const, detail: summary };
+  }
+}

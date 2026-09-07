@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { DELEGATION_RUN_TASK_TYPE } from "./delegations.js";
+
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
 export const OCR_BATCH_POLLING_TASK_TYPE = "ocr_batch_polling";
@@ -22,6 +24,7 @@ export const TASK_TYPES = [
   "artificial_analysis_scoring",
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
+  DELEGATION_RUN_TASK_TYPE,
   OCR_BATCH_POLLING_TASK_TYPE,
   USAGE_ROLLUP_TASK_TYPE,
   REALTIME_RECONCILIATION_TASK_TYPE,

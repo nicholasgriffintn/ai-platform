@@ -51,6 +51,7 @@ export interface TurnAdmissionRequest {
 export interface DurableTurnReservation {
   kind: "chat_run";
   refId: string;
+  creditMicros?: number;
   expiresAt?: string | null;
 }
 
@@ -476,10 +477,12 @@ export class ConversationManager {
         repositories,
         actor,
         planId: this.user?.plan_id ?? null,
-        estimatedCreditMicros: estimateTurnCreditMicros({
-          promptTokens: estimateMessagesTokens(params.messages),
-          modelConfig: params.modelConfig,
-        }),
+        estimatedCreditMicros:
+          this.durableTurnReservation?.creditMicros ??
+          estimateTurnCreditMicros({
+            promptTokens: estimateMessagesTokens(params.messages),
+            modelConfig: params.modelConfig,
+          }),
         ...(this.durableTurnReservation && userId
           ? {
               durableReservation: {

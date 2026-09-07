@@ -5,6 +5,7 @@ import { chatRunIdSchema } from "./chat-runs.js";
 export const DELEGATION_MAX_DEPTH = 1 as const;
 export const DELEGATION_MAX_FAN_OUT = 3 as const;
 export const DELEGATION_DEFAULT_TOKEN_BUDGET = 400_000 as const;
+export const DELEGATION_RUN_TASK_TYPE = "delegation_run" as const;
 
 export const delegationWaitForSchema = z.enum(["all", "any", "none"]);
 export type DelegationWaitFor = z.infer<typeof delegationWaitForSchema>;
@@ -63,3 +64,10 @@ export const DELEGATION_RUN_EVENT_TYPES = [
 ] as const;
 export const delegationRunEventTypeSchema = z.enum(DELEGATION_RUN_EVENT_TYPES);
 export type DelegationRunEventType = z.infer<typeof delegationRunEventTypeSchema>;
+
+export const delegationRunTaskDataSchema = z.object({
+  delegationId: z.string().min(1),
+  projectId: z.string().min(1).nullable(),
+  enabledTools: z.array(z.string()),
+});
+export type DelegationRunTaskData = z.infer<typeof delegationRunTaskDataSchema>;

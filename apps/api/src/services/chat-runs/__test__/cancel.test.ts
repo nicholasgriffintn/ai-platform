@@ -39,6 +39,9 @@ function createContext(currentRun: ChatRun = run) {
           run: { ...currentRun, status: "cancelling" },
         }),
       },
+      delegations: {
+        listByParentRunId: vi.fn().mockResolvedValue([]),
+      },
     },
   } as unknown as ServiceContext;
 }

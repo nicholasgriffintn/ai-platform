@@ -1,6 +1,7 @@
 import {
   INFRA_RECONCILIATION_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
+  DELEGATION_RUN_TASK_TYPE,
   OCR_BATCH_POLLING_TASK_TYPE,
   REALTIME_RECONCILIATION_TASK_TYPE,
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
@@ -18,6 +19,7 @@ import { TaskNotificationDeliveryHandler } from "../task-notifications/delivery"
 import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
 import { ArtificialAnalysisScoringHandler } from "./handlers/ArtificialAnalysisScoringHandler";
 import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandler";
+import { DelegationRunHandler } from "./handlers/DelegationRunHandler";
 import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { InfraReconciliationHandler } from "./handlers/InfraReconciliationHandler";
 import { MemorySynthesisHandler } from "./handlers/MemorySynthesisHandler";
@@ -54,6 +56,7 @@ export function createTaskHandlers(): Map<TaskType, TaskHandler> {
     ["artificial_analysis_scoring", new ArtificialAnalysisScoringHandler()],
     [SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
     [PROJECT_TASK_RUN_TASK_TYPE, new ProjectTaskRunHandler()],
+    [DELEGATION_RUN_TASK_TYPE, new DelegationRunHandler()],
     [OCR_BATCH_POLLING_TASK_TYPE, new OcrBatchPollingHandler()],
     [USAGE_ROLLUP_TASK_TYPE, new UsageRollupHandler()],
     [REALTIME_RECONCILIATION_TASK_TYPE, new RealtimeReconciliationHandler()],
