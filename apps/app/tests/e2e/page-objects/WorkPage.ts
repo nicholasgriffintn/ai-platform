@@ -243,12 +243,25 @@ export class WorkPage extends BasePage {
   }
 
   async openProjectSettings() {
-    if (await this.page.getByRole("link", { name: "Back to project" }).isVisible()) {
+    const backToProject = this.page.getByRole("link", { name: "Back to project" });
+
+    if (await backToProject.isVisible()) {
       return;
     }
 
-    await this.clickElement(this.page.getByRole("link", { name: "Project settings" }));
-    await this.page.getByRole("link", { name: "Back to project" }).waitFor();
+    const gear = this.page.getByRole("link", { name: "Project settings" });
+
+    if (await gear.isVisible()) {
+      await gear.click();
+      await backToProject.waitFor();
+
+      return;
+    }
+
+    await this.navigate(
+      `/work/${this.currentWorkspaceId()}/projects/${this.currentProjectId()}/settings`,
+    );
+    await backToProject.waitFor();
   }
 
   async leaveProjectSettings() {
@@ -562,8 +575,7 @@ export class WorkPage extends BasePage {
     await this.requireSuccessfulResponse(scheduleResponse, "Recipe scheduling");
     await schedule.waitFor({ state: "hidden" });
 
-    await this.page.getByRole("link", { name: "Release Project", exact: true }).first().click();
-    await this.page.getByRole("heading", { name: "Release Project", exact: true }).waitFor();
+    await this.openProjectSettings();
     const scheduleEntry = this.page.getByRole("listitem").filter({ hasText: recipeName });
 
     await scheduleEntry.getByText("15 7 * * 1-5 · active", { exact: false }).waitFor();
@@ -586,7 +598,9 @@ export class WorkPage extends BasePage {
     await pauseMenuItem.waitFor({ state: "hidden" });
     await scheduleEntry.getByText("15 7 * * 1-5 · paused", { exact: false }).waitFor();
     await this.reload();
-    await this.page.getByRole("heading", { name: "Release Project", exact: true }).waitFor();
+    await this.page
+      .getByRole("heading", { name: "Release Project settings", exact: true })
+      .waitFor();
     await scheduleEntry.getByText("15 7 * * 1-5 · paused", { exact: false }).waitFor();
 
     await this.page.getByRole("button", { name: `Manage ${recipeName} schedule` }).click();
@@ -598,7 +612,9 @@ export class WorkPage extends BasePage {
     await resumeMenuItem.waitFor({ state: "hidden" });
     await scheduleEntry.getByText("15 7 * * 1-5 · active", { exact: false }).waitFor();
     await this.reload();
-    await this.page.getByRole("heading", { name: "Release Project", exact: true }).waitFor();
+    await this.page
+      .getByRole("heading", { name: "Release Project settings", exact: true })
+      .waitFor();
     await scheduleEntry.getByText("15 7 * * 1-5 · active", { exact: false }).waitFor();
 
     await this.page.getByRole("button", { name: `Manage ${recipeName} schedule` }).click();
@@ -826,8 +842,9 @@ export class WorkPage extends BasePage {
     await this.page.getByPlaceholder("Search Replicate models...").fill(modelName);
     await this.page.getByRole("heading", { name: modelName, exact: true }).click();
     await this.page.getByRole("heading", { name: modelName, exact: true }).waitFor();
-    await this.page.goBack();
-    await this.page.getByRole("link", { name: /Replicate Predictions/ }).click();
+    await this.clickElement(
+      this.page.getByRole("link", { name: "Back to Replicate Predictions", exact: true }),
+    );
     await this.page.getByPlaceholder("Search Replicate models...").waitFor();
     await this.page.getByRole("button", { name: "View my predictions" }).click();
     await this.page.getByRole("heading", { name: "No predictions yet" }).waitFor();

@@ -13,7 +13,7 @@ export class ProjectTasksPage extends BasePage {
 
   async createBacklogTask(objective: string) {
     await this.page.getByRole("button", { name: "Add a task", exact: true }).first().click();
-    const dialog = this.page.getByRole("dialog", { name: "Add work to the agent queue" });
+    const dialog = this.page.getByRole("dialog", { name: "Add work to the teammate queue" });
 
     await dialog.getByLabel("Objective", { exact: true }).fill(objective);
     await dialog.getByRole("button", { name: "Save to backlog", exact: true }).click();
@@ -31,26 +31,26 @@ export class ProjectTasksPage extends BasePage {
       .or(this.page.getByRole("button", { name: "Build pipeline", exact: true }))
       .first()
       .click();
-    await this.page.getByRole("dialog", { name: "Configure the agent pipeline" }).waitFor();
+    await this.page.getByRole("dialog", { name: "Configure the teammate pipeline" }).waitFor();
   }
 
   async nameStage(index: number, name: string) {
     await this.page
-      .getByRole("dialog", { name: "Configure the agent pipeline" })
+      .getByRole("dialog", { name: "Configure the teammate pipeline" })
       .getByLabel("Stage name", { exact: true })
       .nth(index)
       .fill(name);
   }
 
   async addStage(name: string) {
-    const dialog = this.page.getByRole("dialog", { name: "Configure the agent pipeline" });
+    const dialog = this.page.getByRole("dialog", { name: "Configure the teammate pipeline" });
 
     await dialog.getByRole("button", { name: "Add stage", exact: true }).click();
     await dialog.getByLabel("Stage name", { exact: true }).last().fill(name);
   }
 
   async savePipeline() {
-    const dialog = this.page.getByRole("dialog", { name: "Configure the agent pipeline" });
+    const dialog = this.page.getByRole("dialog", { name: "Configure the teammate pipeline" });
 
     await dialog.getByRole("button", { name: "Save pipeline", exact: true }).click();
     await dialog.waitFor({ state: "hidden" });
@@ -86,6 +86,6 @@ export class ProjectTasksPage extends BasePage {
       .getByRole("dialog", { name: "Delete task?", exact: true })
       .getByRole("button", { name: "Delete task", exact: true })
       .click();
-    await this.page.getByRole("heading", { name: "Tasks", level: 1 }).waitFor();
+    await this.page.getByRole("button", { name: "Add a task", exact: true }).waitFor();
   }
 }

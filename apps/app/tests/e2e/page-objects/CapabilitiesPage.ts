@@ -34,7 +34,7 @@ export class CapabilitiesPage extends BasePage {
   async openAddMenuWithKeyboard() {
     await this.addMenu.focus();
     await this.addMenu.press("Enter");
-    await this.addMenuItem("New teammate").waitFor();
+    await this.addMenuItem("Hire a teammate").waitFor();
   }
 
   async moveAddMenuSelection() {
@@ -51,7 +51,7 @@ export class CapabilitiesPage extends BasePage {
 
   async closeAddMenuWithKeyboard() {
     await this.page.keyboard.press("Escape");
-    await this.addMenuItem("New teammate").waitFor({ state: "hidden" });
+    await this.addMenuItem("Hire a teammate").waitFor({ state: "hidden" });
   }
 
   async legacyTeamEndpointStatus() {
@@ -60,7 +60,7 @@ export class CapabilitiesPage extends BasePage {
 
   async startNewTeammate() {
     await this.clickElement(this.addMenu);
-    await this.clickElement(this.page.getByRole("menuitem", { name: /^New teammate/ }));
+    await this.clickElement(this.page.getByRole("menuitem", { name: /^Build one from scratch/ }));
     await this.page.getByRole("heading", { name: "New teammate", level: 1 }).waitFor();
   }
 

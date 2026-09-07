@@ -274,11 +274,11 @@ test.describe("Account-owned resources", () => {
 
     await homePage.navigate("/chat");
     await homePage.selectModel("GPT-5.5");
-    await expect(page.getByRole("button", { name: /^Ash\./ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Ash\./ })).toBeVisible();
     await homePage.selectModel("GPT OSS 120B");
-    await expect(page.getByRole("button", { name: /^Ash\./ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Ash\./ })).toBeVisible();
     await homePage.selectModel("Llama 4 Scout 17B");
-    await expect(page.getByRole("button", { name: /^Pip\./ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Pip\./ })).toBeVisible();
 
     await profilePage.openTab("pets", "Your pet");
     await profilePage.removePetMakerRule("OpenAI");
@@ -287,7 +287,7 @@ test.describe("Account-owned resources", () => {
     ).toBeVisible();
     await homePage.navigate("/chat");
     await homePage.selectModel("GPT OSS 120B");
-    await expect(page.getByRole("button", { name: /^Pip\./ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Pip\./ })).toBeVisible();
   });
 
   test("creates and revokes an application API key", async ({ page, profilePage }) => {

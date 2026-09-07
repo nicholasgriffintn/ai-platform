@@ -391,7 +391,7 @@ export class ProfilePage extends BasePage {
     sourceTitle: string,
     content: string,
   ) {
-    await this.openTab("sources", "Sources");
+    await this.openTab("sources", "Files");
     await this.page.getByRole("button", { name: "Create collection" }).click();
     const collectionDialog = this.page.getByRole("dialog", { name: "Create collection" });
 
