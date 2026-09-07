@@ -46,6 +46,14 @@ export function isExternalHttpUrl(value: string): boolean {
   }
 }
 
+export function isSameOrigin(left: string, right: string): boolean {
+  try {
+    return new URL(left.trim()).origin === new URL(right.trim()).origin;
+  } catch {
+    return false;
+  }
+}
+
 export function requireInternalNavigationPath(value: string): string {
   if (!isInternalNavigationPath(value)) {
     throw new Error("This action cannot open because its navigation path is unsafe.");
