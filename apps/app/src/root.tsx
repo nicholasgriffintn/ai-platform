@@ -21,6 +21,7 @@ import { customResponseViews } from "~/components/Apps/ResponseRenderer/customRe
 import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
 import { AppShell } from "~/components/Core/AppShell";
 import { ServiceWorkerRegistration } from "~/components/Core/ServiceWorkerRegistration";
+import { WebShellHost } from "~/components/Core/WebShellHost";
 import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
 import ErrorRoute from "~/pages/error";
 
@@ -34,7 +35,9 @@ function AppProviders({ children }: { children: React.ReactNode }) {
       <LinkProvider Link={RouterLink} NavLink={RouterNavLink}>
         <AnalyticsProvider analytics={analytics}>
           <CustomResponseViewProvider views={customResponseViews}>
-            <PolychatProvider>{children}</PolychatProvider>
+            <PolychatProvider>
+              <WebShellHost>{children}</WebShellHost>
+            </PolychatProvider>
           </CustomResponseViewProvider>
         </AnalyticsProvider>
       </LinkProvider>

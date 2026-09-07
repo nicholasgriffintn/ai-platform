@@ -1,8 +1,7 @@
 import { AccountSidebarShell } from "@ngriffin_uk/polychat-component-account";
+import { SidebarFooter, SidebarHeader } from "@ngriffin_uk/polychat-component-shell";
 import { useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
 
-import { SidebarFooter } from "../Sidebar/SidebarFooter";
-import { SidebarHeader } from "../Sidebar/SidebarHeader";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab";
 import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab";
 import { ProfileBillingTab } from "./Tabs/ProfileBillingTab";

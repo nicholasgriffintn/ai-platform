@@ -1,3 +1,4 @@
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import {
   CreateTaskDialog,
@@ -20,7 +21,6 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { NEW_TEAMMATE_ID } from "~/components/Teammates/useTeammateEditorController";
 

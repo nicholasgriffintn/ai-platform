@@ -4,6 +4,7 @@ import {
   RecipeScheduleDialog,
   ToolConfigurationDialog,
 } from "@ngriffin_uk/polychat-component-capabilities";
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import {
   CardGridLoadingSkeleton,
   ConfirmationDialog,
@@ -25,7 +26,6 @@ import {
   type CapabilityLibraryScope,
 } from "~/components/Capabilities/useCapabilityLibraryController";
 import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
-import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryProps) {

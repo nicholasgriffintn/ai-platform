@@ -1,0 +1,56 @@
+import { getLocalChatScope } from "@ngriffin_uk/polychat-library-chat";
+import { searchPolychat, useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  buildGlobalSearchResults,
+  localChatService,
+  rankGlobalSearchResults,
+  useProjectCapabilityCatalog,
+} from "@ngriffin_uk/polychat-library-react";
+import { useDebouncedValue } from "@ngriffin_uk/polychat-utility-react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+
+const GLOBAL_SEARCH_LIMIT = 8;
+
+export function useGlobalSearch(query: string) {
+  const debouncedQuery = useDebouncedValue(query, 180).trim();
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const userId = useChatStore((state) => state.user?.id);
+  const localScope = getLocalChatScope(userId);
+  const catalog = useProjectCapabilityCatalog();
+  const remoteQuery = useQuery({
+    queryKey: ["global-search", debouncedQuery],
+    queryFn: () => searchPolychat(debouncedQuery, GLOBAL_SEARCH_LIMIT),
+    enabled: isAuthenticated,
+    placeholderData: (previous) => previous,
+    staleTime: 30 * 1000,
+  });
+  const localQuery = useQuery({
+    queryKey: ["global-search", "local", localScope],
+    queryFn: () => localChatService.listLocalChats(),
+    staleTime: 30 * 1000,
+  });
+
+  const items = useMemo(
+    () =>
+      buildGlobalSearchResults({
+        capabilities: catalog.items,
+        experiences: catalog.experiences,
+        localConversations: localQuery.data ?? [],
+        remote: remoteQuery.data,
+      }),
+    [catalog.experiences, catalog.items, localQuery.data, remoteQuery.data],
+  );
+  const results = useMemo(
+    () => rankGlobalSearchResults(items, debouncedQuery),
+    [debouncedQuery, items],
+  );
+
+  return {
+    debouncedQuery,
+    error: remoteQuery.error ?? localQuery.error ?? catalog.error,
+    isLoading: remoteQuery.isLoading || localQuery.isLoading || catalog.isLoading,
+    isUpdating: query.trim() !== debouncedQuery || remoteQuery.isFetching,
+    results,
+  };
+}

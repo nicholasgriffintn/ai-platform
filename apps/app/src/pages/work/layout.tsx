@@ -1,8 +1,7 @@
+import { ConversationProductHeader, PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { isProjectConversationPath } from "@ngriffin_uk/polychat-library-react";
 import { Outlet, useLocation, useParams } from "react-router";
 
-import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
-import { PageShell } from "~/components/Core/PageShell";
 import { WorkAccessGate } from "~/components/Work/WorkAccessGate";
 import { useWorkData } from "~/components/Work/WorkDataContext";
 import { WorkDataProvider } from "~/components/Work/WorkDataProvider";

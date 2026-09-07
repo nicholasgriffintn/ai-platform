@@ -1,6 +1,5 @@
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import type { ReactNode } from "react";
-
-import { PageShell } from "~/components/Core/PageShell";
 
 import { ProjectHomeTabs } from "./ProjectHomeTabs";
 import { useWorkData } from "./WorkDataContext";

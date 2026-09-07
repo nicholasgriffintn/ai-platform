@@ -1,8 +1,5 @@
+import { ChatSidebar, PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { Outlet, useLocation, useParams } from "react-router";
-
-import { ChatSidebar } from "~/components/ChatSidebar";
-import { PageShell } from "~/components/Core/PageShell";
-
 export default function ChatLayout() {
   const { pathname } = useLocation();
   const { completionId } = useParams<"completionId">();

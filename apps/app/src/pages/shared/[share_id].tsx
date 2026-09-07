@@ -1,5 +1,6 @@
 import { ArtifactPanel } from "@ngriffin_uk/polychat-component-content";
 import { MessageList } from "@ngriffin_uk/polychat-component-conversation";
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { ButtonLink, LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { ApiError, fetchSharedConversationHistory } from "@ngriffin_uk/polychat-library-client";
@@ -7,9 +8,6 @@ import { useArtifactPanel, useCopyToClipboard } from "@ngriffin_uk/polychat-libr
 import { PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-
-import { PageShell } from "~/components/Core/PageShell";
-
 export function meta({ params }: { params: { share_id: string } }) {
   return [
     { title: `Shared Conversation ${params.share_id} - Polychat` },

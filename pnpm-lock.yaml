@@ -363,6 +363,9 @@ importers:
       '@ngriffin_uk/polychat-component-navigation':
         specifier: workspace:^
         version: link:../../packages/component-navigation
+      '@ngriffin_uk/polychat-component-shell':
+        specifier: workspace:^
+        version: link:../../packages/component-shell
       '@ngriffin_uk/polychat-component-ui':
         specifier: workspace:^
         version: link:../../packages/component-ui
@@ -631,6 +634,9 @@ importers:
       '@ngriffin_uk/polychat-component-navigation':
         specifier: workspace:^
         version: link:../../packages/component-navigation
+      '@ngriffin_uk/polychat-component-shell':
+        specifier: workspace:^
+        version: link:../../packages/component-shell
       '@ngriffin_uk/polychat-component-ui':
         specifier: workspace:^
         version: link:../../packages/component-ui
@@ -1273,6 +1279,88 @@ importers:
       vite:
         specifier: 8.2.2
         version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
+
+  packages/component-shell:
+    dependencies:
+      '@ngriffin_uk/polychat-component-content':
+        specifier: workspace:^
+        version: link:../component-content
+      '@ngriffin_uk/polychat-component-conversation':
+        specifier: workspace:^
+        version: link:../component-conversation
+      '@ngriffin_uk/polychat-component-models':
+        specifier: workspace:^
+        version: link:../component-models
+      '@ngriffin_uk/polychat-component-navigation':
+        specifier: workspace:^
+        version: link:../component-navigation
+      '@ngriffin_uk/polychat-component-ui':
+        specifier: workspace:^
+        version: link:../component-ui
+      '@ngriffin_uk/polychat-library-chat':
+        specifier: workspace:^
+        version: link:../library-chat
+      '@ngriffin_uk/polychat-library-client':
+        specifier: workspace:^
+        version: link:../library-client
+      '@ngriffin_uk/polychat-library-react':
+        specifier: workspace:^
+        version: link:../library-react
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+      '@ngriffin_uk/polychat-utility-react':
+        specifier: workspace:^
+        version: link:../utility-react
+      '@tanstack/react-query':
+        specifier: '*'
+        version: 5.102.8(react@19.2.8)
+      lucide-react:
+        specifier: 1.37.0
+        version: 1.37.0(react@19.2.8)
+      react-router:
+        specifier: '*'
+        version: 8.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      sonner:
+        specifier: '*'
+        version: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      zustand:
+        specifier: '*'
+        version: 5.0.15(@types/react@19.2.18)(react@19.2.8)
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@testing-library/react':
+        specifier: 'catalog:'
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.5(@types/react@19.2.18)
+      jsdom:
+        specifier: 'catalog:'
+        version: 30.0.1
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+      tsup:
+        specifier: 'catalog:'
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.13)(typescript@6.0.3)(yaml@2.9.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))

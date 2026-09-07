@@ -1,4 +1,4 @@
-import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import { buttonClassName, Card } from "@ngriffin_uk/polychat-component-ui";
 import { useDesktopDownloads } from "@ngriffin_uk/polychat-library-react";
 import type { DesktopDownload } from "@ngriffin_uk/polychat-schemas";
 import { formatBytes, formatDate } from "@ngriffin_uk/polychat-utility-core";
@@ -25,12 +25,10 @@ function DownloadCard({ download }: { download: DesktopDownload }) {
       </div>
       <div className="mt-auto flex items-center justify-between gap-3">
         <span className="text-xs text-muted-foreground">{formatBytes(download.size)}</span>
-        <Button asChild>
-          <a href={download.url} download>
-            <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-            Download
-          </a>
-        </Button>
+        <a href={download.url} download className={buttonClassName()}>
+          <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+          Download
+        </a>
       </div>
     </Card>
   );

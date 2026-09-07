@@ -1,7 +1,6 @@
-import { PageShell } from "~/components/Core/PageShell";
-import { PetShowcase } from "~/components/Pets/PetShowcase";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { PageShell, StandardSidebarContent } from "@ngriffin_uk/polychat-component-shell";
 
+import { PetShowcase } from "~/components/Pets/PetShowcase";
 export function meta() {
   return [
     { title: "Pets - Polychat" },

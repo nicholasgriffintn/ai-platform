@@ -1,3 +1,4 @@
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   TaskAttentionList,
@@ -9,7 +10,6 @@ import { useTaskAttention, isAuthenticationError } from "@ngriffin_uk/polychat-l
 import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useState } from "react";
 
-import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";

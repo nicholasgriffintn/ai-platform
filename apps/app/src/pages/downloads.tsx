@@ -1,6 +1,6 @@
-import { PageShell } from "~/components/Core/PageShell";
+import { PageShell, StandardSidebarContent } from "@ngriffin_uk/polychat-component-shell";
+
 import { DownloadsPage } from "~/components/Downloads/DownloadsPage";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 
 export function meta() {
   return [

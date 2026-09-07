@@ -52,12 +52,13 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0076: Give the desktop shell a core that owns egress](decisions/0076-desktop-core-owns-egress.md).
 - [0077: Separate model runtimes from agent runtimes](decisions/0077-separate-model-runtimes-from-agent-runtimes.md).
 - [0078: Release applications from changesets and hand out builds through the API](decisions/0078-release-applications-from-changesets.md).
+- [0079: Share one connected navigation shell between web and desktop](decisions/0079-share-one-connected-navigation-shell.md).
 
 ## Accepted designs awaiting implementation
 
 - [0038: Scope future model lifecycle to a provider surface](decisions/0038-provider-surface-model-lifecycle.md).
 - [0040: Resolve future provider governance before execution](decisions/0040-provider-execution-governance-policy.md).
 
-Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0079.
+Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0080.
 
 Add a record only for a durable trade-off that code alone cannot explain. State the problem, decision, implementation status and consequence; update this index. Keep rollout plans and copied schemas out of ADRs.

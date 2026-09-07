@@ -1,3 +1,4 @@
+import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { Card, ConfirmationDialog, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   ProjectStarterList,
@@ -13,8 +14,6 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-
-import { PageShell } from "~/components/Core/PageShell";
 
 import { useWorkData } from "./WorkDataContext";
 import { WorkspaceUsage } from "./WorkspaceUsage";
