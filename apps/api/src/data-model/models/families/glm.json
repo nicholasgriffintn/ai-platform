@@ -170,7 +170,6 @@
       "defaults": {
         "name": "GLM 4.6",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
@@ -277,6 +276,7 @@
     },
     "glm-4-7": {
       "defaults": {
+        "name": "GLM 4.7",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "strengths": [
           "tool_use"
@@ -351,6 +351,7 @@
     },
     "glm-5": {
       "defaults": {
+        "name": "GLM-5",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 202752,
         "strengths": [
@@ -358,6 +359,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
+        "releaseDate": "February 12, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -964,7 +966,7 @@
         "openWeights": false,
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 1310720,
-        "maxTokens": 235929,
+        "maxTokens": 943718,
         "releaseDate": "August 19, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [

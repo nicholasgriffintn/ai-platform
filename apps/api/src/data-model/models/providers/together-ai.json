@@ -26,10 +26,10 @@
         "speed": 3
       },
       "unset": [
-        "supportsAttachments",
-        "supportsTemperature",
+        "openWeights",
         "supportsToolCalls",
-        "openWeights"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo": {
@@ -41,10 +41,10 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "supportsAttachments",
-        "supportsTemperature",
+        "openWeights",
         "supportsToolCalls",
-        "openWeights"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo": {
@@ -56,10 +56,10 @@
         "costPer1kOutputTokens": 0.00018
       },
       "unset": [
-        "supportsAttachments",
-        "supportsTemperature",
+        "openWeights",
         "supportsToolCalls",
-        "openWeights"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "meta-llama/Llama-Vision-Free": {
@@ -70,10 +70,10 @@
         "speed": 3
       },
       "unset": [
-        "supportsAttachments",
-        "supportsTemperature",
+        "openWeights",
         "supportsToolCalls",
-        "openWeights"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo": {
@@ -86,10 +86,10 @@
         "costPer1kOutputTokens": 0.0035
       },
       "unset": [
-        "supportsAttachments",
-        "supportsTemperature",
+        "openWeights",
         "supportsToolCalls",
-        "openWeights"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free": {
@@ -100,8 +100,8 @@
         "speed": 3
       },
       "unset": [
-        "supportsTemperature",
         "supportsToolCalls",
+        "supportsTemperature",
         "supportsAttachments"
       ]
     },
@@ -113,10 +113,10 @@
         "isFeatured": false
       },
       "unset": [
-        "supportsAttachments",
-        "supportsTemperature",
+        "openWeights",
         "supportsToolCalls",
-        "openWeights"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "Refuel-Llm-V2": {
@@ -126,9 +126,9 @@
         "speed": 4
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "Refuel-Llm-V2-Small": {
@@ -138,9 +138,9 @@
         "speed": 4
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "moonshotai/Kimi-K2-Instruct": {
@@ -178,10 +178,7 @@
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.004
-      },
-      "unset": [
-        "reasoningConfig"
-      ]
+      }
     },
     "openai/gpt-oss-120b": {
       "model": "gpt-oss/gpt-oss-120b",
@@ -258,33 +255,10 @@
       "model": "deepseek/deepseek-v4-pro",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
       "overrides": {
-        "name": "DeepSeek V4 Pro",
-        "openWeights": true,
-        "contextWindow": 512000,
-        "maxTokens": 384000,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00174,
-        "costPer1kOutputTokens": 0.00348,
-        "supportsResponseFormat": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 31.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
-        }
+        "costPer1kOutputTokens": 0.00348
       }
     },
     "google/gemma-4-31B-it": {
@@ -304,12 +278,10 @@
         "name": "MiniMax-M2.7",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 202752,
-        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
-        "supportsResponseFormat": true
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "moonshotai/Kimi-K2.6": {

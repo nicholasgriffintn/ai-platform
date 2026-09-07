@@ -56,11 +56,6 @@
         "name": "gpt-oss-20b",
         "openWeights": true,
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
-        "maxTokens": 131072,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
         "speed": 5,
         "releaseDate": "August 28, 2025",
         "lastUpdated": "August 28, 2025",

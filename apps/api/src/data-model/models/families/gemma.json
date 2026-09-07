@@ -9,6 +9,7 @@
         "text"
       ]
     },
+    "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": true
   },
@@ -78,7 +79,6 @@
         "reliability": 4,
         "knowledgeCutoffDate": "June 2024",
         "releaseDate": "June 27, 2024",
-        "supportsToolCalls": true,
         "supportsAttachments": false
       }
     },
@@ -104,7 +104,6 @@
         "reliability": 3,
         "knowledgeCutoffDate": "June 2024",
         "releaseDate": "June 27, 2024",
-        "supportsToolCalls": true,
         "supportsAttachments": false
       }
     },
@@ -174,7 +173,6 @@
         "contextWindow": 131000,
         "maxTokens": 131000,
         "releaseDate": "18 May 2026",
-        "supportsToolCalls": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -199,7 +197,6 @@
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "March 12, 2025",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 4.8,
@@ -224,7 +221,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "March 12, 2025",
-        "supportsToolCalls": true,
         "artificialAnalysis": {
           "intelligenceIndex": 4.8,
           "codingIndex": null,
@@ -304,7 +300,6 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "releaseDate": "December 1, 2024",
-        "supportsToolCalls": true,
         "supportsAttachments": false
       }
     },
@@ -437,7 +432,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 2, 2026",
-        "supportsToolCalls": true,
         "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -461,7 +455,6 @@
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 262144,
         "releaseDate": "April 2, 2026",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -499,7 +492,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 2, 2026",
-        "supportsToolCalls": true,
         "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -525,7 +517,6 @@
         "maxTokens": 131072,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 7, 2026",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -543,7 +534,6 @@
         "description": "Largest Gemma 4 instruction model for open, self-hosted chat and reasoning",
         "contextWindow": 262144,
         "releaseDate": "April 2, 2026",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -562,7 +552,6 @@
         "contextWindow": 131072,
         "maxTokens": 65536,
         "releaseDate": "April 2, 2026",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -590,7 +579,6 @@
           ]
         },
         "releaseDate": "April 2, 2026",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -618,7 +606,6 @@
           ]
         },
         "releaseDate": "April 2, 2026",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -650,54 +637,6 @@
         "supportsAttachments": false
       }
     },
-    "gemma3-12b": {
-      "defaults": {
-        "name": "gemma3:12b",
-        "description": "gemma3:12b accepts text, image and produces text.",
-        "contextWindow": 131072,
-        "maxTokens": 131072,
-        "strengths": [
-          "summarization",
-          "multilingual",
-          "creative"
-        ],
-        "multimodal": true,
-        "releaseDate": "December 1, 2024",
-        "supportsToolCalls": false
-      }
-    },
-    "gemma3-27b": {
-      "defaults": {
-        "name": "gemma3:27b",
-        "description": "gemma3:27b accepts text, image and produces text.",
-        "contextWindow": 131072,
-        "maxTokens": 131072,
-        "strengths": [
-          "summarization",
-          "multilingual",
-          "creative"
-        ],
-        "multimodal": true,
-        "releaseDate": "July 27, 2025",
-        "supportsToolCalls": false
-      }
-    },
-    "gemma3-4b": {
-      "defaults": {
-        "name": "gemma3:4b",
-        "description": "gemma3:4b accepts text, image and produces text.",
-        "contextWindow": 131072,
-        "maxTokens": 131072,
-        "strengths": [
-          "summarization",
-          "multilingual",
-          "creative"
-        ],
-        "multimodal": true,
-        "releaseDate": "December 1, 2024",
-        "supportsToolCalls": false
-      }
-    },
     "gemma4": {
       "defaults": {
         "name": "gemma4",
@@ -706,7 +645,6 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "releaseDate": "April 2, 2026",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -723,12 +661,12 @@
     "gemma4-31b": {
       "defaults": {
         "name": "gemma4:31b",
+        "openWeights": true,
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 262144,
         "maxTokens": 262144,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 2, 2026",
-        "supportsToolCalls": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -755,8 +693,7 @@
         "reliability": 4,
         "multimodal": true,
         "knowledgeCutoffDate": "December 2024",
-        "releaseDate": "January 1, 2025",
-        "supportsToolCalls": true
+        "releaseDate": "January 1, 2025"
       }
     },
     "google-gemma-3-12b": {
@@ -782,26 +719,7 @@
         "maxTokens": 8192,
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "July 27, 2025",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true
-      }
-    },
-    "ollama-gemma-3-1b": {
-      "defaults": {
-        "name": "Ollama Gemma 3 1B",
-        "description": "Ollama Gemma 3 1B accepts text and produces text.",
-        "contextWindow": 32000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "summarization"
-        ]
       }
     },
     "pearl-ai-gemma-4-31b-instruct": {

@@ -26,8 +26,8 @@
         }
       },
       "unset": [
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsToolCalls",
+        "supportsTemperature"
       ]
     }
   }

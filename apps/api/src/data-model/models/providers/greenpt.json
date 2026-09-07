@@ -392,6 +392,7 @@
       "overrides": {
         "name": "MiniMax-M2.5",
         "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
+        "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0001938,

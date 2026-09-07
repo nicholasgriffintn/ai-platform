@@ -424,6 +424,7 @@
         "name": "Qwen3-Next 80B-A3B (Thinking)",
         "description": "Efficient Qwen thinking model for local reasoning, math, and coding agents",
         "contextWindow": 131072,
+        "maxTokens": 32768,
         "contextComplexity": 3,
         "speed": 4,
         "lastUpdated": "September 2025",

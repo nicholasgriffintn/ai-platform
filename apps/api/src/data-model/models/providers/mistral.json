@@ -12,9 +12,9 @@
         "deprecated": true
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "mistral-ocr-latest": {
@@ -25,9 +25,9 @@
         "supportsDocuments": true
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "mistral-ocr-4-1": {
@@ -38,9 +38,9 @@
         "supportsDocuments": true
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "leanstral": {
@@ -382,9 +382,9 @@
         "apiOperation": "codestralEmbeddings"
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "mistral-moderation-latest": {
@@ -394,9 +394,9 @@
         "apiOperation": "moderations"
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "voxtral-mini-tts-latest": {

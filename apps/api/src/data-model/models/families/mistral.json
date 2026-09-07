@@ -304,25 +304,6 @@
         }
       }
     },
-    "mistral-large-3-675b": {
-      "defaults": {
-        "name": "mistral-large-3:675b",
-        "description": "mistral-large-3:675b accepts text, image and produces text.",
-        "contextWindow": 262144,
-        "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "December 2, 2025",
-        "supportsAttachments": true
-      }
-    },
     "mistral-medium-2508": {
       "defaults": {
         "name": "Mistral Medium 2508",

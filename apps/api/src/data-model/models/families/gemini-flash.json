@@ -647,6 +647,57 @@
         }
       }
     },
+    "nano-banana-2-preview": {
+      "defaults": {
+        "name": "Nano Banana 2 (Gemini 3.1 Flash Image Preview)",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 65536,
+        "maxTokens": 58982,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
+        "contextComplexity": 3,
+        "reliability": 5,
+        "releaseDate": "February 26, 2026",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1254,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
+      }
+    },
     "nano-banana-gemini-2-5-flash-image": {
       "defaults": {
         "name": "Nano Banana (Gemini 2.5 Flash Image)",

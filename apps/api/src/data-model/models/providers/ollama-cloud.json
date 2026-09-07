@@ -58,8 +58,8 @@
       },
       "unset": [
         "knowledgeCutoffDate",
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTemperature"
       ]
     },
     "deepseek-v4-pro": {
@@ -92,7 +92,6 @@
       "model": "gemma/gemma4-31b",
       "matchingModel": "gemma4:31b",
       "overrides": {
-        "openWeights": true,
         "lastUpdated": "April 8, 2026",
         "supportsAttachments": true
       },
@@ -114,8 +113,8 @@
         "costPer1kOutputTokens": 0.0044
       },
       "unset": [
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTemperature"
       ]
     },
     "glm-5.2": {
@@ -179,8 +178,8 @@
       },
       "unset": [
         "knowledgeCutoffDate",
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTemperature"
       ]
     },
     "kimi-k2.6": {
@@ -212,8 +211,8 @@
       },
       "unset": [
         "knowledgeCutoffDate",
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTemperature"
       ]
     },
     "kimi-k2.7-code": {
@@ -257,6 +256,7 @@
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "minimax-m2.5",
+        "maxTokens": 131072,
         "speed": 4,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
@@ -281,7 +281,8 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "supportsTemperature"
+        "supportsTemperature",
+        "supportsResponseFormat"
       ]
     },
     "minimax-m3": {
@@ -321,9 +322,9 @@
         "supportsAttachments": true
       },
       "unset": [
-        "supportsTemperature",
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "supportsTemperature"
       ]
     },
     "nemotron-3-nano:30b": {
@@ -354,7 +355,6 @@
       "model": "qwen/qwen3-5-397b",
       "matchingModel": "qwen3.5:397b",
       "overrides": {
-        "openWeights": true,
         "lastUpdated": "February 17, 2026",
         "supportsAttachments": true
       },

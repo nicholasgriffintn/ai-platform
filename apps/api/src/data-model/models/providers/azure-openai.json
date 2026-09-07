@@ -610,7 +610,10 @@
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-3-mini": {
       "model": "grok/grok-3-mini",
@@ -622,6 +625,7 @@
         "costPer1kReasoningTokens": 0.0005
       },
       "unset": [
+        "openWeights",
         "strengths",
         "contextComplexity",
         "reliability"
@@ -635,7 +639,10 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "costPer1kReasoningTokens": 0.015
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4-fast-non-reasoning": {
       "model": "grok/grok-4-fast-non-reasoning",
@@ -645,14 +652,16 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4-fast-reasoning": {
       "model": "grok/grok-4-fast-reasoning",
       "matchingModel": "grok-4-fast-reasoning",
       "overrides": {
         "name": "Grok 4 Fast (Reasoning)",
-        "openWeights": false,
         "maxTokens": 30000,
         "modalities": {
           "input": [
@@ -684,7 +693,10 @@
         "lastUpdated": "August 28, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0015
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "monshot/kimi-k2-thinking": {
       "model": "kimi-thinking/kimi-k2-thinking",
@@ -1706,6 +1718,28 @@
         "maxTokens": 128000,
         "lastUpdated": "August 12, 2026",
         "supportsAttachments": true
+      }
+    },
+    "gpt-6-astra": {
+      "model": "gpt-astra/gpt-6-astra",
+      "matchingModel": "gpt-6-astra",
+      "overrides": {
+        "lastUpdated": "September 4, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

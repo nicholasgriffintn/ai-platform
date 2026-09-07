@@ -662,6 +662,7 @@
       "overrides": {
         "description": "Efficient Qwen thinking model for local reasoning, math, and coding agents",
         "contextWindow": 131072,
+        "maxTokens": 32768,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012
@@ -1228,7 +1229,8 @@
         "supportsToolCalls": false
       },
       "unset": [
-        "reasoningConfig"
+        "reasoningConfig",
+        "supportsResponseFormat"
       ]
     },
     "google/gemini-3-pro-preview": {
@@ -2316,7 +2318,10 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-3": {
       "model": "grok/grok-3",
@@ -2328,7 +2333,10 @@
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-3-fast": {
       "model": "grok/grok-3-fast",
@@ -2337,7 +2345,10 @@
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-3-mini": {
       "model": "grok/grok-3-mini",
@@ -2349,6 +2360,7 @@
         "costPer1kReasoningTokens": 0.0005
       },
       "unset": [
+        "openWeights",
         "strengths",
         "contextComplexity",
         "reliability"
@@ -2362,7 +2374,10 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.004,
         "costPer1kReasoningTokens": 0.004
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4": {
       "model": "grok/grok-4",
@@ -2372,7 +2387,10 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "costPer1kReasoningTokens": 0.015
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4-fast-non-reasoning": {
       "model": "grok/grok-4-fast-non-reasoning",
@@ -2382,7 +2400,10 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4-fast-reasoning": {
       "model": "grok/grok-4-fast-reasoning",
@@ -2407,7 +2428,10 @@
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4.1-fast-non-reasoning": {
       "model": "grok/grok-4-1-fast-non-reasoning",
@@ -2458,7 +2482,10 @@
         "lastUpdated": "August 28, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0015
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xiaomi/mimo-v2-flash": {
       "model": "mimo/mimo-v2-flash",
@@ -2594,7 +2621,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "zai/glm-4.7",
       "overrides": {
-        "name": "GLM 4.7",
         "description": "Mature GLM model for dependable coding, reasoning, and structured agent tasks",
         "contextWindow": 200000,
         "maxTokens": 120000,
@@ -2637,17 +2663,9 @@
         "maxTokens": 256000,
         "speed": 4,
         "knowledgeCutoffDate": "September 2025",
-        "releaseDate": "February 3, 2026",
         "lastUpdated": "February 3, 2026",
         "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.0012,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "alibaba/qwen3-vl-235b-a22b-instruct": {
@@ -3069,7 +3087,10 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "minimax/minimax-m2.7-highspeed": {
       "model": "minimax/minimax-m2-7-high-speed",
@@ -3123,8 +3144,8 @@
         "supportsToolCalls": false
       },
       "unset": [
-        "supportsResponseFormat",
-        "strengths"
+        "strengths",
+        "supportsResponseFormat"
       ]
     },
     "openai/gpt-5.3-chat": {
@@ -3447,7 +3468,10 @@
       "overrides": {
         "lastUpdated": "February 19, 2026",
         "supportsToolCalls": false
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "xiaomi/mimo-v2-pro": {
       "model": "mimo/mimo-v2-pro",
@@ -3513,12 +3537,10 @@
       "model": "glm/glm-5",
       "matchingModel": "zai/glm-5",
       "overrides": {
-        "name": "GLM-5",
         "description": "General GLM flagship for coding, analysis, and tool-heavy engineering workflows",
         "contextWindow": 202800,
         "maxTokens": 131100,
         "speed": 3,
-        "releaseDate": "February 12, 2026",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0032
@@ -4541,9 +4563,9 @@
         "supportsToolCalls": false
       },
       "unset": [
-        "reasoningConfig",
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "reasoningConfig"
       ]
     },
     "openai/gpt-4o-transcribe": {
@@ -5317,8 +5339,8 @@
         "supportsToolCalls": false
       },
       "unset": [
-        "supportsTemperature",
         "multimodal",
+        "supportsTemperature",
         "reasoningConfig"
       ]
     },
@@ -5401,8 +5423,8 @@
         }
       },
       "unset": [
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTemperature"
       ]
     },
     "fish-audio/s1": {
@@ -6489,8 +6511,8 @@
         "supportsAttachments": true
       },
       "unset": [
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTemperature"
       ]
     },
     "tencent/hy4-preview": {
@@ -6652,8 +6674,8 @@
         }
       },
       "unset": [
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTemperature"
       ]
     },
     "zai/glm-5.3-fast": {
@@ -6674,8 +6696,8 @@
         "costPer1kOutputTokens": 0.0022
       },
       "unset": [
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTemperature"
       ]
     },
     "inclusionai/ling-3.0-flash-sante": {

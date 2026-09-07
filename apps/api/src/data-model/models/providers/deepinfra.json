@@ -190,7 +190,14 @@
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "November 7, 2025",
         "costPer1kInputTokens": 0.00047,
-        "costPer1kOutputTokens": 0.002
+        "costPer1kOutputTokens": 0.002,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -355,8 +362,8 @@
         "costPer1kOutputTokens": 0.0004
       },
       "unset": [
-        "supportsTemperature",
         "openWeights",
+        "supportsTemperature",
         "supportsResponseFormat"
       ]
     },
@@ -369,8 +376,8 @@
         "costPer1kOutputTokens": 0.0004
       },
       "unset": [
-        "supportsTemperature",
         "openWeights",
+        "supportsTemperature",
         "supportsResponseFormat"
       ]
     },
@@ -385,8 +392,8 @@
         "costPer1kOutputTokens": 0.00005
       },
       "unset": [
-        "supportsTemperature",
         "openWeights",
+        "supportsTemperature",
         "supportsResponseFormat"
       ]
     },
@@ -399,8 +406,8 @@
         "costPer1kOutputTokens": 0.00003
       },
       "unset": [
-        "supportsTemperature",
         "openWeights",
+        "supportsTemperature",
         "supportsResponseFormat"
       ]
     },
@@ -559,6 +566,7 @@
       "overrides": {
         "name": "GLM-4.6",
         "contextWindow": 202752,
+        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "September 30, 2025",
         "costPer1kInputTokens": 0.0005,
@@ -596,12 +604,10 @@
       "model": "glm/glm-5",
       "matchingModel": "zai-org/GLM-5",
       "overrides": {
-        "name": "GLM-5",
         "maxTokens": 16384,
         "contextComplexity": 3,
         "speed": 3,
         "knowledgeCutoffDate": "December 2025",
-        "releaseDate": "February 12, 2026",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.00208
@@ -721,7 +727,6 @@
       "overrides": {
         "name": "MiniMax-M2.7",
         "contextWindow": 196608,
-        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.00025,

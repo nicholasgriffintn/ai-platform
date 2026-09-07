@@ -474,7 +474,6 @@
       "model": "grok/grok-4",
       "matchingModel": "xai/grok-4",
       "overrides": {
-        "openWeights": false,
         "modalities": {
           "input": [
             "text",
@@ -510,7 +509,6 @@
       "model": "grok/grok-4-fast",
       "matchingModel": "xai/grok-4-fast",
       "overrides": {
-        "openWeights": false,
         "maxTokens": 64000,
         "modalities": {
           "input": [
@@ -2870,10 +2868,10 @@
         "costPer1kOutputTokens": 0.00825
       },
       "unset": [
-        "supportsTemperature",
         "strengths",
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "supportsTemperature"
       ]
     },
     "mistral-medium-latest": {

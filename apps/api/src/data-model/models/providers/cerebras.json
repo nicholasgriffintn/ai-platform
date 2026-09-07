@@ -9,10 +9,10 @@
       "matchingModel": "llama-3.3-70b",
       "overrides": {},
       "unset": [
-        "supportsAttachments",
-        "supportsTemperature",
+        "openWeights",
         "supportsToolCalls",
-        "openWeights"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "cerebras/gpt-oss-120b": {
@@ -39,9 +39,9 @@
       "matchingModel": "qwen-3-32b",
       "overrides": {},
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "cerebras/zai-glm-4.6": {
@@ -49,10 +49,10 @@
       "matchingModel": "zai-glm-4.6",
       "overrides": {},
       "unset": [
-        "supportsAttachments",
-        "supportsTemperature",
         "supportsToolCalls",
         "supportsResponseFormat",
+        "supportsAttachments",
+        "supportsTemperature",
         "openWeights"
       ]
     },
@@ -107,6 +107,26 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "qwen-3.8-27b": {
+      "model": "qwen/qwen3-8-27b",
+      "matchingModel": "qwen-3.8-27b",
+      "overrides": {
+        "contextWindow": 65536,
+        "maxTokens": 32768,
+        "lastUpdated": "September 3, 2026",
+        "costPer1kInputTokens": 0.00099,
+        "costPer1kOutputTokens": 0.00149,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
         }
       }
     }

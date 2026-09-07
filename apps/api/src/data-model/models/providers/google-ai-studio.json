@@ -743,12 +743,21 @@
       "overrides": {
         "contextWindow": 131072,
         "isFree": true,
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "releaseDate": "November 20, 2025",
         "lastUpdated": "November 20, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
         "supportsToolCalls": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemma-4-E2B-it": {
       "model": "gemma/gemma-4-e2b-it",
@@ -827,7 +836,10 @@
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "deep-research-preview-04-2026": {
       "model": "gemini-pro/deep-research-preview-apr-21-2026",
@@ -836,7 +848,10 @@
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-2.5-computer-use-preview-10-2025": {
       "model": "gemini-pro/gemini-2-5-computer-use-preview-10-2025",
@@ -845,13 +860,22 @@
         "lastUpdated": "October 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3-pro-image": {
       "model": "gemini-pro/nano-banana-pro",
       "matchingModel": "gemini-3-pro-image",
       "overrides": {
         "contextWindow": 131072,
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
@@ -863,7 +887,10 @@
           ],
           "defaultEffort": "low"
         }
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3.1-flash-image": {
       "model": "gemini-flash/nano-banana-2",
@@ -937,7 +964,8 @@
         "supportsAttachments": false
       },
       "unset": [
-        "reasoningConfig"
+        "reasoningConfig",
+        "supportsResponseFormat"
       ]
     },
     "gemini-embedding-2": {

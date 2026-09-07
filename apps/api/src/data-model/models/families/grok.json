@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "openWeights": false,
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -462,7 +463,6 @@
     },
     "grok-4-1-fast-non-reasoning": {
       "defaults": {
-        "openWeights": false,
         "description": "Fast Grok model for responsive chat, reasoning, and tool-assisted work",
         "releaseDate": "November 19, 2025",
         "supportsAttachments": true
@@ -471,7 +471,6 @@
     "grok-4-1-fast-reasoning": {
       "defaults": {
         "name": "Grok 4.1 Fast Reasoning",
-        "openWeights": false,
         "description": "Fast Grok model for responsive chat, reasoning, and tool-assisted work",
         "contextWindow": 1000000,
         "maxTokens": 1000000,
@@ -502,7 +501,6 @@
     "grok-4-2-beta": {
       "defaults": {
         "name": "grok-4.2-beta",
-        "openWeights": false,
         "description": "Grok 4.20 Beta is xAI's newest flagship model with industry-leading speed and agentic tool calling capabilities. It combines the lowest hallucination rate on the market with strict prompt adherance, delivering consistently precise and truthful responses.",
         "contextWindow": 2000000,
         "maxTokens": 2000000,
@@ -533,7 +531,6 @@
     "grok-4-20": {
       "defaults": {
         "name": "Grok 4.20",
-        "openWeights": false,
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "contextWindow": 2000000,
         "maxTokens": 1800000,
@@ -576,7 +573,6 @@
     "grok-4-20-beta-non-reasoning": {
       "defaults": {
         "name": "Grok 4.20 Beta Non-Reasoning",
-        "openWeights": false,
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "contextWindow": 2000000,
         "maxTokens": 2000000,
@@ -597,7 +593,6 @@
     "grok-4-20-beta-reasoning": {
       "defaults": {
         "name": "Grok 4.20 Beta Reasoning",
-        "openWeights": false,
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "contextWindow": 2000000,
         "maxTokens": 2000000,
@@ -625,7 +620,6 @@
     "grok-4-20-multi-agent": {
       "defaults": {
         "name": "Grok 4.20 Multi-Agent",
-        "openWeights": false,
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "contextWindow": 2000000,
         "supportsAttachments": true
@@ -634,7 +628,6 @@
     "grok-4-20-multi-agent-beta": {
       "defaults": {
         "name": "Grok 4.20 Multi Agent Beta",
-        "openWeights": false,
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "contextWindow": 2000000,
         "maxTokens": 2000000,
@@ -650,7 +643,6 @@
     },
     "grok-4-20-non-reasoning": {
       "defaults": {
-        "openWeights": false,
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "strengths": [
           "vision",
@@ -669,7 +661,6 @@
     },
     "grok-4-20-reasoning": {
       "defaults": {
-        "openWeights": false,
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -684,7 +675,6 @@
     "grok-4-3": {
       "defaults": {
         "name": "Grok 4.3",
-        "openWeights": false,
         "description": "xAI's default Grok for chat, coding, agentic tools, and lower hallucination risk",
         "contextWindow": 1000000,
         "strengths": [
@@ -708,7 +698,6 @@
     "grok-4-5": {
       "defaults": {
         "name": "Grok 4.5",
-        "openWeights": false,
         "description": "xAI's Grok model for chat, coding, agentic tools, and lower hallucination risk",
         "contextWindow": 500000,
         "maxTokens": 500000,
@@ -738,7 +727,6 @@
     "grok-4-6": {
       "defaults": {
         "name": "Grok 4.6",
-        "openWeights": false,
         "description": "xAI's frontier model for long-running agents, coding, knowledge work, and visual projects",
         "contextWindow": 500000,
         "maxTokens": 500000,
@@ -754,6 +742,66 @@
         "knowledgeCutoffDate": "February 1, 2026",
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "grok-4-6-global": {
+      "defaults": {
+        "name": "Grok 4.6 (Global)",
+        "description": "xAI's frontier model for long-running agents, coding, knowledge work, and visual projects",
+        "contextWindow": 500000,
+        "maxTokens": 500000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "February 1, 2026",
+        "releaseDate": "August 12, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "grok-4-6-us": {
+      "defaults": {
+        "name": "Grok 4.6 (US)",
+        "description": "xAI's frontier model for long-running agents, coding, knowledge work, and visual projects",
+        "contextWindow": 500000,
+        "maxTokens": 500000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "February 1, 2026",
+        "releaseDate": "August 12, 2026",
+        "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -907,7 +955,6 @@
     "grok-imagine": {
       "defaults": {
         "name": "Grok Imagine",
-        "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -947,7 +994,6 @@
     "grok-imagine-image": {
       "defaults": {
         "name": "Grok Imagine Image",
-        "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "maxTokens": 0,
         "reliability": 4,
@@ -974,7 +1020,6 @@
     "grok-imagine-image-2-0": {
       "defaults": {
         "name": "Grok Imagine Image 2.0",
-        "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -994,7 +1039,6 @@
     "grok-imagine-image-2-0-preview": {
       "defaults": {
         "name": "Grok Imagine Image 2.0 Preview",
-        "openWeights": false,
         "description": "Grok Imagine Image 2.0 Preview accepts text and produces image.",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -1052,7 +1096,6 @@
     "grok-imagine-image-quality": {
       "defaults": {
         "name": "Grok Imagine Image Quality",
-        "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 16000,
         "maxTokens": 0,
@@ -1131,7 +1174,6 @@
     "grok-imagine-video-1-5": {
       "defaults": {
         "name": "Grok Imagine Video 1.5",
-        "openWeights": false,
         "description": "Video model for image-to-video generation, editing, and extension workflows",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -1151,7 +1193,6 @@
     "grok-imagine-video-1-5-preview": {
       "defaults": {
         "name": "Grok Imagine Video 1.5 Preview",
-        "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -1191,7 +1232,6 @@
     "grok-latest": {
       "defaults": {
         "name": "Grok Latest",
-        "openWeights": false,
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "contextWindow": 500000,
         "maxTokens": 450000,
@@ -1222,7 +1262,6 @@
     "grok-stt": {
       "defaults": {
         "name": "Grok STT",
-        "openWeights": false,
         "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -1241,7 +1280,6 @@
     "grok-tts": {
       "defaults": {
         "name": "Grok TTS",
-        "openWeights": false,
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -1288,7 +1326,6 @@
     "grok-voice-think-fast-1-0": {
       "defaults": {
         "name": "Grok Voice Think Fast 1.0",
-        "openWeights": false,
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -1343,7 +1380,6 @@
     "grok-voice-think-fast-2-0": {
       "defaults": {
         "name": "Grok Voice Think Fast 2.0",
-        "openWeights": false,
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "contextWindow": 0,
         "maxTokens": 0,

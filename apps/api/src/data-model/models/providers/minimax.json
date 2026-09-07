@@ -30,7 +30,6 @@
       "overrides": {
         "name": "MiniMax M2.7",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "strengths": [
           "coding",
           "agents",
@@ -40,8 +39,7 @@
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
-        "supportsResponseFormat": true
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "MiniMax-M2.1": {
@@ -62,6 +60,7 @@
       "overrides": {
         "name": "MiniMax-M2.5",
         "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
+        "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,

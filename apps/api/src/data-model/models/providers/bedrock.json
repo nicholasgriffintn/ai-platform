@@ -88,8 +88,8 @@
         "bedrockApiOperation": "invoke"
       },
       "unset": [
-        "supportsAttachments",
         "supportsToolCalls",
+        "supportsAttachments",
         "supportsTemperature"
       ]
     },
@@ -101,8 +101,8 @@
         "bedrockApiOperation": "async-invoke"
       },
       "unset": [
-        "supportsAttachments",
         "supportsToolCalls",
+        "supportsAttachments",
         "supportsTemperature"
       ]
     },
@@ -111,8 +111,8 @@
       "matchingModel": "amazon.nova-2-sonic-v1:0",
       "overrides": {},
       "unset": [
-        "supportsAttachments",
         "supportsToolCalls",
+        "supportsAttachments",
         "supportsTemperature"
       ]
     },
@@ -243,8 +243,8 @@
         "supportsPromptCaching": true
       },
       "unset": [
-        "supportsResponseFormat",
-        "openWeights"
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "anthropic.claude-3-5-haiku": {
@@ -303,9 +303,9 @@
         "costPer1kInputTokens": 0.0001
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "cohere.embed-multilingual": {
@@ -315,9 +315,9 @@
         "costPer1kInputTokens": 0.0001
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "cohere.command-r": {
@@ -758,8 +758,8 @@
         "costPer1kOutputTokens": 0.015
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },
@@ -893,8 +893,8 @@
         "costPer1kOutputTokens": 0.015
       },
       "unset": [
-        "supportsResponseFormat",
-        "openWeights"
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "eu.anthropic.claude-sonnet-4-5-20250929-v1:0": {
@@ -951,8 +951,8 @@
         "costPer1kOutputTokens": 0.015
       },
       "unset": [
-        "supportsResponseFormat",
-        "openWeights"
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "global.anthropic.claude-sonnet-4-5-20250929-v1:0": {
@@ -1224,6 +1224,15 @@
         "openWeights": true,
         "contextWindow": 262143,
         "maxTokens": 16000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "tool_use"
@@ -1696,14 +1705,7 @@
         "lastUpdated": "February 6, 2026",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.0018,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       }
     },
     "us.anthropic.claude-opus-4-7": {
@@ -1792,7 +1794,6 @@
       "model": "glm/glm-5",
       "matchingModel": "zai.glm-5",
       "overrides": {
-        "name": "GLM-5",
         "maxTokens": 101376,
         "speed": 3,
         "releaseDate": "March 18, 2026",
@@ -2345,6 +2346,24 @@
         "costPer1kInputTokens": 0.011,
         "costPer1kOutputTokens": 0.055,
         "supportsTemperature": false
+      }
+    },
+    "global.xai.grok-4.6": {
+      "model": "grok/grok-4-6-global",
+      "matchingModel": "global.xai.grok-4.6",
+      "overrides": {
+        "lastUpdated": "August 18, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
+      }
+    },
+    "us.xai.grok-4.6": {
+      "model": "grok/grok-4-6-us",
+      "matchingModel": "us.xai.grok-4.6",
+      "overrides": {
+        "lastUpdated": "August 18, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.0066
       }
     }
   }
