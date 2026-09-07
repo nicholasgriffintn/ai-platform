@@ -1,0 +1,1 @@
+ALTER TABLE `user_settings` ADD `advertise_machines` integer DEFAULT true;

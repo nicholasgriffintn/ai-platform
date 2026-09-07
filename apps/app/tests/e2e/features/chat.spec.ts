@@ -269,6 +269,23 @@ for (const persona of ["logged-out", "free"] as const) {
   });
 }
 
+test.describe("Temporary storage as free", () => {
+  test.use({ persona: "free" });
+
+  test("does not create an API conversation row", async ({ homePage, polychatApi }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+
+    const request = await homePage.sendMessageAndRequireCompletion(
+      "Do not keep this temporary release conversation",
+    );
+    const conversationId = homePage.completionIdFromRequest(request);
+
+    await homePage.waitForChatResponse(0);
+    await expect.poll(() => polychatApi.conversationStatus(conversationId)).toBe(404);
+  });
+});
+
 test.describe("Canvas creation as pro", () => {
   test.use({ persona: "pro" });
 

@@ -10,6 +10,7 @@ struct MessageInputView: View {
     let voiceError: String?
     let activeModelName: String
     let activeModelProvider: String?
+    let isTemporaryConversation: Bool
     let modelReadinessMessage: String?
     let isRunActive: Bool
     let isCancellationPending: Bool
@@ -102,6 +103,17 @@ struct MessageInputView: View {
                     .buttonStyle(.plain)
                     .disabled(isRunActive)
                     .accessibilityLabel("Select model")
+
+                    if isTemporaryConversation {
+                        Label("Session only", systemImage: "theatermasks")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 8)
+                            .frame(height: 34)
+                            .background(Color.polychat.elevatedBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .accessibilityLabel("Temporary conversation, kept for this session only")
+                    }
 
                     Button(action: onSettingsTapped) {
                         Image(systemName: "slider.horizontal.3")

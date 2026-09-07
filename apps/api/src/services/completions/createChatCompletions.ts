@@ -209,6 +209,7 @@ export const handleCreateChatCompletions = async (req: {
     finish_reason: result.response.tool_calls?.length ? "tool_calls" : "stop",
     refusal: result.response?.refusal ?? null,
     annotations: result.response?.annotations ?? null,
+    provenance: result.response?.provenance,
   });
 
   const assistantParts = buildMessageParts({
@@ -235,6 +236,7 @@ export const handleCreateChatCompletions = async (req: {
           data: assistantMessage.data,
           tool_calls: assistantMessage.tool_calls,
           citations: assistantMessage.citations,
+          provenance: assistantMessage.provenance,
           status: result.response.status || undefined,
         },
         finish_reason: assistantMessage.finish_reason,

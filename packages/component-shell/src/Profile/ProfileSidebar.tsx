@@ -14,12 +14,12 @@ import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab.js";
 import { ProfileSandboxTab } from "./Tabs/ProfileSandboxTab.js";
 import { ProfileTrainingTab } from "./Tabs/ProfileTrainingTab.js";
 
-interface ProfileSidebarItem {
+export interface ProfileSidebarItem {
   id: string;
   label: string;
   group: string;
   pageTitle?: string;
-  component: React.FC;
+  component: React.ComponentType;
 }
 
 const ACCOUNT_GROUP = "Account";
@@ -63,18 +63,36 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
   { id: "training", label: "Training", group: ADVANCED_GROUP, component: ProfileTrainingTab },
 ];
 
+export function extendProfileSidebarItems(
+  additionalItems: readonly ProfileSidebarItem[] = [],
+): ProfileSidebarItem[] {
+  const items = [...profileSidebarItems];
+
+  for (const item of additionalItems) {
+    const groupIndex = items.map(({ group }) => group).lastIndexOf(item.group);
+    items.splice(groupIndex === -1 ? items.length : groupIndex + 1, 0, item);
+  }
+
+  return items;
+}
+
 interface ProfileSidebarProps {
   activeItemId: string;
   onSelectItem: (id: string) => void;
+  items?: readonly ProfileSidebarItem[];
 }
 
-export function ProfileSidebar({ activeItemId, onSelectItem }: ProfileSidebarProps) {
+export function ProfileSidebar({
+  activeItemId,
+  onSelectItem,
+  items = profileSidebarItems,
+}: ProfileSidebarProps) {
   const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();
   const { isAuthenticated, logout, isLoggingOut } = useAuthStatus();
 
   return (
     <AccountSidebarShell
-      sections={profileSidebarItems.map(({ id, label, group }) => ({ id, label, group }))}
+      sections={items.map(({ id, label, group }) => ({ id, label, group }))}
       activeSectionId={activeItemId}
       onSelectSection={onSelectItem}
       homeHref="/"

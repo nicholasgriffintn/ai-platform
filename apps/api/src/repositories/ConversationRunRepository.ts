@@ -11,6 +11,8 @@ import {
   type ChatRunCommandReceipt,
   type ChatRunEvent,
   type ChatRunStatus,
+  runProvenanceSchema,
+  type RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
 
 import {
@@ -75,6 +77,18 @@ function formatRun(row: ConversationRunRow): ChatRun {
     }
   }
 
+  let provenance = null;
+
+  if (row.provenance_json) {
+    try {
+      const parsed = runProvenanceSchema.safeParse(JSON.parse(row.provenance_json));
+
+      provenance = parsed.success ? parsed.data : null;
+    } catch {
+      provenance = null;
+    }
+  }
+
   return {
     protocolVersion: CHAT_RUN_PROTOCOL_VERSION,
     id: row.id,
@@ -94,6 +108,7 @@ function formatRun(row: ConversationRunRow): ChatRun {
     lastMessageId: row.last_message_id,
     context,
     retry,
+    ...(provenance ? { provenance } : {}),
   };
 }
 
@@ -217,6 +232,24 @@ export class ConversationRunRepository extends BaseRepository {
       buildTrimRunEventsStatement(this.env.DB, runId),
     ]);
     const row = result.results[0] as ConversationRunRow | undefined;
+
+    return row ? formatRun(row) : null;
+  }
+
+  async updateProvenance(
+    runId: string,
+    attempt: number,
+    provenance: RunProvenance,
+  ): Promise<ChatRun | null> {
+    const row = await this.runQuery<ConversationRunRow>(
+      `UPDATE conversation_run
+       SET provenance_json = ?, updated_at = ?
+       WHERE id = ? AND attempt = ?
+         AND status IN ('accepted', 'running', 'awaiting_input', 'awaiting_approval', 'cancelling')
+       RETURNING *`,
+      [JSON.stringify(provenance), new Date().toISOString(), runId, attempt],
+      true,
+    );
 
     return row ? formatRun(row) : null;
   }

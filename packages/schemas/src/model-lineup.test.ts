@@ -6,6 +6,7 @@ import {
   MODEL_TIERS,
   MODEL_TIER_ROLES,
   SYSTEM_MODEL_LINEUP,
+  getLineupModelsByRuntime,
   isLineupEligibleModel,
   resolveLineupReasoningEffort,
   resolveModelTierAlternate,
@@ -104,6 +105,27 @@ describe("model lineup", () => {
         isEligible: isLineupEligibleModel,
       }),
     ).toBeNull();
+  });
+
+  it("partitions catalogue models by their compute site", () => {
+    const models: ModelConfig = {
+      hosted: model("hosted", { provider: "openai", runsOn: "server" }),
+      browser: model("browser", { provider: "web-llm" }),
+      device: model("device", { provider: "ollama", runsOn: "device" }),
+      machine: model("machine", {
+        provider: "ollama",
+        runsOn: "device",
+        machineId: "machine-1",
+      }),
+    };
+
+    expect(Object.keys(getLineupModelsByRuntime(models, "hosted"))).toEqual(["hosted"]);
+    expect(Object.keys(getLineupModelsByRuntime(models, "browser"))).toEqual(["browser"]);
+    expect(Object.keys(getLineupModelsByRuntime(models, "device"))).toEqual(["device"]);
+    expect(getLineupModelsByRuntime(models, "machine")).toEqual({});
+    expect(Object.keys(getLineupModelsByRuntime(models, "machine", "machine-1"))).toEqual([
+      "machine",
+    ]);
   });
 
   it("chooses a comparison alternate from a different provider and family", () => {

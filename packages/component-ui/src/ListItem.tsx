@@ -7,7 +7,7 @@ interface ListItemProps {
   isActive?: boolean;
   /** Icon to display before the label */
   icon?: ReactNode;
-  /** Badge or indicator to display (e.g., "Local only", branch icon) */
+  /** Badge or indicator to display (e.g., temporary conversation, branch icon) */
   badge?: ReactNode;
   /** Main label text */
   label: ReactNode;

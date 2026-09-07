@@ -25,9 +25,9 @@ struct ViewPresentationTests {
 
     @Test func modelSelectionFilterAppliesSearchProviderFeaturedAndDeprecatedRules() {
         let models = [
-            makeModel(id: "gpt-4o", name: "GPT-4o", provider: "openai", description: "Vision model", strengths: ["Vision"], isFeatured: true, isDeprecated: false),
-            makeModel(id: "old-gpt", name: "Old GPT", provider: "openai", description: "Legacy", strengths: ["Chat"], isFeatured: true, isDeprecated: true),
-            makeModel(id: "mistral", name: "Mistral", provider: "mistral", description: "Fast", strengths: ["Code"], isFeatured: false, isDeprecated: false),
+            makeModel(id: "gpt-4o", name: "GPT-4o", provider: "openai", description: "Vision model", strengths: ["Vision"], isFeatured: true, deprecated: false),
+            makeModel(id: "old-gpt", name: "Old GPT", provider: "openai", description: "Legacy", strengths: ["Chat"], isFeatured: true, deprecated: true),
+            makeModel(id: "mistral", name: "Mistral", provider: "mistral", description: "Fast", strengths: ["Code"], isFeatured: false, deprecated: false),
             makeModel(id: "unavailable", name: "Unavailable", provider: "openai", isFeatured: true, isExecutable: false)
         ]
 

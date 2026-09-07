@@ -253,7 +253,7 @@ export function useLiveConversationMessages({
 
   const upsertLiveMessage = useCallback(
     async (conversationId: string, message: Message) => {
-      const { shouldSyncRemote } = determineStorageMode();
+      const shouldSyncRemote = determineStorageMode(conversationId).retention === "kept";
 
       await updateConversation(conversationId, (previous) => {
         const now = new Date().toISOString();
@@ -301,7 +301,7 @@ export function useLiveConversationMessages({
 
   const persistConversation = useCallback(
     async (conversationId: string) => {
-      if (!determineStorageMode().shouldSyncRemote) {
+      if (determineStorageMode(conversationId).retention !== "kept") {
         return;
       }
 

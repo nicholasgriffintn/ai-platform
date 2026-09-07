@@ -288,6 +288,20 @@
       "when": 1788698984977,
       "tag": "0040_quick_tiger_shark",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "6",
+      "when": 1788806345155,
+      "tag": "0041_big_amphibian",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "6",
+      "when": 1788806746773,
+      "tag": "0042_rapid_ghost_rider",
+      "breakpoints": true
     }
   ]
 }

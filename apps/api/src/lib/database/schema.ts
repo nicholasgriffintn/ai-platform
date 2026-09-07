@@ -9,6 +9,8 @@ import type {
   OutputProvenance,
   StoredPetModelOverrides,
   ToolPermission,
+  MachineCapability,
+  MachineRuntime,
 } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
 import {
@@ -188,6 +190,34 @@ export const mobilePushDevice = sqliteTable(
   },
   (table) => ({
     userIdx: index("mobile_push_device_user_idx").on(table.user_id, table.invalidated_at),
+  }),
+);
+
+export const machine = sqliteTable(
+  "machine",
+  {
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    machine_id: text().notNull(),
+    label: text().notNull(),
+    platform: text({ enum: ["macos", "windows", "linux"] }).notNull(),
+    app_version: text().notNull(),
+    runtimes: text({ mode: "json" }).$type<MachineRuntime[]>().notNull(),
+    capabilities: text({ mode: "json" }).$type<MachineCapability[]>().notNull(),
+    last_seen_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    primaryKey: primaryKey({ columns: [table.user_id, table.machine_id] }),
+    userIdx: index("machine_user_idx").on(table.user_id, table.last_seen_at),
   }),
 );
 
@@ -740,6 +770,8 @@ export const conversation = sqliteTable(
     parent_conversation_id: text().references(() => conversation.id),
     parent_message_id: text(),
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    model_id: text(),
+    model_tier: text({ enum: ["low", "medium", "high", "ultra"] }),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -802,6 +834,7 @@ export const conversationRun = sqliteTable(
     last_message_id: text(),
     context_json: text(),
     retry_json: text(),
+    provenance_json: text(),
     created_at: text().notNull(),
     updated_at: text().notNull(),
     started_at: text(),
@@ -1060,6 +1093,7 @@ export const message = sqliteTable(
     usage: text({
       mode: "json",
     }),
+    provenance_json: text(),
     tool_call_id: text(),
     tool_call_arguments: text({
       mode: "json",
@@ -1126,6 +1160,9 @@ export const userSettings = sqliteTable(
       enum: ["duckduckgo", "tavily", "serper", "parallel", "perplexity", "exa"],
     }),
     sandbox_model: text(),
+    default_model_tier: text({ enum: ["low", "medium", "high", "ultra"] }),
+    default_model_id: text(),
+    default_compute_site: text({ enum: ["hosted", "browser", "device", "machine"] }),
     pet_source: text({
       enum: ["preset", "custom"],
     }).default("preset"),
@@ -1136,7 +1173,9 @@ export const userSettings = sqliteTable(
       .$type<StoredPetModelOverrides>()
       .default({ families: {}, providers: {} })
       .notNull(),
+    onboarding_seen: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     tracking_enabled: integer({ mode: "boolean" }).default(true),
+    advertise_machines: integer({ mode: "boolean" }).default(true),
     public_key: text(),
     private_key: text(),
     created_at: text()
@@ -2532,6 +2571,9 @@ export const usageEvent = sqliteTable(
     billable: integer({ mode: "boolean" }).notNull().default(true),
     byok: integer({ mode: "boolean" }).notNull().default(false),
     estimated: integer({ mode: "boolean" }).notNull().default(false),
+    vendor_units: real(),
+    reason: text({ enum: ["ran_off_platform"] }),
+    site: text({ enum: ["hosted", "browser", "device", "machine"] }),
     raw: text({ mode: "json" }),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)

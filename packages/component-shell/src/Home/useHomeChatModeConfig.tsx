@@ -253,7 +253,7 @@ export function useHomeChatModeConfig(): {
     }
 
     setSelectedTeammateId(null);
-    setChatMode("remote");
+    setChatMode("chat");
   }, [activeModeId, setChatMode, setSelectedTeammateId]);
 
   const handleModeChange = useCallback(
@@ -267,7 +267,7 @@ export function useHomeChatModeConfig(): {
       } else {
         next.set("mode", modeId);
         setSelectedTeammateId(null);
-        setChatMode("remote");
+        setChatMode("chat");
       }
 
       if (modeId === "live") {
@@ -328,7 +328,7 @@ export function useHomeChatModeConfig(): {
         setActiveModeId("live");
         setHomeChatMode("live");
         setSelectedTeammateId(null);
-        setChatMode("remote");
+        setChatMode("chat");
         setLiveProvider(nextLiveProvider);
         next.set("mode", "live");
         setSearchParams(next, { replace: true });
@@ -343,7 +343,7 @@ export function useHomeChatModeConfig(): {
       stopLiveSessionAndFlush();
       setActiveModeId("chat");
       setHomeChatMode("chat");
-      setChatMode("remote");
+      setChatMode("chat");
       next.delete("mode");
       setSearchParams(next, { replace: true });
     },

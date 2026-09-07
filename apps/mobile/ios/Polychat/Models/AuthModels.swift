@@ -15,8 +15,26 @@ public struct AuthUser: Codable, Equatable {
     }
 }
 
+public struct AuthUserSettings: Codable, Equatable {
+    public let defaultModelTier: String?
+    public let defaultModelId: String?
+    public let defaultComputeSite: String?
+
+    enum CodingKeys: String, CodingKey {
+        case defaultModelTier = "default_model_tier"
+        case defaultModelId = "default_model_id"
+        case defaultComputeSite = "default_compute_site"
+    }
+}
+
 public struct AuthStatusResponse: Codable {
     public let user: AuthUser?
+    public let userSettings: AuthUserSettings?
+
+    enum CodingKeys: String, CodingKey {
+        case user
+        case userSettings = "userSettings"
+    }
 }
 
 public struct TokenResponse: Codable {

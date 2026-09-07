@@ -17,7 +17,7 @@ export function useGoal(
   const queryClient = useQueryClient();
   const isPro = useChatStore((state) => state.isPro);
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
-  const isLocalModel = useChatStore((state) => state.chatMode === "local");
+  const isLocalModel = useChatStore((state) => state.computeSite !== "hosted");
   const isAwaitingRemoteConversation = useChatStore((state) =>
     Boolean(conversationId && state.locallyCreatedConversationIds[conversationId]),
   );

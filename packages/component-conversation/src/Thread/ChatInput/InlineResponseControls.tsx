@@ -28,12 +28,12 @@ interface InlineResponseControlsProps {
 }
 
 export function InlineResponseControls({ isDisabled = false }: InlineResponseControlsProps) {
-  const { chatMode, chatSettings, model, setChatSettings } = useChatStore();
+  const { computeSite, chatSettings, model, setChatSettings } = useChatStore();
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
-  const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
+  const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
   const availableModels = useMemo(
-    () => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
-    [apiModels, chatMode, webLLMModels],
+    () => getAvailableModels(apiModels, computeSite === "browser", webLLMModels),
+    [apiModels, computeSite, webLLMModels],
   );
   const selectedModelConfig = model ? availableModels[model] : undefined;
 

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { IEnv } from "~/types";
 
 import { listModels } from ".";
-import { resolveModelReadiness } from "./readiness";
+import { resolveModelReadiness, resolveRuntimeReadiness } from "./readiness";
 
 const now = new Date("2026-09-05T10:00:00.000Z");
 
@@ -58,5 +58,30 @@ describe("resolveModelReadiness", () => {
         now,
       ),
     ).toMatchObject({ state: "unknown", reasonCode: "check_failed", action: { kind: "retry" } });
+  });
+
+  it("distinguishes an unconfigured runtime from one that is not answering", () => {
+    const notConfigured = resolveRuntimeReadiness(
+      model({ name: "Gemma 3 4B", provider: "ollama" }),
+      "not_configured",
+      now,
+    );
+    const unreachable = resolveModelReadiness(
+      model({ name: "Gemma 3 4B", provider: "ollama" }),
+      undefined,
+      now,
+      { runtimeStatus: "unreachable" },
+    );
+
+    expect(notConfigured).toMatchObject({
+      state: "setup_required",
+      reasonCode: "runtime_not_configured",
+      action: { kind: "open_runtimes", label: "Set up", path: "/downloads" },
+    });
+    expect(unreachable).toMatchObject({
+      state: "unavailable",
+      reasonCode: "runtime_unreachable",
+      action: { kind: "open_runtimes", label: "Check again", path: "/downloads" },
+    });
   });
 });

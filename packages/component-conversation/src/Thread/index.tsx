@@ -33,17 +33,20 @@ import {
   useComposerDraft,
   useIsLoading,
   useConversationScope,
+  useConversationStorage,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ChatSuggestion } from "@ngriffin_uk/polychat-library-react";
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
+  PET_TEMPORARY_CONVERSATION_STATE,
   getModelByReference,
   isImageGenerationOutputModel,
   isReadinessFresh,
 } from "@ngriffin_uk/polychat-schemas";
 import type {
   ConversationModeMetadata,
+  PetConversationState,
   UserQuestionSet,
   ModelSelectionChangeHandler,
   ModelSelectorScope,
@@ -147,15 +150,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const navigate = useNavigate();
   const { trackEvent, trackFeatureUsage, trackError } = useTrackEvent();
 
-  const {
-    model,
-    chatMode,
-    selectedAssistantAction,
-    setSelectedAssistantAction,
-    isAuthenticated,
-    isPro,
-    localOnlyMode,
-  } = useChatStore();
+  const { model, chatMode, selectedAssistantAction, setSelectedAssistantAction, computeSite } =
+    useChatStore();
   const { currentConversationId, startNewConversation } = useConversationScope();
   const { composerInput, setComposerInput } = useComposerDraft();
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
@@ -164,14 +160,18 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     currentConversationId,
     { monitorRemoteActivity: true },
   );
+  const { determineStorageMode } = useConversationStorage(modeConfig?.requestOptions);
+  const storageMode = determineStorageMode(currentConversationId);
   const streamSource = useStreamActivityStore((state) =>
     currentConversationId ? state.streams[currentConversationId]?.source : undefined,
   );
+  const conversationState: PetConversationState | undefined =
+    storageMode.retention === "temporary" ? PET_TEMPORARY_CONVERSATION_STATE : undefined;
 
   useChatRunReplay(
     currentConversationId,
     currentConversation?.latest_run,
-    isAuthenticated && isPro && !localOnlyMode && streamSource !== "local",
+    storageMode.retention === "kept" && computeSite === "hosted" && streamSource !== "local",
   );
   useRemoteConversationActivity(
     currentConversationId,
@@ -472,7 +472,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
 
       // For text-to-image models, only allow the first message unless they support image edits
-      if (model && chatMode !== "local") {
+      if (model && computeSite === "hosted") {
         let currentModel = selectedModelConfig;
 
         if (currentModel?.readiness && !isReadinessFresh(currentModel.readiness)) {
@@ -842,6 +842,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
                   placement="top"
                   model={selectedModelConfig}
                   modelReady={!model || !isModelsLoading}
+                  conversationState={conversationState}
                   presetSlug={modeConfig?.petPresetSlug}
                 />
               }
@@ -863,6 +864,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         <ConversationMessageColumn>
           <MessageList
             messages={messages}
+            retention={storageMode.retention}
             hideInlineUserQuestions={Boolean(modeConfig?.pendingUserQuestions)}
             onToolInteraction={handleToolInteraction}
             onConnectorApproval={handleConnectorApproval}
@@ -885,6 +887,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
                 placement="left"
                 model={selectedModelConfig}
                 modelReady={!model || !isModelsLoading}
+                conversationState={conversationState}
                 presetSlug={modeConfig?.petPresetSlug}
               />
             }
@@ -925,12 +928,13 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         ) : null}
         {modeConfig?.composerBanner}
         <ChatInput
+          retention={storageMode.retention}
           goalState={goalState}
           ref={chatInputRef}
           handleSubmit={handleSubmit}
           isLoading={isStreamLoading || isModelInitializing || isConversationLoading}
           isSubmissionBlocked={
-            chatMode !== "local" &&
+            computeSite === "hosted" &&
             isModelSubmissionBlocked(model, selectedModelConfig, isModelsLoading)
           }
           streamStarted={streamStarted}

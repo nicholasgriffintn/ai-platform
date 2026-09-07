@@ -33,6 +33,8 @@ import {
   type ModelTier,
   type ToolSelectionMode,
   type ChatMode,
+  type ComputeSite,
+  type RecordOffPlatformUsageRequest,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   CHAT_STREAM_PROGRESS_BATCH_EVENTS,
@@ -114,6 +116,7 @@ export interface StreamChatCompletionsParams {
   endpoint?: string;
   messages: Message[];
   mode: ChatMode;
+  computeSite?: ComputeSite;
   model?: string;
   modelConfig?: ModelConfigItem;
   modelTier?: ModelTier;
@@ -183,6 +186,8 @@ export class ChatService {
         id: string;
         title: string;
         messages: string[];
+        model?: string | null;
+        model_tier?: ModelTier | null;
         created_at?: string;
         updated_at?: string;
         last_message_at: string;
@@ -507,6 +512,22 @@ export class ChatService {
     return normaliseConversationResponse(data, completion_id);
   }
 
+  async recordOffPlatformRunUsage(input: RecordOffPlatformUsageRequest): Promise<void> {
+    let headers = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error recording off-platform usage:", error);
+    }
+
+    await fetchApiOrThrow("/user/usage/off-platform", {
+      method: "POST",
+      headers,
+      body: input,
+    });
+  }
+
   async deleteConversation(completion_id: string): Promise<void> {
     if (!completion_id) {
       throw new Error("No completion ID provided");
@@ -729,6 +750,7 @@ export class ChatService {
     endpoint = "/chat/completions",
     messages,
     mode,
+    computeSite,
     model,
     modelConfig,
     modelTier,
@@ -792,6 +814,7 @@ export class ChatService {
       model_tier: modelTier,
       provider,
       mode,
+      compute_site: computeSite,
       use_multi_model: useMultiModel,
       max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
       enabled_tools: enabledTools,

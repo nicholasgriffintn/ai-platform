@@ -1,4 +1,8 @@
-import { desktopExecutionBackend, getLocalChatScope } from "@ngriffin_uk/polychat-library-chat";
+import {
+  desktopExecutionBackend,
+  getLocalChatScope,
+  resolveComputeSiteForClient,
+} from "@ngriffin_uk/polychat-library-chat";
 import { resolveConversationStorageMode } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import type {
   ChatRequestOptions,
@@ -20,6 +24,7 @@ import {
 import {
   chatRunCommandReceiptSchema,
   chatTurnActivityEventSchema,
+  createRunProvenance,
   EMPTY_MODEL_CONFIG,
   getModelProvider,
   isBrowserModel,
@@ -46,6 +51,7 @@ import { useLoadingActions } from "../state/LoadingContext.js";
 import { useUsageStore } from "../state/usageStore.js";
 import { useMessageOperations } from "./useMessageOperations.js";
 import { useModels } from "./useModels.js";
+import { useWebLLMModels } from "./useWebLLMModels.js";
 
 export interface StreamResponseOptions {
   assistantMessageData?: Partial<Message>;
@@ -67,11 +73,12 @@ export function useStreamingResponse(
   const { stopLoading, updateLoading } = useLoadingActions();
   const {
     chatMode,
+    computeSite,
     model,
     chatSettings,
     isAuthenticated,
     isPro,
-    localOnlyMode,
+    temporaryChat,
     temporaryChatsDefault,
     useMultiModel,
     modelTier,
@@ -109,7 +116,9 @@ export function useStreamingResponse(
     Record<string, { id: string; attempt: number; status: ChatRunStatus }>
   >({});
   const pendingCommandIdsRef = useRef<Record<string, string>>({});
+  const computeSiteFallbackNoticeRef = useRef<Set<string>>(new Set());
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
+  const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
 
   const {
     addMessageToConversation,
@@ -179,20 +188,70 @@ export function useStreamingResponse(
       const requestedModelId = normalizeSelectedModel(
         options?.models?.[0] ?? options?.model ?? model,
       );
-      const requestedModel = requestedModelId ? apiModels[requestedModelId] : undefined;
+      const availableModels =
+        computeSite === "browser" ? { ...webLLMModels, ...apiModels } : apiModels;
+      const requestedModel = requestedModelId ? availableModels[requestedModelId] : undefined;
       const deviceBackend = desktopExecutionBackend();
+      const computeSiteResolution = resolveComputeSiteForClient({
+        requestedSite: computeSite,
+        requestedModel,
+        requestedModelId,
+        hasDesktopBackend: Boolean(deviceBackend),
+        hasBrowserRuntime: Boolean(webLLMService),
+      });
+      const effectiveComputeSite = computeSiteResolution.computeSite;
+      const effectiveModelId = computeSiteResolution.modelId;
+
+      const fallbackNoticeKey = `${conversationId}:${computeSite}`;
+      if (
+        computeSiteResolution.reason &&
+        !computeSiteFallbackNoticeRef.current.has(fallbackNoticeKey)
+      ) {
+        computeSiteFallbackNoticeRef.current.add(fallbackNoticeKey);
+        toast.info(computeSiteResolution.reason);
+      }
+
+      const runsOnAnotherMachine = Boolean(
+        effectiveComputeSite === "machine" && requestedModel?.machineId,
+      );
       const runsOnThisDevice = Boolean(
-        requestedModel && runsOnDevice(requestedModel) && deviceBackend,
+        effectiveComputeSite === "device" &&
+        requestedModel &&
+        runsOnDevice(requestedModel) &&
+        !requestedModel.machineId &&
+        deviceBackend,
       );
       const runsInBrowser =
-        !runsOnThisDevice && chatMode === "local" && isBrowserModel(requestedModel);
+        !runsOnThisDevice && effectiveComputeSite === "browser" && isBrowserModel(requestedModel);
+      const localRunProvenance =
+        requestedModel && runsOnThisDevice
+          ? createRunProvenance({
+              site: "device",
+              model: requestedModel.matchingModel,
+              vendor: requestedModel.provider,
+              ...(requestedModel.machineId ? { machineId: requestedModel.machineId } : {}),
+            })
+          : requestedModel && runsInBrowser
+            ? createRunProvenance({
+                site: "browser",
+                model: requestedModel.matchingModel,
+                vendor: requestedModel.provider,
+              })
+            : undefined;
       const storageMode = resolveConversationStorageMode(
         {
           isAuthenticated,
           isPro,
-          temporaryChat: localOnlyMode,
-          temporaryChatsDefault,
-          runsOnDevice: runsOnThisDevice,
+          temporaryChat:
+            queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, conversationId])
+              ?.isLocalOnly ?? temporaryChat,
+          temporaryChatsDefault: queryClient.getQueryData<Conversation>([
+            CHATS_QUERY_KEY,
+            conversationId,
+          ])
+            ? false
+            : temporaryChatsDefault,
+          runsOnDevice: runsOnThisDevice || runsInBrowser,
         },
         effectiveRequestOptions,
       );
@@ -204,13 +263,16 @@ export function useStreamingResponse(
       const pendingMessageTasks: Promise<unknown>[] = [];
       let serverTitle = "";
       const assistantMessageData = options?.assistantMessageData;
+      const effectiveAssistantMessageData = localRunProvenance
+        ? { ...assistantMessageData, provenance: localRunProvenance }
+        : assistantMessageData;
       let shouldRefreshStoredConversation = false;
       const commandId = effectiveRequestOptions?.command_id ?? crypto.randomUUID();
 
       pendingCommandIdsRef.current[conversationId] = commandId;
 
       const placeholderMessage = await addAssistantMessage(conversationId, "", undefined, {
-        ...assistantMessageData,
+        ...effectiveAssistantMessageData,
         status: "in_progress",
       });
       let activeAssistantMessage: Message | undefined = placeholderMessage;
@@ -241,7 +303,7 @@ export function useStreamingResponse(
         const cycle = assistantMessageCycle;
 
         activeAssistantMessagePromise = enqueueMessageWrite(() =>
-          addAssistantMessage(conversationId, "", undefined, assistantMessageData),
+          addAssistantMessage(conversationId, "", undefined, effectiveAssistantMessageData),
         ).then((message) => {
           if (cycle === assistantMessageCycle) {
             activeAssistantMessage = message;
@@ -271,7 +333,7 @@ export function useStreamingResponse(
 
       const withAssistantMessageData = (assistantMessage: Message): Message => ({
         ...assistantMessage,
-        ...assistantMessageData,
+        ...effectiveAssistantMessageData,
         content: assistantMessage.content,
         model: assistantMessage.model ?? assistantMessageData?.model,
         reasoning: assistantMessage.reasoning ?? assistantMessageData?.reasoning,
@@ -394,6 +456,12 @@ export function useStreamingResponse(
       const streamProgress = createStreamProgressCoalescer(handleMessageUpdate);
 
       try {
+        if (runsOnAnotherMachine) {
+          throw new Error(
+            "This model is advertised by another machine and remote machine execution is not available yet.",
+          );
+        }
+
         if (runsOnThisDevice && deviceBackend && requestedModel) {
           try {
             response = await streamDeviceModelRun({
@@ -451,16 +519,14 @@ export function useStreamingResponse(
             streamProgress.stop();
           }
         } else {
-          const shouldStore = storageMode.shouldSyncRemote;
+          const shouldStore = storageMode.retention === "kept";
 
           const normalizedMessages = messages.map(normalizeMessage);
 
           const modelsToSend = options?.models
             ?.map((modelId) => normalizeSelectedModel(modelId))
             .filter((modelId): modelId is string => Boolean(modelId));
-          const selectedModel = normalizeSelectedModel(
-            modelsToSend?.[0] ?? options?.model ?? model,
-          );
+          const selectedModel = effectiveModelId;
           const modelToSend = modelsToSend?.length ? undefined : selectedModel;
           const providerToSend = getModelProvider(apiModels, selectedModel);
           const modelConfigToSend = selectedModel ? apiModels[selectedModel] : undefined;
@@ -564,6 +630,7 @@ export function useStreamingResponse(
                 chatMode === "agent" ? `/teammates/${selectedTeammateId}/completions` : undefined,
               messages: normalizedMessages,
               mode: chatMode,
+              computeSite: effectiveComputeSite,
               model: modelToSend,
               modelConfig: modelConfigToSend,
               modelTier: selectedModel ? undefined : (modelTier ?? undefined),
@@ -615,6 +682,33 @@ export function useStreamingResponse(
 
         await Promise.allSettled(pendingMessageTasks);
         await messageWriteQueue;
+
+        if (isAuthenticated && localRunProvenance) {
+          await apiService
+            .recordOffPlatformRunUsage({
+              completion_id: conversationId,
+              message_id: generatedMessage?.id ?? placeholderMessage.id,
+              provenance: localRunProvenance,
+            })
+            .catch(() => undefined);
+        }
+
+        if ((runsOnThisDevice || runsInBrowser) && storageMode.retention === "kept") {
+          const conversation = queryClient.getQueryData<Conversation>([
+            CHATS_QUERY_KEY,
+            conversationId,
+          ]);
+
+          if (conversation?.messages.length) {
+            await apiService.updateConversation(conversationId, {
+              title: conversation.title,
+              messages: conversation.messages,
+            });
+            markConversationRemoteAvailable(conversationId);
+            shouldRefreshStoredConversation = true;
+          }
+        }
+
         if (shouldRefreshStoredConversation) {
           await queryClient.invalidateQueries({
             queryKey: [CHATS_QUERY_KEY, conversationId],
@@ -622,7 +716,7 @@ export function useStreamingResponse(
         }
 
         await queryClient.invalidateQueries({ queryKey: [GOAL_QUERY_KEY, conversationId] });
-        if (isAuthenticated && storageMode.shouldSyncRemote) {
+        if (isAuthenticated && storageMode.retention === "kept") {
           await queryClient.invalidateQueries({ queryKey: USAGE_QUERY_KEYS.balance });
         }
 
@@ -639,7 +733,7 @@ export function useStreamingResponse(
           return { status: "error" as const, response: "Request aborted" };
         }
 
-        if (storageMode.shouldSyncRemote && observedRunsRef.current[conversationId]) {
+        if (storageMode.retention === "kept" && observedRunsRef.current[conversationId]) {
           markConversationRemoteAvailable(conversationId);
           updateConversationInChatCaches<Conversation>(
             queryClient,
@@ -672,10 +766,12 @@ export function useStreamingResponse(
     },
     [
       chatMode,
+      computeSite,
       updateAssistantMessage,
       isAuthenticated,
       isPro,
-      localOnlyMode,
+      temporaryChat,
+      temporaryChatsDefault,
       chatSettings,
       model,
       addMessageToConversation,
@@ -685,6 +781,7 @@ export function useStreamingResponse(
       modelTier,
       selectedTeammateId,
       apiModels,
+      webLLMModels,
       updateLoading,
       webLLMService,
       requestOptions,

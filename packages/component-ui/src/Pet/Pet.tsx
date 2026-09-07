@@ -12,6 +12,7 @@ import {
 import {
   PET_IDLE_FLOURISH_CLIPS,
   type ModelConfigItem,
+  type PetConversationState,
   type PetClipName,
   resolvePet,
   resolvePetClipIn,
@@ -36,6 +37,7 @@ export interface PetProps {
   className?: string;
   model?: Pick<ModelConfigItem, "family" | "provider">;
   modelReady?: boolean;
+  conversationState?: PetConversationState;
   presetSlug?: string;
 }
 
@@ -46,9 +48,10 @@ export function Pet({
   className,
   model,
   modelReady = true,
+  conversationState,
   presetSlug,
 }: PetProps) {
-  const selectedPet = useActivePet(model, modelReady);
+  const selectedPet = useActivePet(model, modelReady, conversationState);
   const presetPet = useMemo<ActivePet | null>(
     () =>
       presetSlug

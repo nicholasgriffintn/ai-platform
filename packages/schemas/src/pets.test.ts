@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   EMPTY_PET_MODEL_OVERRIDES,
+  parsePetModelOverrides,
   removeCustomPetFromModelOverrides,
   resolvePetForModel,
   resolvePetSelectionForModel,
@@ -13,6 +14,7 @@ import {
 const defaultSelection: PetSelection = { pet_source: "preset", pet_id: "ash" };
 
 const overrides: PetModelOverrides = {
+  states: {},
   families: {
     "claude-sonnet": { pet_source: "preset", pet_id: "ash" },
   },
@@ -25,6 +27,52 @@ const overrides: PetModelOverrides = {
 };
 
 describe("model-aware pet selection", () => {
+  it("uses a temporary conversation override before model rules", () => {
+    expect(
+      resolvePetSelectionForModel(
+        defaultSelection,
+        {
+          ...overrides,
+          states: {
+            temporary: { pet_source: "preset", pet_id: "wisp" },
+          },
+        },
+        { family: "claude-sonnet", provider: "anthropic" },
+        "temporary",
+      ),
+    ).toEqual({ pet_source: "preset", pet_id: "wisp" });
+  });
+
+  it("uses Wisp for temporary conversations without an override", () => {
+    expect(
+      resolvePetSelectionForModel(defaultSelection, EMPTY_PET_MODEL_OVERRIDES, null, "temporary"),
+    ).toEqual({ pet_source: "preset", pet_id: "wisp" });
+
+    expect(
+      resolvePetForModel(
+        defaultSelection,
+        EMPTY_PET_MODEL_OVERRIDES,
+        { family: "claude-sonnet", provider: "anthropic" },
+        "temporary",
+      ),
+    ).toMatchObject({ source: "preset", id: "wisp", name: "Wisp" });
+  });
+
+  it("parses overrides saved before conversation states existed", () => {
+    expect(
+      parsePetModelOverrides({
+        families: { claude: { pet_source: "preset", pet_id: "ash" } },
+        providers: {},
+        makers: {},
+      }),
+    ).toEqual({
+      states: {},
+      families: { claude: { pet_source: "preset", pet_id: "ash" } },
+      providers: {},
+      makers: {},
+    });
+  });
+
   it("prefers a model family override over its provider override", () => {
     expect(
       resolvePetSelectionForModel(defaultSelection, overrides, {
@@ -67,6 +115,7 @@ describe("model-aware pet selection", () => {
 
   it("recovers to the default preset when an override references a missing custom pet", () => {
     const customOverride: PetModelOverrides = {
+      states: {},
       families: {},
       providers: {
         openai: { pet_source: "custom", pet_id: "missing" },
@@ -91,6 +140,7 @@ describe("model-aware pet selection", () => {
       created_at: "2026-08-30T00:00:00.000Z",
     };
     const customOverride: PetModelOverrides = {
+      states: {},
       families: {},
       providers: {
         openai: { pet_source: "custom", pet_id: customPet.id },
@@ -99,7 +149,9 @@ describe("model-aware pet selection", () => {
     };
 
     expect(
-      resolvePetForModel(defaultSelection, customOverride, { provider: "openai" }, [customPet]),
+      resolvePetForModel(defaultSelection, customOverride, { provider: "openai" }, undefined, [
+        customPet,
+      ]),
     ).toMatchObject({ source: "custom", id: customPet.id, name: "Orbit" });
   });
 
@@ -107,6 +159,9 @@ describe("model-aware pet selection", () => {
     expect(
       removeCustomPetFromModelOverrides(
         {
+          states: {
+            temporary: { pet_source: "custom", pet_id: "pet-1" },
+          },
           families: {
             gpt: { pet_source: "custom", pet_id: "pet-1" },
             claude: { pet_source: "preset", pet_id: "pet-1" },
@@ -122,6 +177,7 @@ describe("model-aware pet selection", () => {
         "pet-1",
       ),
     ).toEqual({
+      states: {},
       families: { claude: { pet_source: "preset", pet_id: "pet-1" } },
       providers: { anthropic: { pet_source: "custom", pet_id: "pet-2" } },
       makers: {},

@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 
 use crate::egress::{DesktopEndpoint, EndpointKind, EndpointTransport};
@@ -59,6 +59,17 @@ fn transport_to_text(transport: EndpointTransport) -> &'static str {
     }
 }
 
+fn new_machine_id() -> String {
+    let mut bytes = [0u8; 16];
+    getrandom::fill(&mut bytes).expect("the operating system random source");
+
+    bytes
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<Vec<_>>()
+        .join("")
+}
+
 impl Store {
     pub fn open(connection: Connection) -> Result<Self, String> {
         let store = Self {
@@ -87,6 +98,10 @@ impl Store {
             connection.execute_batch(
                 "PRAGMA foreign_keys = ON;
                 PRAGMA journal_mode = WAL;
+                CREATE TABLE IF NOT EXISTS machine_identity (
+                    id INTEGER PRIMARY KEY CHECK (id = 1),
+                    machine_id TEXT NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS endpoints (
                     id TEXT PRIMARY KEY,
                     kind TEXT NOT NULL,
@@ -136,7 +151,40 @@ impl Store {
                 );
                 CREATE INDEX IF NOT EXISTS announcements_by_scope
                     ON announcements (scope, announced_at DESC);",
-            )
+            )?;
+
+            connection.execute(
+                "DELETE FROM endpoints
+                 WHERE id IN ('ollama-loopback', 'lmstudio-loopback')
+                   AND last_seen_at IS NULL",
+                [],
+            )?;
+
+            Ok(())
+        })
+    }
+
+    pub fn machine_id(&self) -> Result<String, String> {
+        let generated = new_machine_id();
+
+        self.with_connection(|connection| {
+            if let Some(machine_id) = connection
+                .query_row(
+                    "SELECT machine_id FROM machine_identity WHERE id = 1",
+                    [],
+                    |row| row.get::<_, String>(0),
+                )
+                .optional()?
+            {
+                return Ok(machine_id);
+            }
+
+            connection.execute(
+                "INSERT INTO machine_identity (id, machine_id) VALUES (1, ?1)",
+                params![generated],
+            )?;
+
+            Ok(generated)
         })
     }
 
@@ -201,6 +249,17 @@ impl Store {
     pub fn forget_endpoint(&self, endpoint_id: &str) -> Result<(), String> {
         self.with_connection(|connection| {
             connection.execute("DELETE FROM endpoints WHERE id = ?1", params![endpoint_id])?;
+
+            Ok(())
+        })
+    }
+
+    pub fn mark_endpoint_seen(&self, endpoint_id: &str, seen_at: &str) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "UPDATE endpoints SET last_seen_at = ?2 WHERE id = ?1",
+                params![endpoint_id, seen_at],
+            )?;
 
             Ok(())
         })
@@ -405,31 +464,6 @@ impl Store {
             Ok(())
         })
     }
-
-    pub fn seed_missing(&self, endpoints: &[DesktopEndpoint]) -> Result<(), String> {
-        self.with_connection(|connection| {
-            for endpoint in endpoints {
-                connection.execute(
-                    "INSERT OR IGNORE INTO endpoints (id, kind, vendor, label, url, transport,
-                                                      pairing_secret_stored, approved_at, last_seen_at)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
-                    params![
-                        endpoint.id,
-                        kind_to_text(endpoint.kind),
-                        endpoint.vendor,
-                        endpoint.label,
-                        endpoint.url,
-                        transport_to_text(endpoint.transport),
-                        i64::from(endpoint.pairing_secret_stored),
-                        endpoint.approved_at,
-                        endpoint.last_seen_at,
-                    ],
-                )?;
-            }
-
-            Ok(())
-        })
-    }
 }
 
 #[cfg(test)]
@@ -440,6 +474,18 @@ mod tests {
 
     fn store() -> Store {
         Store::open(Connection::open_in_memory().expect("in-memory database")).expect("migrated")
+    }
+
+    #[test]
+    fn keeps_the_same_machine_id_across_reads() {
+        let store = store();
+
+        let first = store.machine_id().expect("machine id");
+        let second = store.machine_id().expect("machine id");
+
+        assert_eq!(first, second);
+        assert_eq!(first.len(), 32);
+        assert!(first.chars().all(|character| character.is_ascii_hexdigit()));
     }
 
     fn endpoint(id: &str, label: &str) -> DesktopEndpoint {
@@ -476,20 +522,21 @@ mod tests {
     }
 
     #[test]
-    fn seeding_twice_does_not_duplicate_or_overwrite() {
+    fn migration_removes_unseen_built_in_endpoints_but_keeps_seen_ones() {
         let store = store();
-        let built_ins = vec![endpoint("ollama-loopback", "Ollama")];
+        let unseen = endpoint("ollama-loopback", "Ollama");
+        let mut seen = endpoint("lmstudio-loopback", "LM Studio");
+        seen.last_seen_at = Some("2026-09-06T09:30:00Z".to_string());
 
-        store.seed_missing(&built_ins).expect("seeded");
-        store
-            .save_endpoint(&endpoint("ollama-loopback", "Renamed by the user"))
-            .expect("renamed");
-        store.seed_missing(&built_ins).expect("seeded again");
+        store.save_endpoint(&unseen).expect("saved");
+        store.save_endpoint(&seen).expect("saved");
+        store.migrate().expect("migrated");
 
         let saved = store.list_endpoints().expect("listed");
 
         assert_eq!(saved.len(), 1);
-        assert_eq!(saved[0].label, "Renamed by the user");
+        assert_eq!(saved[0].id, "lmstudio-loopback");
+        assert_eq!(saved[0].last_seen_at, seen.last_seen_at);
     }
 
     #[test]

@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { normaliseCompactionStatusMessage } from "./compaction-status.js";
 import { messagePartsSchema } from "./message-parts.js";
+import { runProvenanceSchema } from "./run-provenance.js";
 
 export const messageRoleSchema = z.enum([
   "user",
@@ -60,6 +61,7 @@ export const messageSchema = z
     timestamp: z.number().optional(),
     platform: z.string().optional(),
     usage: z.record(z.string(), z.any()).optional(),
+    provenance: runProvenanceSchema.nullable().optional(),
   })
   .superRefine((message, ctx) => {
     const hasContent = message.content !== undefined && message.content !== null;

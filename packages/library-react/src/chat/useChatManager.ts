@@ -248,7 +248,8 @@ export function useChatManager(
       };
     }
 
-    const isRemoteStoredConversation = determineStorageMode().shouldSyncRemote;
+    const isRemoteStoredConversation =
+      determineStorageMode(currentConversationId).retention === "kept";
 
     if (!isRemoteStoredConversation) {
       return {

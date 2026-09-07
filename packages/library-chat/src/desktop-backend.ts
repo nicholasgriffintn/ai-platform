@@ -21,7 +21,10 @@ export interface DesktopBackend {
   listEndpoints: () => Promise<DesktopEndpoint[]>;
   saveEndpoint: (endpoint: DesktopEndpoint, pairingSecret?: string) => Promise<void>;
   forgetEndpoint: (endpointId: string) => Promise<void>;
-  probeEndpoint: (endpointId: string) => Promise<DesktopRuntimeReadiness>;
+  probeEndpoint: (
+    endpoint: DesktopEndpoint,
+    pairingSecret?: string,
+  ) => Promise<DesktopRuntimeReadiness>;
   discoverModels: (endpointId: string) => Promise<DiscoveredModel[]>;
   startModelRun: (request: DesktopModelRunRequest) => Promise<DesktopRun>;
   listAgentSessions: (endpointId: string) => Promise<AgentRuntimeSession[]>;
@@ -46,6 +49,7 @@ export interface FakeDesktopBackendSeed {
 export interface FakeDesktopBackend extends DesktopBackend {
   decisions: { endpointId: string; decision: AgentApprovalDecision }[];
   cancelledRuns: string[];
+  probedEndpoints: { endpointId: string; url: string }[];
 }
 
 const UNREACHABLE: DesktopRuntimeReadiness = {
@@ -57,6 +61,7 @@ const UNREACHABLE: DesktopRuntimeReadiness = {
 export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): FakeDesktopBackend {
   const decisions: { endpointId: string; decision: AgentApprovalDecision }[] = [];
   const cancelledRuns: string[] = [];
+  const probedEndpoints: { endpointId: string; url: string }[] = [];
   let runCounter = 0;
 
   function createRun(script: DesktopStreamEvent[]): DesktopRun {
@@ -93,6 +98,7 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
   return {
     decisions,
     cancelledRuns,
+    probedEndpoints,
     listEndpoints: async () => saved,
     saveEndpoint: async (endpoint) => {
       const existing = saved.findIndex((candidate) => candidate.id === endpoint.id);
@@ -112,7 +118,11 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
         saved.splice(existing, 1);
       }
     },
-    probeEndpoint: async (endpointId) => seed.readiness?.[endpointId] ?? UNREACHABLE,
+    probeEndpoint: async (endpoint) => {
+      probedEndpoints.push({ endpointId: endpoint.id, url: endpoint.url });
+
+      return seed.readiness?.[endpoint.id] ?? UNREACHABLE;
+    },
     discoverModels: async (endpointId) =>
       (seed.models ?? []).filter((model) => model.endpointId === endpointId),
     listAgentSessions: async (endpointId) =>

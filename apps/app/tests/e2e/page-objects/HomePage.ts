@@ -221,7 +221,7 @@ export class HomePage extends BasePage {
   async waitForPersonaReady(persona: "logged-out" | "free" | "pro") {
     if (persona === "logged-out") {
       await this.page
-        .getByText("Chats are only stored on this device while you are not signed in", {
+        .getByText("Not signed in, so this stays on this device.", {
           exact: true,
         })
         .waitFor();
@@ -229,7 +229,7 @@ export class HomePage extends BasePage {
       return;
     }
 
-    await this.page.getByRole("button", { name: "Switch to local-only mode" }).waitFor();
+    await this.chatInput.waitFor();
   }
 
   async recordModelSelectorStatesAcrossNextNavigation() {
@@ -320,10 +320,9 @@ export class HomePage extends BasePage {
   }
 
   async openCanvas() {
-    await this.page
-      .getByRole("button", { name: "Switch to local-only mode" })
+    await this.chatInput
       .or(
-        this.page.getByText("Chats are only stored on this device while you are not signed in", {
+        this.page.getByText("Not signed in, so this stays on this device.", {
           exact: true,
         }),
       )
@@ -430,7 +429,7 @@ export class HomePage extends BasePage {
   }
 
   async createDrawing() {
-    await this.page.getByRole("button", { name: "Switch to local-only mode" }).waitFor();
+    await this.chatInput.waitFor();
     await this.openCanvas();
     await this.selectCanvasSurface("Drawing");
     await this.page.getByRole("button", { name: "New Drawing" }).click();

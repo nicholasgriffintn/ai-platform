@@ -1,12 +1,18 @@
 import z from "zod/v4";
 
+import { computeSiteSchema } from "./compute-sites.js";
 import { usageUnitSchema } from "./pricing/units.js";
+import { runProvenanceSchema } from "./run-provenance.js";
 
 export const USAGE_SOURCES = ["model", "hosted_tool", "capability", "infrastructure"] as const;
 
 export const usageSourceSchema = z.enum(USAGE_SOURCES);
 
 export type UsageSource = z.infer<typeof usageSourceSchema>;
+
+export const USAGE_EVENT_REASONS = ["ran_off_platform"] as const;
+export const usageEventReasonSchema = z.enum(USAGE_EVENT_REASONS);
+export type UsageEventReason = z.infer<typeof usageEventReasonSchema>;
 
 export const CREDIT_STATES = ["ok", "reserve", "overage", "exhausted"] as const;
 
@@ -26,7 +32,13 @@ export const usageReservationStatusSchema = z.enum(USAGE_RESERVATION_STATUSES);
 
 export type UsageReservationStatus = z.infer<typeof usageReservationStatusSchema>;
 
-export const chatRunUsageMeasurementSchema = z.enum(["reported", "estimated", "mixed", "unknown"]);
+export const chatRunUsageMeasurementSchema = z.enum([
+  "reported",
+  "estimated",
+  "mixed",
+  "off_platform",
+  "unknown",
+]);
 
 export const chatRunUsageSourceSummarySchema = z.object({
   source: usageSourceSchema,
@@ -165,6 +177,14 @@ export const usageEventsQuerySchema = z.object({
 
 export type UsageEventsQuery = z.infer<typeof usageEventsQuerySchema>;
 
+export const recordOffPlatformUsageRequestSchema = z.object({
+  completion_id: z.string().min(1),
+  message_id: z.string().min(1),
+  provenance: runProvenanceSchema,
+});
+
+export type RecordOffPlatformUsageRequest = z.infer<typeof recordOffPlatformUsageRequestSchema>;
+
 export const usageEventSchema = z.object({
   id: z.string(),
   occurred_at: z.string(),
@@ -180,6 +200,9 @@ export const usageEventSchema = z.object({
   billable: z.boolean(),
   byok: z.boolean(),
   estimated: z.boolean(),
+  vendor_units: z.number().nonnegative().nullable(),
+  reason: usageEventReasonSchema.nullable(),
+  site: computeSiteSchema.nullable(),
   conversation_id: z.string().nullable(),
   project_id: z.string().nullable(),
   workspace_id: z.string().nullable(),

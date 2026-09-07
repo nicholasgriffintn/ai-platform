@@ -12,10 +12,12 @@ import type {
   ConversationModeMetadata,
   ConversationGroup,
   ConversationSnooze,
+  ModelTier,
   MessageRole as SchemaMessageRole,
   ModelServiceTier,
   ReasoningEffort,
   ThreadOperation,
+  RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
 
 export type ChatRole = SchemaMessageRole;
@@ -229,6 +231,7 @@ export interface Message {
   mode?: string;
   citations?: string[] | null;
   usage?: MessageUsage;
+  provenance?: RunProvenance | null;
   log_id?: string;
   name?: string;
   tool_call_id?: string;
@@ -259,6 +262,8 @@ export interface Conversation {
   created_at?: string;
   updated_at?: string;
   last_message_at?: string;
+  model?: string | null;
+  model_tier?: ModelTier | null;
   has_branches?: boolean;
   parent_conversation_id?: string;
   parent_message_id?: string;

@@ -1,7 +1,8 @@
-import type { ModelTier } from "@ngriffin_uk/polychat-schemas";
+import { computeSiteSchema, type ComputeSite, type ModelTier } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ChatSettings } from "./conversation-types.js";
+import { deviceModelSource } from "./device-models.js";
 
 const LEGACY_SAMPLING_DEFAULTS: Record<string, number> = {
   temperature: 0.7,
@@ -56,10 +57,41 @@ export function migrateLegacyAutoMode(persistedState: unknown, version: number):
 }
 
 export function migrateChatStore(persistedState: unknown, version: number): unknown {
-  return migrateLegacyAutoMode(
-    migrateLegacySamplingDefaults(migrateLegacyMaxOutputTokens(persistedState, version), version),
+  return migrateComputeSite(
+    migrateLegacyAutoMode(
+      migrateLegacySamplingDefaults(migrateLegacyMaxOutputTokens(persistedState, version), version),
+      version,
+    ),
     version,
   );
+}
+
+export function migrateComputeSite(persistedState: unknown, version: number): unknown {
+  if (version >= 4 || !isRecord(persistedState)) {
+    return persistedState;
+  }
+
+  const {
+    chatMode,
+    computeSite: persistedComputeSite,
+    localOnlyMode: _localOnlyMode,
+    ...state
+  } = persistedState;
+  const legacyChatMode = typeof chatMode === "string" ? chatMode : "chat";
+  const parsedComputeSite = computeSiteSchema.safeParse(persistedComputeSite);
+  const computeSite: ComputeSite = parsedComputeSite.success
+    ? parsedComputeSite.data
+    : legacyChatMode === "local"
+      ? deviceModelSource()
+        ? "device"
+        : "browser"
+      : "hosted";
+
+  return {
+    ...state,
+    chatMode: legacyChatMode === "remote" || legacyChatMode === "local" ? "chat" : legacyChatMode,
+    computeSite,
+  };
 }
 
 export function migrateLegacyMaxOutputTokens(persistedState: unknown, version: number): unknown {

@@ -1,4 +1,4 @@
-import type { DesktopStreamEvent } from "@ngriffin_uk/polychat-schemas";
+import type { DesktopEndpoint, DesktopStreamEvent } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import { createFakeDesktopBackend, type DesktopRun } from "./desktop-backend.js";
@@ -9,6 +9,18 @@ const script: DesktopStreamEvent[] = [
   { type: "text", runId: "seed", delta: " there" },
   { type: "finished", runId: "seed", reason: "complete", at: "2026-09-06T09:00:00.000Z" },
 ];
+
+const endpoint: DesktopEndpoint = {
+  id: "endpoint-1",
+  kind: "model",
+  vendor: "ollama",
+  label: "Ollama",
+  url: "http://127.0.0.1:11434",
+  transport: "loopback",
+  pairingSecretStored: false,
+  approvedAt: "2026-09-06T09:00:00.000Z",
+  lastSeenAt: null,
+};
 
 async function collect(run: DesktopRun): Promise<DesktopStreamEvent[]> {
   const events: DesktopStreamEvent[] = [];
@@ -58,9 +70,13 @@ describe("createFakeDesktopBackend", () => {
   it("reports an unprobed endpoint as unreachable rather than ready", async () => {
     const backend = createFakeDesktopBackend();
 
-    await expect(backend.probeEndpoint("missing")).resolves.toMatchObject({
+    await expect(backend.probeEndpoint({ ...endpoint, id: "missing" })).resolves.toMatchObject({
       status: "unreachable",
     });
+
+    expect(backend.probedEndpoints).toEqual([
+      { endpointId: "missing", url: "http://127.0.0.1:11434" },
+    ]);
   });
 
   it("records approval decisions against their endpoint", async () => {

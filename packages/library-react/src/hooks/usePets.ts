@@ -13,6 +13,7 @@ import {
   resolvePetForModel,
   resolvePetSelectionForModel,
   type ModelConfigItem,
+  type PetConversationState,
   type ResolvedPet,
   type UserPet,
 } from "@ngriffin_uk/polychat-schemas";
@@ -90,6 +91,7 @@ export interface ActivePet extends ResolvedPet {
 export function useActivePet(
   model?: Pick<ModelConfigItem, "family" | "provider">,
   modelReady = true,
+  conversationState?: PetConversationState,
 ): ActivePet {
   const { isAuthenticated, isLoading: isAuthLoading, userSettings } = useAuthStatus();
   const { pets, isLoadingPets } = usePets(1);
@@ -101,7 +103,12 @@ export function useActivePet(
   const overrides = parsePetModelOverrides(
     userSettings?.pet_model_overrides ?? EMPTY_PET_MODEL_OVERRIDES,
   );
-  const modelSelection = resolvePetSelectionForModel(selection, overrides, model);
+  const modelSelection = resolvePetSelectionForModel(
+    selection,
+    overrides,
+    model,
+    conversationState,
+  );
   const listedCustomPet =
     modelSelection.pet_source === "custom"
       ? pets.find((pet) => pet.id === modelSelection.pet_id)
@@ -114,6 +121,7 @@ export function useActivePet(
   const listedDefaultPet =
     selection.pet_source === "custom" ? pets.find((pet) => pet.id === selection.pet_id) : undefined;
   const needsDefaultPet =
+    !conversationState &&
     selection.pet_source === "custom" &&
     selection.pet_id !== modelSelection.pet_id &&
     !listedDefaultPet;
@@ -124,7 +132,7 @@ export function useActivePet(
   const customPets = [pets, fetchedCustomPet, fetchedDefaultPet]
     .flat()
     .filter((pet): pet is UserPet => Boolean(pet));
-  const resolved = resolvePetForModel(selection, overrides, model, customPets);
+  const resolved = resolvePetForModel(selection, overrides, model, conversationState, customPets);
 
   const isSelectionReady =
     !isAuthLoading &&

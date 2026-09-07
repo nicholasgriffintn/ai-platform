@@ -1,4 +1,4 @@
-import { parsePetModelOverrides } from "@ngriffin_uk/polychat-schemas";
+import { onboardingSeenSchema, parsePetModelOverrides } from "@ngriffin_uk/polychat-schemas";
 import { decodeBase64 } from "hono/utils/encode";
 
 import { prepareUserSettingsUpdates } from "~/lib/database/user-settings";
@@ -239,6 +239,7 @@ export class UserSettingsRepository extends BaseRepository {
       "traits",
       "preferences",
       "tracking_enabled",
+      "advertise_machines",
       "guardrails_enabled",
       "guardrails_provider",
       "bedrock_guardrail_id",
@@ -259,11 +260,15 @@ export class UserSettingsRepository extends BaseRepository {
       "speech_model",
       "search_provider",
       "sandbox_model",
+      "default_model_tier",
+      "default_model_id",
+      "default_compute_site",
       "pet_source",
       "pet_id",
       "pet_travel_enabled",
       "pet_animation_enabled",
       "pet_model_overrides",
+      "onboarding_seen",
     ];
     const { query, values } = this.buildSelectQuery(
       "user_settings",
@@ -276,9 +281,16 @@ export class UserSettingsRepository extends BaseRepository {
       return null;
     }
 
+    const onboardingSeen = onboardingSeenSchema.safeParse(
+      typeof result.onboarding_seen === "string"
+        ? safeParseJson(result.onboarding_seen)
+        : result.onboarding_seen,
+    );
+
     return {
       ...result,
       tracking_enabled: Boolean(result.tracking_enabled),
+      advertise_machines: result.advertise_machines !== 0,
       guardrails_enabled: Boolean(result.guardrails_enabled),
       memories_save_enabled: Boolean(result.memories_save_enabled),
       memories_chat_history_enabled: Boolean(result.memories_chat_history_enabled),
@@ -290,6 +302,7 @@ export class UserSettingsRepository extends BaseRepository {
           ? safeParseJson(result.pet_model_overrides)
           : result.pet_model_overrides,
       ),
+      onboarding_seen: onboardingSeen.success ? onboardingSeen.data : [],
     } as IUserSettings;
   }
 

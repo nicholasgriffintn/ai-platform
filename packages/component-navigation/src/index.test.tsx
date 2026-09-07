@@ -8,6 +8,7 @@ import {
   ConversationListActions,
   ConversationListControls,
   ConversationListItemActions,
+  ConversationStorageNotice,
   DEFAULT_CONVERSATION_LIST_FILTERS,
   ProductModeSwitch,
   SidebarSettingsPopover,
@@ -220,6 +221,38 @@ describe("ConversationList", () => {
 
     expect(screen.getByLabelText("Response in progress")).toBeTruthy();
     expect(screen.getByLabelText("Action required")).toBeTruthy();
+  });
+
+  it("marks temporary conversations with a ghost indicator", () => {
+    render(
+      <ConversationList
+        sections={[{ id: "today", conversations: [{ id: "temporary", isLocalOnly: true }] }]}
+        isConversationRoute
+        onSelect={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText("Temporary conversation")).toBeTruthy();
+  });
+});
+
+describe("ConversationStorageNotice", () => {
+  it.each([
+    ["chosen", "Temporary. Nothing here is kept."],
+    ["default", "Temporary by default. Change this in Settings."],
+    ["signed_out", "Not signed in, so this stays on this device."],
+    ["plan", "Stored history is part of Pro. This stays on this device."],
+    ["device_default", "Runs on this Mac, so nothing is kept by default. Keep this chat"],
+  ] as const)("uses the %s retention explanation", (reason, copy) => {
+    render(<ConversationStorageNotice reason={reason} />);
+
+    expect(screen.getByText(copy)).toBeTruthy();
+  });
+
+  it("does not render a notice when the conversation is kept", () => {
+    const { container } = render(<ConversationStorageNotice reason={null} />);
+
+    expect(container.firstChild).toBeNull();
   });
 });
 

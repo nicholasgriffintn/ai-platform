@@ -287,4 +287,20 @@ describe("UserSettingsRepository", () => {
     expect(executeRunSpy.mock.calls[0]?.[0]).toContain("pet_animation_enabled = ?");
     expect(executeRunSpy.mock.calls[0]?.[1]).toContain(1);
   });
+
+  it("persists onboarding keys as JSON without touching omitted settings", async () => {
+    const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
+    const executeRunSpy = vi
+      .spyOn(repo as any, "executeRun")
+      .mockResolvedValue({ success: true } as any);
+
+    await repo.updateUserSettings(42, {
+      onboarding_seen: ["model-sources:web"],
+    });
+
+    expect(executeRunSpy).toHaveBeenCalledTimes(1);
+    expect(executeRunSpy.mock.calls[0]?.[0]).toContain("onboarding_seen = ?");
+    expect(executeRunSpy.mock.calls[0]?.[1]).toContain('["model-sources:web"]');
+    expect(executeRunSpy.mock.calls[0]?.[1]).not.toContain("provider-setup");
+  });
 });

@@ -1,4 +1,5 @@
 import {
+  READINESS_PROTOCOL_VERSION,
   isActiveModel,
   type ModelConfigItem,
   type Readiness,
@@ -9,6 +10,21 @@ import type { IUser } from "~/types";
 
 const MODEL_READINESS_TTL_MS = 60_000;
 
+export const MODEL_RUNTIME_READINESS_STATUSES = [
+  "not_configured",
+  "unreachable",
+  "model_missing",
+  "model_loading",
+  "machine_offline",
+  "desktop_required",
+] as const;
+
+export type ModelRuntimeReadinessStatus = (typeof MODEL_RUNTIME_READINESS_STATUSES)[number];
+
+export interface ModelReadinessOptions {
+  runtimeStatus?: ModelRuntimeReadinessStatus;
+}
+
 function readiness(
   state: Readiness["state"],
   reasonCode: Readiness["reasonCode"],
@@ -17,7 +33,7 @@ function readiness(
   action?: Readiness["action"],
 ): Readiness {
   return {
-    protocolVersion: 1,
+    protocolVersion: READINESS_PROTOCOL_VERSION,
     state,
     reasonCode,
     reason,
@@ -27,11 +43,80 @@ function readiness(
   };
 }
 
+export function resolveRuntimeReadiness(
+  model: Pick<ModelConfigItem, "matchingModel" | "name" | "provider">,
+  status: ModelRuntimeReadinessStatus,
+  now = new Date(),
+): Readiness {
+  const modelName = model.name || model.matchingModel;
+  const runtimeName = model.provider ? `${model.provider} runtime` : "device runtime";
+
+  switch (status) {
+    case "not_configured":
+      return readiness(
+        "setup_required",
+        "runtime_not_configured",
+        `Set up the ${runtimeName} before using ${modelName}.`,
+        now,
+        { kind: "open_runtimes", label: "Set up", path: "/downloads" },
+      );
+    case "unreachable":
+      return readiness(
+        "unavailable",
+        "runtime_unreachable",
+        `The ${runtimeName} is not responding. Check that it is running before trying again.`,
+        now,
+        { kind: "open_runtimes", label: "Check again", path: "/downloads" },
+      );
+    case "model_missing":
+      return readiness(
+        "unavailable",
+        "runtime_model_missing",
+        `${modelName} is no longer available in the ${runtimeName}. Install it again or choose another model.`,
+        now,
+        { kind: "open_runtimes", label: "Open runtimes", path: "/downloads" },
+      );
+    case "model_loading":
+      return readiness(
+        "unknown",
+        "runtime_model_loading",
+        `${modelName} is loading into memory and should be ready shortly.`,
+        now,
+        { kind: "retry", label: "Check again" },
+      );
+    case "machine_offline":
+      return readiness(
+        "unavailable",
+        "machine_offline",
+        `The machine running ${modelName} is offline. Open Polychat on that machine to use it.`,
+        now,
+        { kind: "open_on_machine", label: "Open on machine" },
+      );
+    case "desktop_required":
+      return readiness(
+        "setup_required",
+        "desktop_required",
+        `${modelName} runs on a desktop runtime. Install the desktop app to use it.`,
+        now,
+        { kind: "install_desktop", label: "Install desktop", path: "/downloads" },
+      );
+  }
+
+  const unreachableStatus: never = status;
+
+  throw new Error(`Unsupported model runtime readiness status: ${String(unreachableStatus)}`);
+}
+
 export function resolveModelReadiness(
   model: ModelConfigItem,
   user?: Pick<IUser, "id" | "plan_id">,
   now = new Date(),
+  options: ModelReadinessOptions = {},
 ): Readiness {
+  if (options.runtimeStatus) {
+    return resolveRuntimeReadiness(model, options.runtimeStatus, now);
+  }
+
   if (!isActiveModel(model)) {
     return readiness(
       "unavailable",

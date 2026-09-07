@@ -6,6 +6,7 @@ import moss from "../pets/moss.png";
 import pip from "../pets/pip.png";
 import prism from "../pets/prism.png";
 import sprocket from "../pets/sprocket.png";
+import wisp from "../pets/wisp.png";
 
 const BUILT_IN_PET_SHEETS = new Map<string, string>([
   ["/pets/ash.png", ash],
@@ -16,6 +17,7 @@ const BUILT_IN_PET_SHEETS = new Map<string, string>([
   ["/pets/pip.png", pip],
   ["/pets/prism.png", prism],
   ["/pets/sprocket.png", sprocket],
+  ["/pets/wisp.png", wisp],
 ]);
 
 export function resolvePetSheetUrl(sheetUrl: string): string {

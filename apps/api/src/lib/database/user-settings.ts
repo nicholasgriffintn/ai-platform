@@ -8,6 +8,8 @@ export function prepareUserSettingsUpdates(
     preferences: settings.preferences ?? null,
     tracking_enabled:
       settings.tracking_enabled !== undefined ? (settings.tracking_enabled ? 1 : 0) : null,
+    advertise_machines:
+      settings.advertise_machines !== undefined ? (settings.advertise_machines ? 1 : 0) : null,
     guardrails_enabled:
       settings.guardrails_enabled !== undefined ? (settings.guardrails_enabled ? 1 : 0) : null,
     guardrails_provider: settings.guardrails_provider ?? null,
@@ -45,6 +47,9 @@ export function prepareUserSettingsUpdates(
     speech_model: settings.speech_model ?? null,
     search_provider: settings.search_provider ?? null,
     sandbox_model: settings.sandbox_model ?? null,
+    default_model_tier: settings.default_model_tier ?? null,
+    default_model_id: settings.default_model_id ?? null,
+    default_compute_site: settings.default_compute_site ?? null,
     pet_source: settings.pet_source ?? null,
     pet_id: settings.pet_id ?? null,
     pet_travel_enabled:
@@ -59,6 +64,8 @@ export function prepareUserSettingsUpdates(
       settings.pet_model_overrides !== undefined
         ? JSON.stringify(settings.pet_model_overrides)
         : null,
+    onboarding_seen:
+      settings.onboarding_seen !== undefined ? JSON.stringify(settings.onboarding_seen) : null,
   };
 
   for (const field of Object.keys(updates)) {

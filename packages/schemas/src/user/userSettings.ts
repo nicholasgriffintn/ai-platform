@@ -1,5 +1,7 @@
 import * as z from "zod/v4";
 
+import { computeSiteSchema } from "../compute-sites.js";
+import { modelTierSchema } from "../model-lineup.js";
 import { petModelOverridesSchema } from "../pets.js";
 
 export const guardrailsProviderIds = ["llamaguard", "bedrock", "mistral", "shieldstral"] as const;
@@ -27,6 +29,8 @@ export const awsRegionSchema = z
   .max(64)
   .regex(/^[a-z]{2}(?:-[a-z0-9]+)+-\d$/);
 
+export const onboardingSeenSchema = z.array(z.string());
+
 export const updateUserSettingsSchema = z
   .object({
     nickname: z.string().nullable().optional(),
@@ -34,6 +38,7 @@ export const updateUserSettingsSchema = z
     traits: z.string().nullable().optional(),
     preferences: z.string().nullable().optional(),
     tracking_enabled: z.boolean().optional(),
+    advertise_machines: z.boolean().optional(),
     guardrails_enabled: z.boolean().optional(),
     guardrails_provider: guardrailsProviderSchema.optional(),
     bedrock_guardrail_id: z.string().optional(),
@@ -54,11 +59,15 @@ export const updateUserSettingsSchema = z
     speech_model: z.string().optional(),
     search_provider: z.string().optional(),
     sandbox_model: z.string().optional(),
+    default_model_tier: modelTierSchema.nullable().optional(),
+    default_model_id: z.string().trim().min(1).nullable().optional(),
+    default_compute_site: computeSiteSchema.nullable().optional(),
     pet_source: z.enum(["preset", "custom"]).optional(),
     pet_id: z.string().trim().min(1).max(60).optional(),
     pet_travel_enabled: z.boolean().optional(),
     pet_animation_enabled: z.boolean().optional(),
     pet_model_overrides: petModelOverridesSchema.optional(),
+    onboarding_seen: onboardingSeenSchema.optional(),
   })
   .superRefine((settings, context) => {
     if (settings.embedding_provider !== "s3vectors") {

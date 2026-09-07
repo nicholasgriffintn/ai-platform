@@ -1,4 +1,4 @@
-import type { UsageUnit } from "@ngriffin_uk/polychat-schemas";
+import type { ComputeSite, UsageEventReason, UsageUnit } from "@ngriffin_uk/polychat-schemas";
 
 import { isRecord } from "~/utils/objects";
 import { findNumericFieldDeep, readNumericField } from "~/utils/recordFields";
@@ -15,6 +15,20 @@ export interface BillableUnitOptions {
   hasAudioRate?: boolean;
   hasGenericCacheWriteRate?: boolean;
   longContextThresholdTokens?: number;
+}
+
+export interface OffPlatformUsageMarker {
+  vendorUnits: 0;
+  reason: UsageEventReason;
+  site: ComputeSite;
+}
+
+export function offPlatformUsageMarker(site: ComputeSite): OffPlatformUsageMarker {
+  return {
+    vendorUnits: 0,
+    reason: "ran_off_platform",
+    site,
+  };
 }
 
 const ADDITIONAL_CACHE_READ_FIELDS = [

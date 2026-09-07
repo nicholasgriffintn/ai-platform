@@ -2,6 +2,7 @@ import {
   hostedToolRateEntries,
   modelRateResource,
   rateEntriesFromModelConfig,
+  type RunProvenance,
   type RateEntry,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -10,6 +11,7 @@ import { RepositoryManager } from "~/repositories";
 import type { IEnv, MessagePart } from "~/types";
 import { getLogger } from "~/utils/logger";
 
+import { offPlatformUsageMarker } from "./billableUnits";
 import { isByokTurn } from "./byok";
 import { creditActorUserId, type CreditActor } from "./creditActor";
 import {
@@ -40,12 +42,103 @@ export interface RecordModelTurnUsageParams {
   runAttempt?: number | null;
   occurredAt?: string;
   tier?: string;
+  provenance?: RunProvenance | null;
+}
+
+export interface RecordOffPlatformRunUsageParams {
+  env: IEnv;
+  repositories?: RepositoryManager;
+  actor?: CreditActor | null;
+  provenance: RunProvenance;
+  provider?: string;
+  completionId: string;
+  messageId?: string | null;
+  conversationId?: string | null;
+  runId?: string | null;
+  runAttempt?: number | null;
+  occurredAt?: string;
+}
+
+export async function recordOffPlatformRunUsage(
+  params: RecordOffPlatformRunUsageParams,
+): Promise<UsageEmissionOutcome> {
+  const { env, actor } = params;
+
+  if (!actor || !env?.DB) {
+    return "skipped";
+  }
+
+  try {
+    const repositories = params.repositories ?? new RepositoryManager(env);
+    const attribution = await resolveUsageAttribution(repositories, params.conversationId);
+    const marker = offPlatformUsageMarker(params.provenance.site);
+    const eventScope = params.messageId ?? params.completionId;
+    const vendor = params.provenance.vendor ?? params.provider ?? "off-platform";
+    const raw = {
+      ...marker,
+      machineId: params.provenance.machineId ?? null,
+      model: params.provenance.model,
+    };
+
+    return await emitUsageEvents({
+      env,
+      repositories,
+      drafts: [
+        {
+          idempotencyKey: `model:off_platform:${eventScope}`,
+          actor,
+          source: "model",
+          vendor,
+          resource: params.provenance.model,
+          unit: "requests",
+          quantity: 1,
+          vendorUnits: marker.vendorUnits,
+          reason: marker.reason,
+          site: marker.site,
+          occurredAt: params.occurredAt,
+          conversationId: params.conversationId ?? null,
+          messageId: params.messageId ?? null,
+          completionId: params.completionId,
+          runId: params.runId ?? null,
+          runAttempt: params.runAttempt ?? null,
+          raw,
+          projectId: attribution.projectId,
+          workspaceId: attribution.workspaceId,
+        },
+      ],
+    });
+  } catch (error) {
+    logger.error("Failed to record an off-platform model run", {
+      error,
+      completionId: params.completionId,
+      model: params.provenance.model,
+      site: params.provenance.site,
+    });
+
+    return "failed";
+  }
 }
 
 export async function recordModelTurnUsage(
   params: RecordModelTurnUsageParams,
 ): Promise<UsageEmissionOutcome> {
   const { env, usage, actor } = params;
+
+  if (params.provenance && params.provenance.site !== "hosted") {
+    return recordOffPlatformRunUsage({
+      env,
+      repositories: params.repositories,
+      actor,
+      provenance: params.provenance,
+      provider: params.provider,
+      completionId: params.completionId,
+      messageId: params.messageId,
+      conversationId: params.conversationId,
+      runId: params.runId,
+      runAttempt: params.runAttempt,
+      occurredAt: params.occurredAt,
+    });
+  }
 
   if (!actor || !env?.DB || (!usage && params.rawUsage === undefined)) {
     return "skipped";

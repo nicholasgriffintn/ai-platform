@@ -4,6 +4,7 @@ import { chatContextSnapshotSchema } from "./chat-context.js";
 import { chatRetrySnapshotSchema } from "./chat-retries.js";
 import { normaliseCompactionStatusMessage } from "./compaction-status.js";
 import { messagePartsSchema } from "./message-parts.js";
+import { runProvenanceSchema } from "./run-provenance.js";
 import { messageRoleSchema } from "./shared.js";
 import { chatRunUsageSchema } from "./usage.js";
 
@@ -85,6 +86,7 @@ export const chatRunSchema = z.object({
   lastMessageId: z.string().min(1).nullable(),
   context: chatContextSnapshotSchema.nullable().optional(),
   retry: chatRetrySnapshotSchema.nullable().optional(),
+  provenance: runProvenanceSchema.nullable().optional(),
   usage: chatRunUsageSchema.optional(),
 });
 
@@ -150,6 +152,7 @@ export const storedChatMessageResponseSchema = z
     timestamp: z.number().optional(),
     platform: z.string().nullable().optional(),
     usage: z.record(z.string(), z.any()).nullable().optional(),
+    provenance: runProvenanceSchema.nullable().optional(),
   })
   .passthrough()
   .superRefine((message, ctx) => {

@@ -150,7 +150,7 @@ export function ProjectConversationPage({
   );
 
   useEffect(() => {
-    setChatMode("remote");
+    setChatMode("chat");
     setSelectedTeammateId(null);
     setSelectedTeammateTokenPosition(null);
     setSelectedAssistantAction(null);

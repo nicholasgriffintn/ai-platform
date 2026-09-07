@@ -1,4 +1,10 @@
-import type { ModelConfig, ProviderSyncStatus, Tool } from "@ngriffin_uk/polychat-schemas";
+import {
+  decodeModelConfig,
+  type ModelConfig,
+  type ModelTiersResponse,
+  type ProviderSyncStatus,
+  type Tool,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper.js";
 import { returnFetchedData } from "../http.js";
@@ -78,9 +84,31 @@ export class UserService {
       throw new Error(`Failed to fetch models: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
+    const responseData = await returnFetchedData<unknown>(response);
 
-    return responseData;
+    return decodeModelConfig(responseData);
+  }
+
+  async fetchModelTiers(): Promise<ModelTiersResponse> {
+    let headers = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error fetching model tiers:", error);
+    }
+
+    const response = await fetchApi("/models/tiers", {
+      method: "GET",
+      headers,
+      timeoutMs: 10000,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch model tiers: ${response.statusText}`);
+    }
+
+    return returnFetchedData<ModelTiersResponse>(response);
   }
 
   async fetchModelCatalogue(): Promise<ModelConfig> {
@@ -93,7 +121,7 @@ export class UserService {
       throw new Error(`Failed to fetch model catalogue: ${response.statusText}`);
     }
 
-    return returnFetchedData<ModelConfig>(response);
+    return decodeModelConfig(await returnFetchedData<unknown>(response));
   }
 
   async fetchTools(): Promise<Tool[]> {

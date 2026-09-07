@@ -137,11 +137,10 @@ export function MetaAssistantOverlay({ open, onClose }: { open: boolean; onClose
   const navigate = useNavigate();
   const { trackEvent } = useTrackEvent();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
-  const localOnlyMode = useChatStore((state) => state.localOnlyMode);
   const metaConversationId = useUIStore((state) => state.metaAssistantConversationId);
   const setMetaConversationId = useUIStore((state) => state.setMetaAssistantConversationId);
   const scope = useLocalConversationScope(metaConversationId, setMetaConversationId);
-  const canUsePoly = isAuthenticated && !localOnlyMode;
+  const canUsePoly = isAuthenticated;
   const handleNavigate = (href: string) => {
     trackEvent({
       name: "meta_assistant_navigate",
@@ -183,10 +182,6 @@ export function MetaAssistantOverlay({ open, onClose }: { open: boolean; onClose
               title="Sign in to use Poly"
               message="Poly finds, opens and tidies your conversations, so it needs to know whose they are."
             />
-          </div>
-        ) : localOnlyMode ? (
-          <div className="p-6 text-sm text-muted-foreground">
-            Poly works on conversations stored in the cloud. Switch off local-only mode to use it.
           </div>
         ) : (
           <MetaAssistantThread scope={scope} onNavigate={handleNavigate} />

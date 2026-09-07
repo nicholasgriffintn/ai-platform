@@ -5,6 +5,7 @@ import SwiftUI
 class ModelsStore: ObservableObject {
     @Published var models: [ModelConfigItem] = []
     @Published var selectedModelId: String? = nil
+    @Published var selectedModelTier: String? = nil
     @Published var isLoading: Bool = false
     @Published var error: String? = nil
     @Published var selectionIssue: String? = nil
@@ -12,6 +13,10 @@ class ModelsStore: ObservableObject {
     private let apiClient: any ModelsAPIClient
     private let userDefaults: UserDefaults
     private let selectedModelKey = "selectedModelId"
+    private let selectedModelTierKey = "selectedModelTier"
+    private var accountDefaultModelId: String?
+    private var accountDefaultModelTier: String?
+    private var accountDefaultComputeSite: String?
     
     init(apiClient: any ModelsAPIClient = APIClient.shared, userDefaults: UserDefaults = .standard) {
         self.apiClient = apiClient
@@ -35,30 +40,44 @@ class ModelsStore: ObservableObject {
                     contextWindow: model.contextWindow,
                     pricing: model.pricing,
                     modalities: model.modalities,
-                    supportsFunctions: model.supportsFunctions,
+                    supportsToolCalls: model.supportsToolCalls,
                     multimodal: model.multimodal,
                     isFeatured: model.isFeatured,
-                    isDeprecated: model.isDeprecated,
+                    deprecated: model.deprecated,
                     isDefault: model.isDefault,
                     isExecutable: model.isExecutable,
+                    runsOn: model.runsOn,
+                    isPlatformEnabled: model.isPlatformEnabled,
+                    isFree: model.isFree,
+                    isByokEnabled: model.isByokEnabled,
                     readiness: model.readiness,
                     status: model.status,
                     supportsAttachments: model.supportsAttachments,
                     supportsDocuments: model.supportsDocuments,
                     supportsAudio: model.supportsAudio,
                     supportsImageEdits: model.supportsImageEdits,
+                    supportsResponseFormat: model.supportsResponseFormat,
+                    supportsRealtimeSession: model.supportsRealtimeSession,
                     supportedServiceTiers: model.supportedServiceTiers,
                     serviceTierMultipliers: model.serviceTierMultipliers
                 )
             }
 
-            if selectedModelId == nil {
+            let hasAccountDefaults = accountDefaultModelId != nil ||
+                accountDefaultModelTier != nil ||
+                accountDefaultComputeSite != nil
+            let usedAccountDefaults = !hasLocalModelSelection && hasAccountDefaults
+            if usedAccountDefaults {
+                applyAccountSelection()
+            }
+
+            if selectedModelId == nil && selectedModelTier == nil {
                 let defaultModel = models.first {
                     $0.isDefault == true &&
                     $0.isAvailableForSelection
                 }
                 selectModel(defaultModel?.id)
-            } else {
+            } else if !usedAccountDefaults {
                 updateSelectionIssue()
             }
         } catch {
@@ -70,8 +89,20 @@ class ModelsStore: ObservableObject {
     
     func selectModel(_ modelId: String?) {
         selectedModelId = modelId
+        selectedModelTier = nil
+        userDefaults.removeObject(forKey: selectedModelTierKey)
         updateSelectionIssue()
         saveSelectedModel()
+    }
+
+    func applyAccountDefaults(_ settings: AuthUserSettings?) {
+        accountDefaultModelId = settings?.defaultModelId
+        accountDefaultModelTier = settings?.defaultModelTier
+        accountDefaultComputeSite = settings?.defaultComputeSite
+
+        if !hasLocalModelSelection && !models.isEmpty {
+            applyAccountSelection()
+        }
     }
     
     func getSelectedModel() -> ModelConfigItem? {
@@ -89,6 +120,45 @@ class ModelsStore: ObservableObject {
     
     private func loadSelectedModel() {
         selectedModelId = userDefaults.string(forKey: selectedModelKey)
+        selectedModelTier = userDefaults.string(forKey: selectedModelTierKey)
+    }
+
+    private var hasLocalModelSelection: Bool {
+        userDefaults.object(forKey: selectedModelKey) != nil ||
+        userDefaults.object(forKey: selectedModelTierKey) != nil
+    }
+
+    private func applyAccountSelection() {
+        let runtimeFallback = accountDefaultComputeSite.map { $0 != "hosted" } ?? false
+        let accountModel = accountDefaultModelId.flatMap { model(withId: $0) }
+
+        if let accountModel, accountModel.isAvailableForSelection, !runtimeFallback {
+            selectedModelId = accountModel.id
+            selectedModelTier = nil
+            selectionIssue = nil
+            return
+        }
+
+        if let accountDefaultModelTier, !runtimeFallback {
+            selectedModelId = nil
+            selectedModelTier = accountDefaultModelTier
+            selectionIssue = nil
+            return
+        }
+
+        let defaultModel = models.first {
+            $0.isDefault == true && $0.isAvailableForSelection
+        }
+        selectedModelId = defaultModel?.id
+        selectedModelTier = nil
+        updateSelectionIssue()
+
+        if runtimeFallback {
+            let site = accountDefaultComputeSite ?? "another"
+            selectionIssue = "Your account default uses \(site) compute, which this phone cannot reach. Using hosted compute instead."
+        } else if accountDefaultModelId != nil {
+            selectionIssue = "Your account default model is not available on this phone. Using the hosted default instead."
+        }
     }
     
     private func saveSelectedModel() {

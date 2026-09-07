@@ -283,6 +283,13 @@ struct ConversationRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
+            if !conversation.isLoadedFromAPI {
+                Image(systemName: "theatermasks")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("Session-only conversation")
+            }
+
             Text(conversation.title)
                 .font(.body.weight(isSelected ? .semibold : .regular))
                 .foregroundColor(.primary)
@@ -373,7 +380,7 @@ private enum ConversationListPreviewData {
                 contextWindow: 64000,
                 pricing: nil,
                 modalities: nil,
-                supportsFunctions: true,
+                supportsToolCalls: true,
                 multimodal: false,
                 isFeatured: true
             ),
@@ -386,7 +393,7 @@ private enum ConversationListPreviewData {
                 contextWindow: 128000,
                 pricing: nil,
                 modalities: nil,
-                supportsFunctions: true,
+                supportsToolCalls: true,
                 multimodal: true,
                 isFeatured: true
             )

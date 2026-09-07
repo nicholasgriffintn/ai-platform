@@ -5,6 +5,8 @@ import {
   usagePeriodFromDate,
   USAGE_ROLLUP_TASK_TYPE,
   type RateEntry,
+  type ComputeSite,
+  type UsageEventReason,
   type UsageSource,
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
@@ -49,6 +51,9 @@ export interface UsageEventDraft {
   margin?: number;
   rates?: readonly RateEntry[];
   raw?: unknown;
+  vendorUnits?: number | null;
+  reason?: UsageEventReason | null;
+  site?: ComputeSite | null;
 }
 
 export interface UsageRollupTaskPayload {
@@ -74,6 +79,21 @@ export interface PricedUsageDraft {
 
 function priceUsageDraft(draft: UsageEventDraft): PricedUsageDraft {
   const occurredAt = draft.occurredAt ?? new Date().toISOString();
+
+  if (draft.reason === "ran_off_platform") {
+    return {
+      occurredAt,
+      period: usagePeriodFromDate(new Date(occurredAt)),
+      rateVersion: null,
+      unitCostMicros: null,
+      costMicros: 0,
+      creditMicros: 0,
+      billable: false,
+      byok: false,
+      estimated: false,
+    };
+  }
+
   const priced = priceUsage(
     draft.rates ?? [],
     {
@@ -150,6 +170,9 @@ export function buildUsageEventRow(draft: UsageEventDraft): UsageEventInsert {
     billable: priced.billable,
     byok: priced.byok,
     estimated: priced.estimated,
+    vendor_units: draft.vendorUnits ?? null,
+    reason: draft.reason ?? null,
+    site: draft.site ?? null,
     raw: draft.raw === undefined ? null : JSON.stringify(draft.raw),
   };
 }

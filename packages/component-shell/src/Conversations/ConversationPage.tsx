@@ -36,7 +36,7 @@ export function ConversationPage({
             <ConversationThreadNavigation />
           </div>
         ) : (
-          <ConversationProductHeader />
+          <ConversationProductHeader requestOptions={effectiveModeConfig?.requestOptions} />
         )
       }
     />

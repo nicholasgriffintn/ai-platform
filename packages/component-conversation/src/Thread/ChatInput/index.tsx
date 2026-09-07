@@ -1,6 +1,7 @@
 import { Image } from "@ngriffin_uk/polychat-component-content";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
+import type { ConversationRetention } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
@@ -26,7 +27,7 @@ import type {
   ComposerCommandAction,
 } from "@ngriffin_uk/polychat-utility-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { File, FileText, Paperclip, Pause, Send, Volume2 } from "lucide-react";
+import { File, FileText, Ghost, Paperclip, Pause, Send, Volume2 } from "lucide-react";
 import {
   type ChangeEvent,
   type KeyboardEvent,
@@ -132,6 +133,7 @@ export interface ConversationRunSteering {
 }
 
 interface ChatInputProps {
+  retention?: ConversationRetention;
   goalState?: {
     canUseGoals: boolean;
     goal: { status: string } | null;
@@ -188,6 +190,7 @@ interface ChatInputProps {
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
   (
     {
+      retention = "kept",
       handleSubmit,
       goalState,
       isLoading,
@@ -689,7 +692,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const isToolSelectionLocked =
       toolSelectionLocked || (chatMode === "agent" && selectedTeammateId !== null);
     const canUseProComposerActions = isPro;
-    const showInlineMultiModelToggle = isPro && !model && chatMode === "remote";
+    const showInlineMultiModelToggle = isPro && !model && chatMode === "chat";
     const canShowToolMenu =
       !isToolSelectionLocked && (showInlineMultiModelToggle || supportsToolCalls);
     const canShowActionMenu =
@@ -933,6 +936,16 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                       onBeforeModelChange={handleBeforeModelChange}
                     />
                   </div>
+                )}
+                {retention === "temporary" && (
+                  <span
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2 py-1 text-xs text-muted-foreground"
+                    title="Temporary conversation"
+                    aria-label="Temporary conversation"
+                  >
+                    <Ghost size={14} aria-hidden="true" />
+                    <span>Temporary</span>
+                  </span>
                 )}
                 {!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}
                 {showFooterControls && <div className="shrink-0">{controls}</div>}

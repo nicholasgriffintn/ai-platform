@@ -1,7 +1,6 @@
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useRecipeConnectors,
-  useUser,
   useWorkspaces,
   useUsageStore,
 } from "@ngriffin_uk/polychat-library-react";
@@ -44,7 +43,6 @@ export function useComposerBanner({
   const user = useChatStore((state) => state.user);
   const hasHydratedUserConfiguration = useChatStore((state) => state.hasHydratedUserConfiguration);
   const usageLimits = useUsageStore((state) => state.usageLimits);
-  const { providerSettings, isLoadingProviderSettings } = useUser({ enabled: isAuthenticated });
   const { data: connectorsData } = useRecipeConnectors();
   const { data: workspacesData } = useWorkspaces();
   const dismissals = useComposerBannerDismissals((state) => state.dismissals);
@@ -76,19 +74,6 @@ export function useComposerBanner({
         message: "Type / for actions or @ for recipes, agents, connectors, and tools.",
         dismissal: { scope: "forever", suggestion: true },
       });
-
-      if (!isLoadingProviderSettings && !providerSettings.some((p) => p.hasApiKey)) {
-        candidates.push({
-          id: "provider-setup",
-          tone: "info",
-          title: "Bring your own models",
-          message: isPro
-            ? "Add provider keys to reach the full model catalogue beyond your Pro allowance."
-            : "Add provider keys to run your own models without spending credits.",
-          action: { label: "Open Providers", to: "/profile?tab=providers" },
-          dismissal: { scope: "forever", suggestion: true },
-        });
-      }
 
       if (
         isPro &&
@@ -150,8 +135,6 @@ export function useComposerBanner({
     isAuthenticated,
     hasHydratedUserConfiguration,
     user,
-    providerSettings,
-    isLoadingProviderSettings,
     connectorsData,
     workspacesData,
     dismissals,

@@ -64,7 +64,7 @@ export class WebLLMService {
       throw new Error("Engine or model not initialized");
     }
 
-    await onSendMessage(selectedChat, prompt, this.currentModel, "local", "user");
+    await onSendMessage(selectedChat, prompt, this.currentModel, "chat", "user");
 
     this.chatHistory.push({ role: "user", content: prompt });
 
@@ -97,7 +97,7 @@ export class WebLLMService {
     });
 
     if (hasCompleted) {
-      await onSendMessage(selectedChat, generatedContent, this.currentModel, "local", "assistant");
+      await onSendMessage(selectedChat, generatedContent, this.currentModel, "chat", "assistant");
     }
 
     return generatedContent;

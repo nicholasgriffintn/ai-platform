@@ -22,6 +22,10 @@ struct ChatView: View {
         conversationManager.currentConversation?.messages ?? []
     }
 
+    private var isTemporaryConversation: Bool {
+        !(conversationManager.currentConversation?.isLoadedFromAPI ?? false)
+    }
+
     private var activeModelId: String? {
         conversationManager.currentConversation?.modelId ??
         conversationManager.selectedModelId ??
@@ -49,6 +53,10 @@ struct ChatView: View {
     }
 
     private var modelReadinessMessage: String? {
+        if let selectionIssue = modelsStore.selectionIssue {
+            return selectionIssue
+        }
+
         guard activeModelId != nil else { return nil }
         guard let activeModelConfig else {
             return "Your selected model is no longer available to this account. Choose another model before sending."
@@ -82,6 +90,7 @@ struct ChatView: View {
         VStack(spacing: 0) {
             MessageListView(
                 messages: messages,
+                isTemporaryConversation: isTemporaryConversation,
                 conversationModelId: activeModelId,
                 run: currentRun,
                 taskActivity: conversationManager.currentTaskActivity,
@@ -143,6 +152,7 @@ struct ChatView: View {
                 voiceError: voiceError,
                 activeModelName: activeModelName,
                 activeModelProvider: activeModelProvider,
+                isTemporaryConversation: isTemporaryConversation,
                 modelReadinessMessage: modelReadinessMessage,
                 isRunActive: currentRun?.isActive == true,
                 isCancellationPending: currentRun?.status == "cancelling",
@@ -173,6 +183,15 @@ struct ChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
+            if isTemporaryConversation {
+                ToolbarItem(placement: .principal) {
+                    Label("Session only", systemImage: "theatermasks")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel("Temporary conversation, kept for this session only")
+                }
+            }
+
             ToolbarItem(placement: .topBarTrailing) {
                 Button(action: {
                     isMessageInputFocused = false

@@ -7,6 +7,7 @@ import {
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import { useAnalytics } from "@ngriffin_uk/polychat-library-react";
+import { computeSiteSchema, modelTierSchema } from "@ngriffin_uk/polychat-schemas";
 import { type FormEvent, type ReactNode, useState } from "react";
 
 import { SettingsSection } from "./SettingsSection";
@@ -233,6 +234,90 @@ export function UserSettingsForm({
       </SettingsSection>
 
       {afterPersonalisedResponses}
+
+      <SettingsSection title="Chat defaults">
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor="default_model_id"
+              className="mb-1 block text-sm font-medium text-foreground"
+            >
+              Default model
+            </label>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Use this model for new conversations. Leave blank to use the selected model tier.
+            </p>
+            <FormInput
+              id="default_model_id"
+              name="default_model_id"
+              value={formData.default_model_id}
+              onChange={handleChange}
+              placeholder="Optional model ID"
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="default_model_tier"
+              className="mb-1 block text-sm font-medium text-foreground"
+            >
+              Default model tier
+            </label>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Used for new conversations when no default model is set.
+            </p>
+            <FormSelect
+              id="default_model_tier"
+              name="default_model_tier"
+              value={formData.default_model_tier}
+              onChange={(event) => {
+                const value = modelTierSchema.safeParse(event.target.value);
+                updateFormData({
+                  default_model_tier: value.success ? value.data : "",
+                });
+              }}
+              className="w-full"
+            >
+              <option value="">Use the standard tier</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="ultra">Ultra</option>
+            </FormSelect>
+          </div>
+
+          <div>
+            <label
+              htmlFor="default_compute_site"
+              className="mb-1 block text-sm font-medium text-foreground"
+            >
+              Default compute site
+            </label>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Choose where new conversations should run. If it is unavailable, Polychat explains the
+              fallback and uses hosted compute.
+            </p>
+            <FormSelect
+              id="default_compute_site"
+              name="default_compute_site"
+              value={formData.default_compute_site}
+              onChange={(event) => {
+                const value = computeSiteSchema.safeParse(event.target.value);
+                updateFormData({
+                  default_compute_site: value.success ? value.data : "",
+                });
+              }}
+              className="w-full"
+            >
+              <option value="">Hosted compute</option>
+              <option value="browser">This browser</option>
+              <option value="device">This device</option>
+              <option value="machine">Connected machine</option>
+            </FormSelect>
+          </div>
+        </div>
+      </SettingsSection>
 
       <SettingsSection title="Sandbox Worker">
         <div className="space-y-4">
@@ -546,8 +631,7 @@ export function UserSettingsForm({
               }
             />
             <p className="text-sm text-muted-foreground">
-              New chats start in local-only mode. Use the cloud toggle in chat to keep a specific
-              conversation.
+              New chats start as temporary and stay on this device.
             </p>
           </div>
 
@@ -570,6 +654,28 @@ export function UserSettingsForm({
             <p className="text-sm text-muted-foreground">
               Allow Polychat to save conversation prompts and responses for improving AI models. We
               still collect operational usage and performance metrics without prompt content.
+            </p>
+          </div>
+
+          <div>
+            <label
+              htmlFor="advertise_machines"
+              className="mb-1 block text-sm font-medium text-foreground"
+            >
+              Let other devices see this desktop
+            </label>
+            <Switch
+              id="advertise_machines"
+              checked={formData.advertise_machines}
+              onChange={(e) =>
+                updateFormData({
+                  advertise_machines: e.target.checked,
+                })
+              }
+            />
+            <p className="text-sm text-muted-foreground">
+              Share this desktop&apos;s name and available model names with your signed-in devices.
+              Prompts, responses, and endpoint addresses stay on this desktop.
             </p>
           </div>
         </div>

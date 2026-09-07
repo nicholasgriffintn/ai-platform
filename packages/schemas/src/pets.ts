@@ -189,6 +189,12 @@ export const PET_PRESETS: readonly PetPreset[] = [
     description: "A rock with a sprout and no urgency whatsoever. Moves when it feels like it.",
     sheetUrl: "/pets/moss.png",
   },
+  {
+    slug: "wisp",
+    label: "Wisp",
+    description: "Present, briefly. Remembers nothing and is at peace with it.",
+    sheetUrl: "/pets/wisp.png",
+  },
 ];
 
 export const DEFAULT_PET_PRESET_SLUG = "pip";
@@ -257,6 +263,10 @@ export const petSelectionSchema = z.object({
 
 const petModelSelectionMapSchema = z.record(z.string().trim().min(1).max(100), petSelectionSchema);
 
+export const PET_TEMPORARY_CONVERSATION_STATE = "temporary" as const;
+
+export type PetConversationState = typeof PET_TEMPORARY_CONVERSATION_STATE;
+
 function normalisePetModelSelectionMap(
   selections: Record<string, PetSelection>,
 ): Record<string, PetSelection> {
@@ -270,11 +280,13 @@ function normalisePetModelSelectionMap(
 
 export const petModelOverridesSchema = z
   .object({
+    states: petModelSelectionMapSchema.default({}),
     families: petModelSelectionMapSchema.default({}),
     providers: petModelSelectionMapSchema.default({}),
     makers: petModelSelectionMapSchema.default({}),
   })
   .transform((overrides) => ({
+    states: normalisePetModelSelectionMap(overrides.states),
     families: normalisePetModelSelectionMap(overrides.families),
     providers: normalisePetModelSelectionMap(overrides.providers),
     makers: normalisePetModelSelectionMap(overrides.makers),
@@ -290,6 +302,7 @@ export type PetModelOverrides = z.infer<typeof petModelOverridesSchema>;
 export type StoredPetModelOverrides = z.input<typeof petModelOverridesSchema>;
 
 export const EMPTY_PET_MODEL_OVERRIDES: PetModelOverrides = {
+  states: {},
   families: {},
   providers: {},
   makers: {},
@@ -312,14 +325,40 @@ function normalisePetModelTarget(value: string | null | undefined): string | und
 export function parsePetModelOverrides(value: unknown): PetModelOverrides {
   const parsed = petModelOverridesSchema.safeParse(value);
 
-  return parsed.success ? parsed.data : { families: {}, providers: {}, makers: {} };
+  return parsed.success ? parsed.data : { states: {}, families: {}, providers: {}, makers: {} };
+}
+
+const TEMPORARY_PET_SELECTION: PetSelection = {
+  pet_source: "preset",
+  pet_id: "wisp",
+};
+
+function selectionForConversationState(
+  overrides: PetModelOverrides | null | undefined,
+  conversationState: string | null | undefined,
+): PetSelection | undefined {
+  const state = normalisePetModelTarget(conversationState);
+
+  return state ? overrides?.states[state] : undefined;
 }
 
 export function resolvePetSelectionForModel(
   selection: PetSelection,
   overrides: PetModelOverrides | null | undefined,
   model: { family?: string | null; provider?: string | null } | null | undefined,
+  conversationState?: string | null,
 ): PetSelection {
+  const state = normalisePetModelTarget(conversationState);
+  const stateSelection = selectionForConversationState(overrides, conversationState);
+
+  if (stateSelection) {
+    return stateSelection;
+  }
+
+  if (state === PET_TEMPORARY_CONVERSATION_STATE) {
+    return TEMPORARY_PET_SELECTION;
+  }
+
   const family = normalisePetModelTarget(model?.family);
   const provider = normalisePetModelTarget(model?.provider);
   const maker = resolveModelMakerId(model);
@@ -340,6 +379,7 @@ export function removeCustomPetFromModelOverrides(
     selection.pet_source !== "custom" || selection.pet_id !== petId;
 
   return {
+    states: Object.fromEntries(Object.entries(overrides.states).filter(keepSelection)),
     families: Object.fromEntries(Object.entries(overrides.families).filter(keepSelection)),
     providers: Object.fromEntries(Object.entries(overrides.providers).filter(keepSelection)),
     makers: Object.fromEntries(Object.entries(overrides.makers).filter(keepSelection)),
@@ -379,13 +419,49 @@ export function resolvePetForModel(
   selection: PetSelection,
   overrides: PetModelOverrides | null | undefined,
   model: { family?: string | null; provider?: string | null } | null | undefined,
-  customPets: readonly UserPet[] = [],
+  customPets?: readonly UserPet[],
+): ResolvedPet;
+export function resolvePetForModel(
+  selection: PetSelection,
+  overrides: PetModelOverrides | null | undefined,
+  model: { family?: string | null; provider?: string | null } | null | undefined,
+  conversationState?: string | null,
+  customPets?: readonly UserPet[],
+): ResolvedPet;
+export function resolvePetForModel(
+  selection: PetSelection,
+  overrides: PetModelOverrides | null | undefined,
+  model: { family?: string | null; provider?: string | null } | null | undefined,
+  conversationStateOrCustomPets?: string | null | readonly UserPet[],
+  customPetsOrConversationState?: readonly UserPet[] | string | null,
 ): ResolvedPet {
-  const modelSelection = resolvePetSelectionForModel(selection, overrides, model);
+  const hasCustomPets = isUserPetList(conversationStateOrCustomPets);
+  const customPets = hasCustomPets
+    ? conversationStateOrCustomPets
+    : isUserPetList(customPetsOrConversationState)
+      ? customPetsOrConversationState
+      : [];
+  const conversationState = hasCustomPets
+    ? typeof customPetsOrConversationState === "string" || customPetsOrConversationState === null
+      ? customPetsOrConversationState
+      : undefined
+    : typeof conversationStateOrCustomPets === "string" || conversationStateOrCustomPets === null
+      ? conversationStateOrCustomPets
+      : undefined;
+  const state = normalisePetModelTarget(conversationState);
+  const fallbackSelection =
+    state === PET_TEMPORARY_CONVERSATION_STATE ? TEMPORARY_PET_SELECTION : selection;
+  const modelSelection = resolvePetSelectionForModel(fallbackSelection, overrides, model, state);
   const modelSelectionExists =
     (modelSelection.pet_source === "preset" && isPetPresetSlug(modelSelection.pet_id)) ||
     (modelSelection.pet_source === "custom" &&
       customPets.some((pet) => pet.id === modelSelection.pet_id));
 
-  return resolvePet(modelSelectionExists ? modelSelection : selection, customPets);
+  return resolvePet(modelSelectionExists ? modelSelection : fallbackSelection, customPets);
+}
+
+function isUserPetList(
+  value: string | null | readonly UserPet[] | undefined,
+): value is readonly UserPet[] {
+  return Array.isArray(value);
 }

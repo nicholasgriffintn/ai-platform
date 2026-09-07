@@ -1,6 +1,10 @@
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
-import type { ChatCompletionResponseBody, ChatStreamMessage } from "@ngriffin_uk/polychat-schemas";
+import {
+  runProvenanceSchema,
+  type ChatCompletionResponseBody,
+  type ChatStreamMessage,
+} from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { ApiError } from "./http.js";
@@ -98,6 +102,16 @@ function responseMessageReasoning(reasoning: unknown): Message["reasoning"] | un
   };
 }
 
+function responseProvenance(value: unknown): Message["provenance"] {
+  if (value === null) {
+    return null;
+  }
+
+  const parsed = runProvenanceSchema.safeParse(value);
+
+  return parsed.success ? parsed.data : undefined;
+}
+
 function responseToolCalls(toolCalls: unknown): Message["tool_calls"] {
   if (!Array.isArray(toolCalls)) {
     return undefined;
@@ -160,6 +174,7 @@ export function toAppMessage(streamMessage: ChatStreamMessage): Message {
     platform: streamMessage.platform,
     citations: streamMessage.citations,
     usage: isRecord(streamMessage.usage) ? streamMessage.usage : undefined,
+    provenance: streamMessage.provenance,
     log_id: streamMessage.log_id,
     name: streamMessage.name,
     tool_call_id: streamMessage.tool_call_id,
@@ -195,6 +210,7 @@ export function toCompletionResponseAppMessage(
     platform: responseString(responseMessageRecord.platform),
     citations: responseMessage?.citations ?? null,
     usage: isRecord(responseMessageRecord.usage) ? responseMessageRecord.usage : responseBody.usage,
+    provenance: responseProvenance(responseMessageRecord.provenance),
     log_id: responseString(responseMessage?.log_id) ?? responseString(responseBody.log_id),
     name: responseMessage?.name,
     tool_call_id: responseMessage?.tool_call_id,

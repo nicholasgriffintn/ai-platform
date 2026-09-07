@@ -1,9 +1,11 @@
-import { SectionNav } from "@ngriffin_uk/polychat-component-ui";
+import { Button, SectionNav } from "@ngriffin_uk/polychat-component-ui";
 import {
   useModelCatalogue,
   groupModelsByProvider,
   isCatalogueModel,
+  useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
+import { CircleHelp } from "lucide-react";
 import { useMemo } from "react";
 
 import { ModelLineup } from "./ModelLineup.js";
@@ -11,6 +13,7 @@ import { MODELS_SECTION_NAV } from "./models-sections.js";
 import { ProviderCatalogue } from "./ProviderCatalogue.js";
 
 export function ModelsCatalogue() {
+  const setShowModelSources = useUIStore((state) => state.setShowModelSources);
   const { data, isLoading, error } = useModelCatalogue();
   const models = useMemo(() => Object.values(data ?? {}).filter(isCatalogueModel), [data]);
   const groups = useMemo(() => groupModelsByProvider(models), [models]);
@@ -26,7 +29,18 @@ export function ModelsCatalogue() {
         <h1 className="font-display text-4xl font-medium tracking-tight text-balance text-foreground md:text-5xl">
           Every model, one perch
         </h1>
-        <p className="max-w-prose text-lg leading-relaxed text-muted-foreground">{lede}</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="max-w-prose text-lg leading-relaxed text-muted-foreground">{lede}</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            icon={<CircleHelp className="h-4 w-4" aria-hidden="true" />}
+            onClick={() => setShowModelSources(true)}
+          >
+            How models work here
+          </Button>
+        </div>
         <SectionNav label="Models sections" sections={MODELS_SECTION_NAV} />
       </header>
       <ModelLineup />

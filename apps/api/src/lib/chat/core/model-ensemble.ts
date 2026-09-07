@@ -131,6 +131,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
         model: merged.model,
         provider: params.provider,
         platform: merged.platform,
+        provenance: merged.provenance,
         usage: merged.usage,
         citations: merged.citations,
         data: merged.data,
@@ -263,6 +264,13 @@ async function requestSecondaryAnswer(
       conversationId: params.completionId,
       runId: params.runId ?? null,
       runAttempt: params.runAttempt ?? null,
+      provenance: params.provenance
+        ? {
+            ...params.provenance,
+            model: modelConfig.model,
+            vendor: modelConfig.provider,
+          }
+        : undefined,
     });
 
     return response.response || "";

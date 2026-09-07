@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import {
   type AppKeyboardShortcutId,
+  dispatchModelSelectorShortcut,
   matchesAppKeyboardShortcut,
 } from "../lib/keyboard-shortcuts.js";
 import { useUIStore } from "../state/stores/uiStore.js";
@@ -18,8 +19,7 @@ export function useKeyboardShortcuts() {
     showMetaAssistant,
     setShowMetaAssistant,
   } = useUIStore();
-  const { clearCurrentConversation, setShowSearch, localOnlyMode, setLocalOnlyMode } =
-    useChatStore();
+  const { clearCurrentConversation, setShowSearch } = useChatStore();
 
   useEffect(() => {
     const handlers: Partial<Record<AppKeyboardShortcutId, ShortcutHandler>> = {
@@ -39,16 +39,33 @@ export function useKeyboardShortcuts() {
         e.preventDefault();
         setShowKeyboardShortcuts(!showKeyboardShortcuts);
       },
-      "toggle-local-only-mode": (e) => {
-        e.preventDefault();
-        setLocalOnlyMode(!localOnlyMode);
-      },
       "toggle-meta-assistant": (e) => {
         e.preventDefault();
         setShowMetaAssistant(!showMetaAssistant);
       },
     };
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (matchesAppKeyboardShortcut(e, "open-model-selector")) {
+        e.preventDefault();
+        dispatchModelSelectorShortcut("open");
+
+        return;
+      }
+
+      if (matchesAppKeyboardShortcut(e, "cycle-compute-site")) {
+        e.preventDefault();
+        dispatchModelSelectorShortcut("cycle-compute-site");
+
+        return;
+      }
+
+      if (matchesAppKeyboardShortcut(e, "toggle-retention")) {
+        e.preventDefault();
+        dispatchModelSelectorShortcut("toggle-retention");
+
+        return;
+      }
+
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
@@ -79,8 +96,6 @@ export function useKeyboardShortcuts() {
     showKeyboardShortcuts,
     setShowKeyboardShortcuts,
     setShowSearch,
-    localOnlyMode,
-    setLocalOnlyMode,
     showMetaAssistant,
     setShowMetaAssistant,
   ]);

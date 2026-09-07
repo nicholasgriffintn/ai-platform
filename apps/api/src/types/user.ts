@@ -1,4 +1,9 @@
-import type { GuardrailsProviderId, PetModelOverrides } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ComputeSite,
+  GuardrailsProviderId,
+  ModelTier,
+  PetModelOverrides,
+} from "@ngriffin_uk/polychat-schemas";
 
 export interface User {
   id: number;
@@ -53,12 +58,17 @@ export interface IUserSettings {
   speech_model: string | null;
   search_provider: string | null;
   tracking_enabled: boolean;
+  advertise_machines: boolean;
   sandbox_model: string | null;
+  default_model_tier: ModelTier | null;
+  default_model_id: string | null;
+  default_compute_site: ComputeSite | null;
   pet_source: "preset" | "custom" | null;
   pet_id: string | null;
   pet_travel_enabled: boolean;
   pet_animation_enabled: boolean;
   pet_model_overrides: PetModelOverrides;
+  onboarding_seen: string[];
 }
 
 export interface UserSettings {

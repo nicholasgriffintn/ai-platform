@@ -1,4 +1,4 @@
-import type { Goal } from "@ngriffin_uk/polychat-schemas";
+import type { Goal, RunProvenance } from "@ngriffin_uk/polychat-schemas";
 
 import { runAgentLoop } from "~/lib/chat/agent/agent-loop";
 import { createGoalFinishGate } from "~/lib/chat/agent/goal-gate";
@@ -11,7 +11,9 @@ import { prependCompactionStateEvent } from "~/lib/chat/core/compaction-stream";
 import { createChatExecutionRequest } from "~/lib/chat/core/execution-request";
 import { createModelEnsembleStream } from "~/lib/chat/core/model-ensemble";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
+import { resolveRunProvenance } from "~/lib/chat/core/run-provenance";
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
+import { resolveAccountDefaultComputeSite } from "~/lib/chat/policy/project-model-tier";
 import { resolveTurnStepBudget } from "~/lib/chat/policy/step-budget";
 import { applyTierReasoningEffort } from "~/lib/chat/policy/tier-reasoning";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
@@ -111,6 +113,14 @@ export class ChatOrchestrator {
     let options = requestOptions;
 
     try {
+      if (!options.compute_site && options.context) {
+        const defaultComputeSite = await resolveAccountDefaultComputeSite(options.context);
+
+        if (defaultComputeSite) {
+          options = { ...options, compute_site: defaultComputeSite };
+        }
+      }
+
       const validationResult = await this.validator.validate(options);
 
       options = applyTierReasoningEffort(options, validationResult.context.reasoningEffort);
@@ -207,7 +217,16 @@ export class ChatOrchestrator {
           runLifecycle?.run.id,
         );
 
-        result = await this.executeRequest(options, prepared, release, runLifecycle);
+        const runProvenance = resolveRunProvenance({
+          requestedSite: options.compute_site,
+          model: prepared.primaryModel,
+          provider: prepared.primaryProvider,
+          modelConfig: prepared.primaryModelConfig,
+        });
+
+        await runLifecycle?.recordProvenance(runProvenance);
+
+        result = await this.executeRequest(options, prepared, release, runLifecycle, runProvenance);
       } catch (error) {
         if (runLifecycle && !runLifecycle.receipt.duplicate) {
           try {
@@ -256,6 +275,7 @@ export class ChatOrchestrator {
     prepared: PreparedRequest,
     onTurnEnd?: () => Promise<void>,
     runLifecycle?: ChatRunLifecycle | null,
+    runProvenance?: RunProvenance,
   ) {
     const {
       platform = "api",
@@ -284,6 +304,7 @@ export class ChatOrchestrator {
     await conversationManager.admitTurn({
       modelConfig: primaryModelConfig,
       messages: preparedMessages,
+      skipCreditAdmission: runProvenance?.site !== undefined && runProvenance.site !== "hosted",
     });
 
     let messages = preparedMessages;
@@ -333,6 +354,7 @@ export class ChatOrchestrator {
       },
       input: messageWithContext,
       mode: currentMode,
+      provenance: runProvenance,
       model: primaryModel,
       provider: primaryProvider,
       runId: runLifecycle?.run.id,

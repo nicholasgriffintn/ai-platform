@@ -1,3 +1,5 @@
+import type { RunProvenance } from "@ngriffin_uk/polychat-schemas";
+
 import { formatAssistantMessage } from "~/lib/chat/messages/assistant-format";
 import { buildMessageParts } from "~/lib/chat/messages/parts";
 import { buildAssistantMessageData } from "~/lib/chat/policy/mode-metadata";
@@ -59,6 +61,7 @@ export interface FinaliseAssistantTurnParams {
   deferOutputUntilValidated?: boolean;
   runId?: string;
   runAttempt?: number;
+  provenance?: RunProvenance;
 }
 
 export interface FinalisedAssistantTurn {
@@ -125,7 +128,9 @@ export async function finaliseAssistantTurn(
     },
     log_id: turn.logId ?? env.AI?.aiGatewayLogId,
     model,
+    provider: params.provider,
     platform: params.platform,
+    provenance: params.provenance,
     timestamp: Date.now(),
     mode: params.mode,
     finish_reason: visibleTurn.toolCalls.length > 0 ? "tool_calls" : "stop",
@@ -154,7 +159,9 @@ export async function finaliseAssistantTurn(
     id: assistantMessage.id,
     timestamp: assistantMessage.timestamp,
     model: assistantMessage.model,
+    provider: params.provider,
     platform: assistantMessage.platform,
+    provenance: params.provenance,
     usage: assistantMessage.usage,
     tool_calls: nonEmptyToolCallsOrNull(assistantMessage.tool_calls),
     parts,
@@ -180,6 +187,7 @@ export async function finaliseAssistantTurn(
     conversationId: completionId,
     runId: params.runId ?? null,
     runAttempt: params.runAttempt ?? null,
+    provenance: params.provenance,
   });
 
   await params.conversationManager.releaseTurnReservation(usageReservationOutcome(usageOutcome));
@@ -192,6 +200,7 @@ export async function finaliseAssistantTurn(
     model: message.model,
     provider: params.provider,
     platform: message.platform,
+    provenance: params.provenance,
     nonce: generateId(),
     post_processing: {
       guardrails: assistantMessage.guardrails,

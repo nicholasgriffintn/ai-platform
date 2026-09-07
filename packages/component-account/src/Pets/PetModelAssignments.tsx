@@ -10,9 +10,12 @@ import { PetModelRuleDialog } from "./PetModelRuleDialog";
 import {
   describePetModelTarget,
   listPetModelAssignments,
+  petConversationStateSelectionFor,
   petKey,
   petModelSelectionFor,
   petModelTargetKey,
+  PET_CONVERSATION_STATE_OPTIONS,
+  withPetConversationStateOverride,
   withPetModelOverride,
   type PetModelTargetOption,
 } from "./petModelTargets";
@@ -45,11 +48,25 @@ export function PetModelAssignments({
     (target) => !configuredKeys.has(petModelTargetKey(target)),
   );
   const petOptions = pets.map((pet) => ({ value: petKey(pet), label: pet.name }));
+  const temporaryState = PET_CONVERSATION_STATE_OPTIONS[0];
+  const temporarySelection = petConversationStateSelectionFor(overrides, temporaryState.value);
+  const temporaryValue = temporarySelection
+    ? petKey({ source: temporarySelection.pet_source, id: temporarySelection.pet_id })
+    : "";
+  const temporaryAssigned = pets.find((option) => petKey(option) === temporaryValue);
+  const temporarySelectOptions = [
+    { value: "", label: "Wisp (automatic)" },
+    ...(temporaryAssigned
+      ? petOptions
+      : temporaryValue
+        ? [{ value: temporaryValue, label: "Assigned custom pet" }, ...petOptions]
+        : petOptions),
+  ];
 
   return (
     <SettingsSection
       title="Model companions"
-      description="Give a maker a pet and every model they make gets it, whoever serves it. Narrow it to a provider or a single family when you want to. Everything else keeps your default pet."
+      description="Temporary chats use Wisp unless you choose a different pet. For stored chats, give a maker a pet and every model they make gets it, whoever serves it. Narrow it to a provider or a single family when you want to."
       actions={
         <Button
           type="button"
@@ -62,6 +79,48 @@ export function PetModelAssignments({
         </Button>
       }
     >
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-foreground">{temporaryState.label}</p>
+          <p className="truncate text-xs text-muted-foreground">{temporaryState.hint}</p>
+        </div>
+        {renderPreview && temporaryAssigned ? (
+          <span className="flex h-10 w-10 items-end justify-center">
+            {renderPreview(temporaryAssigned, 40)}
+          </span>
+        ) : null}
+        <FormSelect
+          aria-label="Pet for temporary chats"
+          value={temporaryValue}
+          options={temporarySelectOptions}
+          disabled={disabled}
+          fullWidth={false}
+          className="w-40"
+          onChange={(event) => {
+            const value = event.target.value;
+
+            if (!value) {
+              onChange(
+                withPetConversationStateOverride(overrides, temporaryState.value, undefined),
+              );
+
+              return;
+            }
+
+            const pet = pets.find((option) => petKey(option) === value);
+
+            if (pet) {
+              onChange(
+                withPetConversationStateOverride(overrides, temporaryState.value, {
+                  pet_source: pet.source,
+                  pet_id: pet.id,
+                }),
+              );
+            }
+          }}
+        />
+      </div>
+
       {assignments.length > 0 ? (
         <>
           <ul className="space-y-2">

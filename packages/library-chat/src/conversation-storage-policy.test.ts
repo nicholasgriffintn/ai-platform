@@ -5,29 +5,34 @@ import { resolveConversationStorageMode } from "./conversation-storage-policy.js
 const signedInPro = {
   isAuthenticated: true,
   isPro: true,
-  temporaryChat: false,
   temporaryChatsDefault: false,
 };
 
 describe("resolveConversationStorageMode", () => {
   it("syncs an ordinary conversation", () => {
     expect(resolveConversationStorageMode(signedInPro)).toEqual({
-      isTemporary: false,
+      retention: "kept",
+      reason: "chosen",
       isProjectScoped: false,
-      shouldSyncRemote: true,
     });
   });
 
   it("keeps a conversation the person marked temporary off the service", () => {
-    expect(
-      resolveConversationStorageMode({ ...signedInPro, temporaryChat: true }).shouldSyncRemote,
-    ).toBe(false);
+    expect(resolveConversationStorageMode({ ...signedInPro, temporaryChat: true })).toEqual({
+      retention: "temporary",
+      reason: "chosen",
+      isProjectScoped: false,
+    });
   });
 
   it("keeps every new conversation temporary when that is the person's setting", () => {
-    expect(
-      resolveConversationStorageMode({ ...signedInPro, temporaryChatsDefault: true }).isTemporary,
-    ).toBe(true);
+    expect(resolveConversationStorageMode({ ...signedInPro, temporaryChatsDefault: true })).toEqual(
+      {
+        retention: "temporary",
+        reason: "default",
+        isProjectScoped: false,
+      },
+    );
   });
 
   it("syncs project work regardless of the temporary setting, because it is shared", () => {
@@ -36,28 +41,45 @@ describe("resolveConversationStorageMode", () => {
       { metadata: { project_id: "project-1" } },
     );
 
-    expect(mode).toEqual({ isTemporary: false, isProjectScoped: true, shouldSyncRemote: true });
+    expect(mode).toEqual({
+      retention: "kept",
+      reason: "chosen",
+      isProjectScoped: true,
+    });
   });
 
   it("cannot sync without an account or the entitlement to store", () => {
-    expect(
-      resolveConversationStorageMode({ ...signedInPro, isAuthenticated: false }).isTemporary,
-    ).toBe(true);
-    expect(resolveConversationStorageMode({ ...signedInPro, isPro: false }).isTemporary).toBe(true);
+    expect(resolveConversationStorageMode({ ...signedInPro, isAuthenticated: false })).toEqual({
+      retention: "temporary",
+      reason: "signed_out",
+      isProjectScoped: false,
+    });
+    expect(resolveConversationStorageMode({ ...signedInPro, isPro: false })).toEqual({
+      retention: "temporary",
+      reason: "plan",
+      isProjectScoped: false,
+    });
   });
 
-  it("does not let where a model runs decide where the conversation is kept", () => {
-    expect(resolveConversationStorageMode(signedInPro).shouldSyncRemote).toBe(true);
-  });
-
-  it("keeps a conversation answered on this machine off the service", () => {
+  it("keeps a conversation answered on this machine when the person has not chosen temporary", () => {
     const onDevice = { ...signedInPro, runsOnDevice: true };
 
-    expect(resolveConversationStorageMode(onDevice).isTemporary).toBe(true);
-    expect(resolveConversationStorageMode(onDevice).shouldSyncRemote).toBe(false);
+    expect(resolveConversationStorageMode(onDevice)).toEqual({
+      retention: "kept",
+      reason: "device_default",
+      isProjectScoped: false,
+    });
+    expect(resolveConversationStorageMode({ ...onDevice, temporaryChat: true })).toEqual({
+      retention: "temporary",
+      reason: "chosen",
+      isProjectScoped: false,
+    });
     expect(
-      resolveConversationStorageMode(onDevice, { metadata: { project_id: "project-1" } })
-        .shouldSyncRemote,
-    ).toBe(false);
+      resolveConversationStorageMode(onDevice, { metadata: { project_id: "project-1" } }),
+    ).toEqual({
+      retention: "kept",
+      reason: "chosen",
+      isProjectScoped: true,
+    });
   });
 });

@@ -1,4 +1,7 @@
+import type { ModelSource } from "@ngriffin_uk/polychat-component-models";
 import { type ComponentType, createContext, type ReactNode, useContext } from "react";
+
+export type ShellModelSourceSurface = "web" | "desktop";
 
 export interface ShellHost {
   webBaseUrl: string;
@@ -7,6 +10,9 @@ export interface ShellHost {
   signOut: () => void;
   TaskNotificationSettings: ComponentType;
   HostDialogs?: ComponentType;
+  modelSourceSurface?: ShellModelSourceSurface;
+  modelSourceRows?: readonly ModelSource[];
+  openProviderSettings?: () => void;
 }
 
 const ShellHostContext = createContext<ShellHost | null>(null);

@@ -116,6 +116,7 @@ export function useComposerCommandActions({
 }) {
   const {
     chatMode,
+    computeSite,
     chatSettings,
     isPro,
     model,
@@ -137,13 +138,13 @@ export function useComposerCommandActions({
   const includeTeammates = assistantActionCatalog?.includeTeammates !== false;
   const { teammates, isLoadingTeammates } = useTeammates({ enabled: includeTeammates });
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
-  const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
+  const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
   const selectedTools = useToolsStore((state) => state.selectedTools);
   const setSelectedTools = useToolsStore((state) => state.setSelectedTools);
 
   const availableModels = useMemo(
-    () => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
-    [apiModels, chatMode, webLLMModels],
+    () => getAvailableModels(apiModels, computeSite === "browser", webLLMModels),
+    [apiModels, computeSite, webLLMModels],
   );
   const defaultModelId = useMemo(() => getDefaultModelId(availableModels), [availableModels]);
   const selectedModelConfig = model ? availableModels[model] : undefined;
@@ -297,11 +298,8 @@ export function useComposerCommandActions({
     setSelectedTeammateId(null);
     setSelectedTeammateTokenPosition(null);
     if (chatMode === "agent") {
-      setChatMode("remote");
-      selectModelWithDefaults(defaultModelId ?? null, {
-        ...chatSettings,
-        localOnly: false,
-      });
+      setChatMode("chat");
+      selectModelWithDefaults(defaultModelId ?? null);
     }
   }, [
     chatMode,
@@ -442,7 +440,7 @@ export function useComposerCommandActions({
       });
     }
 
-    if (isPro && !model && chatMode === "remote") {
+    if (isPro && !model && chatMode === "chat") {
       commands.push({
         id: "multi-model-toggle",
         label: useMultiModel ? "Disable multi-model" : "Enable multi-model",
@@ -649,7 +647,6 @@ export function useComposerCommandActions({
       setChatMode("agent");
       selectModelWithDefaults(teammate.model ?? defaultModelId ?? null, {
         ...chatSettings,
-        localOnly: false,
       });
       setChatInput(selection.input);
 

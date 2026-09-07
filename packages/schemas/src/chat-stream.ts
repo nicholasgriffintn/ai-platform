@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { normaliseMessageParts, type MessagePart } from "./message-part-utils.js";
+import { runProvenanceSchema, type RunProvenance } from "./run-provenance.js";
 
 const turnActivityStepSchema = z.number().int().positive();
 const turnActivityToolSchema = z.object({
@@ -89,6 +90,7 @@ export interface ChatStreamMessage {
   tool_calls?: ChatStreamToolCall[];
   status?: string | null;
   data?: unknown;
+  provenance?: RunProvenance | null;
 }
 
 export type ChatStreamUpdate =
@@ -295,6 +297,7 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
   private responseProvider?: string;
   private responsePlatform?: string;
   private status?: string | null;
+  private provenance?: RunProvenance;
   private readonly pendingToolCalls: Record<string, PendingToolCall> = {};
   private readonly emittedToolResponseIds = new Set<string>();
   private responseModel?: string;
@@ -576,6 +579,12 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
       this.responsePlatform = event.platform;
     }
 
+    const provenance = runProvenanceSchema.safeParse(event.provenance);
+
+    if (provenance.success) {
+      this.provenance = provenance.data;
+    }
+
     if (typeof event.status === "string" || event.status === null) {
       this.status = event.status;
     }
@@ -646,6 +655,12 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
       this.responsePlatform = event.platform;
     }
 
+    const provenance = runProvenanceSchema.safeParse(event.provenance);
+
+    if (provenance.success) {
+      this.provenance = provenance.data;
+    }
+
     return [{ type: "assistant_metadata", message: this.buildAssistantMessage(this.id) }];
   }
 
@@ -666,6 +681,7 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
     this.responseProvider = undefined;
     this.responsePlatform = undefined;
     this.status = undefined;
+    this.provenance = undefined;
     this.currentAssistantFinalised = false;
   }
 
@@ -697,6 +713,7 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
       tool_calls: this.toolCalls.length > 0 ? this.toolCalls : undefined,
       log_id: this.logId,
       status: this.status,
+      provenance: this.provenance,
     };
   }
 

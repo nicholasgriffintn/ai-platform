@@ -352,6 +352,8 @@ export class RequestPreparer {
           lastMessage,
           finalMessage,
           primaryModel,
+          modelId: validationContext.selectedModels?.[0] ?? primaryModel,
+          modelTier: validationContext.modelTier ?? null,
           platform,
           mode,
         })

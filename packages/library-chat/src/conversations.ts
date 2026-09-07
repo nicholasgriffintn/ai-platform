@@ -37,6 +37,8 @@ export interface ConversationSummary {
   id?: string;
   type?: ConversationType;
   title: string;
+  model?: string | null;
+  model_tier?: string | null;
   created_at?: string;
   updated_at?: string;
   last_message_at?: string;

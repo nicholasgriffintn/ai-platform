@@ -4,9 +4,11 @@ import {
   clearModelResponseSettings,
   migrateChatStore,
   migrateLegacyAutoMode,
+  migrateComputeSite,
   migrateLegacyMaxOutputTokens,
   migrateLegacySamplingDefaults,
 } from "./chat-settings.js";
+import { setDeviceModelSource } from "./device-models.js";
 
 describe("chat response token defaults", () => {
   it("drops the previous model's response settings but keeps the rest", () => {
@@ -70,7 +72,11 @@ describe("chat sampling defaults", () => {
   it("strips the legacy token and sampling defaults in one pass", () => {
     expect(
       migrateChatStore({ chatSettings: { max_tokens: 8_192, temperature: 0.7, top_p: 0.5 } }, 0),
-    ).toEqual({ chatSettings: { top_p: 0.5 } });
+    ).toEqual({
+      chatSettings: { top_p: 0.5 },
+      chatMode: "chat",
+      computeSite: "hosted",
+    });
   });
 });
 
@@ -90,6 +96,64 @@ describe("model tier migration", () => {
     expect(migrateChatStore({ chatSettings: {}, modelTier: "ultra" }, 3)).toEqual({
       chatSettings: {},
       modelTier: "ultra",
+      chatMode: "chat",
+      computeSite: "hosted",
     });
+  });
+});
+
+describe("storage mode migration", () => {
+  it("drops local-only mode while extending the existing v4 migration", () => {
+    const persistedState = {
+      localOnlyMode: true,
+      chatMode: "remote",
+      chatSettings: { enabled_tools: [] },
+    };
+
+    expect(migrateChatStore(persistedState, 3)).toEqual({
+      chatSettings: { enabled_tools: [] },
+      chatMode: "chat",
+      computeSite: "hosted",
+    });
+  });
+
+  it("leaves a v4 store alone", () => {
+    const persistedState = { chatMode: "chat", computeSite: "hosted" };
+
+    expect(migrateComputeSite(persistedState, 4)).toBe(persistedState);
+  });
+});
+
+describe("compute site migration", () => {
+  it.each([
+    ["remote", "chat", "hosted"],
+    ["local", "chat", "browser"],
+    ["chat", "chat", "hosted"],
+    ["tool", "tool", "hosted"],
+    ["agent", "agent", "hosted"],
+  ] as const)("maps %s to %s on %s", (legacyMode, chatMode, computeSite) => {
+    expect(migrateComputeSite({ chatMode: legacyMode }, 3)).toEqual({
+      chatMode,
+      computeSite,
+    });
+  });
+
+  it("maps a legacy local mode to the device when a device runtime exists", () => {
+    setDeviceModelSource(async () => ({}));
+
+    try {
+      expect(migrateComputeSite({ chatMode: "local" }, 3)).toEqual({
+        chatMode: "chat",
+        computeSite: "device",
+      });
+    } finally {
+      setDeviceModelSource(null);
+    }
+  });
+
+  it("preserves a valid compute site already present in an older persisted state", () => {
+    const persistedState = { chatMode: "chat", computeSite: "machine" };
+
+    expect(migrateComputeSite(persistedState, 3)).toEqual(persistedState);
   });
 });

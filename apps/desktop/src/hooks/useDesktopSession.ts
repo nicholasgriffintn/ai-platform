@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getApiOriginMismatch } from "../lib/api-origin";
 import { tauriDesktopBackend } from "../lib/desktop-backend";
+import { removeMachineAdvertisement } from "../lib/machine-heartbeat";
 import { expiresAtMs, isTokenStale, refreshDelayMs } from "../lib/session-refresh";
 import { getDesktopSignInMessage } from "../lib/sign-in-message";
 
@@ -135,6 +136,7 @@ export function useDesktopSession() {
   const signOut = useCallback(async () => {
     setError(null);
 
+    await removeMachineAdvertisement().catch(() => undefined);
     await Promise.allSettled([authService.logout(), tauriDesktopBackend.signOut()]);
 
     forgetSession();

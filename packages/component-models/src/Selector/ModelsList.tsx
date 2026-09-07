@@ -1,16 +1,20 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import {
-  collapseRegionalModelVariants,
-  formatProviderLabel,
-  getModelDisplayName,
   getSelectedRegionalModelId,
   isActiveModel,
   isModelSelectableForAccount,
   isRegionalModelEntrySelected,
-  type RegionalModelListEntry,
   type ModelCatalogItem,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  FEATURED_MODEL_GROUP_KEY,
+  getSelectedModelProvider,
+  groupModelsByProvider,
+  partitionDeprecatedModelEntries,
+  type ModelProviderListEntry,
+  type RegionalModelListEntry,
+} from "@ngriffin_uk/polychat-utility-core";
 import { scrollIntoContainerView } from "@ngriffin_uk/polychat-utility-react";
 import { Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -30,22 +34,6 @@ interface ModelsListProps {
   isSearchActive?: boolean;
   onInfoHoverStart?: (model: ModelConfigItem, anchorRect: DOMRect) => void;
   onInfoHoverEnd?: () => void;
-}
-
-interface ProviderListEntry {
-  key: string;
-  label: string;
-  models: RegionalModelListEntry[];
-}
-
-const FEATURED_PROVIDER_KEY = "featured";
-
-function getSelectedModelProvider(models: ModelCatalogItem[], selectedId?: string | null) {
-  if (!selectedId) {
-    return null;
-  }
-
-  return models.find((model) => model.id === selectedId)?.provider || null;
 }
 
 export function ModelsList({
@@ -68,7 +56,7 @@ export function ModelsList({
     [models, selectedId],
   );
   const [selectedProvider, setSelectedProvider] = useState<string>(
-    () => selectedModelProvider || FEATURED_PROVIDER_KEY,
+    () => selectedModelProvider || FEATURED_MODEL_GROUP_KEY,
   );
   const [showDeprecatedByProvider, setShowDeprecatedByProvider] = useState<Record<string, boolean>>(
     {},
@@ -85,54 +73,10 @@ export function ModelsList({
     onSelect(modelId, modelInfo);
   };
 
-  const featuredModels = useMemo(
-    () =>
-      models
-        .filter((model) => featuredModelIds[model.id])
-        .sort((a, b) => getModelDisplayName(a).localeCompare(getModelDisplayName(b))),
+  const providerEntries = useMemo<ModelProviderListEntry<ModelCatalogItem>[]>(
+    () => groupModelsByProvider(models, featuredModelIds),
     [models, featuredModelIds],
   );
-
-  const groupedByProvider = useMemo(() => {
-    return models.reduce<Record<string, ModelCatalogItem[]>>((acc, model) => {
-      const provider = model.provider || "unknown";
-
-      if (!acc[provider]) {
-        acc[provider] = [];
-      }
-
-      acc[provider].push(model);
-
-      return acc;
-    }, {});
-  }, [models]);
-
-  const providerEntries = useMemo(() => {
-    const providerLists: ProviderListEntry[] = Object.entries(groupedByProvider)
-      .sort(([providerA], [providerB]) => providerA.localeCompare(providerB))
-      .map(([provider, providerModels]) => {
-        const sortedModels = [...providerModels].sort((a, b) =>
-          getModelDisplayName(a).localeCompare(getModelDisplayName(b)),
-        );
-
-        return {
-          key: provider,
-          label: formatProviderLabel(provider),
-          models: collapseRegionalModelVariants(sortedModels),
-        };
-      });
-
-    return featuredModels.length > 0
-      ? [
-          {
-            key: FEATURED_PROVIDER_KEY,
-            label: "Featured",
-            models: collapseRegionalModelVariants(featuredModels),
-          },
-          ...providerLists,
-        ]
-      : providerLists;
-  }, [groupedByProvider, featuredModels]);
 
   useEffect(() => {
     if (providerEntries.length === 0) {
@@ -152,7 +96,8 @@ export function ModelsList({
     );
     const fallbackProvider =
       (selectedProviderExists && selectedModelProvider) ||
-      providerEntries.find((providerEntry) => providerEntry.key === FEATURED_PROVIDER_KEY)?.key ||
+      providerEntries.find((providerEntry) => providerEntry.key === FEATURED_MODEL_GROUP_KEY)
+        ?.key ||
       providerEntries[0].key;
 
     setSelectedProvider(fallbackProvider);
@@ -183,15 +128,15 @@ export function ModelsList({
   const selectedProviderEntry =
     providerEntries.find((entry) => entry.key === selectedProvider) || providerEntries[0];
   const visibleModels = selectedProviderEntry?.models || [];
-  const visibleActiveModels = visibleModels.filter((entry) => !entry.model.deprecated);
-  const visibleDeprecatedModels = visibleModels.filter((entry) => entry.model.deprecated);
+  const { active: visibleActiveModels, deprecated: visibleDeprecatedModels } =
+    partitionDeprecatedModelEntries(visibleModels);
   const selectedDeprecatedModel = selectedId
     ? models.find((model) => model.id === selectedId && model.deprecated)
     : undefined;
   const showDeprecatedForSelectedProvider =
     showDeprecatedByProvider[selectedProviderEntry?.key || ""] ?? false;
   const searchResultEntries = providerEntries.filter(
-    (providerEntry) => providerEntry.key !== FEATURED_PROVIDER_KEY,
+    (providerEntry) => providerEntry.key !== FEATURED_MODEL_GROUP_KEY,
   );
   const visibleModelCount = isSearchActive
     ? searchResultEntries.reduce((total, providerEntry) => total + providerEntry.models.length, 0)
@@ -243,7 +188,7 @@ export function ModelsList({
     );
   }
 
-  const renderModelEntry = (modelEntry: RegionalModelListEntry) => {
+  const renderModelEntry = (modelEntry: RegionalModelListEntry<ModelCatalogItem>) => {
     const modelItem = modelEntry.model;
     const selectedRegionModelId = getSelectedRegionalModelId(modelEntry, selectedId);
     const selectedRegionModel = modelsById[selectedRegionModelId] || modelItem;
@@ -279,7 +224,7 @@ export function ModelsList({
             <div className="overflow-x-auto px-2 py-2 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:px-2">
               <div className="flex gap-2 sm:block sm:space-y-1">
                 {providerEntries.map((providerEntry) => {
-                  const isFeaturedProvider = providerEntry.key === FEATURED_PROVIDER_KEY;
+                  const isFeaturedProvider = providerEntry.key === FEATURED_MODEL_GROUP_KEY;
                   const isSelected = selectedProvider === providerEntry.key;
 
                   return (
@@ -343,12 +288,8 @@ export function ModelsList({
               {isSearchActive ? (
                 <div className="space-y-4">
                   {searchResultEntries.map((providerEntry) => {
-                    const activeModels = providerEntry.models.filter(
-                      (modelEntry) => !modelEntry.model.deprecated,
-                    );
-                    const deprecatedModels = providerEntry.models.filter(
-                      (modelEntry) => modelEntry.model.deprecated,
-                    );
+                    const { active: activeModels, deprecated: deprecatedModels } =
+                      partitionDeprecatedModelEntries(providerEntry.models);
                     const showDeprecated = showDeprecatedByProvider[providerEntry.key] ?? false;
 
                     return (

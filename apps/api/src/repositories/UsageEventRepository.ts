@@ -1,4 +1,9 @@
-import type { UsageSource, UsageUnit } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ComputeSite,
+  UsageEventReason,
+  UsageSource,
+  UsageUnit,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -30,6 +35,9 @@ export interface UsageEventInsert {
   billable: boolean;
   byok: boolean;
   estimated: boolean;
+  vendor_units: number | null;
+  reason: UsageEventReason | null;
+  site: ComputeSite | null;
   raw: string | null;
 }
 
@@ -47,6 +55,9 @@ export interface UsageEventRecordRow {
   billable: number;
   byok: number;
   estimated: number;
+  vendor_units: number | null;
+  reason: UsageEventReason | null;
+  site: ComputeSite | null;
   conversation_id: string | null;
   project_id: string | null;
   workspace_id: string | null;
@@ -110,11 +121,15 @@ const INSERT_COLUMNS = [
   "billable",
   "byok",
   "estimated",
+  "vendor_units",
+  "reason",
+  "site",
   "raw",
 ] as const;
 
 const RECORD_COLUMNS = `id, occurred_at, period, source, vendor, resource, unit, quantity,
-	cost_micros, credit_micros, billable, byok, estimated, conversation_id, project_id, workspace_id`;
+	cost_micros, credit_micros, billable, byok, estimated, vendor_units, reason, site,
+	conversation_id, project_id, workspace_id`;
 
 const CREDITS_ENFORCED = "included_credit_micros > 0";
 

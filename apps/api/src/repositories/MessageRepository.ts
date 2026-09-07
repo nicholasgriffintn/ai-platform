@@ -24,6 +24,7 @@ const MESSAGE_INSERT_COLUMNS = [
   "log_id",
   "data",
   "usage",
+  "provenance_json",
   "tool_call_id",
   "tool_call_arguments",
   "app",
@@ -296,6 +297,7 @@ export class MessageRepository extends BaseRepository {
     const citations = messageData.citations ? JSON.stringify(messageData.citations) : null;
     const data = messageData.data ? JSON.stringify(messageData.data) : null;
     const usage = messageData.usage ? JSON.stringify(messageData.usage) : null;
+    const provenance = messageData.provenance ? JSON.stringify(messageData.provenance) : null;
     const parts = messageData.parts ? JSON.stringify(messageData.parts) : null;
 
     return [
@@ -316,6 +318,7 @@ export class MessageRepository extends BaseRepository {
       messageData.log_id || null,
       data,
       usage,
+      provenance,
       messageData.tool_call_id || null,
       serialiseToolCallArguments(messageData.tool_call_arguments),
       messageData.app || null,
@@ -622,6 +625,7 @@ export class MessageRepository extends BaseRepository {
       "name",
       "timestamp",
       "usage",
+      "provenance_json",
       "parts",
     ];
 
@@ -632,7 +636,7 @@ export class MessageRepository extends BaseRepository {
       "id = ? AND conversation_id = ?",
       [messageId, conversationId],
       {
-        jsonFields: ["tool_calls", "citations", "data", "usage", "parts"],
+        jsonFields: ["tool_calls", "citations", "data", "usage", "provenance_json", "parts"],
         transformer: (field, value) => {
           if (field === "content" && typeof value === "object") {
             return JSON.stringify(value);

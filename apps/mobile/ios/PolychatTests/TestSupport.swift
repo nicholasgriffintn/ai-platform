@@ -16,12 +16,16 @@ func makeModel(
     contextWindow: Int? = nil,
     inputModalities: [String] = ["text"],
     outputModalities: [String]? = ["text"],
-    supportsFunctions: Bool? = nil,
+    supportsToolCalls: Bool? = nil,
     multimodal: Bool? = nil,
     isFeatured: Bool? = true,
-    isDeprecated: Bool? = false,
+    deprecated: Bool? = false,
     isDefault: Bool? = nil,
     isExecutable: Bool? = nil,
+    runsOn: String? = nil,
+    isPlatformEnabled: Bool? = nil,
+    isFree: Bool? = nil,
+    isByokEnabled: Bool? = nil,
     readiness: ModelReadiness? = nil,
     status: String? = nil
 ) -> ModelConfigItem {
@@ -34,12 +38,16 @@ func makeModel(
         contextWindow: contextWindow,
         pricing: nil,
         modalities: ModelConfigItem.ModelModalities(input: inputModalities, output: outputModalities),
-        supportsFunctions: supportsFunctions,
+        supportsToolCalls: supportsToolCalls,
         multimodal: multimodal,
         isFeatured: isFeatured,
-        isDeprecated: isDeprecated,
+        deprecated: deprecated,
         isDefault: isDefault,
         isExecutable: isExecutable,
+        runsOn: runsOn,
+        isPlatformEnabled: isPlatformEnabled,
+        isFree: isFree,
+        isByokEnabled: isByokEnabled,
         readiness: readiness,
         status: status
     )
@@ -356,7 +364,9 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         provider: String?,
         completionId: String?,
         settings: ChatSettings?,
-        commandId: String
+        commandId: String,
+        modelTier: String?,
+        computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         streamCallCount += 1
         streamedMessages = messages
@@ -444,7 +454,9 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         completionId: String,
         settings: ChatSettings?,
         approvalId: String,
-        commandId: String
+        commandId: String,
+        modelTier: String?,
+        computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         resumedConnectorApprovalId = approvalId
         return streamChatCompletion(
@@ -453,7 +465,9 @@ final class ConversationAPIClientStub: ConversationAPIClient {
             provider: provider,
             completionId: completionId,
             settings: settings,
-            commandId: commandId
+            commandId: commandId,
+            modelTier: modelTier,
+            computeSite: computeSite
         )
     }
 

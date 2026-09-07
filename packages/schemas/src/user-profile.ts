@@ -1,3 +1,5 @@
+import type { ComputeSite } from "./compute-sites.js";
+import type { ModelTier } from "./model-lineup.js";
 import type { PetModelOverrides } from "./pets.js";
 import type { GuardrailsProviderId } from "./user/userSettings.js";
 
@@ -37,6 +39,7 @@ export interface UserSettings {
   traits: string;
   preferences: string;
   tracking_enabled?: boolean;
+  advertise_machines?: boolean;
   guardrails_enabled?: boolean;
   guardrails_provider?: GuardrailsProviderId;
   bedrock_guardrail_id?: string;
@@ -57,9 +60,13 @@ export interface UserSettings {
   speech_model?: string;
   search_provider?: string;
   sandbox_model?: string;
+  default_model_tier?: ModelTier | null;
+  default_model_id?: string | null;
+  default_compute_site?: ComputeSite | null;
   pet_source?: "preset" | "custom";
   pet_id?: string;
   pet_travel_enabled?: boolean;
   pet_animation_enabled?: boolean;
   pet_model_overrides?: PetModelOverrides;
+  onboarding_seen?: string[];
 }

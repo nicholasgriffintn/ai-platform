@@ -3,6 +3,7 @@ import {
   usagePeriodFromDate,
   usagePeriodResetsAt,
   type UsageBalanceResponse,
+  type RecordOffPlatformUsageRequest,
   type UsageEventsQuery,
   type UsageEventsResponse,
   type UsageSummaryQuery,
@@ -11,12 +12,31 @@ import {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { resolveUsageBalanceSnapshot } from "~/lib/usage/balanceSnapshot";
-import type { CreditActor } from "~/lib/usage/creditActor";
+import { userCreditActor, type CreditActor } from "~/lib/usage/creditActor";
 import { usageCreditsFromBalance } from "~/lib/usage/creditSummary";
+import { recordOffPlatformRunUsage } from "~/lib/usage/modelUsage";
 import { toSummaryGroups, totalUsageGroups } from "~/lib/usage/summary";
 import { decodeCompositeCursor, encodeCompositeCursor } from "~/utils/cursor";
 
 const DEFAULT_EVENT_PAGE_SIZE = 25;
+
+export async function recordOffPlatformUsage(
+  context: ServiceContext,
+  userId: number,
+  input: RecordOffPlatformUsageRequest,
+): Promise<{ success: true; message: string }> {
+  await recordOffPlatformRunUsage({
+    env: context.env,
+    repositories: context.repositories,
+    actor: userCreditActor(userId),
+    provenance: input.provenance,
+    completionId: input.completion_id,
+    conversationId: input.completion_id,
+    messageId: input.message_id,
+  });
+
+  return { success: true, message: "Off-platform run recorded" };
+}
 
 export async function getUsageBalance(
   context: ServiceContext,
@@ -117,6 +137,9 @@ export async function listUsageEvents(
       billable: Boolean(row.billable),
       byok: Boolean(row.byok),
       estimated: Boolean(row.estimated),
+      vendor_units: row.vendor_units,
+      reason: row.reason,
+      site: row.site,
       conversation_id: row.conversation_id,
       project_id: row.project_id,
       workspace_id: row.workspace_id,

@@ -23,10 +23,13 @@ import { Channel, invoke } from "@tauri-apps/api/core";
 import z from "zod/v4";
 
 import type { DesktopAnnouncement } from "./inbox-announcements";
+import { notifyMachineEndpointsChanged } from "./machine-heartbeat-events";
 import { describeRunFailure } from "./run-failures";
 
 export const desktopDiagnosticsSchema = z.object({
   appVersion: z.string(),
+  machineId: z.string().min(1),
+  platform: z.enum(["macos", "windows", "linux"]),
   target: z.string(),
   apiBaseUrl: z.string(),
   databasePath: z.string(),
@@ -52,9 +55,11 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
   listEndpoints: async () => desktopEndpointSchema.array().parse(await invoke("list_endpoints")),
   saveEndpoint: async (endpoint, pairingSecret) => {
     await invoke("save_endpoint", { endpoint, pairingSecret: pairingSecret ?? null });
+    notifyMachineEndpointsChanged();
   },
   forgetEndpoint: async (endpointId) => {
     await invoke("forget_endpoint", { endpointId });
+    notifyMachineEndpointsChanged();
   },
   listConversations: async (accountId) =>
     localConversationSchema.array().parse(await invoke("list_conversations", { accountId })),
@@ -85,8 +90,13 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
   },
   isSignedIn: async () => z.boolean().parse(await invoke("is_signed_in")),
   accessToken: async () => desktopSessionTokenSchema.parse(await invoke("access_token")),
-  probeEndpoint: async (endpointId) =>
-    desktopRuntimeReadinessSchema.parse(await invoke("probe_endpoint", { endpointId })),
+  probeEndpoint: async (endpoint, pairingSecret) =>
+    desktopRuntimeReadinessSchema.parse(
+      await invoke("probe_endpoint", {
+        endpoint,
+        pairingSecret: pairingSecret ?? null,
+      }),
+    ),
   discoverModels: async (endpointId) =>
     discoveredModelSchema.array().parse(await invoke("discover_models", { endpointId })),
   listAgentSessions: async (endpointId) =>

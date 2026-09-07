@@ -20,6 +20,7 @@ import {
   useTrackEvent,
   useUIStore,
   useUpdateChatTitle,
+  useConversationStorage,
 } from "@ngriffin_uk/polychat-library-react";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import { Loader2, Search, SquarePen } from "lucide-react";
@@ -61,9 +62,10 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
     setShowSearch,
     isAuthenticated,
     isAuthenticationLoading,
-    isPro,
-    localOnlyMode,
   } = useChatStore();
+  const { determineStorageMode } = useConversationStorage();
+  const storageMode = determineStorageMode(currentConversationId);
+  const storageNoticeReason = storageMode.retention === "temporary" ? storageMode.reason : null;
 
   const {
     data: conversations,
@@ -241,11 +243,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
       >
         {sidebarVisible && !contentOverride && !isAuthenticationLoading && (
           <div>
-            <ConversationStorageNotice
-              isAuthenticated={isAuthenticated}
-              isPro={isPro}
-              localOnlyMode={localOnlyMode}
-            />
+            <ConversationStorageNotice reason={storageNoticeReason} />
           </div>
         )}
 
@@ -307,7 +305,6 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
                 sections={conversationSections}
                 activeConversationId={currentConversationId}
                 isConversationRoute={isConversationRoute}
-                localOnlyMode={localOnlyMode}
                 loadMoreRef={loadMoreRef}
                 loadMoreSlot={
                   isFetchingNextPage ? (
@@ -320,7 +317,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
                 renderItemActions={(conversation) => (
                   <ConversationItemActions
                     conversation={conversation}
-                    canOrganise={!conversation.isLocalOnly && !localOnlyMode}
+                    canOrganise={!conversation.isLocalOnly}
                     canManageGroups
                     onEditTitle={(conversationId, currentTitle) => {
                       void handleEditTitle(conversationId, currentTitle);

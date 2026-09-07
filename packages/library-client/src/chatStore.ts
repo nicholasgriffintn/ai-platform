@@ -1,8 +1,9 @@
-import { migrateChatStore } from "@ngriffin_uk/polychat-library-chat";
+import { migrateChatStore, resolveAccountModelSelection } from "@ngriffin_uk/polychat-library-chat";
 import type { ChatSettings } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import type {
   AssistantActionSelection,
   ChatMode,
+  ComputeSite,
   HomeChatModeId,
   ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
@@ -47,18 +48,25 @@ export interface ChatStore {
   isPro: boolean;
   setIsPro: (isPro: boolean) => void;
 
-  localOnlyMode: boolean;
-  setLocalOnlyMode: (localOnly: boolean) => void;
+  temporaryChat: boolean | undefined;
+  setTemporaryChat: (temporaryChat: boolean | undefined) => void;
   temporaryChatsDefault: boolean;
   setTemporaryChatsDefault: (temporaryChatsDefault: boolean) => void;
   chatMode: ChatMode;
   setChatMode: (mode: ChatMode) => void;
+  computeSite: ComputeSite;
+  setComputeSite: (computeSite: ComputeSite) => void;
   homeChatMode: HomeChatModeId;
   setHomeChatMode: (mode: HomeChatModeId) => void;
   model: string | null;
+  modelSelectionOrigin: "account" | "local" | "conversation";
   setModel: (model: string | null) => void;
   modelTier: ModelTier | null;
   setModelTier: (tier: ModelTier | null) => void;
+  setConversationModelSelection: (selection: {
+    model?: string | null;
+    modelTier?: ModelTier | null;
+  }) => void;
   useMultiModel: boolean;
   setUseMultiModel: (useMultiModel: boolean) => void;
   selectedTeammateId: string | null;
@@ -90,13 +98,21 @@ export const useChatStore = create<ChatStore>()(
       currentConversationId: undefined,
       locallyCreatedConversationIds: {},
       isComposingGoal: false,
-      setCurrentConversationId: (id) => set({ currentConversationId: id, isComposingGoal: false }),
+      setCurrentConversationId: (id) =>
+        set({ currentConversationId: id, temporaryChat: undefined, isComposingGoal: false }),
       setComposingGoal: (composing) => set({ isComposingGoal: composing }),
       startNewConversation: (id?: string) => {
         const conversationId = id || generateId();
 
         set((state) => ({
           currentConversationId: conversationId,
+          temporaryChat: undefined,
+          ...(state.modelSelectionOrigin === "conversation"
+            ? {
+                ...resolveAccountModelSelection(state.userSettings),
+                modelSelectionOrigin: "account" as const,
+              }
+            : {}),
           locallyCreatedConversationIds: {
             ...state.locallyCreatedConversationIds,
             [conversationId]: true,
@@ -120,7 +136,7 @@ export const useChatStore = create<ChatStore>()(
           return { locallyCreatedConversationIds: remainingIds };
         }),
       clearCurrentConversation: () =>
-        set({ currentConversationId: undefined, isComposingGoal: false }),
+        set({ currentConversationId: undefined, temporaryChat: undefined, isComposingGoal: false }),
 
       hasApiKey: false,
       setHasApiKey: (hasApiKey) => set({ hasApiKey }),
@@ -134,18 +150,23 @@ export const useChatStore = create<ChatStore>()(
       isPro: false,
       setIsPro: (isPro) => set({ isPro }),
 
-      localOnlyMode: false,
-      setLocalOnlyMode: (localOnly) => set({ localOnlyMode: localOnly }),
+      temporaryChat: undefined,
+      setTemporaryChat: (temporaryChat) => set({ temporaryChat }),
       temporaryChatsDefault: false,
       setTemporaryChatsDefault: (temporaryChatsDefault) => set({ temporaryChatsDefault }),
-      chatMode: "remote" as ChatMode,
+      chatMode: "chat",
       setChatMode: (mode) => set({ chatMode: mode }),
+      computeSite: "hosted",
+      setComputeSite: (computeSite) => set({ computeSite, modelSelectionOrigin: "local" }),
       homeChatMode: "chat",
       setHomeChatMode: (mode) => set({ homeChatMode: mode }),
       model: null,
-      setModel: (model) => set({ model }),
+      modelSelectionOrigin: "local" as const,
+      setModel: (model) => set({ model, modelSelectionOrigin: "local" }),
       modelTier: null,
-      setModelTier: (modelTier) => set({ modelTier }),
+      setModelTier: (modelTier) => set({ modelTier, modelSelectionOrigin: "local" }),
+      setConversationModelSelection: ({ model = null, modelTier = null }) =>
+        set({ model, modelTier, modelSelectionOrigin: "conversation" }),
       useMultiModel: false,
       setUseMultiModel: (useMultiModel) => set({ useMultiModel }),
       selectedTeammateId: null,
@@ -165,6 +186,13 @@ export const useChatStore = create<ChatStore>()(
       setAuthenticatedUserConfiguration: ({ hasApiKey, user, userSettings }) =>
         set((state) => {
           const temporaryChatsDefault = Boolean(userSettings?.temporary_chats_default);
+          const accountSelection = resolveAccountModelSelection(userSettings);
+          const shouldHydrateSelection =
+            state.modelSelectionOrigin === "account" ||
+            (!state.hasHydratedUserConfiguration && state.model === null);
+          const shouldHydrateComputeSite =
+            state.modelSelectionOrigin === "account" ||
+            (!state.hasHydratedUserConfiguration && state.computeSite === "hosted");
 
           return {
             hasApiKey,
@@ -173,17 +201,33 @@ export const useChatStore = create<ChatStore>()(
             hasHydratedUserConfiguration: true,
             isAuthenticated: true,
             isPro: user?.plan_id === "pro",
-            localOnlyMode:
-              !state.hasHydratedUserConfiguration && !state.currentConversationId
-                ? temporaryChatsDefault
-                : state.localOnlyMode,
             temporaryChatsDefault,
+            ...(shouldHydrateSelection
+              ? {
+                  model: accountSelection.model,
+                  modelTier: accountSelection.modelTier,
+                  modelSelectionOrigin: "account" as const,
+                }
+              : {}),
+            ...(shouldHydrateComputeSite ? { computeSite: accountSelection.computeSite } : {}),
           };
         }),
       setUserSettings: (userSettings) =>
-        set({
-          userSettings,
-          temporaryChatsDefault: Boolean(userSettings?.temporary_chats_default),
+        set((state) => {
+          const accountSelection = resolveAccountModelSelection(userSettings);
+          const shouldHydrateSelection = state.modelSelectionOrigin === "account";
+
+          return {
+            userSettings,
+            temporaryChatsDefault: Boolean(userSettings?.temporary_chats_default),
+            ...(shouldHydrateSelection
+              ? {
+                  model: accountSelection.model,
+                  modelTier: accountSelection.modelTier,
+                  computeSite: accountSelection.computeSite,
+                }
+              : {}),
+          };
         }),
       clearAuthenticatedUserConfiguration: () =>
         set({
@@ -194,6 +238,7 @@ export const useChatStore = create<ChatStore>()(
           isAuthenticated: false,
           isPro: false,
           temporaryChatsDefault: false,
+          modelSelectionOrigin: "local",
         }),
 
       initializeStore: async (completionId?: string) => {
@@ -208,17 +253,18 @@ export const useChatStore = create<ChatStore>()(
     }),
     {
       name: "chat-store",
-      version: 3,
+      version: 4,
       migrate: migrateChatStore,
       partialize: (state) => ({
-        localOnlyMode: state.localOnlyMode,
         chatMode: state.chatMode,
+        computeSite: state.computeSite,
         homeChatMode: state.homeChatMode,
         model: state.model,
         modelTier: state.modelTier,
         useMultiModel: state.useMultiModel,
         chatSettings: state.chatSettings,
         selectedTeammateId: state.selectedTeammateId,
+        modelSelectionOrigin: state.modelSelectionOrigin,
       }),
     },
   ),

@@ -133,14 +133,14 @@ test.describe("Conversation organisation", () => {
   });
 });
 
-test("limits a local-only conversation menu to Rename and Delete", async ({ homePage, page }) => {
+test("limits a temporary conversation menu to Rename and Delete", async ({ homePage, page }) => {
   const organisation = new ConversationOrganisationPage(page);
 
   await homePage.navigate("/chat");
   await homePage.selectModel("GPT OSS 120B");
-  await homePage.sendMessage("Create a local-only conversation for menu validation");
+  await homePage.sendMessage("Create a temporary conversation for menu validation");
   await homePage.waitForChatResponse(0);
-  await homePage.renameConversation(/Release validation chat|Create a local-only/, "Local menu");
+  await homePage.renameConversation(/Release validation chat|Create a temporary/, "Local menu");
   expect(await organisation.visibleActionNames("Local menu")).toEqual([
     expect.stringMatching(/^Rename/),
     expect.stringMatching(/^Delete/),

@@ -253,11 +253,11 @@ struct ModelRow: View {
                             CapabilityBadge(icon: "star.fill", text: "Featured", color: .yellow)
                         }
 
-                        if model.isDeprecated == true {
+                        if model.deprecated == true {
                             CapabilityBadge(icon: "exclamationmark.triangle", text: "Deprecated", color: .orange)
                         }
 
-                        if model.supportsFunctions == true {
+                        if model.supportsToolCalls == true {
                             CapabilityBadge(icon: "function", text: "Functions", color: .green)
                         }
 

@@ -1,6 +1,8 @@
 import {
+  type ComputeSite,
   guardrailsProviderIds,
   type GuardrailsProviderId,
+  type ModelTier,
   type PetModelOverrides,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -17,6 +19,7 @@ export interface UserSettings {
   traits: string;
   preferences: string;
   tracking_enabled?: boolean;
+  advertise_machines?: boolean;
   guardrails_enabled?: boolean;
   guardrails_provider?: GuardrailsProviderId;
   bedrock_guardrail_id?: string;
@@ -37,6 +40,9 @@ export interface UserSettings {
   speech_model?: string;
   search_provider?: string;
   sandbox_model?: string;
+  default_model_tier?: ModelTier | null;
+  default_model_id?: string | null;
+  default_compute_site?: ComputeSite | null;
   pet_source?: "preset" | "custom";
   pet_id?: string;
   pet_travel_enabled?: boolean;
@@ -44,8 +50,25 @@ export interface UserSettings {
   pet_model_overrides?: PetModelOverrides;
 }
 
-export function prepareUserSettingsPayload(settings: Partial<UserSettings>): Partial<UserSettings> {
-  const payload = { ...settings };
+type UserSettingsFormData = Omit<
+  Partial<UserSettings>,
+  "default_model_tier" | "default_model_id" | "default_compute_site"
+> & {
+  default_model_tier: ModelTier | "";
+  default_model_id: string;
+  default_compute_site: ComputeSite | "";
+};
+
+export function prepareUserSettingsPayload(
+  settings: Partial<UserSettingsFormData>,
+): Partial<UserSettings> {
+  const { default_model_id, default_model_tier, default_compute_site, ...rest } = settings;
+  const payload: Partial<UserSettings> = {
+    ...rest,
+    default_model_id: default_model_id || null,
+    default_model_tier: default_model_tier || null,
+    default_compute_site: default_compute_site || null,
+  };
 
   if (payload.embedding_provider !== "s3vectors") {
     delete payload.s3vectors_bucket_name;
@@ -88,11 +111,15 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null) {
     temporary_chats_default: userSettings?.temporary_chats_default || false,
     memory_provider: userSettings?.memory_provider || "built-in",
     tracking_enabled: userSettings?.tracking_enabled ?? true,
+    advertise_machines: userSettings?.advertise_machines ?? true,
     transcription_provider: transcriptionSettings.transcription_provider,
     transcription_model: transcriptionSettings.transcription_model,
     speech_provider: speechSettings.speech_provider,
     speech_model: speechSettings.speech_model,
     search_provider: userSettings?.search_provider || "",
     sandbox_model: userSettings?.sandbox_model || "",
+    default_model_tier: userSettings?.default_model_tier ?? null,
+    default_model_id: userSettings?.default_model_id || "",
+    default_compute_site: userSettings?.default_compute_site ?? null,
   };
 }

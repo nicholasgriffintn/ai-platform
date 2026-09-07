@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { readinessSchema } from "./readiness.js";
+import { decodeReadiness, readinessSchema } from "./readiness.js";
 import { reasoningEffortSchema } from "./reasoning.js";
 
 export const modelModalities = [
@@ -156,6 +156,7 @@ export const modelConfigItemSchema = z.object({
   isExecutable: z.boolean().optional(),
   readiness: readinessSchema.optional(),
   runsOn: z.enum(["server", "device"]).optional(),
+  machineId: z.string().min(1).optional(),
   isPlatformEnabled: z.boolean().optional(),
   isByokEnabled: z.boolean().optional(),
   hiddenFromDefaultList: z.boolean().optional(),
@@ -254,6 +255,24 @@ export const modelResponseSchema = z.object({
   message: z.string(),
   data: modelConfigItemSchema,
 });
+
+const modelConfigItemDecoderSchema = modelConfigItemSchema
+  .omit({ readiness: true })
+  .extend({ readiness: z.unknown().optional() });
+
+export function decodeModelConfig(value: unknown): ModelConfig {
+  const parsed = z.record(z.string(), modelConfigItemDecoderSchema).parse(value);
+  const models: ModelConfig = {};
+
+  for (const [id, model] of Object.entries(parsed)) {
+    const { readiness: rawReadiness, ...modelDetails } = model;
+    const readiness = rawReadiness === undefined ? undefined : decodeReadiness(rawReadiness);
+
+    models[id] = readiness ? { ...modelDetails, readiness } : modelDetails;
+  }
+
+  return models;
+}
 
 const artificialAnalysisScoresSchema = z.object({
   intelligence: z.number().optional(),

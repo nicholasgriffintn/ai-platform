@@ -93,6 +93,7 @@ struct ContentView: View {
                 .task(id: authManager.isAuthenticated) {
                     if authManager.isAuthenticated {
                         await conversationManager.loadConversations()
+                        modelsStore.applyAccountDefaults(authManager.userSettings)
                         await modelsStore.fetchModels()
                         await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
                         await pushNotificationManager.enableForAuthenticatedUser()

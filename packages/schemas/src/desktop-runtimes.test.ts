@@ -35,6 +35,18 @@ describe("desktopEndpointSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects an endpoint with an unsupported protocol", () => {
+    const result = desktopEndpointSchema.safeParse({
+      ...base,
+      kind: "model",
+      vendor: "ollama",
+      url: "ftp://127.0.0.1:11434",
+      transport: "loopback",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("rejects an unprotected network agent runtime", () => {
     const result = desktopEndpointSchema.safeParse({
       ...base,

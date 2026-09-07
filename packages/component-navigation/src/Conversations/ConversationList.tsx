@@ -1,6 +1,6 @@
 import { ListItem } from "@ngriffin_uk/polychat-component-ui";
 import type { ConversationSection, ConversationSummary } from "@ngriffin_uk/polychat-utility-react";
-import { CircleQuestionMark, CloudOff, GitBranch, LoaderCircle, Mail, Pin } from "lucide-react";
+import { CircleQuestionMark, Ghost, GitBranch, LoaderCircle, Mail, Pin } from "lucide-react";
 import type { ReactNode, Ref } from "react";
 
 export type { ConversationSection, ConversationSummary } from "@ngriffin_uk/polychat-utility-react";
@@ -9,7 +9,6 @@ export interface ConversationListProps {
   sections: ConversationSection[];
   activeConversationId?: string;
   isConversationRoute: boolean;
-  localOnlyMode?: boolean;
   loadMoreRef?: Ref<HTMLDivElement>;
   loadMoreSlot?: ReactNode;
   onSelect: (conversationId: string | undefined) => void;
@@ -20,7 +19,6 @@ export function ConversationList({
   sections,
   activeConversationId,
   isConversationRoute,
-  localOnlyMode = false,
   loadMoreRef,
   loadMoreSlot,
   onSelect,
@@ -64,10 +62,9 @@ export function ConversationList({
                       {conversation.isUnread && (
                         <Mail size={14} className="text-attention" aria-label="Unread" />
                       )}
-                      {(conversation.isLocalOnly || localOnlyMode) && (
-                        <span className="inline-flex items-center text-xs text-active-work">
-                          <CloudOff size={14} />
-                          <span className="sr-only">Local only</span>
+                      {conversation.isLocalOnly && (
+                        <span className="inline-flex items-center text-xs text-muted-foreground">
+                          <Ghost size={14} aria-label="Temporary conversation" />
                         </span>
                       )}
                       {conversation.parentConversationId && (

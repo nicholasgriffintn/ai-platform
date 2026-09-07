@@ -4,6 +4,7 @@ import { getDefaultModelId } from "./model-selection.js";
 import {
   artificialAnalysisModelsQuerySchema,
   artificialAnalysisModelsResponseSchema,
+  decodeModelConfig,
   modelConfigItemSchema,
 } from "./models.js";
 
@@ -100,6 +101,34 @@ describe("model schemas", () => {
       supportedServiceTiers: ["default", "fast"],
       serviceTierMultipliers: { fast: 2 },
     });
+  });
+
+  it("keeps models readable when readiness contains an unknown code", () => {
+    const models = decodeModelConfig({
+      future: {
+        matchingModel: "future-model",
+        provider: "ollama",
+        readiness: {
+          protocolVersion: 1,
+          state: "unknown",
+          reasonCode: "future_runtime_state",
+          reason: "A newer runtime reported a state this client does not know.",
+          checkedAt: "2026-09-05T10:00:00.000Z",
+          expiresAt: "2026-09-05T10:01:00.000Z",
+          action: { kind: "future_action", label: "Do something", path: "/future" },
+        },
+      },
+    });
+
+    expect(models.future).toMatchObject({
+      matchingModel: "future-model",
+      readiness: {
+        state: "unknown",
+        reasonCode: "check_failed",
+        reason: "A newer runtime reported a state this client does not know.",
+      },
+    });
+    expect(models.future.readiness?.action).toBeUndefined();
   });
 
   it("uses only the server-published active default", () => {

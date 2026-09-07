@@ -88,7 +88,7 @@ export function useAutoPlayResponses({
       });
 
       if (
-        determineStorageMode().shouldSyncRemote &&
+        determineStorageMode(conversationId).retention === "kept" &&
         updatedMessages &&
         canReplaceStoredConversationMessages(updatedMessages)
       ) {

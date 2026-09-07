@@ -29,6 +29,9 @@ function event(overrides: Partial<UsageEventInsert> = {}): UsageEventInsert {
     billable: true,
     byok: false,
     estimated: false,
+    vendor_units: null,
+    reason: null,
+    site: null,
     raw: null,
     ...overrides,
   };

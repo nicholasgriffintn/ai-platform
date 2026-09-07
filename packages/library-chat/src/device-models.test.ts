@@ -1,7 +1,7 @@
-import type { DiscoveredModel } from "@ngriffin_uk/polychat-schemas";
+import type { DiscoveredModel, MachineRecord } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { buildDeviceModels } from "./device-models.js";
+import { buildDeviceModels, buildMachineModels } from "./device-models.js";
 
 function discovered(overrides: Partial<DiscoveredModel>): DiscoveredModel {
   return {
@@ -54,5 +54,65 @@ describe("buildDeviceModels", () => {
     expect(model.supportsToolCalls).toBe(false);
     expect(model.multimodal).toBe(true);
     expect(model.modalities?.input).toContain("image");
+  });
+});
+
+describe("buildMachineModels", () => {
+  it("only merges online ready machine runtimes and keeps machine ids unique", () => {
+    const machine: MachineRecord = {
+      machineId: "office-desktop",
+      label: "Office desktop",
+      platform: "macos",
+      appVersion: "0.1.0",
+      lastSeenAt: "2026-09-07T09:00:00.000Z",
+      online: true,
+      capabilities: ["model-run"],
+      runtimes: [
+        {
+          kind: "model",
+          vendor: "ollama",
+          readiness: {
+            status: "ready",
+            checkedAt: "2026-09-07T09:00:00.000Z",
+            version: "0.12.0",
+          },
+          models: [
+            {
+              nativeId: "gemma3:4b",
+              displayName: "Gemma 3 4B",
+              contextTokens: 8192,
+              capabilities: { tools: true, vision: false, thinking: false },
+              loaded: false,
+            },
+          ],
+        },
+        {
+          kind: "model",
+          vendor: "lmstudio",
+          readiness: {
+            status: "unreachable",
+            checkedAt: "2026-09-07T09:00:00.000Z",
+            detail: null,
+          },
+          models: [
+            {
+              nativeId: "hidden",
+              displayName: "Hidden",
+              contextTokens: 8192,
+              capabilities: { tools: false, vision: false, thinking: false },
+              loaded: false,
+            },
+          ],
+        },
+      ],
+    };
+
+    const models = buildMachineModels([machine]);
+    const model = models["machine/office-desktop/ollama/gemma3:4b"];
+
+    expect(Object.keys(models)).toEqual(["machine/office-desktop/ollama/gemma3:4b"]);
+    expect(model.machineId).toBe("office-desktop");
+    expect(model.isExecutable).toBe(false);
+    expect(model.description).toContain("Office desktop");
   });
 });

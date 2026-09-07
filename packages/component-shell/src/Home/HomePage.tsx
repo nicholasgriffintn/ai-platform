@@ -68,13 +68,7 @@ export function HomePage({ hostModeConfig }: HomePageProps = {}) {
       headerContent={<PageTitle title="Conversation" className="sr-only" />}
     >
       <ConversationSurfaceLayout
-        header={
-          isCanvasMode ? (
-            <ProductModeHeader showCloudToggle />
-          ) : (
-            <ConversationProductHeader showCloudToggle />
-          )
-        }
+        header={isCanvasMode ? <ProductModeHeader /> : <ConversationProductHeader />}
       >
         {isCanvasMode ? (
           <CanvasGenerationsView canvas={canvas} />

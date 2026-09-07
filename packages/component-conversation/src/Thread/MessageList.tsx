@@ -3,6 +3,7 @@ import type {
   ToolInteractionHandler,
 } from "@ngriffin_uk/polychat-component-content";
 import { collectResolvedToolCallIds } from "@ngriffin_uk/polychat-library-chat/agent-trace";
+import type { ConversationRetention } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import {
   getCompactionMessageLabel,
@@ -34,7 +35,7 @@ import {
   getAvailableModels,
   getModelByReference,
 } from "@ngriffin_uk/polychat-schemas";
-import { Loader2 } from "lucide-react";
+import { Ghost, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { VList, type VListHandle } from "virtua";
 
@@ -66,6 +67,7 @@ interface MessageListProps {
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
   hideInlineUserQuestions?: boolean;
+  retention?: ConversationRetention;
 }
 
 function hasCurrentResponseCompactionMarker(messages: Message[]): boolean {
@@ -91,8 +93,9 @@ export const MessageList = ({
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
   hideInlineUserQuestions = false,
+  retention = "kept",
 }: MessageListProps) => {
-  const chatMode = useChatStore((state) => state.chatMode);
+  const computeSite = useChatStore((state) => state.computeSite);
   const { currentConversationId } = useConversationScope();
   const savedMessages = useSavedMessages(Boolean(currentConversationId));
 
@@ -103,7 +106,7 @@ export const MessageList = ({
     !isSharedView ? currentConversationId : undefined,
   );
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
-  const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
+  const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
   const canAccessProFeatures = useCanAccessProFeatures();
 
   const {
@@ -116,11 +119,12 @@ export const MessageList = ({
   } = useChatManager();
 
   const sourceMessages = propMessages ?? conversation?.messages ?? EMPTY_MESSAGES;
+  const isTemporary = retention === "temporary";
   const messages = useMemo(() => applyToolInteractionResolutions(sourceMessages), [sourceMessages]);
   const resolvedToolCallIds = useMemo(() => collectResolvedToolCallIds(messages), [messages]);
   const availableModels = useMemo(
-    () => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
-    [apiModels, chatMode, webLLMModels],
+    () => getAvailableModels(apiModels, computeSite === "browser", webLLMModels),
+    [apiModels, computeSite, webLLMModels],
   );
   const modelReferences = useMemo(
     () => createModelReferenceMap(availableModels),
@@ -244,8 +248,11 @@ export const MessageList = ({
   return (
     <ResolvedToolCallsProvider resolvedToolCallIds={resolvedToolCallIds}>
       <section
-        className="relative flex flex-1 flex-col"
+        className={`relative flex flex-1 flex-col border-l-2 pl-3 ${
+          isTemporary ? "border-dotted border-muted-foreground/50" : "border-border"
+        }`}
         data-conversation-id={currentConversationId || undefined}
+        data-retention={retention}
         aria-label="Conversation messages"
       >
         <output className="sr-only" aria-live="polite">
@@ -257,6 +264,15 @@ export const MessageList = ({
           className="h-full w-full flex-1 overflow-auto pt-4 pr-2"
           onScroll={handleScroll}
         >
+          {isTemporary && !isSharedView ? (
+            <div
+              data-temporary-notice="start"
+              className="mb-4 flex items-center gap-2 px-1 text-xs text-muted-foreground"
+            >
+              <Ghost size={14} aria-hidden="true" />
+              <span>Temporary. Nothing here is kept.</span>
+            </div>
+          ) : null}
           {!isSharedView && conversation?.has_more_messages ? (
             <div className="flex justify-center pb-4">
               <button
@@ -291,6 +307,7 @@ export const MessageList = ({
                           conversationId={currentConversationId}
                           canSubmitFeedback={Boolean(conversation && !conversation.isLocalOnly)}
                           message={message}
+                          isTemporary={isTemporary}
                           isGenerating={index === generatingAssistantMessageIndex}
                           modelConfig={getModelByReference(modelReferences, message.model)}
                           onToolInteraction={onToolInteraction}
@@ -356,6 +373,15 @@ export const MessageList = ({
             </div>
           )}
         </VList>
+        {isTemporary && !isSharedView ? (
+          <div
+            data-temporary-notice="end"
+            className="sticky bottom-0 flex items-center gap-2 border-t border-border bg-surface px-1 py-2 text-xs text-muted-foreground"
+          >
+            <Ghost size={14} aria-hidden="true" />
+            <span>This closes without a trace.</span>
+          </div>
+        ) : null}
         {showScroll && !isSharedView && (
           <div className="absolute right-2 bottom-2 z-10">
             <ScrollButton

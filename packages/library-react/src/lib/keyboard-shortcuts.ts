@@ -3,10 +3,16 @@ export type AppKeyboardShortcutId =
   | "new-chat"
   | "toggle-sidebar"
   | "toggle-keyboard-shortcuts"
-  | "toggle-local-only-mode"
   | "toggle-meta-assistant"
+  | "open-model-selector"
+  | "cycle-compute-site"
+  | "toggle-retention"
   | "dictate"
   | "live";
+
+export type ModelSelectorShortcut = "open" | "cycle-compute-site" | "toggle-retention";
+
+export const MODEL_SELECTOR_SHORTCUT_EVENT = "polychat:model-selector-shortcut";
 
 interface ShortcutMatch {
   key: string;
@@ -48,20 +54,32 @@ const actionableShortcuts: Record<AppKeyboardShortcutId, AppKeyboardShortcut> = 
   "toggle-keyboard-shortcuts": {
     id: "toggle-keyboard-shortcuts",
     description: "Keyboard shortcuts",
-    keys: ["⌘/Ctrl", "/"],
-    match: { key: "/", modifier: "primary" },
-  },
-  "toggle-local-only-mode": {
-    id: "toggle-local-only-mode",
-    description: "Toggle local-only mode",
-    keys: ["⌘/Ctrl", "L"],
-    match: { key: "l", modifier: "primary" },
+    keys: ["⌘/Ctrl", "⇧", "/"],
+    match: { key: "/", modifier: "primary", shift: true },
   },
   "toggle-meta-assistant": {
     id: "toggle-meta-assistant",
     description: "Ask Poly",
     keys: ["⌘/Ctrl", "J"],
     match: { key: "j", modifier: "primary" },
+  },
+  "open-model-selector": {
+    id: "open-model-selector",
+    description: "Open model selector",
+    keys: ["⌘/Ctrl", "/"],
+    match: { key: "/", modifier: "primary" },
+  },
+  "cycle-compute-site": {
+    id: "cycle-compute-site",
+    description: "Cycle compute site",
+    keys: ["⌘/Ctrl", "⇧", "L"],
+    match: { key: "l", modifier: "primary", shift: true },
+  },
+  "toggle-retention": {
+    id: "toggle-retention",
+    description: "Toggle chat retention",
+    keys: ["⌘/Ctrl", "⇧", "T"],
+    match: { key: "t", modifier: "primary", shift: true },
   },
   dictate: {
     id: "dictate",
@@ -113,12 +131,37 @@ export const APP_KEYBOARD_SHORTCUT_SECTIONS: AppKeyboardShortcutSection[] = [
       actionableShortcuts["new-chat"],
       actionableShortcuts["toggle-sidebar"],
       actionableShortcuts["toggle-meta-assistant"],
-      actionableShortcuts["toggle-local-only-mode"],
+      actionableShortcuts["open-model-selector"],
+      actionableShortcuts["cycle-compute-site"],
+      actionableShortcuts["toggle-retention"],
       actionableShortcuts["toggle-keyboard-shortcuts"],
       { id: "close", description: "Close panels or stop generation", keys: ["Esc"] },
     ],
   },
 ];
+
+export function getModelSelectorShortcut(event: Event): ModelSelectorShortcut | undefined {
+  if (!(event instanceof CustomEvent)) {
+    return undefined;
+  }
+
+  switch (event.detail) {
+    case "open":
+    case "cycle-compute-site":
+    case "toggle-retention":
+      return event.detail;
+    default:
+      return undefined;
+  }
+}
+
+export function dispatchModelSelectorShortcut(shortcut: ModelSelectorShortcut): void {
+  window.dispatchEvent(
+    new CustomEvent<ModelSelectorShortcut>(MODEL_SELECTOR_SHORTCUT_EVENT, {
+      detail: shortcut,
+    }),
+  );
+}
 
 export function matchesAppKeyboardShortcut(
   event: Pick<KeyboardEvent, "altKey" | "ctrlKey" | "key" | "metaKey" | "shiftKey">,

@@ -28,6 +28,21 @@ function renderAssignments(overrides: PetModelOverrides, onChange = vi.fn()) {
 }
 
 describe("model companion rules", () => {
+  it("lets temporary chats use a chosen pet instead of Wisp", () => {
+    const onChange = renderAssignments(EMPTY_PET_MODEL_OVERRIDES);
+
+    fireEvent.change(screen.getByLabelText("Pet for temporary chats"), {
+      target: { value: "preset:pip" },
+    });
+
+    expect(onChange).toHaveBeenCalledWith({
+      states: { temporary: { pet_source: "preset", pet_id: "pip" } },
+      families: {},
+      providers: {},
+      makers: {},
+    });
+  });
+
   it("assigns a pet to a maker so every model it makes is covered", () => {
     const onChange = renderAssignments(EMPTY_PET_MODEL_OVERRIDES);
 
@@ -43,6 +58,7 @@ describe("model companion rules", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add rule" }));
 
     expect(onChange).toHaveBeenCalledWith({
+      states: {},
       families: {},
       providers: {},
       makers: { anthropic: { pet_source: "preset", pet_id: "moss" } },

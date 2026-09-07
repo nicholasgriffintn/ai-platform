@@ -29,6 +29,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0015: Hire teammates from roles and call them teammates everywhere](decisions/0015-teammates-hired-from-roles.md)
 - [0016: Keep meta tools in the meta scope](decisions/0016-meta-tools-belong-to-the-meta-scope.md)
 - [0017: Bind connector execution to exact local authority](decisions/0017-bind-connector-execution-to-local-authority.md)
+- [0035: Resolve model tiers once, on the server](decisions/0035-resolve-model-tiers-on-the-server.md)
 
 ## Work
 
@@ -51,9 +52,12 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0028: Give the desktop shell a core that owns egress and one shared navigation shell](decisions/0028-desktop-core-owns-egress.md)
 - [0029: Separate model runtimes from agent runtimes](decisions/0029-separate-model-and-agent-runtimes.md)
 - [0030: Release applications from changesets and hand out builds through the API](decisions/0030-release-applications-from-changesets.md)
+- [0033: Separate compute site from conversation retention](decisions/0033-separate-compute-site-from-retention.md)
+- [0034: Advertise machines through a control plane that never carries content](decisions/0034-advertise-machines-through-a-control-plane-that-never-carries-content.md)
+- [0036: Reach a device runtime only after someone connects it](decisions/0036-reach-a-device-runtime-only-after-someone-connects-it.md)
 
 ## Maintaining these records
 
-Records 0001–0030 were renumbered contiguously when 44 earlier records were consolidated into these 30; earlier numbers do not map onto them and are not referenced anywhere. The next new decision is 0033. Do not reuse a retired number.
+Records 0001–0030 were renumbered contiguously when 44 earlier records were consolidated into these 30; earlier numbers do not map onto them and are not referenced anywhere. New numbers may be reserved by active work. Do not reuse a retired number.
 
 Add a record only for a durable trade-off that code alone cannot explain. State the problem, the decision, its status and its consequences, then update this index. Merge a record into an existing one rather than adding a second account of the same boundary. Keep rollout plans, copied schemas and unimplemented proposals out of these files.

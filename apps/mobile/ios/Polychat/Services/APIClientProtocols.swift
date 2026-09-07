@@ -32,7 +32,9 @@ protocol ConversationAPIClient {
         provider: String?,
         completionId: String?,
         settings: ChatSettings?,
-        commandId: String
+        commandId: String,
+        modelTier: String?,
+        computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
     func fetchChatRunSnapshot(id: String) async throws -> ChatRunSnapshotResponse
     func fetchChatRunEvents(id: String, after: Int, limit: Int) async throws -> ChatRunReplayResponse
@@ -46,7 +48,9 @@ protocol ConversationAPIClient {
         completionId: String,
         settings: ChatSettings?,
         approvalId: String,
-        commandId: String
+        commandId: String,
+        modelTier: String?,
+        computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
     func fetchProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskDetailResponse
     func answerProjectTaskQuestions(

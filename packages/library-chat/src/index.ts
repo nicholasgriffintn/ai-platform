@@ -6,6 +6,8 @@ export * from "./local-chat-scope.js";
 export * from "./local-chat-export.js";
 export * from "./local-conversation-store.js";
 export * from "./chat-settings.js";
+export * from "./account-model-defaults.js";
+export * from "./compute-site-selection.js";
 export type { AttachmentData } from "./attachments.js";
 export {
   COMPACT_CONVERSATION_COMMAND,
@@ -20,7 +22,12 @@ export {
   type GoalSubmission,
 } from "./goal-command.js";
 export { getGoalMessageMarker, type GoalMessageMarker } from "./message-goal-status.js";
-export { resolveConversationStorageMode } from "./conversation-storage-policy.js";
+export {
+  resolveConversationStorageMode,
+  type ConversationRetention,
+  type ConversationStorageMode,
+  type RetentionReason,
+} from "./conversation-storage-policy.js";
 export {
   createFakeDesktopBackend,
   type DesktopBackend,

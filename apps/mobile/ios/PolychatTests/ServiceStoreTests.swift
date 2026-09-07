@@ -12,7 +12,11 @@ struct ServiceStoreTests {
                 id: "",
                 name: "Mistral Small",
                 provider: "mistral",
-                isDefault: true
+                isDefault: true,
+                runsOn: "server",
+                isPlatformEnabled: true,
+                isFree: true,
+                isByokEnabled: false
             )
         ]))
         let store = ModelsStore(apiClient: client, userDefaults: defaults)
@@ -21,6 +25,10 @@ struct ServiceStoreTests {
 
         #expect(store.error == nil)
         #expect(store.models.map(\.id).sorted() == ["gpt-4o", "mistral-small"])
+        #expect(store.models.first(where: { $0.id == "mistral-small" })?.runsOn == "server")
+        #expect(store.models.first(where: { $0.id == "mistral-small" })?.isPlatformEnabled == true)
+        #expect(store.models.first(where: { $0.id == "mistral-small" })?.isFree == true)
+        #expect(store.models.first(where: { $0.id == "mistral-small" })?.isByokEnabled == false)
         #expect(store.selectedModelId == "mistral-small")
         #expect(defaults.string(forKey: "selectedModelId") == "mistral-small")
 
@@ -33,7 +41,7 @@ struct ServiceStoreTests {
         let defaults = try makeIsolatedUserDefaults()
         defaults.set("retired-model", forKey: "selectedModelId")
         let client = ModelsAPIClientStub(result: .success([
-            "retired-model": makeModel(id: "", isDeprecated: true),
+            "retired-model": makeModel(id: "", deprecated: true),
             "active-model": makeModel(id: "", isDefault: true)
         ]))
         let store = ModelsStore(apiClient: client, userDefaults: defaults)
@@ -179,7 +187,7 @@ struct ServiceStoreTests {
             userDefaults: defaults
         )
         modelsStore.models = [
-            makeModel(id: "compound", provider: "groq", isDeprecated: true, isExecutable: false),
+            makeModel(id: "compound", provider: "groq", deprecated: true, isExecutable: false),
             makeModel(id: "active-model", provider: "workers-ai", isDefault: true, isExecutable: true)
         ]
         modelsStore.selectModel("active-model")

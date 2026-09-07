@@ -9,6 +9,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
     @Published private(set) var isLoading = true
     @Published private(set) var isAuthenticating = false
     @Published private(set) var user: AuthUser?
+    @Published private(set) var userSettings: AuthUserSettings?
     @Published var error: String?
     @Published var statusMessage: String?
 
@@ -318,10 +319,12 @@ final class AuthenticationManager: NSObject, ObservableObject {
         do {
             let status = try await apiClient?.fetchAuthStatus()
             user = status?.user
+            userSettings = status?.userSettings
             isAuthenticated = status?.user != nil
             return isAuthenticated
         } catch {
             user = nil
+            userSettings = nil
             isAuthenticated = false
             return false
         }
@@ -331,6 +334,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
         tokenStore.clear()
         apiClient?.setAuthToken(nil)
         user = nil
+        userSettings = nil
         isAuthenticated = false
         isLoading = false
         clearCookies()

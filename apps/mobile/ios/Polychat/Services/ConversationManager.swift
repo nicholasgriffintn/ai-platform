@@ -66,6 +66,7 @@ class ConversationManager: ObservableObject {
                     messages: [],
                     createdAt: AppDateParser.parse(summary.createdAt, fallback: Date()),
                     modelId: summary.model,
+                    modelTier: summary.modelTier,
                     isLoadedFromAPI: true,
                     lastMessageAt: AppDateParser.parse(summary.lastMessageAt ?? summary.updatedAt),
                     messageCount: summary.messageCount ?? summary.messages.count
@@ -433,12 +434,14 @@ class ConversationManager: ObservableObject {
 
     func startNewConversation() -> Conversation {
         let modelId = selectedModelId ?? modelsStore?.selectedModelId
+        let modelTier = modelId == nil ? modelsStore?.selectedModelTier : nil
         let newConversation = Conversation(
             id: UUID().uuidString,
             title: "New Conversation",
             messages: [],
             createdAt: Date(),
             modelId: modelId,
+            modelTier: modelTier,
             isLoadedFromAPI: false,
             lastMessageAt: nil,
             messageCount: 0
@@ -500,6 +503,7 @@ class ConversationManager: ObservableObject {
             messages: branchMessages,
             createdAt: Date(),
             modelId: parentConversation.modelId,
+            modelTier: parentConversation.modelTier,
             isLoadedFromAPI: false,
             lastMessageAt: Date(),
             messageCount: branchMessages.count
@@ -678,7 +682,12 @@ class ConversationManager: ObservableObject {
 
         do {
             let currentSelectedModelId = await MainActor.run { modelsStore?.selectedModelId }
-            let requestedModelId = conversation.modelId ?? selectedModelId ?? currentSelectedModelId
+            let requestedModelId = conversation.modelTier == nil
+                ? conversation.modelId ?? selectedModelId ?? currentSelectedModelId
+                : nil
+            let requestedModelTier = conversation.modelId == nil
+                ? conversation.modelTier ?? (requestedModelId == nil ? modelsStore?.selectedModelTier : nil)
+                : nil
             let selectedModel = requestedModelId.flatMap { modelsStore?.model(withId: $0) }
 
             if let requestedModelId {
@@ -708,7 +717,9 @@ class ConversationManager: ObservableObject {
                     completionId: conversationId,
                     settings: settings,
                     approvalId: $0,
-                    commandId: commandId
+                    commandId: commandId,
+                    modelTier: requestedModelTier,
+                    computeSite: "hosted"
                 )
             } ?? apiClient.streamChatCompletion(
                 messages: requestMessages,
@@ -716,7 +727,9 @@ class ConversationManager: ObservableObject {
                 provider: providerToUse,
                 completionId: conversationId,
                 settings: settings,
-                commandId: commandId
+                commandId: commandId,
+                modelTier: requestedModelTier,
+                computeSite: "hosted"
             )
 
             var streamedReasoning = ""
@@ -1059,6 +1072,7 @@ class ConversationManager: ObservableObject {
         updatedConversation.messages = detail.messages
         updatedConversation.title = detail.title ?? conversation.title
         updatedConversation.modelId = detail.model
+        updatedConversation.modelTier = detail.modelTier
         updatedConversation.lastMessageAt = AppDateParser.parse(detail.lastMessageAt ?? detail.updatedAt)
         updatedConversation.messageCount = detail.messageCount ?? detail.messages.count
         updatedConversation.latestRun = detail.latestRun
@@ -1223,6 +1237,7 @@ class ConversationManager: ObservableObject {
         selectedModelId = modelId
         modelsStore?.selectModel(modelId)
         currentConversation?.modelId = modelId
+        currentConversation?.modelTier = nil
         if let conversation = currentConversation {
             updateConversationInArray(conversation)
         }

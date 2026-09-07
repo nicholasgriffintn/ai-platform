@@ -47,7 +47,7 @@ export const ToolToggles = ({ isDisabled = false, showHeading = true }: ToolTogg
     );
   };
 
-  const showMultiModelToggle = isPro && !model && chatMode === "remote";
+  const showMultiModelToggle = isPro && !model && chatMode === "chat";
 
   if (!showMultiModelToggle && modelToolOptions.length === 0) {
     return null;

@@ -1,4 +1,10 @@
-import type { PetModelOverrides, PetSelection, PetSource } from "@ngriffin_uk/polychat-schemas";
+import {
+  PET_TEMPORARY_CONVERSATION_STATE,
+  type PetConversationState,
+  type PetModelOverrides,
+  type PetSelection,
+  type PetSource,
+} from "@ngriffin_uk/polychat-schemas";
 import type { PetModelTargetKind, PetModelTargetOption } from "@ngriffin_uk/polychat-utility-react";
 
 export type { PetModelTargetKind, PetModelTargetOption } from "@ngriffin_uk/polychat-utility-react";
@@ -19,6 +25,18 @@ export const PET_MODEL_TARGET_GROUPS: Array<{
   { kind: "maker", title: "Makers", hint: "Every model they make, whoever serves it" },
   { kind: "provider", title: "Providers", hint: "Everything served by one provider" },
   { kind: "family", title: "Model families", hint: "One family, nothing else" },
+];
+
+export const PET_CONVERSATION_STATE_OPTIONS: ReadonlyArray<{
+  value: PetConversationState;
+  label: string;
+  hint: string;
+}> = [
+  {
+    value: PET_TEMPORARY_CONVERSATION_STATE,
+    label: "Temporary chats",
+    hint: "Chats that are not kept on Polychat",
+  },
 ];
 
 export function petModelTargetKey(target: Pick<PetModelTargetOption, "kind" | "value">): string {
@@ -54,6 +72,29 @@ export function withPetModelOverride(
   }
 
   return { ...overrides, [group]: nextGroup };
+}
+
+export function withPetConversationStateOverride(
+  overrides: PetModelOverrides,
+  state: PetConversationState,
+  selection: PetSelection | undefined,
+): PetModelOverrides {
+  const states = { ...overrides.states };
+
+  if (selection) {
+    states[state] = selection;
+  } else {
+    delete states[state];
+  }
+
+  return { ...overrides, states };
+}
+
+export function petConversationStateSelectionFor(
+  overrides: PetModelOverrides,
+  state: PetConversationState,
+): PetSelection | undefined {
+  return overrides.states[state];
 }
 
 export function petModelSelectionFor(

@@ -136,7 +136,9 @@ final class APIClient: ObservableObject {
         provider: String? = nil,
         completionId: String? = nil,
         settings: ChatSettings? = nil,
-        commandId: String = UUID().uuidString
+        commandId: String = UUID().uuidString,
+        modelTier: String? = nil,
+        computeSite: String = "hosted"
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         let requestBody = ChatCompletionRequest(
             messages: messages,
@@ -146,6 +148,8 @@ final class APIClient: ObservableObject {
             completionId: completionId,
             settings: settings,
             stream: true,
+            modelTier: modelTier,
+            computeSite: computeSite,
             commandId: commandId
         )
         guard !requestBody.messages.isEmpty else {
@@ -164,7 +168,9 @@ final class APIClient: ObservableObject {
         completionId: String,
         settings: ChatSettings?,
         approvalId: String,
-        commandId: String
+        commandId: String,
+        modelTier: String?,
+        computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         let requestBody = ChatCompletionRequest(
             messages: messages,
@@ -174,6 +180,8 @@ final class APIClient: ObservableObject {
             completionId: completionId,
             settings: settings,
             stream: true,
+            modelTier: modelTier,
+            computeSite: computeSite,
             commandId: commandId,
             connectorApprovalId: approvalId
         )

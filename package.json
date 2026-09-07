@@ -28,6 +28,7 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint:monorepo": "sherif",
+    "refresh:mobile-model-fixture": "node scripts/refresh-mobile-model-fixture.mjs",
     "release:check": "pnpm check && pnpm typecheck && pnpm test && pnpm test:e2e:release && pnpm build:packages && pnpm audit --audit-level high",
     "release:plan": "node scripts/app-releases.mjs",
     "release:publish": "pnpm release:check && changeset publish",

@@ -30,6 +30,7 @@ public struct ChatCompletionRequest: Encodable {
     let enabledTools: [String]?
     let toolSelectionMode: String
     let modelTier: String?
+    let computeSite: String?
     let commandId: String
     let runId: String?
     let connectorApprovalId: String?
@@ -46,6 +47,7 @@ public struct ChatCompletionRequest: Encodable {
         case enabledTools = "enabled_tools"
         case toolSelectionMode = "tool_selection_mode"
         case modelTier = "model_tier"
+        case computeSite = "compute_site"
         case commandId = "command_id"
         case runId = "run_id"
         case connectorApprovalId = "connector_approval_id"
@@ -60,6 +62,7 @@ public struct ChatCompletionRequest: Encodable {
         settings: ChatSettings? = nil,
         stream: Bool = false,
         modelTier: String? = nil,
+        computeSite: String? = nil,
         commandId: String = UUID().uuidString,
         runId: String? = nil,
         connectorApprovalId: String? = nil
@@ -85,6 +88,7 @@ public struct ChatCompletionRequest: Encodable {
         self.enabledTools = settings?.enabledTools.isEmpty == false ? settings?.enabledTools : nil
         self.toolSelectionMode = "managed"
         self.modelTier = model == nil ? modelTier : nil
+        self.computeSite = computeSite
         self.commandId = commandId
         self.runId = runId
         self.connectorApprovalId = connectorApprovalId
@@ -448,18 +452,24 @@ public struct ModelConfigItem: Codable, Identifiable {
     public let contextWindow: Int?
     public let pricing: ModelPricing?
     public let modalities: ModelModalities?
-    public let supportsFunctions: Bool?
+    public let supportsToolCalls: Bool?
     public let multimodal: Bool?
     public let isFeatured: Bool?
-    public let isDeprecated: Bool?
+    public let deprecated: Bool?
     public let isDefault: Bool?
     public let isExecutable: Bool?
+    public let runsOn: String?
+    public let isPlatformEnabled: Bool?
+    public let isFree: Bool?
+    public let isByokEnabled: Bool?
     public let readiness: ModelReadiness?
     public let status: String?
     public let supportsAttachments: Bool?
     public let supportsDocuments: Bool?
     public let supportsAudio: Bool?
     public let supportsImageEdits: Bool?
+    public let supportsResponseFormat: Bool?
+    public let supportsRealtimeSession: Bool?
     public let reasoningConfig: ReasoningConfig?
     public let supportedServiceTiers: [String]?
     public let serviceTierMultipliers: [String: Double]?
@@ -482,13 +492,56 @@ public struct ModelConfigItem: Codable, Identifiable {
         public let output: [String]?
     }
     
-    enum CodingKeys: String, CodingKey {
-        case name, provider, description, strengths, contextWindow, pricing, modalities, supportsFunctions, multimodal
-        case isFeatured, featured, isDefault, isExecutable, readiness, status
-        case isDeprecated, deprecated
+    enum CodingKeys: String, CodingKey, CaseIterable {
+        case id, name, provider, description, strengths, contextWindow, pricing, modalities, supportsToolCalls
+        case multimodal, isFeatured, isDefault, isExecutable, runsOn, isPlatformEnabled, isFree, isByokEnabled
+        case readiness, status, deprecated
         case reasoningConfig, supportedServiceTiers, serviceTierMultipliers
-        case supportsAttachments, supportsDocuments, supportsAudio, supportsImageEdits
+        case supportsAttachments, supportsDocuments, supportsAudio, supportsImageEdits, supportsResponseFormat
+        case supportsRealtimeSession
     }
+
+    private enum LegacyCodingKeys: String, CodingKey {
+        case featured
+        case supportsFunctions
+        case isDeprecated
+    }
+
+    static let ignoredKeys: Set<String> = [
+        "apiOperation",
+        "artificialAnalysis",
+        "card",
+        "contextComplexity",
+        "costPer1kInputTokens",
+        "costPer1kOutputTokens",
+        "costPer1kReasoningTokens",
+        "deprecationMessage",
+        "family",
+        "hiddenFromDefaultList",
+        "hostedToolCosts",
+        "inputFormat",
+        "knowledgeCutoffDate",
+        "lastUpdated",
+        "matchingModel",
+        "maxTokens",
+        "openWeights",
+        "releaseDate",
+        "reliability",
+        "replacementModel",
+        "speed",
+        "supportsCodeExecution",
+        "supportsFim",
+        "supportsFrequencyPenalty",
+        "supportsParallelToolCalls",
+        "supportsPresencePenalty",
+        "supportsSearchGrounding",
+        "supportsStreaming",
+        "supportsTemperature",
+        "supportsToolChoice",
+        "supportsTopP",
+        "supportsUrlContext",
+        "supportsWebFetch"
+    ]
     
     public init(
         id: String,
@@ -499,18 +552,24 @@ public struct ModelConfigItem: Codable, Identifiable {
         contextWindow: Int?,
         pricing: ModelPricing?,
         modalities: ModelModalities?,
-        supportsFunctions: Bool?,
+        supportsToolCalls: Bool?,
         multimodal: Bool?,
         isFeatured: Bool? = nil,
-        isDeprecated: Bool? = nil,
+        deprecated: Bool? = nil,
         isDefault: Bool? = nil,
         isExecutable: Bool? = nil,
+        runsOn: String? = nil,
+        isPlatformEnabled: Bool? = nil,
+        isFree: Bool? = nil,
+        isByokEnabled: Bool? = nil,
         readiness: ModelReadiness? = nil,
         status: String? = nil,
         supportsAttachments: Bool? = nil,
         supportsDocuments: Bool? = nil,
         supportsAudio: Bool? = nil,
         supportsImageEdits: Bool? = nil,
+        supportsResponseFormat: Bool? = nil,
+        supportsRealtimeSession: Bool? = nil,
         reasoningConfig: ReasoningConfig? = nil,
         supportedServiceTiers: [String]? = nil,
         serviceTierMultipliers: [String: Double]? = nil
@@ -523,18 +582,24 @@ public struct ModelConfigItem: Codable, Identifiable {
         self.contextWindow = contextWindow
         self.pricing = pricing
         self.modalities = modalities
-        self.supportsFunctions = supportsFunctions
+        self.supportsToolCalls = supportsToolCalls
         self.multimodal = multimodal
         self.isFeatured = isFeatured
-        self.isDeprecated = isDeprecated
+        self.deprecated = deprecated
         self.isDefault = isDefault
         self.isExecutable = isExecutable
+        self.runsOn = runsOn
+        self.isPlatformEnabled = isPlatformEnabled
+        self.isFree = isFree
+        self.isByokEnabled = isByokEnabled
         self.readiness = readiness
         self.status = status
         self.supportsAttachments = supportsAttachments
         self.supportsDocuments = supportsDocuments
         self.supportsAudio = supportsAudio
         self.supportsImageEdits = supportsImageEdits
+        self.supportsResponseFormat = supportsResponseFormat
+        self.supportsRealtimeSession = supportsRealtimeSession
         self.reasoningConfig = reasoningConfig
         self.supportedServiceTiers = supportedServiceTiers
         self.serviceTierMultipliers = serviceTierMultipliers
@@ -542,7 +607,9 @@ public struct ModelConfigItem: Codable, Identifiable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        let legacyContainer = try decoder.container(keyedBy: LegacyCodingKeys.self)
 
+        id = try container.decodeIfPresent(String.self, forKey: .id) ?? ""
         name = try container.decodeIfPresent(String.self, forKey: .name)
         provider = try container.decode(String.self, forKey: .provider)
         description = try container.decodeIfPresent(String.self, forKey: .description)
@@ -550,20 +617,27 @@ public struct ModelConfigItem: Codable, Identifiable {
         contextWindow = try container.decodeIfPresent(Int.self, forKey: .contextWindow)
         pricing = try container.decodeIfPresent(ModelPricing.self, forKey: .pricing)
         modalities = try container.decodeIfPresent(ModelModalities.self, forKey: .modalities)
-        supportsFunctions = try container.decodeIfPresent(Bool.self, forKey: .supportsFunctions)
+        supportsToolCalls = try container.decodeIfPresent(Bool.self, forKey: .supportsToolCalls)
+            ?? legacyContainer.decodeIfPresent(Bool.self, forKey: .supportsFunctions)
         multimodal = try container.decodeIfPresent(Bool.self, forKey: .multimodal)
         isFeatured = try container.decodeIfPresent(Bool.self, forKey: .isFeatured)
-            ?? container.decodeIfPresent(Bool.self, forKey: .featured)
-        isDeprecated = try container.decodeIfPresent(Bool.self, forKey: .isDeprecated)
-            ?? container.decodeIfPresent(Bool.self, forKey: .deprecated)
+            ?? legacyContainer.decodeIfPresent(Bool.self, forKey: .featured)
+        deprecated = try container.decodeIfPresent(Bool.self, forKey: .deprecated)
+            ?? legacyContainer.decodeIfPresent(Bool.self, forKey: .isDeprecated)
         isDefault = try container.decodeIfPresent(Bool.self, forKey: .isDefault)
         isExecutable = try container.decodeIfPresent(Bool.self, forKey: .isExecutable)
+        runsOn = try container.decodeIfPresent(String.self, forKey: .runsOn)
+        isPlatformEnabled = try container.decodeIfPresent(Bool.self, forKey: .isPlatformEnabled)
+        isFree = try container.decodeIfPresent(Bool.self, forKey: .isFree)
+        isByokEnabled = try container.decodeIfPresent(Bool.self, forKey: .isByokEnabled)
         readiness = try container.decodeIfPresent(ModelReadiness.self, forKey: .readiness)
         status = try container.decodeIfPresent(String.self, forKey: .status)
         supportsAttachments = try container.decodeIfPresent(Bool.self, forKey: .supportsAttachments)
         supportsDocuments = try container.decodeIfPresent(Bool.self, forKey: .supportsDocuments)
         supportsAudio = try container.decodeIfPresent(Bool.self, forKey: .supportsAudio)
         supportsImageEdits = try container.decodeIfPresent(Bool.self, forKey: .supportsImageEdits)
+        supportsResponseFormat = try container.decodeIfPresent(Bool.self, forKey: .supportsResponseFormat)
+        supportsRealtimeSession = try container.decodeIfPresent(Bool.self, forKey: .supportsRealtimeSession)
         reasoningConfig = try container.decodeIfPresent(ReasoningConfig.self, forKey: .reasoningConfig)
         supportedServiceTiers = try container.decodeIfPresent([String].self, forKey: .supportedServiceTiers)
         serviceTierMultipliers = try container.decodeIfPresent([String: Double].self, forKey: .serviceTierMultipliers)
@@ -572,6 +646,9 @@ public struct ModelConfigItem: Codable, Identifiable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
+        if !id.isEmpty {
+            try container.encode(id, forKey: .id)
+        }
         try container.encodeIfPresent(name, forKey: .name)
         try container.encode(provider, forKey: .provider)
         try container.encodeIfPresent(description, forKey: .description)
@@ -579,18 +656,24 @@ public struct ModelConfigItem: Codable, Identifiable {
         try container.encodeIfPresent(contextWindow, forKey: .contextWindow)
         try container.encodeIfPresent(pricing, forKey: .pricing)
         try container.encodeIfPresent(modalities, forKey: .modalities)
-        try container.encodeIfPresent(supportsFunctions, forKey: .supportsFunctions)
+        try container.encodeIfPresent(supportsToolCalls, forKey: .supportsToolCalls)
         try container.encodeIfPresent(multimodal, forKey: .multimodal)
         try container.encodeIfPresent(isFeatured, forKey: .isFeatured)
-        try container.encodeIfPresent(isDeprecated, forKey: .isDeprecated)
+        try container.encodeIfPresent(deprecated, forKey: .deprecated)
         try container.encodeIfPresent(isDefault, forKey: .isDefault)
         try container.encodeIfPresent(isExecutable, forKey: .isExecutable)
+        try container.encodeIfPresent(runsOn, forKey: .runsOn)
+        try container.encodeIfPresent(isPlatformEnabled, forKey: .isPlatformEnabled)
+        try container.encodeIfPresent(isFree, forKey: .isFree)
+        try container.encodeIfPresent(isByokEnabled, forKey: .isByokEnabled)
         try container.encodeIfPresent(readiness, forKey: .readiness)
         try container.encodeIfPresent(status, forKey: .status)
         try container.encodeIfPresent(supportsAttachments, forKey: .supportsAttachments)
         try container.encodeIfPresent(supportsDocuments, forKey: .supportsDocuments)
         try container.encodeIfPresent(supportsAudio, forKey: .supportsAudio)
         try container.encodeIfPresent(supportsImageEdits, forKey: .supportsImageEdits)
+        try container.encodeIfPresent(supportsResponseFormat, forKey: .supportsResponseFormat)
+        try container.encodeIfPresent(supportsRealtimeSession, forKey: .supportsRealtimeSession)
         try container.encodeIfPresent(reasoningConfig, forKey: .reasoningConfig)
         try container.encodeIfPresent(supportedServiceTiers, forKey: .supportedServiceTiers)
         try container.encodeIfPresent(serviceTierMultipliers, forKey: .serviceTierMultipliers)
@@ -605,6 +688,41 @@ public struct ModelReadiness: Codable, Equatable {
     public let checkedAt: String
     public let expiresAt: String
     public let action: ModelReadinessAction?
+
+    private static let knownReasonCodes: Set<String> = [
+        "ready",
+        "account_required",
+        "plan_required",
+        "credential_required",
+        "permission_denied",
+        "provider_unavailable",
+        "model_unavailable",
+        "attachment_incompatible",
+        "active_run",
+        "pending_interaction",
+        "check_failed",
+        "no_match",
+        "runtime_not_configured",
+        "runtime_unreachable",
+        "runtime_model_missing",
+        "runtime_model_loading",
+        "machine_offline",
+        "desktop_required"
+    ]
+
+    private static let knownActionKinds: Set<String> = [
+        "retry",
+        "sign_in",
+        "upgrade",
+        "configure_provider",
+        "choose_model",
+        "remove_attachment",
+        "resolve_interaction",
+        "start_new_conversation",
+        "open_runtimes",
+        "install_desktop",
+        "open_on_machine"
+    ]
 
     public init(
         protocolVersion: Int,
@@ -622,6 +740,36 @@ public struct ModelReadiness: Codable, Equatable {
         self.checkedAt = checkedAt
         self.expiresAt = expiresAt
         self.action = action
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        protocolVersion = try container.decode(Int.self, forKey: .protocolVersion)
+        state = try container.decode(String.self, forKey: .state)
+        let rawReasonCode = try container.decode(String.self, forKey: .reasonCode)
+        reasonCode = Self.knownReasonCodes.contains(rawReasonCode) ? rawReasonCode : "check_failed"
+        reason = try container.decode(String.self, forKey: .reason)
+        checkedAt = try container.decode(String.self, forKey: .checkedAt)
+        expiresAt = try container.decode(String.self, forKey: .expiresAt)
+
+        if let decodedAction = try? container.decode(ModelReadinessAction.self, forKey: .action),
+           Self.knownActionKinds.contains(decodedAction.kind),
+           Self.knownReasonCodes.contains(rawReasonCode) {
+            action = decodedAction
+        } else {
+            action = nil
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case protocolVersion
+        case state
+        case reasonCode
+        case reason
+        case checkedAt
+        case expiresAt
+        case action
     }
 
     var isReady: Bool {
@@ -865,6 +1013,7 @@ public struct ConversationListResponse: Codable {
         public let createdAt: String
         public let updatedAt: String
         public let model: String?
+        public let modelTier: String?
         public let isArchived: Bool
         public let userId: Int?
         public let shareId: String?
@@ -874,6 +1023,7 @@ public struct ConversationListResponse: Codable {
 
         enum CodingKeys: String, CodingKey {
             case id, title, model, messages
+            case modelTier = "model_tier"
             case createdAt = "created_at"
             case updatedAt = "updated_at"
             case isArchived = "is_archived"
@@ -890,6 +1040,7 @@ public struct ConversationListResponse: Codable {
             createdAt = try container.decode(String.self, forKey: .createdAt)
             updatedAt = try container.decode(String.self, forKey: .updatedAt)
             model = try container.decodeIfPresent(String.self, forKey: .model)
+            modelTier = try container.decodeIfPresent(String.self, forKey: .modelTier)
             isArchived = try container.decodeFlexibleBool(forKey: .isArchived)
             userId = try container.decodeFlexibleIntIfPresent(forKey: .userId)
             shareId = try container.decodeIfPresent(String.self, forKey: .shareId)
@@ -906,6 +1057,7 @@ public struct ConversationDetailResponse: Codable {
     public let createdAt: String
     public let updatedAt: String
     public let model: String?
+    public let modelTier: String?
     public let isArchived: Bool
     public let messages: [ChatMessage]
     public let shareId: String?
@@ -917,6 +1069,7 @@ public struct ConversationDetailResponse: Codable {
 
     enum CodingKeys: String, CodingKey {
         case id, title, model, messages
+        case modelTier = "model_tier"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case isArchived = "is_archived"
@@ -935,6 +1088,7 @@ public struct ConversationDetailResponse: Codable {
         createdAt = try container.decode(String.self, forKey: .createdAt)
         updatedAt = try container.decode(String.self, forKey: .updatedAt)
         model = try container.decodeIfPresent(String.self, forKey: .model)
+        modelTier = try container.decodeIfPresent(String.self, forKey: .modelTier)
         isArchived = try container.decodeFlexibleBool(forKey: .isArchived)
         messages = try container.decodeIfPresent([ChatMessage].self, forKey: .messages) ?? []
         shareId = try container.decodeIfPresent(String.self, forKey: .shareId)

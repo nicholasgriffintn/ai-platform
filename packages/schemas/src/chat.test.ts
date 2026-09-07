@@ -108,7 +108,7 @@ describe("chat schemas", () => {
       status: null,
       timestamp: 1783110534616,
       platform: "api",
-      mode: "remote",
+      mode: "chat",
       log_id: null,
       data: null,
       created_at: "2026-07-03 20:28:55",

@@ -6,6 +6,7 @@ struct Conversation: Identifiable, Equatable {
     var messages: [ChatMessage]
     let createdAt: Date
     var modelId: String?
+    var modelTier: String? = nil
     var isLoadedFromAPI: Bool
     var lastMessageAt: Date?
     var messageCount: Int

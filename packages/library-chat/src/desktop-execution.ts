@@ -4,7 +4,7 @@ import type { DesktopBackend } from "./desktop-backend.js";
 
 let backend: DesktopBackend | null = null;
 
-export function setDesktopExecutionBackend(next: DesktopBackend): void {
+export function setDesktopExecutionBackend(next: DesktopBackend | null): void {
   backend = next;
 }
 

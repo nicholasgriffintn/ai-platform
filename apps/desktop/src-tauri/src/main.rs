@@ -20,10 +20,7 @@ use announcements::{Announcement, AnnouncementPlan};
 use chat::{ModelRunRequest, StreamChunk};
 use diagnostics::Diagnostics;
 use discovery::DiscoveredModel;
-use egress::{
-    describe_transport_failure, DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport,
-    TransportFailure,
-};
+use egress::{describe_transport_failure, DesktopEndpoint, EgressRefusal, TransportFailure};
 use futures_util::StreamExt;
 use lines::LineReader;
 use runs::{RunRegistry, StreamEvent};
@@ -42,7 +39,7 @@ const DISCOVERY_TIMEOUT: Duration = Duration::from_secs(10);
 const RUN_IDLE_TIMEOUT: Duration = Duration::from_secs(120);
 const CANCEL_POLL: Duration = Duration::from_millis(200);
 const MAX_JSON_BODY: usize = 8 * 1024 * 1024;
-const BUILT_IN_APPROVED_AT: &str = "1970-01-01T00:00:00Z";
+const FALLBACK_TIMESTAMP: &str = "1970-01-01T00:00:00Z";
 const SESSION_SECRET: &str = "session-token";
 const DEFAULT_TOKEN_LIFETIME_SECONDS: u32 = 15 * 60;
 const API_LABEL: &str = "Polychat";
@@ -82,38 +79,7 @@ enum Readiness {
 fn timestamp() -> String {
     OffsetDateTime::now_utc()
         .format(&Rfc3339)
-        .unwrap_or_else(|_| BUILT_IN_APPROVED_AT.to_string())
-}
-
-fn built_in_endpoint(id: &str, vendor: &str, label: &str, url: &str) -> DesktopEndpoint {
-    DesktopEndpoint {
-        id: id.to_string(),
-        kind: EndpointKind::Model,
-        vendor: vendor.to_string(),
-        label: label.to_string(),
-        url: url.to_string(),
-        transport: EndpointTransport::Loopback,
-        pairing_secret_stored: false,
-        approved_at: BUILT_IN_APPROVED_AT.to_string(),
-        last_seen_at: None,
-    }
-}
-
-fn configured_endpoints() -> Vec<DesktopEndpoint> {
-    vec![
-        built_in_endpoint(
-            "ollama-loopback",
-            "ollama",
-            "Ollama",
-            "http://127.0.0.1:11434",
-        ),
-        built_in_endpoint(
-            "lmstudio-loopback",
-            "lmstudio",
-            "LM Studio",
-            "http://127.0.0.1:1234",
-        ),
-    ]
+        .unwrap_or_else(|_| FALLBACK_TIMESTAMP.to_string())
 }
 
 fn refusal_detail(refusal: EgressRefusal) -> String {
@@ -219,7 +185,23 @@ fn with_pairing(
     builder: reqwest::RequestBuilder,
     endpoint: &DesktopEndpoint,
 ) -> Result<reqwest::RequestBuilder, String> {
-    match secrets::read(&secrets::pairing_key(&endpoint.id))? {
+    with_pairing_secret(builder, endpoint, None)
+}
+
+fn with_pairing_secret(
+    builder: reqwest::RequestBuilder,
+    endpoint: &DesktopEndpoint,
+    pairing_secret: Option<&str>,
+) -> Result<reqwest::RequestBuilder, String> {
+    let secret = match pairing_secret
+        .map(str::trim)
+        .filter(|secret| !secret.is_empty())
+    {
+        Some(secret) => Some(secret.to_string()),
+        None => secrets::read(&secrets::pairing_key(&endpoint.id))?,
+    };
+
+    match secret {
         Some(secret) => Ok(builder.bearer_auth(secret.as_str())),
         None => Ok(builder),
     }
@@ -302,8 +284,21 @@ fn save_endpoint(
     store: State<'_, Store>,
 ) -> Result<(), String> {
     let key = secrets::pairing_key(&endpoint.id);
+    let existing_secret = secrets::read(&key)?;
+    let requested_secret = pairing_secret.as_deref().map(str::trim);
+    let pairing_secret_stored = match requested_secret {
+        Some(secret) if !secret.is_empty() => true,
+        Some(_) => false,
+        None => existing_secret.is_some(),
+    };
+    let mut candidate = endpoint.clone();
 
-    match pairing_secret.as_deref().map(str::trim) {
+    candidate.pairing_secret_stored = pairing_secret_stored;
+
+    egress::resolve_target(std::slice::from_ref(&candidate), &candidate.id)
+        .map_err(refusal_detail)?;
+
+    match requested_secret {
         Some(secret) if !secret.is_empty() => secrets::store(&key, secret)?,
         Some(_) => secrets::forget(&key)?,
         None => {}
@@ -312,9 +307,6 @@ fn save_endpoint(
     let mut endpoint = endpoint;
 
     endpoint.pairing_secret_stored = secrets::read(&key)?.is_some();
-
-    egress::resolve_target(std::slice::from_ref(&endpoint), &endpoint.id)
-        .map_err(refusal_detail)?;
 
     store.save_endpoint(&endpoint)
 }
@@ -327,19 +319,32 @@ fn forget_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<(), S
 }
 
 #[tauri::command]
-async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<Readiness, String> {
-    let (endpoint, target) = match authorised_endpoint(&store, &endpoint_id) {
-        Ok(resolved) => resolved,
-        Err(detail) => {
+async fn probe_endpoint(
+    endpoint: DesktopEndpoint,
+    pairing_secret: Option<String>,
+    store: State<'_, Store>,
+) -> Result<Readiness, String> {
+    let stored_secret = secrets::read(&secrets::pairing_key(&endpoint.id))?;
+    let supplied_secret = pairing_secret
+        .as_deref()
+        .map(str::trim)
+        .filter(|secret| !secret.is_empty());
+    let mut endpoint = endpoint;
+
+    endpoint.pairing_secret_stored = supplied_secret.is_some() || stored_secret.is_some();
+
+    let target = match egress::resolve_target(std::slice::from_ref(&endpoint), &endpoint.id) {
+        Ok(target) => target,
+        Err(refusal) => {
             return Ok(Readiness::Unreachable {
                 checked_at: timestamp(),
-                detail: Some(detail),
+                detail: Some(refusal_detail(refusal)),
             })
         }
     };
 
-    let request =
-        http_client(REQUEST_TIMEOUT).and_then(|client| with_pairing(client.get(target), &endpoint));
+    let request = http_client(REQUEST_TIMEOUT)
+        .and_then(|client| with_pairing_secret(client.get(target), &endpoint, supplied_secret));
     let request = match request {
         Ok(request) => request,
         Err(detail) => {
@@ -357,10 +362,15 @@ async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<
                 detail: None,
             }
         }
-        Ok(response) if response.status().is_success() => Readiness::Ready {
-            checked_at: timestamp(),
-            version: None,
-        },
+        Ok(response) if response.status().is_success() => {
+            let checked_at = timestamp();
+            store.mark_endpoint_seen(&endpoint.id, &checked_at)?;
+
+            Readiness::Ready {
+                checked_at,
+                version: None,
+            }
+        }
         Ok(response) => Readiness::Unreachable {
             checked_at: timestamp(),
             detail: Some(format!(
@@ -822,6 +832,8 @@ fn collect_diagnostics(
 
     Ok(Diagnostics {
         app_version: app.package_info().version.to_string(),
+        machine_id: store.machine_id()?,
+        platform: std::env::consts::OS.to_string(),
         target: format!("{} {}", std::env::consts::OS, std::env::consts::ARCH),
         api_base_url: API_BASE_URL.to_string(),
         database_path: directory.join("polychat.sqlite").display().to_string(),
@@ -1019,8 +1031,6 @@ fn main() {
             std::fs::create_dir_all(&directory)?;
 
             let store = Store::open(Connection::open(directory.join("polychat.sqlite"))?)?;
-
-            store.seed_missing(&configured_endpoints())?;
 
             app.manage(store);
             app.manage(RunRegistry::default());

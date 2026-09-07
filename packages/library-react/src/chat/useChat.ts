@@ -18,7 +18,7 @@ import {
   useStreamActivityStore,
 } from "@ngriffin_uk/polychat-library-client";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import { getConversationRefetchInterval } from "../chat/conversation-polling.js";
 import { recoverUnacknowledgedConversation } from "../chat/pending-conversation.js";
@@ -36,14 +36,8 @@ const CHAT_DETAIL_STALE_TIME = 2 * 60 * 1000;
 const CHAT_QUERY_GC_TIME = 30 * 60 * 1000;
 
 export function useChats(options: ConversationListOptions = {}) {
-  const {
-    currentConversationId,
-    isAuthenticated,
-    isPro,
-    localOnlyMode,
-    locallyCreatedConversationIds,
-    user,
-  } = useChatStore();
+  const { currentConversationId, isAuthenticated, isPro, locallyCreatedConversationIds, user } =
+    useChatStore();
   const localScope = getLocalChatScope(user?.id);
   const queryOptions = useMemo<Omit<ConversationListOptions, "page">>(
     () => ({
@@ -69,7 +63,7 @@ export function useChats(options: ConversationListOptions = {}) {
 
       return lastPage.pageNumber + 1;
     },
-    enabled: isAuthenticated && isPro && !localOnlyMode,
+    enabled: isAuthenticated && isPro,
   });
 
   const localChatsQuery = useQuery({
@@ -83,7 +77,7 @@ export function useChats(options: ConversationListOptions = {}) {
     const remoteChats = remoteChatsQuery.data?.pages.flatMap((page) => page.conversations) || [];
     const localChats = filterConversationsByListOptions(localChatsQuery.data || [], queryOptions);
 
-    if (localOnlyMode || !isAuthenticated) {
+    if (!isAuthenticated) {
       return { chats: localChats, total: localChats.length };
     }
 
@@ -104,7 +98,6 @@ export function useChats(options: ConversationListOptions = {}) {
   }, [
     remoteChatsQuery.data,
     localChatsQuery.data,
-    localOnlyMode,
     isAuthenticated,
     queryOptions,
     currentConversationId,
@@ -116,7 +109,7 @@ export function useChats(options: ConversationListOptions = {}) {
     total,
     error: remoteChatsQuery.error ?? localChatsQuery.error,
     fetchNextPage: remoteChatsQuery.fetchNextPage,
-    hasNextPage: remoteChatsQuery.hasNextPage && !localOnlyMode && isAuthenticated && isPro,
+    hasNextPage: remoteChatsQuery.hasNextPage && isAuthenticated && isPro,
     isFetchingNextPage: remoteChatsQuery.isFetchingNextPage,
     isLoading: remoteChatsQuery.isLoading || localChatsQuery.isLoading,
     refetch: () => {
@@ -134,9 +127,10 @@ export function useChat(
     isAuthenticated,
     isAuthenticationLoading,
     isPro,
-    localOnlyMode,
     locallyCreatedConversationIds,
     markConversationRemoteAvailable,
+    currentConversationId,
+    setConversationModelSelection,
   } = useChatStore();
   const queryClient = useQueryClient();
   const streamSource = useStreamActivityStore((state) =>
@@ -153,7 +147,7 @@ export function useChat(
       const getCachedConversation = () =>
         queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, completion_id]);
       const localChat = await localChatService.getLocalChat(completion_id);
-      const shouldUseLocalOnly = localOnlyMode || (localChat?.isLocalOnly ?? false);
+      const shouldUseLocalOnly = localChat?.isLocalOnly ?? false;
       const cachedConversation = getCachedConversation();
 
       if (shouldUseLocalOnly || !isAuthenticated || !isPro) {
@@ -222,6 +216,17 @@ export function useChat(
     refetchIntervalInBackground: options.monitorRemoteActivity === true,
   });
 
+  useEffect(() => {
+    if (!completion_id || completion_id !== currentConversationId || !query.data) {
+      return;
+    }
+
+    setConversationModelSelection({
+      model: query.data.model,
+      modelTier: query.data.model_tier,
+    });
+  }, [completion_id, currentConversationId, query.data, setConversationModelSelection]);
+
   return query;
 }
 
@@ -270,21 +275,15 @@ export function useLoadEarlierChatMessages(completionId: string | undefined) {
 
 export function useDeleteChat() {
   const queryClient = useQueryClient();
-  const {
-    currentConversationId,
-    isAuthenticated,
-    isPro,
-    localOnlyMode,
-    setCurrentConversationId,
-    user,
-  } = useChatStore();
+  const { currentConversationId, isAuthenticated, isPro, setCurrentConversationId, user } =
+    useChatStore();
 
   return useMutation({
     mutationFn: async (completion_id: string) => {
       const localChat = await localChatService.getLocalChat(completion_id);
       const isLocalOnly = localChat?.isLocalOnly || false;
 
-      if (isAuthenticated && isPro && !localOnlyMode && !isLocalOnly) {
+      if (isAuthenticated && isPro && !isLocalOnly) {
         await apiService.deleteConversation(completion_id);
       }
 
@@ -309,7 +308,7 @@ export function useDeleteChat() {
 
 export function useSetAllChatsArchived() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isPro, localOnlyMode, user } = useChatStore();
+  const { isAuthenticated, isPro, user } = useChatStore();
 
   return useMutation({
     mutationFn: async ({
@@ -321,7 +320,7 @@ export function useSetAllChatsArchived() {
     }) => {
       const local = await localChatService.setLocalChatsArchived(archived, options);
 
-      if (!isAuthenticated || !isPro || localOnlyMode) {
+      if (!isAuthenticated || !isPro) {
         return local;
       }
 
@@ -372,7 +371,7 @@ export function useDeleteAllRemoteChats() {
 
 export function useUpdateChatTitle() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isPro, localOnlyMode, user } = useChatStore();
+  const { isAuthenticated, isPro, user } = useChatStore();
 
   return useMutation({
     mutationFn: async ({ completion_id, title }: { completion_id: string; title: string }) => {
@@ -381,7 +380,7 @@ export function useUpdateChatTitle() {
       const localChat = await localChatService.getLocalChat(completion_id);
       const isLocalOnly = localChat?.isLocalOnly || false;
 
-      if (isAuthenticated && isPro && !localOnlyMode && !isLocalOnly) {
+      if (isAuthenticated && isPro && !isLocalOnly) {
         await apiService.updateConversationTitle(completion_id, title);
       }
     },
@@ -416,10 +415,10 @@ export function useGenerateTitle(requestOptions?: ChatRequestOptions) {
       const localChat = await localChatService.getLocalChat(completion_id);
       const isLocalOnly = localChat?.isLocalOnly || false;
 
-      const storageMode = determineStorageMode();
+      const storageMode = determineStorageMode(completion_id);
       let newTitle;
 
-      if (!storageMode.shouldSyncRemote || (isLocalOnly && !storageMode.isProjectScoped)) {
+      if (storageMode.retention !== "kept" || (isLocalOnly && !storageMode.isProjectScoped)) {
         newTitle = createTemporaryConversationTitle(messages);
       } else {
         newTitle = await apiService.generateTitle(completion_id, messages);

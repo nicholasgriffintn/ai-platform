@@ -70,6 +70,11 @@ export async function updateUserSettings(
   const validatedSettings = await validatePetSettingsUpdate(context, id, settings);
 
   await repo.updateUserSettings(id, validatedSettings);
+
+  if (validatedSettings.advertise_machines === false) {
+    await context.repositories.machines.deleteAllForUser(id);
+  }
+
   await invalidateUserModelCache(context, id, "update-user-settings");
 
   return {

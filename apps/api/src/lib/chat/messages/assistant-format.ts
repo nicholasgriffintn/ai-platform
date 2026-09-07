@@ -16,6 +16,7 @@ export function formatAssistantMessage({
   guardrails = { passed: true },
   log_id = null,
   model = "",
+  provider,
   selected_models = [],
   platform = "api",
   timestamp = Date.now(),
@@ -24,6 +25,7 @@ export function formatAssistantMessage({
   mode,
   refusal = null,
   annotations = null,
+  provenance,
 }: Partial<AssistantMessageData>): AssistantMessageData {
   if (tool_calls && !Array.isArray(tool_calls)) {
     logger.warn("Invalid tool_calls format, expected array", {
@@ -88,6 +90,7 @@ export function formatAssistantMessage({
     guardrails,
     log_id,
     model,
+    provider,
     selected_models,
     platform,
     timestamp,
@@ -96,5 +99,6 @@ export function formatAssistantMessage({
     mode,
     refusal,
     annotations,
+    provenance,
   };
 }

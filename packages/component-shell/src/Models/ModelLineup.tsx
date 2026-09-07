@@ -5,6 +5,7 @@ import {
   useModelCatalogue,
   useModels,
   formatProviderLabel,
+  getLineupModelsByRuntime,
   resolveLineupHeadline,
   toModelRecordById,
   type LineupEntryView,
@@ -139,6 +140,10 @@ function useTierEntries(runtime: ModelLineupRuntime) {
   const { catalogueRecord, accountRecord } = useLineupModels();
 
   return useMemo(() => {
+    const runtimeCatalogueRecord = getLineupModelsByRuntime(catalogueRecord, runtime);
+    const runtimeAccountRecord = accountRecord
+      ? getLineupModelsByRuntime(accountRecord, runtime)
+      : null;
     const entries = new Map<
       string,
       { headline: LineupEntryView | null; yours: LineupEntryView | null | undefined }
@@ -150,11 +155,11 @@ function useTierEntries(runtime: ModelLineupRuntime) {
           MODEL_TIER_LINEUP[runtime][tier.id][role];
 
         entries.set(`${tier.id}:${role}`, {
-          headline: resolveLineupHeadline(catalogueRecord, candidates),
+          headline: resolveLineupHeadline(runtimeCatalogueRecord, candidates),
           yours:
-            accountRecord && runtime === "hosted"
+            runtimeAccountRecord && runtime === "hosted"
               ? resolveLineupHeadline(
-                  accountRecord,
+                  runtimeAccountRecord,
                   candidates,
                   (model) => model.isExecutable === true,
                 )
@@ -207,7 +212,7 @@ function TierCard({ tier }: { tier: (typeof MODEL_TIER_DEFINITIONS)[number] }) {
   );
 }
 
-function LocalRuntimeTable({ runtime }: { runtime: "browser" | "local-server" }) {
+function LocalRuntimeTable({ runtime }: { runtime: "browser" | "device" | "machine" }) {
   const entries = useTierEntries(runtime);
   const definition = MODEL_LINEUP_RUNTIME_DEFINITIONS[runtime];
 
@@ -334,7 +339,8 @@ export function ModelLineup() {
       >
         <div className="grid gap-4 lg:grid-cols-2">
           <LocalRuntimeTable runtime="browser" />
-          <LocalRuntimeTable runtime="local-server" />
+          <LocalRuntimeTable runtime="device" />
+          <LocalRuntimeTable runtime="machine" />
         </div>
       </ModelsSection>
 

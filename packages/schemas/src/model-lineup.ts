@@ -3,14 +3,15 @@ import z from "zod/v4";
 import { MODEL_DEFAULTS, type ModelPolicyReference } from "./model-defaults.js";
 import { isActiveModel, isStealthModel } from "./model-selection.js";
 import type { ModelConfig, ModelConfigItem, ModelModality } from "./models.js";
-import type { ReasoningEffort } from "./reasoning.js";
+import { reasoningEffortSchema, type ReasoningEffort } from "./reasoning.js";
 
 export const MODEL_TIERS = ["low", "medium", "high", "ultra"] as const;
 export const modelTierSchema = z.enum(MODEL_TIERS);
 export type ModelTier = z.infer<typeof modelTierSchema>;
 export const DEFAULT_MODEL_TIER: ModelTier = "medium";
 
-export const MODEL_LINEUP_RUNTIMES = ["hosted", "browser", "local-server"] as const;
+export const MODEL_LINEUP_RUNTIMES = ["hosted", "browser", "device", "machine"] as const;
+export const modelLineupRuntimeSchema = z.enum(MODEL_LINEUP_RUNTIMES);
 export type ModelLineupRuntime = (typeof MODEL_LINEUP_RUNTIMES)[number];
 
 export const MODEL_TIER_ROLES = ["agent", "coding"] as const;
@@ -81,10 +82,15 @@ export const MODEL_LINEUP_RUNTIME_DEFINITIONS: Record<
     label: "In the browser",
     description: "WebLLM models that download once and run on your device. Nothing leaves it.",
   },
-  "local-server": {
-    label: "Local server",
+  device: {
+    label: "On this device",
     description:
-      "Models Ollama or LM Studio already has on this machine. The desktop app asks the runtime what it holds; the list is whatever you have pulled.",
+      "Models discovered in a runtime on this device. Only models actually installed here are available.",
+  },
+  machine: {
+    label: "On another machine",
+    description:
+      "Models advertised by a connected machine. Only models that machine reports are available.",
   },
 };
 
@@ -278,7 +284,7 @@ const BROWSER_LINEUP: TierLineup = {
   },
 };
 
-const LOCAL_SERVER_LINEUP: TierLineup = {
+const DEVICE_LINEUP: TierLineup = {
   ultra: {
     agent: [
       { model: "deepseek-v4-flash", provider: "ollama", effort: "thinking" },
@@ -335,7 +341,8 @@ export const DEFAULT_SANDBOX_MODEL = hostedFreeCoding.medium[0].model;
 export const MODEL_TIER_LINEUP: Record<ModelLineupRuntime, TierLineup> = {
   hosted: HOSTED_LINEUP,
   browser: BROWSER_LINEUP,
-  "local-server": LOCAL_SERVER_LINEUP,
+  device: DEVICE_LINEUP,
+  machine: DEVICE_LINEUP,
 };
 
 export const SYSTEM_MODEL_ROLES = [
@@ -566,6 +573,42 @@ export interface ResolvedLineupCandidate<
   effort?: ReasoningEffort;
 }
 
+export const resolvedModelTierSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  provider: z.string(),
+  effort: reasoningEffortSchema.optional(),
+});
+export type ResolvedModelTier = z.infer<typeof resolvedModelTierSchema>;
+
+const modelTierRoleSelectionsSchema = z.object({
+  agent: resolvedModelTierSchema.nullable(),
+  coding: resolvedModelTierSchema.nullable(),
+});
+
+export const modelTierLineupSchema = z.object({
+  low: modelTierRoleSelectionsSchema,
+  medium: modelTierRoleSelectionsSchema,
+  high: modelTierRoleSelectionsSchema,
+  ultra: modelTierRoleSelectionsSchema,
+});
+
+export type ModelTierLineup = z.infer<typeof modelTierLineupSchema>;
+
+export const modelTiersResponseSchema = z.object({
+  runtimes: z.record(modelLineupRuntimeSchema, modelTierLineupSchema),
+  default: modelTierSchema,
+  inheritedFrom: z
+    .object({
+      kind: z.literal("project"),
+      id: z.string(),
+      tier: modelTierSchema,
+    })
+    .optional(),
+});
+
+export type ModelTiersResponse = z.infer<typeof modelTiersResponseSchema>;
+
 export interface ResolveLineupOptions<T extends ModelConfigItem> {
   isEligible?: (model: T) => boolean;
 }
@@ -696,14 +739,23 @@ export function resolveModelTierAlternate<T extends ModelConfigItem>(
   );
 }
 
-export function getLineupModelsByRuntime(models: ModelConfig, runtime: ModelLineupRuntime) {
+export function getLineupModelsByRuntime(
+  models: ModelConfig,
+  runtime: ModelLineupRuntime,
+  machineId?: string,
+) {
   return Object.fromEntries(
-    Object.entries(models).filter(([, model]) =>
-      runtime === "browser"
-        ? model.provider === BROWSER_PROVIDER
-        : runtime === "local-server"
-          ? model.runsOn === "device"
-          : model.provider !== BROWSER_PROVIDER && model.runsOn !== "device",
-    ),
+    Object.entries(models).filter(([, model]) => {
+      switch (runtime) {
+        case "browser":
+          return model.provider === BROWSER_PROVIDER;
+        case "device":
+          return model.runsOn === "device" && !model.machineId;
+        case "machine":
+          return Boolean(machineId) && model.machineId === machineId;
+        case "hosted":
+          return model.provider !== BROWSER_PROVIDER && model.runsOn !== "device";
+      }
+    }),
   );
 }

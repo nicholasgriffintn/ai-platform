@@ -227,7 +227,7 @@ export function useConversationActions(
         setIsStartingThread(true);
 
         const newConversationId = generateId();
-        const shouldStore = determineStorageMode().shouldSyncRemote;
+        const shouldStore = determineStorageMode(currentConversationId).retention === "kept";
         let startConversationThread = createConversationThread({
           conversation,
           conversationId: newConversationId,

@@ -3,6 +3,7 @@ import {
   capabilityParamsSchema,
   artificialAnalysisModelsQuerySchema,
   artificialAnalysisModelsResponseSchema,
+  modelTiersResponseSchema,
   modelParamsSchema,
   modelResponseSchema,
   modelsResponseSchema,
@@ -14,6 +15,7 @@ import { Hono } from "hono";
 import { availableModalities } from "~/constants/models";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { addRoute } from "~/lib/http/routeBuilder";
+import { getLineupModelsForUser } from "~/lib/providers/models";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
   getModelDetails,
@@ -26,6 +28,7 @@ import {
   listModelsByModality,
   listModelsByOutputModality,
 } from "~/services/models";
+import { resolveTierLineup } from "~/services/models/tiers";
 
 const app = new Hono();
 
@@ -187,6 +190,27 @@ addRoute(app, "get", "/artificial-analysis", {
   },
   handler: async ({ query, serviceContext }) =>
     listArtificialAnalysisModels(serviceContext.env, query),
+});
+
+addRoute(app, "get", "/tiers", {
+  tags: ["models"],
+  summary: "Resolve model tiers",
+  description:
+    "Returns the model selected by each tier and role for the calling account across each supported runtime.",
+  responses: {
+    200: {
+      description: "Account-specific model tier resolution",
+      schema: modelTiersResponseSchema,
+    },
+    500: { description: "Server error", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, user }) => {
+    const models = await getLineupModelsForUser(serviceContext.env, user, {
+      shouldUseCache: false,
+    });
+
+    return resolveTierLineup(models, user);
+  },
 });
 
 addRoute(app, "get", "/:id", {

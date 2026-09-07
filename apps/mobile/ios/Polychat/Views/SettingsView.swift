@@ -50,7 +50,7 @@ struct SettingsView: View {
                         }
                         
                         HStack {
-                            if selectedModel.supportsFunctions == true {
+                            if selectedModel.supportsToolCalls == true {
                                 Text("Functions")
                                     .font(.caption2)
                                     .padding(.horizontal, 6)
@@ -283,7 +283,7 @@ struct SettingsView: View {
             contextWindow: 128000,
             pricing: nil,
             modalities: nil,
-            supportsFunctions: true,
+            supportsToolCalls: true,
             multimodal: true,
             isFeatured: true
         )

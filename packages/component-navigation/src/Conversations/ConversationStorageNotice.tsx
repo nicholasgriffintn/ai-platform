@@ -1,35 +1,27 @@
+import type { RetentionReason } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
+
 export interface ConversationStorageNoticeProps {
-  isAuthenticated: boolean;
-  isPro: boolean;
-  localOnlyMode: boolean;
+  reason: RetentionReason | null;
 }
 
-export function ConversationStorageNotice({
-  isAuthenticated,
-  isPro,
-  localOnlyMode,
-}: ConversationStorageNoticeProps) {
+const NOTICE_COPY: Record<RetentionReason, string> = {
+  chosen: "Temporary. Nothing here is kept.",
+  default: "Temporary by default. Change this in Settings.",
+  signed_out: "Not signed in, so this stays on this device.",
+  plan: "Stored history is part of Pro. This stays on this device.",
+  device_default: "Runs on this Mac, so nothing is kept by default. Keep this chat",
+};
+
+export function ConversationStorageNotice({ reason }: ConversationStorageNoticeProps) {
+  if (!reason) {
+    return null;
+  }
+
   return (
     <div className="mb-2">
-      {!isAuthenticated && (
-        <div className="border-y border-sidebar-border bg-surface-elevated px-3 py-2 text-xs text-muted-foreground">
-          Chats are only stored on this device while you are not signed in
-        </div>
-      )}
-
-      {!isPro && isAuthenticated && (
-        <div className="border-y border-sidebar-border bg-surface-elevated px-3 py-2 text-xs text-muted-foreground">
-          {localOnlyMode
-            ? "Local-only mode: Chats are only stored on this device"
-            : "Free plan: Chats are only stored on this device"}
-        </div>
-      )}
-
-      {isPro && isAuthenticated && localOnlyMode && (
-        <div className="border-y border-sidebar-border bg-surface-elevated px-3 py-2 text-xs text-muted-foreground">
-          Local-only mode: Chats are only stored on this device
-        </div>
-      )}
+      <div className="border-y border-sidebar-border bg-surface-elevated px-3 py-2 text-xs text-muted-foreground">
+        {NOTICE_COPY[reason]}
+      </div>
     </div>
   );
 }

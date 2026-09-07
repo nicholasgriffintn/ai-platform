@@ -12,14 +12,14 @@ import { WebLLMService } from "./web-llm.js";
  */
 export function useWebLLMInitialization(apiModels: Record<string, any> = {}) {
   const { startLoading, updateLoading, stopLoading } = useLoadingActions();
-  const { chatMode, model, setModel } = useChatStore();
-  const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
+  const { computeSite, model, setModel } = useChatStore();
+  const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
 
   const webLLMService = useRef<WebLLMService>(WebLLMService.getInstance());
   const initializingRef = useRef<boolean>(false);
 
   const matchingModel =
-    model === null ? undefined : chatMode === "local" ? webLLMModels[model] : apiModels[model];
+    model === null ? undefined : computeSite === "browser" ? webLLMModels[model] : apiModels[model];
 
   useEffect(() => {
     const loadingId = "model-init";
@@ -30,7 +30,7 @@ export function useWebLLMInitialization(apiModels: Record<string, any> = {}) {
         return;
       }
 
-      if (model && chatMode === "local" && matchingModel?.provider === "web-llm") {
+      if (model && computeSite === "browser" && matchingModel?.provider === "web-llm") {
         try {
           initializingRef.current = true;
 
@@ -81,7 +81,7 @@ export function useWebLLMInitialization(apiModels: Record<string, any> = {}) {
         initializingRef.current = false;
       }
     };
-  }, [chatMode, model, matchingModel, startLoading, updateLoading, stopLoading, setModel]);
+  }, [computeSite, model, matchingModel, startLoading, updateLoading, stopLoading, setModel]);
 
   return {
     webLLMService: webLLMService.current,

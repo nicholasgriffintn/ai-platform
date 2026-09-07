@@ -50,6 +50,7 @@ export * from "./Pets/PetShowcase.js";
 export * from "./Pricing/PricingPage.js";
 export * from "./Profile/ProfilePage.js";
 export * from "./Profile/ProfileSidebar.js";
+export * from "./Profile/ProfileTabLayout.js";
 export * from "./Recipes/useRecipeWorkflows.js";
 export * from "./Search/SearchDialog.js";
 export * from "./Search/useGlobalSearch.js";

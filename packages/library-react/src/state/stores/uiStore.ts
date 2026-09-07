@@ -29,6 +29,8 @@ export interface UIStore {
   setShowMetaAssistant: (showMetaAssistant: boolean) => void;
   showProjectPicker: boolean;
   setShowProjectPicker: (showProjectPicker: boolean) => void;
+  showModelSources: boolean;
+  setShowModelSources: (showModelSources: boolean) => void;
   metaAssistantConversationId: string | undefined;
   setMetaAssistantConversationId: (conversationId: string | undefined) => void;
   chatConversationListFilters: ConversationListFilters;
@@ -56,6 +58,8 @@ export const useUIStore = create<UIStore>()(
       setShowMetaAssistant: (showMetaAssistant) => set({ showMetaAssistant }),
       showProjectPicker: false,
       setShowProjectPicker: (showProjectPicker) => set({ showProjectPicker }),
+      showModelSources: false,
+      setShowModelSources: (showModelSources) => set({ showModelSources }),
       metaAssistantConversationId: undefined,
       setMetaAssistantConversationId: (metaAssistantConversationId) =>
         set({ metaAssistantConversationId }),
@@ -83,6 +87,7 @@ export const useUIStore = create<UIStore>()(
           sidebarVisible: _s,
           showMetaAssistant: _a,
           showProjectPicker: _p,
+          showModelSources: _ms,
           chatConversationListFilters,
           workConversationListFilters,
           ...rest

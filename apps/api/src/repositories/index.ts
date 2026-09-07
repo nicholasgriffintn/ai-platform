@@ -19,6 +19,7 @@ import { ConversationRunRepository } from "./ConversationRunRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { GoalRepository } from "./GoalRepository";
 import { InfraCostDailyRepository } from "./InfraCostDailyRepository";
+import { MachineRepository } from "./MachineRepository";
 import { MemoryDocumentRepository } from "./MemoryDocumentRepository";
 import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
@@ -70,6 +71,7 @@ export {
   InfraCostDailyRepository,
   MemorySynthesisRepository,
   MessageRepository,
+  MachineRepository,
   MobilePushRepository,
   OAuthStateRepository,
   OutputRepository,
@@ -116,6 +118,7 @@ export class RepositoryManager {
   private composioConnectorSessionRepo: ComposioConnectorSessionRepository;
   private connectorOperationApprovalRepo: ConnectorOperationApprovalRepository;
   private messageRepo: MessageRepository;
+  private machineRepo: MachineRepository;
   private mobilePushRepo: MobilePushRepository;
   private embeddingRepo: EmbeddingRepository;
   private goalRepo: GoalRepository;
@@ -164,6 +167,7 @@ export class RepositoryManager {
     this.composioConnectorSessionRepo = new ComposioConnectorSessionRepository(env);
     this.connectorOperationApprovalRepo = new ConnectorOperationApprovalRepository(env);
     this.messageRepo = new MessageRepository(env);
+    this.machineRepo = new MachineRepository(env);
     this.mobilePushRepo = new MobilePushRepository(env);
     this.embeddingRepo = new EmbeddingRepository(env);
     this.goalRepo = new GoalRepository(env);
@@ -313,6 +317,10 @@ export class RepositoryManager {
 
   public get messages(): MessageRepository {
     return this.messageRepo;
+  }
+
+  public get machines(): MachineRepository {
+    return this.machineRepo;
   }
 
   public get mobilePush(): MobilePushRepository {

@@ -29,18 +29,18 @@ export function useConversationModelOptions({
   excludedModelIds = EMPTY_EXCLUDED_MODEL_IDS,
   requiredOutputModality,
 }: UseConversationModelOptionsOptions = {}) {
-  const chatMode = useChatStore((state) => state.chatMode);
+  const computeSite = useChatStore((state) => state.computeSite);
   const currentModelId = useChatStore((state) => state.model);
   const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading } = useModels();
-  const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
+  const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
 
   const availableModels = useMemo(
-    () => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
-    [apiModels, chatMode, webLLMModels],
+    () => getAvailableModels(apiModels, computeSite === "browser", webLLMModels),
+    [apiModels, computeSite, webLLMModels],
   );
   const modeModels = useMemo(
-    () => getModelsByMode(availableModels, chatMode),
-    [availableModels, chatMode],
+    () => getModelsByMode(availableModels, computeSite),
+    [availableModels, computeSite],
   );
   const currentModel = useMemo(
     () =>

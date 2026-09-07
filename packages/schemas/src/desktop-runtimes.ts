@@ -42,6 +42,14 @@ export function isProtectedEndpointUrl(value: string): boolean {
   }
 }
 
+export function isSupportedEndpointUrl(value: string): boolean {
+  try {
+    return ["http:", "https:"].includes(new URL(value.trim()).protocol);
+  } catch {
+    return false;
+  }
+}
+
 export const desktopEndpointSchema = z
   .discriminatedUnion("kind", [
     desktopEndpointBaseSchema.extend({
@@ -57,6 +65,7 @@ export const desktopEndpointSchema = z
     (endpoint) => endpoint.transport !== "loopback" || isLoopbackUrl(endpoint.url),
     "A loopback endpoint must address a loopback host",
   )
+  .refine((endpoint) => isSupportedEndpointUrl(endpoint.url), "An endpoint must use HTTP or HTTPS")
   .refine(
     (endpoint) =>
       endpoint.kind !== "agent" ||
@@ -68,11 +77,19 @@ export const desktopEndpointSchema = z
 
 export type DesktopEndpoint = z.infer<typeof desktopEndpointSchema>;
 
+export type DesktopEndpointCandidate = Pick<
+  DesktopEndpoint,
+  "id" | "kind" | "vendor" | "label" | "url" | "transport"
+> & {
+  pairingSecret?: string;
+};
+
 export const desktopRuntimeReadinessSchema = z.discriminatedUnion("status", [
   z.object({
     status: z.literal("ready"),
     checkedAt: z.string(),
     version: z.string().nullable(),
+    detail: z.string().max(400).nullable().optional(),
   }),
   z.object({
     status: z.literal("unreachable"),

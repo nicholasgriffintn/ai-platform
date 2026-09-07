@@ -1,3 +1,5 @@
+import type { ModelTier } from "@ngriffin_uk/polychat-schemas";
+
 import { getAllAttachments } from "~/lib/chat/messages/attachments";
 import { messagesMatchStoredPrefix } from "~/lib/chat/messages/comparison";
 import {
@@ -16,6 +18,8 @@ export interface StoreUserTurnParams {
   lastMessage: Message;
   finalMessage: string;
   primaryModel: string;
+  modelId?: string;
+  modelTier?: ModelTier | null;
   platform: Platform;
   mode: ChatMode;
 }
@@ -25,6 +29,8 @@ function buildMessagesToStore({
   lastMessage,
   finalMessage,
   primaryModel,
+  modelId,
+  modelTier,
   platform,
   mode,
 }: Omit<StoreUserTurnParams, "conversationManager">): Message[] {
@@ -85,6 +91,8 @@ export async function storeUserTurn({
   lastMessage,
   finalMessage,
   primaryModel,
+  modelId,
+  modelTier,
   platform,
   mode,
 }: StoreUserTurnParams): Promise<void> {
@@ -147,5 +155,7 @@ export async function storeUserTurn({
   await conversationManager.addBatch(options.completion_id, messagesToStore, {
     metadata: options.metadata || {},
     type: options.conversation_type ?? (options.options?.recipe ? "task" : "chat"),
+    model_id: modelId ?? primaryModel,
+    model_tier: modelTier,
   });
 }

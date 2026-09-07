@@ -4,6 +4,7 @@ import type {
   ChatRun,
   ChatRunCommandReceipt,
   ChatRunStatus,
+  RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
@@ -189,6 +190,26 @@ export class ChatRunLifecycle {
     if (updated) {
       this.receipt.run = updated;
     }
+
+    return updated;
+  }
+
+  async recordProvenance(provenance: RunProvenance): Promise<ChatRun> {
+    const updated = await this.repository.updateProvenance(
+      this.run.id,
+      this.run.attempt,
+      provenance,
+    );
+
+    if (!updated) {
+      throw new AssistantError(
+        "The run changed before its provenance could be recorded",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
+
+    this.receipt.run = updated;
 
     return updated;
   }

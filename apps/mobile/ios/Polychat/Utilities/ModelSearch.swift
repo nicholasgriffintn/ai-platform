@@ -2,7 +2,7 @@ import Foundation
 
 extension ModelConfigItem {
     var isAvailableForSelection: Bool {
-        isDeprecated != true && status != "deprecated" && isExecutable != false
+        deprecated != true && status != "deprecated" && isExecutable != false
     }
 }
 
@@ -42,7 +42,7 @@ struct ModelSelectionFilter {
         }
 
         if !showsDeprecated {
-            filtered = filtered.filter { $0.isDeprecated != true && $0.status != "deprecated" }
+            filtered = filtered.filter { $0.deprecated != true && $0.status != "deprecated" }
         }
 
         if let selectedProvider {

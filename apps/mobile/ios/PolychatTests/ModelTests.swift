@@ -84,6 +84,28 @@ struct ModelTests {
         #expect(model.readiness?.isFresh(at: try #require(AppDateParser.parse("2026-09-05T10:01:00.000Z"))) == false)
     }
 
+    @Test func modelReadinessKeepsUnknownCodesVisibleButNonActionable() throws {
+        let model = try JSONDecoder().decode(ModelConfigItem.self, from: Data("""
+        {
+            "name": "Future model",
+            "provider": "ollama",
+            "readiness": {
+                "protocolVersion": 1,
+                "state": "unknown",
+                "reasonCode": "future_runtime_state",
+                "reason": "A newer runtime reported a state this client does not know.",
+                "checkedAt": "2026-09-05T10:00:00.000Z",
+                "expiresAt": "2026-09-05T10:01:00.000Z",
+                "action": { "kind": "future_action", "label": "Do something", "path": "/future" }
+            }
+        }
+        """.utf8))
+
+        #expect(model.readiness?.reasonCode == "check_failed")
+        #expect(model.readiness?.reason == "A newer runtime reported a state this client does not know.")
+        #expect(model.readiness?.action == nil)
+    }
+
     @Test func messageContentDecodesTextAndMultimodalBlocks() throws {
         let text = try JSONDecoder().decode(MessageContent.self, from: Data(#""Hello""#.utf8))
         #expect(text.textValue == "Hello")
@@ -410,7 +432,59 @@ struct ModelTests {
         let model = try JSONDecoder().decode(ModelConfigItem.self, from: data)
 
         #expect(model.isFeatured == true)
-        #expect(model.isDeprecated == true)
+        #expect(model.deprecated == true)
+    }
+
+    @Test func modelConfigDecodesPublishedRuntimeAndAccessFields() throws {
+        let data = Data("""
+        {
+            "id":"device-model",
+            "provider":"ollama",
+            "name":"Device Model",
+            "supportsToolCalls":true,
+            "deprecated":false,
+            "runsOn":"device",
+            "isPlatformEnabled":false,
+            "isFree":true,
+            "isByokEnabled":true
+        }
+        """.utf8)
+        let model = try JSONDecoder().decode(ModelConfigItem.self, from: data)
+
+        #expect(model.id == "device-model")
+        #expect(model.supportsToolCalls == true)
+        #expect(model.deprecated == false)
+        #expect(model.runsOn == "device")
+        #expect(model.isPlatformEnabled == false)
+        #expect(model.isFree == true)
+        #expect(model.isByokEnabled == true)
+    }
+
+    @Test func modelDecoderCoversEveryPublishedField() throws {
+        let sourceFile = URL(fileURLWithPath: #filePath)
+        let repositoryRoot = sourceFile
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let fixtureURL = repositoryRoot
+            .appendingPathComponent("apps/mobile/ios/PolychatTests/Fixtures/models-response.json")
+        let data = try Data(contentsOf: fixtureURL)
+        let published = try #require(
+            JSONSerialization.jsonObject(with: data) as? [String: [String: Any]]
+        )
+        let decoded = try JSONDecoder().decode([String: ModelConfigItem].self, from: data)
+
+        let publishedKeys = Set(published.values.flatMap { $0.keys })
+        let knownKeys = Set(ModelConfigItem.CodingKeys.allCases.map(\.rawValue))
+        let dropped = publishedKeys.subtracting(knownKeys).subtracting(ModelConfigItem.ignoredKeys)
+
+        if !dropped.isEmpty {
+            Issue.record("Swift decoder drops published fields: \(dropped.sorted())")
+        }
+        #expect(dropped.isEmpty)
+        #expect(!decoded.isEmpty)
     }
 
     @Test func recipeInstallResponseDecodesOptionalInstallationAndNullConfigurationValues() throws {

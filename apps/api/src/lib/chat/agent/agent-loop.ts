@@ -7,7 +7,11 @@ import {
   type AgentMessage,
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-library-agent-core";
-import type { ChatContextSnapshot, ChatRetrySnapshot } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ChatContextSnapshot,
+  ChatRetrySnapshot,
+  RunProvenance,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { finaliseAssistantTurn, type TurnOutput } from "~/lib/chat/agent/assistant-turn";
 import { startConversationTitle } from "~/lib/chat/agent/conversation-title";
@@ -128,6 +132,7 @@ export interface ModelResponse {
   annotations?: unknown;
   status?: string;
   steps?: AgentStepSummary[];
+  provenance?: RunProvenance;
 }
 
 export interface AgentLoopExecutionParams {
@@ -163,6 +168,7 @@ export interface AgentLoopExecutionParams {
   contextSkills?: readonly ContextBudgetSkill[];
   runId?: string;
   runAttempt?: number;
+  provenance?: RunProvenance;
   onContextSnapshot?: (snapshot: ChatContextSnapshot) => Promise<void> | void;
   onRetryState?: (state: ChatRetrySnapshot | null) => Promise<void> | void;
 }
@@ -243,6 +249,7 @@ export async function runAgentLoop(
       deferOutputUntilValidated: params.deferOutputUntilValidated,
       runId: params.runId,
       runAttempt: params.runAttempt,
+      provenance: params.provenance,
     });
 
     guardrailsPassed = finalised.guardrailsPassed;
@@ -741,6 +748,7 @@ export async function runAgentLoop(
       log_id: finalMessage.log_id,
       tool_calls: finalMessage.tool_calls ?? null,
       status: finalStatus,
+      ...(finalMessage.provenance ? { provenance: finalMessage.provenance } : {}),
       ...(totalUsage ? { usage: totalUsage, totalUsage } : {}),
       ...(usedTools ? { steps } : {}),
     },

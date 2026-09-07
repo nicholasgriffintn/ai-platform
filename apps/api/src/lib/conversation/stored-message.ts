@@ -1,3 +1,5 @@
+import { runProvenanceSchema } from "@ngriffin_uk/polychat-schemas";
+
 import type { Message } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
@@ -25,6 +27,11 @@ export function formatStoredMessage(dbMessage: Record<string, unknown>): Message
     : dbMessage.citations;
   const data = dbMessage.data ? safeParseJson(dbMessage.data as string) : dbMessage.data;
   const parts = dbMessage.parts ? safeParseJson(dbMessage.parts as string) : dbMessage.parts;
+  const provenanceValue =
+    typeof dbMessage.provenance_json === "string"
+      ? safeParseJson(dbMessage.provenance_json)
+      : dbMessage.provenance_json;
+  const provenance = runProvenanceSchema.safeParse(provenanceValue);
   const normalisedParts = normaliseMessageParts(parts, dbMessage.timestamp as number | undefined);
   const message = {
     ...dbMessage,
@@ -42,6 +49,7 @@ export function formatStoredMessage(dbMessage: Record<string, unknown>): Message
     data,
     parts: normalisedParts,
     usage: dbMessage.usage ? safeParseJson(dbMessage.usage as string) : undefined,
+    ...(provenance.success ? { provenance: provenance.data } : {}),
     log_id: dbMessage.log_id as string,
   } as Message;
 

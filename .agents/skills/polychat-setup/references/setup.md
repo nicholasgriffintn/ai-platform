@@ -41,4 +41,6 @@ Use the existing [E2E personas](testing/e2e.md) for deterministic Free and Pro j
 
 Open `apps/mobile/ios/Polychat.xcodeproj` in Xcode. Configure an available iPhone simulator and use `pnpm dev:mobile`, `pnpm test:mobile` or `pnpm build:mobile`; `scripts/xcodebuild-mobile.sh` owns the build details. Distribution additionally requires manual signing, archive and export in Xcode. Follow [white-labelling](white-labelling.md) for bundle identity and associated domains.
 
+Refresh the checked-in model response fixture from a running API with `pnpm refresh:mobile-model-fixture`. Set `POLYCHAT_API_URL` when the API is not running at `http://localhost:8787`; set `POLYCHAT_API_TOKEN` when the fixture should represent an authenticated account's model access. Keep tokens in the environment rather than in the repository.
+
 Optional Worker details live in [sandbox](components/sandbox-worker.md) and [training](components/training-worker.md).

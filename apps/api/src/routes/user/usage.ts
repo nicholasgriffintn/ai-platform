@@ -1,5 +1,7 @@
 import {
   errorResponseSchema,
+  recordOffPlatformUsageRequestSchema,
+  successResponseSchema,
   usageBalanceResponseSchema,
   usageEventsQuerySchema,
   usageEventsResponseSchema,
@@ -10,7 +12,12 @@ import { Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
 import { anonymousCreditActor, userCreditActor } from "~/lib/usage/creditActor";
-import { getUsageBalance, getUsageSummary, listUsageEvents } from "~/services/user/usage";
+import {
+  getUsageBalance,
+  getUsageSummary,
+  listUsageEvents,
+  recordOffPlatformUsage,
+} from "~/services/user/usage";
 
 const app = new Hono();
 
@@ -56,6 +63,20 @@ addRoute(app, "get", "/events", {
     401: { description: "Authentication required", schema: errorResponseSchema },
   },
   handler: ({ query, serviceContext, user }) => listUsageEvents(serviceContext, user.id, query),
+});
+
+addRoute(app, "post", "/off-platform", {
+  tags: ["user"],
+  auth: true,
+  summary: "Record an off-platform model run",
+  description: "Records a zero-cost ledger event for a model that ran outside the hosted service",
+  bodySchema: recordOffPlatformUsageRequestSchema,
+  responses: {
+    200: { description: "Off-platform run recorded", schema: successResponseSchema },
+    401: { description: "Authentication required", schema: errorResponseSchema },
+  },
+  handler: ({ body, serviceContext, user }) =>
+    recordOffPlatformUsage(serviceContext, user.id, body),
 });
 
 export default app;

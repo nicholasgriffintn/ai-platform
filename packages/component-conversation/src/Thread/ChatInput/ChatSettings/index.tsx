@@ -42,14 +42,22 @@ function isChatServiceTier(value: string): value is ChatServiceTier {
 }
 
 export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
-  const { chatMode, chatSettings, isPro, model, setChatSettings, setUseMultiModel, useMultiModel } =
-    useChatStore();
+  const {
+    chatMode,
+    computeSite,
+    chatSettings,
+    isPro,
+    model,
+    setChatSettings,
+    setUseMultiModel,
+    useMultiModel,
+  } = useChatStore();
   const [showSettings, setShowSettings] = useState(false);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
-  const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
+  const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
   const availableModels = useMemo(
-    () => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
-    [apiModels, chatMode, webLLMModels],
+    () => getAvailableModels(apiModels, computeSite === "browser", webLLMModels),
+    [apiModels, computeSite, webLLMModels],
   );
 
   const activeModelId = model && model.length > 0 ? model : undefined;
@@ -59,7 +67,7 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
   const defaultReasoningEffort = getDefaultReasoningEffort(selectedModelConfig);
   const verbosityOptions = getVerbosityOptions(selectedModelConfig);
   const defaultVerbosity = getDefaultVerbosity(selectedModelConfig);
-  const showMultiModelToggle = isPro && !model && chatMode === "remote";
+  const showMultiModelToggle = isPro && !model && chatMode === "chat";
   const fastTierMultiplier = selectedModelConfig?.serviceTierMultipliers?.fast;
   const fastTierPrice = fastTierMultiplier ? ` at ${fastTierMultiplier}× token price` : "";
   const serviceTierDescription = selectedModelConfig?.matchingModel.startsWith("gpt-6-astra")

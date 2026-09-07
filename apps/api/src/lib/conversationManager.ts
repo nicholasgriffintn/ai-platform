@@ -1,4 +1,4 @@
-import type { ConversationType, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationType, ModelConfigItem, ModelTier } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
 import type {
@@ -45,6 +45,7 @@ const logger = getLogger({ prefix: "lib/conversationManager" });
 export interface TurnAdmissionRequest {
   modelConfig?: ModelConfigItem | null;
   messages: Message[];
+  skipCreditAdmission?: boolean;
 }
 
 export interface DurableTurnReservation {
@@ -70,6 +71,8 @@ export interface ConversationDetails extends Record<string, unknown> {
 interface ConversationWriteOptions {
   metadata?: Record<string, string>;
   type?: ConversationType;
+  model_id?: string | null;
+  model_tier?: ModelTier | null;
 }
 
 export class ConversationManager {
@@ -320,6 +323,8 @@ export class ConversationManager {
           parent_message_id: parentMessageId,
           project_id: projectId,
           type: options?.type,
+          model_id: options?.model_id,
+          model_tier: options?.model_tier,
         },
       );
     }
@@ -329,6 +334,26 @@ export class ConversationManager {
         "You don't have permission to update this conversation",
         ErrorType.FORBIDDEN,
       );
+    }
+
+    const selectionUpdates: Record<string, unknown> = {};
+
+    if (options?.model_id !== undefined) {
+      selectionUpdates.model_id = options.model_id;
+    }
+
+    if (options?.model_tier !== undefined) {
+      selectionUpdates.model_tier = options.model_tier;
+    }
+
+    if (Object.keys(selectionUpdates).length > 0) {
+      await this.assertWriteOwnership();
+      await this.database.repositories.conversations.updateConversation(
+        conversation_id,
+        selectionUpdates,
+      );
+
+      return { ...conversation, ...selectionUpdates };
     }
 
     return conversation;
@@ -428,6 +453,10 @@ export class ConversationManager {
   }
 
   private async resolveTurnAdmission(params: TurnAdmissionRequest): Promise<TurnAdmission | null> {
+    if (params.skipCreditAdmission) {
+      return null;
+    }
+
     const actor = this.creditActor();
     const repositories = this.repositories;
 
@@ -711,8 +740,12 @@ export class ConversationManager {
         updates.parts = normaliseMessageParts(message.parts, message.timestamp) || [];
       }
 
+      if (message.provenance !== undefined) {
+        updates.provenance_json = message.provenance;
+      }
+
       for (const [key, value] of Object.entries(message)) {
-        if (!["id", "content", "parts"].includes(key)) {
+        if (!["id", "content", "parts", "provenance"].includes(key)) {
           updates[key] = value;
         }
       }
@@ -1004,7 +1037,13 @@ export class ConversationManager {
       },
     );
 
-    return result;
+    return {
+      ...result,
+      conversations: result.conversations.map((conversation) => ({
+        ...conversation,
+        model: conversation.model_id ?? null,
+      })),
+    };
   }
 
   async setArchivedForAll(options: SetConversationsArchivedOptions): Promise<number> {
@@ -1045,7 +1084,10 @@ export class ConversationManager {
       );
     }
 
-    return conversation;
+    return {
+      ...conversation,
+      model: conversation.model_id ?? null,
+    };
   }
 
   /**

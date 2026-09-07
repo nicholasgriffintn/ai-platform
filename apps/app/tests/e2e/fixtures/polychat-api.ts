@@ -49,6 +49,14 @@ export class PolychatApi {
     return getChatCompletionResponseSchema.parse(await response.json());
   }
 
+  async conversationStatus(completionId: string): Promise<number> {
+    return (
+      await this.request.get(`${API_BASE_URL}/chat/completions/${completionId}`, {
+        headers: BROWSER_REQUEST_HEADERS,
+      })
+    ).status();
+  }
+
   async currentUser() {
     const response = await this.request.get(`${API_BASE_URL}/auth/me`);
 

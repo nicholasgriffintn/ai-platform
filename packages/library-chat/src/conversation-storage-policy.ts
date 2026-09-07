@@ -1,38 +1,60 @@
-import type { ChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ChatCompletionRequestBody,
+  ConversationRetention,
+  RetentionReason,
+} from "@ngriffin_uk/polychat-schemas";
+
+export type { ConversationRetention, RetentionReason } from "@ngriffin_uk/polychat-schemas";
 
 export type ChatRequestOptions = Partial<ChatCompletionRequestBody>;
 
 export interface ConversationStorageState {
   isAuthenticated: boolean;
   isPro: boolean;
-  temporaryChat: boolean;
+  temporaryChat?: boolean;
   temporaryChatsDefault: boolean;
-  /** The answer is being produced on this machine, so its content never reaches the service. */
   runsOnDevice?: boolean;
 }
 
 export interface ConversationStorageMode {
-  isTemporary: boolean;
+  retention: ConversationRetention;
+  reason: RetentionReason;
   isProjectScoped: boolean;
-  shouldSyncRemote: boolean;
 }
 
 export function resolveConversationStorageMode(
   state: ConversationStorageState,
   requestOptions?: ChatRequestOptions,
 ): ConversationStorageMode {
-  const isProjectScoped = Boolean(requestOptions?.metadata?.project_id) && !state.runsOnDevice;
+  const isProjectScoped = Boolean(requestOptions?.metadata?.project_id);
 
-  if (isProjectScoped) {
-    return { isTemporary: false, isProjectScoped, shouldSyncRemote: true };
+  if (!state.isAuthenticated) {
+    return { retention: "temporary", reason: "signed_out", isProjectScoped };
   }
 
-  const isTemporary =
-    Boolean(state.runsOnDevice) ||
-    !state.isAuthenticated ||
-    !state.isPro ||
-    state.temporaryChat ||
-    state.temporaryChatsDefault;
+  if (!state.isPro) {
+    return { retention: "temporary", reason: "plan", isProjectScoped };
+  }
 
-  return { isTemporary, isProjectScoped, shouldSyncRemote: !isTemporary };
+  if (isProjectScoped) {
+    return { retention: "kept", reason: "chosen", isProjectScoped };
+  }
+
+  if (state.temporaryChat !== undefined) {
+    return {
+      retention: state.temporaryChat ? "temporary" : "kept",
+      reason: "chosen",
+      isProjectScoped,
+    };
+  }
+
+  if (state.temporaryChatsDefault) {
+    return { retention: "temporary", reason: "default", isProjectScoped };
+  }
+
+  return {
+    retention: "kept",
+    reason: state.runsOnDevice ? "device_default" : "chosen",
+    isProjectScoped,
+  };
 }

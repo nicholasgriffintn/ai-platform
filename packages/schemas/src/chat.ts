@@ -7,6 +7,7 @@ import {
 } from "./chat-runs.js";
 import { normaliseCompactionStatusMessage } from "./compaction-status.js";
 import { messagePartsSchema } from "./message-parts.js";
+import { modelTierSchema } from "./model-lineup.js";
 import { messageSchema } from "./shared.js";
 import { threadOperationSchema } from "./thread-operations.js";
 
@@ -200,6 +201,7 @@ export const getChatCompletionResponseSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   model: z.string().nullable().optional(),
+  model_tier: modelTierSchema.nullable().optional(),
   is_archived: z.boolean(),
   user_id: z.number().int().nullable(),
   share_id: z.string().nullable(),

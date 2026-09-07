@@ -27,6 +27,7 @@ type ConversationUpdateMessage = ChatRequestMessage & {
   mode?: string;
   platform?: string;
   provider?: string;
+  provenance?: Message["provenance"];
   status?: string;
   timestamp?: number;
   usage?: Message["usage"];
@@ -367,6 +368,7 @@ export function serialiseMessageForConversationUpdate(message: Message): Convers
     tool_call_id: normalizedMessage.tool_call_id || undefined,
     tool_call_arguments: normalizedMessage.tool_call_arguments || undefined,
     usage: normalizedMessage.usage,
+    provenance: normalizedMessage.provenance,
   };
 
   const toolCalls = serialiseToolCallsForChatRequest(normalizedMessage.tool_calls);

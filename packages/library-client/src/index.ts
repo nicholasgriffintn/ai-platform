@@ -45,6 +45,7 @@ export * from "./workspaces.js";
 export * from "./yield-to-main-thread.js";
 export * from "./services/audio-service.js";
 export * from "./services/chat-service.js";
+export * from "./services/machine-service.js";
 export * from "./services/research-service.js";
 export * from "./services/strudel-service.js";
 export * from "./services/subscription-service.js";

@@ -44,7 +44,7 @@ export function ModelSelectorTrigger({
       type="button"
       onClick={onToggle}
       disabled={disabled}
-      aria-haspopup="listbox"
+      aria-haspopup="dialog"
       aria-expanded={isOpen}
       aria-label="Select a model"
       className={`flex w-full cursor-pointer items-center gap-2 rounded-md bg-selection text-foreground transition-colors hover:bg-active-work/15 disabled:cursor-not-allowed ${minimal ? "px-2 py-1" : "px-3 py-1.5"}`}

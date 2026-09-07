@@ -3,6 +3,7 @@ import type {
   ConversationArchiveFilter,
   ConversationSortBy,
   ConversationType,
+  ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
@@ -33,6 +34,8 @@ export interface CreateConversationOptions {
   parent_message_id?: string;
   project_id?: string;
   type?: ConversationType;
+  model_id?: string | null;
+  model_tier?: ModelTier | null;
 }
 
 export interface GlobalConversationSearchRow {
@@ -62,6 +65,8 @@ export class ConversationRepository extends BaseRepository {
     const parentMessageId = options.parent_message_id;
     const projectId = options.project_id;
     const type = options.type ?? "chat";
+    const modelId = options.model_id ?? null;
+    const modelTier = options.model_tier ?? null;
 
     const result = this.runQuery<Record<string, unknown>>(
       `INSERT INTO conversation (
@@ -72,10 +77,12 @@ export class ConversationRepository extends BaseRepository {
          parent_conversation_id,
 		 parent_message_id,
 		 project_id,
+         model_id,
+         model_tier,
          created_at, 
          updated_at
        )
-		 VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
        RETURNING *`,
       [
         conversationId,
@@ -85,6 +92,8 @@ export class ConversationRepository extends BaseRepository {
         parentConversationId ?? null,
         parentMessageId ?? null,
         projectId ?? null,
+        modelId,
+        modelTier,
       ],
       true,
     );
@@ -94,7 +103,17 @@ export class ConversationRepository extends BaseRepository {
 
   public async getConversation(conversationId: string): Promise<Record<string, unknown> | null> {
     const conversation = await this.runQuery<Record<string, unknown>>(
-      `SELECT c.*, EXISTS (
+      `SELECT c.*,
+         COALESCE(c.model_id, (
+           SELECT message.model
+           FROM message
+           WHERE message.conversation_id = c.id
+             AND message.role = 'assistant'
+             AND message.model IS NOT NULL
+           ORDER BY message.created_at DESC, message.id DESC
+           LIMIT 1
+         )) AS model_id,
+         EXISTS (
          SELECT 1 FROM conversation related
          WHERE (related.id = c.parent_conversation_id OR related.parent_conversation_id = c.id)
            AND related.id != c.id
@@ -232,6 +251,15 @@ export class ConversationRepository extends BaseRepository {
       sortBy === "title"
         ? `
         SELECT c.*,
+          COALESCE(c.model_id, (
+            SELECT message.model
+            FROM message
+            WHERE message.conversation_id = c.id
+              AND message.role = 'assistant'
+              AND message.model IS NOT NULL
+            ORDER BY message.created_at DESC, message.id DESC
+            LIMIT 1
+          )) AS model_id,
           COALESCE(state.is_pinned, 0) AS is_pinned,
           COALESCE(state.is_unread, 0) AS is_unread,
           state.snoozed_until,
@@ -260,6 +288,15 @@ export class ConversationRepository extends BaseRepository {
       `
         : `
         SELECT c.*,
+          COALESCE(c.model_id, (
+            SELECT message.model
+            FROM message
+            WHERE message.conversation_id = c.id
+              AND message.role = 'assistant'
+              AND message.model IS NOT NULL
+            ORDER BY message.created_at DESC, message.id DESC
+            LIMIT 1
+          )) AS model_id,
           COALESCE(state.is_pinned, 0) AS is_pinned,
           COALESCE(state.is_unread, 0) AS is_unread,
           state.snoozed_until,
@@ -362,6 +399,8 @@ export class ConversationRepository extends BaseRepository {
       "message_count",
       "is_public",
       "share_id",
+      "model_id",
+      "model_tier",
     ];
 
     const result = this.buildUpdateQuery("conversation", updates, allowedFields, "id = ?", [

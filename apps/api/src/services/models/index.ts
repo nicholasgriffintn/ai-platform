@@ -140,6 +140,8 @@ export async function listModelsByOutputModality(env: IEnv, modality: string, us
   return includeModelIds(filteredModels);
 }
 
+export { resolveTierLineup } from "./tiers";
+
 /**
  * Get model details by ID if user has access.
  */

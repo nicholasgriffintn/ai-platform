@@ -1,4 +1,4 @@
-import type { ChatMode } from "./chat-modes.js";
+import type { ComputeSite } from "./compute-sites.js";
 import type { ModelCatalogItem, ModelConfig, ModelConfigItem, ModelModality } from "./models.js";
 import type { ReasoningEffort } from "./reasoning.js";
 
@@ -305,9 +305,9 @@ export function getRealtimeSessionModelsByProvider(models: ModelConfig, provider
   }, {});
 }
 
-export function getChatAndRealtimeModelsByMode(models: ModelConfig, mode: ChatMode) {
+export function getChatAndRealtimeModelsByMode(models: ModelConfig, computeSite: ComputeSite) {
   return {
-    ...getModelsByMode(models, mode),
+    ...getModelsByMode(models, computeSite),
     ...getRealtimeSessionModelsByProvider(models),
   };
 }
@@ -325,7 +325,7 @@ export function getToolCallModels(models: ModelConfig) {
   }, {});
 }
 
-export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
+export function getModelsByMode(models: ModelConfig, computeSite: ComputeSite) {
   return Object.entries(models).reduce<Record<string, ModelCatalogItem>>((acc, [key, model]) => {
     const outputs = getModelOutputModalities(model);
     const isEmbeddingOnly =
@@ -335,9 +335,16 @@ export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
     const isHidden = model.hiddenFromDefaultList;
     const isIncompatible =
       !isTextInputChatModel(model) || isAudioOnly || isVideoOnly || isEmbeddingOnly || isHidden;
-    const isLocalModel = runsOffPlatform(model);
+    const matchesComputeSite =
+      computeSite === "browser"
+        ? isBrowserModel(model)
+        : computeSite === "device"
+          ? runsOnDevice(model) && !model.machineId
+          : computeSite === "machine"
+            ? Boolean(model.machineId)
+            : !runsOffPlatform(model);
 
-    if (!isHidden && !isIncompatible && (mode === "local" ? isLocalModel : !isLocalModel)) {
+    if (!isHidden && !isIncompatible && matchesComputeSite) {
       acc[key] = {
         ...model,
         id: key,

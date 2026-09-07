@@ -2,22 +2,18 @@ import { cn } from "@ngriffin_uk/polychat-component-ui";
 import {
   DEFAULT_MODEL_TIER,
   formatReasoningLabel,
-  getModelDisplayName,
   getModelTierDefinition,
-  isLineupEligibleModel,
-  isTextInputChatModel,
   MODEL_TIER_DEFINITIONS,
   MODEL_TIER_ROLE_DEFINITIONS,
   MODEL_TIER_ROLES,
-  resolveModelTierSelection,
-  type ModelConfigItem,
   type ModelLineupRuntime,
   type ModelTier,
   type ModelTierRole,
-  type ResolvedLineupCandidate,
+  type ModelTierLineup,
+  type ResolvedModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { Check, Crown, Rocket, Sparkles, Wand2, Zap } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { ModelIcon } from "../ModelIcon/ModelIcon";
 
@@ -27,11 +23,11 @@ export type ModelTierChoice = ModelTier | typeof INHERITED_MODEL_TIER;
 
 export interface ModelTierSelection {
   tier: ModelTier | null;
-  agent: ResolvedLineupCandidate | null;
+  agent: ResolvedModelTier | null;
 }
 
 interface ModelTierPickerProps {
-  models: ModelConfigItem[];
+  resolved?: ModelTierLineup;
   runtime: ModelLineupRuntime;
   selectedTier: ModelTier | null;
   allowInherit?: boolean;
@@ -98,27 +94,48 @@ function getTierTone(tier: ModelTier | null) {
   }
 }
 
-export function toModelRecord(models: ModelConfigItem[]): Record<string, ModelConfigItem> {
-  return Object.fromEntries(models.map((model) => [model.id ?? model.matchingModel, model]));
-}
-
-export function resolveTierRole(
-  models: Record<string, ModelConfigItem>,
-  runtime: ModelLineupRuntime,
+function getTierRoleSelection(
+  resolved: ModelTierLineup | undefined,
   tier: ModelTier,
   role: ModelTierRole,
 ) {
-  return resolveModelTierSelection(models, runtime, tier, role, {
-    isEligible: (model) => isLineupEligibleModel(model) && isTextInputChatModel(model),
-  });
+  return resolved?.[tier][role] ?? null;
+}
+
+function getEmptyRoleMessage(runtime: ModelLineupRuntime) {
+  switch (runtime) {
+    case "browser":
+      return "No matching browser model is available.";
+    case "device":
+      return "No matching model was discovered on this device.";
+    case "machine":
+      return "No matching model is available on the selected machine.";
+    default:
+      return "Not available on your plan yet";
+  }
+}
+
+function getTierHint(runtime: ModelLineupRuntime) {
+  switch (runtime) {
+    case "browser":
+      return "Only browser models currently available on this device are shown.";
+    case "device":
+      return "Only models discovered on this device are shown. Install a matching model to use this tier.";
+    case "machine":
+      return "Only models advertised by the selected machine are shown.";
+    default:
+      return "The first model your plan can run wins. Add a provider key to move up the lineup.";
+  }
 }
 
 function TierRoleRow({
   role,
   selection,
+  runtime,
 }: {
   role: ModelTierRole;
-  selection: ResolvedLineupCandidate | null;
+  selection: ResolvedModelTier | null;
+  runtime: ModelLineupRuntime;
 }) {
   const definition = MODEL_TIER_ROLE_DEFINITIONS[role];
 
@@ -131,21 +148,18 @@ function TierRoleRow({
       {selection ? (
         <div className="flex min-w-0 shrink-0 flex-col items-end gap-1 text-right">
           <span className="inline-flex max-w-[12rem] items-center gap-1.5 text-xs font-medium text-foreground">
-            <ModelIcon
-              url={selection.config.avatarUrl}
-              modelName={getModelDisplayName(selection.config)}
-              provider={selection.config.provider}
-              size={13}
-            />
-            <span className="truncate">{getModelDisplayName(selection.config)}</span>
+            <ModelIcon modelName={selection.name} provider={selection.provider} size={13} />
+            <span className="truncate">{selection.name}</span>
           </span>
           <span className="font-mono text-[10px] tracking-wide text-muted-foreground uppercase">
-            {selection.config.provider}
+            {selection.provider}
             {selection.effort ? ` · ${formatReasoningLabel(selection.effort)}` : ""}
           </span>
         </div>
       ) : (
-        <span className="shrink-0 text-xs text-muted-foreground">Not on your plan yet</span>
+        <span className="max-w-[12rem] shrink-0 text-right text-xs text-muted-foreground">
+          {getEmptyRoleMessage(runtime)}
+        </span>
       )}
     </div>
   );
@@ -153,11 +167,11 @@ function TierRoleRow({
 
 function TierDetail({
   tier,
-  models,
+  resolved,
   runtime,
 }: {
   tier: ModelTier | null;
-  models: Record<string, ModelConfigItem>;
+  resolved?: ModelTierLineup;
   runtime: ModelLineupRuntime;
 }) {
   const effectiveTier = tier ?? DEFAULT_MODEL_TIER;
@@ -190,26 +204,26 @@ function TierDetail({
           <TierRoleRow
             key={role}
             role={role}
-            selection={resolveTierRole(models, runtime, effectiveTier, role)}
+            selection={getTierRoleSelection(resolved, effectiveTier, role)}
+            runtime={runtime}
           />
         ))}
       </div>
       <p className="mt-auto pt-3 text-[11px] leading-4 text-muted-foreground">
-        The first model your plan can run wins. Add a provider key to move up the lineup.
+        {getTierHint(runtime)}
       </p>
     </div>
   );
 }
 
 export function ModelTierPicker({
-  models,
+  resolved,
   runtime,
   selectedTier,
   allowInherit = true,
   disabled,
   onSelectTier,
 }: ModelTierPickerProps) {
-  const record = useMemo(() => toModelRecord(models), [models]);
   const [previewTier, setPreviewTier] = useState<ModelTierChoice | null>(null);
   const choices: Array<ModelTier | null> = [
     ...(allowInherit ? [null] : []),
@@ -229,10 +243,10 @@ export function ModelTierPicker({
           const tagline = tier
             ? getModelTierDefinition(tier).tagline
             : "Project or account default";
-          const hasTeammate = Boolean(
-            resolveTierRole(record, runtime, tier ?? DEFAULT_MODEL_TIER, "agent"),
-          );
-          const isChoiceDisabled = disabled || !hasTeammate;
+          const hasAgent = tier
+            ? Boolean(getTierRoleSelection(resolved, tier, "agent"))
+            : Boolean(resolved?.medium.agent);
+          const isChoiceDisabled = disabled || !hasAgent;
 
           return (
             <button
@@ -250,7 +264,9 @@ export function ModelTierPicker({
               onClick={() =>
                 onSelectTier({
                   tier,
-                  agent: resolveTierRole(record, runtime, tier ?? DEFAULT_MODEL_TIER, "agent"),
+                  agent: tier
+                    ? getTierRoleSelection(resolved, tier, "agent")
+                    : (resolved?.medium.agent ?? null),
                 })
               }
               className={cn(
@@ -286,7 +302,7 @@ export function ModelTierPicker({
           );
         })}
       </div>
-      <TierDetail tier={detailTier} models={record} runtime={runtime} />
+      <TierDetail tier={detailTier} resolved={resolved} runtime={runtime} />
     </div>
   );
 }

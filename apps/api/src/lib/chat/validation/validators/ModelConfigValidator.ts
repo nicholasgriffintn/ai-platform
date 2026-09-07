@@ -1,6 +1,9 @@
 import { getAllAttachments } from "~/lib/chat/messages/attachments";
 import { selectModels } from "~/lib/chat/policy/model-access";
-import { resolveProjectModelTier } from "~/lib/chat/policy/project-model-tier";
+import {
+  resolveConversationModelSelection,
+  resolveProjectModelTier,
+} from "~/lib/chat/policy/project-model-tier";
 import type {
   ValidationContext,
   Validator,
@@ -49,6 +52,18 @@ export class ModelConfigValidator implements Validator {
 
     const { allAttachments } = getAllAttachments(lastMessageContent);
 
+    const storedSelection = await resolveConversationModelSelection(options);
+    const userSettings = options.context ? await options.context.getUserSettings() : null;
+    const hasExplicitModel = Boolean(requestedModel || requestedModels?.length);
+    const effectiveModel =
+      requestedModel ??
+      (!requestedModels?.length
+        ? (storedSelection.modelId ??
+          (!storedSelection.conversationExists
+            ? (userSettings?.default_model_id ?? undefined)
+            : undefined))
+        : undefined);
+    const usesModelTier = !hasExplicitModel && !effectiveModel;
     const tier = await resolveProjectModelTier(options);
 
     try {
@@ -57,7 +72,7 @@ export class ModelConfigValidator implements Validator {
         user,
         attachments: allAttachments,
         tier,
-        requestedModel,
+        requestedModel: effectiveModel,
         requestedModels,
         requestedProvider,
         useMultiModel: use_multi_model,
@@ -100,6 +115,7 @@ export class ModelConfigValidator implements Validator {
         context: {
           modelConfig: primaryModelConfig,
           selectedModels: selection.models,
+          ...(usesModelTier ? { modelTier: tier } : {}),
           reasoningEffort: selection.reasoningEffort,
         },
       };

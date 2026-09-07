@@ -135,4 +135,16 @@ export const PET_STRAYS: PetLoreEntry[] = [
       { label: "Notable", value: "Outlasts every roadmap" },
     ],
   ),
+  entry(
+    "wisp",
+    "Present, briefly.",
+    [
+      "Wisp appears when a conversation is not being kept. It does not ask why.",
+      "Remembers nothing and is at peace with it. This is probably the healthiest arrangement in the flock.",
+    ],
+    [
+      { label: "Temperament", value: "Ephemeral" },
+      { label: "Notable", value: "Leaves no history behind" },
+    ],
+  ),
 ];

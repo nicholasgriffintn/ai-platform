@@ -1,19 +1,22 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ngriffin_uk/polychat-component-ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type {
-  ChatMode,
+  ComputeSite,
+  ConversationRetention,
   ModelCatalogItem,
   ModelConfigItem,
-  ModelLineupRuntime,
   ModelModality,
   ModelTier,
+  ModelTierLineup,
+  RetentionReason,
 } from "@ngriffin_uk/polychat-schemas";
-import { Cloud, Computer, Filter, Gauge, Search, Server } from "lucide-react";
+import { MODEL_TIER_DEFINITIONS } from "@ngriffin_uk/polychat-schemas";
+import { CircleHelp, Filter, Search } from "lucide-react";
 import type { KeyboardEvent, RefObject } from "react";
 
 import { ModelsList } from "./ModelsList";
 import { ModelTierPicker, type ModelTierSelection } from "./ModelTierPicker";
-
-export type ModelSelectorTab = "tiers" | "models";
+import { RetentionRow } from "./RetentionRow";
+import { RuntimeRail, type RuntimeRailOption } from "./RuntimeRail";
 
 export interface ModelSelectorPanelLayout {
   left: number;
@@ -26,9 +29,16 @@ export interface ModelSelectorPanelProps {
   layout: ModelSelectorPanelLayout | null;
   onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void;
 
-  selectedTab: ModelSelectorTab;
-  onTabChange: (tab: ModelSelectorTab) => void;
-  showTiersTab: boolean;
+  runtimeOptions?: RuntimeRailOption[];
+  selectedComputeSite?: ComputeSite;
+  selectedMachineId?: string;
+  onComputeSiteChange?: (computeSite: ComputeSite, machineId?: string) => void;
+
+  showTiers: boolean;
+  tierLineup?: ModelTierLineup;
+  modelTier: ModelTier | null;
+  onModelTierChange: (selection: ModelTierSelection) => void;
+  onTierShortcut?: (tier: ModelTier) => void;
 
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
@@ -36,13 +46,10 @@ export interface ModelSelectorPanelProps {
   selectedCapability: ModelModality | null;
   onCapabilityChange: (capability: ModelModality | null) => void;
 
-  chatMode?: ChatMode;
-  onChatModeChange?: (mode: ChatMode) => void;
-
-  tierModels: ModelConfigItem[];
-  tierRuntime: ModelLineupRuntime;
-  modelTier: ModelTier | null;
-  onModelTierChange: (selection: ModelTierSelection) => void;
+  retention?: ConversationRetention;
+  retentionReason?: RetentionReason;
+  onRetentionChange?: (retention: ConversationRetention) => void;
+  isRetentionLocked?: boolean;
 
   models: ModelCatalogItem[];
   featuredModelIds: Record<string, ModelCatalogItem>;
@@ -54,6 +61,20 @@ export interface ModelSelectorPanelProps {
   onModelSelect: (id: string, model: ModelCatalogItem) => void;
   onInfoHoverStart?: (model: ModelConfigItem, anchorRect: DOMRect) => void;
   onInfoHoverEnd?: () => void;
+  onOpenModelSources?: () => void;
+}
+
+function isTextEntryTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    target.isContentEditable
+  );
 }
 
 export function ModelSelectorPanel({
@@ -61,20 +82,24 @@ export function ModelSelectorPanel({
   searchInputRef,
   layout,
   onKeyDown,
-  selectedTab,
-  onTabChange,
-  showTiersTab,
+  runtimeOptions,
+  selectedComputeSite,
+  selectedMachineId,
+  onComputeSiteChange,
+  showTiers,
+  tierLineup,
+  modelTier,
+  onModelTierChange,
+  onTierShortcut,
   searchQuery,
   onSearchQueryChange,
   capabilities,
   selectedCapability,
   onCapabilityChange,
-  chatMode,
-  onChatModeChange,
-  tierModels,
-  tierRuntime,
-  modelTier,
-  onModelTierChange,
+  retention = "kept",
+  retentionReason = "chosen",
+  onRetentionChange,
+  isRetentionLocked,
   models,
   featuredModelIds,
   isDisabled,
@@ -85,159 +110,145 @@ export function ModelSelectorPanel({
   onModelSelect,
   onInfoHoverStart,
   onInfoHoverEnd,
+  onOpenModelSources,
 }: ModelSelectorPanelProps) {
-  const showModelSource = Boolean(chatMode && onChatModeChange);
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const tierIndex = Number.parseInt(event.key, 10) - 1;
+
+    if (
+      showTiers &&
+      !isTextEntryTarget(event.target) &&
+      tierIndex >= 0 &&
+      tierIndex < MODEL_TIER_DEFINITIONS.length
+    ) {
+      event.preventDefault();
+      onTierShortcut?.(MODEL_TIER_DEFINITIONS[tierIndex].id);
+
+      return;
+    }
+
+    onKeyDown(event);
+  };
 
   return (
     <div
       ref={panelRef}
-      onKeyDown={onKeyDown}
+      onKeyDown={handleKeyDown}
       role="dialog"
       tabIndex={-1}
       aria-modal="false"
       style={layout ? { left: `${layout.left}px`, width: `${layout.width}px` } : undefined}
-      className="absolute bottom-full left-0 z-50 mb-1 flex max-h-[70vh] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border border-border bg-surface-elevated shadow-[var(--polychat-elevated-shadow)] sm:max-h-[75vh] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
+      className="absolute bottom-full left-0 z-50 mb-1 flex max-h-[80vh] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border border-border bg-surface-elevated shadow-[var(--polychat-elevated-shadow)] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
       aria-label="Model selection dialog"
     >
-      {selectedTab === "models" && (
+      {runtimeOptions && selectedComputeSite && onComputeSiteChange && (
         <div className="border-b border-border p-2">
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="relative flex-1">
-              <input
-                ref={searchInputRef}
-                placeholder="Search models..."
-                value={searchQuery}
-                onChange={(event) => onSearchQueryChange(event.target.value)}
-                className="w-full rounded-md border border-border bg-surface py-2 pr-3 pl-8 text-sm text-foreground placeholder:text-muted-foreground focus:border-active-work focus:outline-none"
-                aria-label="Search models"
-              />
-              <Search
-                className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                aria-hidden="true"
-              />
-            </div>
-            <div className="relative sm:w-48">
-              <select
-                value={selectedCapability || ""}
-                onChange={(event) => {
-                  const nextCapability =
-                    capabilities.find((capability) => capability === event.target.value) ?? null;
-
-                  onCapabilityChange(nextCapability);
-                }}
-                className="w-full appearance-none rounded-md border border-border bg-surface py-2 pr-3 pl-8 text-sm text-foreground focus:border-active-work focus:outline-none"
-                aria-label="Filter by model type"
-              >
-                <option value="">All model types</option>
-                {capabilities.map((capability) => (
-                  <option key={capability} value={capability}>
-                    {capability}
-                  </option>
-                ))}
-              </select>
-              <Filter
-                className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                aria-hidden="true"
-              />
-            </div>
-          </div>
+          <RuntimeRail
+            options={runtimeOptions}
+            selected={selectedComputeSite}
+            selectedMachineId={selectedMachineId}
+            onSelect={onComputeSiteChange}
+          />
         </div>
       )}
 
-      <Tabs
-        value={selectedTab}
-        onValueChange={(value) => {
-          const tab = value as ModelSelectorTab;
+      {showTiers && (
+        <section
+          aria-label="Model tiers"
+          className="max-h-[19rem] overflow-y-auto border-b border-border"
+        >
+          <ModelTierPicker
+            resolved={tierLineup}
+            runtime={selectedComputeSite ?? "hosted"}
+            selectedTier={modelTier}
+            allowInherit={selectedComputeSite === "hosted"}
+            disabled={isDisabled || isModelLocked}
+            onSelectTier={onModelTierChange}
+          />
+        </section>
+      )}
 
-          if (!showTiersTab && tab !== "models") {
-            return;
-          }
-
-          onTabChange(tab);
-        }}
-        className="min-h-0 flex-1 px-2 pt-2 pb-2"
-      >
-        {showTiersTab && (
-          <>
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-1">
-              <TabsTrigger value="tiers" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
-                <Gauge className="h-4 w-4" />
-                Tiers
-              </TabsTrigger>
-              <TabsTrigger value="models" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
-                <Server className="h-4 w-4" />
-                Models
-              </TabsTrigger>
-            </TabsList>
-            <div className="w-full border-b border-border" />
-
-            <TabsContent value="tiers" className="min-h-0 overflow-y-auto">
-              <ModelTierPicker
-                models={tierModels}
-                runtime={tierRuntime}
-                selectedTier={modelTier}
-                allowInherit={tierRuntime === "hosted"}
-                disabled={isDisabled || isModelLocked}
-                onSelectTier={onModelTierChange}
-              />
-            </TabsContent>
-          </>
-        )}
-
-        <TabsContent value="models" className="flex min-h-0 flex-col overflow-hidden">
-          <div className="flex min-h-0 flex-1 flex-col gap-3">
-            {showModelSource && (
-              <div>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-xs text-muted-foreground">Model Source:</div>
-                  <div className="inline-flex items-center rounded-md bg-surface p-0.5">
-                    <button
-                      type="button"
-                      className={`flex cursor-pointer items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
-                        chatMode === "remote"
-                          ? "bg-selection text-foreground"
-                          : "text-muted-foreground hover:bg-selection/60 hover:text-foreground"
-                      }`}
-                      onClick={() => chatMode !== "remote" && onChatModeChange?.("remote")}
-                      aria-pressed={chatMode === "remote"}
-                    >
-                      <Cloud className="h-3 w-3" />
-                      Remote
-                    </button>
-                    <button
-                      type="button"
-                      className={`flex cursor-pointer items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
-                        chatMode === "local"
-                          ? "bg-selection text-foreground"
-                          : "text-muted-foreground hover:bg-selection/60 hover:text-foreground"
-                      }`}
-                      onClick={() => chatMode !== "local" && onChatModeChange?.("local")}
-                      aria-pressed={chatMode === "local"}
-                    >
-                      <Computer className="h-3 w-3" />
-                      Local
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <ModelsList
-              disabled={isModelLocked}
-              models={models}
-              featuredModelIds={featuredModelIds}
-              isDisabled={isDisabled}
-              isPro={isPro}
-              selectedId={selectedModelId}
-              onSelect={onModelSelect}
-              mono={mono}
-              isSearchActive={searchQuery.trim().length > 0}
-              onInfoHoverStart={onInfoHoverStart}
-              onInfoHoverEnd={onInfoHoverEnd}
+      <div className="border-b border-border p-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="relative flex-1">
+            <input
+              ref={searchInputRef}
+              placeholder="Search models..."
+              value={searchQuery}
+              onChange={(event) => onSearchQueryChange(event.target.value)}
+              className="w-full rounded-md border border-border bg-surface py-2 pr-3 pl-8 text-sm text-foreground placeholder:text-muted-foreground focus:border-active-work focus:outline-none"
+              aria-label="Search models"
+            />
+            <Search
+              className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
             />
           </div>
-        </TabsContent>
-      </Tabs>
+          <div className="relative sm:w-48">
+            <select
+              value={selectedCapability || ""}
+              onChange={(event) => {
+                const nextCapability =
+                  capabilities.find((capability) => capability === event.target.value) ?? null;
+
+                onCapabilityChange(nextCapability);
+              }}
+              className="w-full appearance-none rounded-md border border-border bg-surface py-2 pr-3 pl-8 text-sm text-foreground focus:border-active-work focus:outline-none"
+              aria-label="Filter by model type"
+            >
+              <option value="">All model types</option>
+              {capabilities.map((capability) => (
+                <option key={capability} value={capability}>
+                  {capability}
+                </option>
+              ))}
+            </select>
+            <Filter
+              className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto p-2">
+        <ModelsList
+          disabled={isModelLocked}
+          models={models}
+          featuredModelIds={featuredModelIds}
+          isDisabled={isDisabled}
+          isPro={isPro}
+          selectedId={selectedModelId}
+          onSelect={onModelSelect}
+          mono={mono}
+          isSearchActive={searchQuery.trim().length > 0}
+          onInfoHoverStart={onInfoHoverStart}
+          onInfoHoverEnd={onInfoHoverEnd}
+        />
+      </div>
+
+      {onRetentionChange && (
+        <RetentionRow
+          retention={retention}
+          reason={retentionReason}
+          onChange={onRetentionChange}
+          isLocked={isRetentionLocked}
+        />
+      )}
+
+      {onOpenModelSources && (
+        <div className="border-t border-border px-3 py-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            icon={<CircleHelp className="h-3.5 w-3.5" aria-hidden="true" />}
+            onClick={onOpenModelSources}
+          >
+            How models work here
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

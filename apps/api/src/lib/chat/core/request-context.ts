@@ -1,3 +1,5 @@
+import type { RunProvenance } from "@ngriffin_uk/polychat-schemas";
+
 import { withExecutionRunContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions, IRequest, ChatMode, MemoryScope } from "~/types";
 import { resolveRequestUser } from "~/utils/requestUser";
@@ -36,13 +38,14 @@ export function buildToolRequestContext(params: {
   chatOptions: CoreChatOptions;
   input: string;
   mode: ChatMode;
+  provenance?: RunProvenance | null;
   model: string;
   provider: string;
   runId?: string;
   runAttempt?: number;
   memoryScope: MemoryScope;
 }): IRequest {
-  const { chatOptions, input, mode, model, provider, memoryScope } = params;
+  const { chatOptions, input, mode, model, provider, memoryScope, provenance } = params;
   const user = resolveRequestUser(chatOptions);
   const context =
     chatOptions.context && params.runId
@@ -52,6 +55,8 @@ export function buildToolRequestContext(params: {
   return {
     env: chatOptions.env,
     mode,
+    compute_site: chatOptions.compute_site,
+    provenance,
     request: {
       completion_id: chatOptions.completion_id,
       conversation_type: chatOptions.conversation_type,
@@ -61,6 +66,7 @@ export function buildToolRequestContext(params: {
       run_id: params.runId,
       run_attempt: params.runAttempt,
       mode,
+      compute_site: chatOptions.compute_site,
       tool_policy_mode: chatOptions.tool_policy_mode,
       date: new Date().toISOString().slice(0, 10),
       approved_tools: chatOptions.approved_tools ?? [],

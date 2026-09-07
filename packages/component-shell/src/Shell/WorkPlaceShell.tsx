@@ -26,7 +26,10 @@ function WorkShell({ children, projectId, workspaceId }: WorkShellProps) {
       title={isProjectConversation ? undefined : "Work"}
       headerContent={
         isProjectConversation ? (
-          <ConversationProductHeader projectColour={projectColour} />
+          <ConversationProductHeader
+            projectColour={projectColour}
+            requestOptions={projectId ? { metadata: { project_id: projectId } } : undefined}
+          />
         ) : undefined
       }
       sidebarContent={<WorkSidebar workspaceId={workspaceId} projectId={projectId} />}

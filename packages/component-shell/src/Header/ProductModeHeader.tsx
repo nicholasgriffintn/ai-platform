@@ -1,15 +1,13 @@
 import { ProductHeaderShell, ProductModeSwitch } from "@ngriffin_uk/polychat-component-navigation";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
-import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   getProductMode,
   isProductModeRoute,
   MODE_BASE_PATHS,
-  useTrackEvent,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
 import { useHeaderScrollEdge } from "@ngriffin_uk/polychat-utility-react";
-import { Cloud, CloudOff, Menu, PanelLeftOpen } from "lucide-react";
+import { Menu, PanelLeftOpen } from "lucide-react";
 import { type ReactNode, useRef } from "react";
 import { useLocation } from "react-router";
 
@@ -17,7 +15,6 @@ export interface ProductModeHeaderProps {
   actions?: ReactNode;
   context?: ReactNode;
   projectColour?: string;
-  showCloudToggle?: boolean;
   showSidebarToggle?: boolean;
 }
 
@@ -25,31 +22,13 @@ export function ProductModeHeader({
   actions,
   context,
   projectColour,
-  showCloudToggle = false,
   showSidebarToggle = true,
 }: ProductModeHeaderProps) {
   const { pathname } = useLocation();
   const showProductModeSwitch = isProductModeRoute(pathname);
   const headerRef = useRef<HTMLElement>(null);
   const isScrolled = useHeaderScrollEdge(headerRef, pathname);
-  const { trackEvent } = useTrackEvent();
   const { isMobile, sidebarVisible, setSidebarVisible } = useUIStore();
-  const { isAuthenticated, localOnlyMode, setLocalOnlyMode } = useChatStore();
-  const cloudModeLabel = localOnlyMode
-    ? "Local-only mode stays on this device and cannot recover after closing. Switch to cloud mode."
-    : "Cloud mode stores chats for recovery. Switch to local-only mode.";
-
-  const toggleLocalOnlyMode = () => {
-    const nextMode = !localOnlyMode;
-
-    setLocalOnlyMode(nextMode);
-    trackEvent({
-      name: "toggle_local_only_mode",
-      category: "header",
-      label: "toggle_local_only_mode",
-      value: nextMode ? "local-only" : "cloud",
-    });
-  };
 
   return (
     <ProductHeaderShell
@@ -86,21 +65,7 @@ export function ProductModeHeader({
           />
         ) : null
       }
-      end={
-        <>
-          {actions}
-          {showCloudToggle && isAuthenticated && (
-            <Button
-              type="button"
-              variant={localOnlyMode ? "iconActive" : "icon"}
-              title={cloudModeLabel}
-              aria-label={cloudModeLabel}
-              icon={localOnlyMode ? <CloudOff size={20} /> : <Cloud size={20} />}
-              onClick={toggleLocalOnlyMode}
-            />
-          )}
-        </>
-      }
+      end={actions}
     />
   );
 }

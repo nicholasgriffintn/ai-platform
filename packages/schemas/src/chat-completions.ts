@@ -12,10 +12,12 @@ import {
   chatRunCommandReceiptSchema,
   chatRunIdSchema,
 } from "./chat-runs.js";
+import { computeSiteSchema } from "./compute-sites.js";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
 import { metaAssistantRequestSchema } from "./meta-assistant.js";
 import { modelTierSchema } from "./model-lineup.js";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
+import { runProvenanceSchema } from "./run-provenance.js";
 import { sandboxRequestOptionsSchema } from "./sandbox.js";
 import { messageSchema } from "./shared.js";
 import { toolIdsSchema, toolSelectionModeSchema } from "./tools.js";
@@ -376,6 +378,9 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   mode: chatRequestModeSchema
     .optional()
     .describe("The chat mode to use for default parameters and prompt configuration."),
+  compute_site: computeSiteSchema
+    .optional()
+    .describe("The compute site where the selected model should run."),
   system_prompt: z
     .string()
     .optional()
@@ -730,6 +735,7 @@ const chatCompletionResponseMessageSchema = z
       .union([z.number(), z.string()])
       .optional()
       .describe("Message timestamp from runtime or persistence."),
+    provenance: runProvenanceSchema.nullable().optional().describe("Where the run executed."),
   })
   .passthrough();
 

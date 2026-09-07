@@ -33,6 +33,12 @@ export async function streamDeviceModelRun({
   onContent,
   signal,
 }: DeviceModelRunOptions): Promise<string> {
+  if (model.machineId) {
+    throw new Error(
+      "This model is advertised by another machine and cannot run through this desktop runtime.",
+    );
+  }
+
   const endpoints = await backend.listEndpoints();
   const endpoint = findModelRuntimeEndpoint(endpoints, model.provider);
 

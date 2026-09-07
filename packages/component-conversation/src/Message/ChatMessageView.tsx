@@ -18,6 +18,7 @@ import { useState } from "react";
 import { EditableMessageContent } from "./EditableMessageContent.js";
 import { MessageActions } from "./MessageActions.js";
 import { MessageContent } from "./MessageContent.js";
+import { MessageProvenanceMark } from "./MessageProvenanceMark.js";
 import { useResolvedToolCallIds } from "./ResolvedToolCalls.js";
 import { ToolMessage } from "./ToolMessage.js";
 
@@ -120,6 +121,7 @@ export const ChatMessageView = ({
   isArchivedByCompaction = false,
   responseDurationMs,
   goalStarted = false,
+  isTemporary = false,
   copied,
   onCopy,
   onSubmitFeedback,
@@ -153,6 +155,7 @@ export const ChatMessageView = ({
   isArchivedByCompaction?: boolean;
   responseDurationMs?: number;
   goalStarted?: boolean;
+  isTemporary?: boolean;
   copied: boolean;
   onCopy: (value: string) => void;
   onSubmitFeedback?: (value: 1 | -1) => Promise<void>;
@@ -228,14 +231,16 @@ export const ChatMessageView = ({
       <div
         className={`flex flex-col ${
           message.role === "user"
-            ? "max-w-[80%] rounded-2xl border border-border bg-selection text-foreground"
-            : "w-full text-foreground"
+            ? `max-w-[80%] rounded-2xl border border-border ${isTemporary ? "bg-surface" : "bg-selection"} text-foreground`
+            : `w-full text-foreground ${isTemporary ? "rounded-xl border border-border bg-surface" : ""}`
         } `}
       >
-        <div className={`flex flex-col gap-2 py-2 ${message.role === "user" ? "px-3" : ""}`}>
+        <div
+          className={`flex flex-col gap-2 py-2 ${message.role === "user" || isTemporary ? "px-3" : ""}`}
+        >
           <div className="flex items-start gap-2">
             {assistantModelName && (
-              <div className="mt-1 mr-2 flex-shrink-0">
+              <div className="mt-1 mr-2 flex flex-shrink-0 items-center gap-1">
                 <ModelIcon
                   modelName={assistantModelName}
                   provider={modelConfig?.provider ?? message.provider}
@@ -244,6 +249,7 @@ export const ChatMessageView = ({
                   title={assistantModelName}
                   mono
                 />
+                <MessageProvenanceMark provenance={message.provenance} />
               </div>
             )}
             <div className="flex-1 overflow-x-auto">

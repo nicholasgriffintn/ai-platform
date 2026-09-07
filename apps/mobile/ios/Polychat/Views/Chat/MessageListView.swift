@@ -1,6 +1,7 @@
 import SwiftUI
 struct MessageListView: View {
     let messages: [ChatMessage]
+    let isTemporaryConversation: Bool
     let conversationModelId: String?
     let run: ChatRun?
     let taskActivity: ProjectTaskActivityTimeline?
@@ -23,6 +24,17 @@ struct MessageListView: View {
         ScrollView {
             ScrollViewReader { proxy in
                 LazyVStack(spacing: 22) {
+                    if isTemporaryConversation {
+                        HStack(spacing: 8) {
+                            Image(systemName: "theatermasks")
+                            Text("Temporary. This conversation stays in memory for this session.")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityElement(children: .combine)
+                    }
+
                     if hasMoreMessages {
                         Button(action: onLoadEarlierMessages) {
                             if isLoadingEarlierMessages {
@@ -76,12 +88,33 @@ struct MessageListView: View {
                             }
                         }
                     }
+
+                    if isTemporaryConversation {
+                        HStack(spacing: 8) {
+                            Image(systemName: "theatermasks")
+                            Text("This session ends without a trace.")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityElement(children: .combine)
+                    }
                 }
                 .frame(maxWidth: 860)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 28)
                 .padding(.top, messages.isEmpty ? 28 : 72)
                 .padding(.bottom, 28)
+                .overlay(alignment: .leading) {
+                    if isTemporaryConversation {
+                        Rectangle()
+                            .stroke(
+                                Color.polychat.border,
+                                style: StrokeStyle(lineWidth: 2, dash: [3, 4])
+                            )
+                            .frame(width: 2)
+                    }
+                }
                 .onChange(of: messages.count) {
                     guard !isLoadingEarlierMessages else {
                         return

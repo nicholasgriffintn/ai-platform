@@ -11,7 +11,11 @@ import type {
   CreateTeammateInput,
   HireTeammateInput,
   SharedTeammateSummary,
+  MachineHeartbeat,
+  MachineRecord,
   ModelConfig,
+  ModelTiersResponse,
+  RecordOffPlatformUsageRequest,
   Tool,
   UpdateTeammateInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -24,6 +28,7 @@ import {
   type GetChatOptions,
   type StreamChatCompletionsParams,
 } from "./services/chat-service.js";
+import { MachineService } from "./services/machine-service.js";
 import { ResearchService } from "./services/research-service.js";
 import { SubscriptionService } from "./services/subscription-service.js";
 import { TeammateService } from "./services/teammate-service.js";
@@ -45,6 +50,7 @@ class ApiService {
   private audioService: AudioService;
   private teammateService: TeammateService;
   private userService: UserService;
+  private machineService: MachineService;
   private subscriptionService: SubscriptionService;
   private uploadService: UploadService;
   private researchService: ResearchService;
@@ -54,6 +60,7 @@ class ApiService {
     this.audioService = new AudioService(getHeaders);
     this.teammateService = new TeammateService(getHeaders);
     this.userService = new UserService(getHeaders);
+    this.machineService = new MachineService(getHeaders);
     this.subscriptionService = new SubscriptionService();
     this.uploadService = new UploadService(getHeaders);
     this.researchService = new ResearchService(getHeaders);
@@ -136,6 +143,10 @@ class ApiService {
     updates: ConversationUpdateRequest,
   ): Promise<Conversation> => {
     return this.chatService.updateConversation(completion_id, updates);
+  };
+
+  recordOffPlatformRunUsage = (input: RecordOffPlatformUsageRequest): Promise<void> => {
+    return this.chatService.recordOffPlatformRunUsage(input);
   };
 
   deleteConversation = (completion_id: string): Promise<void> => {
@@ -310,8 +321,24 @@ class ApiService {
     return this.userService.fetchModels();
   };
 
+  fetchModelTiers = (): Promise<ModelTiersResponse> => {
+    return this.userService.fetchModelTiers();
+  };
+
   fetchModelCatalogue = (): Promise<ModelConfig> => {
     return this.userService.fetchModelCatalogue();
+  };
+
+  fetchMachines = (): Promise<MachineRecord[]> => {
+    return this.machineService.fetchMachines();
+  };
+
+  heartbeatMachine = (input: MachineHeartbeat): Promise<MachineRecord | null> => {
+    return this.machineService.heartbeat(input);
+  };
+
+  forgetMachine = (machineId: string): Promise<void> => {
+    return this.machineService.forget(machineId);
   };
 
   fetchTools = (): Promise<Tool[]> => {

@@ -1,4 +1,8 @@
-import { isReadinessFresh, type ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import {
+  decodeReadiness,
+  isReadinessFresh,
+  type ModelConfigItem,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ComposerBannerDescriptor } from "../../Composer/ComposerBannerCard.js";
 
@@ -22,7 +26,7 @@ export function buildModelReadinessBanner(
     };
   }
 
-  const readiness = model.readiness;
+  const readiness = model.readiness ? decodeReadiness(model.readiness) : undefined;
 
   if (!readiness) {
     return model.isExecutable === false

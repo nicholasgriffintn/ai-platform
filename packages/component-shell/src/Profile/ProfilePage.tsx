@@ -5,14 +5,23 @@ import { Navigate, useSearchParams } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
-import { ProfileSidebar, profileSidebarItems } from "./ProfileSidebar.js";
+import {
+  extendProfileSidebarItems,
+  ProfileSidebar,
+  type ProfileSidebarItem,
+} from "./ProfileSidebar.js";
 
-export function ProfilePage() {
+export interface ProfilePageProps {
+  additionalItems?: readonly ProfileSidebarItem[];
+}
+
+export function ProfilePage({ additionalItems = [] }: ProfilePageProps) {
   const { isAuthenticated, isLoading } = useAuthStatus();
   const [searchParams, setSearchParams] = useSearchParams();
+  const sidebarItems = extendProfileSidebarItems(additionalItems);
 
-  const activeTabId = searchParams.get("tab") || profileSidebarItems[0].id;
-  const activeItem = profileSidebarItems.find((item) => item.id === activeTabId);
+  const activeTabId = searchParams.get("tab") || sidebarItems[0].id;
+  const activeItem = sidebarItems.find((item) => item.id === activeTabId);
   const ActiveComponent = activeItem?.component;
   const retiredTabPath = activeItem ? undefined : getRetiredProfileTabPath(activeTabId);
 
@@ -25,6 +34,7 @@ export function ProfilePage() {
       title={activeItem?.pageTitle ?? activeItem?.label ?? "Profile"}
       sidebarContent={
         <ProfileSidebar
+          items={sidebarItems}
           activeItemId={activeTabId}
           onSelectItem={(id) => setSearchParams({ tab: id })}
         />

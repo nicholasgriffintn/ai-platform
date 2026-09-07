@@ -5,10 +5,12 @@ import type {
   ChatRequestOptions as SchemaChatRequestOptions,
   AgentMode,
   ConversationType,
+  ComputeSite,
   MessageRole as SchemaMessageRole,
   MessagePart as SchemaMessagePart,
   MetaAssistantRequest,
   RecipeConnectorProvider,
+  RunProvenance,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -175,6 +177,7 @@ export interface Message {
   timestamp?: number;
   platform?: Platform;
   usage?: Record<string, any>;
+  provenance?: RunProvenance | null;
 }
 
 export type ChatInput = string | { prompt: string };
@@ -205,6 +208,7 @@ export interface IBody {
   provider?: string;
   platform?: Platform;
   mode?: ChatMode;
+  compute_site?: ComputeSite;
   tool_policy_mode?: AgentMode;
   approved_tools?: string[];
   connector_approval_id?: string;
@@ -246,6 +250,8 @@ export interface IRequest {
   user?: IUser;
   anonymousUser?: AnonymousUser;
   mode?: ChatMode;
+  compute_site?: ComputeSite;
+  provenance?: RunProvenance | null;
   rag_options?: RagOptions;
   context?: ServiceContext;
   memoryScope?: MemoryScope;
@@ -357,6 +363,7 @@ export interface AssistantMessageData {
   };
   log_id?: string | null;
   model?: string;
+  provider?: string;
   selected_models?: string[];
   platform?: Platform;
   timestamp?: number;
@@ -365,6 +372,7 @@ export interface AssistantMessageData {
   mode?: ChatMode;
   refusal?: string | null;
   annotations?: unknown;
+  provenance?: RunProvenance | null;
 }
 
 export type CoreChatOptions = ChatCompletionParameters & {

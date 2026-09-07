@@ -11,7 +11,12 @@ function sum(rows: readonly ChatRunUsageEventSummaryRow[], key: "cost_micros" | 
 function attemptMeasurement(params: {
   hasEvents: boolean;
   contextSource: "reported" | "estimated" | null;
+  offPlatform: boolean;
 }): ChatRunUsage["measurement"] {
+  if (params.offPlatform) {
+    return "off_platform";
+  }
+
   if (params.hasEvents && params.contextSource === "estimated") {
     return "mixed";
   }
@@ -40,6 +45,7 @@ export function buildChatRunUsage(
         measurement: attemptMeasurement({
           hasEvents,
           contextSource: context?.usage.source ?? null,
+          offPlatform: run.provenance?.site !== undefined && run.provenance.site !== "hosted",
         }),
         inputTokens:
           attemptRows.length > 0
@@ -75,16 +81,18 @@ export function buildChatRunUsage(
   }
 
   const eventCount = runRows.reduce((total, row) => total + row.event_count, 0);
-  const measurement = attemptSummaries.some((attempt) => attempt.measurement === "mixed")
-    ? "mixed"
-    : attemptSummaries.some((attempt) => attempt.measurement === "reported") &&
-        attemptSummaries.some((attempt) => attempt.measurement === "estimated")
+  const measurement = attemptSummaries.some((attempt) => attempt.measurement === "off_platform")
+    ? "off_platform"
+    : attemptSummaries.some((attempt) => attempt.measurement === "mixed")
       ? "mixed"
-      : attemptSummaries.some((attempt) => attempt.measurement === "reported")
-        ? "reported"
-        : attemptSummaries.some((attempt) => attempt.measurement === "estimated")
-          ? "estimated"
-          : "unknown";
+      : attemptSummaries.some((attempt) => attempt.measurement === "reported") &&
+          attemptSummaries.some((attempt) => attempt.measurement === "estimated")
+        ? "mixed"
+        : attemptSummaries.some((attempt) => attempt.measurement === "reported")
+          ? "reported"
+          : attemptSummaries.some((attempt) => attempt.measurement === "estimated")
+            ? "estimated"
+            : "unknown";
   const settlementStatus =
     reservation?.status === "settled"
       ? "settled"
