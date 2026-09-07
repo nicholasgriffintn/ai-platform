@@ -8,9 +8,11 @@ import { unavailableOnDesktop } from "./lib/host-features";
 export function DesktopShellHost({
   children,
   onSignIn,
+  onSignOut,
 }: {
   children: ReactNode;
   onSignIn: () => void;
+  onSignOut: () => void;
 }) {
   useAttentionNotifier();
 
@@ -19,8 +21,9 @@ export function DesktopShellHost({
       webBaseUrl: WEB_APP_BASE_URL,
       openAssistant: unavailableOnDesktop("Ask Poly"),
       openSignIn: onSignIn,
+      signOut: onSignOut,
     }),
-    [onSignIn],
+    [onSignIn, onSignOut],
   );
 
   return <ShellHostProvider host={host}>{children}</ShellHostProvider>;
