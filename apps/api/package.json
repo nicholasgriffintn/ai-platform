@@ -6,7 +6,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "pnpm run build:deps",
-    "build:deps": "pnpm --filter \"@assistant/api^...\" --if-present build",
+    "build:deps": "vp run --filter=\"@assistant/api^...\" build",
     "cf-typegen": "wrangler types",
     "ci:test": "pnpm run coverage",
     "connectors:sync": "node ./scripts/sync-composio-toolkit-manifest.mjs",

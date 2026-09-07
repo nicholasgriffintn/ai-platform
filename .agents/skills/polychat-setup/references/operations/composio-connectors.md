@@ -1,6 +1,6 @@
 # Operate Composio connectors
 
-Composio owns credentials and execution schemas for its configured connectors. Polychat owns scoped authority, approvals, event mappings and cleanup. Read [the connector decision](../architecture/decisions/0013-composio-run-approval-and-event-boundaries.md) before changing those boundaries.
+Composio owns credentials and execution schemas for its configured connectors. Polychat owns scoped authority, approvals, event mappings and cleanup. Read [the connector decision](../architecture/decisions/0017-bind-connector-execution-to-local-authority.md) before changing those boundaries.
 
 ## Configure and synchronise
 

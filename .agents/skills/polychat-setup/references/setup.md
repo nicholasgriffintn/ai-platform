@@ -7,8 +7,10 @@ Run commands from the repository root. Use the Node/pnpm toolchain declared by t
 1. Run `pnpm install`, then build shared schemas:
 
    ```sh
-   pnpm --filter @ngriffin_uk/polychat-schemas build
+   pnpm exec vp run --filter=@ngriffin_uk/polychat-schemas build
    ```
+
+   Package builds are Vite+ tasks rather than package.json scripts, so `vp run` reaches them and pulls in their workspace dependencies. `pnpm build:packages` builds the whole set. Neither is needed before `pnpm dev`: the development servers resolve workspace packages from source through the `polychat-source` export condition.
 
 2. Create ignored local configuration from the tracked examples, without overwriting existing files:
    - API: `.dev.vars.example` → `.dev.vars` and `wrangler.jsonc.example` → `wrangler.json` under `apps/api`.

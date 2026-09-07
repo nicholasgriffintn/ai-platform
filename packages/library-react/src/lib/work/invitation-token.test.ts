@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { clearWorkspaceInvitationToken, consumeWorkspaceInvitationToken } from "./invitation-token";

@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import {
   LEGACY_THEME_STORAGE_KEY,
   THEME_PAIR_STORAGE_KEY,

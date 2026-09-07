@@ -5,13 +5,13 @@
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "scripts": {
-    "build:deps": "pnpm --filter \"@assistant/sandbox-worker^...\" --if-present build",
+    "build:deps": "vp run --filter=\"@assistant/sandbox-worker^...\" build",
     "cf-typegen": "wrangler types",
     "ci:test": "pnpm run coverage",
     "coverage": "vitest run --coverage",
     "deploy": "pnpm run build:deps && pnpm typecheck && wrangler deploy",
     "dev": "WRANGLER_BUILD_CONDITIONS=polychat-source,workerd,worker,browser wrangler dev src/index.ts",
-    "start": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
+    "start": "vp run --filter=@ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

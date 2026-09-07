@@ -2,7 +2,7 @@
 
 - **Change:** The release pipeline produces signed update artefacts whenever `TAURI_SIGNING_PRIVATE_KEY` is present, and the API serves them from `/desktop/releases/:target/:arch/:current_version`. The desktop application does not yet ask, because no key exists: `plugins.updater` in `apps/desktop/src-tauri/tauri.conf.json` is inactive with an empty `pubkey`, and the updater plugin is not registered in the Rust core.
 - **Surfaces:** desktop.
-- **Prerequisites:** an operator must generate the keypair; the private half is a secret this repository must never hold in a tracked file. ADR 0076 already lists installer signing, notarisation and update-signing keys as procurement that gates release.
+- **Prerequisites:** an operator must generate the keypair; the private half is a secret this repository must never hold in a tracked file. ADR 0028 already lists installer signing, notarisation and update-signing keys as procurement that gates release.
 - **Risk if wrong:** a build enables the updater with no valid public key, and the application fails to start; or updates ship unsigned and anything that can answer the endpoint can install code.
 - **Commits:** this change.
 

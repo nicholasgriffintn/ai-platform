@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import type { Conversation } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { filterConversationsByListOptions } from "@ngriffin_uk/polychat-library-chat/conversations";
 import { describe, expect, it } from "vitest";

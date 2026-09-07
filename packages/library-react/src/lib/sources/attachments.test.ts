@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import type { Source } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 

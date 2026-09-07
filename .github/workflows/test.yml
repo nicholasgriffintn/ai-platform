@@ -32,6 +32,8 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Restore the Vite+ task cache
+        uses: ./.github/actions/vite-task-cache
       - name: Run checks
         run: pnpm check
       - name: Run typechecks
@@ -118,6 +120,8 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Restore the Vite+ task cache
+        uses: ./.github/actions/vite-task-cache
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
       - name: Build packages and app for end-to-end tests

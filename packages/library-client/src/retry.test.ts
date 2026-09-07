@@ -9,11 +9,27 @@ import {
 } from "./retry";
 
 describe("shouldRetryApiQuery", () => {
-  it("retries transient failures but not authentication failures", () => {
+  it("retries transient API failures until the query retry limit", () => {
     expect(shouldRetryApiQuery(0, new ApiError("Server error", 500))).toBe(true);
-    expect(shouldRetryApiQuery(0, new ApiError("Unauthorized", 401))).toBe(false);
-    expect(shouldRetryApiQuery(0, new ApiError("Conflict", 409))).toBe(false);
+    expect(shouldRetryApiQuery(1, new ApiError("Rate limited", 429))).toBe(true);
     expect(shouldRetryApiQuery(2, new ApiError("Server error", 500))).toBe(false);
+  });
+
+  it("retries fetch-shaped network errors", () => {
+    expect(shouldRetryApiQuery(0, new TypeError("Failed to fetch"))).toBe(true);
+  });
+
+  it("does not retry authentication failures", () => {
+    expect(shouldRetryApiQuery(0, new ApiError("Unauthorized", 401))).toBe(false);
+    expect(shouldRetryApiQuery(0, new ApiError("Forbidden", 403))).toBe(false);
+  });
+
+  it("does not treat an application conflict as a transient query failure", () => {
+    expect(shouldRetryApiQuery(0, new ApiError("Conflict", 409))).toBe(false);
+  });
+
+  it("does not retry statusless application errors", () => {
+    expect(shouldRetryApiQuery(0, new Error("Failed to list agents: Unauthorized"))).toBe(false);
   });
 });
 

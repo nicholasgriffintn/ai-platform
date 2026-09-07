@@ -1,0 +1,13 @@
+name: Vite task cache
+description: Restore and persist the Vite+ task cache so unchanged workspace tasks replay instead of rerunning.
+
+runs:
+  using: composite
+  steps:
+    - name: Cache Vite+ task results
+      uses: actions/cache@v6
+      with:
+        path: node_modules/.vite/task-cache
+        key: vite-task-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: |
+          vite-task-${{ runner.os }}-${{ runner.arch }}-

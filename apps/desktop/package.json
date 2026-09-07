@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "build:deps": "pnpm --filter \"@assistant/desktop^...\" --if-present build",
+    "build:deps": "vp run --filter=\"@assistant/desktop^...\" build",
     "dev": "tauri dev --config src-tauri/tauri.dev.conf.json",
     "dev:renderer": "vite",
     "tauri": "tauri",
