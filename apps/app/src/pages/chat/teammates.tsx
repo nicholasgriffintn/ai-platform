@@ -1,5 +1,7 @@
-import { CapabilityLibrary } from "~/components/Capabilities/CapabilityLibrary";
-import { usePersonalCapabilityScope } from "~/components/Capabilities/useCapabilityLibraryController";
+import {
+  CapabilityLibrary,
+  usePersonalCapabilityScope,
+} from "@ngriffin_uk/polychat-component-shell";
 
 export function meta() {
   return [{ title: "Teammates - Polychat" }];

@@ -4,7 +4,6 @@ import {
   RecipeScheduleDialog,
   ToolConfigurationDialog,
 } from "@ngriffin_uk/polychat-component-capabilities";
-import { PageShell, SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import {
   CardGridLoadingSkeleton,
   ConfirmationDialog,
@@ -13,19 +12,21 @@ import {
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
 import { SearchX } from "lucide-react";
 
-import { AddSkillDialog } from "~/components/Capabilities/AddSkillDialog";
-import { AttachTeammateDialog } from "~/components/Capabilities/AttachTeammateDialog";
-import { CapabilityAddMenu } from "~/components/Capabilities/CapabilityAddMenu";
-import { CapabilityGroups } from "~/components/Capabilities/CapabilityGroups";
-import { HireTeammateDialog } from "~/components/Capabilities/HireTeammateDialog";
-import { SharedTeammatesDialog } from "~/components/Capabilities/SharedTeammatesDialog";
-import { ShareTeammateDialog } from "~/components/Capabilities/ShareTeammateDialog";
-import { useCapabilityAuthoring } from "~/components/Capabilities/useCapabilityAuthoring";
+import { SignInEmptyState } from "../Account/SignInEmptyState";
+import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs";
+import { PageShell } from "../Shell/PageShell";
+import { AddSkillDialog } from "./AddSkillDialog";
+import { AttachTeammateDialog } from "./AttachTeammateDialog";
+import { CapabilityAddMenu } from "./CapabilityAddMenu";
+import { CapabilityGroups } from "./CapabilityGroups";
+import { HireTeammateDialog } from "./HireTeammateDialog";
+import { SharedTeammatesDialog } from "./SharedTeammatesDialog";
+import { ShareTeammateDialog } from "./ShareTeammateDialog";
+import { useCapabilityAuthoring } from "./useCapabilityAuthoring";
 import {
   useCapabilityLibraryController,
   type CapabilityLibraryScope,
-} from "~/components/Capabilities/useCapabilityLibraryController";
-import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
+} from "./useCapabilityLibraryController";
 
 export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryProps) {
   const controller = useCapabilityLibraryController(scope);

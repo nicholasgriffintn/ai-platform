@@ -39,14 +39,18 @@ describe("desktop routes", () => {
     expect(pageFor("/chat/attention")).toBe("attention");
   });
 
-  it.each([
-    "/chat/teammates",
-    "/chat/teammates/poly",
-    "/chat/apps/notes/entry",
-    "/chat/tools/search",
-  ])("does not read the unbuilt chat route %s as a conversation", (pathname) => {
-    expect(pageFor(pathname)).toBe(NOT_FOUND_PAGE);
+  it("serves the Teammates place and the surfaces it links to", () => {
+    expect(pageFor("/chat/teammates")).toBe("teammates");
+    expect(pageFor("/chat/teammates/poly")).toBe("teammate");
+    expect(pageFor("/chat/tools/search")).toBe("tools");
   });
+
+  it.each(["/chat/apps/notes/entry"])(
+    "does not read the unbuilt chat route %s as a conversation",
+    (pathname) => {
+      expect(pageFor(pathname)).toBe(NOT_FOUND_PAGE);
+    },
+  );
 
   it.each(["/work", "/work/acme/projects/p1", "/models", "/apps", "/pets", "/profile", "/pricing"])(
     "answers 404 for the route %s this window does not serve",

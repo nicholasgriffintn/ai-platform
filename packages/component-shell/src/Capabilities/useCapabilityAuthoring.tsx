@@ -8,11 +8,8 @@ import { Bot, Link2, Plus, Store, UserRoundPlus } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
-import type {
-  TeammateCardActions,
-  AuthoredSkillActions,
-} from "~/components/Capabilities/CapabilityGroups";
-import { useTeammateCapabilityActions } from "~/components/Capabilities/useTeammateCapabilityActions";
+import type { TeammateCardActions, AuthoredSkillActions } from "./CapabilityGroups";
+import { useTeammateCapabilityActions } from "./useTeammateCapabilityActions";
 
 interface PendingCapabilityDeletion {
   id: string;
