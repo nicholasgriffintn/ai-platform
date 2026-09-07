@@ -15,7 +15,7 @@
 - [x] Switch between the project's Chat, Tasks and Files tabs. Confirm the project name and description stay in the same place and nothing shifts.
 - [ ] On the project Files tab, switch between Given, Made and Memory. Confirm the sidebar's Files entry stays highlighted throughout.
 - [ ] Ask Poly to open Files while you are in Work, then again while you are in Chat. Confirm each opens the one for the mode you were in.
-- [ ] Confirm `/attention`, `/files`, `/teammates`, `/chat/capabilities` and `/chat/experiences` all 404 rather than redirecting.
+- [x] Confirm `/attention`, `/files`, `/teammates`, `/chat/capabilities` and `/chat/experiences` all 404 rather than redirecting.
 
 **Stop and report if:** a place opens in the wrong shell, or a project's Files shows personal files.
 
@@ -26,5 +26,5 @@
 - The project home opens on Chat with the tab marked current, and moving through Tasks, Files and Chat keeps the project name in the header. The Files tab no longer replaces the project header with its own title.
 - `features/work.spec.ts` opens a Replicate model from the app and returns through "Back to Replicate Predictions", which steps up one level rather than to the library.
 - `/attention`, `/files` and `/teammates` now answer 404 rather than 200 with the not-found page.
-- Not confirmed: `/chat/capabilities` and `/chat/experiences` still answer 200. `/chat/:completionId?` matches any single segment, so both resolve as conversation ids rather than 404. Reported rather than changed, because constraining that route affects every conversation link.
+- Fix: `/chat/capabilities` and `/chat/experiences` answered 200 because `/chat/:completionId?` matches any single segment, so both resolved as conversation ids. Each retired path now has its own route that renders the not-found page, and the journey checks all five.
 - Left open: Back from an app root returning to the library, the sidebar Files entry staying highlighted across Given/Made/Memory, and Poly opening the place for the mode it was asked from.

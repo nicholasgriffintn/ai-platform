@@ -9,6 +9,8 @@ export default [
     route("teammates/:teammateId", "pages/chat/teammate.tsx"),
     route("apps/:appId/*", "pages/chat/app.tsx"),
     route("tools/:toolId", "pages/chat/tool.tsx"),
+    route("capabilities", "pages/catchall.tsx", { id: "chat-retired-capabilities" }),
+    route("experiences", "pages/catchall.tsx", { id: "chat-retired-experiences" }),
     route(":completionId?", "pages/chat/index.tsx"),
   ]),
   route("/work", "pages/work/layout.tsx", [

@@ -12,7 +12,7 @@ dotenv.config({ path: path.resolve(configDir, ".env"), quiet: true });
 
 export default defineConfig({
   fullyParallel: true,
-  workers: 4,
+  workers: 2,
   timeout: 30 * 1000,
   retries: process.env.CI ? 1 : 0,
   testDir: "./apps/app/tests/e2e",

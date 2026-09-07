@@ -12,8 +12,14 @@
 - [ ] In Paper and Dawn, check primary text, muted text, focus rings, the send action and selected sidebar items against the canvas and surfaces. In Fern confirm the primary action reads as a solid orange fill with a dark label; in Plum confirm it reads as a violet fill with a near-white label.
 - [ ] In each new theme, check a capability grid, the model picker and a provider badge: identity accents should stay distinguishable and legible.
 - [ ] Set the operating system to light, choose Dark or Fern in the app, then trigger a toast (for example copy a message). Confirm the toast renders dark. Repeat with the operating system dark and Light or Paper chosen; the toast should render light.
-- [ ] Sign out. Open the sidebar settings popover and confirm a Theme select is present above Keyboard shortcuts. Choose Plum and confirm the shell changes immediately and survives a reload.
-- [ ] In a browser where the old `theme` local storage key is set to `dark` and `polychat-theme` is absent, load the app. Confirm it opens in Dark without a flash, that `polychat-theme` now holds `dark` and the old key is gone.
+- [x] Sign out. Open the sidebar settings popover and confirm a Theme select is present above Keyboard shortcuts. Choose Plum and confirm the shell changes immediately and survives a reload.
+- [x] In a browser where the old `theme` local storage key is set to `dark` and `polychat-theme` is absent, load the app. Confirm it opens in Dark without a flash, that `polychat-theme` now holds `dark` and the old key is gone.
 - [ ] Switch theme on a mobile browser and confirm the browser chrome colour follows for the four new palettes. Install the app to the home screen and confirm the splash background is the dark shell rather than white or pure black.
 
 **Stop and report if:** Any text or control loses contrast in a new palette, a toast renders in the wrong appearance, or a guest cannot change theme from the sidebar.
+
+## Automated evidence — 7 September 2026
+
+- `features/themes.spec.ts` opens the sidebar settings popover signed out, confirms the Theme control is offered, picks Plum, and confirms the shell adopts it and keeps it across a reload.
+- A second journey stores the retired `theme` key as `dark` with no `polychat-theme`, reloads, and confirms the shell paints dark from first paint, `polychat-theme` then holds `dark`, and the retired key is gone.
+- Left open: the palette contrast walks, the toast appearance against the operating system, and mobile browser chrome and splash colours.

@@ -67,7 +67,8 @@ test.describe("Private sandbox previews", () => {
     await pausedActivity.wait();
     await reload;
     try {
-      await expect(workbench.previewShell).toContainText("Loading preview");
+      await expect(page.getByText("Loading workspace…", { exact: true })).toBeVisible();
+      await expect(workbench.previewShell).toHaveCount(0);
     } finally {
       await pausedActivity.release();
     }
