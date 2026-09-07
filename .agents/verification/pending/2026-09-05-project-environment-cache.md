@@ -8,8 +8,8 @@ Verify with a disposable coding project whose setup produces a visible dependenc
 - [x] Request **Rebuild**. Confirm settings show immediate invalidation and the next run performs full setup before recording a replacement.
 - [x] Request **Delete** while no run is active. Confirm the setting becomes invalidated and a later run does not reuse it.
 - Delete or expire the stored backup while leaving its project record. Confirm restoration reports failure, the clone is cleaned and full setup succeeds without stale files.
-- Start two clean runs together. Confirm only one same-key snapshot remains current and the other run still completes.
-- Delete or rebuild while a run is preparing. Confirm the older run cannot repopulate the invalidated generation when it finishes.
-- Remove the runner's project membership before completion. Confirm its new snapshot is discarded and no cache handle appears in project responses, run records or streamed events.
+- [ ] Start two clean runs together. Confirm only one same-key snapshot remains current and the other run still completes.
+- [ ] Delete or rebuild while a run is preparing. Confirm the older run cannot repopulate the invalidated generation when it finishes.
+- [ ] Remove the runner's project membership before completion. Confirm its new snapshot is discarded and no cache handle appears in project responses, run records or streamed events.
 
 **Automated evidence:** `features/sandbox-cache.spec.ts` confirms snapshot creation and restoration, lightweight resume, settings revision metadata, rebuild/delete invalidation across reload, and fresh setup after each action. Snapshot age, size and cold-run Activity presentation remain unconfirmed.

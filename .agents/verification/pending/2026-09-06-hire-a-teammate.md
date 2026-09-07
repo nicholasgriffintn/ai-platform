@@ -23,3 +23,4 @@
 - The editor opens on the new teammate with the role brief first and the extra instruction last, with tools selected, and the teammate appears in the library.
 - Hiring from a name and a job description alone creates a teammate carrying that description and no tools at all.
 - Left open: hiring inside a project, the bot kind and its denied tools, and reopening a teammate created before the change.
+- Related finding recorded under [teammates replace agents](2026-09-06-teammates-replace-agents.md): a teammate with no pinned model is refused with 400 when it is mentioned, and a mouse click on the mention row does not apply it.

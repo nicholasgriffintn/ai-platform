@@ -294,6 +294,14 @@ export class PolychatApi {
     ).status();
   }
 
+  async teammatesRouteStatus(): Promise<number> {
+    return (await this.request.get(`${API_BASE_URL}/teammates`)).status();
+  }
+
+  async retiredAgentsRouteStatus(): Promise<number> {
+    return (await this.request.get(`${API_BASE_URL}/agents`)).status();
+  }
+
   async getProjectCapabilityIds(projectId: string): Promise<string[]> {
     const response = await this.request.get(`${API_BASE_URL}/projects/${projectId}`, {
       headers: BROWSER_REQUEST_HEADERS,

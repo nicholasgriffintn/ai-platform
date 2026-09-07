@@ -64,6 +64,10 @@ export class CapabilitiesPage extends BasePage {
     await this.page.getByRole("heading", { name: "New teammate", level: 1 }).waitFor();
   }
 
+  async selectTeammateModel(label: string) {
+    await this.page.getByLabel("Model", { exact: true }).selectOption({ label });
+  }
+
   async fillTeammateEditor(settings: {
     name: string;
     description: string;
