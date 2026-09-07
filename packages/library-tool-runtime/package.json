@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-tool-runtime",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "Tool definitions, mode step budgets, and permission gating shared by Polychat agent runtimes",
   "license": "Apache-2.0",

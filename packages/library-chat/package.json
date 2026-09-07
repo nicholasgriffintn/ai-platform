@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-chat",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Reusable chat policies and conversation state helpers for Polychat",
   "license": "Apache-2.0",
   "files": [

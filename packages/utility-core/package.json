@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-utility-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Dependency-light utility functions shared by Polychat React surfaces",
   "license": "Apache-2.0",
   "files": [

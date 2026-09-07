@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-component-models",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Model and provider presentation for Polychat surfaces: icon registry, catalogue lists, and controlled model selection views",
   "license": "Apache-2.0",
   "files": [

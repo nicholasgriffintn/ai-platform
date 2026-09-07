@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-component-workspaces",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Controlled workspace and project views for Polychat surfaces",
   "license": "Apache-2.0",
   "files": [
