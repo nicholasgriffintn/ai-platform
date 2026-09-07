@@ -65,7 +65,6 @@ export * from "./hooks/useSources";
 export * from "./hooks/useStartNewChat";
 export * from "./hooks/useStrudel";
 export * from "./hooks/useTabAudioCapture";
-export * from "./hooks/useTaskInbox";
 export * from "./hooks/useTaskNotifications";
 export * from "./hooks/useTasks";
 export * from "./hooks/useTeammateFilters";

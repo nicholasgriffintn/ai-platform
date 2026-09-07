@@ -1,16 +1,14 @@
 import { getLocalChatScope } from "@ngriffin_uk/polychat-library-chat";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { useTaskInbox, useTaskNotificationSettings } from "@ngriffin_uk/polychat-library-react";
+import { useTaskAttention, useTaskNotificationSettings } from "@ngriffin_uk/polychat-library-react";
 import { useEffect } from "react";
 
 import { tauriDesktopBackend } from "../lib/desktop-backend";
 import { readAnnouncements } from "../lib/inbox-announcements";
 
-const POLL_INTERVAL_MS = 2 * 60 * 1000;
-
 export function useInboxNotifier() {
   const userId = useChatStore((state) => state.user?.id);
-  const { items, unread } = useTaskInbox({ refetchIntervalMs: POLL_INTERVAL_MS });
+  const { items, unread } = useTaskAttention();
   const { settings } = useTaskNotificationSettings();
   const preferences = settings?.preferences;
 
