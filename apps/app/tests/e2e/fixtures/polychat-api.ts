@@ -542,6 +542,34 @@ export class PolychatApi {
     return outputSchema.parse(await response.json());
   }
 
+  async writeImageOutput(title: string) {
+    const response = await this.request.post(`${API_BASE_URL}/outputs`, {
+      headers: BROWSER_REQUEST_HEADERS,
+      data: {
+        capabilityId: DOCUMENT_CAPABILITY_ID,
+        kind: "image",
+        title,
+        content: { format: "url", url: "https://example.invalid/release.png" },
+      },
+    });
+
+    await requireSuccessfulResponse(response, "Write image output");
+
+    return outputSchema.parse(await response.json());
+  }
+
+  async reviseOutputStatus(outputId: string, body: string, expectedRevision: number) {
+    const response = await this.request.put(`${API_BASE_URL}/outputs/${outputId}`, {
+      headers: BROWSER_REQUEST_HEADERS,
+      data: {
+        content: { format: "markdown", body },
+        expectedRevision,
+      },
+    });
+
+    return response.status();
+  }
+
   async exportOutputDocument(outputId: string) {
     const response = await this.request.get(`${API_BASE_URL}/outputs/${outputId}/export`, {
       headers: BROWSER_REQUEST_HEADERS,
