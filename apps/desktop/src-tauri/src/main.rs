@@ -220,7 +220,7 @@ fn with_pairing(
     endpoint: &DesktopEndpoint,
 ) -> Result<reqwest::RequestBuilder, String> {
     match secrets::read(&secrets::pairing_key(&endpoint.id))? {
-        Some(secret) => Ok(builder.bearer_auth(secret)),
+        Some(secret) => Ok(builder.bearer_auth(secret.as_str())),
         None => Ok(builder),
     }
 }
