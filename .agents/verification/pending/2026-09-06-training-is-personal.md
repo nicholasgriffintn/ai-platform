@@ -11,7 +11,7 @@
 - [x] Try to enable Training in a project through the API directly. Confirm it is refused with the reason, not a generic error.
 - [x] Open You › Advanced. Confirm Training sits beside Sandbox and works exactly as it did from the Apps list.
 - [ ] Confirm Training still opens from the personal Apps list.
-- [ ] Open the public catalogue and confirm Training is marked "Personal only".
+- [x] Open the public catalogue and confirm Training is marked "Personal only".
 - [x] Confirm every other App is still enableable in a project.
 - [ ] If any project already has a Training grant from before this change, confirm what happens when it is opened, and remove the grant.
 
@@ -21,4 +21,5 @@
 
 - `features/work.spec.ts` searches a project's library for Training and finds no card, then posts `featured-finetuning` to the project's capabilities route and receives 400 carrying the scope reason rather than a generic failure. Note Taker in the same library still offers Add to project.
 - `features/profile.spec.ts` opens You › Training and walks the jobs, deployments and models tabs, which behave as they did from the project Apps list.
-- Left open: the personal Apps list entry point, the public catalogue's "Personal only" mark, and any pre-existing project grant.
+- `features/public-catalogues.spec.ts` confirms the catalogue's personal-only app carries the Personal only mark on its card.
+- Left open: the personal Apps list entry point and any pre-existing project grant.

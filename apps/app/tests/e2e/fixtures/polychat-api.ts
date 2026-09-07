@@ -487,6 +487,12 @@ export class PolychatApi {
     ).status();
   }
 
+  async retiredConversationBranchesStatus(conversationId: string): Promise<number> {
+    return (
+      await this.request.get(`${API_BASE_URL}/chat/completions/${conversationId}/branches`)
+    ).status();
+  }
+
   async writeDocumentOutput(title: string, body: string) {
     const response = await this.request.post(`${API_BASE_URL}/outputs`, {
       headers: BROWSER_REQUEST_HEADERS,

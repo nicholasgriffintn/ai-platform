@@ -87,6 +87,14 @@ test("describes every app, shows its connected services and types an ask exactly
     `${app.when} It works from ${app.uses.toLowerCase()} and leaves behind ${app.produces.toLowerCase()}`,
   );
 
+  const personalOnlyApp = catalogue.experiences.find((item) => item.scope === "personal");
+
+  if (!personalOnlyApp) {
+    throw new Error("The catalogue must contain a personal-only app");
+  }
+
+  await expect(cataloguePage.card("Apps", personalOnlyApp.name)).toContainText("Personal only");
+
   await cataloguePage.openSection("Automations");
   const services = cataloguePage
     .card("Automations", connectedRecipe.title)

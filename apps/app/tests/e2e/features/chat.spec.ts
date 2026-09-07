@@ -930,6 +930,8 @@ test.describe("Pro message attachments", () => {
       await otherContext.close();
     }
 
+    expect(await polychatApi.retiredConversationBranchesStatus(parentId)).toBe(404);
+
     await captureVisualSnapshots(page, "release-chat-threading", {
       ...DEFAULT_VISUAL_CHECKPOINTS,
       viewports: [{ name: "desktop", width: 1280, height: 720 }],
