@@ -232,6 +232,63 @@ export class HomePage extends BasePage {
     await this.page.getByRole("button", { name: "Switch to local-only mode" }).waitFor();
   }
 
+  async recordModelSelectorStatesAcrossNextNavigation() {
+    await this.page.addInitScript(() => {
+      const states: string[] = [];
+      const recordState = () => {
+        const loading = Array.from(document.querySelectorAll("div")).some(
+          (element) => element.textContent?.trim() === "Loading models...",
+        );
+        const selector = document.querySelector('[aria-label="Select a model"]');
+        const state = loading ? "Loading models..." : selector?.textContent?.trim();
+
+        if (state && states.at(-1) !== state) {
+          states.push(state);
+        }
+      };
+      const observer = new MutationObserver(recordState);
+      const start = () => {
+        observer.observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
+        recordState();
+      };
+
+      Reflect.set(window, "__polychatModelSelectorStates", states);
+      if (document.readyState === "loading") {
+        window.addEventListener("DOMContentLoaded", start, { once: true });
+      } else {
+        start();
+      }
+    });
+  }
+
+  async waitForModelLoadingState() {
+    await this.page.getByText("Loading models...", { exact: true }).waitFor();
+  }
+
+  async waitForSelectedModel(modelName: string) {
+    await this.modelSelector.filter({ hasText: modelName }).waitFor();
+  }
+
+  async modelSelectorCount() {
+    return this.modelSelector.count();
+  }
+
+  async recordedModelSelectorStates() {
+    const states = await this.page.evaluate(() =>
+      Reflect.get(window, "__polychatModelSelectorStates"),
+    );
+
+    if (!Array.isArray(states) || states.some((state) => typeof state !== "string")) {
+      throw new Error("Model selector state recording was not initialised");
+    }
+
+    return states.filter((state): state is string => typeof state === "string");
+  }
+
   async clearChatMode(mode: "Live") {
     await this.page.getByRole("button", { name: `Clear ${mode} mode` }).click();
   }

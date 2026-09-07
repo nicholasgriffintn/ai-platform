@@ -8,6 +8,7 @@ import {
   ThemeMenu,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ThemePreference } from "@ngriffin_uk/polychat-library-chat";
+import { useMediaQuery } from "@ngriffin_uk/polychat-utility-react";
 import {
   ChevronDown,
   ChevronUp,
@@ -204,6 +205,7 @@ export function SidebarSettingsPopover({
 }: SidebarSettingsPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const isNarrow = useMediaQuery("(max-width: 480px)");
 
   const displayName = isAuthenticated && account?.name ? account.name : "Settings";
   const planLabel = isAuthenticated ? (account?.planLabel ?? "Free") : "Guest";
@@ -296,6 +298,8 @@ export function SidebarSettingsPopover({
               <ThemeMenu
                 value={theme.value}
                 onChange={theme.onChange}
+                side={isNarrow ? "top" : "right"}
+                sideOffset={isNarrow ? 4 : 12}
                 triggerClassName={cn(
                   popoverRowClassName,
                   "data-[state=open]:bg-selection data-[state=open]:text-foreground",

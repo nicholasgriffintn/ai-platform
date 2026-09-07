@@ -48,6 +48,14 @@ export class AppPage extends BasePage {
     return this.page.getByRole("button", { name: "Keyboard shortcuts" });
   }
 
+  private get settingsDialog() {
+    return this.page.getByRole("dialog");
+  }
+
+  private get themeButton() {
+    return this.page.getByRole("button", { name: /^Theme / });
+  }
+
   notification(text: string | RegExp) {
     return this.page
       .getByRole("region", { name: /^Notifications/ })
@@ -81,6 +89,54 @@ export class AppPage extends BasePage {
     await this.waitForElement(this.settingsMenuItem);
   }
 
+  async closeSettings() {
+    await this.page.keyboard.press("Escape");
+    await this.settingsDialog.waitFor({ state: "hidden" });
+  }
+
+  async openSettingsWithKeyboard(plan: "Guest" | "Free" | "Pro") {
+    await this.settingsButton.getByText(plan, { exact: true }).waitFor();
+    await this.settingsButton.focus();
+    await this.settingsButton.press("Enter");
+    await this.settingsDialog.waitFor();
+  }
+
+  firstSettingsRow(plan: "Guest" | "Free" | "Pro") {
+    return plan === "Guest"
+      ? this.settingsDialog.getByRole("button", { name: "Sign in", exact: true })
+      : this.settingsDialog.getByRole("link", { name: "Account", exact: true });
+  }
+
+  async focusedInteractiveSettingsRows() {
+    return this.settingsDialog.locator("a:focus-visible, button:focus-visible").count();
+  }
+
+  async themeRowState() {
+    return this.themeButton.getAttribute("data-state");
+  }
+
+  async themeMenuFitsViewport() {
+    const menu = this.page.getByRole("menu");
+    const bounds = await menu.boundingBox();
+
+    if (!bounds) {
+      throw new Error("Theme menu has no visible bounds");
+    }
+
+    const viewport = this.page.viewportSize();
+
+    if (!viewport) {
+      throw new Error("The page has no viewport");
+    }
+
+    return (
+      bounds.x >= 0 &&
+      bounds.y >= 0 &&
+      bounds.x + bounds.width <= viewport.width &&
+      bounds.y + bounds.height <= viewport.height
+    );
+  }
+
   async openSettingsDestination(name: string) {
     await this.clickElement(this.page.getByRole("link", { name, exact: true }).last());
   }
@@ -109,7 +165,7 @@ export class AppPage extends BasePage {
   }
 
   async openThemeOptions() {
-    await this.page.getByRole("button", { name: /^Theme / }).click();
+    await this.themeButton.click();
   }
 
   async openKeyboardShortcuts() {

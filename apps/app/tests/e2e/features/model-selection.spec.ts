@@ -1,4 +1,5 @@
 import { expect, test } from "../fixtures/polychat-test";
+import { pauseNextNetworkRequest } from "../support/network-conditions";
 
 test.describe("Persisted model selection", () => {
   test.use({ persona: "pro" });
@@ -44,6 +45,34 @@ test.describe("Persisted model selection", () => {
       homePage.completionIdFromRequest(request),
     );
     await homePage.waitForChatResponse(1);
+  });
+
+  test("keeps the chosen model while the catalogue is delayed during reload", async ({
+    homePage,
+    page,
+  }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT-6 Astra");
+    await homePage.recordModelSelectorStatesAcrossNextNavigation();
+    const pausedModels = await pauseNextNetworkRequest(page, "*/models");
+    const reload = page.reload({ waitUntil: "domcontentloaded" });
+
+    await pausedModels.wait();
+    await reload;
+    try {
+      await homePage.waitForModelLoadingState();
+      expect(await homePage.modelSelectorCount()).toBe(0);
+    } finally {
+      await pausedModels.release();
+    }
+
+    await homePage.waitForPersonaReady("pro");
+    await homePage.waitForSelectedModel("GPT-6 Astra");
+    const states = await homePage.recordedModelSelectorStates();
+
+    expect(states).toContain("Loading models...");
+    expect(states.some((state) => /^(?:Auto|Default)$/.test(state))).toBe(false);
+    expect(states.at(-1)).toContain("GPT-6 Astra");
   });
 
   test("retains an unavailable model after sign-out until an eligible replacement is chosen", async ({

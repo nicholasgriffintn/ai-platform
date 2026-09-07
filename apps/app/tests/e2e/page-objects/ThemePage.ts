@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
+import { renderedColourChannels } from "../support/colour";
 import { BasePage } from "./BasePage";
 
 export class ThemePage extends BasePage {
@@ -16,6 +17,10 @@ export class ThemePage extends BasePage {
 
   option(name: string) {
     return this.page.getByRole("radio", { name: new RegExp(`^${name}\\b`) });
+  }
+
+  systemCard() {
+    return this.option("System").locator("..");
   }
 
   async select(name: string) {
@@ -35,5 +40,57 @@ export class ThemePage extends BasePage {
     await this.page.evaluate((value) => {
       localStorage.setItem("polychat-theme-pair", value);
     }, pair);
+  }
+
+  async systemPreviewThemes() {
+    return this.systemCard()
+      .locator("[data-polychat-theme]")
+      .evaluateAll((elements) =>
+        elements.map((element) => element.getAttribute("data-polychat-theme")),
+      );
+  }
+
+  async themeCardColours(name: string) {
+    const card = this.option(name).locator("..");
+    const heading = card.getByText(name, { exact: true }).first();
+    const previewText = card.getByText("What’s on your mind?", { exact: true });
+
+    return {
+      background: await renderedColourChannels(card, "backgroundColor"),
+      heading: await renderedColourChannels(heading, "color"),
+      previewText: await renderedColourChannels(previewText, "color"),
+    };
+  }
+
+  async recordThemeFramesAcrossNavigations() {
+    await this.page.addInitScript(() => {
+      const frames: string[] = [];
+      let frameCount = 0;
+      const record = () => {
+        const theme = document.documentElement?.dataset.polychatTheme;
+
+        if (theme) {
+          frames.push(theme);
+        }
+
+        frameCount += 1;
+        if (frameCount < 12 || document.readyState !== "complete") {
+          requestAnimationFrame(record);
+        }
+      };
+
+      Reflect.set(window, "__polychatThemeFrames", frames);
+      requestAnimationFrame(record);
+    });
+  }
+
+  async recordedThemeFrames() {
+    const frames = await this.page.evaluate(() => Reflect.get(window, "__polychatThemeFrames"));
+
+    if (!Array.isArray(frames) || frames.some((theme) => typeof theme !== "string")) {
+      throw new Error("Theme frame recording was not initialised");
+    }
+
+    return frames.filter((theme): theme is string => typeof theme === "string");
   }
 }
