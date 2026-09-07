@@ -1,4 +1,5 @@
 import { MODE_BASE_PATHS } from "@ngriffin_uk/polychat-library-react";
+import { matchRoutes } from "react-router";
 
 import { readPageRoutes, type DesktopPageRoutes } from "./pages/registry";
 
@@ -37,3 +38,12 @@ export const DESKTOP_PAGE_ROUTES = readPageRoutes(
 
 export const DESKTOP_ROUTE_DEFINITIONS: readonly DesktopRouteDefinition[] =
   buildRouteDefinitions(DESKTOP_PAGE_ROUTES);
+
+export function readPageForPath(pathname: string): string | undefined {
+  const matches = matchRoutes(
+    DESKTOP_ROUTE_DEFINITIONS.map(({ path, page }) => ({ path, id: `${page}:${path}` })),
+    pathname,
+  );
+
+  return matches?.at(-1)?.route.id?.split(":")[0];
+}

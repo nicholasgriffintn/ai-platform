@@ -1,6 +1,9 @@
-import { PageShell, StandardSidebarContent } from "@ngriffin_uk/polychat-component-shell";
+import {
+  DiscoverBands,
+  PageShell,
+  StandardSidebarContent,
+} from "@ngriffin_uk/polychat-component-shell";
 
-import { DiscoverBands } from "~/components/Discover/DiscoverBands";
 export function meta() {
   return [
     { title: "Discover - Polychat" },

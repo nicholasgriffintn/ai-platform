@@ -1,6 +1,9 @@
-import { PageShell, StandardSidebarContent } from "@ngriffin_uk/polychat-component-shell";
+import {
+  PageShell,
+  PricingPage,
+  StandardSidebarContent,
+} from "@ngriffin_uk/polychat-component-shell";
 
-import { PricingPage } from "~/components/Pricing/PricingPage";
 export function meta() {
   return [
     { title: "Pricing - Polychat" },

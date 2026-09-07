@@ -5,3 +5,9 @@ declare module "*.css?raw" {
 
   export default content;
 }
+
+declare module "*.png" {
+  const source: string;
+
+  export default source;
+}

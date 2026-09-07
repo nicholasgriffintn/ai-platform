@@ -1,6 +1,5 @@
+import { WorkspaceMembers } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
-
-import { WorkspaceMembers } from "~/components/Work/WorkspaceMembers";
 
 export function meta() {
   return [{ title: "Workspace people - Polychat" }];

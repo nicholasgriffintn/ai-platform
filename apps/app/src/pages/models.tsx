@@ -1,6 +1,9 @@
-import { PageShell, StandardSidebarContent } from "@ngriffin_uk/polychat-component-shell";
+import {
+  ModelsCatalogue,
+  PageShell,
+  StandardSidebarContent,
+} from "@ngriffin_uk/polychat-component-shell";
 
-import { ModelsCatalogue } from "~/components/Models/ModelsCatalogue";
 export function meta() {
   return [
     { title: "Models - Polychat" },

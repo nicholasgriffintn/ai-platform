@@ -40,6 +40,7 @@
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
     "@ngriffin_uk/polychat-library-client": "workspace:^",
     "@ngriffin_uk/polychat-library-react": "workspace:^",
+    "@ngriffin_uk/polychat-library-realtime": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-react": "workspace:^",
@@ -47,6 +48,7 @@
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
+    "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -55,6 +57,7 @@
     "react-dom": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
+    "vite": "8.2.2",
     "vitest": "catalog:"
   },
   "peerDependencies": {

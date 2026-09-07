@@ -4,7 +4,7 @@ import { useTaskAttention, useTaskNotificationSettings } from "@ngriffin_uk/poly
 import { useEffect } from "react";
 
 import { tauriDesktopBackend } from "../lib/desktop-backend";
-import { readAnnouncements } from "../lib/inbox-announcements";
+import { readAnnouncements, readAttentionBadgeCount } from "../lib/inbox-announcements";
 
 export function useInboxNotifier() {
   const userId = useChatStore((state) => state.user?.id);
@@ -13,8 +13,10 @@ export function useInboxNotifier() {
   const preferences = settings?.preferences;
 
   useEffect(() => {
-    void tauriDesktopBackend.setAttentionBadge(unread).catch(() => undefined);
-  }, [unread]);
+    void tauriDesktopBackend
+      .setAttentionBadge(readAttentionBadgeCount(unread, preferences))
+      .catch(() => undefined);
+  }, [preferences, unread]);
 
   useEffect(() => {
     const announcements = readAnnouncements(items, preferences);

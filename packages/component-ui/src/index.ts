@@ -34,6 +34,7 @@ export * from "./Page/PageShellFrame";
 export * from "./Page/PageShellHeader";
 export * from "./Page/PageStatus";
 export * from "./Page/PageTitle";
+export * from "./Page/SectionNav";
 export * from "./popover";
 export * from "./SearchInput";
 export * from "./ShortcutTooltip";

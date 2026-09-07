@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+import { resolvePetSheetUrl } from "./Pet/petSheets";
 import { cn } from "./utils";
 
 export interface PetSpriteLayout {
@@ -66,7 +67,7 @@ export function PetSprite({
     "--polychat-pet-iterations": clip.loop ? "infinite" : "1",
     "--polychat-pet-facing": facing === "left" ? -1 : 1,
     animationPlayState: paused ? "paused" : undefined,
-    backgroundImage: `url("${sheetUrl}")`,
+    backgroundImage: `url("${resolvePetSheetUrl(sheetUrl)}")`,
   };
 
   return (

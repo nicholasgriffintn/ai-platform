@@ -1,4 +1,5 @@
 import { CustomResponseViewProvider } from "@ngriffin_uk/polychat-component-content";
+import { customResponseViews, ErrorPage } from "@ngriffin_uk/polychat-component-shell";
 import { LinkProvider, LoadingSpinner, ThemedToaster } from "@ngriffin_uk/polychat-component-ui";
 import { shouldShowDevTools } from "@ngriffin_uk/polychat-library-client";
 import {
@@ -17,13 +18,11 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect } from "react";
 import { Outlet, isRouteErrorResponse, ScrollRestoration } from "react-router";
 
-import { customResponseViews } from "~/components/Apps/ResponseRenderer/customResponseViews";
 import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
 import { AppShell } from "~/components/Core/AppShell";
 import { ServiceWorkerRegistration } from "~/components/Core/ServiceWorkerRegistration";
 import { WebShellHost } from "~/components/Core/WebShellHost";
 import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
-import ErrorRoute from "~/pages/error";
 
 import type { Route } from "./+types/root";
 
@@ -116,5 +115,5 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     });
   }, [details, error, stack, trackException]);
 
-  return <ErrorRoute message={message} details={details} stack={stack || ""} />;
+  return <ErrorPage message={message} details={details} stack={stack || ""} />;
 }

@@ -1,6 +1,5 @@
+import { ProjectTaskBoard } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
-
-import { ProjectTaskBoard } from "~/components/Work/ProjectTaskBoard";
 
 export function meta() {
   return [{ title: "Tasks - Polychat" }];

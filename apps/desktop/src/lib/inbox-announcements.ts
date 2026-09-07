@@ -28,6 +28,13 @@ export function describeInboxItem(item: ProjectTaskAttentionItem): DesktopAnnoun
   };
 }
 
+export function readAttentionBadgeCount(
+  unread: number,
+  preferences: TaskNotificationPreferences | undefined,
+): number {
+  return preferences?.enabled ? unread : 0;
+}
+
 export function readAnnouncements(
   items: readonly ProjectTaskAttentionItem[],
   preferences: TaskNotificationPreferences | undefined,

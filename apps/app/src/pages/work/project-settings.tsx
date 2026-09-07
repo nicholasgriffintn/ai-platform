@@ -1,6 +1,5 @@
+import { ProjectSettings } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
-
-import { ProjectSettings } from "~/components/Work/ProjectSettings";
 
 export function meta() {
   return [{ title: "Project settings - Polychat" }];

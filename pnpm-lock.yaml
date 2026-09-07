@@ -1321,6 +1321,9 @@ importers:
       '@ngriffin_uk/polychat-library-react':
         specifier: workspace:^
         version: link:../library-react
+      '@ngriffin_uk/polychat-library-realtime':
+        specifier: workspace:^
+        version: link:../library-realtime
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../schemas
@@ -1349,6 +1352,9 @@ importers:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
         version: link:../config
+      '@testing-library/jest-dom':
+        specifier: 7.0.1
+        version: 7.0.1(@testing-library/dom@10.4.1)(vitest@4.1.11)
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -1373,6 +1379,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vite:
+        specifier: 8.2.2
+        version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0)
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))

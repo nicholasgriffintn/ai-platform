@@ -1,0 +1,65 @@
+import { PasskeyList } from "@ngriffin_uk/polychat-component-account";
+import { useTrackEvent, usePasskeys } from "@ngriffin_uk/polychat-library-react";
+import { KeyRound } from "lucide-react";
+import { useEffect } from "react";
+
+import { ProfileTab } from "../ProfileTabLayout";
+
+export function ProfilePasskeysTab() {
+  const { trackEvent } = useTrackEvent();
+
+  const {
+    passkeys,
+    fetchPasskeys,
+    isLoadingPasskeys,
+    registerPasskey,
+    isRegisteringPasskey,
+    deletePasskey,
+    isDeletingPasskey,
+    isPasskeySupported,
+  } = usePasskeys();
+
+  const passkeySupported = isPasskeySupported();
+
+  useEffect(() => {
+    void fetchPasskeys();
+  }, [fetchPasskeys]);
+
+  const handleAddPasskey = () => {
+    trackEvent({
+      name: "add_passkey",
+      category: "profile",
+      label: "add_passkey",
+      value: 1,
+    });
+    registerPasskey();
+  };
+
+  return (
+    <ProfileTab
+      title="Passkeys"
+      actions={
+        passkeySupported
+          ? [
+              {
+                label: isRegisteringPasskey ? "Adding..." : "Add Passkey",
+                onClick: handleAddPasskey,
+                disabled: isRegisteringPasskey,
+                icon: <KeyRound className="mr-2 h-4 w-4" />,
+              },
+            ]
+          : []
+      }
+    >
+      <PasskeyList
+        passkeys={passkeys}
+        isSupported={passkeySupported}
+        isLoading={isLoadingPasskeys}
+        isRegistering={isRegisteringPasskey}
+        isDeleting={isDeletingPasskey}
+        onRegister={handleAddPasskey}
+        onDelete={deletePasskey}
+      />
+    </ProfileTab>
+  );
+}

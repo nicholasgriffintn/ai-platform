@@ -1,4 +1,4 @@
-import { WorkOverview } from "~/components/Work/WorkOverview";
+import { WorkOverview } from "@ngriffin_uk/polychat-component-shell";
 
 export function meta() {
   return [

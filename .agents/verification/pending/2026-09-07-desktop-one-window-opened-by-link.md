@@ -11,7 +11,7 @@
 - [ ] With the window closed, open `polychat://chat/<a conversation id>` and confirm the application starts on that conversation.
 - [ ] With the window already open and minimised, open the same link and confirm the window comes forward on that conversation.
 - [ ] Open `polychat://chat/files?tab=made` and confirm Files opens on the Made tab.
-- [ ] Open `polychat://work/acme` and `polychat://profile` and confirm the window ignores them rather than showing an empty screen.
+- [ ] Open `polychat://work/acme` and `polychat://profile` and confirm the window opens that workspace and the profile. Open `polychat://pricing` and confirm the window ignores it rather than showing an empty screen.
 - [ ] Confirm the same on Windows and Linux, where the link arrives as a launch argument rather than an open-URL event.
 
-**Stop and report if:** a `polychat://` link navigates anywhere other than a chat path, or two application processes can run at once.
+**Stop and report if:** a `polychat://` link navigates anywhere other than a Chat, Work, Profile or Discover path, or two application processes can run at once.

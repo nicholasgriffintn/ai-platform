@@ -1,9 +1,14 @@
+import { DISCOVER_PATH, MODE_BASE_PATHS, PROFILE_PATH } from "@ngriffin_uk/polychat-library-react";
 import { isInternalNavigationPath } from "@ngriffin_uk/polychat-schemas";
 
 export const DEEP_LINK_SCHEME = "polychat:";
 export const DEEP_LINK_EVENT = "polychat://deep-link";
 
-const ALLOWED_ROOTS = new Set(["chat"]);
+const ALLOWED_ROOTS = new Set(
+  [MODE_BASE_PATHS.chat, MODE_BASE_PATHS.work, PROFILE_PATH, DISCOVER_PATH].map((path) =>
+    path.replace(/^\//, ""),
+  ),
+);
 
 export function readDeepLinkPath(value: unknown): string | null {
   if (typeof value !== "string") {

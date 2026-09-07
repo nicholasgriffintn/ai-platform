@@ -1,10 +1,9 @@
+import { ProjectConversationPage } from "@ngriffin_uk/polychat-component-shell";
 import {
   getProjectConversationPath,
   readLegacyConversationQuery,
 } from "@ngriffin_uk/polychat-library-react";
 import { Navigate, useLocation, useParams } from "react-router";
-
-import { ProjectConversationPage } from "~/components/Work/ProjectConversationPage";
 
 export function meta() {
   return [{ title: "Project conversation - Polychat" }];

@@ -1,4 +1,4 @@
-import { HomePage } from "~/components/Home/HomePage";
+import { HomePage } from "@ngriffin_uk/polychat-component-shell";
 
 export function meta() {
   return [
@@ -7,6 +7,4 @@ export function meta() {
   ];
 }
 
-export default function ChatPage() {
-  return <HomePage />;
-}
+export default HomePage;

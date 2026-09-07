@@ -83,6 +83,27 @@ export function useTaskNotificationSettings() {
   return { settings: query.data, isLoading: query.isLoading, refetch: query.refetch };
 }
 
+export function useTaskNotificationPreferences() {
+  const queryClient = useQueryClient();
+  const { settings, isLoading, refetch } = useTaskNotificationSettings();
+
+  const updatePreferences = useMutation({
+    mutationFn: (updates: UpdateTaskNotificationPreferences) =>
+      updateTaskNotificationSettings(updates),
+    onSuccess: (next) => queryClient.setQueryData(TASK_NOTIFICATION_SETTINGS_QUERY_KEY, next),
+  });
+
+  return {
+    settings,
+    isLoading,
+    refetch,
+    isUpdating: updatePreferences.isPending,
+    setEnabled: (enabled: boolean) => updatePreferences.mutateAsync({ enabled }),
+    setCategory: (category: TaskNotificationCategory, enabled: boolean) =>
+      updatePreferences.mutateAsync({ [category]: enabled }),
+  };
+}
+
 export function useTaskNotifications() {
   const queryClient = useQueryClient();
   const [permission, setPermission] = useState<ReturnType<typeof notificationPermission> | null>(
@@ -90,9 +111,9 @@ export function useTaskNotifications() {
   );
   const [registrationError, setRegistrationError] = useState<string | null>(null);
 
-  const settings = useTaskNotificationSettings();
-  const notificationSettings = settings.settings;
-  const refetchSettings = settings.refetch;
+  const preferences = useTaskNotificationPreferences();
+  const notificationSettings = preferences.settings;
+  const refetchSettings = preferences.refetch;
 
   const enable = useMutation({
     mutationFn: async () => {
@@ -141,12 +162,6 @@ export function useTaskNotifications() {
     },
   });
 
-  const updatePreferences = useMutation({
-    mutationFn: (updates: UpdateTaskNotificationPreferences) =>
-      updateTaskNotificationSettings(updates),
-    onSuccess: (next) => queryClient.setQueryData(TASK_NOTIFICATION_SETTINGS_QUERY_KEY, next),
-  });
-
   useEffect(() => {
     const reconcile = async () => {
       const currentPermission = notificationPermission();
@@ -190,17 +205,14 @@ export function useTaskNotifications() {
     refetchSettings,
   ]);
 
-  const setCategory = (category: TaskNotificationCategory, enabled: boolean) =>
-    updatePreferences.mutateAsync({ [category]: enabled });
-
   return {
     settings: notificationSettings,
     permission,
     registrationError,
-    isLoading: settings.isLoading,
-    isUpdating: enable.isPending || disable.isPending || updatePreferences.isPending,
+    isLoading: preferences.isLoading,
+    isUpdating: enable.isPending || disable.isPending || preferences.isUpdating,
     enable: enable.mutateAsync,
     disable: disable.mutateAsync,
-    setCategory,
+    setCategory: preferences.setCategory,
   };
 }

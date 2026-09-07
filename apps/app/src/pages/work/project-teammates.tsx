@@ -1,6 +1,5 @@
+import { ProjectCapabilityLibrary } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
-
-import { ProjectCapabilityLibrary } from "~/components/Work/ProjectCapabilityLibrary";
 
 export function meta() {
   return [{ title: "Project teammates - Polychat" }];

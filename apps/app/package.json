@@ -19,7 +19,7 @@
     "serve:e2e": "wrangler dev --config tests/e2e/runtime/app-wrangler.jsonc --env-file tests/e2e/runtime/app.env --port ${POLYCHAT_E2E_APP_PORT:-5173} --log-level warn",
     "start": "wrangler dev",
     "sync": "npx cap sync",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "typecheck": "react-router typegen && tsc -b",
     "watch": "react-router build --watch",

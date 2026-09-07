@@ -1,4 +1,4 @@
-import { InvitationAcceptPage } from "~/components/Work/InvitationAcceptPage";
+import { InvitationAcceptPage } from "@ngriffin_uk/polychat-component-shell";
 
 export function meta() {
   return [

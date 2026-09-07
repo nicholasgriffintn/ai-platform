@@ -1,6 +1,5 @@
+import { ProjectHome } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
-
-import { ProjectHome } from "~/components/Work/ProjectHome";
 
 export function meta() {
   return [{ title: "Project - Polychat" }];

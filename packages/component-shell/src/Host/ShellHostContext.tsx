@@ -1,10 +1,13 @@
 import { type ComponentType, createContext, type ReactNode, useContext } from "react";
 
+import type { UseTaskNotificationChannel } from "../Notifications/task-notification-channel";
+
 export interface ShellHost {
   webBaseUrl: string;
   openAssistant: () => void;
   openSignIn: () => void;
   signOut: () => void;
+  useTaskNotificationChannel: UseTaskNotificationChannel;
   HostDialogs?: ComponentType;
 }
 

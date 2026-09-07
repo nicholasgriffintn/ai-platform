@@ -2,13 +2,13 @@
 
 - **Change:** Self-hosted Fraunces (display), IBM Plex Sans (body) and IBM Plex Mono (utility) replace the system font stack through three font tokens; the welcome title, page titles and theme picker names use the display face; eyebrow labels use a shared mono style.
 - **Surfaces:** Every web page; conversation welcome, page headers, Customisation theme picker, model chips and code.
-- **Prerequisites:** None. The fonts are static assets under `/fonts` served from the origin.
+- **Prerequisites:** None. The font files ship inside `packages/component-ui` and each host's bundler emits them with the rest of its assets.
 - **Risk if wrong:** A missing or blocked font file falls back to the system stack silently; a layout shift on swap could move the composer; a heading in the display face could clip in a narrow header.
 - **Commits:** None yet.
 
 ## Verify
 
-- [ ] Load the app with the network panel open. Confirm requests for `/fonts/*.woff2` return 200 from the origin, that no request goes to a font host, and that no console line reports a content security policy violation for fonts.
+- [ ] Load the app with the network panel open. Confirm each `*.woff2` request returns 200 from the application's own assets, that no request goes to a font host, and that no console line reports a content security policy violation for fonts.
 - [ ] On the home welcome screen, confirm the title renders in a serif display face and the body copy and suggestions in a sans face distinct from the operating system default. Reload with a throttled connection and confirm the composer does not move when the fonts swap in.
 - [ ] Open Profile and Work. Confirm page titles use the display face at a size that fits the header without clipping, on desktop and at 390px width.
 - [ ] Open Customisation and confirm the theme names use the display face and the appearance captions use the mono eyebrow style.

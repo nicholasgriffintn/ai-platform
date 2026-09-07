@@ -1,6 +1,5 @@
+import { ProjectTaskDetail } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
-
-import { ProjectTaskDetail } from "~/components/Work/ProjectTaskDetail";
 
 export function meta() {
   return [{ title: "Task - Polychat" }];

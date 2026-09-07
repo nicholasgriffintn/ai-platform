@@ -1,6 +1,5 @@
+import { ProjectActivity } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
-
-import { ProjectActivity } from "~/components/Work/ProjectActivity";
 
 export default function ProjectActivityPage() {
   const { projectId } = useParams<{ projectId: string }>();

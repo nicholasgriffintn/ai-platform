@@ -16,13 +16,23 @@ describe("desktop deep links", () => {
     expect(readDeepLinkPath("polychat://chat/../../etc/passwd")).toBe("/chat/etc/passwd");
   });
 
-  it.each([
-    "polychat://work/acme/projects/p1",
-    "polychat://profile",
-    "polychat://evil.example/chat",
-  ])("refuses %s, which addresses somewhere this window does not serve", (link) => {
-    expect(readDeepLinkPath(link)).toBeNull();
+  it("opens the Work surfaces a notification points at", () => {
+    expect(readDeepLinkPath("polychat://work/acme/projects/p1/tasks/t1")).toBe(
+      "/work/acme/projects/p1/tasks/t1",
+    );
+    expect(readDeepLinkPath("polychat://work/attention")).toBe("/work/attention");
   });
+
+  it("opens a settings tab the link names", () => {
+    expect(readDeepLinkPath("polychat://profile?tab=billing")).toBe("/profile?tab=billing");
+  });
+
+  it.each(["polychat://evil.example/chat", "polychat://pricing", "polychat://s/share-id"])(
+    "refuses %s, which addresses somewhere this window does not serve",
+    (link) => {
+      expect(readDeepLinkPath(link)).toBeNull();
+    },
+  );
 
   it.each([
     "https://polychat.app/chat/abc",

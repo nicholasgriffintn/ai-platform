@@ -1,6 +1,5 @@
+import { WorkspaceGovernance } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
-
-import { WorkspaceGovernance } from "~/components/Work/WorkspaceGovernance";
 
 export default function WorkspaceGovernancePage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();

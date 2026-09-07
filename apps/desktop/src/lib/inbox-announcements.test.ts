@@ -4,7 +4,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { readAnnouncements } from "./inbox-announcements";
+import { readAnnouncements, readAttentionBadgeCount } from "./inbox-announcements";
 
 const ALL_ENABLED: TaskNotificationPreferences = {
   enabled: true,
@@ -72,4 +72,18 @@ describe("desktop inbox announcements", () => {
       expect(announcement.title).not.toBe("Waiting on you");
     },
   );
+});
+
+describe("the desktop attention badge", () => {
+  it("counts what is waiting while task notifications are on", () => {
+    expect(readAttentionBadgeCount(4, ALL_ENABLED)).toBe(4);
+  });
+
+  it("clears rather than badging once task notifications are turned off", () => {
+    expect(readAttentionBadgeCount(4, { ...ALL_ENABLED, enabled: false })).toBe(0);
+  });
+
+  it("clears while the settings this account keeps are still loading", () => {
+    expect(readAttentionBadgeCount(4, undefined)).toBe(0);
+  });
 });
