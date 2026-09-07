@@ -2,6 +2,7 @@ import { type ShellHost, ShellHostProvider } from "@ngriffin_uk/polychat-compone
 import { WEB_APP_BASE_URL } from "@ngriffin_uk/polychat-library-client";
 import { type ReactNode, useMemo } from "react";
 
+import { useAttentionNotifier } from "./hooks/useAttentionNotifier";
 import { unavailableOnDesktop } from "./lib/host-features";
 
 export function DesktopShellHost({
@@ -11,6 +12,8 @@ export function DesktopShellHost({
   children: ReactNode;
   onSignIn: () => void;
 }) {
+  useAttentionNotifier();
+
   const host = useMemo<ShellHost>(
     () => ({
       webBaseUrl: WEB_APP_BASE_URL,
