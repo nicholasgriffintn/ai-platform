@@ -1,4 +1,4 @@
-use keyring::{Entry, SecretString};
+use keyring::Entry;
 
 const SERVICE: &str = "uk.co.nicholasgriffin.polychat.desktop";
 
@@ -16,9 +16,9 @@ pub fn store(name: &str, secret: &str) -> Result<(), String> {
         .map_err(|cause| cause.to_string())
 }
 
-pub fn read(name: &str) -> Result<Option<SecretString>, String> {
+pub fn read(name: &str) -> Result<Option<String>, String> {
     match entry(name)?.get_password() {
-        Ok(secret) => Ok(Some(SecretString::new(secret))),
+        Ok(secret) => Ok(Some(secret)),
         Err(keyring::Error::NoEntry) => Ok(None),
         Err(cause) => Err(cause.to_string()),
     }
