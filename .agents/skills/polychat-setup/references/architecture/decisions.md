@@ -9,6 +9,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0003: Use scoped resources and explicit authority](decisions/0003-scoped-resources-and-explicit-authority.md)
 - [0004: Render one shell with one user-facing vocabulary](decisions/0004-one-shell-and-one-vocabulary.md)
 - [0031: Run workspace tasks through Vite+](decisions/0031-run-workspace-tasks-through-vite-plus.md)
+- [0032: Ship the navigation shell as preserved modules](decisions/0032-ship-navigation-shell-as-preserved-modules.md)
 
 ## Running a turn
 
@@ -53,6 +54,6 @@ Read the relevant record before changing a durable boundary. These are consolida
 
 ## Maintaining these records
 
-Records 0001–0030 were renumbered contiguously when 44 earlier records were consolidated into these 30; earlier numbers do not map onto them and are not referenced anywhere. The next new decision is 0032. Do not reuse a retired number.
+Records 0001–0030 were renumbered contiguously when 44 earlier records were consolidated into these 30; earlier numbers do not map onto them and are not referenced anywhere. The next new decision is 0033. Do not reuse a retired number.
 
 Add a record only for a durable trade-off that code alone cannot explain. State the problem, the decision, its status and its consequences, then update this index. Merge a record into an existing one rather than adding a second account of the same boundary. Keep rollout plans, copied schemas and unimplemented proposals out of these files.
