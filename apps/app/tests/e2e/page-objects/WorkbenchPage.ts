@@ -1,6 +1,35 @@
 import { BasePage } from "./BasePage";
 
 export class WorkbenchPage extends BasePage {
+  get status() {
+    return this.page.getByRole("status").filter({
+      has: this.page.locator("span").filter({
+        hasText:
+          /^(Ready|Queued|Preparing|Running|Paused|Waiting for approval|Waiting for input|Ready for review|Completed|Failed|Cancelled)$/,
+      }),
+    });
+  }
+
+  get statusDetail() {
+    return this.status.locator("span.text-muted-foreground");
+  }
+
+  async statusDetailIsTruncated() {
+    return this.statusDetail.evaluate((element) => element.scrollWidth > element.clientWidth);
+  }
+
+  async statusStripHasPageBackground() {
+    return this.status.locator("..").evaluate((element) => {
+      return getComputedStyle(element).backgroundColor === "rgba(0, 0, 0, 0)";
+    });
+  }
+
+  async statusStripHasAttentionBackground() {
+    return this.status.locator("..").evaluate((element) => {
+      return getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)";
+    });
+  }
+
   get dock() {
     return this.page.getByRole("complementary", { name: "Project workbench", exact: true });
   }
@@ -79,6 +108,24 @@ export class WorkbenchPage extends BasePage {
     return this.page.locator('[role="tab"]:visible').filter({ hasText: name });
   }
 
+  panePanel(name: "Activity" | "Changes" | "Files" | "Proof" | "Preview") {
+    return this.page.getByRole("tabpanel", { name, exact: true });
+  }
+
+  async hasVisibleKeyboardFocus() {
+    return this.page.evaluate(() => {
+      const element = document.activeElement;
+
+      if (!(element instanceof HTMLElement) || !element.matches(":focus-visible")) {
+        return false;
+      }
+
+      const style = getComputedStyle(element);
+
+      return style.outlineStyle !== "none" && Number.parseFloat(style.outlineWidth) > 0;
+    });
+  }
+
   async collapse() {
     await this.page.getByRole("button", { name: "Collapse workbench panels", exact: true }).click();
   }
@@ -91,8 +138,21 @@ export class WorkbenchPage extends BasePage {
     await this.controlButton(action).click();
   }
 
-  controlButton(action: "Pause" | "Resume" | "Cancel") {
+  controlButton(action: "Pause" | "Resume" | "Cancel" | "Continue") {
     return this.page.getByRole("button", { name: action, exact: true });
+  }
+
+  controlLabel(action: "Pause" | "Resume" | "Cancel" | "Continue") {
+    return this.controlButton(action).locator("span").filter({ hasText: action }).last();
+  }
+
+  async controlPresentation(action: "Pause" | "Resume" | "Cancel" | "Continue") {
+    const [title, labelVisible] = await Promise.all([
+      this.controlButton(action).getAttribute("title"),
+      this.controlLabel(action).isVisible(),
+    ]);
+
+    return { action, title, labelVisible };
   }
 
   service(name: string) {
@@ -157,6 +217,12 @@ export class WorkbenchPage extends BasePage {
 
   get previewAttackResults() {
     return this.previewFrame.locator("#sandbox-attack-results");
+  }
+
+  async selectPreviewService(serviceName: string) {
+    await this.previewShell
+      .getByLabel("Declared service", { exact: true })
+      .selectOption(serviceName);
   }
 
   async startPreview() {

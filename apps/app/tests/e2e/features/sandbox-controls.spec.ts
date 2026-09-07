@@ -42,10 +42,12 @@ test.describe("Sandbox run supervision", () => {
       expect(
         (await sandbox.events(run.runId)).some(({ event }) => event.type === "service_healthy"),
       ).toBe(true);
+      await expect(workbench.status).toContainText("Running");
       const runningControl = await sandbox.control(run.runId);
 
       await workbench.control("Pause");
       await expect.poll(async () => (await sandbox.control(run.runId)).state).toBe("paused");
+      await expect(workbench.status).toContainText("Paused");
       await expect
         .poll(
           async () =>
@@ -126,6 +128,7 @@ test.describe("Sandbox run supervision", () => {
       await expect
         .poll(async () => (await sandbox.latestRun())?.status, { timeout: 40_000 })
         .toBe(action === "Resume" ? "completed" : "cancelled");
+      await expect(workbench.status).toContainText(action === "Resume" ? "Completed" : "Cancelled");
       const completed = await sandbox.latestRun();
 
       expect(completed?.runId).toBe(run.runId);
@@ -242,6 +245,17 @@ test.describe("Sandbox run supervision", () => {
         "title",
         `This run is ${action === "Resume" ? "completed" : "cancelled"} and no longer accepts actions.`,
       );
+
+      if (action === "Resume") {
+        await sandbox.removeCodingEnvironment();
+        expect((await sandbox.project()).codingEnvironment).toBeNull();
+        await workbench.reload();
+        await expect(workbench.dock).toBeVisible();
+        await workbench.selectPane("Activity");
+        await expect(workbench.panel).toContainText("Keep the verified README change.");
+        await workbench.selectPane("Proof");
+        await expect(workbench.panel).toContainText("completed");
+      }
     });
   }
 

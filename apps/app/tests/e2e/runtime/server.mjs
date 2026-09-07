@@ -1259,6 +1259,86 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
 						return Response.json({ ...state, event_count: Number(ledger?.event_count || 0) });
 					}
 
+					async function currentSessionUser(request, env) {
+						const cookie = request.headers.get("cookie") || "";
+						const sessionToken = cookie.match(/(?:^|;\\s*)session=([^;]+)/)?.[1];
+						if (!sessionToken) return null;
+						const sessionId = await hashSession(decodeURIComponent(sessionToken));
+						return env.DB.prepare("SELECT user_id FROM session WHERE id = ?").bind(sessionId).first();
+					}
+
+					async function createQueuedWorkbenchRun(request, env) {
+						const session = await currentSessionUser(request, env);
+						if (!session?.user_id) {
+							return Response.json({ error: "Authenticated E2E session required" }, { status: 401 });
+						}
+						const { projectId, conversationId, task } = await request.json();
+						if (
+							typeof projectId !== "string" ||
+							typeof conversationId !== "string" ||
+							typeof task !== "string" ||
+							projectId.length > 200 ||
+							conversationId.length > 200 ||
+							task.length > 2000
+						) {
+							return Response.json({ error: "Invalid queued Workbench fixture" }, { status: 400 });
+						}
+						const membership = await env.DB.prepare(
+							"SELECT p.id FROM project p JOIN workspace_member wm ON wm.workspace_id = p.workspace_id WHERE p.id = ? AND wm.user_id = ?"
+						).bind(projectId, session.user_id).first();
+						if (!membership) {
+							return Response.json({ error: "Project membership required" }, { status: 403 });
+						}
+						const now = new Date().toISOString();
+						const runId = "e2e-queued-" + crypto.randomUUID();
+						const run = {
+							runId,
+							projectId,
+							installationId: 987654,
+							repo: "nicholasgriffintn/polychat-e2e-fixture",
+							task,
+							taskType: "documentation",
+							model: "groq-openai-gpt-oss-120b",
+							trustLevel: "balanced",
+							deliveryPolicy: { mode: "leave_uncommitted" },
+							environmentPreparationMode: "setup",
+							environmentCacheGeneration: 0,
+							status: "queued",
+							startedAt: now,
+							updatedAt: now,
+							events: [],
+							timeoutSeconds: 120,
+							timeoutAt: new Date(Date.now() + 120000).toISOString(),
+							workflowPhase: "queued",
+						};
+						await env.DB.prepare(
+							"INSERT INTO activity_record (id, created_by_user_id, project_id, conversation_id, capability_id, group_id, kind, status, summary, data, created_at, updated_at) VALUES (?, ?, ?, ?, 'sandbox_runs', ?, 'sandbox_run', 'queued', ?, ?, ?, ?)"
+						).bind(
+							"e2e-workbench-" + runId,
+							session.user_id,
+							projectId,
+							conversationId,
+							runId,
+							"Queued Workbench fixture",
+							JSON.stringify(run),
+							now,
+							now,
+						).run();
+						return Response.json(run, { status: 201 });
+					}
+
+					async function deleteQueuedWorkbenchRun(request, env) {
+						const session = await currentSessionUser(request, env);
+						const runId = new URL(request.url).searchParams.get("runId");
+						if (!session?.user_id || !runId?.startsWith("e2e-queued-")) {
+							return Response.json({ error: "Invalid queued Workbench fixture" }, { status: 400 });
+						}
+						await env.DB.prepare(
+							"DELETE FROM activity_record WHERE group_id = ? AND created_by_user_id = ?"
+						).bind(runId, session.user_id).run();
+						return new Response(null, { status: 204 });
+					}
+
 					async function redeliverSandboxRun(request, env) {
 						const { runId } = await request.json();
 						if (typeof runId !== "string" || !/^[A-Za-z0-9_-]{1,160}$/.test(runId)) {
@@ -1319,6 +1399,12 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
 								if (request.method === "GET" && url.pathname === "/__e2e-persona-state") {
 									return readAnonymousState(request, env);
 								}
+								if (request.method === "POST" && url.pathname === "/__e2e-workbench-run") {
+									return createQueuedWorkbenchRun(request, env);
+								}
+								if (request.method === "DELETE" && url.pathname === "/__e2e-workbench-run") {
+									return deleteQueuedWorkbenchRun(request, env);
+								}
 								if (request.method === "POST" && url.pathname === "/__e2e-sandbox-redelivery") {
 									return redeliverSandboxRun(request, env);
 								}
@@ -1344,6 +1430,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
           `${apiBaseUrl}/__e2e-ready`,
           `${apiBaseUrl}/__e2e-persona`,
           `${apiBaseUrl}/__e2e-persona-state*`,
+          `${apiBaseUrl}/__e2e-workbench-run*`,
           `${apiBaseUrl}/__e2e-sandbox-redelivery*`,
         ],
       },

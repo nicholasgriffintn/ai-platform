@@ -31,6 +31,17 @@ export const SUPERVISED_SANDBOX_ENVIRONMENT = {
   },
 } satisfies SandboxEnvironmentSetup;
 
+export const WORKBENCH_STATUS_SANDBOX_ENVIRONMENT = {
+  source: "polychat",
+  definition: {
+    version: 1,
+    setupCommands: ['node -e "setTimeout(() => {}, 6000)"'],
+    resumeCommands: [],
+    runtimes: [{ name: "node", version: "22" }],
+    setupTimeoutSeconds: 30,
+  },
+} satisfies SandboxEnvironmentSetup;
+
 export const BOUNDED_LOG_SANDBOX_ENVIRONMENT = {
   ...SUPERVISED_SANDBOX_ENVIRONMENT,
   definition: {

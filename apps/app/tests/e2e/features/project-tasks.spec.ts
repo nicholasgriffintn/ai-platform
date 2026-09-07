@@ -1,8 +1,10 @@
 import { ChatRunApi } from "../fixtures/chat-run-api";
 import { expect, test } from "../fixtures/polychat-test";
 import { ProjectTaskApi } from "../fixtures/project-task-api";
+import { SandboxApi } from "../fixtures/sandbox-api";
 import { InteractionPage } from "../page-objects/InteractionPage";
 import { ProjectTasksPage } from "../page-objects/ProjectTasksPage";
+import { WorkbenchPage } from "../page-objects/WorkbenchPage";
 
 test.describe("Project task evidence", () => {
   test.use({ persona: "pro" });
@@ -56,7 +58,10 @@ test.describe("Project task evidence", () => {
 
     await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
     const taskApi = new ProjectTaskApi(page.request, workPage.currentProjectId());
+    const sandbox = new SandboxApi(page.request, workPage.currentProjectId());
     const runs = new ChatRunApi(page.request);
+
+    await sandbox.configureProject();
     const task = await taskApi.createQuestionTask();
 
     await tasks.openBoard();
@@ -98,6 +103,11 @@ test.describe("Project task evidence", () => {
       reopenedTasks.plan.getByRole("link", { name: `Run ${detail.task.runId}`, exact: true }),
     ).toBeVisible();
     await reopenedTasks.answerQuestions();
+    const workbench = new WorkbenchPage(reopenedPage);
+
+    await expect(workbench.dock).toBeVisible();
+    await expect(workbench.status).toContainText("Waiting for input");
+    expect(await workbench.statusStripHasAttentionBackground()).toBe(true);
     const interaction = new InteractionPage(reopenedPage);
 
     await interaction.answerReleaseQuestions();
@@ -126,6 +136,9 @@ test.describe("Project task evidence", () => {
 
     expect(completed.pendingQuestions).toBeNull();
     expect(completed.task.conversationId).toBe(detail.task.conversationId);
+    await workbench.reload();
+    await expect(workbench.status).toContainText("Ready for review");
+    await expect(workbench.status).toContainText(task.objective);
     await reopenedTasks.navigate(taskUrl);
     await expect(
       reopenedPage.getByRole("button", { name: "Approve result", exact: true }),

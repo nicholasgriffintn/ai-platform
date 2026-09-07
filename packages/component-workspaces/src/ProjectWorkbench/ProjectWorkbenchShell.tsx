@@ -222,16 +222,19 @@ function RunStatusStrip({
         <div className="flex max-w-xl min-w-0 items-baseline gap-2">
           <span
             className={cn(
-              "truncate text-sm font-medium",
+              "shrink-0 text-sm font-medium",
               presentation.requiresAttention && "text-attention",
             )}
           >
             {presentation.label}
           </span>
           {statusDetail ? (
-            <span className="hidden min-w-0 truncate text-xs text-muted-foreground sm:inline">
-              {statusDetail}
-            </span>
+            <>
+              <span className="sr-only">: {statusDetail}</span>
+              <span aria-hidden="true" className="min-w-0 truncate text-xs text-muted-foreground">
+                {statusDetail}
+              </span>
+            </>
           ) : null}
         </div>
       </output>

@@ -56,6 +56,7 @@ export function ProjectWorkbenchRunControls({
           size="sm"
           collapseLabel="xl"
           disabled={disabled}
+          aria-label="Resume"
           title={controlHint ?? "Resume this run"}
           onClick={() => runAction(onResume)}
           icon={<CirclePlay className="size-4" />}
@@ -69,6 +70,7 @@ export function ProjectWorkbenchRunControls({
           size="sm"
           collapseLabel="xl"
           disabled={disabled || controlState !== "running"}
+          aria-label="Pause"
           title={
             controlHint ??
             (controlState === "running"
@@ -89,6 +91,7 @@ export function ProjectWorkbenchRunControls({
           size="sm"
           collapseLabel="xl"
           disabled={disabled}
+          aria-label="Continue"
           title={controlHint ?? "Ask the run to keep going and finish with clear validation"}
           onClick={() => runAction(onContinue)}
           icon={<StepForward className="size-4" />}
@@ -103,6 +106,7 @@ export function ProjectWorkbenchRunControls({
         size="sm"
         collapseLabel="xl"
         disabled={disabled || controlState === "cancelled"}
+        aria-label="Cancel"
         title={controlHint ?? "Cancel this run"}
         onClick={() => runAction(onCancel)}
         icon={<OctagonX className="size-4" />}

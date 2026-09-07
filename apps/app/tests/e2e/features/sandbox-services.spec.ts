@@ -104,6 +104,9 @@ test.describe("Sandbox service controls", () => {
       expect(events.some(({ event }) => event.type === scenario.eventType)).toBe(true);
       expect(events.some(({ event }) => event.type === "planning_started")).toBe(false);
       await workbench.selectPane("Preview");
+      if (scenario.name === "occupied declared port") {
+        await workbench.selectPreviewService("fixture");
+      }
       await expect(workbench.panel).toContainText("Service unhealthy");
       await workbench.selectPane("Proof");
       await expect(workbench.panel).toContainText("failed");

@@ -70,6 +70,8 @@ test.describe("Sandbox command approval", () => {
       await expect(
         page.getByRole("region", { name: "Pending command approvals", exact: true }),
       ).toContainText("curl --version");
+      await expect(workbench.status).toContainText("Waiting for approval");
+      expect(await workbench.statusStripHasAttentionBackground()).toBe(true);
       if (action === "Expire") {
         await expect
           .poll(
@@ -136,6 +138,7 @@ test.describe("Sandbox command approval", () => {
       );
       await workbench.reload();
       await workbench.selectPane("Activity");
+      await expect(workbench.status).toContainText(action === "Approve" ? "Completed" : "Failed");
       const activityTitles = await workbench.activityTitles.allTextContents();
       const approvalTitles =
         action === "Expire"

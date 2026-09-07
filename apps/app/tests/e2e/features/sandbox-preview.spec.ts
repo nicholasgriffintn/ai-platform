@@ -6,6 +6,7 @@ import { SUPERVISED_SANDBOX_ENVIRONMENT } from "../fixtures/sandbox-environment"
 import { SandboxPreviewPage } from "../page-objects/SandboxPreviewPage";
 import { WorkbenchPage } from "../page-objects/WorkbenchPage";
 import { E2E_APP_BASE_URL } from "../support/environment";
+import { pauseNextNetworkRequest } from "../support/network-conditions";
 import { replaceSandboxPreviewGrantIdentity } from "../support/sandbox-preview-grant";
 
 test.describe("Private sandbox previews", () => {
@@ -58,6 +59,20 @@ test.describe("Private sandbox previews", () => {
       .toBe(true);
     await workbench.control("Pause");
     await expect.poll(async () => (await sandbox.control(run.runId)).state).toBe("paused");
+    await workbench.selectPane("Preview");
+    await expect(workbench.previewShell).toContainText("Preview stopped");
+    const pausedActivity = await pauseNextNetworkRequest(page, "*/activity?*");
+    const reload = page.reload({ waitUntil: "domcontentloaded" });
+
+    await pausedActivity.wait();
+    await reload;
+    try {
+      await expect(workbench.previewShell).toContainText("Loading preview");
+    } finally {
+      await pausedActivity.release();
+    }
+
+    await expect(workbench.previewShell).toContainText("Preview stopped");
     expect((await sandbox.createPreview(run.runId, "undeclared")).status()).toBe(409);
     expect((await sandbox.createPreview(run.runId, "watcher")).status()).toBe(409);
     const access = await sandbox.preview(run.runId, "fixture");
@@ -217,6 +232,7 @@ test.describe("Private sandbox previews", () => {
     });
 
     await expect(embeddedHeading).toBeVisible();
+    await expect(workbench.previewShell).toContainText("Preview healthy");
     await workbench.previewViewport("Fit");
     await expect(workbench.previewViewportButton("Fit")).toHaveAttribute("aria-pressed", "true");
     await expect(workbench.previewShell).toContainText("Fit to panel");
@@ -279,6 +295,7 @@ test.describe("Private sandbox previews", () => {
     expect(Date.parse(refreshedAccess.expiresAt)).toBeGreaterThan(
       Date.parse(embeddedAccess.expiresAt),
     );
+    expect(await sandbox.previewAccessStatus(run.runId, embeddedAccess.previewId)).toBe(404);
     await expect(embeddedHeading).toBeVisible();
     await workbench.previewViewport("Mobile");
     await workbench.navigatePreview("/review?source=e2e");
@@ -387,12 +404,27 @@ test.describe("Private sandbox previews", () => {
     await expect(
       workbench.previewFrame.getByRole("heading", { name: "Sandbox service ready", exact: true }),
     ).toBeVisible();
+    const externalTab = await workbench.openPreviewExternally();
+    const externalPreview = new SandboxPreviewPage(externalTab);
+
+    await expect(externalPreview.serviceHeading).toBeVisible();
+    const externalOrigin = new URL(externalTab.url()).origin;
+
     await expect
-      .poll(async () => (await workbench.reloadPreviewDocument())?.status() ?? 400, {
+      .poll(async () => (await sandbox.previewAccess(run.runId, access.previewId)).state, {
         timeout: 320_000,
         intervals: [15_000],
       })
-      .toBeGreaterThanOrEqual(400);
+      .toBe("expired");
     await expect(workbench.previewShell).toContainText("Preview expired");
+    await expect(workbench.previewFrameElement).toHaveCount(0);
+    await expect
+      .poll(async () => (await externalPreview.open(externalOrigin))?.status() ?? 200, {
+        timeout: 30_000,
+        intervals: [5_000],
+      })
+      .toBeGreaterThanOrEqual(400);
+    await expect(externalPreview.serviceHeading).not.toBeVisible();
+    await externalTab.close();
   });
 });

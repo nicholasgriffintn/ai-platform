@@ -88,6 +88,15 @@ export class SandboxApi {
     });
   }
 
+  async removeCodingEnvironment() {
+    const response = await this.request.put(`${E2E_API_BASE_URL}/projects/${this.projectId}`, {
+      headers: { origin: E2E_APP_BASE_URL },
+      data: { codingEnvironment: null },
+    });
+
+    await requireSuccessfulResponse(response, "Remove the fixture coding environment");
+  }
+
   async replaceConnectionRepositories(repositories: string[], installationId = INSTALLATION_ID) {
     const response = await this.request.put(
       `${E2E_API_BASE_URL}/apps/sandbox/connections/${installationId}/repositories`,
@@ -106,6 +115,24 @@ export class SandboxApi {
     });
 
     await requireSuccessfulResponse(response, "Redeliver terminal sandbox task");
+  }
+
+  async createQueuedWorkbenchRun(conversationId: string, task: string) {
+    const response = await this.request.post(`${E2E_API_BASE_URL}/__e2e-workbench-run`, {
+      data: { projectId: this.projectId, conversationId, task },
+    });
+
+    await requireSuccessfulResponse(response, "Create queued Workbench fixture");
+
+    return sandboxRunDataSchema.parse(await response.json());
+  }
+
+  async deleteQueuedWorkbenchRun(runId: string) {
+    const response = await this.request.delete(`${E2E_API_BASE_URL}/__e2e-workbench-run`, {
+      params: { runId },
+    });
+
+    await requireSuccessfulResponse(response, "Delete queued Workbench fixture");
   }
 
   async redeliveryState(runId: string): Promise<string | undefined> {
@@ -185,6 +212,24 @@ export class SandboxApi {
     await requireSuccessfulResponse(response, "Create declared service preview");
 
     return sandboxPreviewAccessSchema.parse(await response.json());
+  }
+
+  async previewAccess(runId: string, previewId: string) {
+    const response = await this.request.get(
+      `${E2E_API_BASE_URL}/apps/sandbox/runs/${runId}/previews/${previewId}`,
+    );
+
+    await requireSuccessfulResponse(response, "Read sandbox preview access");
+
+    return sandboxPreviewAccessSchema.parse(await response.json());
+  }
+
+  async previewAccessStatus(runId: string, previewId: string) {
+    const response = await this.request.get(
+      `${E2E_API_BASE_URL}/apps/sandbox/runs/${runId}/previews/${previewId}`,
+    );
+
+    return response.status();
   }
 
   async revokePreview(runId: string, previewId: string) {

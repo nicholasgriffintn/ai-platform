@@ -7,7 +7,8 @@ export class ProjectTasksPage extends BasePage {
 
   async openBoard() {
     await this.page.getByRole("link", { name: "Tasks", exact: true }).first().click();
-    await this.page.getByRole("heading", { name: "Tasks", level: 1 }).waitFor();
+    await this.page.waitForURL(/\/tasks$/);
+    await this.page.getByRole("heading", { name: "Work queue", exact: true }).waitFor();
   }
 
   async createBacklogTask(objective: string) {
