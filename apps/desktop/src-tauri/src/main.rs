@@ -8,6 +8,7 @@ mod discovery;
 mod egress;
 mod lines;
 mod link;
+mod links;
 mod runs;
 mod secrets;
 mod store;
@@ -27,7 +28,8 @@ use rusqlite::Connection;
 use serde::Serialize;
 use store::{LocalConversation, LocalMessage, Store};
 use tauri::ipc::Channel;
-use tauri::{Manager, State};
+use tauri::{Emitter, Manager, State};
+use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_notification::NotificationExt;
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 use url::Url;
@@ -952,10 +954,36 @@ async fn start_model_run(
     Ok(())
 }
 
+fn raise(app: &tauri::AppHandle) {
+    for window in app.webview_windows().values() {
+        let _ = window.unminimize();
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+}
+
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+            raise(app);
+
+            if let Some(url) = links::find_deep_link(&argv) {
+                let _ = app.emit(links::DEEP_LINK_EVENT, url.clone());
+            }
+        }))
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {
+            let opened = app.handle().clone();
+
+            app.deep_link().on_open_url(move |event| {
+                raise(&opened);
+
+                for url in event.urls() {
+                    let _ = opened.emit(links::DEEP_LINK_EVENT, url.to_string());
+                }
+            });
+
             let directory = app.path().app_data_dir()?;
 
             std::fs::create_dir_all(&directory)?;

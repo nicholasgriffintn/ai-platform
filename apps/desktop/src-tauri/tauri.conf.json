@@ -33,6 +33,9 @@
       "endpoints": [
         "https://api.polychat.app/desktop/releases/{{target}}/{{arch}}/{{current_version}}"
       ]
+    },
+    "deep-link": {
+      "desktop": { "schemes": ["polychat"] }
     }
   },
   "bundle": {
