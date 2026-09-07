@@ -1,3 +1,4 @@
+import type { ThreadModeConfig } from "@ngriffin_uk/polychat-component-conversation";
 import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useChat,
@@ -16,7 +17,7 @@ import {
   sandboxTaskTypeSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { ConversationPage } from "../Conversations/ConversationPage";
@@ -75,8 +76,11 @@ export function ProjectConversationPage({
     currentConversationId ? state.streams[currentConversationId]?.status === "streaming" : false,
   );
   const refreshedConversationIdRef = useRef<string | null>(null);
-  const capabilities =
-    project?.capabilities.map(({ kind, capabilityId }) => ({ kind, capabilityId })) ?? [];
+  const projectCapabilities = project?.capabilities;
+  const capabilities = useMemo(
+    () => projectCapabilities?.map(({ kind, capabilityId }) => ({ kind, capabilityId })) ?? [],
+    [projectCapabilities],
+  );
   const codingEnvironment = project?.codingEnvironment;
   const [draftTaskType, setDraftTaskType] = useState<SandboxTaskType>("feature-implementation");
   const [taskTypesByConversation, setTaskTypesByConversation] = useState<
@@ -86,7 +90,7 @@ export function ProjectConversationPage({
   const taskType = currentConversationId
     ? (taskTypesByConversation[currentConversationId] ?? draftTaskType)
     : draftTaskType;
-  const codingPresentation = getProjectCodingPresentation(taskType);
+  const codingPresentation = useMemo(() => getProjectCodingPresentation(taskType), [taskType]);
   const recipeManagementPath = getCapabilityLibraryPath(getProjectSurface(workspaceId, projectId));
 
   useEffect(() => {
@@ -129,18 +133,21 @@ export function ProjectConversationPage({
     }));
   }, [currentConversation, currentConversationId]);
 
-  const handleTaskTypeChange = (nextTaskType: SandboxTaskType) => {
-    if (currentConversationId) {
-      setTaskTypesByConversation((current) => ({
-        ...current,
-        [currentConversationId]: nextTaskType,
-      }));
+  const handleTaskTypeChange = useCallback(
+    (nextTaskType: SandboxTaskType) => {
+      if (currentConversationId) {
+        setTaskTypesByConversation((current) => ({
+          ...current,
+          [currentConversationId]: nextTaskType,
+        }));
 
-      return;
-    }
+        return;
+      }
 
-    setDraftTaskType(nextTaskType);
-  };
+      setDraftTaskType(nextTaskType);
+    },
+    [currentConversationId],
+  );
 
   useEffect(() => {
     setChatMode("remote");
@@ -183,6 +190,93 @@ export function ProjectConversationPage({
     }
   }, [currentConversationId, isStreamLoading, project, projectId, queryClient]);
 
+  const baseModeConfig = useMemo<ThreadModeConfig>(
+    () => ({
+      contextAttachments: isNewConversation ? projectSources.attachments : [],
+      contextAttachmentsReady: !isNewConversation || !projectSources.isLoading,
+      assistantActionRoutes: {
+        recipes: recipeManagementPath,
+      },
+      assistantActionCatalog: {
+        includeTeammates: false,
+        includeTools: false,
+        projectId,
+      },
+      allowedAssistantActionCapabilities: capabilities,
+      toolSelectionLocked: true,
+      welcomeTitle: codingEnvironment
+        ? codingPresentation.title
+        : (project?.name ?? "Project conversation"),
+      welcomeDescription: codingEnvironment
+        ? codingPresentation.description
+        : project?.description ||
+          "This conversation uses the project's instructions and capabilities.",
+      welcomeSuggestions: codingEnvironment ? codingPresentation.suggestions : undefined,
+      welcomeCapabilitySuggestions: false,
+      inputPlaceholder: {
+        newConversation: codingEnvironment
+          ? codingPresentation.placeholder
+          : "Message about this project…",
+        followUp: codingEnvironment ? codingPresentation.placeholder : "Reply…",
+      },
+      inputControls: codingEnvironment ? (
+        <ProjectCodingTaskControl
+          taskType={taskType}
+          isDisabled={isStreamLoading}
+          onChange={handleTaskTypeChange}
+        />
+      ) : (
+        <ProjectFileAsTaskControl
+          isEnabled={fileAsTask.isEnabled}
+          isDisabled={isStreamLoading || fileAsTask.isFiling}
+          onChange={fileAsTask.setIsEnabled}
+        />
+      ),
+      ...(fileAsTask.isEnabled && !codingEnvironment ? { onFileAsTask: fileAsTask.file } : {}),
+      requestOptions: {
+        metadata: { project_id: projectId },
+        ...(codingEnvironment
+          ? {
+              options: {
+                sandbox: {
+                  enabled: true,
+                  installationId: codingEnvironment.installationId,
+                  repo: codingEnvironment.repository,
+                  taskType,
+                  promptStrategy: codingEnvironment.promptStrategy,
+                  deliveryPolicy: codingEnvironment.deliveryPolicy,
+                  environmentSetup: codingEnvironment.environmentSetup,
+                  timeoutSeconds: codingEnvironment.timeoutSeconds,
+                },
+              },
+            }
+          : {}),
+      },
+      analyticsSource: "project",
+      hideComposerSuggestions: true,
+      pendingUserQuestions: pendingQuestions,
+      onToolInteraction,
+    }),
+    [
+      capabilities,
+      codingEnvironment,
+      codingPresentation,
+      fileAsTask,
+      handleTaskTypeChange,
+      isNewConversation,
+      isStreamLoading,
+      onToolInteraction,
+      pendingQuestions,
+      project?.description,
+      project?.name,
+      projectId,
+      projectSources.attachments,
+      projectSources.isLoading,
+      recipeManagementPath,
+      taskType,
+    ],
+  );
+
   return (
     <ProjectWorkbenchConversation
       projectId={projectId}
@@ -197,76 +291,7 @@ export function ProjectConversationPage({
           embedded
           pathConversationId={conversationId}
           title={project?.name ?? "Project conversation"}
-          modeConfig={{
-            contextAttachments: isNewConversation ? projectSources.attachments : [],
-            contextAttachmentsReady: !isNewConversation || !projectSources.isLoading,
-            assistantActionRoutes: {
-              recipes: recipeManagementPath,
-            },
-            assistantActionCatalog: {
-              includeTeammates: false,
-              includeTools: false,
-              projectId,
-            },
-            allowedAssistantActionCapabilities: capabilities,
-            toolSelectionLocked: true,
-            welcomeTitle: codingEnvironment
-              ? codingPresentation.title
-              : (project?.name ?? "Project conversation"),
-            welcomeDescription: codingEnvironment
-              ? codingPresentation.description
-              : project?.description ||
-                "This conversation uses the project's instructions and capabilities.",
-            welcomeSuggestions: codingEnvironment ? codingPresentation.suggestions : undefined,
-            welcomeCapabilitySuggestions: false,
-            inputPlaceholder: {
-              newConversation: codingEnvironment
-                ? codingPresentation.placeholder
-                : "Message about this project…",
-              followUp: codingEnvironment ? codingPresentation.placeholder : "Reply…",
-            },
-            inputControls: codingEnvironment ? (
-              <ProjectCodingTaskControl
-                taskType={taskType}
-                isDisabled={isStreamLoading}
-                onChange={handleTaskTypeChange}
-              />
-            ) : (
-              <ProjectFileAsTaskControl
-                isEnabled={fileAsTask.isEnabled}
-                isDisabled={isStreamLoading || fileAsTask.isFiling}
-                onChange={fileAsTask.setIsEnabled}
-              />
-            ),
-            ...(fileAsTask.isEnabled && !codingEnvironment
-              ? { onFileAsTask: fileAsTask.file }
-              : {}),
-            requestOptions: {
-              metadata: { project_id: projectId },
-              ...(codingEnvironment
-                ? {
-                    options: {
-                      sandbox: {
-                        enabled: true,
-                        installationId: codingEnvironment.installationId,
-                        repo: codingEnvironment.repository,
-                        taskType,
-                        promptStrategy: codingEnvironment.promptStrategy,
-                        deliveryPolicy: codingEnvironment.deliveryPolicy,
-                        environmentSetup: codingEnvironment.environmentSetup,
-                        timeoutSeconds: codingEnvironment.timeoutSeconds,
-                      },
-                    },
-                  }
-                : {}),
-            },
-            analyticsSource: "project",
-            hideComposerSuggestions: true,
-            pendingUserQuestions: pendingQuestions,
-            onToolInteraction,
-            composerBanner,
-            runSteering,
-          }}
+          modeConfig={{ ...baseModeConfig, composerBanner, runSteering }}
         />
       )}
     </ProjectWorkbenchConversation>

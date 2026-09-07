@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 export interface DesktopPageRoutes {
   page: string;
   paths: readonly string[];
+  layout?: string;
 }
 
 export interface DesktopPageComponent {
@@ -25,12 +26,13 @@ export function readPageNames(modules: Record<string, unknown>): string[] {
 }
 
 export function readPageRoutes(
-  modules: Record<string, { paths: readonly string[] }>,
+  modules: Record<string, { paths: readonly string[]; layout?: string }>,
 ): DesktopPageRoutes[] {
   return byPage(
     Object.entries(modules).map(([file, module]) => ({
       page: directoryName(file),
       paths: module.paths,
+      ...(module.layout ? { layout: module.layout } : {}),
     })),
   );
 }

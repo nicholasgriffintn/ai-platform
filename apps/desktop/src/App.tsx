@@ -18,6 +18,7 @@ import {
 import { type ReactNode, useCallback } from "react";
 
 import { DesktopShellHost } from "./DesktopShellHost";
+import { DesktopWindowEffects } from "./DesktopWindowEffects";
 import { useDesktopSession } from "./hooks/useDesktopSession";
 import { DesktopRoutes } from "./routes";
 
@@ -50,6 +51,7 @@ function DesktopWindowContent() {
         })
       }
     >
+      <DesktopWindowEffects />
       <DesktopRoutes />
     </AppErrorBoundary>
   );

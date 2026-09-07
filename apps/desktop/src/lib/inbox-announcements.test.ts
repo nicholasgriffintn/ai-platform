@@ -4,7 +4,11 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { readAnnouncements, readAttentionBadgeCount } from "./inbox-announcements";
+import {
+  readAnnouncements,
+  readAnnouncementSignature,
+  readAttentionBadgeCount,
+} from "./inbox-announcements";
 
 const ALL_ENABLED: TaskNotificationPreferences = {
   enabled: true,
@@ -85,5 +89,33 @@ describe("the desktop attention badge", () => {
 
   it("clears while the settings this account keeps are still loading", () => {
     expect(readAttentionBadgeCount(4, undefined)).toBe(0);
+  });
+});
+
+describe("the announcement signature", () => {
+  it("stays the same when a poll returns the same items", () => {
+    const announcements = readAnnouncements([item()], ALL_ENABLED);
+    const polledAgain = readAnnouncements([item()], ALL_ENABLED);
+
+    expect(readAnnouncementSignature("scope", announcements)).toBe(
+      readAnnouncementSignature("scope", polledAgain),
+    );
+  });
+
+  it("changes once a task moves on to a new version", () => {
+    const before = readAnnouncements([item()], ALL_ENABLED);
+    const after = readAnnouncements([item({ id: "task-1:v2" })], ALL_ENABLED);
+
+    expect(readAnnouncementSignature("scope", before)).not.toBe(
+      readAnnouncementSignature("scope", after),
+    );
+  });
+
+  it("changes with the account, so one account's ledger never silences another's", () => {
+    const announcements = readAnnouncements([item()], ALL_ENABLED);
+
+    expect(readAnnouncementSignature("account-a", announcements)).not.toBe(
+      readAnnouncementSignature("account-b", announcements),
+    );
   });
 });

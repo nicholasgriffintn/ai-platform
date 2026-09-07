@@ -1,9 +1,5 @@
-import { AttentionPage, ChatPlaceShell } from "@ngriffin_uk/polychat-component-shell";
+import { AttentionPage } from "@ngriffin_uk/polychat-component-shell";
 
 export default function DesktopAttentionPage() {
-  return (
-    <ChatPlaceShell>
-      <AttentionPage />
-    </ChatPlaceShell>
-  );
+  return <AttentionPage />;
 }

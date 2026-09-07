@@ -21,6 +21,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
+import { useShallow } from "zustand/react/shallow";
 
 import { ConversationGroupsDialog } from "../Conversations/ConversationGroupsDialog";
 import { ConversationItemActions } from "../Conversations/ConversationItemActions";
@@ -33,6 +34,10 @@ interface WorkSidebarProps {
   workspaceId?: string;
   projectId?: string;
 }
+
+const EMPTY_CONVERSATIONS: NonNullable<
+  ReturnType<typeof useWorkData>["projectQuery"]["data"]
+>["conversations"] = [];
 
 export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const {
@@ -63,7 +68,12 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     routedConversationId ??
     project?.conversations.find((conversation) => conversation.id === currentConversationId)?.id;
   const { items: attentionItems } = useTaskAttention();
-  const conversationStreams = useStreamActivityStore((state) => state.streams);
+  const projectConversations = project?.conversations ?? EMPTY_CONVERSATIONS;
+  const conversationStreams = useStreamActivityStore(
+    useShallow((state) =>
+      projectConversations.map((conversation) => state.streams[conversation.id]?.status),
+    ),
+  );
   const projectAttentionCount = projectId
     ? attentionItems.filter((item) => item.projectId === projectId).length
     : 0;
@@ -85,18 +95,18 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     refreshProject: projectQuery.refetch,
   });
   const conversationSections = buildConversationSections(
-    (project?.conversations ?? []).map((conversation) => ({
+    projectConversations.map((conversation, index) => ({
       id: conversation.id,
       type: conversation.type,
       title: conversation.title,
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt,
       lastMessageAt: conversation.lastMessageAt,
-      isStreaming: conversationStreams[conversation.id]?.status === "streaming",
+      isStreaming: conversationStreams[index] === "streaming",
       needsInput:
         attentionItems.some(
           (item) => item.kind === "input" && item.conversationId === conversation.id,
-        ) || conversationStreams[conversation.id]?.status === "action-required",
+        ) || conversationStreams[index] === "action-required",
       isPinned: conversation.isPinned,
       isUnread: conversation.isUnread,
       group: conversation.group,

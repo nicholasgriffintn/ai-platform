@@ -35,6 +35,13 @@ export function readAttentionBadgeCount(
   return preferences?.enabled ? unread : 0;
 }
 
+export function readAnnouncementSignature(
+  scope: string,
+  announcements: readonly DesktopAnnouncement[],
+): string {
+  return [scope, ...announcements.map((announcement) => announcement.id)].join(" ");
+}
+
 export function readAnnouncements(
   items: readonly ProjectTaskAttentionItem[],
   preferences: TaskNotificationPreferences | undefined,

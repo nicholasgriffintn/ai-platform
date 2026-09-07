@@ -481,6 +481,7 @@ export function useHomeChatModeConfig(): {
     handleModeChange,
     handleLiveProviderChange,
     handleModelChange,
+    isPro,
     selectedModel,
     liveCameraDevices,
     liveError,

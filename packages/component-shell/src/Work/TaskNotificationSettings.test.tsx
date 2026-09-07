@@ -1,7 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { ShellHostProvider, type ShellHost } from "../Host/ShellHostContext";
 import type { TaskNotificationChannel } from "../Notifications/task-notification-channel";
 import { TaskNotificationSettings } from "./TaskNotificationSettings";
 
@@ -30,31 +29,21 @@ vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
   }),
 }));
 
-function renderWithChannel(channel: Partial<TaskNotificationChannel>) {
+function renderWithChannel(overrides: Partial<TaskNotificationChannel>) {
   const enable = vi.fn();
-  const host = {
-    webBaseUrl: "https://polychat.test",
-    openAssistant: vi.fn(),
-    openSignIn: vi.fn(),
-    signOut: vi.fn(),
-    useTaskNotificationChannel: () => ({
-      status: "Ready",
-      isDeliverable: true,
-      isUnavailable: false,
-      error: null,
-      isBusy: false,
-      enable,
-      disable: vi.fn(),
-      retry: null,
-      ...channel,
-    }),
-  } satisfies ShellHost;
+  const channel: TaskNotificationChannel = {
+    status: "Ready",
+    isDeliverable: true,
+    isUnavailable: false,
+    error: null,
+    isBusy: false,
+    enable,
+    disable: vi.fn(),
+    retry: null,
+    ...overrides,
+  };
 
-  render(
-    <ShellHostProvider host={host}>
-      <TaskNotificationSettings />
-    </ShellHostProvider>,
-  );
+  render(<TaskNotificationSettings channel={channel} />);
 
   return { enable };
 }

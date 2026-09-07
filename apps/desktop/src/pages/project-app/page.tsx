@@ -1,8 +1,8 @@
-import { AppRoute, useWorkData, WorkPlaceShell } from "@ngriffin_uk/polychat-component-shell";
+import { AppRoute, useWorkData } from "@ngriffin_uk/polychat-component-shell";
 import { getProjectSurface } from "@ngriffin_uk/polychat-library-react";
 import { useParams } from "react-router";
 
-function ProjectApp() {
+export default function DesktopProjectAppPage() {
   const { workspaceId = "", projectId = "", appId = "", "*": subpath = "" } = useParams();
   const { projectQuery } = useWorkData();
 
@@ -18,13 +18,5 @@ function ProjectApp() {
         error: projectQuery.error,
       }}
     />
-  );
-}
-
-export default function DesktopProjectAppPage() {
-  return (
-    <WorkPlaceShell>
-      <ProjectApp />
-    </WorkPlaceShell>
   );
 }

@@ -1,4 +1,4 @@
-import { ProjectConversationPage, WorkPlaceShell } from "@ngriffin_uk/polychat-component-shell";
+import { ProjectConversationPage } from "@ngriffin_uk/polychat-component-shell";
 import {
   getProjectConversationPath,
   readLegacyConversationQuery,
@@ -20,12 +20,10 @@ export default function DesktopProjectChatPage() {
   }
 
   return (
-    <WorkPlaceShell>
-      <ProjectConversationPage
-        workspaceId={workspaceId}
-        projectId={projectId}
-        conversationId={conversationId}
-      />
-    </WorkPlaceShell>
+    <ProjectConversationPage
+      workspaceId={workspaceId}
+      projectId={projectId}
+      conversationId={conversationId}
+    />
   );
 }
