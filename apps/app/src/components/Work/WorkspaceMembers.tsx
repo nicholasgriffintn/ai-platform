@@ -1,4 +1,4 @@
-import { PageShell } from "@ngriffin_uk/polychat-component-shell";
+import { PageShell, SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import {
   WorkspaceInvitationList,
@@ -14,8 +14,6 @@ import {
 import { LogOut, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 import { InviteMemberDialog } from "./InviteMemberDialog";
 import { useWorkData } from "./WorkDataContext";

@@ -171,6 +171,13 @@ export const agentApprovalDecisionSchema = z.object({
 
 export type AgentApprovalDecision = z.infer<typeof agentApprovalDecisionSchema>;
 
+export const desktopSessionTokenSchema = z.object({
+  token: z.string().min(1),
+  expiresIn: z.number().int().positive(),
+});
+
+export type DesktopSessionToken = z.infer<typeof desktopSessionTokenSchema>;
+
 export const SIGNED_OUT_ACCOUNT = "device-only" as const;
 
 export const localConversationSchema = z.object({

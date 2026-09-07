@@ -1,4 +1,4 @@
-import { PageShell } from "@ngriffin_uk/polychat-component-shell";
+import { PageShell, SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import {
   CreateTaskDialog,
@@ -15,14 +15,12 @@ import {
   getProjectConversationPath,
   getErrorMessage,
   isAuthenticationError,
+  NEW_TEAMMATE_ID,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { NEW_TEAMMATE_ID } from "~/components/Teammates/useTeammateEditorController";
 
 import { ProjectHomeHeader } from "./ProjectHomeHeader";
 import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates";

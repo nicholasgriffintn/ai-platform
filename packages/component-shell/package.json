@@ -28,11 +28,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ngriffin_uk/polychat-component-account": "workspace:^",
+    "@ngriffin_uk/polychat-component-capabilities": "workspace:^",
     "@ngriffin_uk/polychat-component-content": "workspace:^",
     "@ngriffin_uk/polychat-component-conversation": "workspace:^",
+    "@ngriffin_uk/polychat-component-experiences": "workspace:^",
     "@ngriffin_uk/polychat-component-models": "workspace:^",
     "@ngriffin_uk/polychat-component-navigation": "workspace:^",
     "@ngriffin_uk/polychat-component-ui": "workspace:^",
+    "@ngriffin_uk/polychat-component-workspaces": "workspace:^",
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
     "@ngriffin_uk/polychat-library-client": "workspace:^",
     "@ngriffin_uk/polychat-library-react": "workspace:^",

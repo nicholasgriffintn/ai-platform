@@ -1,12 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod agents;
+mod announcements;
 mod chat;
 mod diagnostics;
 mod discovery;
 mod egress;
 mod lines;
 mod link;
+mod links;
 mod runs;
 mod secrets;
 mod store;
@@ -14,10 +16,14 @@ mod store;
 use std::time::Duration;
 
 use agents::{AgentApprovalRequest, AgentChunk, AgentSession};
+use announcements::{Announcement, AnnouncementPlan};
 use chat::{ModelRunRequest, StreamChunk};
 use diagnostics::Diagnostics;
 use discovery::DiscoveredModel;
-use egress::{DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport};
+use egress::{
+    describe_transport_failure, DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport,
+    TransportFailure,
+};
 use futures_util::StreamExt;
 use lines::LineReader;
 use runs::{RunRegistry, StreamEvent};
@@ -25,7 +31,9 @@ use rusqlite::Connection;
 use serde::Serialize;
 use store::{LocalConversation, LocalMessage, Store};
 use tauri::ipc::Channel;
-use tauri::{Manager, State};
+use tauri::{Emitter, Manager, State};
+use tauri_plugin_deep_link::DeepLinkExt;
+use tauri_plugin_notification::NotificationExt;
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 use url::Url;
 
@@ -36,11 +44,20 @@ const CANCEL_POLL: Duration = Duration::from_millis(200);
 const MAX_JSON_BODY: usize = 8 * 1024 * 1024;
 const BUILT_IN_APPROVED_AT: &str = "1970-01-01T00:00:00Z";
 const SESSION_SECRET: &str = "session-token";
+const DEFAULT_TOKEN_LIFETIME_SECONDS: u32 = 15 * 60;
+const API_LABEL: &str = "Polychat";
 const API_BASE_URL: &str = match option_env!("POLYCHAT_API_BASE_URL") {
     Some(value) => value,
     None if cfg!(debug_assertions) => "http://localhost:8787",
     None => "https://api.polychat.app",
 };
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SessionToken {
+    token: String,
+    expires_in: u32,
+}
 
 #[derive(Serialize)]
 #[serde(tag = "status", rename_all = "camelCase")]
@@ -128,16 +145,17 @@ fn authorised_endpoint(store: &Store, endpoint_id: &str) -> Result<(DesktopEndpo
 async fn stream_lines(
     response: reqwest::Response,
     run_id: &str,
+    label: &str,
     registry: &RunRegistry,
     mut parse: impl FnMut(&str) -> StreamChunk,
     emit: &impl Fn(StreamEvent),
-) -> Result<&'static str, String> {
+) -> &'static str {
     let mut stream = response.bytes_stream();
     let mut reader = LineReader::default();
 
     loop {
         let Some(piece) = next_piece(&mut stream, run_id, registry).await else {
-            return Ok("cancelled");
+            return "cancelled";
         };
 
         let piece = match piece {
@@ -146,12 +164,12 @@ async fn stream_lines(
                 emit(StreamEvent::Failed {
                     run_id: run_id.to_string(),
                     failure: "unknown".to_string(),
-                    message: cause.to_string(),
+                    message: transport_failure(label, &cause),
                 });
 
-                return Ok("interrupted");
+                return "interrupted";
             }
-            None => return Ok("complete"),
+            None => return "complete",
         };
 
         reader.push(&piece);
@@ -163,7 +181,7 @@ async fn stream_lines(
                 message: "The runtime sent a single line too large to read.".to_string(),
             });
 
-            return Ok("interrupted");
+            return "interrupted";
         }
 
         while let Some(line) = reader.next_line() {
@@ -172,7 +190,7 @@ async fn stream_lines(
                     run_id: run_id.to_string(),
                     delta,
                 }),
-                StreamChunk::Done => return Ok("complete"),
+                StreamChunk::Done => return "complete",
                 StreamChunk::Ignored => {}
             }
         }
@@ -202,17 +220,20 @@ fn with_pairing(
     endpoint: &DesktopEndpoint,
 ) -> Result<reqwest::RequestBuilder, String> {
     match secrets::read(&secrets::pairing_key(&endpoint.id))? {
-        Some(secret) => Ok(builder.bearer_auth(secret)),
+        Some(secret) => Ok(builder.bearer_auth(secret.as_str())),
         None => Ok(builder),
     }
 }
 
-async fn read_bounded_json(response: reqwest::Response) -> Result<serde_json::Value, String> {
+async fn read_bounded_json(
+    response: reqwest::Response,
+    label: &str,
+) -> Result<serde_json::Value, String> {
     let mut stream = response.bytes_stream();
     let mut body: Vec<u8> = Vec::new();
 
     while let Some(piece) = stream.next().await {
-        let piece = piece.map_err(|cause| cause.to_string())?;
+        let piece = piece.map_err(|cause| transport_failure(label, &cause))?;
 
         body.extend_from_slice(&piece);
 
@@ -223,7 +244,24 @@ async fn read_bounded_json(response: reqwest::Response) -> Result<serde_json::Va
         }
     }
 
-    serde_json::from_slice(&body).map_err(|cause| cause.to_string())
+    serde_json::from_slice(&body)
+        .map_err(|_| describe_transport_failure(label, TransportFailure::Unreadable))
+}
+
+fn classify_transport(cause: &reqwest::Error) -> TransportFailure {
+    if cause.is_timeout() {
+        TransportFailure::Timeout
+    } else if cause.is_connect() || cause.is_request() {
+        TransportFailure::Unreachable
+    } else if cause.is_body() || cause.is_decode() {
+        TransportFailure::Unreadable
+    } else {
+        TransportFailure::Refused
+    }
+}
+
+fn transport_failure(label: &str, cause: &reqwest::Error) -> String {
+    describe_transport_failure(label, classify_transport(cause))
 }
 
 fn user_agent() -> String {
@@ -290,8 +328,8 @@ fn forget_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<(), S
 
 #[tauri::command]
 async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<Readiness, String> {
-    let target = match authorised_endpoint(&store, &endpoint_id) {
-        Ok((_, target)) => target,
+    let (endpoint, target) = match authorised_endpoint(&store, &endpoint_id) {
+        Ok(resolved) => resolved,
         Err(detail) => {
             return Ok(Readiness::Unreachable {
                 checked_at: timestamp(),
@@ -300,8 +338,10 @@ async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<
         }
     };
 
-    let client = match http_client(REQUEST_TIMEOUT) {
-        Ok(client) => client,
+    let request =
+        http_client(REQUEST_TIMEOUT).and_then(|client| with_pairing(client.get(target), &endpoint));
+    let request = match request {
+        Ok(request) => request,
         Err(detail) => {
             return Ok(Readiness::Unreachable {
                 checked_at: timestamp(),
@@ -310,7 +350,7 @@ async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<
         }
     };
 
-    Ok(match client.get(target).send().await {
+    Ok(match request.send().await {
         Ok(response) if matches!(response.status().as_u16(), 401 | 403) => {
             Readiness::Unauthorised {
                 checked_at: timestamp(),
@@ -330,7 +370,7 @@ async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<
         },
         Err(cause) => Readiness::Unreachable {
             checked_at: timestamp(),
-            detail: Some(cause.to_string()),
+            detail: Some(transport_failure(&endpoint.label, &cause)),
         },
     })
 }
@@ -345,11 +385,10 @@ async fn discover_models(
         .join(discovery::models_path(&endpoint))
         .map_err(|cause| cause.to_string())?;
 
-    let response = http_client(DISCOVERY_TIMEOUT)?
-        .get(target)
+    let response = with_pairing(http_client(DISCOVERY_TIMEOUT)?.get(target), &endpoint)?
         .send()
         .await
-        .map_err(|cause| cause.to_string())?;
+        .map_err(|cause| transport_failure(&endpoint.label, &cause))?;
 
     if !response.status().is_success() {
         return Err(format!(
@@ -359,7 +398,7 @@ async fn discover_models(
         ));
     }
 
-    let body = read_bounded_json(response).await?;
+    let body = read_bounded_json(response, &endpoint.label).await?;
 
     Ok(discovery::parse_models(&endpoint, &body, &timestamp()))
 }
@@ -420,7 +459,7 @@ fn delete_all_local_chats(scope: String, store: State<'_, Store>) -> Result<(), 
 }
 
 #[tauri::command]
-async fn access_token() -> Result<String, String> {
+async fn access_token() -> Result<SessionToken, String> {
     let Some(session) = secrets::read(SESSION_SECRET)? else {
         return Err("Sign in before using Polychat.".to_string());
     };
@@ -430,7 +469,7 @@ async fn access_token() -> Result<String, String> {
         .header(reqwest::header::COOKIE, format!("session={session}"))
         .send()
         .await
-        .map_err(|cause| cause.to_string())?;
+        .map_err(|cause| transport_failure(API_LABEL, &cause))?;
 
     if !response.status().is_success() {
         let status = response.status().as_u16();
@@ -444,14 +483,30 @@ async fn access_token() -> Result<String, String> {
         return Err(sign_in_failure(status, &detail));
     }
 
-    response
+    let body = response
         .json::<serde_json::Value>()
         .await
-        .map_err(|cause| cause.to_string())?
-        .get("token")
-        .and_then(serde_json::Value::as_str)
-        .map(str::to_string)
-        .ok_or_else(|| "Polychat returned no access token.".to_string())
+        .map_err(|cause| transport_failure(API_LABEL, &cause))?;
+
+    read_session_token(&body).ok_or_else(|| "Polychat returned no access token.".to_string())
+}
+
+fn read_session_token(body: &serde_json::Value) -> Option<SessionToken> {
+    let token = body.get("token").and_then(serde_json::Value::as_str)?;
+
+    if token.is_empty() {
+        return None;
+    }
+
+    Some(SessionToken {
+        token: token.to_string(),
+        expires_in: body
+            .get("expires_in")
+            .and_then(serde_json::Value::as_u64)
+            .and_then(|seconds| u32::try_from(seconds).ok())
+            .filter(|seconds| *seconds > 0)
+            .unwrap_or(DEFAULT_TOKEN_LIFETIME_SECONDS),
+    })
 }
 
 #[tauri::command]
@@ -488,7 +543,7 @@ async fn sign_in() -> Result<(), String> {
         .json(&serde_json::json!({ "code": code }))
         .send()
         .await
-        .map_err(|cause| cause.to_string())?;
+        .map_err(|cause| transport_failure(API_LABEL, &cause))?;
 
     if !response.status().is_success() {
         let status = response.status().as_u16();
@@ -563,7 +618,7 @@ async fn list_agent_sessions(
     let response = with_pairing(http_client(DISCOVERY_TIMEOUT)?.get(target), &endpoint)?
         .send()
         .await
-        .map_err(|cause| cause.to_string())?;
+        .map_err(|cause| transport_failure(&endpoint.label, &cause))?;
 
     if !response.status().is_success() {
         return Err(format!(
@@ -573,7 +628,7 @@ async fn list_agent_sessions(
         ));
     }
 
-    let body = read_bounded_json(response).await?;
+    let body = read_bounded_json(response, &endpoint.label).await?;
 
     Ok(agents::parse_sessions(
         &endpoint,
@@ -602,7 +657,7 @@ async fn decide_approval(
     )?
     .send()
     .await
-    .map_err(|cause| cause.to_string())?;
+    .map_err(|cause| transport_failure(&endpoint.label, &cause))?;
 
     if response.status().is_success() {
         return Ok(());
@@ -630,6 +685,12 @@ async fn start_agent_run(
         .join(&agents::prompt_path(&endpoint, &session_native_id))
         .map_err(|cause| cause.to_string())?;
     let host = executing_host(&endpoint);
+    let attempt = with_pairing(
+        streaming_client()?
+            .post(target)
+            .json(&agents::prompt_body(&prompt)),
+        &endpoint,
+    )?;
 
     let emit = |event: StreamEvent| {
         let _ = on_event.send(event);
@@ -643,22 +704,14 @@ async fn start_agent_run(
         at: timestamp(),
     });
 
-    let response = match with_pairing(
-        streaming_client()?
-            .post(target)
-            .json(&agents::prompt_body(&prompt)),
-        &endpoint,
-    )?
-    .send()
-    .await
-    {
+    let response = match attempt.send().await {
         Ok(response) => response,
-        Err(cause) => {
+        Err(_cause) => {
             registry.forget(&run_id);
             emit(StreamEvent::Failed {
                 run_id: run_id.clone(),
                 failure: "unreachable".to_string(),
-                message: cause.to_string(),
+                message: format!("{} is unreachable", endpoint.label),
             });
 
             return Ok(());
@@ -780,6 +833,55 @@ fn collect_diagnostics(
 }
 
 #[tauri::command]
+fn announce_attention(
+    scope: String,
+    items: Vec<Announcement>,
+    app: tauri::AppHandle,
+    store: State<'_, Store>,
+) -> Result<usize, String> {
+    let ids: Vec<String> = items.iter().map(|item| item.id.clone()).collect();
+    let unshown = store.unshown(&scope, &ids)?;
+    let pending: Vec<Announcement> = items
+        .into_iter()
+        .filter(|item| unshown.contains(&item.id))
+        .collect();
+    let shown = pending.len();
+
+    match announcements::plan(pending, announcements::MAX_INDIVIDUAL) {
+        AnnouncementPlan::Nothing => return Ok(0),
+        AnnouncementPlan::Each(items) => {
+            for item in items {
+
+    store.record_shown(&scope, &unshown, &timestamp())?;
+    store.forget_shown(&scope, announcements::LEDGER_LIMIT)?;
+
+    Ok(shown)
+}
+
+fn show(app: &tauri::AppHandle, title: &str, body: &str) {
+    let _ = app.notification().builder().title(title).body(body).show();
+}
+
+#[tauri::command]
+fn set_attention_badge(count: u32, app: tauri::AppHandle) {
+    for window in app.webview_windows().values() {
+        let _ = window.set_badge_count(if count == 0 {
+            None
+    let response = match with_pairing(
+        streaming_client()?
+            .post(target)
+            .json(&chat::chat_body(&endpoint, &request)),
+        &endpoint,
+    )?
+    .send()
+    .await
+    {
+            Some(i64::from(count))
+        });
+    }
+}
+
+#[tauri::command]
 fn cancel_model_run(run_id: String, registry: State<'_, RunRegistry>) {
     registry.cancel(&run_id);
 }
@@ -803,6 +905,12 @@ async fn start_model_run(
     let target = base
         .join(chat::chat_path(&endpoint))
         .map_err(|cause| cause.to_string())?;
+    let attempt = with_pairing(
+        streaming_client()?
+            .post(target)
+            .json(&chat::chat_body(&endpoint, &request)),
+        &endpoint,
+    )?;
 
     let emit = |event: StreamEvent| {
         let _ = on_event.send(event);
@@ -820,19 +928,14 @@ async fn start_model_run(
         state: "loading-model".to_string(),
     });
 
-    let response = match streaming_client()?
-        .post(target)
-        .json(&chat::chat_body(&endpoint, &request))
-        .send()
-        .await
-    {
+    let response = match attempt.send().await {
         Ok(response) => response,
         Err(cause) => {
             registry.forget(&run_id);
             emit(StreamEvent::Failed {
                 run_id: run_id.clone(),
                 failure: "not-running".to_string(),
-                message: cause.to_string(),
+                message: transport_failure(&endpoint.label, &cause),
             });
 
             return Ok(());
@@ -865,11 +968,12 @@ async fn start_model_run(
     let reason = stream_lines(
         response,
         &run_id,
+        &endpoint.label,
         &registry,
         |line| chat::parse_stream_line(&endpoint, line),
         &emit,
     )
-    .await?;
+    .await;
 
     registry.forget(&run_id);
     emit(StreamEvent::Finished {
@@ -881,9 +985,36 @@ async fn start_model_run(
     Ok(())
 }
 
+fn raise(app: &tauri::AppHandle) {
+    for window in app.webview_windows().values() {
+        let _ = window.unminimize();
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+}
+
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+            raise(app);
+
+            if let Some(url) = links::find_deep_link(&argv) {
+                let _ = app.emit(links::DEEP_LINK_EVENT, url.clone());
+            }
+        }))
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_notification::init())
         .setup(|app| {
+            let opened = app.handle().clone();
+
+            app.deep_link().on_open_url(move |event| {
+                raise(&opened);
+
+                for url in event.urls() {
+                    let _ = opened.emit(links::DEEP_LINK_EVENT, url.to_string());
+                }
+            });
+
             let directory = app.path().app_data_dir()?;
 
             std::fs::create_dir_all(&directory)?;
@@ -920,7 +1051,9 @@ fn main() {
             start_agent_run,
             decide_approval,
             collect_diagnostics,
-            cancel_model_run
+            cancel_model_run,
+            announce_attention,
+            set_attention_badge
         ])
         .run(tauri::generate_context!())
         .expect("Polychat desktop failed to start");
@@ -929,6 +1062,33 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reads_the_lifetime_the_api_reports_with_a_token() {
+        let token = read_session_token(&serde_json::json!({
+            "token": "jwt-value",
+            "expires_in": 900,
+            "token_type": "Bearer"
+        }))
+        .expect("a token");
+
+        assert_eq!(token.token, "jwt-value");
+        assert_eq!(token.expires_in, 900);
+    }
+
+    #[test]
+    fn falls_back_to_the_documented_lifetime_when_the_api_omits_one() {
+        let token =
+            read_session_token(&serde_json::json!({ "token": "jwt-value" })).expect("token");
+
+        assert_eq!(token.expires_in, DEFAULT_TOKEN_LIFETIME_SECONDS);
+    }
+
+    #[test]
+    fn refuses_a_response_carrying_no_usable_token() {
+        assert!(read_session_token(&serde_json::json!({ "expires_in": 900 })).is_none());
+        assert!(read_session_token(&serde_json::json!({ "token": "" })).is_none());
+    }
 
     #[test]
     fn identifies_itself_to_the_api_as_a_desktop_client() {

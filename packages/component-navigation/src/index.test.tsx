@@ -32,9 +32,34 @@ const sidebarSettingsProps = {
   usage: [],
   onShowKeyboardShortcuts: vi.fn(),
   onSignIn: vi.fn(),
+  onSignOut: vi.fn(),
 };
 
 describe("SidebarSettingsPopover", () => {
+  it("offers a signed-in account a way out, and a guest a way in", async () => {
+    const onSignOut = vi.fn();
+
+    const { rerender } = render(
+      <SidebarSettingsPopover {...sidebarSettingsProps} onSignOut={onSignOut} />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Open settings and configuration" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Sign out" }));
+
+    expect(onSignOut).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <SidebarSettingsPopover
+        {...sidebarSettingsProps}
+        isAuthenticated={false}
+        onSignOut={onSignOut}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Sign out" })).toBeNull();
+    expect(await screen.findByRole("button", { name: "Sign in" })).toBeTruthy();
+  });
+
   it("shows a loading state instead of waiting for a first message", async () => {
     render(<SidebarSettingsPopover {...sidebarSettingsProps} isUsageLoading />);
 

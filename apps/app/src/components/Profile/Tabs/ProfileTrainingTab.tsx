@@ -4,7 +4,7 @@ import { lazy, Suspense } from "react";
 import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 
 const TrainingDashboard = lazy(async () => {
-  const module = await import("~/components/Training/TrainingDashboard");
+  const module = await import("@ngriffin_uk/polychat-component-shell");
 
   return { default: module.TrainingDashboard };
 });

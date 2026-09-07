@@ -29,7 +29,7 @@ const links: SidebarSettingsLinks = {
 
 export function SidebarSettingsPopover() {
   const setShowKeyboardShortcuts = useUIStore((state) => state.setShowKeyboardShortcuts);
-  const { openSignIn } = useShellHost();
+  const { openSignIn, signOut } = useShellHost();
   const { user, isLoading } = useAuthStatus();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const usageLimits = useUsageStore((state) => state.usageLimits);
@@ -59,6 +59,7 @@ export function SidebarSettingsPopover() {
       theme={{ value: themePreference, onChange: setThemePreference }}
       onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
       onSignIn={openSignIn}
+      onSignOut={signOut}
     />
   );
 }

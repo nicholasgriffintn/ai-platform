@@ -1,4 +1,4 @@
-import { PageShell } from "@ngriffin_uk/polychat-component-shell";
+import { PageShell, SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import {
   ProjectConversationList,
@@ -13,8 +13,6 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 import { ProjectConversationStarter } from "./ProjectConversationStarter";
 import { ProjectHomeHeader } from "./ProjectHomeHeader";

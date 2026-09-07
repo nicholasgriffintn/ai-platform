@@ -1,9 +1,8 @@
+import { SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import { PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { WorkAccessEmptyState } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { ReactNode } from "react";
-
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 export function WorkAccessGate({
   children,

@@ -1,6 +1,5 @@
+import { TeammateEditorPage } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
-
-import { TeammateEditorPage } from "~/components/Teammates/TeammateEditorPage";
 
 export function meta() {
   return [{ title: "Configure a teammate - Polychat" }];

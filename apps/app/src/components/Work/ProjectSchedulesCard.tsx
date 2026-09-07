@@ -3,6 +3,7 @@ import {
   RecipeConfigurationSummaryDialog,
   RecipeScheduleDialog,
 } from "@ngriffin_uk/polychat-component-capabilities";
+import { useRecipeWorkflows } from "@ngriffin_uk/polychat-component-shell";
 import { ConfirmationDialog, FormDialog, FormSelect } from "@ngriffin_uk/polychat-component-ui";
 import { ScheduledRecipeList } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
@@ -16,8 +17,6 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo, useState } from "react";
-
-import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 
 export function ProjectSchedulesCard({
   workspaceId,

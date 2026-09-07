@@ -1102,16 +1102,6 @@ importers:
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
-      lucide-react:
-        specifier: 1.38.0
-        version: 1.38.0(react@19.2.8)
-      sonner:
-        specifier: 2.0.8
-        version: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-    devDependencies:
-      '@ngriffin_uk/polychat-config':
-        specifier: workspace:^
-        version: link:../config
       '@strudel/codemirror':
         specifier: 1.3.0
         version: 1.3.0(@codemirror/lint@6.9.7)
@@ -1142,6 +1132,16 @@ importers:
       '@strudel/webaudio':
         specifier: 1.3.0
         version: 1.3.0
+      lucide-react:
+        specifier: 1.38.0
+        version: 1.38.0(react@19.2.8)
+      sonner:
+        specifier: 2.0.8
+        version: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -1285,12 +1285,21 @@ importers:
 
   packages/component-shell:
     dependencies:
+      '@ngriffin_uk/polychat-component-account':
+        specifier: workspace:^
+        version: link:../component-account
+      '@ngriffin_uk/polychat-component-capabilities':
+        specifier: workspace:^
+        version: link:../component-capabilities
       '@ngriffin_uk/polychat-component-content':
         specifier: workspace:^
         version: link:../component-content
       '@ngriffin_uk/polychat-component-conversation':
         specifier: workspace:^
         version: link:../component-conversation
+      '@ngriffin_uk/polychat-component-experiences':
+        specifier: workspace:^
+        version: link:../component-experiences
       '@ngriffin_uk/polychat-component-models':
         specifier: workspace:^
         version: link:../component-models
@@ -1300,6 +1309,9 @@ importers:
       '@ngriffin_uk/polychat-component-ui':
         specifier: workspace:^
         version: link:../component-ui
+      '@ngriffin_uk/polychat-component-workspaces':
+        specifier: workspace:^
+        version: link:../component-workspaces
       '@ngriffin_uk/polychat-library-chat':
         specifier: workspace:^
         version: link:../library-chat

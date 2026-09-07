@@ -1,5 +1,7 @@
-import { CapabilityLibrary } from "~/components/Capabilities/CapabilityLibrary";
-import { useProjectCapabilityScope } from "~/components/Capabilities/useCapabilityLibraryController";
+import {
+  CapabilityLibrary,
+  useProjectCapabilityScope,
+} from "@ngriffin_uk/polychat-component-shell";
 
 import { useWorkData } from "./WorkDataContext";
 

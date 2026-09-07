@@ -1,4 +1,4 @@
-import { AttentionPage } from "~/components/Work/AttentionPage";
+import { AttentionPage } from "@ngriffin_uk/polychat-component-shell";
 
 export function meta() {
   return [

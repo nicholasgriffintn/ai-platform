@@ -7,16 +7,23 @@ import {
   desktopEndpointSchema,
   desktopRuntimeReadinessSchema,
   agentRuntimeSessionSchema,
+  desktopSessionTokenSchema,
   desktopStreamEventSchema,
   discoveredModelSchema,
   localConversationSchema,
   localMessageSchema,
   type DesktopModelRunRequest,
+  type DesktopSessionToken,
   type DesktopStreamEvent,
+  type ModelRuntimeFailure,
+  type AgentRuntimeFailure,
 } from "@ngriffin_uk/polychat-schemas";
 import { createAsyncEventQueue } from "@ngriffin_uk/polychat-utility-core";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import z from "zod/v4";
+
+import type { DesktopAnnouncement } from "./inbox-announcements";
+import { describeRunFailure } from "./run-failures";
 
 export const desktopDiagnosticsSchema = z.object({
   appVersion: z.string(),
@@ -35,8 +42,10 @@ export interface ConnectedDesktopBackend extends DesktopBackend {
   collectDiagnostics: () => Promise<DesktopDiagnostics>;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
+  announceAttention: (scope: string, items: DesktopAnnouncement[]) => Promise<number>;
+  setAttentionBadge: (count: number) => Promise<void>;
   isSignedIn: () => Promise<boolean>;
-  accessToken: () => Promise<string>;
+  accessToken: () => Promise<DesktopSessionToken>;
 }
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
@@ -65,12 +74,17 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
   signOut: async () => {
     await invoke("sign_out");
   },
-  isSignedIn: async () => z.boolean().parse(await invoke("is_signed_in")),
-  accessToken: async () =>
+  announceAttention: async (scope, items) =>
     z
-      .string()
-      .min(1)
-      .parse(await invoke("access_token")),
+      .number()
+      .int()
+      .nonnegative()
+      .parse(await invoke("announce_attention", { scope, items })),
+  setAttentionBadge: async (count) => {
+    await invoke("set_attention_badge", { count });
+  },
+  isSignedIn: async () => z.boolean().parse(await invoke("is_signed_in")),
+  accessToken: async () => desktopSessionTokenSchema.parse(await invoke("access_token")),
   probeEndpoint: async (endpointId) =>
     desktopRuntimeReadinessSchema.parse(await invoke("probe_endpoint", { endpointId })),
   discoverModels: async (endpointId) =>
@@ -85,31 +99,59 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
     });
   },
   startAgentRun: async (request) =>
-    startRun("start_agent_run", {
-      endpointId: request.endpointId,
-      sessionNativeId: request.sessionNativeId ?? "",
-      prompt: request.prompt,
-    }),
+    startRun(
+      "start_agent_run",
+      {
+        endpointId: request.endpointId,
+        sessionNativeId: request.sessionNativeId ?? "",
+        prompt: request.prompt,
+      },
+      "agent-error",
+    ),
   startModelRun: async (request: DesktopModelRunRequest): Promise<DesktopRun> =>
-    startRun("start_model_run", { request }),
+    startRun("start_model_run", { request }, "unknown"),
 };
 
-function startRun(command: string, args: Record<string, unknown>): Promise<DesktopRun> {
+type RunFailure = ModelRuntimeFailure | AgentRuntimeFailure;
+
+function startRun(
+  command: string,
+  args: Record<string, unknown>,
+  refusalFailure: RunFailure,
+): Promise<DesktopRun> {
   const runId = globalThis.crypto.randomUUID();
   const queue = createAsyncEventQueue<DesktopStreamEvent>();
   const channel = new Channel();
 
+  const fail = (failure: RunFailure, cause: unknown) => {
+    queue.push({
+      type: "failed",
+      runId,
+      failure,
+      message: describeRunFailure(cause),
+    });
+    queue.close();
+  };
+
   channel.onmessage = (raw) => {
-    const event = desktopStreamEventSchema.parse(raw);
+    const event = desktopStreamEventSchema.safeParse(raw);
 
-    queue.push(event);
+    if (!event.success) {
+      fail("unknown", "The desktop bridge sent an event this version cannot read.");
 
-    if (event.type === "finished" || event.type === "failed") {
+      return;
+    }
+
+    queue.push(event.data);
+
+    if (event.data.type === "finished" || event.data.type === "failed") {
       queue.close();
     }
   };
 
-  void invoke(command, { runId, ...args, onEvent: channel }).catch(() => queue.close());
+  void invoke(command, { runId, ...args, onEvent: channel }).catch((cause) =>
+    fail(refusalFailure, cause),
+  );
 
   return Promise.resolve({
     runId,
