@@ -10,7 +10,7 @@ publish = false
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-opener = { version = "0.7", default-features = false }
+opener = { version = "0.8", default-features = false }
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 getrandom = "0.3"
 bytes = "1"
