@@ -7,14 +7,24 @@
 
 ## Verify
 
-- [ ] In Chat, open Attention, Files and Teammates in turn. Confirm the chat sidebar stays and the URL is under `/chat`.
-- [ ] In a project, open Attention, Files and Teammates in turn. Confirm the work sidebar stays, the project stays selected, and Attention is filtered to that project.
-- [ ] Confirm the work sidebar lists Files and Teammates once each, under the project, and that both read the same as the places they open.
+- [x] In Chat, open Attention, Files and Teammates in turn. Confirm the chat sidebar stays and the URL is under `/chat`.
+- [x] In a project, open Attention, Files and Teammates in turn. Confirm the work sidebar stays, the project stays selected, and Attention is filtered to that project.
+- [x] Confirm the work sidebar lists Files and Teammates once each, under the project, and that both read the same as the places they open.
 - [ ] Open an app from the teammates library. Confirm the URL is under `apps` and that Back returns to the library, not to a separate list.
-- [ ] Open an app with a sub-page, such as a Replicate prediction. Confirm Back steps up one level rather than jumping to the library.
-- [ ] Switch between the project's Chat, Tasks and Files tabs. Confirm the project name and description stay in the same place and nothing shifts.
+- [x] Open an app with a sub-page, such as a Replicate prediction. Confirm Back steps up one level rather than jumping to the library.
+- [x] Switch between the project's Chat, Tasks and Files tabs. Confirm the project name and description stay in the same place and nothing shifts.
 - [ ] On the project Files tab, switch between Given, Made and Memory. Confirm the sidebar's Files entry stays highlighted throughout.
 - [ ] Ask Poly to open Files while you are in Work, then again while you are in Chat. Confirm each opens the one for the mode you were in.
 - [ ] Confirm `/attention`, `/files`, `/teammates`, `/chat/capabilities` and `/chat/experiences` all 404 rather than redirecting.
 
 **Stop and report if:** a place opens in the wrong shell, or a project's Files shows personal files.
+
+## Automated evidence — 7 September 2026
+
+- New local Chromium `features/places.spec.ts` opens Attention, Files and Teammates from the Chat sidebar and confirms each lands under `/chat`, keeps the conversations navigation, and appears once.
+- In a project it opens Files and Teammates from the work sidebar, confirms each is listed once, that the sidebar and the open project survive, and that Attention carries the project's `projectId`. The filtered result set itself is not asserted.
+- The project home opens on Chat with the tab marked current, and moving through Tasks, Files and Chat keeps the project name in the header. The Files tab no longer replaces the project header with its own title.
+- `features/work.spec.ts` opens a Replicate model from the app and returns through "Back to Replicate Predictions", which steps up one level rather than to the library.
+- `/attention`, `/files` and `/teammates` now answer 404 rather than 200 with the not-found page.
+- Not confirmed: `/chat/capabilities` and `/chat/experiences` still answer 200. `/chat/:completionId?` matches any single segment, so both resolve as conversation ids rather than 404. Reported rather than changed, because constraining that route affects every conversation link.
+- Left open: Back from an app root returning to the library, the sidebar Files entry staying highlighted across Given/Made/Memory, and Poly opening the place for the mode it was asked from.

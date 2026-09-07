@@ -198,7 +198,10 @@ test.describe("Application experience", () => {
 
       await expect(drawer).toBeVisible();
       await expect(appPage.settingsButton).toBeVisible();
-      await captureVisualSnapshots(page, "release-app-mobile-sidebar");
+      await captureVisualSnapshots(page, "release-app-mobile-sidebar", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        viewports: [{ name: "mobile", width: 390, height: 844 }],
+      });
 
       await appPage.toggleSidebar();
       await expect(drawer).toBeHidden();

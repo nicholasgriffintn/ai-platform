@@ -8,10 +8,17 @@
 
 ## Verify
 
-- [ ] Open a saved conversation with related conversations. Confirm the header offers Threads, that it lists the family with the current one marked, and that selecting one opens it.
-- [ ] Start a thread from an assistant reply and from a user message. Confirm both appear in the family and the new conversation answers.
+- [x] Open a saved conversation with related conversations. Confirm the header offers Threads, that it lists the family with the current one marked, and that selecting one opens it.
+- [x] Start a thread from an assistant reply and from a user message. Confirm both appear in the family and the new conversation answers.
 - [ ] Confirm a local-only conversation and a shared read-only view still do not offer Threads.
 - [ ] As a person outside a project, confirm the thread family for a project conversation is still refused.
 - [ ] Confirm `/chat/completions/:id/branches` returns 404 and `/threads` returns the family. The old path is gone, not aliased.
 
 **Stop and report if:** a thread family shows a conversation the viewer could not previously see, or starting a thread copies history rather than linking it.
+
+## Automated evidence — 7 September 2026
+
+`features/chat.spec.ts` starts a thread from an assistant reply and from a user message, confirms both join the family through `/chat/completions/:id/threads`, and that the new conversation answers.
+It then opens the Threads control from the sibling, the child and the parent in turn, confirms the current and archived marks, and that selecting a thread opens it. The control still survives a reload.
+Fix: the header only offered Threads on the conversation that was branched from, and only until the page reloaded, because `has_branches` was set optimistically on the parent and never returned by the API. The conversation response now reports family membership, and a stored thread carries it too.
+Left open: local-only and shared read-only conversations, a project conversation's family refused to an outsider, and the retired `/branches` path.

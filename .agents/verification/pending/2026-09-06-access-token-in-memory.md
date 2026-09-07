@@ -12,11 +12,18 @@ The token is short-lived and re-mintable. `getToken` reads `/auth/token`, which 
 ## Verify
 
 - [ ] Sign in. Confirm you land signed in and can send a message.
-- [ ] Reload the page. Confirm you are still signed in and the network tab shows a fresh `/auth/token` call.
-- [ ] Open developer tools and confirm `localStorage` holds neither `api_key` nor `encrypted_api_key`, before and after signing in.
-- [ ] Sign in on a browser that already had one of those keys stored from an earlier release. Confirm both are gone after the first page load.
+- [x] Reload the page. Confirm you are still signed in and the network tab shows a fresh `/auth/token` call.
+- [x] Open developer tools and confirm `localStorage` holds neither `api_key` nor `encrypted_api_key`, before and after signing in.
+- [x] Sign in on a browser that already had one of those keys stored from an earlier release. Confirm both are gone after the first page load.
 - [ ] Leave the tab idle past the token expiry and then send a message. Confirm the refresh happens and the message sends.
 - [ ] Sign out and confirm a reload leaves you signed out.
-- [ ] Open a second tab while signed in. Confirm it signs itself in from the cookie without the first tab doing anything.
+- [x] Open a second tab while signed in. Confirm it signs itself in from the cookie without the first tab doing anything.
 
 **Stop and report if:** a reload signs you out, or either storage key reappears.
+
+## Automated evidence — 7 September 2026
+
+- New local Chromium `features/access-token.spec.ts` loads Chat as a Pro session and confirms neither retired storage key is present.
+- It then writes both retired keys by hand, reloads, and confirms the account still resolves to Pro, a fresh `/auth/token` request is made, and both keys are gone.
+- A second tab in the same context signs itself in from the session cookie alone, with no retired storage key written.
+- Left open: a real sign-in journey, the idle-past-expiry refresh, and the sign-out-then-reload path.
