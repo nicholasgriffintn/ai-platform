@@ -13,6 +13,7 @@ import {
   chatRunIdSchema,
 } from "./chat-runs.js";
 import { computeSiteSchema } from "./compute-sites.js";
+import { delegationContextSchema } from "./delegations.js";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
 import { chatMessageSelectionSchema } from "./message-selection.js";
 import { metaAssistantRequestSchema } from "./meta-assistant.js";
@@ -579,6 +580,9 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .optional()
     .describe("Idempotency key for accepting this user command."),
   run_id: chatRunIdSchema.optional().describe("Existing waiting run resumed by this command."),
+  delegation_context: delegationContextSchema
+    .optional()
+    .describe("Trusted context for a run created by a delegation."),
   platform: z.string().min(1).optional().describe("Client platform sending the request."),
   meta_assistant: metaAssistantRequestSchema
     .optional()

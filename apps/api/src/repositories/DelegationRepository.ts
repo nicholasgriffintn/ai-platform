@@ -119,6 +119,19 @@ export class DelegationRepository extends BaseRepository {
     return rows.map(formatDelegation);
   }
 
+  async countLiveForParent(parentConversationId: string, parentRunId: string): Promise<number> {
+    const row = await this.runQuery<{ count: number }>(
+      `SELECT COUNT(*) AS count FROM delegation
+       WHERE parent_conversation_id = ?
+         AND parent_run_id = ?
+         AND state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')`,
+      [parentConversationId, parentRunId],
+      true,
+    );
+
+    return Number(row?.count ?? 0);
+  }
+
   async updateState(
     id: string,
     state: DelegationState,

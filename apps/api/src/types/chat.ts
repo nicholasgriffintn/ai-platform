@@ -12,6 +12,7 @@ import type {
   RecipeConnectorProvider,
   RunProvenance,
   ChatMessageSelection,
+  DelegationContext,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -155,6 +156,7 @@ export interface Message {
   data?: MessageDataPayload | null;
   completion_id?: string;
   run_id?: string;
+  delegation_context?: DelegationContext;
   created?: number;
   model?: string;
   provider?: string;

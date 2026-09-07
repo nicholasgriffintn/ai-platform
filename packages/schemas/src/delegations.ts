@@ -34,6 +34,13 @@ export const delegationResultSchema = z.object({
 });
 export type DelegationResult = z.infer<typeof delegationResultSchema>;
 
+export const delegationContextSchema = z.object({
+  delegationId: z.string().min(1),
+  depth: z.number().int().nonnegative(),
+  rootConversationId: z.string().min(1),
+});
+export type DelegationContext = z.infer<typeof delegationContextSchema>;
+
 export const delegationSchema = z.object({
   id: z.string().min(1),
   parentConversationId: z.string().min(1),

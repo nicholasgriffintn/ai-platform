@@ -65,6 +65,7 @@ export function buildToolRequestContext(params: {
       provider,
       run_id: params.runId,
       run_attempt: params.runAttempt,
+      delegation_context: chatOptions.delegation_context,
       mode,
       compute_site: chatOptions.compute_site,
       tool_policy_mode: chatOptions.tool_policy_mode,
