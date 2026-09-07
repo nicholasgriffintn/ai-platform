@@ -58,6 +58,13 @@ export class ProjectTasksPage extends BasePage {
     });
   }
 
+  async suggestedPipelineAvailable() {
+    return this.page
+      .getByRole("button", { name: "Build pipeline", exact: true })
+      .first()
+      .isVisible();
+  }
+
   async useSuggestedPipeline() {
     await this.suggestedPipelineButton().click();
   }
