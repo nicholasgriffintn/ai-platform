@@ -1,7 +1,6 @@
+import { FilesPage } from "@ngriffin_uk/polychat-component-shell";
 import { getPlacePaths } from "@ngriffin_uk/polychat-library-react";
 import { useParams } from "react-router";
-
-import { FilesPage } from "~/components/Files/FilesPage";
 
 export function meta() {
   return [

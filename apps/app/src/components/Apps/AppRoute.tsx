@@ -1,4 +1,4 @@
-import { PageShell } from "@ngriffin_uk/polychat-component-shell";
+import { PageShell, SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import {
   BackLink,
   ButtonLink,
@@ -20,7 +20,6 @@ import { useMemo, useState } from "react";
 
 import { AppChromeProvider } from "~/components/Apps/AppChrome";
 import { AppRuntime } from "~/components/Apps/AppRuntime";
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 export function AppRoute({
   appId,

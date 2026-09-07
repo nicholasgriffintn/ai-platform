@@ -20,7 +20,7 @@ import type { SourceKind } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { MemorySynthesisPanel } from "~/components/Profile/MemorySynthesisPanel";
+import { MemorySynthesisPanel } from "./MemorySynthesisPanel";
 
 const sourceKinds: Array<{ value: "" | SourceKind; label: string }> = [
   { value: "", label: "All sources" },

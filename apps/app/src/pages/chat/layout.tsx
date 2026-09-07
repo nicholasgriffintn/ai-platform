@@ -1,4 +1,4 @@
-import { ChatSidebar, PageShell } from "@ngriffin_uk/polychat-component-shell";
+import { ChatPlaceShell } from "@ngriffin_uk/polychat-component-shell";
 import { Outlet, useLocation, useParams } from "react-router";
 export default function ChatLayout() {
   const { pathname } = useLocation();
@@ -10,12 +10,8 @@ export default function ChatLayout() {
   }
 
   return (
-    <PageShell title="Chat" sidebarContent={<ChatSidebar />} fullBleed displayNavBar={false}>
-      <div className="flex h-full min-h-0 flex-col overflow-hidden">
-        <div data-header-scroll-source className="min-h-0 flex-1 overflow-y-auto">
-          <Outlet />
-        </div>
-      </div>
-    </PageShell>
+    <ChatPlaceShell>
+      <Outlet />
+    </ChatPlaceShell>
   );
 }

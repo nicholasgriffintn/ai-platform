@@ -1,8 +1,7 @@
 import { TeammateEditor, ConfirmDeleteModal } from "@ngriffin_uk/polychat-component-account";
+import { SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import { BackLink, Card, FormLoadingSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
-
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 import { NEW_TEAMMATE_ID, useTeammateEditorController } from "./useTeammateEditorController";
 

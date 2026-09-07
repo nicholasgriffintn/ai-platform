@@ -33,8 +33,8 @@ import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
 import { Puzzle } from "lucide-react";
 import { useRef, useState } from "react";
 
-import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
+import { SignInEmptyState } from "../Account/SignInEmptyState";
+import { ResponseRenderer } from "../Content/ResponseRenderer";
 
 export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryProps) {
   const [copiedOutputId, setCopiedOutputId] = useState<string | null>(null);

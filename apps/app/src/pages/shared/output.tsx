@@ -1,4 +1,4 @@
-import { PageShell } from "@ngriffin_uk/polychat-component-shell";
+import { PageShell, ResponseRenderer } from "@ngriffin_uk/polychat-component-shell";
 import {
   ButtonLink,
   Card,
@@ -12,7 +12,6 @@ import { FileQuestion, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
-import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 export function meta() {
   return [
     { title: "Shared output - Polychat" },
