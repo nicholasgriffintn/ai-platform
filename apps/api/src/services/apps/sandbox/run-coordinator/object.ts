@@ -7,6 +7,7 @@ import {
   sandboxPreviewSessionRecordSchema,
   sandboxServiceActionSchema,
   sandboxServiceNameSchema,
+  sandboxCommandSchema,
   type SandboxRunDispatchMessage,
   type SandboxRunEvent,
   type SandboxRunInstruction,
@@ -803,12 +804,28 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           return Response.json({ instruction: envelope.instruction, envelope });
         }
 
+        if (kind === "run_command") {
+          const parsedCommand = sandboxCommandSchema.safeParse(body.command);
+
+          if (!parsedCommand.success || parsedCommand.data.includes("&")) {
+            return Response.json(
+              {
+                error: parsedCommand.success
+                  ? "Background commands are not allowed"
+                  : parsedCommand.error.message,
+              },
+              { status: 400 },
+            );
+          }
+        }
+
         const instruction: SandboxRunInstruction = {
           id: crypto.randomUUID(),
           idempotencyKey: idempotencyKey || undefined,
           runId: control?.runId ?? "unknown",
           kind,
           content: contentRaw || undefined,
+          command: kind === "run_command" ? String(body.command).trim() : undefined,
           serviceName:
             kind === "service_action" && parsedServiceName.success
               ? parsedServiceName.data

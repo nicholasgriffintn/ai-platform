@@ -417,6 +417,8 @@ export async function executeFeatureImplementation(
       emit,
       abortSignal: supervisedAbortSignal,
       checkpoint,
+      environmentVariables: params.environmentVariables,
+      environmentVariableNames: environmentPreparation.environmentVariableNames,
     });
     const qualityGateResult = serviceFailure
       ? await Promise.race([qualityGateOperation, serviceFailure])
@@ -435,6 +437,7 @@ export async function executeFeatureImplementation(
         command: check.command,
         status: check.passed ? "passed" : "failed",
         exitCode: check.exitCode,
+        output: check.output,
       })),
     };
 

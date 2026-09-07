@@ -6,6 +6,8 @@ import {
   quoteForShell,
   runSandboxCommand,
 } from "../commands";
+import { redactSandboxOutput } from "../output-redaction";
+import { withSandboxEnvironment } from "../sandbox-environment-runtime";
 import { MAX_OBSERVATION_CHARS } from "./constants";
 import type { QualityGateCheckResult, QualityGateResult, SandboxExecInstance } from "./types";
 import { truncateForModel } from "./utils";
@@ -88,6 +90,8 @@ export async function runQualityGate(params: {
   executionLogs: string[];
   abortSignal?: AbortSignal;
   checkpoint?: (abortMessage: string) => Promise<void>;
+  environmentVariables?: Record<string, string>;
+  environmentVariableNames?: readonly string[];
   emit: (event: {
     type: string;
     command?: string;
@@ -147,7 +151,7 @@ export async function runQualityGate(params: {
 
     const result = await runSandboxCommand(
       sandbox,
-      `cd ${quoteForShell(repoTargetDir)} && ${command}`,
+      `cd ${quoteForShell(repoTargetDir)} && ${withSandboxEnvironment(command, params.environmentVariables, params.environmentVariableNames ?? [])}`,
       {
         abortSignal,
         onOutput: async (output) => {
@@ -157,44 +161,53 @@ export async function runQualityGate(params: {
             commandIndex: index + 1,
             commandTotal: commands.length,
             stream: output.stream,
-            output: truncateForModel(output.data, MAX_OBSERVATION_CHARS),
+            output: truncateForModel(
+              redactSandboxOutput(output.data, Object.values(params.environmentVariables ?? {})),
+              MAX_OBSERVATION_CHARS,
+            ),
           });
         },
       },
     );
 
     await guardExecution("Sandbox run cancelled during quality gate checks");
-    executionLogs.push(formatCommandResult(`[quality-gate] ${command}`, result));
+    const safeResult = {
+      ...result,
+      stdout: redactSandboxOutput(result.stdout, Object.values(params.environmentVariables ?? {})),
+      stderr: redactSandboxOutput(result.stderr, Object.values(params.environmentVariables ?? {})),
+    };
+
+    executionLogs.push(formatCommandResult(`[quality-gate] ${command}`, safeResult));
 
     const check: QualityGateCheckResult = {
       name: toCheckName(command, index),
       command,
-      passed: result.success,
-      exitCode: result.exitCode,
-      output: toCheckOutput(result.stdout, result.stderr),
+      passed: safeResult.success,
+      exitCode: safeResult.exitCode,
+      output: toCheckOutput(safeResult.stdout, safeResult.stderr),
     };
 
     checks.push(check);
 
-    if (result.success) {
+    if (safeResult.success) {
       await emit({
         type: "quality_gate_check_passed",
         command,
         commandIndex: index + 1,
         commandTotal: commands.length,
-        exitCode: result.exitCode,
+        exitCode: safeResult.exitCode,
       });
       continue;
     }
 
-    const failureMessage = result.stderr || result.stdout || "Validation command failed";
+    const failureMessage = safeResult.stderr || safeResult.stdout || "Validation command failed";
 
     await emit({
       type: "quality_gate_check_failed",
       command,
       commandIndex: index + 1,
       commandTotal: commands.length,
-      exitCode: result.exitCode,
+      exitCode: safeResult.exitCode,
       error: truncateForModel(failureMessage, MAX_OBSERVATION_CHARS),
     });
   }

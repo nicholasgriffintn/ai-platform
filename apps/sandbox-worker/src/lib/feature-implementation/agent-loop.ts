@@ -59,6 +59,7 @@ interface SandboxAgentSharedContext {
   redactionSecrets: readonly string[];
   environmentVariables?: Record<string, string>;
   environmentVariableNames: readonly string[];
+  pendingRunnerCommands: string[];
 }
 
 function toSandboxActionContext(
@@ -160,6 +161,7 @@ export async function executeAgentLoop(
     redactionSecrets: params.redactionSecrets ?? [],
     environmentVariables: params.environmentVariables,
     environmentVariableNames: params.environmentVariableNames ?? [],
+    pendingRunnerCommands: [],
   };
 
   const ingestOperatorInstructions = async (
@@ -188,6 +190,17 @@ export async function executeAgentLoop(
       const instruction = envelope.instruction;
 
       if (instruction.kind !== "message" && instruction.kind !== "continue") {
+        if (instruction.kind === "run_command" && instruction.command) {
+          shared.pendingRunnerCommands.push(instruction.command);
+          await emit({
+            type: "run_instruction_received",
+            agentStep,
+            instructionId: instruction.id,
+            instructionKind: instruction.kind,
+            message: "Runner command received by worker",
+          });
+        }
+
         continue;
       }
 
@@ -286,6 +299,10 @@ export async function executeAgentLoop(
     },
     executeToolCalls: async (toolCalls, context) => {
       const actionContext = toSandboxActionContext(context);
+
+      for (const command of shared.pendingRunnerCommands.splice(0)) {
+        await handleRunCommandAction(actionContext, { command });
+      }
 
       for (const toolCall of toolCalls) {
         if (toolCall.name === READ_FILES_TOOL_NAME) {

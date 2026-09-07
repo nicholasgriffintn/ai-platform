@@ -129,6 +129,7 @@ export const listRunInstructionsQuerySchema = z.object({
 export const sandboxRunInstructionKindSchema = z.enum([
   "message",
   "continue",
+  "run_command",
   "approval_request",
   "approval_response",
   "service_action",
@@ -163,6 +164,18 @@ export const submitRunInstructionSchema = z
         message: "Service name and action are required for service controls",
       });
     }
+
+    if (input.kind === "run_command") {
+      if (!input.command) {
+        context.addIssue({ code: "custom", path: ["command"], message: "command is required" });
+      } else if (/&/.test(input.command)) {
+        context.addIssue({
+          code: "custom",
+          path: ["command"],
+          message: "Background commands are not allowed",
+        });
+      }
+    }
   });
 
 export const sandboxConnectionSchema = z.object({
@@ -191,11 +204,14 @@ export const sandboxRunStatusSchema = z.enum([
 
 export const sandboxRunTerminalStatusSchema = z.enum(["completed", "failed", "cancelled"]);
 
+export const sandboxBoundedOutputSchema = z.string().max(12_000);
+
 export const sandboxRunValidationCheckSchema = z
   .object({
     command: z.string().trim().min(1),
     status: z.enum(["passed", "failed"]),
     exitCode: z.number().int().optional(),
+    output: sandboxBoundedOutputSchema.optional(),
   })
   .strict();
 
