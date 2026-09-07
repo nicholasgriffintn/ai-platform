@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import type { TeammateSummary } from "@ngriffin_uk/polychat-schemas";
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
