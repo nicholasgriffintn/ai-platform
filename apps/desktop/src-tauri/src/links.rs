@@ -27,12 +27,18 @@ mod tests {
 
     #[test]
     fn ignores_a_launch_that_carried_no_link() {
-        assert_eq!(find_deep_link(&arguments(&["/Applications/Polychat.app"])), None);
+        assert_eq!(
+            find_deep_link(&arguments(&["/Applications/Polychat.app"])),
+            None
+        );
     }
 
     #[test]
     fn ignores_an_argument_addressing_another_scheme() {
-        let argv = arguments(&["/Applications/Polychat.app", "https://polychat.app/chat/abc"]);
+        let argv = arguments(&[
+            "/Applications/Polychat.app",
+            "https://polychat.app/chat/abc",
+        ]);
 
         assert_eq!(find_deep_link(&argv), None);
     }

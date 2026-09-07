@@ -353,8 +353,8 @@ impl Store {
 
     pub fn unshown(&self, scope: &str, item_ids: &[String]) -> Result<Vec<String>, String> {
         self.with_connection(|connection| {
-            let mut statement =
-                connection.prepare("SELECT 1 FROM announcements WHERE scope = ?1 AND item_id = ?2")?;
+            let mut statement = connection
+                .prepare("SELECT 1 FROM announcements WHERE scope = ?1 AND item_id = ?2")?;
             let mut unseen = Vec::new();
 
             for item_id in item_ids {

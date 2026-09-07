@@ -338,8 +338,8 @@ async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<
         }
     };
 
-    let request = http_client(REQUEST_TIMEOUT)
-        .and_then(|client| with_pairing(client.get(target), &endpoint));
+    let request =
+        http_client(REQUEST_TIMEOUT).and_then(|client| with_pairing(client.get(target), &endpoint));
     let request = match request {
         Ok(request) => request,
         Err(detail) => {
@@ -872,7 +872,11 @@ fn show(app: &tauri::AppHandle, title: &str, body: &str) {
 #[tauri::command]
 fn set_attention_badge(count: u32, app: tauri::AppHandle) {
     for window in app.webview_windows().values() {
-        let _ = window.set_badge_count(if count == 0 { None } else { Some(i64::from(count)) });
+        let _ = window.set_badge_count(if count == 0 {
+            None
+        } else {
+            Some(i64::from(count))
+        });
     }
 }
 
@@ -1073,7 +1077,8 @@ mod tests {
 
     #[test]
     fn falls_back_to_the_documented_lifetime_when_the_api_omits_one() {
-        let token = read_session_token(&serde_json::json!({ "token": "jwt-value" })).expect("token");
+        let token =
+            read_session_token(&serde_json::json!({ "token": "jwt-value" })).expect("token");
 
         assert_eq!(token.expires_in, DEFAULT_TOKEN_LIFETIME_SECONDS);
     }
