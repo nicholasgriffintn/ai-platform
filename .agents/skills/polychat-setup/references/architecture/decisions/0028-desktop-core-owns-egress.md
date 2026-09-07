@@ -1,0 +1,35 @@
+# ADR 0028: Give the desktop shell a core that owns egress and one shared navigation shell
+
+Status: Implemented in `apps/desktop` and `packages/component-shell`; the desktop application is not packaged, signed or released. Do not describe it as available to users.
+
+## Problem
+
+Polychat carries two meanings of "local". The web application executes WebLLM models in the browser, while Ollama and LM Studio providers lived inside the deployed API Worker. A Worker running on Cloudflare cannot reach a customer's loopback interface, so those providers only ever worked for a self-hosted deployment that could already see the runtime. Neither path gives someone a private chat against a model on their own machine.
+
+Reaching a device-local runtime needs an application on the device, and the choice of shell is a durable boundary rather than a packaging preference: it decides where session credentials live, what a compromised renderer dependency can reach, and which language the team must maintain alongside TypeScript.
+
+Giving that application navigation raises a second problem. The sidebar, header, conversation list and its menus, global search and the settings popover are the largest connected surfaces in the web application, and they read the router, the stores and the API client, which `component-*` packages deliberately do not. Copying that wiring into the desktop would duplicate roughly a thousand lines that change whenever chat navigation changes.
+
+## Decision
+
+Build the desktop application on Tauri with a Rust core, and make that core the only thing that talks to the network.
+
+The core owns four capabilities and no product logic: allowlisted HTTP egress to device and network runtimes, local storage, operating-system credential storage, and deep links with the loopback sign-in listener. Conversation state machines, prompt construction and policy stay in TypeScript in the webview, shared with the web application behind a typed backend port that can be replaced with a fake. Runtime egress is allowlisted per destination: a loopback runtime and any endpoint the person has explicitly configured pass through the same core commands, and the core refuses an address it was not given.
+
+The hosted API is the deliberate exception. The webview calls it directly over HTTPS with the shared API client, because routing it through the core would put a desktop-only transport underneath code both applications share, and the divergence costs more than the isolation buys. The content security policy names the API origin and nothing else. Generations stream over a per-request channel whose lifetime is the request, and cancelling a generation aborts that request rather than calling a separate endpoint.
+
+The desktop application ships no interface of its own; a component written for the desktop alone is a defect. To make that affordable, extract the wiring itself into `packages/component-shell` and let both hosts mount it. That package is the single exception to the router-, store- and client-free rule for `component-*`, and it earns the exception by being the layer whose whole job is connection: the sidebar, product and conversation headers, page and product shells, global search, conversation menus and the not-found page. Controlled presentation stays in `component-navigation` and `component-ui`; nothing moves down into those packages.
+
+What genuinely differs between hosts arrives through `ShellHostProvider`: the origin public share links point at, the dialogs a host owns alone, and the actions that open them. A host that has not migrated an action supplies one that throws, because a shared control that quietly does nothing stops being visible the moment it ships. Destinations the desktop has not migrated resolve to the shared not-found page rather than being hidden, and `apps/desktop/src/route-definitions.ts` is the whole map — naming the unmigrated chat routes explicitly matters, or `/chat/attention` reads as a conversation id.
+
+The desktop cannot be used signed out: there is no offline or anonymous mode, and the model catalogue is always the one the API returns for this account. Requesting it with `surface=desktop` is what adds the device runtimes; the web application never sees them. Storage follows the account's choice rather than where the model ran: conversations sync unless the person marks a chat temporary or has turned on temporary chats by default, and that policy is the same code the web application runs. A temporary chat is written to SQLite on the device, partitioned by the signed-in account, and never reaches the API. Signing out hides local history rather than destroying it, so deleting it is explicit and irreversible. Sign-in reuses the native client flow already serving iOS, with a loopback redirect and PKCE, storing the session through operating-system credential protection.
+
+## Consequences
+
+The renderer becomes genuinely unprivileged, a stronger position than the equivalent Electron design reaches by convention. The application runs on the operating system's webview, so behaviour diverges across platforms and the Linux webview lags far enough that Linux is best-effort rather than supported. Playwright cannot drive the packaged window and the available WebDriver route does not cover macOS, so shared behaviour is tested against the fake backend, packaged coverage runs on the platforms WebDriver reaches, and macOS packaged behaviour is an operator verification item.
+
+Rust enters the monorepo. Keeping the core to those four capabilities keeps it small enough to read in one sitting; a feature that needs the core to grow a new concept is a signal that the logic belongs in TypeScript instead. Installer signing, notarisation and update-signing keys gate release rather than code, so they are procured before implementation.
+
+The Worker's Ollama and LM Studio chat providers are removed, since a Worker cannot reach a customer's loopback interface. Their model definitions stay in the catalogue marked `runsOn: "device"`, and the desktop executes them through the core. Removing WebLLM from the web application is a staged deprecation with an export window rather than a cutover.
+
+Chat navigation now has one implementation, and a desktop-only navigation component remains a defect. The `component-shell` exception is load-bearing and easy to widen by accident: it may connect the shell, but a feature surface that finds itself importing stores belongs in a host or behind a controlled component. It depends on `library-react` and `library-client`, so those cannot depend on it. Route coverage is asserted rather than assumed — the desktop route map is data and its test states which paths reach a conversation and which answer 404 — and the desktop's link set is deliberately larger than what it serves, so unmigrated destinations become visible work items rather than silent gaps.

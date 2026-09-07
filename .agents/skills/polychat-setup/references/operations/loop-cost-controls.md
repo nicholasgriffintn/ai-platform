@@ -1,6 +1,6 @@
 # Operate usage and execution limits
 
-Credits are the monthly allowance; vendor units are the underlying cost record. Read [the credit decision](../architecture/decisions/0041-usage-metering-and-credits.md) before changing accounting or admission.
+Credits are the monthly allowance; vendor units are the underlying cost record. Read [the credit decision](../architecture/decisions/0022-meter-vendor-units-and-settle-once.md) before changing accounting or admission.
 
 ## Allowances and admission
 
@@ -23,7 +23,7 @@ Do not add provider work without a model-independent bound and usage emission. A
 
 ## Use automatic generation settings
 
-Leave optional output-token and sampling settings unset unless the caller explicitly supplies an override. Do not add feature-specific token ceilings, temperatures or shared response-length defaults. Providers that require an output limit use the model catalogue's declared maximum; explicit caller limits remain constrained by that maximum. See [ADR 0070](../architecture/decisions/0070-use-automatic-generation-settings.md).
+Leave optional output-token and sampling settings unset unless the caller explicitly supplies an override. Do not add feature-specific token ceilings, temperatures or shared response-length defaults. Providers that require an output limit use the model catalogue's declared maximum; explicit caller limits remain constrained by that maximum. See [ADR 0011](../architecture/decisions/0011-resolve-models-and-readiness-on-the-server.md).
 
 Keep provider protocol requirements, context retrieval budgets and execution step bounds separate from generation overrides. A saved agent's temperature is nullable: create it with automatic sampling and clear an existing override with `temperature: null`.
 
