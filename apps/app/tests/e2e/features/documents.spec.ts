@@ -23,7 +23,14 @@ test.describe("Documents as finished work", () => {
 
     await expect(editor).toHaveValue(/The first draft, as written\./);
     await editor.fill("# Launch week brief\n\nThe edited draft, as revised.");
+    const saved = page.waitForResponse(
+      (response) =>
+        response.request().method() === "PUT" &&
+        new URL(response.url()).pathname.endsWith(`/outputs/${written.id}`),
+    );
+
     await page.getByRole("button", { name: "Save", exact: true }).click();
+    expect((await saved).status()).toBe(200);
     await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
 
     const revised = await polychatApi.getOutput(written.id);
