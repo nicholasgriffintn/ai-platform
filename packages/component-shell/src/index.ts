@@ -1,4 +1,5 @@
 export * from "./Account/SignInEmptyState";
+export * from "./Attention/AttentionPage";
 export * from "./Chat/ChatSidebar";
 export * from "./Content/ResponseRenderer";
 export * from "./Content/ShareDialog";
