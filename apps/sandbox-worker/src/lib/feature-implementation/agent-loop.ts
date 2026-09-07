@@ -56,6 +56,9 @@ interface SandboxAgentSharedContext {
   emit: ExecuteAgentLoopParams["emit"];
   approvalClient?: ExecuteAgentLoopParams["approvalClient"];
   abortSignal?: AbortSignal;
+  redactionSecrets: readonly string[];
+  environmentVariables?: Record<string, string>;
+  environmentVariableNames: readonly string[];
 }
 
 function toSandboxActionContext(
@@ -73,6 +76,9 @@ function toSandboxActionContext(
     emit: context.shared.emit,
     approvalClient: context.shared.approvalClient,
     abortSignal: context.shared.abortSignal,
+    redactionSecrets: context.shared.redactionSecrets,
+    environmentVariables: context.shared.environmentVariables,
+    environmentVariableNames: context.shared.environmentVariableNames,
     guardExecution: context.guardExecution,
     beginPlanRecovery: context.beginPlanRecovery,
   };
@@ -151,6 +157,9 @@ export async function executeAgentLoop(
     emit,
     approvalClient,
     abortSignal,
+    redactionSecrets: params.redactionSecrets ?? [],
+    environmentVariables: params.environmentVariables,
+    environmentVariableNames: params.environmentVariableNames ?? [],
   };
 
   const ingestOperatorInstructions = async (

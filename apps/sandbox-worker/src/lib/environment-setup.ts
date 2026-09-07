@@ -25,6 +25,7 @@ import {
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { redactSandboxOutput } from "./output-redaction";
 import type { RunControlClient } from "./run-control-client";
+import { withSandboxEnvironment } from "./sandbox-environment-runtime";
 
 const MAX_REPOSITORY_CONFIGURATION_BYTES = 32_000;
 const MAX_SETUP_EVENT_OUTPUT_CHARS = 4_000;
@@ -65,6 +66,7 @@ export interface SandboxEnvironmentPreparationResult {
   evidence?: SandboxRunEnvironmentEvidence;
   cacheRecord?: SandboxEnvironmentCacheRecord;
   services?: SandboxServiceDefinition[];
+  environmentVariableNames?: string[];
 }
 
 async function hashConfiguration(definition: SandboxEnvironmentDefinition): Promise<string> {
@@ -437,6 +439,7 @@ export async function prepareSandboxEnvironment(params: {
   requestedMode?: SandboxEnvironmentPreparationMode;
   environmentCache?: SandboxEnvironmentCacheRecord;
   environmentCacheGeneration?: number;
+  environmentVariables?: Record<string, string>;
   trustLevel: SandboxTrustLevel;
   executionLogs: string[];
   approvalClient?: RunControlClient;
@@ -449,6 +452,7 @@ export async function prepareSandboxEnvironment(params: {
   }
 
   const setup = params.setup;
+  const redactionSecrets = Object.values(params.environmentVariables ?? {});
   const startedAt = Date.now();
   let resolved: ResolvedEnvironmentSetup;
 
@@ -580,7 +584,7 @@ export async function prepareSandboxEnvironment(params: {
         allowRisky: approval.allowRisky,
       });
 
-      const safeCommand = redactSandboxOutput(command);
+      const safeCommand = redactSandboxOutput(command, redactionSecrets);
 
       await params.emit({
         type: "environment_setup_command_started",
@@ -591,7 +595,7 @@ export async function prepareSandboxEnvironment(params: {
       });
       const result = await runSandboxCommand(
         params.sandbox,
-        `cd ${quoteForShell(params.repoTargetDir)} && ${command}`,
+        `cd ${quoteForShell(params.repoTargetDir)} && ${withSandboxEnvironment(command, params.environmentVariables, resolved.definition.environment)}`,
         {
           abortSignal: commandSignal,
           onOutput: async ({ stream, data }) => {
@@ -602,7 +606,10 @@ export async function prepareSandboxEnvironment(params: {
               commandTotal: commands.length,
               preparationMode,
               stream,
-              output: redactSandboxOutput(data).slice(0, MAX_SETUP_EVENT_OUTPUT_CHARS),
+              output: redactSandboxOutput(data, redactionSecrets).slice(
+                0,
+                MAX_SETUP_EVENT_OUTPUT_CHARS,
+              ),
               truncated: data.length > MAX_SETUP_EVENT_OUTPUT_CHARS,
             });
           },
@@ -610,8 +617,8 @@ export async function prepareSandboxEnvironment(params: {
       );
       const safeResult = {
         ...result,
-        stdout: redactSandboxOutput(result.stdout),
-        stderr: redactSandboxOutput(result.stderr),
+        stdout: redactSandboxOutput(result.stdout, redactionSecrets),
+        stderr: redactSandboxOutput(result.stderr, redactionSecrets),
       };
 
       params.executionLogs.push(formatCommandResult(safeCommand, safeResult));
@@ -697,12 +704,17 @@ export async function prepareSandboxEnvironment(params: {
       cacheInvalidationReason: cacheEvidence?.invalidationReason,
     });
 
-    return { evidence, cacheRecord, services: resolved.definition.services ?? [] };
+    return {
+      evidence,
+      cacheRecord,
+      services: resolved.definition.services ?? [],
+      environmentVariableNames: resolved.definition.environment,
+    };
   } catch (error) {
     const message = timeoutSignal.aborted
       ? `Environment ${preparationMode} timed out after ${resolved.definition.setupTimeoutSeconds} seconds`
       : error instanceof Error
-        ? redactSandboxOutput(error.message)
+        ? redactSandboxOutput(error.message, redactionSecrets)
         : `Environment ${preparationMode} failed`;
     const evidence = evidenceFor({
       resolved,

@@ -498,6 +498,33 @@ export const project = sqliteTable(
 
 export type Project = typeof project.$inferSelect;
 
+export const projectEnvironmentVariable = sqliteTable(
+  "project_environment_variable",
+  {
+    id: text().primaryKey(),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    encrypted_value: text().notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    projectNameIdx: uniqueIndex("project_environment_variable_name_idx").on(
+      table.project_id,
+      table.name,
+    ),
+    projectIdx: index("project_environment_variable_project_idx").on(table.project_id),
+  }),
+);
+
+export type ProjectEnvironmentVariableRow = typeof projectEnvironmentVariable.$inferSelect;
+
 export const authoredSkill = sqliteTable(
   "authored_skill",
   {

@@ -19,6 +19,9 @@ import {
   projectTaskDetailResponseSchema,
   projectTaskResponseSchema,
   resolveProjectTaskToolApprovalSchema,
+  sandboxEnvironmentVariableInputSchema,
+  sandboxEnvironmentVariableNameSchema,
+  sandboxEnvironmentVariablesResponseSchema,
   sandboxEnvironmentCacheActionResponseSchema,
   sandboxEnvironmentCacheActionSchema,
   setProjectFlowSchema,
@@ -62,6 +65,9 @@ import {
   getProject,
   removeProjectCapability,
   updateProject,
+  clearProjectEnvironmentVariable,
+  listProjectEnvironmentVariables,
+  setProjectEnvironmentVariable,
 } from "~/services/workspaces";
 import { applyProjectEnvironmentCacheAction } from "~/services/workspaces/environment-cache";
 
@@ -110,6 +116,52 @@ addRoute(app, "post", "/:projectId/environment-cache", {
   },
   handler: ({ serviceContext, params, body }) =>
     applyProjectEnvironmentCacheAction(serviceContext, params.projectId, body),
+});
+
+addRoute(app, "get", "/:projectId/environment-variables", {
+  auth: true,
+  tags: ["projects"],
+  summary: "List configured project environment variable names",
+  paramSchema: projectParams,
+  responses: {
+    200: {
+      description: "Environment variable names",
+      schema: sandboxEnvironmentVariablesResponseSchema,
+    },
+  },
+  handler: ({ serviceContext, params }) =>
+    listProjectEnvironmentVariables(serviceContext, params.projectId),
+});
+
+addRoute(app, "post", "/:projectId/environment-variables", {
+  auth: true,
+  tags: ["projects"],
+  summary: "Set a project environment variable",
+  paramSchema: projectParams,
+  bodySchema: sandboxEnvironmentVariableInputSchema,
+  responses: {
+    200: {
+      description: "Environment variable names",
+      schema: sandboxEnvironmentVariablesResponseSchema,
+    },
+  },
+  handler: ({ serviceContext, params, body }) =>
+    setProjectEnvironmentVariable(serviceContext, params.projectId, body),
+});
+
+addRoute(app, "delete", "/:projectId/environment-variables/:name", {
+  auth: true,
+  tags: ["projects"],
+  summary: "Clear a project environment variable",
+  paramSchema: projectParams.extend({ name: sandboxEnvironmentVariableNameSchema }),
+  responses: {
+    200: {
+      description: "Environment variable names",
+      schema: sandboxEnvironmentVariablesResponseSchema,
+    },
+  },
+  handler: ({ serviceContext, params }) =>
+    clearProjectEnvironmentVariable(serviceContext, params.projectId, params.name),
 });
 
 addRoute(app, "post", "/:projectId/capabilities", {

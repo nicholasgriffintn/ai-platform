@@ -141,6 +141,7 @@ export * from "./sandbox-delivery.js";
 export * from "./sandbox-environment.js";
 export * from "./sandbox-cache.js";
 export * from "./sandbox-services.js";
+export * from "./sandbox-variables.js";
 export * from "./sandbox-preview.js";
 export * from "./search.js";
 export * from "./shared-teammates.js";

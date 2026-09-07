@@ -120,6 +120,7 @@ export async function executeFeatureImplementation(
   const sandbox = getSandbox(env.Sandbox, runId);
   const client = new PolychatClient(secrets.userToken, env.POLYCHAT_API);
   const executionLogs: string[] = [];
+  const redactionSecrets = Object.values(params.environmentVariables ?? {});
   let branchName: string | undefined;
   let baseRevision: string | undefined;
   let headRevision: string | undefined;
@@ -239,6 +240,7 @@ export async function executeFeatureImplementation(
       requestedMode: params.environmentPreparationMode,
       environmentCache: params.environmentCache,
       environmentCacheGeneration: params.environmentCacheGeneration,
+      environmentVariables: params.environmentVariables,
       trustLevel: params.trustLevel ?? "balanced",
       executionLogs,
       approvalClient,
@@ -267,6 +269,7 @@ export async function executeFeatureImplementation(
         abortSignal,
         checkpoint,
         emit,
+        environmentVariables: params.environmentVariables,
       });
       await serviceSupervisor.start();
       serviceFailure = serviceSupervisor.waitForFailure();
@@ -387,6 +390,9 @@ export async function executeFeatureImplementation(
       approvalClient,
       abortSignal: supervisedAbortSignal,
       checkpoint,
+      redactionSecrets,
+      environmentVariables: params.environmentVariables,
+      environmentVariableNames: environmentPreparation.environmentVariableNames,
     });
     const loopResult = serviceFailure
       ? await Promise.race([loopOperation, serviceFailure])

@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { sandboxCommandSchema } from "./sandbox-command.js";
 import { sandboxServiceManifestSchema } from "./sandbox-services.js";
+import { sandboxEnvironmentVariableNameSchema } from "./sandbox-variables.js";
 
 export const SANDBOX_REPOSITORY_ENVIRONMENT_PATH = ".polychat/environment.json";
 
@@ -56,6 +57,7 @@ export const sandboxEnvironmentDefinitionSchema = z
     runtimes: z.array(sandboxRuntimeRequirementSchema).max(6).default([]),
     packageManager: sandboxPackageManagerRequirementSchema.optional(),
     setupTimeoutSeconds: z.number().int().min(30).max(1800).default(600),
+    environment: z.array(sandboxEnvironmentVariableNameSchema).max(32).default([]),
     services: sandboxServiceManifestSchema.optional(),
   })
   .strict();

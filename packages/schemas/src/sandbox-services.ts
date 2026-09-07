@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { sandboxCommandSchema } from "./sandbox-command.js";
+import { sandboxEnvironmentVariableNameSchema } from "./sandbox-variables.js";
 
 export const sandboxServiceNameSchema = z
   .string()
@@ -86,6 +87,7 @@ export const sandboxServiceDefinitionSchema = z
     expectedPort: sandboxServicePortSchema.optional(),
     healthCheck: sandboxServiceHealthCheckSchema.optional(),
     startupTimeoutSeconds: z.number().int().min(5).max(300).default(60),
+    environment: z.array(sandboxEnvironmentVariableNameSchema).max(32).default([]),
     restartPolicy: sandboxServiceRestartPolicySchema.default({
       mode: "never",
       maxRestarts: 0,

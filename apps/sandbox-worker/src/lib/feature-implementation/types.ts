@@ -72,6 +72,9 @@ export interface ExecuteAgentLoopParams {
   approvalClient?: RunControlClient;
   abortSignal?: AbortSignal;
   checkpoint?: (abortMessage: string) => Promise<void>;
+  redactionSecrets?: readonly string[];
+  environmentVariables?: Record<string, string>;
+  environmentVariableNames?: readonly string[];
 }
 
 export interface QualityGateCheckResult {

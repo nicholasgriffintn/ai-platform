@@ -252,6 +252,14 @@ export async function processSandboxRunDispatch(params: {
   });
 
   let workerResponse: Response;
+  const environmentVariables = message.payload.projectId
+    ? await context.repositories.projectEnvironmentVariables.values(
+        message.payload.projectId,
+        (
+          await context.repositories.projectEnvironmentVariables.list(message.payload.projectId)
+        ).map((variable) => variable.name),
+      )
+    : undefined;
 
   try {
     workerResponse = await executeSandboxWorker({
@@ -269,6 +277,7 @@ export async function processSandboxRunDispatch(params: {
       environmentPreparationMode: message.payload.environmentPreparationMode,
       environmentCache: message.payload.environmentCache,
       environmentCacheGeneration: message.payload.environmentCacheGeneration,
+      environmentVariables,
       projectId: message.payload.projectId,
       timeoutSeconds: message.payload.timeoutSeconds,
       trustLevel: message.payload.trustLevel,

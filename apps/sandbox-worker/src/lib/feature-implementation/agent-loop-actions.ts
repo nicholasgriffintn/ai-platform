@@ -8,6 +8,8 @@ import {
   quoteForShell,
   runSandboxCommand,
 } from "../commands";
+import { redactSandboxOutput } from "../output-redaction";
+import { withSandboxEnvironment } from "../sandbox-environment-runtime";
 import { runSandboxScript } from "../script-execution";
 import { resolveCommandApproval } from "./command-approval";
 import {
@@ -50,6 +52,9 @@ export interface AgentLoopActionContext {
   abortSignal?: AbortSignal;
   guardExecution: (abortMessage: string) => Promise<void>;
   beginPlanRecovery: (reason: string) => void;
+  redactionSecrets: readonly string[];
+  environmentVariables?: Record<string, string>;
+  environmentVariableNames: readonly string[];
 }
 
 function pushUserMessage(messages: AgentMessage[], content: string) {
@@ -317,7 +322,7 @@ export async function handleRunCommandAction(
 
   const result = await runSandboxCommand(
     context.sandbox,
-    `cd ${quoteForShell(context.repoTargetDir)} && ${decision.command}`,
+    `cd ${quoteForShell(context.repoTargetDir)} && ${withSandboxEnvironment(decision.command, context.environmentVariables, context.environmentVariableNames)}`,
     {
       abortSignal: context.abortSignal,
       onOutput: async (output) => {
@@ -328,17 +333,26 @@ export async function handleRunCommandAction(
           commandTotal: MAX_COMMANDS,
           agentStep: context.step,
           stream: output.stream,
-          output: truncateForModel(output.data, MAX_OBSERVATION_CHARS),
+          output: truncateForModel(
+            redactSandboxOutput(output.data, context.redactionSecrets),
+            MAX_OBSERVATION_CHARS,
+          ),
         });
       },
     },
   );
 
-  context.executionLogs.push(formatCommandResult(decision.command, result));
+  const safeResult = {
+    ...result,
+    stdout: redactSandboxOutput(result.stdout, context.redactionSecrets),
+    stderr: redactSandboxOutput(result.stderr, context.redactionSecrets),
+  };
+
+  context.executionLogs.push(formatCommandResult(decision.command, safeResult));
 
   if (!result.success) {
     context.state.consecutiveCommandFailures += 1;
-    const failureMessage = result.stderr || result.stdout || "Unknown command failure";
+    const failureMessage = safeResult.stderr || safeResult.stdout || "Unknown command failure";
 
     await context.emit({
       type: "command_failed",
@@ -346,7 +360,7 @@ export async function handleRunCommandAction(
       commandIndex: context.state.commandCount,
       commandTotal: MAX_COMMANDS,
       agentStep: context.step,
-      exitCode: result.exitCode,
+      exitCode: safeResult.exitCode,
       error: truncateForModel(failureMessage, MAX_OBSERVATION_CHARS),
     });
 
@@ -354,7 +368,7 @@ export async function handleRunCommandAction(
       context.messages,
       formatCommandObservation({
         command: decision.command,
-        result,
+        result: safeResult,
       }),
     );
 
@@ -492,7 +506,7 @@ export async function handleRunParallelAction(
     commands.map((command, index) =>
       runSandboxCommand(
         context.sandbox,
-        `cd ${quoteForShell(context.repoTargetDir)} && ${command}`,
+        `cd ${quoteForShell(context.repoTargetDir)} && ${withSandboxEnvironment(command, context.environmentVariables, context.environmentVariableNames)}`,
         {
           abortSignal: context.abortSignal,
           onOutput: async (output) => {
@@ -503,7 +517,10 @@ export async function handleRunParallelAction(
               commandTotal: MAX_COMMANDS,
               agentStep: context.step,
               stream: output.stream,
-              output: truncateForModel(output.data, MAX_OBSERVATION_CHARS),
+              output: truncateForModel(
+                redactSandboxOutput(output.data, context.redactionSecrets),
+                MAX_OBSERVATION_CHARS,
+              ),
             });
           },
         },
@@ -519,16 +536,22 @@ export async function handleRunParallelAction(
     const result = results[index];
     const commandIndex = firstCommandIndex + index;
 
-    context.executionLogs.push(formatCommandResult(command, result));
+    const safeResult = {
+      ...result,
+      stdout: redactSandboxOutput(result.stdout, context.redactionSecrets),
+      stderr: redactSandboxOutput(result.stderr, context.redactionSecrets),
+    };
+
+    context.executionLogs.push(formatCommandResult(command, safeResult));
     observationParts.push(
       formatCommandObservation({
         command,
-        result,
+        result: safeResult,
       }),
     );
     if (!result.success) {
       failedCount += 1;
-      const failureMessage = result.stderr || result.stdout || "Unknown command failure";
+      const failureMessage = safeResult.stderr || safeResult.stdout || "Unknown command failure";
 
       await context.emit({
         type: "command_failed",

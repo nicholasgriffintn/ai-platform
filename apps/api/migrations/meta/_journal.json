@@ -309,6 +309,13 @@
       "when": 1788822266508,
       "tag": "0043_steady_mulholland_black",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "6",
+      "when": 1788824071686,
+      "tag": "0044_typical_the_watchers",
+      "breakpoints": true
     }
   ]
 }

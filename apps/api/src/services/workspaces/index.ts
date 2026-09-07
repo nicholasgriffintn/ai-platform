@@ -32,6 +32,11 @@ import {
 } from "./format";
 import { sendWorkspaceInvitationEmail } from "./invitation-email";
 import { validateProjectToolConfiguration } from "./projectTools";
+export {
+  clearProjectEnvironmentVariable,
+  listProjectEnvironmentVariables,
+  setProjectEnvironmentVariable,
+} from "./environment-variables";
 
 const INVITATION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
 

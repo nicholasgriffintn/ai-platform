@@ -22,6 +22,7 @@ import { resolveCommandApproval } from "./feature-implementation/command-approva
 import { listeningPortsFromProcNet, READ_LISTENING_SOCKETS_COMMAND } from "./network-ports";
 import { redactSandboxOutput } from "./output-redaction";
 import type { RunControlClient } from "./run-control-client";
+import { withSandboxEnvironment } from "./sandbox-environment-runtime";
 
 const SERVICE_OBSERVATION_INTERVAL_MS = 1_000;
 const SERVICE_PORT_RELEASE_TIMEOUT_MS = 5_000;
@@ -58,6 +59,7 @@ export interface ProjectServiceSupervisorOptions {
   abortSignal?: AbortSignal;
   checkpoint: (abortMessage: string) => Promise<void>;
   emit: (event: TaskEvent) => Promise<void>;
+  environmentVariables?: Record<string, string>;
 }
 
 function topologicalServices(services: SandboxServiceDefinition[]): SandboxServiceDefinition[] {
@@ -312,7 +314,10 @@ export class ProjectServiceSupervisor {
       return;
     }
 
-    const safeOutput = redactSandboxOutput(data);
+    const safeOutput = redactSandboxOutput(
+      data,
+      Object.values(this.options.environmentVariables ?? {}),
+    );
     const remaining = MAX_SERVICE_LOG_CHARS - service.logCharacters;
 
     if (remaining <= 0 || service.logEvents >= MAX_SERVICE_LOG_EVENTS) {
@@ -448,11 +453,18 @@ export class ProjectServiceSupervisor {
     let process: Process | undefined;
 
     try {
-      process = await this.options.sandbox.startProcess(definition.command, {
-        cwd: service.absoluteWorkingDirectory,
-        autoCleanup: false,
-        processId: `polychat-${definition.name}-${crypto.randomUUID().slice(0, 8)}`,
-      });
+      process = await this.options.sandbox.startProcess(
+        withSandboxEnvironment(
+          definition.command,
+          this.options.environmentVariables,
+          definition.environment,
+        ),
+        {
+          cwd: service.absoluteWorkingDirectory,
+          autoCleanup: false,
+          processId: `polychat-${definition.name}-${crypto.randomUUID().slice(0, 8)}`,
+        },
+      );
       service.process = process;
       service.stdoutLength = 0;
       service.stderrLength = 0;

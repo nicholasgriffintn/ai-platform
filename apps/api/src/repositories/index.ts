@@ -28,6 +28,7 @@ import { MobilePushRepository } from "./MobilePushRepository";
 import { OAuthStateRepository } from "./OAuthStateRepository";
 import { OutputRepository } from "./OutputRepository";
 import { PlanRepository } from "./PlanRepository";
+import { ProjectEnvironmentVariableRepository } from "./ProjectEnvironmentVariableRepository";
 import { ProjectTaskRepository } from "./ProjectTaskRepository";
 import { ProviderConnectionRepository } from "./ProviderConnectionRepository";
 import { RecipeComposioTriggerRepository } from "./RecipeComposioTriggerRepository";
@@ -91,6 +92,7 @@ export {
   WebAuthnRepository,
   PlanRepository,
   ProjectTaskRepository,
+  ProjectEnvironmentVariableRepository,
   ProviderConnectionRepository,
   RecipeComposioTriggerRepository,
   SharedTeammateRepository,
@@ -104,6 +106,7 @@ export class RepositoryManager {
   private teammateRepo: TeammateRepository;
   private planRepo: PlanRepository;
   private projectTaskRepo: ProjectTaskRepository;
+  private projectEnvironmentVariableRepo: ProjectEnvironmentVariableRepository;
   private userRepo: UserRepository;
   private anonymousUserRepo: AnonymousUserRepository;
   private sessionRepo: SessionRepository;
@@ -154,6 +157,7 @@ export class RepositoryManager {
     this.teammateRepo = new TeammateRepository(env);
     this.planRepo = new PlanRepository(env);
     this.projectTaskRepo = new ProjectTaskRepository(env);
+    this.projectEnvironmentVariableRepo = new ProjectEnvironmentVariableRepository(env);
     this.userRepo = new UserRepository(env);
     this.anonymousUserRepo = new AnonymousUserRepository(env);
     this.sessionRepo = new SessionRepository(env);
@@ -217,6 +221,10 @@ export class RepositoryManager {
 
   public get projectTasks(): ProjectTaskRepository {
     return this.projectTaskRepo;
+  }
+
+  public get projectEnvironmentVariables(): ProjectEnvironmentVariableRepository {
+    return this.projectEnvironmentVariableRepo;
   }
 
   public get taskNotifications(): TaskNotificationRepository {

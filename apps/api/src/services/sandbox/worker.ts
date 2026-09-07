@@ -78,6 +78,7 @@ export interface ExecuteSandboxWorkerOptions {
   environmentPreparationMode?: SandboxEnvironmentPreparationMode;
   environmentCache?: SandboxEnvironmentCacheRecord;
   environmentCacheGeneration?: number;
+  environmentVariables?: Record<string, string>;
   projectId?: string;
   timeoutSeconds?: number;
   trustLevel?: SandboxTrustLevel;
@@ -173,6 +174,7 @@ export async function executeSandboxWorker(
     environmentPreparationMode,
     environmentCache,
     environmentCacheGeneration,
+    environmentVariables,
     projectId,
     timeoutSeconds,
     trustLevel,
@@ -223,6 +225,7 @@ export async function executeSandboxWorker(
     environmentPreparationMode,
     environmentCache,
     environmentCacheGeneration,
+    environmentVariables,
     timeoutSeconds,
     trustLevel,
     modelSettings,

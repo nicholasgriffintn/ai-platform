@@ -93,6 +93,7 @@ export const sandboxRunDispatchPayloadSchema = z.object({
   environmentPreparationMode: sandboxEnvironmentPreparationModeSchema.optional(),
   environmentCache: sandboxEnvironmentCacheRecordSchema.optional(),
   environmentCacheGeneration: z.number().int().nonnegative().optional(),
+  environmentVariables: z.record(z.string(), z.string()).optional(),
   timeoutSeconds: z.number().int().positive().optional(),
   trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
   modelSettings: sandboxModelSettingsSchema.optional(),
@@ -485,6 +486,7 @@ export const sandboxRunDataSchema = z.object({
   environmentSetup: sandboxEnvironmentSetupSchema.optional(),
   environmentPreparationMode: sandboxEnvironmentPreparationModeSchema.optional(),
   environmentCacheGeneration: z.number().int().nonnegative().optional(),
+  environmentVariables: z.record(z.string(), z.string()).optional(),
   status: sandboxRunStatusSchema,
   startedAt: z.string().trim().min(1),
   updatedAt: z.string().trim().min(1),
@@ -619,6 +621,7 @@ export const sandboxWorkerExecuteRequestSchema = z.object({
   environmentPreparationMode: sandboxEnvironmentPreparationModeSchema.optional(),
   environmentCache: sandboxEnvironmentCacheRecordSchema.optional(),
   environmentCacheGeneration: z.number().int().nonnegative().optional(),
+  environmentVariables: z.record(z.string(), z.string()).optional(),
   timeoutSeconds: z
     .number()
     .int()
