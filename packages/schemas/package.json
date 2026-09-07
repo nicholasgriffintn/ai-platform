@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-schemas",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": false,
   "description": "Validated wire contracts and product schemas shared across Polychat runtimes",
   "license": "Apache-2.0",

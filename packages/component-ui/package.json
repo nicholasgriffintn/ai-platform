@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-component-ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Accessible React DOM controls and layout primitives for Polychat surfaces",
   "license": "Apache-2.0",
   "files": [

@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Runtime-neutral HTTP client primitives for Polychat",
   "license": "Apache-2.0",
   "files": [

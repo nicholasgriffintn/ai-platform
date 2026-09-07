@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "React providers and query controllers for Polychat",
   "license": "Apache-2.0",
   "files": [

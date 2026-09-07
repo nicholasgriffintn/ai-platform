@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-agent-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "Reusable Polychat agent decision loop, approvals, and action handler contracts",
   "license": "Apache-2.0",
