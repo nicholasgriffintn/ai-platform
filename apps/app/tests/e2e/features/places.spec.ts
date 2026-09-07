@@ -57,6 +57,21 @@ test.describe("Places belong to a mode", () => {
       await expect(sidebar.getByRole("link", { name: "Release Project" })).toBeVisible();
     }
 
+    await sidebar.getByRole("link", { name: "Files", exact: true }).click();
+    const filesNav = page.getByRole("navigation", { name: "Files sections" });
+
+    for (const tab of ["Given", "Made", "Memory"] as const) {
+      await filesNav.getByRole("link", { name: tab, exact: true }).click();
+      await expect(filesNav.getByRole("link", { name: tab, exact: true })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+      await expect(sidebar.getByRole("link", { name: "Files", exact: true })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+    }
+
     await sidebar.getByRole("link", { name: "Attention", exact: true }).click();
     await expect(page).toHaveURL(/\/work\/attention\?projectId=/);
     await expect(sidebar).toBeVisible();

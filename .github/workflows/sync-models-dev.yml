@@ -26,6 +26,10 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Restore the Vite+ task cache
+        uses: ./.github/actions/vite-task-cache
+      - name: Build the shared schemas package
+        run: pnpm exec vp run --filter=@ngriffin_uk/polychat-schemas build
       - name: Run models.dev sync
         env:
           POLYCHAT_API_KEY: ${{ secrets.POLYCHAT_MODEL_ANALYSIS_TASK_API_KEY }}

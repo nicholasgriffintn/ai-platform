@@ -17,7 +17,12 @@ export function meta() {
 
 export default function Models() {
   return (
-    <PageShell title="Models" sidebarContent={<StandardSidebarContent />} className="max-w-6xl">
+    <PageShell
+      title="Models"
+      headerTitleAs="span"
+      sidebarContent={<StandardSidebarContent />}
+      className="max-w-6xl"
+    >
       <ModelsCatalogue />
     </PageShell>
   );

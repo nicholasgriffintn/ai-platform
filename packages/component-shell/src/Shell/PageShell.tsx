@@ -25,6 +25,7 @@ export interface PageShellProps {
   displayNavBar?: boolean;
   bgClassName?: string;
   projectColour?: string;
+  headerTitleAs?: "h1" | "span";
 }
 
 function PageShellRoot({
@@ -39,6 +40,7 @@ function PageShellRoot({
   displayNavBar,
   bgClassName,
   projectColour,
+  headerTitleAs = "h1",
 }: PageShellProps) {
   const { headerContext, registeredHeader } = usePageShellHeaderRegistry();
 
@@ -59,6 +61,7 @@ function PageShellRoot({
           <div className="min-w-0">
             <PageTitle
               title={effectiveTitle}
+              as={headerTitleAs}
               className="truncate text-sm font-medium text-foreground"
             />
           </div>

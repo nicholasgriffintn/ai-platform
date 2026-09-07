@@ -13,10 +13,7 @@ test("reads as one page and scrolls each section clear of the header", async ({ 
 
   const main = page.getByRole("main");
 
-  await expect(main.getByRole("heading", { level: 1 })).toHaveText([
-    "Models",
-    "Every model, one perch",
-  ]);
+  await expect(main.getByRole("heading", { level: 1 })).toHaveText("Every model, one perch");
 
   const sectionNav = page.getByRole("navigation", { name: "Models sections" });
 
