@@ -90,10 +90,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run --config vitest.config.mts",
-    "test:package": "pnpm build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

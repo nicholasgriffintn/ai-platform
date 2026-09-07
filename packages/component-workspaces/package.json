@@ -24,9 +24,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup",
     "test": "vitest run",
-    "test:package": "pnpm build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

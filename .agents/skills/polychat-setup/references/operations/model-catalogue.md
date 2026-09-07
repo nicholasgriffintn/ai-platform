@@ -23,7 +23,7 @@ Use the family description when a model has no narrower description. Keep provid
 Build the shared schemas before running the tooling. Run the existing Node 24 project toolchain from the repository root:
 
 ```sh
-pnpm --filter @ngriffin_uk/polychat-schemas build
+pnpm exec vp run --filter=@ngriffin_uk/polychat-schemas build
 pnpm --filter @assistant/api models:sync
 pnpm --filter @assistant/api models:sync --write --save-snapshot /tmp/models-dev.json
 pnpm --filter @assistant/api models:sync --snapshot /tmp/models-dev.json

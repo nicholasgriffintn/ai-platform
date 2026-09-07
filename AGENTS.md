@@ -33,7 +33,7 @@ Add model and provider icons through `packages/component-models/src/ModelIcon`: 
 Run the narrowest relevant checks. Root `check`, `typecheck`, `test` and `release:check` are broad CI workflows.
 
 ```sh
-pnpm --filter @ngriffin_uk/polychat-schemas build
+pnpm exec vp run --filter=@ngriffin_uk/polychat-schemas build
 pnpm --filter @assistant/api typecheck
 pnpm --filter @assistant/app typecheck
 pnpm --filter @assistant/app check
@@ -41,6 +41,8 @@ pnpm --filter @assistant/api test <path>
 pnpm exec oxlint <changed dirs>
 pnpm exec oxfmt --check <changed dirs>
 ```
+
+Vite+ runs workspace tasks. Package builds are `build` tasks declared in each package's `vite.config.ts` through `@ngriffin_uk/polychat-config/tasks`, not package.json scripts, so reach them with `vp run` rather than `pnpm --filter`. Everything else remains a package.json script. `vp run` orders tasks by the workspace dependency graph and replays cached results, so repeating a build or typecheck without source changes is close to free.
 
 Only `@assistant/app` has a workspace `check` script. Other workspaces use root oxlint and oxfmt with their own typecheck and tests. Model catalogue files are excluded from lint and format; preserve their conventions and typecheck them. Use `pnpm test:mobile` for iOS.
 
