@@ -1,13 +1,10 @@
 import { MODE_BASE_PATHS } from "@ngriffin_uk/polychat-library-react";
 
-export type DesktopPage = "redirect-to-chat" | "chat" | "not-found";
+import { readPageRoutes, type DesktopPageRoutes } from "./pages/registry";
 
-export interface DesktopRouteDefinition {
-  path: string;
-  page: DesktopPage;
-}
+export const NOT_FOUND_PAGE = "not-found";
 
-const UNMIGRATED_CHAT_PATHS = [
+const UNBUILT_CHAT_PATHS = [
   "attention",
   "files/*",
   "teammates",
@@ -16,13 +13,27 @@ const UNMIGRATED_CHAT_PATHS = [
   "tools/:toolId",
 ];
 
-export const DESKTOP_ROUTE_DEFINITIONS: readonly DesktopRouteDefinition[] = [
-  { path: "/", page: "redirect-to-chat" },
-  { path: MODE_BASE_PATHS.chat, page: "chat" },
-  ...UNMIGRATED_CHAT_PATHS.map<DesktopRouteDefinition>((path) => ({
-    path: `${MODE_BASE_PATHS.chat}/${path}`,
-    page: "not-found",
-  })),
-  { path: `${MODE_BASE_PATHS.chat}/:completionId`, page: "chat" },
-  { path: "*", page: "not-found" },
-];
+export interface DesktopRouteDefinition {
+  path: string;
+  page: string;
+}
+
+export function buildRouteDefinitions(
+  pages: readonly DesktopPageRoutes[],
+): DesktopRouteDefinition[] {
+  const built = new Set(pages.flatMap(({ paths }) => paths));
+
+  return [
+    ...pages.flatMap(({ page, paths }) => paths.map((path) => ({ path, page }))),
+    ...UNBUILT_CHAT_PATHS.map((path) => `${MODE_BASE_PATHS.chat}/${path}`)
+      .filter((path) => !built.has(path))
+      .map((path) => ({ path, page: NOT_FOUND_PAGE })),
+  ];
+}
+
+export const DESKTOP_PAGE_ROUTES = readPageRoutes(
+  import.meta.glob<{ paths: readonly string[] }>("./pages/*/routes.ts", { eager: true }),
+);
+
+export const DESKTOP_ROUTE_DEFINITIONS: readonly DesktopRouteDefinition[] =
+  buildRouteDefinitions(DESKTOP_PAGE_ROUTES);
