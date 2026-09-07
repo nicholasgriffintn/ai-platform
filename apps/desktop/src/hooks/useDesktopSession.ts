@@ -132,6 +132,14 @@ export function useDesktopSession() {
     };
   }, [isAuthenticated, renew]);
 
+  const signOut = useCallback(async () => {
+    setError(null);
+
+    await Promise.allSettled([authService.logout(), tauriDesktopBackend.signOut()]);
+
+    forgetSession();
+  }, [forgetSession]);
+
   const signIn = useCallback(async () => {
     setError(null);
     setSigningIn(true);
@@ -146,5 +154,5 @@ export function useDesktopSession() {
     }
   }, [load]);
 
-  return { isChecking, isSigningIn, error, signIn };
+  return { isChecking, isSigningIn, error, signIn, signOut };
 }

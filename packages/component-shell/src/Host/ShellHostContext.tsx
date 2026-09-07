@@ -4,6 +4,7 @@ export interface ShellHost {
   webBaseUrl: string;
   openAssistant: () => void;
   openSignIn: () => void;
+  signOut: () => void;
   HostDialogs?: ComponentType;
 }
 
