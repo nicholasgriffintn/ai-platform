@@ -246,6 +246,7 @@ export class HomePage extends BasePage {
           states.push(state);
         }
       };
+
       const observer = new MutationObserver(recordState);
       const start = () => {
         observer.observe(document.documentElement, {

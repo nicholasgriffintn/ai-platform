@@ -9,7 +9,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0003: Use scoped resources and explicit authority](decisions/0003-scoped-resources-and-explicit-authority.md)
 - [0004: Render one shell with one user-facing vocabulary](decisions/0004-one-shell-and-one-vocabulary.md)
 - [0031: Run workspace tasks through Vite+](decisions/0031-run-workspace-tasks-through-vite-plus.md)
-- [0032: Ship the navigation shell as preserved modules](decisions/0032-ship-navigation-shell-as-preserved-modules.md)
+- [0032: Ship shared packages as preserved modules](decisions/0032-ship-shared-packages-as-preserved-modules.md)
 
 ## Running a turn
 
