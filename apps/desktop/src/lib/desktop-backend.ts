@@ -22,7 +22,7 @@ import { createAsyncEventQueue } from "@ngriffin_uk/polychat-utility-core";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import z from "zod/v4";
 
-import type { DesktopAnnouncement } from "./attention-announcements";
+import type { DesktopAnnouncement } from "./inbox-announcements";
 import { describeRunFailure } from "./run-failures";
 
 export const desktopDiagnosticsSchema = z.object({

@@ -70,21 +70,28 @@ async function registerSubscription(publicKey: string, requestPermission: boolea
   });
 }
 
-export function useTaskNotifications() {
+export function useTaskNotificationSettings() {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isPro = useChatStore((state) => state.isPro);
+
+  const query = useQuery({
+    queryKey: TASK_NOTIFICATION_SETTINGS_QUERY_KEY,
+    queryFn: getTaskNotificationSettings,
+    enabled: isAuthenticated && isPro,
+  });
+
+  return { settings: query.data, isLoading: query.isLoading, refetch: query.refetch };
+}
+
+export function useTaskNotifications() {
   const queryClient = useQueryClient();
   const [permission, setPermission] = useState<ReturnType<typeof notificationPermission> | null>(
     null,
   );
   const [registrationError, setRegistrationError] = useState<string | null>(null);
 
-  const settings = useQuery({
-    queryKey: TASK_NOTIFICATION_SETTINGS_QUERY_KEY,
-    queryFn: getTaskNotificationSettings,
-    enabled: isAuthenticated && isPro,
-  });
-  const notificationSettings = settings.data;
+  const settings = useTaskNotificationSettings();
+  const notificationSettings = settings.settings;
   const refetchSettings = settings.refetch;
 
   const enable = useMutation({
