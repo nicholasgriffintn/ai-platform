@@ -15,6 +15,7 @@ const EMPTY_DEFINITION: SandboxEnvironmentDefinition = {
   setupCommands: [""],
   resumeCommands: [],
   runtimes: [],
+  environment: [],
   setupTimeoutSeconds: 600,
   services: [],
 };

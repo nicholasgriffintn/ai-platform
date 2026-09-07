@@ -18,6 +18,7 @@ function newService(services: SandboxServiceDefinition[]): SandboxServiceDefinit
     workingDirectory: ".",
     command: "pnpm dev",
     dependencies: [],
+    environment: [],
     startupTimeoutSeconds: 60,
     restartPolicy: { mode: "never", maxRestarts: 0, backoffSeconds: 1 },
   };
