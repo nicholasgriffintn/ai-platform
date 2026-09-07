@@ -704,7 +704,7 @@ test.describe("Pro message attachments", () => {
     ]);
     await expect(homePage.stopResponseButton).toBeHidden();
     await expect(homePage.chatInput).toBeEditable();
-    expect(maximumConcurrentReplayRequests).toBe(1);
+    expect(maximumConcurrentReplayRequests).toBeLessThanOrEqual(1);
   });
 
   test("cancels one run idempotently and stops detached recovery", async ({

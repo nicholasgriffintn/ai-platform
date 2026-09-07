@@ -48,7 +48,7 @@ test.describe("Composer size", () => {
     });
   }
 
-  test("keeps the caret in view while typing at the cap", async ({ homePage, page }) => {
+  test("keeps the caret in view while typing at the cap", async ({ homePage }) => {
     await homePage.navigate("/chat");
     await expect(homePage.chatInput).toBeEditable();
     await homePage.chatInput.fill(LONG_DRAFT);

@@ -7,7 +7,6 @@ test.describe("Keeping a message for later", () => {
 
   test("keeps one message, survives a reload, and releases it again", async ({
     homePage,
-    page,
     polychatApi,
   }) => {
     await homePage.navigate("/chat");
