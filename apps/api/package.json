@@ -61,6 +61,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
+    "@ngriffin_uk/polychat-config": "workspace:^",
     "@types/node": "catalog:",
     "better-sqlite3": "13.0.3",
     "drizzle-kit": "0.31.10",

@@ -19,7 +19,8 @@
     "./tsconfig/react-library": "./tsconfig/react-library.json",
     "./tsconfig/worker": "./tsconfig/worker.json",
     "./vitest/node": "./vitest/node.js",
-    "./vitest/react": "./vitest/react.js"
+    "./vitest/react": "./vitest/react.js",
+    "./vitest/isolation": "./vitest/isolation.js"
   },
   "publishConfig": {
     "access": "public"
