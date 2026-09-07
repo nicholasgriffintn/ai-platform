@@ -312,6 +312,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: 'catalog:'
         version: 5.20260831.1
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../../packages/config
       '@types/node':
         specifier: 'catalog:'
         version: 26.4.0
