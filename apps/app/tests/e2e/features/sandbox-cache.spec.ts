@@ -1,7 +1,29 @@
+import type { SandboxEnvironmentSetup } from "@ngriffin_uk/polychat-schemas";
+
 import { expect, test } from "../fixtures/polychat-test";
 import { SandboxApi } from "../fixtures/sandbox-api";
 import { ProjectEnvironmentPage } from "../page-objects/ProjectEnvironmentPage";
 import { WorkbenchPage } from "../page-objects/WorkbenchPage";
+
+const CACHED_ENVIRONMENT = {
+  source: "polychat",
+  definition: {
+    version: 1,
+    setupCommands: [
+      "node -e \"require('node:fs').writeFileSync('prepared.txt', 'E2E_CACHE_READY')\"",
+    ],
+    resumeCommands: [
+      "node -e \"if(require('node:fs').readFileSync('prepared.txt','utf8')!=='E2E_CACHE_READY')process.exit(1)\"",
+    ],
+    runtimes: [{ name: "node", version: "22" }],
+    setupTimeoutSeconds: 30,
+  },
+} satisfies SandboxEnvironmentSetup;
+
+const SETUP_ONLY_ENVIRONMENT = {
+  ...CACHED_ENVIRONMENT,
+  definition: { ...CACHED_ENVIRONMENT.definition, resumeCommands: [] },
+} satisfies SandboxEnvironmentSetup;
 
 test.describe("Sandbox environment snapshots", () => {
   test.use({ persona: "pro" });
@@ -18,20 +40,7 @@ test.describe("Sandbox environment snapshots", () => {
     const environment = new ProjectEnvironmentPage(page);
     const workbench = new WorkbenchPage(page);
 
-    await sandbox.configureProject({
-      source: "polychat",
-      definition: {
-        version: 1,
-        setupCommands: [
-          "node -e \"require('node:fs').writeFileSync('prepared.txt', 'E2E_CACHE_READY')\"",
-        ],
-        resumeCommands: [
-          "node -e \"if(require('node:fs').readFileSync('prepared.txt','utf8')!=='E2E_CACHE_READY')process.exit(1)\"",
-        ],
-        runtimes: [{ name: "node", version: "22" }],
-        setupTimeoutSeconds: 30,
-      },
-    });
+    await sandbox.configureProject(CACHED_ENVIRONMENT);
     await workPage.reload();
     await workPage.openNewProjectConversation();
     await expect(workbench.dock).toBeVisible();
@@ -53,6 +62,7 @@ test.describe("Sandbox environment snapshots", () => {
     expect(cached.environmentCache).not.toHaveProperty("backupId");
     expect(first).not.toHaveProperty("environmentCache.backupId");
     await environment.navigate(projectUrl);
+    await environment.openSettings();
     await expect(page.getByText("Environment cache", { exact: true })).toBeVisible();
     await expect(page.getByText(/Repo [a-f0-9]+ · Setup [a-f0-9]+/)).toBeVisible();
     await workPage.openNewProjectConversation();
@@ -92,18 +102,7 @@ test.describe("Sandbox environment snapshots", () => {
     await expect(workbench.panel).toContainText("resume");
     await workbench.reload();
     await expect(workbench.panel).toContainText("resume");
-    const setupWithoutResume = await sandbox.saveEnvironment({
-      source: "polychat",
-      definition: {
-        version: 1,
-        setupCommands: [
-          "node -e \"require('node:fs').writeFileSync('prepared.txt', 'E2E_CACHE_READY')\"",
-        ],
-        resumeCommands: [],
-        runtimes: [{ name: "node", version: "22" }],
-        setupTimeoutSeconds: 30,
-      },
-    });
+    const setupWithoutResume = await sandbox.saveEnvironment(SETUP_ONLY_ENVIRONMENT);
 
     expect(setupWithoutResume.status()).toBe(200);
     await workPage.reload();
@@ -141,6 +140,30 @@ test.describe("Sandbox environment snapshots", () => {
     expect(JSON.stringify(fallbackCommands)).not.toContain("readFileSync('prepared.txt'");
     await workbench.selectPane("Proof");
     await expect(workbench.panel).toContainText("setup");
+  });
+
+  test("rebuilds and deletes environment snapshots from project settings", async ({
+    page,
+    workPage,
+    homePage,
+  }) => {
+    test.setTimeout(180_000);
+    await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+    const projectUrl = page.url();
+    const sandbox = new SandboxApi(page.request, workPage.currentProjectId());
+    const environment = new ProjectEnvironmentPage(page);
+
+    await sandbox.configureProject(SETUP_ONLY_ENVIRONMENT);
+    await workPage.reload();
+    await workPage.openNewProjectConversation();
+    await homePage.selectModel("GPT OSS 120B");
+    await homePage.sendMessageAndRequireCompletion(
+      "Polychat sandbox E2E: update README before manual cache controls.",
+    );
+    await expect
+      .poll(async () => (await sandbox.latestRun())?.status, { timeout: 90_000 })
+      .toBe("completed");
+    expect((await sandbox.project()).environmentCache?.status).toBe("ready");
     for (const action of ["Rebuild", "Delete"] as const) {
       await environment.navigate(projectUrl);
       await environment.cacheAction(action);

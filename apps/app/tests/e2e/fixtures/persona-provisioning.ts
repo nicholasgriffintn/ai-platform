@@ -120,3 +120,18 @@ export async function reseedPersonaBilling(
 
   await provisionPersonaSession(persona, seed, billing);
 }
+
+export async function seedLegacyProjectDelivery(
+  seed: string,
+  shouldCommit: boolean,
+): Promise<void> {
+  const identity = personaIdentity(seed);
+  const sessionToken = personaSessionToken("pro", identity);
+
+  await postPersona({
+    identity,
+    persona: "pro",
+    sessionToken,
+    projectCodingLegacy: shouldCommit,
+  });
+}

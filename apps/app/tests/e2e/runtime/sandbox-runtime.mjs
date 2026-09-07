@@ -3,14 +3,25 @@ import { randomUUID } from "node:crypto";
 
 export const SANDBOX_IMAGE = "polychat-e2e-sandbox:0.12.9";
 export const SANDBOX_REPOSITORY = "nicholasgriffintn/polychat-e2e-fixture";
+const SANDBOX_DELIVERY_REPOSITORIES = [
+  "nicholasgriffintn/polychat-e2e-delivery",
+  "nicholasgriffintn/polychat-e2e-delivery-pr-failure",
+  "nicholasgriffintn/polychat-e2e-delivery-default-branch",
+  "nicholasgriffintn/polychat-e2e-delivery-protected",
+  "nicholasgriffintn/polychat-e2e-delivery-protection-change",
+];
+
 export const SANDBOX_REPOSITORIES = [
   SANDBOX_REPOSITORY,
   "nicholasgriffintn/polychat-e2e-fixture-v2",
   "nicholasgriffintn/polychat-e2e-fixture-malformed",
   "nicholasgriffintn/polychat-e2e-fixture-oversized",
+  ...SANDBOX_DELIVERY_REPOSITORIES,
 ];
 export const SANDBOX_INSTALLATION_ID = 987654;
 export const SANDBOX_WORKER_NAME = `polychat-e2e-sandbox-${randomUUID().slice(0, 8)}`;
+const pullRequests = new Map();
+const branchChecks = new Map();
 
 export function stopSandboxContainers() {
   const names = execFileSync("docker", ["ps", "-a", "--format", "{{.Names}}"], { encoding: "utf8" })
@@ -79,6 +90,10 @@ export function mockSandboxGitHubRequest(request) {
     });
   }
 
+  if (request.method === "POST" && url.pathname === "/app/installations/987655/access_tokens") {
+    return Response.json({ message: "Installation revoked" }, { status: 404 });
+  }
+
   if (request.method === "GET" && url.pathname === "/installation/repositories") {
     return Response.json({
       total_count: SANDBOX_REPOSITORIES.length,
@@ -95,6 +110,56 @@ export function mockSandboxGitHubRequest(request) {
         };
       }),
     });
+  }
+
+  const repositoryMatch = /^\/repos\/([^/]+)\/([^/]+)$/.exec(url.pathname);
+
+  if (request.method === "GET" && repositoryMatch) {
+    const repository = `${decodeURIComponent(repositoryMatch[1])}/${decodeURIComponent(repositoryMatch[2])}`;
+
+    return Response.json({
+      default_branch: repository.endsWith("delivery-default-branch") ? "release/e2e" : "main",
+    });
+  }
+
+  const branchMatch = /^\/repos\/([^/]+)\/([^/]+)\/branches\/(.+)$/.exec(url.pathname);
+
+  if (request.method === "GET" && branchMatch) {
+    const repository = `${decodeURIComponent(branchMatch[1])}/${decodeURIComponent(branchMatch[2])}`;
+    const branchName = decodeURIComponent(branchMatch[3]);
+    const checkCount = (branchChecks.get(repository) ?? 0) + 1;
+
+    branchChecks.set(repository, checkCount);
+
+    return Response.json({
+      name: branchName,
+      protected:
+        repository.endsWith("delivery-protected") ||
+        (repository.endsWith("delivery-protection-change") && checkCount > 1),
+    });
+  }
+
+  const pullsMatch = /^\/repos\/([^/]+)\/([^/]+)\/pulls$/.exec(url.pathname);
+
+  if (pullsMatch) {
+    const repository = `${decodeURIComponent(pullsMatch[1])}/${decodeURIComponent(pullsMatch[2])}`;
+    const pullRequestUrl = pullRequests.get(repository);
+
+    if (request.method === "GET") {
+      return Response.json(pullRequestUrl ? [{ html_url: pullRequestUrl }] : []);
+    }
+
+    if (request.method === "POST") {
+      if (repository.endsWith("delivery-pr-failure")) {
+        return Response.json({ message: "E2E pull request failure" }, { status: 503 });
+      }
+
+      const createdUrl = `https://github.com/${repository}/pull/123`;
+
+      pullRequests.set(repository, createdUrl);
+
+      return Response.json({ html_url: createdUrl }, { status: 201 });
+    }
   }
 
   throw new Error(`Unexpected mocked GitHub request: ${request.method} ${url.pathname}`);
@@ -141,7 +206,15 @@ export function resolveSandboxModelTool(body) {
   const multiFile = body.messages?.some(
     (message) => typeof message.content === "string" && message.content.includes("multi-file"),
   );
-  const content = failing ? "Sandbox E2E invalid." : "Sandbox E2E verified.";
+  const customPreparation = body.messages?.some(
+    (message) =>
+      typeof message.content === "string" && message.content.includes("CUSTOM_LOCAL_PREPARATION"),
+  );
+  const content = failing
+    ? "Sandbox E2E invalid."
+    : customPreparation
+      ? "CUSTOM_LOCAL_PREPARATION"
+      : "Sandbox E2E verified.";
   const holdForControls = body.messages?.some(
     (message) =>
       typeof message.content === "string" && message.content.includes("wait for controls"),

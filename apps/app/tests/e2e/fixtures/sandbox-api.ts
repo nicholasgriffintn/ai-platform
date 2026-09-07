@@ -8,6 +8,7 @@ import {
   projectDetailSchema,
   SANDBOX_RUNS_CAPABILITY_ID,
   type SandboxEnvironmentSetup,
+  type SandboxDeliveryPolicy,
 } from "@ngriffin_uk/polychat-schemas";
 import type { APIRequestContext } from "@playwright/test";
 
@@ -19,14 +20,14 @@ export const SANDBOX_E2E_REPOSITORIES = {
   revised: "nicholasgriffintn/polychat-e2e-fixture-v2",
   malformed: "nicholasgriffintn/polychat-e2e-fixture-malformed",
   oversized: "nicholasgriffintn/polychat-e2e-fixture-oversized",
+  delivery: "nicholasgriffintn/polychat-e2e-delivery",
+  deliveryPullRequestFailure: "nicholasgriffintn/polychat-e2e-delivery-pr-failure",
+  deliveryDefaultBranch: "nicholasgriffintn/polychat-e2e-delivery-default-branch",
+  deliveryProtected: "nicholasgriffintn/polychat-e2e-delivery-protected",
+  deliveryProtectionChange: "nicholasgriffintn/polychat-e2e-delivery-protection-change",
 };
 const REPOSITORY = SANDBOX_E2E_REPOSITORIES.base;
-const REPOSITORIES = [
-  SANDBOX_E2E_REPOSITORIES.base,
-  SANDBOX_E2E_REPOSITORIES.revised,
-  SANDBOX_E2E_REPOSITORIES.malformed,
-  SANDBOX_E2E_REPOSITORIES.oversized,
-];
+const REPOSITORIES = Object.values(SANDBOX_E2E_REPOSITORIES);
 const INSTALLATION_ID = 987654;
 
 export class SandboxApi {
@@ -39,38 +40,88 @@ export class SandboxApi {
     environmentSetup?: SandboxEnvironmentSetup,
     timeoutSeconds = 120,
     repository = REPOSITORY,
+    deliveryPolicy: SandboxDeliveryPolicy = { mode: "leave_uncommitted" },
+    installationId = INSTALLATION_ID,
   ) {
+    await this.connectInstallation(installationId);
+    const project = await this.saveEnvironment(
+      environmentSetup,
+      timeoutSeconds,
+      repository,
+      deliveryPolicy,
+      installationId,
+    );
+
+    await requireSuccessfulResponse(project, "Configure the fixture coding environment");
+  }
+
+  async connectInstallation(installationId = INSTALLATION_ID) {
     const connection = await this.request.post(
       `${E2E_API_BASE_URL}/apps/sandbox/connections/auto`,
       {
         headers: { origin: E2E_APP_BASE_URL },
-        data: { installationId: INSTALLATION_ID, repositories: REPOSITORIES },
+        data: { installationId, repositories: REPOSITORIES },
       },
     );
 
     await requireSuccessfulResponse(connection, "Connect the fixture GitHub installation");
-    const project = await this.saveEnvironment(environmentSetup, timeoutSeconds, repository);
-
-    await requireSuccessfulResponse(project, "Configure the fixture coding environment");
   }
 
   async saveEnvironment(
     environmentSetup?: SandboxEnvironmentSetup,
     timeoutSeconds = 120,
     repository = REPOSITORY,
+    deliveryPolicy: SandboxDeliveryPolicy = { mode: "leave_uncommitted" },
+    installationId = INSTALLATION_ID,
   ) {
     return this.request.put(`${E2E_API_BASE_URL}/projects/${this.projectId}`, {
       headers: { origin: E2E_APP_BASE_URL },
       data: {
         codingEnvironment: {
-          installationId: INSTALLATION_ID,
+          installationId,
           repository,
-          deliveryPolicy: { mode: "leave_uncommitted" },
+          deliveryPolicy,
           timeoutSeconds,
           environmentSetup,
         },
       },
     });
+  }
+
+  async replaceConnectionRepositories(repositories: string[], installationId = INSTALLATION_ID) {
+    const response = await this.request.put(
+      `${E2E_API_BASE_URL}/apps/sandbox/connections/${installationId}/repositories`,
+      {
+        headers: { origin: E2E_APP_BASE_URL },
+        data: { repositories },
+      },
+    );
+
+    await requireSuccessfulResponse(response, "Replace fixture repository authority");
+  }
+
+  async redeliverRun(runId: string) {
+    const response = await this.request.post(`${E2E_API_BASE_URL}/__e2e-sandbox-redelivery`, {
+      data: { runId },
+    });
+
+    await requireSuccessfulResponse(response, "Redeliver terminal sandbox task");
+  }
+
+  async redeliveryState(runId: string): Promise<string | undefined> {
+    const response = await this.request.get(`${E2E_API_BASE_URL}/__e2e-sandbox-redelivery`, {
+      params: { runId },
+    });
+
+    if (!response.ok()) {
+      return undefined;
+    }
+
+    const body: unknown = await response.json();
+
+    return body && typeof body === "object" && "status" in body && typeof body.status === "string"
+      ? body.status
+      : undefined;
   }
 
   async latestRun() {

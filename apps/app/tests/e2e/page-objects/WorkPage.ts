@@ -61,7 +61,14 @@ export class WorkPage extends BasePage {
   }
 
   async openProjectSurface(
-    name: "People" | "Governance" | "Files" | "Activity" | "Teammates & tools",
+    name:
+      | "People"
+      | "Governance"
+      | "Files"
+      | "Activity"
+      | "Teammates & tools"
+      | "Experiences"
+      | "Outputs",
   ) {
     await this.clickElement(this.page.getByRole("link", { name, exact: true }));
     const heading =

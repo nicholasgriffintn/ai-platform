@@ -20,15 +20,11 @@ interface DefaultGitHubAppCredentials {
 }
 
 function normaliseRepositories(repositories?: string[]): string[] | undefined {
-  if (!repositories) {
+  if (repositories === undefined) {
     return undefined;
   }
 
   const normalized = repositories.map((repo) => repo.trim().toLowerCase()).filter(Boolean);
-
-  if (normalized.length === 0) {
-    return undefined;
-  }
 
   return Array.from(new Set(normalized));
 }

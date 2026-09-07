@@ -16,6 +16,7 @@ import {
   provisionLoggedOutPersona,
   provisionPersonaSession,
   reseedPersonaBilling,
+  seedLegacyProjectDelivery,
 } from "./persona-provisioning";
 import { PolychatApi } from "./polychat-api";
 
@@ -26,10 +27,15 @@ export interface BillingStateControl {
   set(billing: BillingSeed): Promise<void>;
 }
 
+export interface ProjectStateControl {
+  setLegacyDelivery(shouldCommit: boolean): Promise<void>;
+}
+
 interface PolychatFixtures {
   persona: Persona;
   billing: BillingSeed | null;
   billingState: BillingStateControl;
+  projectState: ProjectStateControl;
   appPage: AppPage;
   authPage: AuthPage;
   billingPage: BillingPage;
@@ -89,6 +95,13 @@ export const test = base.extend<PolychatFixtures>({
 
     await use({
       set: (next: BillingSeed) => reseedPersonaBilling(persona, seed, next),
+    });
+  },
+  projectState: async ({ persona: _persona }, use, testInfo) => {
+    const seed = identitySeed(testInfo);
+
+    await use({
+      setLegacyDelivery: (shouldCommit: boolean) => seedLegacyProjectDelivery(seed, shouldCommit),
     });
   },
   appPage: async ({ page }, use) => use(new AppPage(page)),

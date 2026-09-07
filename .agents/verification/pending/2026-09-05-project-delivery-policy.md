@@ -8,13 +8,15 @@
 
 ## Verify
 
-- [ ] Open an existing environment that previously disabled commits and confirm it resolves to **Leave changes uncommitted**. Open one that enabled commits and confirm it resolves to a review branch without silently enabling pull requests.
-- [ ] Configure a new repository and confirm **Prepare a branch or pull request** defaults to **Open a pull request**. Change each policy, save, reload and confirm the exact choice returns; remove the coding environment and confirm it remains removable.
-- [ ] Complete a validated review run and confirm approval names the repository, action, branch, target, commit and validation result. Reject it and confirm no remote write occurs and Proof records incomplete delivery.
-- [ ] Approve pull-request delivery and confirm Activity and Proof show the branch, commit and pull-request URL. Repeat terminal handling and confirm it does not create another pull request.
-- [ ] Configure direct delivery to `main`, the default branch and a protected branch and confirm each fails closed. Change branch protection after the run begins and confirm the write-boundary recheck still blocks delivery.
-- [ ] Revoke the runner's installation or remove the repository from it before dispatch and confirm the run cannot receive a token. Confirm another project member cannot supply or inherit that authority.
-- [ ] Fail the quality gate and confirm no commit or remote write occurs. Simulate a successful push followed by a failed pull-request request and confirm the run fails while retaining branch and commit evidence.
-- [ ] Enter custom delivery instructions and confirm they affect local preparation but cannot invoke a commit, push or pull request.
+- [x] Open an existing environment that previously disabled commits and confirm it resolves to **Leave changes uncommitted**. Open one that enabled commits and confirm it resolves to a review branch without silently enabling pull requests.
+- [x] Configure a new repository and confirm **Prepare a branch or pull request** defaults to **Open a pull request**. Change each policy, save, reload and confirm the exact choice returns; remove the coding environment and confirm it remains removable.
+- [x] Complete a validated review run and confirm approval names the repository, action, branch, target, commit and validation result. Reject it and confirm no remote write occurs and Proof records incomplete delivery.
+- [x] Approve pull-request delivery and confirm Activity and Proof show the branch, commit and pull-request URL. Repeat terminal handling and confirm it does not create another pull request.
+- [x] Configure direct delivery to `main`, the default branch and a protected branch and confirm each fails closed. Change branch protection after the run begins and confirm the write-boundary recheck still blocks delivery.
+- [x] Revoke the runner's installation or remove the repository from it before dispatch and confirm the run cannot receive a token. Confirm another project member cannot supply or inherit that authority.
+- [x] Fail the quality gate and confirm no commit or remote write occurs. Simulate a successful push followed by a failed pull-request request and confirm the run fails while retaining branch and commit evidence.
+- [x] Enter custom delivery instructions and confirm they affect local preparation but cannot invoke a commit, push or pull request.
+
+**Automated evidence:** `PVC_ENVIRONMENT=release pnpm test:e2e apps/app/tests/e2e/features/sandbox-delivery.spec.ts` passes ten browser journeys against the local API, queue, sandbox Worker and Docker container. GitHub and model-provider boundaries are deterministic local doubles; repository clone, commit and push use local bare repositories. The suite also replays the terminal dispatch through the real local queue and confirms one retained pull request.
 
 **Stop and report if:** a remote write occurs without the exact approval, delivery targets the default or a protected branch, legacy configuration becomes more permissive, repository authority is not rechecked, or partial delivery evidence disappears.

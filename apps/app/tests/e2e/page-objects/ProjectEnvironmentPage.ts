@@ -5,13 +5,14 @@ export class ProjectEnvironmentPage extends BasePage {
   async openSettings() {
     const settings = this.page.getByRole("link", { name: "Project settings", exact: true });
     const edit = this.page.getByRole("button", { name: "Edit coding repository", exact: true });
+    const connect = this.page.getByRole("button", { name: "Connect repository", exact: true });
 
-    await edit.or(settings).first().waitFor();
+    await edit.or(connect).or(settings).first().waitFor();
     if (await settings.isVisible()) {
       await settings.click();
     }
 
-    await edit.waitFor();
+    await edit.or(connect).first().waitFor();
   }
 
   async cacheAction(action: "Rebuild" | "Delete") {
@@ -31,6 +32,43 @@ export class ProjectEnvironmentPage extends BasePage {
 
     await this.openSettings();
     await edit.click();
+  }
+
+  async connect(repository: string) {
+    await this.openSettings();
+    await this.page.getByRole("button", { name: "Connect repository", exact: true }).click();
+    await this.page
+      .getByLabel("GitHub repository", { exact: true })
+      .selectOption({ label: repository });
+  }
+
+  get deliveryPolicy() {
+    return this.page.getByLabel("Delivery policy", { exact: true });
+  }
+
+  get reviewDestination() {
+    return this.page.getByLabel("Review destination", { exact: true });
+  }
+
+  get targetBranch() {
+    return this.page.getByLabel("Target branch", { exact: true });
+  }
+
+  get deliveryInstructions() {
+    return this.page.getByRole("textbox", { name: "Delivery instructions", exact: true });
+  }
+
+  async disconnect() {
+    await this.openSettings();
+    const response = this.page.waitForResponse(
+      (candidate) =>
+        candidate.request().method() === "PUT" &&
+        /\/projects\/[^/]+$/.test(new URL(candidate.url()).pathname),
+    );
+
+    await this.page.getByRole("button", { name: "Disconnect", exact: true }).click();
+    await requireSuccessfulResponse(await response, "Disconnect coding environment");
+    await this.page.getByRole("button", { name: "Connect repository", exact: true }).waitFor();
   }
 
   async configureSetup() {

@@ -53,13 +53,12 @@ export function parseGitHubConnectionData(params: { data: unknown; recordItemId?
     typeof root.webhook_secret === "string" && root.webhook_secret.trim()
       ? root.webhook_secret.trim()
       : undefined;
-  const normalizedRepositories =
-    Array.isArray(root.repositories) && root.repositories.length > 0
-      ? root.repositories
-          .filter((item): item is string => typeof item === "string")
-          .map((item) => item.trim().toLowerCase())
-          .filter(Boolean)
-      : undefined;
+  const normalizedRepositories = Array.isArray(root.repositories)
+    ? root.repositories
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim().toLowerCase())
+        .filter(Boolean)
+    : undefined;
 
   const installationId = root.installation_id;
 
@@ -97,7 +96,7 @@ export function recordAllowsRepo(data: GitHubConnectionRecordData, repo: string)
     return false;
   }
 
-  if (!data.repositories || data.repositories.length === 0) {
+  if (data.repositories === undefined) {
     return true;
   }
 

@@ -166,6 +166,24 @@ describe("github connections", () => {
     ).rejects.toMatchObject({ statusCode: 403 });
   });
 
+  it("rejects every repository when the installation allowlist is explicitly empty", async () => {
+    const getConnection = vi.fn().mockResolvedValue(
+      await createEncryptedRecord({
+        recordId: "record-empty-installation",
+        installationId: 8001,
+        repositories: [],
+      }),
+    );
+    const context = {
+      env: { JWT_SECRET },
+      repositories: { providerConnections: { getConnection } },
+    } as unknown as ServiceContext;
+
+    await expect(
+      getGitHubAppConnectionForUserInstallation(context, USER_ID, 8001, "owner/repo"),
+    ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
   it("lists user connections in updated order", async () => {
     const listConnections = vi.fn().mockResolvedValue([
       {

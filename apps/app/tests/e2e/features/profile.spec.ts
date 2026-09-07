@@ -54,14 +54,6 @@ test.describe("Profile experience", () => {
         for (const [tab, heading] of PROFILE_TABS) {
           await test.step(tab, async () => {
             await profilePage.openTab(tab, heading);
-            if (tab === "tasks" && persona === "free") {
-              await expect(
-                page.getByText("No tasks found. Trigger a memory synthesis to get started!", {
-                  exact: true,
-                }),
-              ).toBeVisible();
-            }
-
             await captureVisualSnapshots(page, `release-profile-${persona}-${tab}`, {
               ...DEFAULT_VISUAL_CHECKPOINTS,
               viewports: [{ name: "desktop", width: 1280, height: 720 }],

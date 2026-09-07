@@ -948,6 +948,9 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
           API_BASE_URL: apiBaseUrl,
           APP_BASE_URL: appBaseUrl,
           SANDBOX_PREVIEW_HOST: `localhost:${port}`,
+          SANDBOX_MAX_CONCURRENT_RUNS: "1000",
+          SANDBOX_MAX_RUNS_PER_DAY: "1000",
+          SANDBOX_MAX_RUN_STARTS_PER_MINUTE: "1000",
           COMPOSIO_USER_NAMESPACE: "e2e",
           COMPOSIO_API_KEY: "e2e-composio-api-key",
           ENV: "development",
@@ -1149,13 +1152,14 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
 					}
 
 	async function provisionPersona(request, env) {
-		const { identity, persona, sessionToken, billing } = await request.json();
+		const { identity, persona, sessionToken, billing, projectCodingLegacy } = await request.json();
 		if (
 			typeof identity !== "string" ||
 			!/^[a-f0-9]{64}$/.test(identity) ||
 			(persona !== "logged-out" && persona !== "free" && persona !== "pro") ||
 			(persona !== "logged-out" && typeof sessionToken !== "string") ||
-			(billing !== undefined && billing !== null && typeof billing !== "object")
+			(billing !== undefined && billing !== null && typeof billing !== "object") ||
+			(projectCodingLegacy !== undefined && typeof projectCodingLegacy !== "boolean")
 		) {
 			return Response.json({ error: "Invalid persona setup request" }, { status: 400 });
 		}
@@ -1221,6 +1225,13 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
 									"INSERT OR IGNORE INTO activity_record (id, created_by_user_id, project_id, capability_id, kind, status, summary, data) VALUES (?, ?, ?, 'release-validation', 'run', 'completed', 'Release validation run completed', '{}')"
 								).bind("e2e-activity-" + identity, userId, projectId),
 							);
+							if (projectCodingLegacy !== undefined) {
+								statements.push(
+									env.DB.prepare(
+										"UPDATE project SET coding_enabled = 1, coding_installation_id = 987654, coding_repository = 'nicholasgriffintn/polychat-e2e-delivery', coding_should_commit = ?, coding_delivery_policy = NULL, coding_timeout_seconds = 120 WHERE id = ?"
+									).bind(projectCodingLegacy ? 1 : 0, projectId),
+								);
+							}
 						}
 
 						statements.push(
@@ -1248,6 +1259,56 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
 						return Response.json({ ...state, event_count: Number(ledger?.event_count || 0) });
 					}
 
+					async function redeliverSandboxRun(request, env) {
+						const { runId } = await request.json();
+						if (typeof runId !== "string" || !/^[A-Za-z0-9_-]{1,160}$/.test(runId)) {
+							return Response.json({ error: "Invalid sandbox run id" }, { status: 400 });
+						}
+						const source = await env.DB.prepare(
+							"SELECT task_type, user_id, project_id, task_data, priority, schedule_type, scheduled_at, max_attempts FROM tasks WHERE task_type = 'sandbox_run_dispatch' AND task_data LIKE ? ORDER BY created_at DESC LIMIT 1"
+						).bind("%" + runId + "%").first();
+						if (!source?.task_data) {
+							return Response.json({ error: "Sandbox dispatch task not found" }, { status: 404 });
+						}
+						const taskId = "e2e-redelivery-" + runId;
+						await env.DB.prepare(
+							"INSERT OR IGNORE INTO tasks (id, task_type, status, priority, user_id, project_id, task_data, schedule_type, scheduled_at, created_by, attempts, max_attempts) VALUES (?, ?, 'queued', ?, ?, ?, ?, ?, ?, 'system', 0, ?)"
+						).bind(
+							taskId,
+							source.task_type,
+							source.priority,
+							source.user_id,
+							source.project_id,
+							source.task_data,
+							source.schedule_type,
+							source.scheduled_at,
+							source.max_attempts,
+						).run();
+						await env.TASK_QUEUE.send({
+							taskId,
+							task_type: source.task_type,
+							user_id: source.user_id,
+							project_id: source.project_id,
+							task_data: JSON.parse(source.task_data),
+							priority: source.priority,
+							schedule_type: source.schedule_type,
+							scheduled_at: source.scheduled_at,
+							max_attempts: source.max_attempts,
+						});
+						return Response.json({ taskId }, { status: 202 });
+					}
+
+					async function sandboxRedeliveryState(request, env) {
+						const runId = new URL(request.url).searchParams.get("runId");
+						if (!runId) {
+							return Response.json({ error: "Sandbox run id is required" }, { status: 400 });
+						}
+						const task = await env.DB.prepare(
+							"SELECT status, error_message FROM tasks WHERE id = ?"
+						).bind("e2e-redelivery-" + runId).first();
+						return task ? Response.json(task) : Response.json({ error: "Redelivery not found" }, { status: 404 });
+					}
+
 					export default {
 						async fetch(request, env) {
 							try {
@@ -1257,6 +1318,12 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
 								}
 								if (request.method === "GET" && url.pathname === "/__e2e-persona-state") {
 									return readAnonymousState(request, env);
+								}
+								if (request.method === "POST" && url.pathname === "/__e2e-sandbox-redelivery") {
+									return redeliverSandboxRun(request, env);
+								}
+								if (request.method === "GET" && url.pathname === "/__e2e-sandbox-redelivery") {
+									return sandboxRedeliveryState(request, env);
 								}
 								const session = await env.DB.prepare(
 									"SELECT user_id FROM session WHERE id = ?"
@@ -1270,10 +1337,14 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
 				`,
         compatibilityDate,
         d1Databases: { DB: "polychat-e2e" },
+        queueProducers: {
+          TASK_QUEUE: { queueName: "polychat-task-queue" },
+        },
         routes: [
           `${apiBaseUrl}/__e2e-ready`,
           `${apiBaseUrl}/__e2e-persona`,
           `${apiBaseUrl}/__e2e-persona-state*`,
+          `${apiBaseUrl}/__e2e-sandbox-redelivery*`,
         ],
       },
     ],

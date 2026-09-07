@@ -70,6 +70,25 @@ describe("GitHub provider connections", () => {
     });
   });
 
+  it("preserves an explicitly empty repository allowlist", async () => {
+    const providerConnections = { upsertConnection: vi.fn().mockResolvedValue(undefined) };
+
+    await upsertGitHubConnectionForUser(context(providerConnections), USER_ID, {
+      installationId: 5002,
+      appId: "123456",
+      privateKey: PRIVATE_KEY,
+      repositories: [],
+    });
+    const saved = providerConnections.upsertConnection.mock.calls[0][0];
+    const decrypted = await decryptGitHubConnectionPayload({
+      jwtSecret: JWT_SECRET,
+      userId: USER_ID,
+      encrypted: saved.encryptedData.encrypted,
+    });
+
+    expect(decrypted).toMatchObject({ repositories: [] });
+  });
+
   it("deletes only the user's matching installation connection", async () => {
     const providerConnections = { deleteConnection: vi.fn().mockResolvedValue(undefined) };
 
