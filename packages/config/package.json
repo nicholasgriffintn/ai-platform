@@ -5,6 +5,7 @@
   "license": "Apache-2.0",
   "files": [
     "tailwind",
+    "tasks",
     "tsconfig",
     "vitest"
   ],
@@ -12,6 +13,10 @@
   "sideEffects": false,
   "exports": {
     "./tailwind/react-dom": "./tailwind/react-dom.cjs",
+    "./tasks": {
+      "types": "./tasks/index.d.ts",
+      "default": "./tasks/index.js"
+    },
     "./tsconfig/base": "./tsconfig/base.json",
     "./tsconfig/library": "./tsconfig/library.json",
     "./tsconfig/node": "./tsconfig/node.json",
