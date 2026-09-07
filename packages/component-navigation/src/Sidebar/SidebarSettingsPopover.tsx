@@ -17,6 +17,7 @@ import {
   Keyboard,
   Loader2,
   LogIn,
+  LogOut,
   Settings2,
   ShieldCheck,
   User,
@@ -185,6 +186,7 @@ export interface SidebarSettingsPopoverProps {
   theme?: SidebarThemeControl;
   onShowKeyboardShortcuts: () => void;
   onSignIn: () => void;
+  onSignOut: () => void;
 }
 
 export function SidebarSettingsPopover({
@@ -198,6 +200,7 @@ export function SidebarSettingsPopover({
   theme,
   onShowKeyboardShortcuts,
   onSignIn,
+  onSignOut,
 }: SidebarSettingsPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -263,6 +266,10 @@ export function SidebarSettingsPopover({
                 <PopoverLink href={links.billing} icon={<WalletCards className="h-4 w-4" />}>
                   Billing
                 </PopoverLink>
+                <button type="button" onClick={onSignOut} className={popoverRowClassName}>
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign out</span>
+                </button>
               </>
             ) : (
               <Button
