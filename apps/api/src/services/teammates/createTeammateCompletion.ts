@@ -3,7 +3,7 @@ import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-sche
 
 import { formatToolCalls } from "~/lib/chat/tools/provider-tool-definitions";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { findModelConfig } from "~/lib/providers/models";
+import { findModelConfig, getDefaultChatModel } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -44,8 +44,16 @@ export async function createTeammateCompletion({
 
   const functionSchemas = await buildTeammateCompletionTools(teammate, serviceContext);
 
-  const modelToUse = teammate.model || body.model;
-  const modelDetails = await findModelConfig(modelToUse || "", env, body.provider);
+  const requestedModel = teammate.model || body.model || undefined;
+  const fallbackModel = requestedModel
+    ? undefined
+    : await getDefaultChatModel(serviceContext.env, user);
+  const modelToUse = requestedModel ?? fallbackModel?.model;
+  const modelDetails = await findModelConfig(
+    modelToUse || "",
+    env,
+    body.provider ?? fallbackModel?.provider,
+  );
 
   if (!modelDetails) {
     throw new AssistantError("Invalid model", ErrorType.PARAMS_ERROR);

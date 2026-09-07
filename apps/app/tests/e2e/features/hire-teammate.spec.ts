@@ -85,7 +85,6 @@ test.describe("Hiring a teammate", () => {
       temperature: "0.2",
       maxSteps: "4",
     });
-    await capabilitiesPage.selectTeammateModel("GPT OSS 120B");
     await capabilitiesPage.createTeammate();
 
     await homePage.navigate("/chat");
