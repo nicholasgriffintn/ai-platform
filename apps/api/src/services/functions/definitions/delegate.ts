@@ -1,7 +1,4 @@
-import {
-  DELEGATION_DEFAULT_TOKEN_BUDGET,
-  DELEGATION_MAX_FAN_OUT,
-} from "@ngriffin_uk/polychat-schemas";
+import { DELEGATION_MAX_FAN_OUT } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import type { FunctionToolDescriptor } from "./types";
@@ -13,12 +10,7 @@ const inlineTeammateSchema = z.object({
 });
 
 const delegationBudgetInputSchema = z.object({
-  max_credit_micros: z
-    .number()
-    .int()
-    .positive()
-    .max(Number.MAX_SAFE_INTEGER)
-    .default(DELEGATION_DEFAULT_TOKEN_BUDGET),
+  max_credit_micros: z.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional(),
   max_steps: z.number().int().positive().max(1000).default(20),
   deadline: z.iso.datetime().optional(),
 });

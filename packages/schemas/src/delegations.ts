@@ -4,8 +4,12 @@ import { chatRunIdSchema } from "./chat-runs.js";
 
 export const DELEGATION_MAX_DEPTH = 1 as const;
 export const DELEGATION_MAX_FAN_OUT = 3 as const;
-export const DELEGATION_DEFAULT_TOKEN_BUDGET = 400_000 as const;
+export const DELEGATION_MAX_CREDIT_SHARE = 0.25 as const;
 export const DELEGATION_RUN_TASK_TYPE = "delegation_run" as const;
+
+export function resolveDelegationCreditCeiling(remainingCreditMicros: number): number {
+  return Math.max(0, Math.floor(remainingCreditMicros * DELEGATION_MAX_CREDIT_SHARE));
+}
 
 export const delegationWaitForSchema = z.enum(["all", "any", "none"]);
 export type DelegationWaitFor = z.infer<typeof delegationWaitForSchema>;

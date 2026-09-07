@@ -1,10 +1,12 @@
 import {
-  DELEGATION_DEFAULT_TOKEN_BUDGET,
   DELEGATION_RUN_TASK_TYPE,
   isMetaToolName,
   readToolIds,
+  resolveDelegationCreditCeiling,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { userCreditActor } from "~/lib/usage/creditActor";
+import { readCreditPosition } from "~/lib/usage/credits";
 import { checkDelegationSpawn } from "~/services/delegations/guards";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireTeammateAccess } from "~/services/teammates/access";
@@ -77,6 +79,29 @@ export const delegate: ApiToolDefinition = {
     const projectId = typeof parent.project_id === "string" ? parent.project_id : null;
     const deadline =
       args.budget?.deadline ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const position = await readCreditPosition({
+      repositories: context.repositories,
+      actor: userCreditActor(user.id),
+      planId: user.plan_id,
+    });
+    const remainingCreditMicros =
+      position.includedCreditMicros +
+      position.graceCreditMicros -
+      position.spentCreditMicros -
+      position.reservedCreditMicros;
+    const ceilingCreditMicros = resolveDelegationCreditCeiling(remainingCreditMicros);
+
+    if (position.enforced && ceilingCreditMicros <= 0) {
+      return {
+        status: "error",
+        name: "delegate",
+        content: "There is not enough remaining credit to give a delegate its own budget.",
+      };
+    }
+
+    const maxCreditMicros = position.enforced
+      ? Math.min(args.budget?.max_credit_micros ?? ceilingCreditMicros, ceilingCreditMicros)
+      : (args.budget?.max_credit_micros ?? ceilingCreditMicros);
 
     await context.repositories.conversations.createConversation(
       childConversationId,
@@ -99,7 +124,7 @@ export const delegate: ApiToolDefinition = {
       goal: args.goal,
       waitFor: args.wait_for,
       budget: {
-        maxCreditMicros: args.budget?.max_credit_micros ?? DELEGATION_DEFAULT_TOKEN_BUDGET,
+        maxCreditMicros,
         maxSteps: args.budget?.max_steps ?? 20,
         deadline,
       },
