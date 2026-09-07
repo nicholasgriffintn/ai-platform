@@ -1,5 +1,4 @@
 import { NoteCardGrid } from "@ngriffin_uk/polychat-component-experiences/content";
-import { SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import {
   ButtonLink,
   CardGridLoadingSkeleton,
@@ -19,9 +18,10 @@ import { NotebookPen, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { useOwnAppChrome } from "~/components/Apps/AppChrome";
-import { createNoteSaver } from "~/components/Apps/Notes/note-saver";
-import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
+import { SignInEmptyState } from "../Account/SignInEmptyState";
+import { useOwnAppChrome } from "./AppChrome";
+import { createNoteSaver } from "./Notes/note-saver";
+import { NoteEditor } from "./Notes/NoteEditor";
 
 export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const navigate = useNavigate();

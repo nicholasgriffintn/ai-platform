@@ -23,8 +23,8 @@ import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { useAutoSave } from "~/components/Apps/Notes/hooks/useAutoSave";
-import { useKeyboardShortcuts } from "~/components/Apps/Notes/hooks/useKeyboardShortcuts";
+import { useAutoSave } from "../Notes/hooks/useAutoSave";
+import { useKeyboardShortcuts } from "../Notes/hooks/useKeyboardShortcuts";
 
 interface NoteEditorProps {
   noteId?: string;
