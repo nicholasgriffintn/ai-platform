@@ -851,13 +851,6 @@ fn announce_attention(
         AnnouncementPlan::Nothing => return Ok(0),
         AnnouncementPlan::Each(items) => {
             for item in items {
-                show(&app, &item.title, &item.body);
-            }
-        }
-        AnnouncementPlan::Summary { count } => {
-            show(&app, "Polychat", &announcements::summary_body(count));
-        }
-    }
 
     store.record_shown(&scope, &unshown, &timestamp())?;
     store.forget_shown(&scope, announcements::LEDGER_LIMIT)?;
@@ -874,7 +867,15 @@ fn set_attention_badge(count: u32, app: tauri::AppHandle) {
     for window in app.webview_windows().values() {
         let _ = window.set_badge_count(if count == 0 {
             None
-        } else {
+    let response = match with_pairing(
+        streaming_client()?
+            .post(target)
+            .json(&chat::chat_body(&endpoint, &request)),
+        &endpoint,
+    )?
+    .send()
+    .await
+    {
             Some(i64::from(count))
         });
     }
