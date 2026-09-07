@@ -1,11 +1,13 @@
+import type { Locator } from "@playwright/test";
+
 import { BasePage } from "./BasePage";
 
 export class ConversationOrganisationPage extends BasePage {
-  item(title: string) {
+  item(title: string | RegExp) {
     return this.page.getByRole("listitem").filter({ hasText: title }).first();
   }
 
-  async openActions(title: string) {
+  async openActions(title: string | RegExp) {
     const item = this.item(title);
 
     await item.hover();
@@ -42,6 +44,60 @@ export class ConversationOrganisationPage extends BasePage {
     await this.openActions(title);
     await this.page.getByRole("menuitem", { name: "Move to group", exact: true }).click();
     await this.page.getByRole("menuitemradio", { name: "No group", exact: true }).click();
+  }
+
+  async snoozeUntilTomorrow(title: string) {
+    await this.openActions(title);
+    await this.page.getByRole("menuitem", { name: "Snooze", exact: true }).click();
+    const update = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "PATCH" &&
+        /\/chat\/completions\/[^/]+\/organisation$/u.test(new URL(response.url()).pathname),
+    );
+
+    await this.page.getByRole("menuitem", { name: "Until tomorrow", exact: true }).click();
+    const response = await update;
+
+    if (!response.ok()) {
+      throw new Error(`Snooze failed with ${response.status()}: ${await response.text()}`);
+    }
+  }
+
+  async clearSnooze(title: string) {
+    await this.openActions(title);
+    await this.page.getByRole("menuitem", { name: "Snooze", exact: true }).click();
+    await this.page.getByRole("menuitem", { name: "Clear snooze", exact: true }).click();
+    await this.item(title).waitFor();
+  }
+
+  async openMoveToGroup(title: string) {
+    await this.openActions(title);
+    await this.page.getByRole("menuitem", { name: "Move to group", exact: true }).click();
+  }
+
+  groupOption(name: string) {
+    return this.page.getByRole("menuitemradio", { name, exact: true });
+  }
+
+  manageGroupsAction() {
+    return this.page.getByRole("menuitem", { name: "Manage groups…", exact: true });
+  }
+
+  async visibleActionNames(title: string | RegExp) {
+    await this.openActions(title);
+
+    return this.page
+      .getByRole("menuitem")
+      .evaluateAll((items) =>
+        items
+          .map((item) => item.textContent?.trim())
+          .filter((name): name is string => Boolean(name)),
+      );
+  }
+
+  async selectSearchResult(result: Locator) {
+    await result.click();
+    await this.page.getByRole("region", { name: "Conversation messages" }).waitFor();
   }
 
   async dismissRenameShortcut(title: string) {

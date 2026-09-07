@@ -10,13 +10,13 @@
 
 - [x] In Chat, open a conversation's actions menu, press `P` and confirm the conversation pins and moves to the top; press `P` again to unpin.
 - [x] With the menu open, press `U` and confirm the unread badge toggles; press `R` and `D` and confirm the rename prompt and delete confirmation appear.
-- [ ] Open Snooze and choose Until tomorrow; confirm the conversation leaves the list and is still found through search, then clear the snooze from there.
+- [x] Open Snooze and choose Until tomorrow; confirm the conversation leaves the list and is still found through search, then clear the snooze from there.
 - [x] Open Move to group, choose Manage groups, create a group and confirm the conversation lands in a new sidebar section named after it. Move it to No group and confirm it returns to the date sections.
-- [ ] In a Work project as a member without owner or admin role, confirm Move to group lists project groups but hides Manage groups, and that a `POST /chat/groups` with that project scope returns 403.
-- [ ] Confirm a local-only conversation's menu shows only Rename and Delete.
+- [x] In a Work project as a member without owner or admin role, confirm Move to group lists project groups but hides Manage groups, and that a `POST /chat/groups` with that project scope returns 403.
+- [x] Confirm a local-only conversation's menu shows only Rename and Delete.
 
 **Stop and report if:** a shortcut fires while a modifier key is held, a group created in one project appears in another, or the migration fails on preview.
 
 ## Automated evidence — 6 September 2026
 
-`features/conversation-organisation.spec.ts` passed in local Chromium. Pin, unread and group state survive reload, their reverse operations succeed, R opens the rename prompt and D opens the deletion confirmation. Alt+P leaves the Pin menu open without invoking it. Project role boundaries, snooze and preview migration remain unconfirmed.
+`features/conversation-organisation.spec.ts`, **3 passed** in local Chromium. Pin, unread and group state survive reload, their reverse operations succeed, R opens the rename prompt and D opens the deletion confirmation. Alt+P leaves the Pin menu open without invoking it. Snooze removes the conversation after leaving it, global search retains a Snoozed result, opening that result restores access to Clear snooze, and the list then restores the conversation. Fix the Pro list merging cached remote conversations back into a server-filtered list while retaining local-only, unsynchronised and currently opened conversations. A real invited project member sees the project group but no Manage groups action, and receives 403 from `POST /chat/groups`; a local-only conversation exposes only Rename and Delete.

@@ -73,6 +73,15 @@ export class PolychatApi {
     return chatRunCommandReceiptResponseSchema.parse(await response.json()).run;
   }
 
+  async createProjectConversationGroupStatus(projectId: string, name: string) {
+    const response = await this.request.post(`${API_BASE_URL}/chat/groups`, {
+      headers: BROWSER_REQUEST_HEADERS,
+      data: { name, scope: { kind: "project", projectId } },
+    });
+
+    return response.status();
+  }
+
   private async exerciseSkillRevisionLifecycle(
     directoryPath: string,
     input: {

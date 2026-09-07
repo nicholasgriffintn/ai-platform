@@ -36,7 +36,14 @@ const CHAT_DETAIL_STALE_TIME = 2 * 60 * 1000;
 const CHAT_QUERY_GC_TIME = 30 * 60 * 1000;
 
 export function useChats(options: ConversationListOptions = {}) {
-  const { isAuthenticated, isPro, localOnlyMode, user } = useChatStore();
+  const {
+    currentConversationId,
+    isAuthenticated,
+    isPro,
+    localOnlyMode,
+    locallyCreatedConversationIds,
+    user,
+  } = useChatStore();
   const localScope = getLocalChatScope(user?.id);
   const queryOptions = useMemo<Omit<ConversationListOptions, "page">>(
     () => ({
@@ -81,14 +88,28 @@ export function useChats(options: ConversationListOptions = {}) {
     }
 
     const remoteIds = new Set(remoteChats.map((chat) => chat.id));
-    const uniqueLocalChats = localChats.filter((chat) => !remoteIds.has(chat.id));
+    const uniqueLocalChats = localChats.filter(
+      (chat) =>
+        !remoteIds.has(chat.id) &&
+        (chat.isLocalOnly ||
+          chat.id === currentConversationId ||
+          Boolean(chat.id && locallyCreatedConversationIds[chat.id])),
+    );
     const remoteTotal = remoteChatsQuery.data?.pages[0]?.total ?? remoteChats.length;
 
     return {
       chats: [...remoteChats, ...uniqueLocalChats],
       total: remoteTotal + uniqueLocalChats.length,
     };
-  }, [remoteChatsQuery.data, localChatsQuery.data, localOnlyMode, isAuthenticated, queryOptions]);
+  }, [
+    remoteChatsQuery.data,
+    localChatsQuery.data,
+    localOnlyMode,
+    isAuthenticated,
+    queryOptions,
+    currentConversationId,
+    locallyCreatedConversationIds,
+  ]);
 
   return {
     data: allChats,
