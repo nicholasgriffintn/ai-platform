@@ -1,5 +1,5 @@
-import { getProjectBasePath } from "./conversation-route";
-import { getPlacePaths } from "./navigation/places";
+import { getProjectBasePath } from "./conversation-route.js";
+import { getPlacePaths } from "./navigation/places.js";
 
 export type FilesTab = "given" | "made" | "memory";
 

@@ -1,7 +1,7 @@
 import { apiService } from "@ngriffin_uk/polychat-library-client";
 
-import { ShareDialog } from "../Content/ShareDialog";
-import { useShellHost } from "../Host/ShellHostContext";
+import { ShareDialog } from "../Content/ShareDialog.js";
+import { useShellHost } from "../Host/ShellHostContext.js";
 
 export interface ConversationShareButtonProps {
   conversationId: string;

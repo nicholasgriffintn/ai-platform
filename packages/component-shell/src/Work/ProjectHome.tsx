@@ -13,12 +13,12 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { PageShell } from "../Shell/PageShell";
-import { ProjectConversationStarter } from "./ProjectConversationStarter";
-import { ProjectHomeHeader } from "./ProjectHomeHeader";
-import { useProjectTemplateSave } from "./useProjectTemplateSave";
-import { useWorkData } from "./WorkDataContext";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
+import { ProjectConversationStarter } from "./ProjectConversationStarter.js";
+import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
+import { useProjectTemplateSave } from "./useProjectTemplateSave.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectHome({
   workspaceId,

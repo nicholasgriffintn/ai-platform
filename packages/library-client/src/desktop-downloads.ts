@@ -1,7 +1,7 @@
 import type { DesktopDownloads } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchApi } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
+import { fetchApi } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
 
 export async function getDesktopDownloads(): Promise<DesktopDownloads | null> {
   const response = await fetchApi("/desktop/downloads", { method: "GET" });

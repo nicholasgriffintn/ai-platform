@@ -13,8 +13,8 @@ import {
 import type { ModelConfigItem, ModelModality } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useMemo } from "react";
 
-import { useModels } from "../chat/useModels";
-import { useWebLLMModels } from "../chat/useWebLLMModels";
+import { useModels } from "../chat/useModels.js";
+import { useWebLLMModels } from "../chat/useWebLLMModels.js";
 
 interface UseConversationModelOptionsOptions {
   excludeCurrentModel?: boolean;

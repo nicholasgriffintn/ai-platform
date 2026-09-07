@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { requireProjectRouteScope } from "./project-route-scope";
+import { requireProjectRouteScope } from "./project-route-scope.js";
 
 describe("project route scope", () => {
   const project = { id: "project-1", workspaceId: "workspace-1" };

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { ToolToggleMenu } from "./ToolToggleMenu";
+import { ToolToggleMenu } from "./ToolToggleMenu.js";
 
 describe("ToolToggleMenu", () => {
   it("keeps toggle pointer events inside the open menu", () => {

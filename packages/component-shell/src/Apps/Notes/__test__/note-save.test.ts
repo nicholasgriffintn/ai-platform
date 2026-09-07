@@ -2,7 +2,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 
-import { createNoteSaver } from "../note-saver";
+import { createNoteSaver } from "../note-saver.js";
 
 const input = (content: string) => ({ title: "Hello", content, metadata: {} });
 

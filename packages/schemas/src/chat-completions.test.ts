@@ -4,7 +4,7 @@ import {
   connectorApprovalIdSchema,
   createChatCompletionsJsonSchema,
   createChatCompletionsResponseSchema,
-} from "./chat-completions";
+} from "./chat-completions.js";
 
 const messages = [{ role: "user" as const, content: "Hello" }];
 

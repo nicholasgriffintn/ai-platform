@@ -1,7 +1,7 @@
 import type { ChatSuggestion as ChatSuggestionView } from "@ngriffin_uk/polychat-utility-react";
 
-import type { SelectableHomeChatModeId } from "../../lib/chatModes";
-import type { FocusRole } from "../../lib/focus-role";
+import type { SelectableHomeChatModeId } from "../../lib/chatModes.js";
+import type { FocusRole } from "../../lib/focus-role.js";
 
 export type ChatSuggestionTier = "capability" | "focus" | "everyday";
 

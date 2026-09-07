@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
-import { getErrorMessage } from "../errors";
+import { getErrorMessage } from "../errors.js";
 
 export const SAVED_MESSAGES_QUERY_KEY = "saved-messages";
 

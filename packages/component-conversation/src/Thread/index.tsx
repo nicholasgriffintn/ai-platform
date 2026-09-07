@@ -58,19 +58,23 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
-import { ConversationComposerDock, ConversationMessageColumn } from "../ConversationColumn";
-import { GoalStatusCard } from "../GoalStatusCard";
-import { PetPerch } from "../PetPerch";
-import { WelcomeScreen } from "../WelcomeScreen";
-import { ChatInput, type ChatInputHandle, type ConversationRunSteering } from "./ChatInput";
-import { ChatRunStatusBanner } from "./ChatRunStatusBanner";
-import { ChatSuggestions } from "./ChatSuggestions";
-import { ComposerBanner } from "./ComposerBanner";
-import { FooterInfo } from "./FooterInfo";
-import { MessageList } from "./MessageList";
-import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
-import { useAutoPlayResponses } from "./useAutoPlayResponses";
-import { useGoalCommands } from "./useGoalCommands";
+import { ConversationComposerDock, ConversationMessageColumn } from "../ConversationColumn.js";
+import { GoalStatusCard } from "../GoalStatusCard.js";
+import { PetPerch } from "../PetPerch.js";
+import { WelcomeScreen } from "../WelcomeScreen.js";
+import {
+  ChatInput,
+  type ChatInputHandle,
+  type ConversationRunSteering,
+} from "./ChatInput/index.js";
+import { ChatRunStatusBanner } from "./ChatRunStatusBanner.js";
+import { ChatSuggestions } from "./ChatSuggestions.js";
+import { ComposerBanner } from "./ComposerBanner/index.js";
+import { FooterInfo } from "./FooterInfo.js";
+import { MessageList } from "./MessageList.js";
+import { useAssistantActionSubmit } from "./useAssistantActionSubmit.js";
+import { useAutoPlayResponses } from "./useAutoPlayResponses.js";
+import { useGoalCommands } from "./useGoalCommands.js";
 
 export interface ThreadModeConfig {
   assistantActionRoutes?: {

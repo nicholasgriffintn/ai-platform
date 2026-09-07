@@ -8,8 +8,8 @@ import {
   executeAssistantAction,
   type AssistantActionExecutionDependencies,
   type AssistantActionExecutionInput,
-} from "./assistant-action-execution";
-import { createAssistantActionConversationUrl } from "./assistant-action-launch";
+} from "./assistant-action-execution.js";
+import { createAssistantActionConversationUrl } from "./assistant-action-launch.js";
 
 interface AssistantActionFlowInput extends AssistantActionExecutionInput {
   conversationPath?: string;

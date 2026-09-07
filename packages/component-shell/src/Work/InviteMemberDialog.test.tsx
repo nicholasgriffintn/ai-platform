@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { InviteMemberDialog } from "./InviteMemberDialog";
+import { InviteMemberDialog } from "./InviteMemberDialog.js";
 
 const reset = vi.fn();
 

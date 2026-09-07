@@ -2,52 +2,52 @@ import { ContentLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-compon
 import { lazy, Suspense } from "react";
 
 const CanvasStudio = lazy(async () => {
-  const module = await import("./Canvas/CanvasStudio");
+  const module = await import("./Canvas/CanvasStudio.js");
 
   return { default: module.CanvasStudio };
 });
 const ReplicateModelDetail = lazy(async () => {
-  const module = await import("./Replicate/ReplicateModelDetail");
+  const module = await import("./Replicate/ReplicateModelDetail.js");
 
   return { default: module.ReplicateModelDetail };
 });
 const ReplicateModels = lazy(async () => {
-  const module = await import("./Replicate/ReplicateModels");
+  const module = await import("./Replicate/ReplicateModels.js");
 
   return { default: module.ReplicateModels };
 });
 const ReplicatePredictionDetail = lazy(async () => {
-  const module = await import("./Replicate/ReplicatePredictionDetail");
+  const module = await import("./Replicate/ReplicatePredictionDetail.js");
 
   return { default: module.ReplicatePredictionDetail };
 });
 const ReplicatePredictions = lazy(async () => {
-  const module = await import("./Replicate/ReplicatePredictions");
+  const module = await import("./Replicate/ReplicatePredictions.js");
 
   return { default: module.ReplicatePredictions };
 });
 const TrainingDashboard = lazy(async () => {
-  const module = await import("./Training/TrainingDashboard");
+  const module = await import("./Training/TrainingDashboard.js");
 
   return { default: module.TrainingDashboard };
 });
 const ArticlesApp = lazy(async () => {
-  const module = await import("./ArticlesApp");
+  const module = await import("./ArticlesApp.js");
 
   return { default: module.ArticlesApp };
 });
 const NotesApp = lazy(async () => {
-  const module = await import("./NotesApp");
+  const module = await import("./NotesApp.js");
 
   return { default: module.NotesApp };
 });
 const RecordingsApp = lazy(async () => {
-  const module = await import("./RecordingsApp");
+  const module = await import("./RecordingsApp.js");
 
   return { default: module.RecordingsApp };
 });
 const StrudelApp = lazy(async () => {
-  const module = await import("./StrudelApp");
+  const module = await import("./StrudelApp.js");
 
   return { default: module.StrudelApp };
 });

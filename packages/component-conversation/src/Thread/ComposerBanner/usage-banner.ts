@@ -1,7 +1,7 @@
 import type { UsageLimits } from "@ngriffin_uk/polychat-library-react";
 import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
 
-import type { ComposerBannerDescriptor } from "../../Composer/ComposerBannerCard";
+import type { ComposerBannerDescriptor } from "../../Composer/ComposerBannerCard.js";
 
 export function buildUsageBanner(usageLimits: UsageLimits | null): ComposerBannerDescriptor | null {
   const credits = usageLimits?.credits;

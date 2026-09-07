@@ -2,8 +2,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useNavigate } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ShellHostProvider, type ShellHost } from "../Host/ShellHostContext";
-import { AppErrorBoundary } from "./AppErrorBoundary";
+import { ShellHostProvider, type ShellHost } from "../Host/ShellHostContext.js";
+import { AppErrorBoundary } from "./AppErrorBoundary.js";
 
 const host = {
   webBaseUrl: "https://polychat.test",

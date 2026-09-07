@@ -1,16 +1,16 @@
 import z from "zod/v4";
 
-import { agentModeSchema, toolPermissionSchema } from "./agent-modes";
-import { chatRunStatusSchema } from "./chat-runs";
-import { goalEvidenceEntrySchema, goalSchema } from "./goals";
-import { outputProvenanceSchema } from "./provenance";
-import { chatRunUsageSchema } from "./usage";
+import { agentModeSchema, toolPermissionSchema } from "./agent-modes.js";
+import { chatRunStatusSchema } from "./chat-runs.js";
+import { goalEvidenceEntrySchema, goalSchema } from "./goals.js";
+import { outputProvenanceSchema } from "./provenance.js";
+import { chatRunUsageSchema } from "./usage.js";
 import {
   answerUserQuestionsSchema,
   userQuestionAnswerSchema,
   userQuestionSetSchema,
   userQuestionsSchema,
-} from "./user-questions";
+} from "./user-questions.js";
 
 export const projectTaskStatusSchema = z.enum([
   "backlog",

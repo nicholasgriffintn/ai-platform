@@ -14,9 +14,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
-import { PageShell } from "../Shell/PageShell";
-import { useWorkData } from "./WorkDataContext";
-import { WorkspaceUsage } from "./WorkspaceUsage";
+import { PageShell } from "../Shell/PageShell.js";
+import { useWorkData } from "./WorkDataContext.js";
+import { WorkspaceUsage } from "./WorkspaceUsage.js";
 
 export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
   const navigate = useNavigate();

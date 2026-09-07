@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 async function loadStore() {
   vi.resetModules();
 
-  const { useThemeStore } = await import("./themeStore");
+  const { useThemeStore } = await import("./themeStore.js");
 
   return useThemeStore;
 }

@@ -1,13 +1,13 @@
 import z from "zod/v4";
 
-import type { ChatRunStatus } from "./chat-runs";
-import { isTerminalChatRunStatus } from "./chat-runs";
+import type { ChatRunStatus } from "./chat-runs.js";
+import { isTerminalChatRunStatus } from "./chat-runs.js";
 import {
   getModelDisplayName,
   getModelInputModalities,
   isImageGenerationOutputModel,
-} from "./model-selection";
-import type { ModelConfigItem } from "./models";
+} from "./model-selection.js";
+import type { ModelConfigItem } from "./models.js";
 
 export const modelAttachmentTypeSchema = z.enum([
   "image",

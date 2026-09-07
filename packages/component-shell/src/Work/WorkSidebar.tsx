@@ -23,12 +23,12 @@ import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useShallow } from "zustand/react/shallow";
 
-import { ConversationGroupsDialog } from "../Conversations/ConversationGroupsDialog";
-import { ConversationItemActions } from "../Conversations/ConversationItemActions";
-import { SidebarFooter } from "../Sidebar/SidebarFooter";
-import { SidebarHeader } from "../Sidebar/SidebarHeader";
-import { useProjectConversationActions } from "./useProjectConversationActions";
-import { useWorkData } from "./WorkDataContext";
+import { ConversationGroupsDialog } from "../Conversations/ConversationGroupsDialog.js";
+import { ConversationItemActions } from "../Conversations/ConversationItemActions.js";
+import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
+import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
+import { useProjectConversationActions } from "./useProjectConversationActions.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 interface WorkSidebarProps {
   workspaceId?: string;

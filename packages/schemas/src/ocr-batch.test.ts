@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ocrBatchStartRequestSchema } from "./ocr-batch";
+import { ocrBatchStartRequestSchema } from "./ocr-batch.js";
 
 describe("ocrBatchStartRequestSchema", () => {
   it("accepts public and private OCR inputs with OCR 4 options", () => {

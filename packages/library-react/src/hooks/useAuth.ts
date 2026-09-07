@@ -2,7 +2,7 @@ import { authService, useChatStore } from "@ngriffin_uk/polychat-library-client"
 import type { UserSettings } from "@ngriffin_uk/polychat-schemas/user-profile";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useUsageStore } from "../state/usageStore";
+import { useUsageStore } from "../state/usageStore.js";
 
 export const AUTH_QUERY_KEYS = {
   authStatus: ["auth", "status"],

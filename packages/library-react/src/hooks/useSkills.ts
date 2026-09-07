@@ -7,8 +7,8 @@ import {
 import type { SkillAvailabilityResponse } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { capabilityCatalogQueryKey } from "../hooks/useCapabilityCatalog";
-import { projectQueryKey } from "../hooks/useWorkspaces";
+import { capabilityCatalogQueryKey } from "../hooks/useCapabilityCatalog.js";
+import { projectQueryKey } from "../hooks/useWorkspaces.js";
 
 export const PERSONAL_SKILLS_QUERY_KEY = ["personalSkills"];
 

@@ -7,8 +7,8 @@ import type {
   GetMemorySynthesisResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchApi } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
+import { fetchApi } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
 
 interface MemorySynthesisHistoryResponse {
   syntheses: MemorySynthesis[];

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import { ChatSidebar } from "../Chat/ChatSidebar";
-import { PageShell } from "./PageShell";
+import { ChatSidebar } from "../Chat/ChatSidebar.js";
+import { PageShell } from "./PageShell.js";
 
 export function ChatPlaceShell({ children }: { children: ReactNode }) {
   return (

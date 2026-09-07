@@ -1,2 +1,2 @@
-export * from "./apiKeys";
-export * from "./userSettings";
+export * from "./apiKeys.js";
+export * from "./userSettings.js";

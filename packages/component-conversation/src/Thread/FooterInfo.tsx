@@ -4,7 +4,7 @@ import {
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
 
-import { ConversationFooterInfo } from "../Composer/ConversationFooterInfo";
+import { ConversationFooterInfo } from "../Composer/ConversationFooterInfo.js";
 
 interface FooterInfoProps {
   isPanelVisible: boolean;

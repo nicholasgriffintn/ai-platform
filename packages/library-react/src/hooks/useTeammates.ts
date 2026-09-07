@@ -8,7 +8,7 @@ import type { TeammateFormData } from "@ngriffin_uk/polychat-utility-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
+import { useCanAccessProFeatures } from "./useCanAccessProFeatures.js";
 
 export const TEAMMATES_QUERY_KEYS = {
   all: ["teammates"],

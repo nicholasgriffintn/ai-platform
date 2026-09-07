@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { isLoopbackUrl } from "./navigation";
+import { isLoopbackUrl } from "./navigation.js";
 
 export const DESKTOP_RUNTIME_PROTOCOL_VERSION = 1 as const;
 

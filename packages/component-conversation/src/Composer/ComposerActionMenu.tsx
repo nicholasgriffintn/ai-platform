@@ -17,14 +17,14 @@ import {
   AssistantActionItemIcon,
   describeAssistantActionItem,
   groupAssistantActionItems,
-} from "./assistantActionPresentation";
-import { useComposerCommandActions } from "./commandActions";
-import { getComposerActionMenuLayout } from "./composerActionMenuLayout";
-import { ComposerActionMenuMobile } from "./ComposerActionMenuMobile";
+} from "./assistantActionPresentation.js";
+import { useComposerCommandActions } from "./commandActions.js";
+import { getComposerActionMenuLayout } from "./composerActionMenuLayout.js";
+import { ComposerActionMenuMobile } from "./ComposerActionMenuMobile.js";
 import {
   composerActionMenuRowClassName as menuRowClassName,
   ComposerActionMenuRow as MenuRow,
-} from "./ComposerActionMenuRow";
+} from "./ComposerActionMenuRow.js";
 
 interface ComposerActionMenuProps {
   autoPlayResponses?: {

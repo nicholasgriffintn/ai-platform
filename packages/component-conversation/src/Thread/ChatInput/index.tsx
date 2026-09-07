@@ -43,26 +43,26 @@ import {
 } from "react";
 import { toast } from "sonner";
 
-import { ComposerCommandActionsProvider } from "../../Composer/commandActions";
-import { ComposerActionMenu } from "../../Composer/ComposerActionMenu";
-import { ComposerCommandChips } from "../../Composer/ComposerCommandSurface";
-import { ComposerDirectiveMenu } from "../../Composer/ComposerDirectiveMenu";
-import { ComposerShell } from "../../Composer/ComposerShell";
-import { ComposerVoiceControls } from "../../Composer/ComposerVoiceControls";
+import { ComposerCommandActionsProvider } from "../../Composer/commandActions.js";
+import { ComposerActionMenu } from "../../Composer/ComposerActionMenu.js";
+import { ComposerCommandChips } from "../../Composer/ComposerCommandSurface.js";
+import { ComposerDirectiveMenu } from "../../Composer/ComposerDirectiveMenu.js";
+import { ComposerShell } from "../../Composer/ComposerShell.js";
+import { ComposerVoiceControls } from "../../Composer/ComposerVoiceControls.js";
 import {
   TokenizedComposerInput,
   type ComposerInputToken,
   type ComposerInputTokenPosition,
   type TokenizedComposerInputHandle,
-} from "../../Composer/TokenizedComposerInput";
-import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
-import { ToolToggles } from "./ChatSettings/ToolToggles";
-import { InlineResponseControls } from "./InlineResponseControls";
-import { ModelSelector } from "./ModelSelector";
-import { uploadComposerAttachment } from "./uploadAttachment";
-import { useComposerCommandController } from "./useComposerCommandController";
-import { useComposerShortcuts } from "./useComposerShortcuts";
-import { useComposerSources } from "./useComposerSources";
+} from "../../Composer/TokenizedComposerInput.js";
+import { ChatSettings as ChatSettingsComponent } from "./ChatSettings/index.js";
+import { ToolToggles } from "./ChatSettings/ToolToggles.js";
+import { InlineResponseControls } from "./InlineResponseControls.js";
+import { ModelSelector } from "./ModelSelector/index.js";
+import { uploadComposerAttachment } from "./uploadAttachment.js";
+import { useComposerCommandController } from "./useComposerCommandController.js";
+import { useComposerShortcuts } from "./useComposerShortcuts.js";
+import { useComposerSources } from "./useComposerSources.js";
 
 export interface ChatInputHandle {
   focus: () => void;

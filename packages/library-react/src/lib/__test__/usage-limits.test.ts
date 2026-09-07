@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { normaliseUsageLimits } from "../../chat/usage-limits";
+import { normaliseUsageLimits } from "../../chat/usage-limits.js";
 
 const credits = {
   included: 500,

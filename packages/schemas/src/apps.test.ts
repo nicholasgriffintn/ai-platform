@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 
-import { contentExtractSchema, recipeInstallationUpdateRequestSchema } from "./apps";
+import { contentExtractSchema, recipeInstallationUpdateRequestSchema } from "./apps.js";
 import {
   buildAssistantActionCatalog,
   type AssistantActionTeammateSource,
-} from "./assistant-actions";
+} from "./assistant-actions.js";
 import {
   deleteEmbeddingSchema,
   insertEmbeddingSchema,
   queryEmbeddingsSchema,
   RESERVED_EMBEDDING_METADATA_KEYS,
-} from "./embeddings";
-import { ocrSchema } from "./ocr";
-import { updateUserSettingsSchema } from "./user/userSettings";
+} from "./embeddings.js";
+import { ocrSchema } from "./ocr.js";
+import { updateUserSettingsSchema } from "./user/userSettings.js";
 
 describe("embedding request schemas", () => {
   it("rejects client-controlled embedding authority", () => {

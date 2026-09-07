@@ -1,7 +1,7 @@
 import type { UsageEventRecord, UsageEventsResponse } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { flattenUsageEventPages, getNextUsageEventsPageParam } from "../chat/usage-ledger";
+import { flattenUsageEventPages, getNextUsageEventsPageParam } from "../chat/usage-ledger.js";
 
 function event(id: string): UsageEventRecord {
   return {

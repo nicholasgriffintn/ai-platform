@@ -5,7 +5,7 @@ import type {
   ConversationListOptions,
   ConversationSortBy,
   ConversationType,
-} from "./conversation-types";
+} from "./conversation-types.js";
 
 export type { ConversationListOptions };
 

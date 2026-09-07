@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
-import { usePetStore } from "../state/stores/petStore";
-import { useUsageStore } from "../state/usageStore";
+import { usePetStore } from "../state/stores/petStore.js";
+import { useUsageStore } from "../state/usageStore.js";
 
 const USAGE_NUDGE_ID = "usage-close-to-limit";
 const GOAL_NUDGE_ID = "goal-stopped";

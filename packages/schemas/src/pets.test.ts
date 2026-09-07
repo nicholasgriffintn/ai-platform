@@ -8,7 +8,7 @@ import {
   type PetModelOverrides,
   type PetSelection,
   type UserPet,
-} from "./pets";
+} from "./pets.js";
 
 const defaultSelection: PetSelection = { pet_source: "preset", pet_id: "ash" };
 

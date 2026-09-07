@@ -12,21 +12,21 @@ import {
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
 import { SearchX } from "lucide-react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs";
-import { PageShell } from "../Shell/PageShell";
-import { AddSkillDialog } from "./AddSkillDialog";
-import { AttachTeammateDialog } from "./AttachTeammateDialog";
-import { CapabilityAddMenu } from "./CapabilityAddMenu";
-import { CapabilityGroups } from "./CapabilityGroups";
-import { HireTeammateDialog } from "./HireTeammateDialog";
-import { SharedTeammatesDialog } from "./SharedTeammatesDialog";
-import { ShareTeammateDialog } from "./ShareTeammateDialog";
-import { useCapabilityAuthoring } from "./useCapabilityAuthoring";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs.js";
+import { PageShell } from "../Shell/PageShell.js";
+import { AddSkillDialog } from "./AddSkillDialog.js";
+import { AttachTeammateDialog } from "./AttachTeammateDialog.js";
+import { CapabilityAddMenu } from "./CapabilityAddMenu.js";
+import { CapabilityGroups } from "./CapabilityGroups.js";
+import { HireTeammateDialog } from "./HireTeammateDialog.js";
+import { SharedTeammatesDialog } from "./SharedTeammatesDialog.js";
+import { ShareTeammateDialog } from "./ShareTeammateDialog.js";
+import { useCapabilityAuthoring } from "./useCapabilityAuthoring.js";
 import {
   useCapabilityLibraryController,
   type CapabilityLibraryScope,
-} from "./useCapabilityLibraryController";
+} from "./useCapabilityLibraryController.js";
 
 export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryProps) {
   const controller = useCapabilityLibraryController(scope);

@@ -2,8 +2,8 @@ import { apiService } from "@ngriffin_uk/polychat-library-client";
 import { useCopyToClipboard } from "@ngriffin_uk/polychat-library-react";
 import type { ComponentProps } from "react";
 
-import { ChatMessageView } from "../../Message/ChatMessageView";
-import { InlineModelSelector } from "../InlineModelSelector";
+import { ChatMessageView } from "../../Message/ChatMessageView.js";
+import { InlineModelSelector } from "../InlineModelSelector.js";
 
 type ChatMessageProps = Omit<
   ComponentProps<typeof ChatMessageView>,

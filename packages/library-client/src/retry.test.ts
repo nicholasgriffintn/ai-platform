@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { ApiError } from "./http";
+import { ApiError } from "./http.js";
 import {
   parseRetryAfterBodyMs,
   parseRetryAfterHeaderMs,
   shouldRetryApiQuery,
   withRetry,
-} from "./retry";
+} from "./retry.js";
 
 describe("shouldRetryApiQuery", () => {
   it("retries transient API failures until the query retry limit", () => {

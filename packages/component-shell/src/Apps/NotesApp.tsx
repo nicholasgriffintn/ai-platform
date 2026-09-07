@@ -18,10 +18,10 @@ import { NotebookPen, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { useOwnAppChrome } from "./AppChrome";
-import { createNoteSaver } from "./Notes/note-saver";
-import { NoteEditor } from "./Notes/NoteEditor";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { useOwnAppChrome } from "./AppChrome.js";
+import { createNoteSaver } from "./Notes/note-saver.js";
+import { NoteEditor } from "./Notes/NoteEditor.js";
 
 export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const navigate = useNavigate();

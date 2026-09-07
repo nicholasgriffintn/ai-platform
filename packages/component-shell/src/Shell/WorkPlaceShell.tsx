@@ -2,12 +2,12 @@ import { isProjectConversationPath } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 import { useLocation, useParams } from "react-router";
 
-import { ConversationProductHeader } from "../Header/ConversationProductHeader";
-import { WorkAccessGate } from "../Work/WorkAccessGate";
-import { useWorkData } from "../Work/WorkDataContext";
-import { WorkDataProvider } from "../Work/WorkDataProvider";
-import { WorkSidebar } from "../Work/WorkSidebar";
-import { PageShell } from "./PageShell";
+import { ConversationProductHeader } from "../Header/ConversationProductHeader.js";
+import { WorkAccessGate } from "../Work/WorkAccessGate.js";
+import { useWorkData } from "../Work/WorkDataContext.js";
+import { WorkDataProvider } from "../Work/WorkDataProvider.js";
+import { WorkSidebar } from "../Work/WorkSidebar.js";
+import { PageShell } from "./PageShell.js";
 
 interface WorkShellProps {
   children: ReactNode;

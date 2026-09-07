@@ -6,8 +6,8 @@ import type {
   UpdateTeammateInput,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchApi } from "../fetch-wrapper";
-import { createApiErrorFromResponse, returnFetchedData } from "../http";
+import { fetchApi } from "../fetch-wrapper.js";
+import { createApiErrorFromResponse, returnFetchedData } from "../http.js";
 
 function toTeammatePayload(data: CreateTeammateInput | UpdateTeammateInput) {
   return {

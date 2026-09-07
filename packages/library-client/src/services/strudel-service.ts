@@ -6,9 +6,9 @@ import type {
   UpdateStrudelPatternInput,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchApi } from "../fetch-wrapper";
-import { returnFetchedData } from "../http";
-import { withProjectScope } from "../project-scope";
+import { fetchApi } from "../fetch-wrapper.js";
+import { returnFetchedData } from "../http.js";
+import { withProjectScope } from "../project-scope.js";
 
 const STRUDEL_BASE_PATH = "/apps/strudel";
 

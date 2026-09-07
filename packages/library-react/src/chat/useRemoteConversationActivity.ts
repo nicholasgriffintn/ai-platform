@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useEffect } from "react";
 
-import { getChatRunLoadingMessage } from "../chat/run-presentation";
+import { getChatRunLoadingMessage } from "../chat/run-presentation.js";
 
 export function useRemoteConversationActivity(
   conversationId: string | undefined,

@@ -3,9 +3,9 @@ import { getRetiredProfileTabPath, useAuthStatus } from "@ngriffin_uk/polychat-l
 import { Loader2 } from "lucide-react";
 import { Navigate, useSearchParams } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { PageShell } from "../Shell/PageShell";
-import { ProfileSidebar, profileSidebarItems } from "./ProfileSidebar";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
+import { ProfileSidebar, profileSidebarItems } from "./ProfileSidebar.js";
 
 export function ProfilePage() {
   const { isAuthenticated, isLoading } = useAuthStatus();

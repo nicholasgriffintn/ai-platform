@@ -6,7 +6,7 @@ import {
   createWorkspaceInvitationSchema,
   updateProjectSchema,
   updateWorkspaceSchema,
-} from "./workspaces";
+} from "./workspaces.js";
 
 describe("workspace boundary schemas", () => {
   it("normalises invitation email addresses before persistence", () => {

@@ -1,6 +1,6 @@
 import { usageLimitsSchema } from "@ngriffin_uk/polychat-schemas";
 
-import type { UsageLimits } from "../state/usageStore";
+import type { UsageLimits } from "../state/usageStore.js";
 
 export function normaliseUsageLimits(value: unknown): UsageLimits | null {
   const parsed = usageLimitsSchema.safeParse(value);

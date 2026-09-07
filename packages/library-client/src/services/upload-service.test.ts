@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { UploadService } from "./upload-service";
+import { UploadService } from "./upload-service.js";
 
 const mocks = vi.hoisted(() => ({
   fetchApi: vi.fn(),
   returnFetchedData: vi.fn(),
 }));
 
-vi.mock("../fetch-wrapper", () => ({
+vi.mock("../fetch-wrapper.js", () => ({
   fetchApi: mocks.fetchApi,
 }));
 
-vi.mock("../http", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../http")>()),
+vi.mock("../http.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../http.js")>()),
   returnFetchedData: mocks.returnFetchedData,
 }));
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getLocalChatScope, isConversationInLocalScope } from "./local-chat-scope";
+import { getLocalChatScope, isConversationInLocalScope } from "./local-chat-scope.js";
 
 const conversation = { id: "conversation-1", title: "Private", messages: [] };
 

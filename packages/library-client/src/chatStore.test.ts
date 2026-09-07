@@ -2,10 +2,10 @@
 
 import { beforeEach, expect, it, vi } from "vitest";
 
-import { apiKeyService } from "./api-key";
-import { useChatStore } from "./chatStore";
+import { apiKeyService } from "./api-key.js";
+import { useChatStore } from "./chatStore.js";
 
-vi.mock("./api-key", () => ({
+vi.mock("./api-key.js", () => ({
   apiKeyService: { getApiKey: vi.fn() },
 }));
 

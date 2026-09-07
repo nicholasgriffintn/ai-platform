@@ -15,11 +15,11 @@ import { Target } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
-import { EditableMessageContent } from "./EditableMessageContent";
-import { MessageActions } from "./MessageActions";
-import { MessageContent } from "./MessageContent";
-import { useResolvedToolCallIds } from "./ResolvedToolCalls";
-import { ToolMessage } from "./ToolMessage";
+import { EditableMessageContent } from "./EditableMessageContent.js";
+import { MessageActions } from "./MessageActions.js";
+import { MessageContent } from "./MessageContent.js";
+import { useResolvedToolCallIds } from "./ResolvedToolCalls.js";
+import { ToolMessage } from "./ToolMessage.js";
 
 const EMPTY_RESOLVED_TOOL_CALL_IDS: ReadonlySet<string> = new Set();
 

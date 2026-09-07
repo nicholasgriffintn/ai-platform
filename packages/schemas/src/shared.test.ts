@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { createChatCompletionsJsonSchema } from "./chat-completions";
-import { messageSchema } from "./shared";
+import { createChatCompletionsJsonSchema } from "./chat-completions.js";
+import { messageSchema } from "./shared.js";
 
 describe("messageSchema", () => {
   it("accepts persisted assistant metadata for durable conversation display", () => {

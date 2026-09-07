@@ -1,6 +1,6 @@
 import { isReadinessFresh, type ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
-import type { ComposerBannerDescriptor } from "../../Composer/ComposerBannerCard";
+import type { ComposerBannerDescriptor } from "../../Composer/ComposerBannerCard.js";
 
 export function buildModelReadinessBanner(
   requestedModelId: string | null,

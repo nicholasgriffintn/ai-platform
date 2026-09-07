@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { mergeRealtimeTranscriptText } from "../../chat/transcript-text";
+import { mergeRealtimeTranscriptText } from "../../chat/transcript-text.js";
 
 describe("realtime transcript text", () => {
   it("replaces cumulative interim snapshots instead of concatenating them", () => {

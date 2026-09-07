@@ -2,7 +2,7 @@ import { shouldShowDevTools } from "@ngriffin_uk/polychat-library-client";
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { useLocation } from "react-router";
 
-import { ErrorPage } from "./ErrorPage";
+import { ErrorPage } from "./ErrorPage.js";
 
 interface ErrorBoundaryViewProps {
   children: ReactNode;

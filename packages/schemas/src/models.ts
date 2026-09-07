@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
-import { readinessSchema } from "./readiness";
-import { reasoningEffortSchema } from "./reasoning";
+import { readinessSchema } from "./readiness.js";
+import { reasoningEffortSchema } from "./reasoning.js";
 
 export const modelModalities = [
   "text",

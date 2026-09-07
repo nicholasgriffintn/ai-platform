@@ -15,9 +15,9 @@ import type {
   UpdateSandboxRunControl,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service";
-import { fetchApi, fetchApiOrThrow } from "./fetch-wrapper";
-import { createApiErrorFromResponse, returnFetchedData } from "./http";
+import { apiService } from "./api-service.js";
+import { fetchApi, fetchApiOrThrow } from "./fetch-wrapper.js";
+import { createApiErrorFromResponse, returnFetchedData } from "./http.js";
 
 export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
   const headers = await apiService.getHeaders();

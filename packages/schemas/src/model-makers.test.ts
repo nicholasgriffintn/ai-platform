@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { MODEL_MAKERS, findModelMaker, resolveModelMakerId } from "./model-makers";
+import { MODEL_MAKERS, findModelMaker, resolveModelMakerId } from "./model-makers.js";
 
 describe("model makers", () => {
   it("matches a family and every variant that extends it", () => {

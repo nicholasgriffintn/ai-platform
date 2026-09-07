@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { processCustomXmlTags, splitContentByArtifacts } from "./message-utils";
+import { processCustomXmlTags, splitContentByArtifacts } from "./message-utils.js";
 
 describe("processCustomXmlTags", () => {
   it("converts a custom tag to a heading", () => {

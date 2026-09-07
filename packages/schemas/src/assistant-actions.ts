@@ -11,13 +11,13 @@ import {
   type RecipeConnectorManifest,
   type RecipeChatSetupResponse,
   type RecipeInstallation,
-} from "./apps";
-import { partialChatCompletionsJsonSchema } from "./chat";
-import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation";
-import { SKILL_LOAD_TOOL_NAME, skillSourceSchema, type SkillSummary } from "./skills";
-import type { TeammateSummary } from "./teammates";
-import { mergeToolIds, normaliseToolIds } from "./tool-ids";
-import { toolIdsSchema, toolIdSchema, type Tool } from "./tools";
+} from "./apps.js";
+import { partialChatCompletionsJsonSchema } from "./chat.js";
+import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation.js";
+import { SKILL_LOAD_TOOL_NAME, skillSourceSchema, type SkillSummary } from "./skills.js";
+import type { TeammateSummary } from "./teammates.js";
+import { mergeToolIds, normaliseToolIds } from "./tool-ids.js";
+import { toolIdsSchema, toolIdSchema, type Tool } from "./tools.js";
 
 export const RECIPE_CONNECTOR_TOOL_ID = "use_recipe_connector";
 

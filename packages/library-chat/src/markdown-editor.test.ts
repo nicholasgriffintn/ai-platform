@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { extractMarkdownOutline } from "./markdown-editor";
+import { extractMarkdownOutline } from "./markdown-editor.js";
 
 describe("extractMarkdownOutline", () => {
   it("reads the level and title of each heading, with its line number", () => {

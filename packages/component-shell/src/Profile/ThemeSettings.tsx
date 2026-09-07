@@ -8,7 +8,7 @@ import {
   useThemePreference,
 } from "@ngriffin_uk/polychat-library-react";
 
-import { ProfileTabSection } from "./ProfileTabLayout";
+import { ProfileTabSection } from "./ProfileTabLayout.js";
 
 export function ThemeSettings() {
   const preference = useThemePreference();

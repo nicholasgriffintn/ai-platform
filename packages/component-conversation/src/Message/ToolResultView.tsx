@@ -5,7 +5,7 @@ import type { ToolResultDisplay } from "@ngriffin_uk/polychat-library-chat/tool-
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 
-import { ToolIcon } from "./toolIcons";
+import { ToolIcon } from "./toolIcons.js";
 
 interface ToolResultViewProps {
   display: ToolResultDisplay;

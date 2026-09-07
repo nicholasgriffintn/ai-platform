@@ -6,7 +6,7 @@ import {
 import { parseRealtimeMessageData } from "@ngriffin_uk/polychat-library-realtime/messages";
 import type { RealtimeLiveWebSocketConfig } from "@ngriffin_uk/polychat-library-realtime/websocket-protocols";
 
-import { createRealtimeWebSocketResumptionController } from "./live-websocket-resumption";
+import { createRealtimeWebSocketResumptionController } from "./live-websocket-resumption.js";
 
 interface RealtimeLiveWebSocketConnectionOptions {
   config: RealtimeLiveWebSocketConfig;

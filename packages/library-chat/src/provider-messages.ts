@@ -4,7 +4,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas/provider-messages";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import type { Message, MessageContent } from "./conversation-types";
+import type { Message, MessageContent } from "./conversation-types.js";
 
 export type ProviderMessage = Omit<Message, "id" | "role"> & {
   id?: string;

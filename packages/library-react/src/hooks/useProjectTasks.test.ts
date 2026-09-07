@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { projectTasksRefetchInterval } from "./useProjectTasks";
+import { projectTasksRefetchInterval } from "./useProjectTasks.js";
 
 describe("projectTasksRefetchInterval", () => {
   it("refreshes queued and running work promptly", () => {

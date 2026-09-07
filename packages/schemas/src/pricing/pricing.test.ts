@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { ModelConfigItem } from "../models";
-import { CLOUDFLARE_RATE_ENTRIES, CONTAINER_INSTANCE_TYPES } from "./cloudflare";
-import { creditMicrosFromCostMicros, creditsFromCreditMicros } from "./constants";
-import { hostedToolRateEntries, rateEntriesFromModelConfig } from "./model-rates";
-import { priceUsage, resolveRateEntry, type RateEntry } from "./rates";
+import type { ModelConfigItem } from "../models.js";
+import { CLOUDFLARE_RATE_ENTRIES, CONTAINER_INSTANCE_TYPES } from "./cloudflare.js";
+import { creditMicrosFromCostMicros, creditsFromCreditMicros } from "./constants.js";
+import { hostedToolRateEntries, rateEntriesFromModelConfig } from "./model-rates.js";
+import { priceUsage, resolveRateEntry, type RateEntry } from "./rates.js";
 
 const OCCURRED_AT = "2026-08-31T12:00:00.000Z";
 

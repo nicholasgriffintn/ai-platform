@@ -4,8 +4,8 @@ import type { EnabledCapability } from "@ngriffin_uk/polychat-library-react";
 import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
 import { Ellipsis, Plus, Trash2 } from "lucide-react";
 
-import { RecipeEventTriggersDialog } from "../Recipes/RecipeEventTriggersDialog";
-import type { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows";
+import { RecipeEventTriggersDialog } from "../Recipes/RecipeEventTriggersDialog.js";
+import type { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
 
 interface RecipeCapabilityCardProps {
   capability?: EnabledCapability;

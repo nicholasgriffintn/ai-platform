@@ -5,7 +5,7 @@ import {
   getCompactionMessageLabel,
   isCompactionMarkerMessage,
   readCompactionStatusMessage,
-} from "./message-compaction-status";
+} from "./message-compaction-status.js";
 
 describe("readCompactionStatusMessage", () => {
   it("suppresses assistant-shaped compaction payloads without rendering them as status rows", () => {

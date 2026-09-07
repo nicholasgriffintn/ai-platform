@@ -1,7 +1,7 @@
 import type { DesktopStreamEvent } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { createFakeDesktopBackend, type DesktopRun } from "./desktop-backend";
+import { createFakeDesktopBackend, type DesktopRun } from "./desktop-backend.js";
 
 const script: DesktopStreamEvent[] = [
   { type: "progress", runId: "seed", state: "loading-model" },

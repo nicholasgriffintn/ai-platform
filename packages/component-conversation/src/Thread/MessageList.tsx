@@ -38,16 +38,16 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { VList, type VListHandle } from "virtua";
 
-import { CompactionStatusRow } from "../CompactionStatusRow";
-import { GoalStatusRow } from "../GoalStatusRow";
-import { isRenderableMessage } from "../Message/ChatMessageView";
-import { MessageSkeleton } from "../Message/MessageSkeleton";
-import { ResolvedToolCallsProvider } from "../Message/ResolvedToolCalls";
-import { StreamActivityIndicator } from "../Message/StreamActivityIndicator";
-import { getMessageListScrollKey } from "../messageListScroll";
-import { ScrollButton } from "../ScrollButton";
-import { ChatMessage } from "./ChatMessage";
-import { useStreamAnnouncement } from "./useStreamAnnouncement";
+import { CompactionStatusRow } from "../CompactionStatusRow.js";
+import { GoalStatusRow } from "../GoalStatusRow.js";
+import { isRenderableMessage } from "../Message/ChatMessageView.js";
+import { MessageSkeleton } from "../Message/MessageSkeleton.js";
+import { ResolvedToolCallsProvider } from "../Message/ResolvedToolCalls.js";
+import { StreamActivityIndicator } from "../Message/StreamActivityIndicator.js";
+import { getMessageListScrollKey } from "../messageListScroll.js";
+import { ScrollButton } from "../ScrollButton.js";
+import { ChatMessage } from "./ChatMessage/index.js";
+import { useStreamAnnouncement } from "./useStreamAnnouncement.js";
 
 const EMPTY_MESSAGES: Message[] = [];
 

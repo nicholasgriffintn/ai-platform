@@ -1,7 +1,10 @@
 import type { ChatRun, ChatRunStatus } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { getChatRunLoadingMessage, getChatRunPresentation } from "../../../chat/run-presentation";
+import {
+  getChatRunLoadingMessage,
+  getChatRunPresentation,
+} from "../../../chat/run-presentation.js";
 
 function run(status: ChatRunStatus): ChatRun {
   return {

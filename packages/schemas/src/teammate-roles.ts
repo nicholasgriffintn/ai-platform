@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
-import type { AgentMode } from "./agent-modes";
-import { normaliseToolIds } from "./tool-ids";
+import type { AgentMode } from "./agent-modes.js";
+import { normaliseToolIds } from "./tool-ids.js";
 
 export const TEAMMATE_KINDS = ["colleague", "bot"] as const;
 

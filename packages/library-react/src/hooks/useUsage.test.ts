@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getUsageBalanceRefreshInterval } from "../chat/useUsage";
+import { getUsageBalanceRefreshInterval } from "../chat/useUsage.js";
 
 describe("getUsageBalanceRefreshInterval", () => {
   it("refreshes an expired usage period promptly", () => {

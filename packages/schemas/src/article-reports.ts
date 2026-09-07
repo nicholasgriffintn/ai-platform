@@ -1,4 +1,4 @@
-import type { Output } from "./outputs";
+import type { Output } from "./outputs.js";
 
 interface VerifiedQuotes {
   verified: boolean;

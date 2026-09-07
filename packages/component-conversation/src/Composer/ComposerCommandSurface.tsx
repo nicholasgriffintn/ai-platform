@@ -8,7 +8,7 @@ import type {
 import { AtSign, Target, X } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { useComposerCommandActions } from "./commandActions";
+import { useComposerCommandActions } from "./commandActions.js";
 
 interface ComposerCommandsState {
   allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];

@@ -1,10 +1,10 @@
-import type { ModelToolDefinition } from "./apps";
+import type { ModelToolDefinition } from "./apps.js";
 import {
   fileSearchToolConfigurationSchema,
   mcpToolConfigurationSchema,
   type FileSearchToolConfiguration,
   type McpToolConfiguration,
-} from "./tool-configurations";
+} from "./tool-configurations.js";
 
 export type ModelToolConfiguration = FileSearchToolConfiguration | McpToolConfiguration;
 

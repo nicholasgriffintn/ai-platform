@@ -26,12 +26,12 @@ import { Loader2, Search, SquarePen } from "lucide-react";
 import { type ReactNode, useCallback, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
-import { ConversationGroupsDialog } from "../Conversations/ConversationGroupsDialog";
-import { ConversationItemActions } from "../Conversations/ConversationItemActions";
-import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection";
-import { PlacesNavLinks } from "../Sidebar/PlacesNavLinks";
-import { SidebarFooter } from "../Sidebar/SidebarFooter";
-import { SidebarHeader } from "../Sidebar/SidebarHeader";
+import { ConversationGroupsDialog } from "../Conversations/ConversationGroupsDialog.js";
+import { ConversationItemActions } from "../Conversations/ConversationItemActions.js";
+import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection.js";
+import { PlacesNavLinks } from "../Sidebar/PlacesNavLinks.js";
+import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
+import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
 
 export interface ChatSidebarProps {
   contentOverride?: ReactNode;

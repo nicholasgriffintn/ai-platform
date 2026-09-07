@@ -1,6 +1,6 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import type { Message } from "./conversation-types";
+import type { Message } from "./conversation-types.js";
 
 export interface StreamActivityTool {
   id: string;

@@ -1,7 +1,7 @@
 import { ButtonLink, PetPreview } from "@ngriffin_uk/polychat-component-ui";
 import { PET_FLOCK } from "@ngriffin_uk/polychat-library-react";
 
-import { DiscoverBand } from "../DiscoverBand";
+import { DiscoverBand } from "../DiscoverBand.js";
 
 export function PetsBand() {
   return (

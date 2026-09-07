@@ -15,9 +15,9 @@ import {
   DEFAULT_LIVE_CONVERSATION_TITLES,
   orderLiveMessages,
   type LiveTurn,
-} from "../chat/live-turn-messages";
-import { mergeRealtimeTranscriptText } from "../chat/transcript-text";
-import { useConversationStorage } from "./useConversationStorage";
+} from "../chat/live-turn-messages.js";
+import { mergeRealtimeTranscriptText } from "../chat/transcript-text.js";
+import { useConversationStorage } from "./useConversationStorage.js";
 
 export interface FinalLiveInputTranscript {
   assistantMessageData: Partial<Message>;

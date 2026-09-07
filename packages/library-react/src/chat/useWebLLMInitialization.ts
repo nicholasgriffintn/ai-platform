@@ -2,9 +2,9 @@ import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-import { useLoadingActions } from "../state/LoadingContext";
-import { useWebLLMModels } from "./useWebLLMModels";
-import { WebLLMService } from "./web-llm";
+import { useLoadingActions } from "../state/LoadingContext.js";
+import { useWebLLMModels } from "./useWebLLMModels.js";
+import { WebLLMService } from "./web-llm.js";
 
 /**
  * Hook for initializing WebLLM local models.

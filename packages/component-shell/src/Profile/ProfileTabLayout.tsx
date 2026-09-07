@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 
-import { PageShell } from "../Shell/PageShell";
+import { PageShell } from "../Shell/PageShell.js";
 type ProfileTabHeaderProps = ComponentProps<typeof PageShell.Header>;
 
 export interface ProfileTabProps {

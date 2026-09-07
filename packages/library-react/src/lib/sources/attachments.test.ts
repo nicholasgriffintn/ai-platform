@@ -3,7 +3,7 @@
 import type { Source } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { createSourceAttachment } from "./attachments";
+import { createSourceAttachment } from "./attachments.js";
 
 const source: Source = {
   id: "source-1",

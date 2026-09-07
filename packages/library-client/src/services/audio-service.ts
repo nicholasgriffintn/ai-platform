@@ -1,5 +1,5 @@
-import { fetchApi } from "../fetch-wrapper";
-import { returnFetchedData } from "../http";
+import { fetchApi } from "../fetch-wrapper.js";
+import { returnFetchedData } from "../http.js";
 
 export interface SpeechGenerationResponse {
   status: "success" | "error";

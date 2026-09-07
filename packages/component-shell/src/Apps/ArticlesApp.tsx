@@ -11,9 +11,9 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { FileText, Plus } from "lucide-react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { ArticleAnalysisSession } from "./Articles/ArticleAnalysisSession";
-import { ArticleView } from "./Articles/View";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { ArticleAnalysisSession } from "./Articles/ArticleAnalysisSession.js";
+import { ArticleView } from "./Articles/View.js";
 
 export function ArticlesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const segments = subpath.split("/").filter(Boolean);

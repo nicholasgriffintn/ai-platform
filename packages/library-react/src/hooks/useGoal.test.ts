@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { goalRefetchInterval } from "../chat/useGoal";
+import { goalRefetchInterval } from "../chat/useGoal.js";
 
 describe("goalRefetchInterval", () => {
   it("keeps checking while a background run owns an active goal", () => {

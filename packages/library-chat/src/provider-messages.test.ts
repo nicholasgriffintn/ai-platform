@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { toProviderMessages } from "./provider-messages";
+import { toProviderMessages } from "./provider-messages.js";
 
 describe("toProviderMessages", () => {
   it("excludes malformed assistant-shaped compaction metadata from provider messages", () => {

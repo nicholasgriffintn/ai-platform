@@ -4,7 +4,7 @@ import type {
 } from "@ngriffin_uk/polychat-library-surface";
 import { useMemo } from "react";
 
-import { useTrackEvent } from "../hooks/use-track-event";
+import { useTrackEvent } from "../hooks/use-track-event.js";
 
 /**
  * Bridges the render packages' host-neutral analytics contract onto the web app's event pipeline,

@@ -1,7 +1,7 @@
 import type { SourceStatus, SourceSummary } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { getProjectConversationSourceIds } from "./project-context";
+import { getProjectConversationSourceIds } from "./project-context.js";
 
 function createSource(id: string, status: SourceStatus = "available"): SourceSummary {
   return {

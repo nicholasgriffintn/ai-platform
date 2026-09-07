@@ -6,7 +6,7 @@ import {
   migrateLegacyAutoMode,
   migrateLegacyMaxOutputTokens,
   migrateLegacySamplingDefaults,
-} from "./chat-settings";
+} from "./chat-settings.js";
 
 describe("chat response token defaults", () => {
   it("drops the previous model's response settings but keeps the rest", () => {

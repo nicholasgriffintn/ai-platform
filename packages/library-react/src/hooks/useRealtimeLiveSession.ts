@@ -54,12 +54,12 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { getErrorMessage } from "../errors";
+import { getErrorMessage } from "../errors.js";
 import {
   createRealtimeSessionController,
   type RealtimeSessionLease,
-} from "../lib/realtime/live-session-controller";
-import { connectRealtimeLiveWebSocket } from "../lib/realtime/live-websocket-connection";
+} from "../lib/realtime/live-session-controller.js";
+import { connectRealtimeLiveWebSocket } from "../lib/realtime/live-websocket-connection.js";
 
 export type { RealtimeLiveStatus } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 

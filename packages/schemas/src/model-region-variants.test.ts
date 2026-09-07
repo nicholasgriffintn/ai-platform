@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { getRegionalModelDisplayName } from "./model-region-variants";
-import type { ModelCatalogItem } from "./models";
+import { getRegionalModelDisplayName } from "./model-region-variants.js";
+import type { ModelCatalogItem } from "./models.js";
 
 function model(name: string): ModelCatalogItem {
   return { id: "model-1", name } as unknown as ModelCatalogItem;

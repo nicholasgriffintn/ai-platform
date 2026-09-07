@@ -1,7 +1,7 @@
 import { goalStatusLabels, type GoalMarkerEvent } from "@ngriffin_uk/polychat-schemas/goals";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import type { Message } from "./conversation-types";
+import type { Message } from "./conversation-types.js";
 
 export interface GoalMessageMarker {
   event?: GoalMarkerEvent;

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { executeRunnableTool } from "./runnable-tools";
+import { executeRunnableTool } from "./runnable-tools.js";
 
 describe("runnable tools api", () => {
   afterEach(() => {

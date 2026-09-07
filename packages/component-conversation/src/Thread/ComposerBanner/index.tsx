@@ -1,7 +1,7 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
-import { ComposerBannerCard } from "../../Composer/ComposerBannerCard";
-import { useComposerBanner } from "./useComposerBanner";
+import { ComposerBannerCard } from "../../Composer/ComposerBannerCard.js";
+import { useComposerBanner } from "./useComposerBanner.js";
 
 interface ComposerBannerProps {
   model?: ModelConfigItem;

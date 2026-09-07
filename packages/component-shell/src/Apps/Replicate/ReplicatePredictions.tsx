@@ -9,7 +9,7 @@ import {
   isAuthenticationError,
 } from "@ngriffin_uk/polychat-library-react";
 
-import { SignInEmptyState } from "../../Account/SignInEmptyState";
+import { SignInEmptyState } from "../../Account/SignInEmptyState.js";
 
 export function ReplicatePredictions({
   basePath,

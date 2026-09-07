@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "./models";
+import type { ModelConfigItem } from "./models.js";
 
 export type ModelSelectorScope = "default" | "text-only" | "live" | "chat-and-live";
 

@@ -7,10 +7,10 @@ import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { MODE_BASE_PATHS, useStartNewChat, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { Search, SquarePen } from "lucide-react";
 
-import { DiscoverSidebarSection } from "./DiscoverSidebarSection";
-import { PlacesNavLinks } from "./PlacesNavLinks";
-import { SidebarFooter } from "./SidebarFooter";
-import { SidebarHeader } from "./SidebarHeader";
+import { DiscoverSidebarSection } from "./DiscoverSidebarSection.js";
+import { PlacesNavLinks } from "./PlacesNavLinks.js";
+import { SidebarFooter } from "./SidebarFooter.js";
+import { SidebarHeader } from "./SidebarHeader.js";
 
 export function StandardSidebarContent() {
   const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();

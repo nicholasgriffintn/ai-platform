@@ -4,7 +4,7 @@ import {
   buildComposerPrefillHref,
   COMPOSER_PREFILL_MAX_LENGTH,
   readComposerPrefill,
-} from "../composer-prefill";
+} from "../composer-prefill.js";
 
 describe("composer prefill links", () => {
   it("escapes a prompt so punctuation survives the round trip", () => {

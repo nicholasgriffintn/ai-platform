@@ -1,8 +1,8 @@
 import z from "zod/v4";
 
-import { capabilityThemeSchema } from "./apps";
-import { modelModalitySchema } from "./models";
-import { apiResponseSchema } from "./shared";
+import { capabilityThemeSchema } from "./apps.js";
+import { modelModalitySchema } from "./models.js";
+import { apiResponseSchema } from "./shared.js";
 
 export const replicateInputFieldSchema = z.object({
   name: z.string(),

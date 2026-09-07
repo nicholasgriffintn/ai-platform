@@ -5,8 +5,8 @@ import {
   PRIVACY_EFFECTIVE_DATE,
 } from "@ngriffin_uk/polychat-library-client";
 
-import { PageShell } from "../Shell/PageShell";
-import { StandardSidebarContent } from "../Sidebar/StandardSidebarContent";
+import { PageShell } from "../Shell/PageShell.js";
+import { StandardSidebarContent } from "../Sidebar/StandardSidebarContent.js";
 export function PrivacyPage() {
   return (
     <PageShell title="Privacy Policy" sidebarContent={<StandardSidebarContent />}>

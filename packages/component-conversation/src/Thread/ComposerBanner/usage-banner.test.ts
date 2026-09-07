@@ -3,7 +3,7 @@
 import type { UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { buildUsageBanner } from "./usage-banner";
+import { buildUsageBanner } from "./usage-banner.js";
 
 function credits(overrides: Partial<UsageCreditsSummary> = {}): UsageCreditsSummary {
   return {

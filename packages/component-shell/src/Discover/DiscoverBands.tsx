@@ -1,12 +1,12 @@
 import { cn, SectionNav } from "@ngriffin_uk/polychat-component-ui";
 
-import { ChatAndWorkBand } from "./bands/ChatAndWorkBand";
-import { KeysBand } from "./bands/KeysBand";
-import { ModelsBand } from "./bands/ModelsBand";
-import { PetsBand } from "./bands/PetsBand";
-import { PricingBand } from "./bands/PricingBand";
-import { TeammatesBand } from "./bands/TeammatesBand";
-import { DISCOVER_SECTIONS } from "./discover-sections";
+import { ChatAndWorkBand } from "./bands/ChatAndWorkBand.js";
+import { KeysBand } from "./bands/KeysBand.js";
+import { ModelsBand } from "./bands/ModelsBand.js";
+import { PetsBand } from "./bands/PetsBand.js";
+import { PricingBand } from "./bands/PricingBand.js";
+import { TeammatesBand } from "./bands/TeammatesBand.js";
+import { DISCOVER_SECTIONS } from "./discover-sections.js";
 
 export interface DiscoverBandsProps {
   variant: "home" | "page";

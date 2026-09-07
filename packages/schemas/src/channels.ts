@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { inboundChannelIdSchema } from "./chat-mode";
+import { inboundChannelIdSchema } from "./chat-mode.js";
 
 export const channelBindingScopeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("personal") }),

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { createConversationTitleExcerpt, DEFAULT_CONVERSATION_TITLE } from "./conversation-title";
+import {
+  createConversationTitleExcerpt,
+  DEFAULT_CONVERSATION_TITLE,
+} from "./conversation-title.js";
 
 describe("createConversationTitleExcerpt", () => {
   it("returns a concise excerpt with normalised whitespace", () => {

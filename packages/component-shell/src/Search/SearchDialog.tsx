@@ -4,7 +4,7 @@ import { useTrackEvent } from "@ngriffin_uk/polychat-library-react";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { useGlobalSearch } from "./useGlobalSearch";
+import { useGlobalSearch } from "./useGlobalSearch.js";
 
 export interface SearchDialogProps {
   isOpen: boolean;

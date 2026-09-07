@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import type { Message, MessageUsage } from "./conversation-types";
+import type { Message, MessageUsage } from "./conversation-types.js";
 
 export type AgentTraceEntryType =
   | "user_turn"

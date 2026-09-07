@@ -17,10 +17,10 @@ import {
 import { Puzzle } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { PageShell } from "../Shell/PageShell";
-import { AppChromeProvider } from "./AppChrome";
-import { AppRuntime } from "./AppRuntime";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
+import { AppChromeProvider } from "./AppChrome.js";
+import { AppRuntime } from "./AppRuntime.js";
 
 export function AppRoute({
   appId,

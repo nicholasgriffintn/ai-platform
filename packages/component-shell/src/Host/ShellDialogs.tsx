@@ -2,13 +2,13 @@ import { useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { lazy, Suspense } from "react";
 
 const MetaAssistantOverlay = lazy(() =>
-  import("../MetaAssistant/MetaAssistantOverlay").then((module) => ({
+  import("../MetaAssistant/MetaAssistantOverlay.js").then((module) => ({
     default: module.MetaAssistantOverlay,
   })),
 );
 
 const NewProjectConversationDialog = lazy(() =>
-  import("../Work/NewProjectConversationDialog").then((module) => ({
+  import("../Work/NewProjectConversationDialog.js").then((module) => ({
     default: module.NewProjectConversationDialog,
   })),
 );

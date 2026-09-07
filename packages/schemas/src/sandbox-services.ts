@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { sandboxCommandSchema } from "./sandbox-command";
+import { sandboxCommandSchema } from "./sandbox-command.js";
 
 export const sandboxServiceNameSchema = z
   .string()

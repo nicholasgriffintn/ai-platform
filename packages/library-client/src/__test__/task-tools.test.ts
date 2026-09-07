@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { SANDBOX_TASK_TOOL_NAME, getSandboxTaskToolNames } from "../task-tools";
+import { SANDBOX_TASK_TOOL_NAME, getSandboxTaskToolNames } from "../task-tools.js";
 
 describe("sandbox task tools", () => {
   it("exposes one tool whatever the task type, because the type is an argument", () => {

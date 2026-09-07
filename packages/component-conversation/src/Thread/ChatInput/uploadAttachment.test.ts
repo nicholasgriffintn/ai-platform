@@ -2,7 +2,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { uploadComposerAttachment } from "./uploadAttachment";
+import { uploadComposerAttachment } from "./uploadAttachment.js";
 
 const mocks = vi.hoisted(() => ({
   uploadFile: vi.fn(),

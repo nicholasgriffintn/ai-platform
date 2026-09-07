@@ -3,7 +3,7 @@ import { useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { KeyRound, Lock, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { DiscoverBand } from "../DiscoverBand";
+import { DiscoverBand } from "../DiscoverBand.js";
 
 const POINTS: { icon: ReactNode; title: string; body: string }[] = [
   {

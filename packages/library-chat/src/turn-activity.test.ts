@@ -4,7 +4,7 @@ import {
   applyTurnActivityEvent,
   createTurnActivityProjection,
   markTurnActivityReconnecting,
-} from "./turn-activity";
+} from "./turn-activity.js";
 
 describe("turn activity projection", () => {
   it("projects model preparation, reasoning and response generation", () => {

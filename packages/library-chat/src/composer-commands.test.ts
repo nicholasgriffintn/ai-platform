@@ -7,7 +7,7 @@ import {
   matchesComposerCommand,
   removeComposerDirective,
   replaceComposerDirectiveWithCursor,
-} from "./composer-commands";
+} from "./composer-commands.js";
 
 describe("composer command parsing", () => {
   it.each([8, 12])(

@@ -10,8 +10,11 @@ import {
   getCapabilityLibraryPath,
   getCapabilityOpenPath,
   PERSONAL_SURFACE,
-} from "../lib/capability-surfaces";
-import { getPersonalConversationPath, getProjectConversationPath } from "../lib/conversation-route";
+} from "../lib/capability-surfaces.js";
+import {
+  getPersonalConversationPath,
+  getProjectConversationPath,
+} from "../lib/conversation-route.js";
 
 export type GlobalSearchResultKind = SearchResultKind;
 

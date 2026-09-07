@@ -5,7 +5,7 @@ import {
   hasValidCompactionPart,
   isCompactionMarkerMessage,
   normaliseMessageParts,
-} from "./message-parts";
+} from "./message-parts.js";
 
 describe("normaliseMessageParts", () => {
   it("normalises persisted snake-case tool part identifiers", () => {

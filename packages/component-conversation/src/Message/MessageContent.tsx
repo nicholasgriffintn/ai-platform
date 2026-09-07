@@ -27,11 +27,11 @@ import {
 import { File, FileText, Loader2, Volume2 } from "lucide-react";
 import { Fragment, type ReactNode, memo, useMemo } from "react";
 
-import { CitationList } from "./CitationList";
-import { ReasoningSection } from "./ReasoningSection";
-import { useResolvedToolCallIds } from "./ResolvedToolCalls";
-import { SearchGroundingSection } from "./SearchGroundingSection";
-import { ToolResultView } from "./ToolResultView";
+import { CitationList } from "./CitationList.js";
+import { ReasoningSection } from "./ReasoningSection.js";
+import { useResolvedToolCallIds } from "./ResolvedToolCalls.js";
+import { SearchGroundingSection } from "./SearchGroundingSection.js";
+import { ToolResultView } from "./ToolResultView.js";
 
 interface MessageContentProps {
   message: Message;

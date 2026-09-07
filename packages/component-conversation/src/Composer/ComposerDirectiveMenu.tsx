@@ -11,9 +11,9 @@ import {
   AssistantActionItemIcon,
   describeAssistantActionItem,
   groupAssistantActionItems,
-} from "./assistantActionPresentation";
-import { useComposerCommandActions } from "./commandActions";
-import { ComposerActionMenuRow } from "./ComposerActionMenuRow";
+} from "./assistantActionPresentation.js";
+import { useComposerCommandActions } from "./commandActions.js";
+import { ComposerActionMenuRow } from "./ComposerActionMenuRow.js";
 
 interface ComposerDirectiveMenuProps {
   activeSuggestionIndex?: number;

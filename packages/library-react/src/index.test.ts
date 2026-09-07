@@ -7,7 +7,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { createPolychatQueryClient, createSurfaceControlsContext } from "./index";
+import { createPolychatQueryClient, createSurfaceControlsContext } from "./index.js";
 
 describe("createPolychatQueryClient", () => {
   it("provides stable defaults while allowing host overrides", () => {

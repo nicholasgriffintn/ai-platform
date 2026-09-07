@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { filterUnavailableModelToolSelections, getModelToolOptions } from "./model-tools";
+import { filterUnavailableModelToolSelections, getModelToolOptions } from "./model-tools.js";
 
 const toolDefinitions = [
   {

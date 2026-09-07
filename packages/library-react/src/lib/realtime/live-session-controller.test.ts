@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { createRealtimeSessionController } from "./live-session-controller";
+import { createRealtimeSessionController } from "./live-session-controller.js";
 
 describe("realtime session controller", () => {
   afterEach(() => {

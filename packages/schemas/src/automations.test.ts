@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createAutomationInputSchema, describeCronExpression } from "./automations";
+import { createAutomationInputSchema, describeCronExpression } from "./automations.js";
 
 describe("describeCronExpression", () => {
   it("says a weekday morning schedule in words", () => {

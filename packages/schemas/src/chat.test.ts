@@ -6,7 +6,7 @@ import {
   getChatCompletionMessagesResponseSchema,
   getMessageResponseSchema,
   submitChatCompletionFeedbackJsonSchema,
-} from "./chat";
+} from "./chat.js";
 
 describe("chat schemas", () => {
   it("accepts only thumb feedback and bounded optional scores", () => {

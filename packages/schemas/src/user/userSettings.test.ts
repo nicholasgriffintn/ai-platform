@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { updateUserSettingsSchema } from "./userSettings";
+import { updateUserSettingsSchema } from "./userSettings.js";
 
 describe("updateUserSettingsSchema", () => {
   it("accepts each supported guardrail provider", () => {

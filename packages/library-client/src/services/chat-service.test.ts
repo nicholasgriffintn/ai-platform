@@ -1,7 +1,7 @@
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ChatService } from "./chat-service";
+import { ChatService } from "./chat-service.js";
 
 function createSseResponse(events: string[]): Response {
   const encoder = new TextEncoder();

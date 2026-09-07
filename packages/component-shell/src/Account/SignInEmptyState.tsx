@@ -1,7 +1,7 @@
 import { SignInEmptyState as ControlledSignInEmptyState } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
 
-import { useShellHost } from "../Host/ShellHostContext";
+import { useShellHost } from "../Host/ShellHostContext.js";
 
 interface SignInEmptyStateProps {
   title?: ReactNode;

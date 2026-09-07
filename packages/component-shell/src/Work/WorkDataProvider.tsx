@@ -1,7 +1,7 @@
 import { useProject, useWorkspace, useWorkspaces } from "@ngriffin_uk/polychat-library-react";
 import { useMemo, type ReactNode } from "react";
 
-import { WorkContext } from "./WorkDataContext";
+import { WorkContext } from "./WorkDataContext.js";
 
 export function WorkDataProvider({
   children,

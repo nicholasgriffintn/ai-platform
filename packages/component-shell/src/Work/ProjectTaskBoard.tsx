@@ -21,11 +21,11 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { PageShell } from "../Shell/PageShell";
-import { ProjectHomeHeader } from "./ProjectHomeHeader";
-import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates";
-import { useWorkData } from "./WorkDataContext";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
+import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
+import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectTaskBoard({
   workspaceId,

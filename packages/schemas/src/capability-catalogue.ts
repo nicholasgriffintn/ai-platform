@@ -5,8 +5,8 @@ import {
   projectExperienceDefinitionSchema,
   recipeCategorySchema,
   recipeKindSchema,
-} from "./apps";
-import { toolSchema } from "./tools";
+} from "./apps.js";
+import { toolSchema } from "./tools.js";
 
 export const recipeCatalogueSummarySchema = z.object({
   id: z.string(),

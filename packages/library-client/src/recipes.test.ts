@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { installAssistantRecipe, invokeAssistantRecipe } from "./recipes";
+import { installAssistantRecipe, invokeAssistantRecipe } from "./recipes.js";
 
 describe("recipes api", () => {
   afterEach(() => {

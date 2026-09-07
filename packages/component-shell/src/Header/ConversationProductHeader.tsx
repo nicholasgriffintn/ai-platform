@@ -8,9 +8,9 @@ import { API_BASE_URL, useChatStore } from "@ngriffin_uk/polychat-library-client
 import { useChat } from "@ngriffin_uk/polychat-library-react";
 import { useMemo } from "react";
 
-import { ConversationShareButton } from "./ConversationShareButton";
-import { ConversationThreadNavigation } from "./ConversationThreadNavigation";
-import { ProductModeHeader } from "./ProductModeHeader";
+import { ConversationShareButton } from "./ConversationShareButton.js";
+import { ConversationThreadNavigation } from "./ConversationThreadNavigation.js";
+import { ProductModeHeader } from "./ProductModeHeader.js";
 
 export interface ConversationProductHeaderProps {
   projectColour?: string;

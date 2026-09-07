@@ -42,7 +42,7 @@ import type {
 import { Activity, Boxes, ListChecks, Server } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
-import { SignInEmptyState } from "../../Account/SignInEmptyState";
+import { SignInEmptyState } from "../../Account/SignInEmptyState.js";
 
 const EMPTY_MODELS: TrainingModelDefinition[] = [];
 const EMPTY_JOBS: TrainingJob[] = [];

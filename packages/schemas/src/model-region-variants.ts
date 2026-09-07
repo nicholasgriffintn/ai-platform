@@ -1,5 +1,5 @@
-import { getModelDisplayName } from "./model-selection";
-import type { ModelCatalogItem } from "./models";
+import { getModelDisplayName } from "./model-selection.js";
+import type { ModelCatalogItem } from "./models.js";
 
 const BEDROCK_PROVIDER = "bedrock";
 const BEDROCK_REGION_LABELS = {

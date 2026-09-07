@@ -1,8 +1,8 @@
 import type { GlobalSearchResponse } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service";
-import { fetchApiOrThrow } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
+import { apiService } from "./api-service.js";
+import { fetchApiOrThrow } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
 
 export async function searchPolychat(query: string, limit = 8): Promise<GlobalSearchResponse> {
   const searchParams = new URLSearchParams({ query, limit: String(limit) });

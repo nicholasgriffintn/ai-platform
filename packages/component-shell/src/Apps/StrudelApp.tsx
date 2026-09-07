@@ -23,8 +23,8 @@ import { Music2, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { StrudelCreateStudio } from "./Strudel/StrudelCreateStudio";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { StrudelCreateStudio } from "./Strudel/StrudelCreateStudio.js";
 
 const STARTER_PATTERN = 's("bd sd, hh*8").bank("RolandTR909").gain(0.8)';
 

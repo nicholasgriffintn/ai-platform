@@ -9,11 +9,11 @@ import { useTaskAttention, isAuthenticationError } from "@ngriffin_uk/polychat-l
 import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useState } from "react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { useShellHost } from "../Host/ShellHostContext";
-import { PageShell } from "../Shell/PageShell";
-import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
-import { useWorkData } from "./WorkDataContext";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { useShellHost } from "../Host/ShellHostContext.js";
+import { PageShell } from "../Shell/PageShell.js";
+import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function WorkOverview() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);

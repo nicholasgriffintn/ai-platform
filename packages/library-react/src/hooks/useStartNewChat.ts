@@ -2,10 +2,10 @@ import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useCallback } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
-import { getProjectChatPath } from "../lib/conversation-route";
-import { getProductMode, MODE_BASE_PATHS } from "../lib/navigation/places";
-import { useUIStore } from "../state/stores/uiStore";
-import { useTrackEvent } from "./use-track-event";
+import { getProjectChatPath } from "../lib/conversation-route.js";
+import { getProductMode, MODE_BASE_PATHS } from "../lib/navigation/places.js";
+import { useUIStore } from "../state/stores/uiStore.js";
+import { useTrackEvent } from "./use-track-event.js";
 
 export function useStartNewChat() {
   const navigate = useNavigate();

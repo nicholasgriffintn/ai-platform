@@ -1,18 +1,18 @@
 import { AccountSidebarShell } from "@ngriffin_uk/polychat-component-account";
 import { useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
 
-import { SidebarFooter } from "../Sidebar/SidebarFooter";
-import { SidebarHeader } from "../Sidebar/SidebarHeader";
-import { ProfileAccountTab } from "./Tabs/ProfileAccountTab";
-import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab";
-import { ProfileBillingTab } from "./Tabs/ProfileBillingTab";
-import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
-import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab";
-import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab";
-import { ProfilePetsTab } from "./Tabs/ProfilePetsTab";
-import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab";
-import { ProfileSandboxTab } from "./Tabs/ProfileSandboxTab";
-import { ProfileTrainingTab } from "./Tabs/ProfileTrainingTab";
+import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
+import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
+import { ProfileAccountTab } from "./Tabs/ProfileAccountTab.js";
+import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab.js";
+import { ProfileBillingTab } from "./Tabs/ProfileBillingTab.js";
+import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab.js";
+import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab.js";
+import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab.js";
+import { ProfilePetsTab } from "./Tabs/ProfilePetsTab.js";
+import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab.js";
+import { ProfileSandboxTab } from "./Tabs/ProfileSandboxTab.js";
+import { ProfileTrainingTab } from "./Tabs/ProfileTrainingTab.js";
 
 interface ProfileSidebarItem {
   id: string;

@@ -3,7 +3,7 @@ import { useTrackEvent, usePasskeys } from "@ngriffin_uk/polychat-library-react"
 import { KeyRound } from "lucide-react";
 import { useEffect } from "react";
 
-import { ProfileTab } from "../ProfileTabLayout";
+import { ProfileTab } from "../ProfileTabLayout.js";
 
 export function ProfilePasskeysTab() {
   const { trackEvent } = useTrackEvent();

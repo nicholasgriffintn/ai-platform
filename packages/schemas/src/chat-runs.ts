@@ -1,11 +1,11 @@
 import z from "zod/v4";
 
-import { chatContextSnapshotSchema } from "./chat-context";
-import { chatRetrySnapshotSchema } from "./chat-retries";
-import { normaliseCompactionStatusMessage } from "./compaction-status";
-import { messagePartsSchema } from "./message-parts";
-import { messageRoleSchema } from "./shared";
-import { chatRunUsageSchema } from "./usage";
+import { chatContextSnapshotSchema } from "./chat-context.js";
+import { chatRetrySnapshotSchema } from "./chat-retries.js";
+import { normaliseCompactionStatusMessage } from "./compaction-status.js";
+import { messagePartsSchema } from "./message-parts.js";
+import { messageRoleSchema } from "./shared.js";
+import { chatRunUsageSchema } from "./usage.js";
 
 export const CHAT_RUN_PROTOCOL_VERSION = 1 as const;
 export const CHAT_RUN_EVENT_PROTOCOL_VERSION = 1 as const;

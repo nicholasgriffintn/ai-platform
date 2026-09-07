@@ -13,7 +13,7 @@ import {
   RECIPE_INSTALLATIONS_QUERY_KEY,
   useInstallAssistantRecipe,
   useUpdateRecipeInstallation,
-} from "./useRecipes";
+} from "./useRecipes.js";
 
 const mocks = vi.hoisted(() => ({
   installAssistantRecipe: vi.fn(),
@@ -29,7 +29,7 @@ vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   updateRecipeInstallation: mocks.updateRecipeInstallation,
 }));
 
-vi.mock("./useCanAccessProFeatures", () => ({
+vi.mock("./useCanAccessProFeatures.js", () => ({
   useCanAccessProFeatures: () => true,
 }));
 

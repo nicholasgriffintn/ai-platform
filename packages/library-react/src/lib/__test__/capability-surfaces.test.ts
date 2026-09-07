@@ -12,7 +12,7 @@ import {
   getProjectSurface,
   PERSONAL_SURFACE,
   type EnabledCapability,
-} from "../capability-surfaces";
+} from "../capability-surfaces.js";
 
 const notes: ProjectExperienceDefinition = {
   id: "notes",

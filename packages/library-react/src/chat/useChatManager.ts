@@ -19,22 +19,22 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
-import { prepareUserMessage } from "../chat/prepare-user-message";
+import { prepareUserMessage } from "../chat/prepare-user-message.js";
 import {
   createTemporaryConversationTitle,
   isPlaceholderConversationTitle,
-} from "../chat/title-source";
-import { upsertConversationInChatCaches } from "../conversation-cache";
-import { getErrorMessage } from "../errors";
-import { useConversationScope } from "../state/conversation-scope";
-import { useLoadingActions } from "../state/LoadingContext";
-import { useGenerateTitle } from "./useChat";
-import { useConversationActions } from "./useConversationActions";
-import { useConversationStorage } from "./useConversationStorage";
-import { useMessageOperations } from "./useMessageOperations";
-import { useModels } from "./useModels";
-import { useStreamingResponse } from "./useStreamingResponse";
-import { useWebLLMInitialization } from "./useWebLLMInitialization";
+} from "../chat/title-source.js";
+import { upsertConversationInChatCaches } from "../conversation-cache.js";
+import { getErrorMessage } from "../errors.js";
+import { useConversationScope } from "../state/conversation-scope.js";
+import { useLoadingActions } from "../state/LoadingContext.js";
+import { useGenerateTitle } from "./useChat.js";
+import { useConversationActions } from "./useConversationActions.js";
+import { useConversationStorage } from "./useConversationStorage.js";
+import { useMessageOperations } from "./useMessageOperations.js";
+import { useModels } from "./useModels.js";
+import { useStreamingResponse } from "./useStreamingResponse.js";
+import { useWebLLMInitialization } from "./useWebLLMInitialization.js";
 
 /**
  * Main hook for managing chat operations.

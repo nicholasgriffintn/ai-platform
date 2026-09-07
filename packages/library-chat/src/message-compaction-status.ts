@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas/compaction-status";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import type { Message, MessageContent } from "./conversation-types";
+import type { Message, MessageContent } from "./conversation-types.js";
 
 function isMessageContentPart(value: unknown): value is MessageContent {
   return isRecord(value) && typeof value.type === "string";

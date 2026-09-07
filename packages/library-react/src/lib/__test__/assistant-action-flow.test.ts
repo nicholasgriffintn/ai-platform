@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
-import { launchAssistantAction } from "../assistant-action-flow";
+import { launchAssistantAction } from "../assistant-action-flow.js";
 
 const morningBriefingRecipe = {
   id: "morning-briefing",

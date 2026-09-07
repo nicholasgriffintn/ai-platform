@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { usageUnitSchema } from "./pricing/units";
+import { usageUnitSchema } from "./pricing/units.js";
 
 export const USAGE_SOURCES = ["model", "hosted_tool", "capability", "infrastructure"] as const;
 

@@ -21,7 +21,7 @@ import {
   createConnectorAssistantActionLaunch,
   createRecipeManagementActionPath,
   createRecipeAssistantActionLaunch,
-} from "./assistant-action-launch";
+} from "./assistant-action-launch.js";
 
 export interface AssistantActionExecutionInput {
   connectorReturnTo?: string;

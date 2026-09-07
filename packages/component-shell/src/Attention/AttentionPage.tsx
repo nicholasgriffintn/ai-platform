@@ -18,8 +18,8 @@ import {
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { PageShell } from "../Shell/PageShell";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
 
 export function AttentionPage() {
   const [searchParams, setSearchParams] = useSearchParams();

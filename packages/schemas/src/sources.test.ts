@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createSourceSchema } from "./sources";
+import { createSourceSchema } from "./sources.js";
 
 describe("createSourceSchema", () => {
   it("reserves memory sources for the memory provider seam", () => {

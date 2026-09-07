@@ -1,5 +1,5 @@
-import type { PetModelOverrides } from "./pets";
-import type { GuardrailsProviderId } from "./user/userSettings";
+import type { PetModelOverrides } from "./pets.js";
+import type { GuardrailsProviderId } from "./user/userSettings.js";
 
 export interface User {
   id: number;

@@ -1,6 +1,6 @@
 import type { SandboxRunData, SandboxRunEvent } from "@ngriffin_uk/polychat-schemas";
 
-import type { AgentTraceEntry, AgentTraceUsage } from "./agent-trace";
+import type { AgentTraceEntry, AgentTraceUsage } from "./agent-trace.js";
 
 export type RunActivityKind =
   | "approval"

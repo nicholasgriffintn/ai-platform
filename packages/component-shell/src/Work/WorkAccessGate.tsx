@@ -3,7 +3,7 @@ import { WorkAccessEmptyState } from "@ngriffin_uk/polychat-component-workspaces
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { ReactNode } from "react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 
 export function WorkAccessGate({
   children,

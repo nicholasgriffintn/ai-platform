@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type { Message } from "./conversation-types";
+import type { Message } from "./conversation-types.js";
 import {
   applyToolInteractionResolutions,
   getResolvedToolUseIndexes,
   resolveToolMessageDisplay,
   resolveToolResultPartDisplay,
-} from "./tool-results";
+} from "./tool-results.js";
 
 type ToolResultPart = Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>;
 

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { fetchSharedConversationHistory } from "./shared-conversation";
+import { fetchSharedConversationHistory } from "./shared-conversation.js";
 
 function createMessages(count: number, offset = 0) {
   return Array.from({ length: count }, (_, index) => ({

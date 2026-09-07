@@ -1,6 +1,6 @@
-import type { ChatMode } from "./chat-modes";
-import type { ModelCatalogItem, ModelConfig, ModelConfigItem, ModelModality } from "./models";
-import type { ReasoningEffort } from "./reasoning";
+import type { ChatMode } from "./chat-modes.js";
+import type { ModelCatalogItem, ModelConfig, ModelConfigItem, ModelModality } from "./models.js";
+import type { ReasoningEffort } from "./reasoning.js";
 
 export const EMPTY_MODEL_CONFIG: ModelConfig = {};
 export const BROWSER_MODEL_PROVIDER = "web-llm";

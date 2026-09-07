@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { ToolToggleMenu } from "../../../ToolToggleMenu";
+import { ToolToggleMenu } from "../../../ToolToggleMenu.js";
 
 interface ToolTogglesProps {
   isDisabled?: boolean;

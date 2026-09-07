@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
-import { chatCompletionResponseSchema } from "./chat";
-import { messageSchema } from "./shared";
+import { chatCompletionResponseSchema } from "./chat.js";
+import { messageSchema } from "./shared.js";
 
 const editRequestBase = z.object({
   model: z.string().optional().describe("The Mercury model to use for the edit operation."),

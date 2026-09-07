@@ -17,7 +17,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { useDrawingStudio } from "./Drawing/useDrawingStudio";
+import { useDrawingStudio } from "./Drawing/useDrawingStudio.js";
 
 export type CanvasStudioMode = CanvasMode | "drawing";
 

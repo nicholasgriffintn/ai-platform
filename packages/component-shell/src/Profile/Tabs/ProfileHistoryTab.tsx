@@ -7,7 +7,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 
-import { ProfileTab } from "../ProfileTabLayout";
+import { ProfileTab } from "../ProfileTabLayout.js";
 
 export function ProfileHistoryTab() {
   const { trackEvent } = useTrackEvent();

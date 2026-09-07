@@ -6,7 +6,7 @@ import {
   listRecipeComposioTriggerTypes,
   updateRecipeComposioTrigger,
   createRecipeComposioTrigger,
-} from "./recipe-composio-triggers";
+} from "./recipe-composio-triggers.js";
 
 describe("recipe Composio triggers api", () => {
   afterEach(() => {

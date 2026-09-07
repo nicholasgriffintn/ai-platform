@@ -1,4 +1,4 @@
-import type { Conversation, ConversationListOptions, Message } from "./conversation-types";
+import type { Conversation, ConversationListOptions, Message } from "./conversation-types.js";
 
 export interface LocalChatExport {
   version: 1;

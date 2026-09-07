@@ -24,8 +24,8 @@ import {
   CompactSettingRange,
   CompactSettingSelect,
   CompactSettingSwitch,
-} from "./CompactSettingControls";
-import { HostedToolSettings } from "./HostedToolSettings";
+} from "./CompactSettingControls.js";
+import { HostedToolSettings } from "./HostedToolSettings.js";
 
 export interface ChatSettingsPanelProps {
   showSettings: boolean;

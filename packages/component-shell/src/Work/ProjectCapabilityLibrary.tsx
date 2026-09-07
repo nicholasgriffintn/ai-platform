@@ -1,6 +1,6 @@
-import { CapabilityLibrary } from "../Capabilities/CapabilityLibrary";
-import { useProjectCapabilityScope } from "../Capabilities/useCapabilityLibraryController";
-import { useWorkData } from "./WorkDataContext";
+import { CapabilityLibrary } from "../Capabilities/CapabilityLibrary.js";
+import { useProjectCapabilityScope } from "../Capabilities/useCapabilityLibraryController.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectCapabilityLibrary({
   workspaceId,

@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 
 const DiscoverBands = lazy(async () => {
-  const module = await import("./DiscoverBands");
+  const module = await import("./DiscoverBands.js");
 
   return { default: module.DiscoverBands };
 });

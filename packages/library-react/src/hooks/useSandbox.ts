@@ -16,7 +16,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
+import { useCanAccessProFeatures } from "./useCanAccessProFeatures.js";
 
 export const SANDBOX_QUERY_KEYS = {
   root: ["sandbox"] as const,

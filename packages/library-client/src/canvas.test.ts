@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { generateCanvasOutputs } from "./canvas";
+import { generateCanvasOutputs } from "./canvas.js";
 
 const mocks = vi.hoisted(() => ({
   fetchApi: vi.fn(),
   getHeaders: vi.fn(),
 }));
 
-vi.mock("./api-service", () => ({
+vi.mock("./api-service.js", () => ({
   apiService: {
     getHeaders: mocks.getHeaders,
   },
 }));
 
-vi.mock("./fetch-wrapper", () => ({
+vi.mock("./fetch-wrapper.js", () => ({
   fetchApi: mocks.fetchApi,
   returnFetchedData: (response: Response) => response.json(),
 }));

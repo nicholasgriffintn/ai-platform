@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { PROJECT_TASK_ATTENTION_KINDS } from "./project-tasks";
+import { PROJECT_TASK_ATTENTION_KINDS } from "./project-tasks.js";
 import {
   isTaskNotificationCategoryEnabled,
   taskNotificationCategoryForAttentionKind,
-} from "./task-notifications";
+} from "./task-notifications.js";
 
 describe("task notification categories", () => {
   it.each([

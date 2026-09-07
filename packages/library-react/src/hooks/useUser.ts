@@ -1,8 +1,8 @@
 import { apiService } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { MODELS_QUERY_KEY } from "../chat/useModels";
-import { REALTIME_PROVIDERS_QUERY_KEY } from "./useRealtimeProviders";
+import { MODELS_QUERY_KEY } from "../chat/useModels.js";
+import { REALTIME_PROVIDERS_QUERY_KEY } from "./useRealtimeProviders.js";
 
 export const USER_QUERY_KEYS = {
   providerSettings: ["user", "provider-settings"],

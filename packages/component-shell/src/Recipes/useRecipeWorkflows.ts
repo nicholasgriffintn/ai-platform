@@ -26,7 +26,7 @@ import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 
-import { getRecipeEventTriggerProviders } from "./recipeEventTriggerProviders";
+import { getRecipeEventTriggerProviders } from "./recipeEventTriggerProviders.js";
 
 interface RecipeEventDialogState {
   recipe: AssistantRecipe;

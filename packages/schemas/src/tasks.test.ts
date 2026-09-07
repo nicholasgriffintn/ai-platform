@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createPublicTaskRequestSchema } from "./tasks";
+import { createPublicTaskRequestSchema } from "./tasks.js";
 
 describe("task scheduling", () => {
   it("normalises offset timestamps to canonical UTC ISO", () => {

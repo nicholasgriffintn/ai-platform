@@ -13,7 +13,7 @@ import {
 } from "@ngriffin_uk/polychat-library-chat/agent-trace-display";
 import { Activity } from "lucide-react";
 
-import { AgentTraceIcon } from "./AgentTraceIcon";
+import { AgentTraceIcon } from "./AgentTraceIcon.js";
 
 interface AgentTracePanelProps {
   entries: AgentTraceEntry[];

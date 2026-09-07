@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
-import { sandboxCommandSchema } from "./sandbox-command";
-import { sandboxServiceManifestSchema } from "./sandbox-services";
+import { sandboxCommandSchema } from "./sandbox-command.js";
+import { sandboxServiceManifestSchema } from "./sandbox-services.js";
 
 export const SANDBOX_REPOSITORY_ENVIRONMENT_PATH = ".polychat/environment.json";
 

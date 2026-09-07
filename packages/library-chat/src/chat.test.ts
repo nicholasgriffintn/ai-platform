@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { isCompactConversationCommand } from "./compaction-command";
+import { isCompactConversationCommand } from "./compaction-command.js";
 import {
   filterConversationsByListOptions,
   preserveOptimisticMessages,
   type ConversationWithMessages,
-} from "./conversations";
-import { mergeChatRequestOptions } from "./request-options";
+} from "./conversations.js";
+import { mergeChatRequestOptions } from "./request-options.js";
 
 describe("chat policies", () => {
   it("preserves project metadata while merging request options", () => {

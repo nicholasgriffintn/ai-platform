@@ -26,7 +26,7 @@ import { Feather, SquarePen } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 
 const POLY_PET_PRESET_SLUG = "pip";
 

@@ -4,11 +4,11 @@ import {
   chatRunCommandReceiptSchema,
   chatRunSchema,
   storedChatMessageResponseSchema,
-} from "./chat-runs";
-import { normaliseCompactionStatusMessage } from "./compaction-status";
-import { messagePartsSchema } from "./message-parts";
-import { messageSchema } from "./shared";
-import { threadOperationSchema } from "./thread-operations";
+} from "./chat-runs.js";
+import { normaliseCompactionStatusMessage } from "./compaction-status.js";
+import { messagePartsSchema } from "./message-parts.js";
+import { messageSchema } from "./shared.js";
+import { threadOperationSchema } from "./thread-operations.js";
 
 export {
   chatCompletionMessageSchema,
@@ -26,7 +26,7 @@ export {
   createChatCompletionsJsonSchema,
   parseChatRequestOptions,
   readRecipeChatRequestOptions,
-} from "./chat-completions";
+} from "./chat-completions.js";
 export type {
   ChatCompletionRequestBody,
   ChatCompletionResponseBody,
@@ -34,7 +34,7 @@ export type {
   ChatRequestOptions,
   ParsedChatCompletionRequestBody,
   ToolInteractionResolution,
-} from "./chat-completions";
+} from "./chat-completions.js";
 
 export const chatCompletionResponseSchema = z.object({
   id: z.string(),

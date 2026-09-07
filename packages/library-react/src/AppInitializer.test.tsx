@@ -3,12 +3,12 @@
 import { render, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { AppInitializer } from "./AppInitializer";
-import { useUIStore } from "./state/stores/uiStore";
+import { AppInitializer } from "./AppInitializer.js";
+import { useUIStore } from "./state/stores/uiStore.js";
 
-vi.mock("./hooks/useAuth", () => ({ useAuthStatus: () => undefined }));
-vi.mock("./hooks/use-analytics-identity", () => ({ useAnalyticsIdentity: () => undefined }));
-vi.mock("./hooks/useTheme", () => ({ useApplyTheme: () => undefined }));
+vi.mock("./hooks/useAuth.js", () => ({ useAuthStatus: () => undefined }));
+vi.mock("./hooks/use-analytics-identity.js", () => ({ useAnalyticsIdentity: () => undefined }));
+vi.mock("./hooks/useTheme.js", () => ({ useApplyTheme: () => undefined }));
 
 describe("AppInitializer", () => {
   it("settles the viewport state every surface waits on before it renders", async () => {

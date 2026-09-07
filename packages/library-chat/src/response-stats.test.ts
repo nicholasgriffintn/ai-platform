@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { Message } from "./conversation-types";
+import type { Message } from "./conversation-types.js";
 import {
   applyStreamActivityState,
   applyStreamActivityText,
@@ -12,7 +12,7 @@ import {
   getMessageStatsSegments,
   getRunningStreamActivityTools,
   getStreamActivityMetrics,
-} from "./response-stats";
+} from "./response-stats.js";
 
 function assistantMessage(overrides: Partial<Message> = {}): Message {
   return {

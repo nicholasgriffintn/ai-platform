@@ -1,6 +1,6 @@
 import * as z from "zod/v4";
 
-import { petModelOverridesSchema } from "../pets";
+import { petModelOverridesSchema } from "../pets.js";
 
 export const guardrailsProviderIds = ["llamaguard", "bedrock", "mistral", "shieldstral"] as const;
 

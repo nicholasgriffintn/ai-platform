@@ -5,10 +5,10 @@ import {
   toolFunctionTypeSchema,
   toolResponseSchema,
   capabilityThemeSchema,
-} from "./apps";
-import { toolIdSchema, toolIdsSchema } from "./tool-ids";
+} from "./apps.js";
+import { toolIdSchema, toolIdsSchema } from "./tool-ids.js";
 
-export { mergeToolIds, normaliseToolIds, readToolIds } from "./tool-ids";
+export { mergeToolIds, normaliseToolIds, readToolIds } from "./tool-ids.js";
 export { toolIdSchema, toolIdsSchema };
 
 export const toolCategories = [

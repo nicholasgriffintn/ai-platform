@@ -16,9 +16,9 @@ import {
 import type { Recording } from "@ngriffin_uk/polychat-schemas";
 import { Mic2, Plus } from "lucide-react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { RecordingWorkflow } from "./Recordings/RecordingWorkflow";
-import { RecordingView } from "./Recordings/View";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { RecordingWorkflow } from "./Recordings/RecordingWorkflow.js";
+import { RecordingView } from "./Recordings/View.js";
 
 export function RecordingsApp({ basePath, projectId, subpath }: ExperienceProps) {
   const segments = subpath.split("/").filter(Boolean);

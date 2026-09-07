@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 import {
   updateConversationInChatCaches,
   upsertConversationInChatCaches,
-} from "../../conversation-cache";
+} from "../../conversation-cache.js";
 
 function conversation(id: string, title: string): Conversation {
   return {

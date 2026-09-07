@@ -9,7 +9,7 @@ import {
   readDocumentBody,
   readDocumentMetadata,
   writeDocumentInputSchema,
-} from "./documents";
+} from "./documents.js";
 
 describe("readDocumentBody", () => {
   it("reads a markdown document body", () => {

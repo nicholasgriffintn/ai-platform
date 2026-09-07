@@ -14,10 +14,10 @@ import { LogOut, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState";
-import { PageShell } from "../Shell/PageShell";
-import { InviteMemberDialog } from "./InviteMemberDialog";
-import { useWorkData } from "./WorkDataContext";
+import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
+import { InviteMemberDialog } from "./InviteMemberDialog.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
   const { workspaceQuery } = useWorkData();

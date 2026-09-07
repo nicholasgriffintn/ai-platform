@@ -2,7 +2,7 @@ import type {
   ConversationActivityWindow,
   ConversationArchiveFilter,
   ConversationSortBy,
-} from "./conversation-types";
+} from "./conversation-types.js";
 
 export type ConversationGroupBy = "date" | "type" | "none";
 

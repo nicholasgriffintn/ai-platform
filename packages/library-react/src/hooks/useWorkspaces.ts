@@ -31,7 +31,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 
-import { requireProjectRouteScope } from "../lib/work/project-route-scope";
+import { requireProjectRouteScope } from "../lib/work/project-route-scope.js";
 
 export const WORKSPACES_QUERY_KEY = ["workspaces"] as const;
 export const workspaceQueryKey = (workspaceId: string) => ["workspace", workspaceId] as const;

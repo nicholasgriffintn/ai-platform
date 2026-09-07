@@ -1,5 +1,5 @@
-import { apiKeyService } from "../api-key";
-import { useCaptchaStore } from "../captchaStore";
+import { apiKeyService } from "../api-key.js";
+import { useCaptchaStore } from "../captchaStore.js";
 
 export async function getHeaders(): Promise<Record<string, string>> {
   try {

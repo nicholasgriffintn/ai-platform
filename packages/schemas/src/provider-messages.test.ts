@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isProviderChatMessage, toProviderChatMessages } from "./provider-messages";
+import { isProviderChatMessage, toProviderChatMessages } from "./provider-messages.js";
 
 describe("toProviderChatMessages", () => {
   it("excludes compaction rows and malformed compaction metadata from provider context", () => {

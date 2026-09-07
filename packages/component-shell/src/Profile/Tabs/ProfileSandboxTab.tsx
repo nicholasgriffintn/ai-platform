@@ -13,8 +13,8 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
-import { SandboxAddGitHubConnection } from "../../Models/SandboxAddGitHubConnection";
-import { ProfileTab } from "../ProfileTabLayout";
+import { SandboxAddGitHubConnection } from "../../Models/SandboxAddGitHubConnection.js";
+import { ProfileTab } from "../ProfileTabLayout.js";
 
 interface ConnectionFormState {
   installationId: string;

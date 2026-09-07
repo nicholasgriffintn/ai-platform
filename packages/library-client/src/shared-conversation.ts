@@ -1,7 +1,7 @@
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 
-import { fetchApiOrThrow } from "./fetch-wrapper";
-import { returnFetchedData } from "./http";
+import { fetchApiOrThrow } from "./fetch-wrapper.js";
+import { returnFetchedData } from "./http.js";
 
 const SHARED_CONVERSATION_PAGE_LIMIT = 100;
 const MAX_SHARED_CONVERSATION_PAGES = 10_000;

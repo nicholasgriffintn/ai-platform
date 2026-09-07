@@ -20,7 +20,7 @@ import type {
 } from "@ngriffin_uk/polychat-utility-react";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
-import { useComposerCommandActions } from "./useComposerCommandActions";
+import { useComposerCommandActions } from "./useComposerCommandActions.js";
 
 interface ComposerCommandControls {
   activeModeControls?: ReactNode;
