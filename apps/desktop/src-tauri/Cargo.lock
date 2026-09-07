@@ -2454,7 +2454,7 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "futures-util",
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "keyring",
  "opener",
  "reqwest 0.12.28",
