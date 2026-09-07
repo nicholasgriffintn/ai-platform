@@ -328,7 +328,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "glm-4.7",
       "overrides": {
-        "name": "GLM 4.7",
         "contextWindow": 202752,
         "maxTokens": 202752,
         "speed": 4,
@@ -358,7 +357,6 @@
         "name": "GLM 5",
         "maxTokens": 202752,
         "speed": 3,
-        "releaseDate": "February 12, 2026",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.000988,
         "costPer1kOutputTokens": 0.003164,
@@ -467,7 +465,14 @@
         "releaseDate": "December 8, 2025",
         "lastUpdated": "December 8, 2025",
         "costPer1kInputTokens": 0.000656,
-        "costPer1kOutputTokens": 0.002731
+        "costPer1kOutputTokens": 0.002731,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -772,18 +777,10 @@
         "maxTokens": 256000,
         "speed": 4,
         "knowledgeCutoffDate": "September 2025",
-        "releaseDate": "February 3, 2026",
         "lastUpdated": "February 3, 2026",
         "costPer1kInputTokens": 0.000167,
         "costPer1kOutputTokens": 0.000891,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       }
     },
     "qwen3-next-80b-a3b-thinking": {
@@ -2290,8 +2287,8 @@
         "contextWindow": 1048576,
         "maxTokens": 1048576,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.004399,
+        "costPer1kInputTokens": 0.001114,
+        "costPer1kOutputTokens": 0.003899,
         "supportsAttachments": false
       }
     },

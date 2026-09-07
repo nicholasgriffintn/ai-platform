@@ -48,33 +48,12 @@
         }
       }
     },
-    "kimi-k2-1t": {
-      "defaults": {
-        "name": "kimi-k2:1t",
-        "description": "kimi-k2:1t accepts text and produces text.",
-        "contextWindow": 262144,
-        "maxTokens": 262144,
-        "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "July 11, 2025"
-      }
-    },
     "kimi-k2-5": {
       "defaults": {
         "name": "Kimi K2.5",
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "contextComplexity": 4,
         "reliability": 1,
-        "releaseDate": "January 27, 2026",
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -107,32 +86,6 @@
         },
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 27, 2026"
-      }
-    },
-    "kimi-k2-6": {
-      "defaults": {
-        "name": "kimi-k2.6",
-        "description": "kimi-k2.6 accepts text, image and produces text.",
-        "contextWindow": 262144,
-        "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "April 20, 2026",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
       }
     },
     "kimi-k2-6-free": {
@@ -232,13 +185,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "November 6, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 32.7,
           "codingIndex": null,

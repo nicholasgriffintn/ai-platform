@@ -1374,7 +1374,6 @@
         "name": "GPT OSS 120B",
         "description": "Large 120B parameter open-source GPT model optimized for reasoning and complex tasks.",
         "contextWindow": 131072,
-        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text"
@@ -1384,7 +1383,6 @@
           ]
         },
         "reliability": 1,
-        "releaseDate": "August 5, 2025",
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 23.8,
@@ -1427,6 +1425,7 @@
       "defaults": {
         "description": "Efficient 20B parameter open-source GPT model for fast reasoning and general tasks.",
         "contextWindow": 131072,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"
@@ -1435,6 +1434,10 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
         "reliability": 1,
         "supportsAttachments": false,
         "artificialAnalysis": {

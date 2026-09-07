@@ -19,7 +19,10 @@
           "creative",
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "search",
+          "research",
+          "coding"
         ],
         "speed": 2,
         "multimodal": true,
@@ -188,14 +191,20 @@
       "unset": [
         "contextComplexity",
         "supportsTopP",
-        "supportsCodeExecution",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsCodeExecution"
       ]
     },
     "claude-opus-4-5": {
       "model": "claude-opus/claude-opus-4-5-latest",
       "matchingModel": "claude-opus-4-5",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "speed": 3,
         "deprecated": true,
         "lastUpdated": "November 24, 2025",
@@ -219,6 +228,14 @@
       "model": "claude-opus/claude-opus-4-7",
       "matchingModel": "claude-opus-4-7",
       "overrides": {
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "research"
+        ],
         "speed": 2,
         "isFeatured": false,
         "releaseDate": "April 14, 2026",
@@ -249,6 +266,14 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "claude-sonnet-4-6",
       "overrides": {
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "research"
+        ],
         "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
@@ -286,7 +311,9 @@
           "agents",
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "search",
+          "research"
         ],
         "speed": 2,
         "multimodal": true,

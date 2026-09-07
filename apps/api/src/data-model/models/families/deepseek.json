@@ -363,22 +363,6 @@
         }
       }
     },
-    "deepseek-v3-1-671b": {
-      "defaults": {
-        "name": "deepseek-v3.1:671b",
-        "description": "deepseek-v3.1:671b accepts text and produces text.",
-        "contextWindow": 163840,
-        "maxTokens": 163840,
-        "releaseDate": "August 21, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "deepseek-v3-1-nex-n1": {
       "defaults": {
         "name": "DeepSeek V3.1 Nex N1",
@@ -581,22 +565,6 @@
         "supportsToolCalls": false
       }
     },
-    "deepseek-v4-flash": {
-      "defaults": {
-        "name": "deepseek-v4-flash",
-        "description": "deepseek-v4-flash accepts text and produces text.",
-        "contextWindow": 1048576,
-        "maxTokens": 1048576,
-        "releaseDate": "April 24, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "deepseek-v4-flash-free": {
       "defaults": {
         "name": "DeepSeek V4 Flash (free)",
@@ -633,7 +601,7 @@
         "openWeights": false,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "contextWindow": 1310720,
-        "maxTokens": 131072,
+        "maxTokens": 393216,
         "releaseDate": "August 1, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -648,8 +616,31 @@
     },
     "deepseek-v4-pro": {
       "defaults": {
+        "name": "DeepSeek V4 Pro",
+        "openWeights": true,
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
-        "releaseDate": "April 24, 2026"
+        "contextWindow": 512000,
+        "maxTokens": 384000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "April 24, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 31.2,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     },
     "groq-deepseek-r1-distill-llama-70b-specdec": {

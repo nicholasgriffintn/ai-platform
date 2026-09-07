@@ -134,6 +134,12 @@
       "matchingModel": "gemini-3-pro-image",
       "overrides": {
         "contextWindow": 65536,
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
@@ -363,8 +369,8 @@
         "costPer1kOutputTokens": 0.0015
       },
       "unset": [
-        "supportsResponseFormat",
-        "contextComplexity"
+        "contextComplexity",
+        "supportsResponseFormat"
       ]
     },
     "gemini-3.8-flash": {

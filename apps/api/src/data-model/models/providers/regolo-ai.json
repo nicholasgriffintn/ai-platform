@@ -31,14 +31,7 @@
         "releaseDate": "March 1, 2026",
         "lastUpdated": "March 1, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0012
       },
       "unset": [
         "supportsResponseFormat"

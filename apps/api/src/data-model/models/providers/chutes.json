@@ -419,8 +419,8 @@
         "costPer1kOutputTokens": 0.00024
       },
       "unset": [
-        "reasoningConfig",
-        "openWeights"
+        "openWeights",
+        "reasoningConfig"
       ]
     },
     "openai/gpt-oss-120b-TEE": {
@@ -437,11 +437,6 @@
       "matchingModel": "openai/gpt-oss-20b",
       "overrides": {
         "name": "gpt oss 20b",
-        "maxTokens": 131072,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
         "speed": 5,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
@@ -538,9 +533,9 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
+        "openWeights",
         "knowledgeCutoffDate",
-        "reasoningConfig",
-        "openWeights"
+        "reasoningConfig"
       ]
     },
     "Qwen/Qwen3-235B-A22B-Instruct-2507-TEE": {
@@ -602,7 +597,8 @@
         "costPer1kOutputTokens": 0.0003
       },
       "unset": [
-        "openWeights"
+        "openWeights",
+        "reasoningConfig"
       ]
     },
     "Qwen/Qwen3-Next-80B-A3B-Instruct": {
@@ -954,8 +950,8 @@
         "costPer1kOutputTokens": 0.00029
       },
       "unset": [
-        "reasoningConfig",
-        "reliability"
+        "reliability",
+        "reasoningConfig"
       ]
     },
     "zai-org/GLM-5-TEE": {

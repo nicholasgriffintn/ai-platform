@@ -342,8 +342,8 @@
         }
       },
       "unset": [
-        "supportsStreaming",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsStreaming"
       ]
     },
     "replicate-minimax-music-1.5": {
@@ -393,9 +393,9 @@
         }
       },
       "unset": [
-        "supportsTemperature",
-        "supportsToolCalls",
         "openWeights",
+        "supportsToolCalls",
+        "supportsTemperature",
         "reasoningConfig"
       ]
     },
@@ -641,8 +641,8 @@
         }
       },
       "unset": [
-        "supportsTemperature",
         "supportsToolCalls",
+        "supportsTemperature",
         "releaseDate"
       ]
     },
@@ -745,10 +745,10 @@
         }
       },
       "unset": [
-        "supportsTemperature",
         "supportsToolCalls",
-        "releaseDate",
-        "contextComplexity"
+        "supportsTemperature",
+        "contextComplexity",
+        "releaseDate"
       ]
     },
     "replicate-flux-2-flex": {
@@ -868,8 +868,8 @@
         }
       },
       "unset": [
-        "supportsTemperature",
         "supportsToolCalls",
+        "supportsTemperature",
         "releaseDate"
       ]
     },
@@ -959,8 +959,8 @@
         }
       },
       "unset": [
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsToolCalls",
+        "supportsTemperature"
       ]
     },
     "replicate-flux-1.1-pro": {
@@ -1036,8 +1036,8 @@
         }
       },
       "unset": [
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsToolCalls",
+        "supportsTemperature"
       ]
     },
     "replicate-sd3.5large": {
@@ -1252,8 +1252,8 @@
         }
       },
       "unset": [
-        "supportsStreaming",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsStreaming"
       ]
     },
     "replicate-google-nano-banana-2": {
@@ -1389,8 +1389,8 @@
         }
       },
       "unset": [
-        "supportsStreaming",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsStreaming"
       ]
     },
     "replicate-xai-grok-imagine-image": {
@@ -1456,11 +1456,11 @@
         }
       },
       "unset": [
-        "supportsTemperature",
         "supportsToolCalls",
-        "releaseDate",
+        "supportsTemperature",
+        "openWeights",
         "maxTokens",
-        "openWeights"
+        "releaseDate"
       ]
     },
     "replicate-qwen-image-edit-2511": {
@@ -1536,8 +1536,8 @@
         }
       },
       "unset": [
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsToolCalls",
+        "supportsTemperature"
       ]
     },
     "replicate-insanely-fast-whisper-with-video": {
@@ -1739,9 +1739,9 @@
         }
       },
       "unset": [
-        "supportsTemperature",
-        "supportsToolCalls",
         "openWeights",
+        "supportsToolCalls",
+        "supportsTemperature",
         "reasoningConfig"
       ]
     },
@@ -1829,8 +1829,8 @@
         }
       },
       "unset": [
-        "supportsToolCalls",
         "openWeights",
+        "supportsToolCalls",
         "releaseDate"
       ]
     },
@@ -1917,9 +1917,9 @@
         }
       },
       "unset": [
-        "supportsAttachments",
-        "supportsToolCalls",
         "openWeights",
+        "supportsToolCalls",
+        "supportsAttachments",
         "supportsStreaming"
       ]
     },
@@ -2004,9 +2004,9 @@
         }
       },
       "unset": [
-        "supportsTemperature",
+        "openWeights",
         "supportsToolCalls",
-        "openWeights"
+        "supportsTemperature"
       ]
     },
     "replicate-bytedance-seedance-2-0": {
@@ -2123,9 +2123,9 @@
         }
       },
       "unset": [
-        "supportsTemperature",
+        "openWeights",
         "supportsToolCalls",
-        "openWeights"
+        "supportsTemperature"
       ]
     },
     "replicate-alibaba-happyhorse-1-0": {
@@ -2271,8 +2271,9 @@
         }
       },
       "unset": [
+        "supportsToolCalls",
         "supportsTemperature",
-        "supportsToolCalls"
+        "openWeights"
       ]
     },
     "replicate-prunaai-p-video": {

@@ -4,6 +4,7 @@
     "maxTokens": 65536,
     "knowledgeCutoffDate": "January 2025",
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
@@ -95,7 +96,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "June 17, 2025",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 27,
           "codingIndex": null,
@@ -132,7 +132,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "June 17, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -170,8 +169,7 @@
           ]
         },
         "knowledgeCutoffDate": "January 31, 2025",
-        "releaseDate": "May 7, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "May 7, 2025"
       }
     },
     "gemini-2-5-pro-tts": {
@@ -222,7 +220,6 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "February 19, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -257,7 +254,6 @@
           ]
         },
         "releaseDate": "February 19, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -351,7 +347,6 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "November 18, 2025",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 39.6,
           "codingIndex": null,
@@ -378,7 +373,6 @@
           ]
         },
         "releaseDate": "April 27, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -404,6 +398,44 @@
             "image"
           ]
         },
+        "contextComplexity": 3,
+        "reliability": 4,
+        "releaseDate": "May 28, 2026",
+        "supportsToolCalls": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1219,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
+      }
+    },
+    "nano-banana-pro-preview": {
+      "defaults": {
+        "name": "Nano Banana Pro (Gemini 3 Pro Image Preview)",
+        "description": "Nano Banana Pro for higher-fidelity image generation and design-heavy edits",
+        "contextWindow": 65536,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -412,7 +444,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 4,
-        "releaseDate": "May 28, 2026",
+        "releaseDate": "November 20, 2025",
         "supportsToolCalls": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,

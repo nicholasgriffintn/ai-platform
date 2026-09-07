@@ -9,7 +9,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "glm-4.7",
       "overrides": {
-        "name": "GLM 4.7",
         "description": "Mature GLM model for dependable coding, reasoning, and structured agent tasks",
         "contextWindow": 204800,
         "maxTokens": 131072,
@@ -40,7 +39,6 @@
           "tool_use"
         ],
         "speed": 3,
-        "releaseDate": "February 12, 2026",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0032
@@ -120,6 +118,7 @@
         "name": "GLM-4.6",
         "description": "Late GLM-4 workhorse for coding agents, reasoning, and structured tasks",
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "September 30, 2025",
         "costPer1kInputTokens": 0.0006,

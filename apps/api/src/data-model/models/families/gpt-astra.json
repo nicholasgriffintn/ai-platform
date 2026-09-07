@@ -25,16 +25,7 @@
       "defaults": {
         "name": "GPT-6 Astra",
         "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "knowledgeCutoffDate": "April 30, 2026"
       }
     },
     "gpt-6-astra-fast": {

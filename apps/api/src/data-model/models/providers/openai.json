@@ -186,7 +186,8 @@
           "instruction",
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "search"
         ],
         "speed": 4,
         "multimodal": true,
@@ -232,7 +233,8 @@
           "instruction",
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "search"
         ],
         "speed": 3,
         "isFeatured": false,
@@ -266,7 +268,8 @@
           "creative",
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "search"
         ],
         "speed": 4,
         "multimodal": true,
@@ -318,7 +321,8 @@
           "multilingual",
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "search"
         ],
         "speed": 2,
         "multimodal": true,
@@ -368,7 +372,8 @@
           "general_knowledge",
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "search"
         ],
         "speed": 3,
         "multimodal": true,
@@ -927,6 +932,13 @@
       "model": "gpt/gpt-5-1",
       "matchingModel": "gpt-5.1",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
         "speed": 4,
         "deprecated": true,
         "lastUpdated": "November 13, 2025",
@@ -1111,6 +1123,13 @@
       "matchingModel": "gpt-5.3-codex",
       "overrides": {
         "name": "GPT-5.3 Codex",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
         "speed": 2,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
@@ -1344,7 +1363,8 @@
           "creative",
           "multilingual",
           "vision",
-          "document"
+          "document",
+          "search"
         ],
         "speed": 4,
         "multimodal": true,
@@ -1410,7 +1430,8 @@
           "chat",
           "multilingual",
           "vision",
-          "document"
+          "document",
+          "search"
         ],
         "speed": 4,
         "multimodal": true,
@@ -1458,7 +1479,9 @@
           "multilingual",
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "search",
+          "coding"
         ],
         "speed": 4,
         "multimodal": true,
@@ -1514,7 +1537,8 @@
           "academic",
           "research",
           "vision",
-          "document"
+          "document",
+          "search"
         ],
         "reliability": 5,
         "speed": 2,
@@ -1569,7 +1593,8 @@
           "research",
           "multilingual",
           "vision",
-          "document"
+          "document",
+          "search"
         ],
         "speed": 3,
         "multimodal": true,
@@ -1633,7 +1658,8 @@
           "academic",
           "research",
           "vision",
-          "document"
+          "document",
+          "search"
         ],
         "reliability": 5,
         "speed": 2,
@@ -2139,7 +2165,6 @@
         "speed": 2,
         "multimodal": true,
         "isFeatured": true,
-        "knowledgeCutoffDate": "April 30, 2026",
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,

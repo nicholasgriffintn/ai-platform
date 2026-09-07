@@ -265,9 +265,9 @@
         "costPer1kOutputTokens": 0.002
       },
       "unset": [
-        "reasoningConfig",
         "strengths",
         "reliability",
+        "reasoningConfig",
         "artificialAnalysis",
         "supportsResponseFormat"
       ]
@@ -333,7 +333,6 @@
       "model": "glm/glm-5",
       "matchingModel": "zai-org/GLM-5",
       "overrides": {
-        "name": "GLM-5",
         "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "February 11, 2026",
@@ -368,6 +367,7 @@
       "matchingModel": "MiniMaxAI/MiniMax-M2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
+        "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -384,7 +384,6 @@
         "name": "MiniMax-M2.7",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -432,13 +431,13 @@
         "maxTokens": 65536,
         "speed": 4,
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "February 3, 2026",
         "lastUpdated": "February 3, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0015
       },
       "unset": [
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "reasoningConfig"
       ]
     },
     "Qwen/Qwen3.5-397B-A17B": {
@@ -818,6 +817,7 @@
         "name": "GLM-4.6",
         "description": "Late GLM-4 workhorse for coding agents, reasoning, and structured tasks",
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "September 30, 2025",
         "costPer1kInputTokens": 0.00055,

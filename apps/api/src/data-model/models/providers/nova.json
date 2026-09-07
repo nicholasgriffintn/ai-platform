@@ -38,8 +38,8 @@
         "supportsAudio": true
       },
       "unset": [
-        "supportsAttachments",
         "supportsToolCalls",
+        "supportsAttachments",
         "supportsTemperature"
       ]
     },
@@ -83,8 +83,8 @@
         "supportsAudio": true
       },
       "unset": [
-        "supportsAttachments",
         "supportsToolCalls",
+        "supportsAttachments",
         "supportsTemperature"
       ]
     },

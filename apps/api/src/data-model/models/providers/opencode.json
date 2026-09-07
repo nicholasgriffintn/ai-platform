@@ -228,7 +228,6 @@
       "model": "glm/glm-5",
       "matchingModel": "glm-5",
       "overrides": {
-        "name": "GLM-5",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "speed": 3,
@@ -619,6 +618,7 @@
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "MiniMax M2.5",
+        "maxTokens": 131072,
         "speed": 4,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
@@ -637,7 +637,6 @@
         "name": "MiniMax M2.7",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 2,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "March 18, 2026",
@@ -1073,7 +1072,17 @@
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "muse-spark-1.3": {

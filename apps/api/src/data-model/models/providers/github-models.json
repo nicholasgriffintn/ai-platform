@@ -388,7 +388,6 @@
       "model": "grok/grok-3",
       "matchingModel": "xai/grok-3",
       "overrides": {
-        "openWeights": false,
         "contextWindow": 128000,
         "speed": 3,
         "knowledgeCutoffDate": "October 2024",
@@ -409,7 +408,6 @@
       "model": "grok/grok-3-mini",
       "matchingModel": "xai/grok-3-mini",
       "overrides": {
-        "openWeights": false,
         "contextWindow": 128000,
         "speed": 4,
         "knowledgeCutoffDate": "October 2024",

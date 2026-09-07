@@ -518,6 +518,7 @@
         }
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -1047,7 +1048,17 @@
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

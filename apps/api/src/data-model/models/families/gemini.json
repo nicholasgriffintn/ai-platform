@@ -586,36 +586,41 @@
         }
       }
     },
-    "gemini-3-flash-preview": {
+    "gemini-3-pro-preview": {
       "defaults": {
-        "name": "gemini-3-flash-preview",
-        "description": "gemini-3-flash-preview accepts text, image and produces text.",
-        "contextWindow": 1048576,
-        "maxTokens": 65536,
+        "name": "Gemini 3 Pro Preview",
+        "description": "gemini-3-pro-preview accepts text, image and produces text.",
+        "contextWindow": 1050000,
+        "maxTokens": 66000,
         "modalities": {
           "input": [
             "text",
-            "image"
+            "image",
+            "audio",
+            "video",
+            "pdf"
           ],
           "output": [
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
         "knowledgeCutoffDate": "January 2025",
-        "releaseDate": "December 17, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
+        "releaseDate": "November 18, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
-      }
-    },
-    "gemini-3-pro-preview": {
-      "defaults": {
-        "description": "gemini-3-pro-preview accepts text, image and produces text.",
-        "releaseDate": "November 18, 2025"
       }
     },
     "gemini-embedding-001": {

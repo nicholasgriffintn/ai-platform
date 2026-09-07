@@ -9,6 +9,7 @@
       "model": "gpt/gpt-oss-120b",
       "matchingModel": "accounts/fireworks/gpt-oss-120b",
       "overrides": {
+        "maxTokens": 32768,
         "strengths": [
           "reasoning",
           "analysis",
@@ -18,6 +19,7 @@
         ],
         "contextComplexity": 3,
         "speed": 5,
+        "releaseDate": "August 5, 2025",
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
@@ -81,8 +83,8 @@
         "costPer1kOutputTokens": 0.00088
       },
       "unset": [
-        "reasoningConfig",
-        "openWeights"
+        "openWeights",
+        "reasoningConfig"
       ]
     },
     "deepseek/deepseek-v3-0324": {
@@ -127,9 +129,9 @@
         "costPer1kOutputTokens": 0.00168
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat",
-        "reasoningConfig",
-        "openWeights"
+        "reasoningConfig"
       ]
     },
     "accounts/fireworks/models/deepseek-v3p2": {
@@ -145,9 +147,9 @@
         "costPer1kOutputTokens": 0.00168
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat",
-        "reasoningConfig",
-        "openWeights"
+        "reasoningConfig"
       ]
     },
     "accounts/fireworks/models/glm-4p5": {
@@ -204,7 +206,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "accounts/fireworks/models/glm-4p7",
       "overrides": {
-        "name": "GLM 4.7",
         "contextWindow": 198000,
         "maxTokens": 198000,
         "speed": 4,
@@ -263,10 +264,7 @@
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025
-      },
-      "unset": [
-        "reasoningConfig"
-      ]
+      }
     },
     "accounts/fireworks/models/kimi-k2p5": {
       "model": "kimi/kimi-k2-5",
@@ -292,6 +290,7 @@
         ],
         "speed": 3,
         "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "January 27, 2026",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -346,8 +345,8 @@
         "costPer1kOutputTokens": 0.0018
       },
       "unset": [
-        "knowledgeCutoffDate",
-        "openWeights"
+        "openWeights",
+        "knowledgeCutoffDate"
       ]
     },
     "accounts/fireworks/models/glm-5": {
@@ -424,7 +423,10 @@
         "lastUpdated": "April 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/models/qwen3p6-plus": {
       "model": "qwen/qwen-3-6-plus",

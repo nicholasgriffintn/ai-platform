@@ -13,8 +13,8 @@
         "isFeatured": false
       },
       "unset": [
-        "supportsAttachments",
-        "openWeights"
+        "openWeights",
+        "supportsAttachments"
       ]
     }
   }

@@ -181,8 +181,8 @@
       },
       "unset": [
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsToolCalls",
+        "supportsTemperature"
       ]
     },
     "flux-2-dev": {
@@ -195,8 +195,8 @@
       },
       "unset": [
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsToolCalls",
+        "supportsTemperature"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-4b": {
@@ -208,8 +208,8 @@
       },
       "unset": [
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsToolCalls",
+        "supportsTemperature"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-9b": {
@@ -221,8 +221,8 @@
       },
       "unset": [
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsToolCalls",
+        "supportsTemperature"
       ]
     },
     "stable-diffusion-1.5-img2img": {
@@ -452,7 +452,8 @@
       },
       "unset": [
         "supportsAttachments",
-        "supportsTemperature"
+        "supportsTemperature",
+        "supportsToolCalls"
       ]
     },
     "@cf/ai4bharat/indictrans2-en-indic-1B": {
