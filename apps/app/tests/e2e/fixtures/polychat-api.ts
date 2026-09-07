@@ -8,6 +8,7 @@ import {
   chatRunCommandReceiptResponseSchema,
   conversationThreadsResponseSchema,
   getChatCompletionResponseSchema,
+  listSavedMessagesResponseSchema,
   usageBalanceResponseSchema,
   usageEventsResponseSchema,
   usageSummaryResponseSchema,
@@ -484,6 +485,27 @@ export class PolychatApi {
   async conversationThreadsStatus(conversationId: string): Promise<number> {
     return (
       await this.request.get(`${API_BASE_URL}/chat/completions/${conversationId}/threads`)
+    ).status();
+  }
+
+  async listSavedMessages() {
+    const response = await this.request.get(`${API_BASE_URL}/chat/saved-messages`);
+
+    await requireSuccessfulResponse(response, "List saved messages");
+
+    return listSavedMessagesResponseSchema.parse(await response.json());
+  }
+
+  async saveMessageStatus(
+    conversationId: string,
+    messageId: string,
+    note?: string,
+  ): Promise<number> {
+    return (
+      await this.request.post(`${API_BASE_URL}/chat/saved-messages`, {
+        headers: BROWSER_REQUEST_HEADERS,
+        data: note ? { conversationId, messageId, note } : { conversationId, messageId },
+      })
     ).status();
   }
 
