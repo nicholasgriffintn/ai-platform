@@ -26,3 +26,38 @@ export function readDeepLinkPath(value: unknown): string | null {
 
   return isInternalNavigationPath(path) ? path : null;
 }
+
+export type DeepLinkListener = (
+  event: string,
+  handler: (event: { payload: unknown }) => void,
+) => Promise<() => void>;
+
+export function subscribeToDeepLinks(
+  listen: DeepLinkListener,
+  open: (path: string) => void,
+): () => void {
+  let stopped = false;
+  let stopListening: (() => void) | undefined;
+
+  const listening = listen(DEEP_LINK_EVENT, (event) => {
+    const path = readDeepLinkPath(event.payload);
+
+    if (path && !stopped) {
+      open(path);
+    }
+  })
+    .then((stop) => {
+      stopListening = stop;
+
+      if (stopped) {
+        stop();
+      }
+    })
+    .catch(() => undefined);
+
+  return () => {
+    stopped = true;
+    stopListening?.();
+    void listening;
+  };
+}
