@@ -145,6 +145,14 @@ export class AppPage extends BasePage {
     await this.clickElement(this.page.getByRole("link", { name, exact: true }));
   }
 
+  async followSidebarLink(name: string) {
+    await this.clickElement(
+      this.page
+        .getByRole("navigation", { name: "Conversations" })
+        .getByRole("link", { name, exact: true }),
+    );
+  }
+
   async followPrimaryLink(name: string) {
     await this.clickElement(
       this.page

@@ -293,6 +293,15 @@ export class PolychatApi {
     ).status();
   }
 
+  async addProjectCapability(projectId: string, kind: string, capabilityId: string) {
+    const response = await this.request.post(`${API_BASE_URL}/projects/${projectId}/capabilities`, {
+      headers: BROWSER_REQUEST_HEADERS,
+      data: { kind, capabilityId },
+    });
+
+    return { status: response.status(), body: await response.text() };
+  }
+
   async getWorkspaceUsage(workspaceId: string, period?: string) {
     const query = period ? `?period=${encodeURIComponent(period)}` : "";
     const response = await this.request.get(

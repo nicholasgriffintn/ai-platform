@@ -339,7 +339,7 @@ export class ProfilePage extends BasePage {
   }
 
   async createAndDeleteSource(title: string, content: string) {
-    await this.openTab("sources", "Sources");
+    await this.openTab("sources", "Files");
     await this.page.getByRole("button", { name: "Add source" }).click();
     const addSource = this.page.getByRole("dialog", { name: "Add source" });
 

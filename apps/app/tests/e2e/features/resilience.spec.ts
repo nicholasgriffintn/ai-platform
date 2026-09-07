@@ -9,7 +9,7 @@ test.describe("Recovery and unavailable states", () => {
         await homePage.navigate(`/missing-${persona}-release-route`);
         await expect(page.getByRole("heading", { name: "Page Not Found" })).toBeVisible();
         await appPage.followLink("Back to the nest");
-        await expect(page).toHaveURL(/\/$/);
+        await expect(page).toHaveURL(/\/chat$/);
         await expect(homePage.chatInput).toBeEditable();
       });
     });

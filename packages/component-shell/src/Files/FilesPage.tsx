@@ -49,20 +49,22 @@ export function FilesPage({
   return (
     <PageShell.Content className="max-w-6xl">
       {header}
-      <PageShell.Header
-        title="Files"
-        actions={
-          tab === "given" && !projectId
-            ? [
-                {
-                  label: "Add source",
-                  icon: <Plus size={16} />,
-                  onClick: () => setCreateRequestKey((current) => current + 1),
-                },
-              ]
-            : undefined
-        }
-      />
+      {header ? null : (
+        <PageShell.Header
+          title="Files"
+          actions={
+            tab === "given" && !projectId
+              ? [
+                  {
+                    label: "Add source",
+                    icon: <Plus size={16} />,
+                    onClick: () => setCreateRequestKey((current) => current + 1),
+                  },
+                ]
+              : undefined
+          }
+        />
+      )}
       <p className="mb-4 max-w-3xl text-sm text-muted-foreground">{activeTab.description}</p>
       <nav aria-label="Files sections" className="mb-6">
         <ul className="flex flex-wrap gap-1">

@@ -130,7 +130,7 @@ test.describe("Application experience", () => {
         viewports: [{ name: "mobile", width: 390, height: 844 }],
       });
       await appPage.followLink("Back to the nest");
-      await expect(page).toHaveURL(/\/$/);
+      await expect(page).toHaveURL(/\/chat$/);
       await expect(homePage.chatInput).toBeEditable();
     });
   });
@@ -190,12 +190,19 @@ test.describe("Application experience", () => {
       page,
     }) => {
       await homePage.navigate("/chat");
-      await appPage.toggleSidebar();
       await expect(page.getByRole("button", { name: "Show sidebar" })).toBeVisible();
-      await captureVisualSnapshots(page, "release-app-mobile-sidebar");
-      await expect(page.getByRole("button", { name: "Show sidebar" })).toBeVisible();
+      await expect(homePage.chatInput).toBeEditable();
+
       await appPage.toggleSidebar();
+      const drawer = page.getByRole("dialog", { name: "Conversations" });
+
+      await expect(drawer).toBeVisible();
       await expect(appPage.settingsButton).toBeVisible();
+      await captureVisualSnapshots(page, "release-app-mobile-sidebar");
+
+      await appPage.toggleSidebar();
+      await expect(drawer).toBeHidden();
+      await expect(page.getByRole("button", { name: "Show sidebar" })).toBeVisible();
       await expect(homePage.chatInput).toBeEditable();
     });
   });

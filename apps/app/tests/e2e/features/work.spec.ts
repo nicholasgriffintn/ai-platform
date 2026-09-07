@@ -542,10 +542,12 @@ test.describe("Work experience", () => {
       );
 
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-      await workPage.setProjectRoutingPreference("low");
       const projectId = workPage.currentProjectId();
       const workspaceId = workPage.currentWorkspaceId();
       const projectPath = new URL(page.url()).pathname;
+      const projectSettingsPath = `${projectPath}/settings`;
+
+      await workPage.setProjectRoutingPreference("low");
       const memberSkill = await polychatApi.createProjectSkill(
         projectId,
         "member-visible-skill",
@@ -597,9 +599,12 @@ test.describe("Work experience", () => {
         const inviteeWorkPage = new WorkPage(await inviteeContext.newPage());
 
         await inviteeWorkPage.acceptInvitation(inviteUrl);
-        await inviteeWorkPage.navigate(projectPath);
+        await inviteeWorkPage.navigate(projectSettingsPath);
         await expect(inviteeWorkPage.projectRoutingPreference()).toHaveValue("low");
         await expect(inviteeWorkPage.projectRoutingPreference()).toBeDisabled();
+        await expect(
+          inviteeWorkPage.page.getByRole("button", { name: "More project actions" }),
+        ).toHaveCount(0);
         const inviteeApi = new PolychatApi(inviteeContext.request);
         const visibleSkill = await inviteeApi.getProjectSkill(projectId, memberSkill.name);
 
@@ -627,7 +632,7 @@ test.describe("Work experience", () => {
       }
 
       await workPage.promoteAndRemoveMember(invitee.email);
-      await workPage.navigate(projectPath);
+      await workPage.navigate(projectSettingsPath);
       await expect(workPage.projectRoutingPreference()).toHaveValue("low");
       await polychatApi.deleteProjectSkill(projectId, memberSkill.name);
       await captureVisualSnapshots(page, "release-work-invitee-cycle", {
@@ -741,19 +746,28 @@ test.describe("Work experience", () => {
       await expect(workPage.getCapabilityAddButton("Replicate Predictions")).toBeVisible();
     });
 
-    test("enables and reviews training jobs, deployments and models", async ({
+    test("keeps a personal-only app out of a project and refuses it with its reason", async ({
       page,
+      polychatApi,
       workPage,
     }) => {
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-      await workPage.enableCapabilityAfterReload("Training");
-      await workPage.browseTrainingDashboard();
-      await expect(page.getByRole("tab", { name: "Models" })).toHaveAttribute(
-        "data-state",
-        "active",
+      const projectId = workPage.currentProjectId();
+
+      await workPage.searchProjectCapabilities("Training");
+      await expect(page.getByRole("heading", { name: "Training", exact: true })).toHaveCount(0);
+
+      const refusal = await polychatApi.addProjectCapability(
+        projectId,
+        "app",
+        "featured-finetuning",
       );
-      await workPage.removeCapabilityAfterReload("Training");
-      await expect(workPage.getCapabilityAddButton("Training")).toBeVisible();
+
+      expect(refusal.status).toBe(400);
+      expect(refusal.body).toContain("your own provider credentials");
+
+      await workPage.searchProjectCapabilities("Note Taker");
+      await expect(workPage.getCapabilityAddButton("Note Taker")).toBeVisible();
     });
 
     test("runs a dynamic project app and reviews its saved response", async ({

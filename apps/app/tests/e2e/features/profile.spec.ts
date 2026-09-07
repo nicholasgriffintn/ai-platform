@@ -364,7 +364,7 @@ test.describe("Account-owned resources", () => {
     await homePage.selectModel("GPT OSS 120B");
     await homePage.sendMessageAndRequireCompletion("Create usage for the task-list check");
     await homePage.waitForChatResponse(0);
-    await profilePage.openTab("tasks", "Tasks");
+    await profilePage.openTab("tasks", "Attention");
 
     await expect(page.getByText(/usage_rollup/i)).toHaveCount(0);
     await expect(page.getByText(/realtime_reconciliation/i)).toHaveCount(0);
@@ -375,6 +375,16 @@ test.describe("Account-owned resources", () => {
         exact: true,
       }),
     ).toBeVisible();
+  });
+
+  test("reviews training jobs, deployments and models from You", async ({ page, profilePage }) => {
+    await profilePage.openTab("training", "Training");
+    await expect(page.getByRole("heading", { name: "No jobs yet" })).toBeVisible();
+    await page.getByRole("tab", { name: "Deployments" }).click();
+    await expect(page.getByRole("heading", { name: "No deployments yet" })).toBeVisible();
+    await page.getByRole("tab", { name: "Models" }).click();
+    await expect(page.getByRole("tab", { name: "Models" })).toHaveAttribute("data-state", "active");
+    await expect(page.getByText("Amazon Nova Lite", { exact: true })).toBeVisible();
   });
 
   test("registers and removes a passkey", async ({ page, profilePage }) => {

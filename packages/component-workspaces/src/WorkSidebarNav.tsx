@@ -77,7 +77,7 @@ export function WorkSidebarNav({
   const linkClass = sidebarNavLinkClass;
 
   return (
-    <nav className="space-y-5 p-2 pb-8">
+    <nav aria-label="Workspace" className="space-y-5 p-2 pb-8">
       <div className="space-y-1">
         <SidebarNavButton icon={<SquarePen size={17} />} onClick={onNewChat}>
           New chat

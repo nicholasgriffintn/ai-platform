@@ -17,7 +17,7 @@ test.describe("Documents as finished work", () => {
     );
 
     expect(written.revision).toBe(1);
-    await homePage.navigate(`/files/made/${written.id}`);
+    await homePage.navigate(`/chat/files/made/${written.id}`);
 
     const editor = page.getByRole("textbox", { name: "Document content" });
 

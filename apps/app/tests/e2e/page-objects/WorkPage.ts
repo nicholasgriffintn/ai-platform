@@ -2,6 +2,16 @@ import type { Locator, Page, Response } from "@playwright/test";
 
 import { BasePage } from "./BasePage";
 
+const PROJECT_SURFACES = {
+  People: { link: "People", heading: "People & access" },
+  Governance: { link: "Governance", heading: "Governance" },
+  Files: { link: "Files", navigation: "Files sections" },
+  Activity: { link: "Activity", heading: "Activity" },
+  "Teammates & tools": { link: "Teammates", heading: "Teammates & tools" },
+} as const;
+
+type ProjectSurface = keyof typeof PROJECT_SURFACES;
+
 export class WorkPage extends BasePage {
   constructor(page: Page) {
     super(page);
@@ -60,25 +70,41 @@ export class WorkPage extends BasePage {
     return href;
   }
 
-  async openProjectSurface(
-    name:
-      | "People"
-      | "Governance"
-      | "Files"
-      | "Activity"
-      | "Teammates & tools"
-      | "Experiences"
-      | "Outputs",
-  ) {
-    await this.clickElement(this.page.getByRole("link", { name, exact: true }));
-    const heading =
-      name === "People"
-        ? "People & access"
-        : name === "Teammates & tools"
-          ? "Teammates & tools"
-          : name;
+  private workspaceNav() {
+    return this.page.getByRole("navigation", { name: "Workspace" });
+  }
 
-    await this.page.getByRole("heading", { name: heading, exact: true }).first().waitFor();
+  async openProjectSurface(name: ProjectSurface) {
+    const surface = PROJECT_SURFACES[name];
+
+    await this.clickElement(
+      this.workspaceNav().getByRole("link", { name: surface.link, exact: true }),
+    );
+
+    if ("navigation" in surface) {
+      await this.page.getByRole("navigation", { name: surface.navigation }).waitFor();
+
+      return;
+    }
+
+    await this.page.getByRole("heading", { name: surface.heading, exact: true }).first().waitFor();
+  }
+
+  async openProjectFiles(tab: "Made" | "Given" | "Memory") {
+    await this.openProjectSurface("Files");
+    await this.clickElement(
+      this.page.getByRole("navigation", { name: "Files sections" }).getByRole("link", {
+        name: tab,
+        exact: true,
+      }),
+    );
+  }
+
+  async openProjectApp(name: string) {
+    await this.openProjectSurface("Teammates & tools");
+    await this.capabilitySearch().fill(name);
+    await this.capabilityCard(name).getByRole("button", { name: "Open", exact: true }).click();
+    await this.page.getByRole("heading", { name, exact: true }).first().waitFor();
   }
 
   async openNewProjectConversation() {
@@ -225,6 +251,17 @@ export class WorkPage extends BasePage {
     await this.page.getByRole("link", { name: "Back to project" }).waitFor();
   }
 
+  async leaveProjectSettings() {
+    const back = this.page.getByRole("link", { name: "Back to project" });
+
+    if (!(await back.isVisible())) {
+      return;
+    }
+
+    await back.click();
+    await back.waitFor({ state: "hidden" });
+  }
+
   async updateProjectBrief(instructions: string) {
     await this.openProjectSettings();
     await this.page.getByRole("button", { name: "Edit project brief" }).click();
@@ -245,7 +282,7 @@ export class WorkPage extends BasePage {
   }
 
   currentProjectId() {
-    const match = new URL(this.page.url()).pathname.match(/\/projects\/([^/]+)$/u);
+    const match = new URL(this.page.url()).pathname.match(/\/projects\/([^/]+)/u);
 
     if (!match?.[1]) {
       throw new Error(`Current route is not a project overview: ${this.page.url()}`);
@@ -265,6 +302,7 @@ export class WorkPage extends BasePage {
   }
 
   async saveUseAndDeleteProjectTemplate(projectName: string) {
+    await this.leaveProjectSettings();
     await this.clickElement(this.page.getByRole("button", { name: "More project actions" }));
     await this.clickElement(this.page.getByRole("menuitem", { name: "Save template" }));
     await this.page.getByText("Project template saved", { exact: true }).waitFor();
@@ -291,8 +329,10 @@ export class WorkPage extends BasePage {
 
     await this.page.waitForURL(/\/projects\/[^/]+$/);
     await this.page.getByRole("heading", { name: projectName, exact: true }).waitFor();
+    await this.openProjectSettings();
     const instantiatedRoutingMode = await this.projectRoutingPreference().inputValue();
 
+    await this.leaveProjectSettings();
     await this.openProjectSurface("Governance");
 
     const savedTemplate = this.page
@@ -609,9 +649,7 @@ export class WorkPage extends BasePage {
   }
 
   async createUpdateAndDeleteProjectNote(title: string, body: string) {
-    await this.openProjectSurface("Experiences");
-    await this.page.getByRole("link", { name: /Note Taker/ }).click();
-    await this.page.getByRole("heading", { name: "Note Taker", exact: true }).waitFor();
+    await this.openProjectApp("Note Taker");
     await this.page.getByRole("link", { name: "New note" }).click();
 
     const editor = this.page.getByPlaceholder("Start typing...");
@@ -653,9 +691,7 @@ export class WorkPage extends BasePage {
   }
 
   async createUpdateAndDeleteStrudelPattern(name: string, description: string) {
-    await this.openProjectSurface("Experiences");
-    await this.page.getByRole("link", { name: /Strudel Music Patterns/ }).click();
-    await this.page.getByRole("heading", { name: "Strudel Music Patterns", exact: true }).waitFor();
+    await this.openProjectApp("Strudel Music Patterns");
     await this.page.getByRole("link", { name: "New pattern", exact: true }).click();
     await this.page.getByRole("button", { name: /Simple Drums/ }).click();
     await this.page.getByLabel("Name", { exact: true }).fill(name);
@@ -713,9 +749,7 @@ export class WorkPage extends BasePage {
   }
 
   async createArticleReportFromPastedContent(content: string) {
-    await this.openProjectSurface("Experiences");
-    await this.page.getByRole("link", { name: /Article Processor/ }).click();
-    await this.page.getByRole("heading", { name: "Article Processor", exact: true }).waitFor();
+    await this.openProjectApp("Article Processor");
     await this.page.getByRole("link", { name: "New report", exact: true }).click();
     await this.page.getByPlaceholder("Paste article content here...").fill(content);
 
@@ -753,9 +787,7 @@ export class WorkPage extends BasePage {
     description: string,
     audio: Buffer,
   ) {
-    await this.openProjectSurface("Experiences");
-    await this.page.getByRole("link", { name: /Recording Processor/ }).click();
-    await this.page.getByRole("heading", { name: "Recording Processor", exact: true }).waitFor();
+    await this.openProjectApp("Recording Processor");
     await this.page.getByRole("link", { name: "New recording", exact: true }).click();
     await this.page.getByLabel("Recording Title *", { exact: true }).fill(title);
     await this.page.getByLabel("Description", { exact: true }).fill(description);
@@ -790,9 +822,7 @@ export class WorkPage extends BasePage {
   }
 
   async browseReplicateModelsAndPredictions(modelName: string) {
-    await this.openProjectSurface("Experiences");
-    await this.page.getByRole("link", { name: /Replicate Predictions/ }).click();
-    await this.page.getByRole("heading", { name: "Replicate Predictions", exact: true }).waitFor();
+    await this.openProjectApp("Replicate Predictions");
     await this.page.getByPlaceholder("Search Replicate models...").fill(modelName);
     await this.page.getByRole("heading", { name: modelName, exact: true }).click();
     await this.page.getByRole("heading", { name: modelName, exact: true }).waitFor();
@@ -805,18 +835,9 @@ export class WorkPage extends BasePage {
     await this.page.getByPlaceholder("Search Replicate models...").waitFor();
   }
 
-  async browseTrainingDashboard() {
-    await this.openProjectSurface("Experiences");
-    await this.page
-      .getByRole("heading", { name: "Training", exact: true })
-      .locator("xpath=ancestor::a[1]")
-      .click();
-    await this.page.getByRole("heading", { name: "Training", exact: true }).waitFor();
-    await this.page.getByRole("heading", { name: "No jobs yet" }).waitFor();
-    await this.page.getByRole("tab", { name: "Deployments" }).click();
-    await this.page.getByRole("heading", { name: "No deployments yet" }).waitFor();
-    await this.page.getByRole("tab", { name: "Models" }).click();
-    await this.page.getByText("Amazon Nova Lite", { exact: true }).waitFor();
+  async searchProjectCapabilities(name: string) {
+    await this.openProjectSurface("Teammates & tools");
+    await this.capabilitySearch().fill(name);
   }
 
   async executeQrToolAndOpenSavedOutput(payload: string) {
@@ -847,7 +868,7 @@ export class WorkPage extends BasePage {
       .getByRole("heading", { name: "Create Qr Code - Results", exact: true })
       .waitFor();
 
-    await this.openProjectSurface("Outputs");
+    await this.openProjectFiles("Made");
     await this.page.getByRole("link", { name: /App output: create_qr_code/ }).click();
     await this.page
       .getByRole("heading", { name: "App output: create_qr_code", exact: true })
@@ -855,7 +876,7 @@ export class WorkPage extends BasePage {
   }
 
   async shareAndRevokeOutput(title: string) {
-    await this.openProjectSurface("Outputs");
+    await this.openProjectFiles("Made");
     await this.page.getByRole("link", { name: new RegExp(title) }).click();
     await this.page.getByRole("heading", { name: title, exact: true }).waitFor();
     await this.page.getByRole("button", { name: "Share", exact: true }).click();
