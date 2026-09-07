@@ -273,8 +273,8 @@ importers:
         specifier: 0.12.0
         version: 0.12.0(hono@4.13.5)
       '@sentry/cloudflare':
-        specifier: 10.72.0
-        version: 10.72.0(@cloudflare/workers-types@5.20260831.1)(wrangler@4.127.1(@cloudflare/workers-types@5.20260831.1))
+        specifier: 10.73.0
+        version: 10.73.0(@cloudflare/workers-types@5.20260831.1)(wrangler@4.127.1(@cloudflare/workers-types@5.20260831.1))
       '@tsndr/cloudflare-worker-jwt':
         specifier: 3.2.3
         version: 3.2.3
@@ -5087,8 +5087,8 @@ packages:
     resolution: {integrity: sha512-j3s9XPv8Wo1EG5/naBi4XGF0uXYQ2A3QZNI0NKWgCMxRHVrDJGlZEYymcHDHY7fquRm73P8U3c8xqJqB5yad6w==}
     engines: {node: '>=20'}
 
-  '@sentry/cloudflare@10.72.0':
-    resolution: {integrity: sha512-fRMlu916jqB5iYSfJlV1MVsM76nLVG1KxkQHmqD/Bg+DyqxiY/ETsP2mL0rscxSuznR3Kjh4fh76PZ+KiGclIw==}
+  '@sentry/cloudflare@10.73.0':
+    resolution: {integrity: sha512-6BmvIbstT8GLdA7xDrjd3oR98tdXh7uwDbnm/Hu3HjO3py0HEQlTypeSZIDVdRpR3veYZ9eT0hJ/74Gp+QZZtQ==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cloudflare/workers-types': ^4.x || ^5.x
@@ -5103,12 +5103,12 @@ packages:
     resolution: {integrity: sha512-fO9PLmHdVURcSPUpWCItWAtgKiMwGdJHbovoSEyLplX5sxs2ugvI4CBPTrkkgqhObnZOD0CnWBKDzSVQYBKEyQ==}
     engines: {node: '>=14'}
 
-  '@sentry/core@10.72.0':
-    resolution: {integrity: sha512-UJMHZfbjP4qk+g4AQhZmzosMdICC2D9p0/hLrm1LofPsp+WBfcSnv9jsY1a9TfmpS4WCAmTx8nANYTIXifcBjA==}
+  '@sentry/core@10.73.0':
+    resolution: {integrity: sha512-FLO1UgH19RyasVpofu612WCOgb2nEH0dZy+R72d7p65XU9i0wxlMKm3+sgfwKmiSJp1Qhilaaxs4Jg6BbiM5HA==}
     engines: {node: '>=18'}
 
-  '@sentry/server-utils@10.72.0':
-    resolution: {integrity: sha512-CWpHMYW81RDBSVBdnxulGUvvBhkBb/OpSr72ubSe1UkKTcgT0NDMCWxE3dLFXqSxzT4DaF5UlUVv9ii5Sse53w==}
+  '@sentry/server-utils@10.73.0':
+    resolution: {integrity: sha512-QskripdKFbM/+gipC6mpa2crLwL7+VbkX84IpHg2z9UlYQ1kNKd3aMT+Qk9NLRSw/zu1rSIAvlbWfx4D3rgNAA==}
     engines: {node: '>=18'}
 
   '@sindresorhus/is@7.2.0':
@@ -11954,11 +11954,11 @@ snapshots:
 
   '@scalar/validation@0.6.3': {}
 
-  '@sentry/cloudflare@10.72.0(@cloudflare/workers-types@5.20260831.1)(wrangler@4.127.1(@cloudflare/workers-types@5.20260831.1))':
+  '@sentry/cloudflare@10.73.0(@cloudflare/workers-types@5.20260831.1)(wrangler@4.127.1(@cloudflare/workers-types@5.20260831.1))':
     dependencies:
       '@opentelemetry/api': 1.9.1
-      '@sentry/core': 10.72.0
-      '@sentry/server-utils': 10.72.0
+      '@sentry/core': 10.73.0
+      '@sentry/server-utils': 10.73.0
       magic-string: 0.30.21
     optionalDependencies:
       '@cloudflare/workers-types': 5.20260831.1
@@ -11966,14 +11966,14 @@ snapshots:
 
   '@sentry/conventions@0.16.0': {}
 
-  '@sentry/core@10.72.0':
+  '@sentry/core@10.73.0':
     dependencies:
       '@sentry/conventions': 0.16.0
 
-  '@sentry/server-utils@10.72.0':
+  '@sentry/server-utils@10.73.0':
     dependencies:
       '@sentry/conventions': 0.16.0
-      '@sentry/core': 10.72.0
+      '@sentry/core': 10.73.0
 
   '@sindresorhus/is@7.2.0': {}
 
