@@ -254,6 +254,7 @@ export function useConversationActions(
               : threadPoint.messages,
             parent_conversation_id: currentConversationId,
             parent_message_id: messageId,
+            has_branches: true,
             isLocalOnly: false,
           };
         }

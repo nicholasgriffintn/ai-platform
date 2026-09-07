@@ -89,12 +89,21 @@ export const handleGetChatCompletion = async (
     messageLimit: options.messageLimit,
   });
 
+  const family = await context.repositories.conversations.listConversationThreads(
+    completion_id,
+    user.id,
+    typeof conversation.project_id === "string" ? conversation.project_id : null,
+    2,
+  );
+  const hasBranches = family.length > 1;
+
   if (!Array.isArray(conversation.messages)) {
     return {
       ...conversation,
       is_archived: Boolean(conversation.is_archived),
       active_operation: activeOperation,
       latest_run: latestRun,
+      has_branches: hasBranches,
     };
   }
 
@@ -107,6 +116,7 @@ export const handleGetChatCompletion = async (
     is_archived: Boolean(conversation.is_archived),
     active_operation: activeOperation,
     latest_run: latestRun,
+    has_branches: hasBranches,
     messages: await hydrateConnectorApprovalMessageState({
       messages: refreshedMessages,
       userId: user.id,
