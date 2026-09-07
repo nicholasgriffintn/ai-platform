@@ -1,7 +1,7 @@
+import { AppRoute } from "@ngriffin_uk/polychat-component-shell";
 import { getProjectSurface } from "@ngriffin_uk/polychat-library-react";
 import { useParams } from "react-router";
 
-import { AppRoute } from "~/components/Apps/AppRoute";
 import { useWorkData } from "~/components/Work/WorkDataContext";
 
 export function meta() {

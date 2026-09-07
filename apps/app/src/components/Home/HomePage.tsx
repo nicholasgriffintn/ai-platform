@@ -8,13 +8,12 @@ import {
   ConversationProductHeader,
   PageShell,
   ProductModeHeader,
+  useCanvasStudio,
 } from "@ngriffin_uk/polychat-component-shell";
 import { Button, PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import { useComposerPrefill, useTrackEvent } from "@ngriffin_uk/polychat-library-react";
 import { Image as ImageIcon, MessageCircle } from "lucide-react";
 import { useState } from "react";
-
-import { useCanvasStudio } from "~/components/Canvas/useCanvasStudio";
 
 import { HomeConversationThread } from "./HomeConversationThread";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
