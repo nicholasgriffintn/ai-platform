@@ -1,4 +1,4 @@
-# ADR 0080: Run workspace tasks through Vite+
+# ADR 0031: Run workspace tasks through Vite+
 
 Status: Implemented at the repository root, in `packages/config/tasks` and in every buildable workspace package.
 
