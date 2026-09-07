@@ -66,6 +66,7 @@ describe("project task completions", () => {
       projectTaskId: "task-1",
       stageId: "review",
       initiatorUserId: 1,
+      trigger: "user",
       status: "succeeded",
       attempt: 2,
       createdAt: "2026-08-30T10:00:00.000Z",

@@ -10,6 +10,7 @@ import {
   type ChatRunCommandKind,
   type ChatRunCommandReceipt,
   type ChatRunEvent,
+  type ChatRunTrigger,
   type ChatRunStatus,
   runProvenanceSchema,
   type RunProvenance,
@@ -43,6 +44,7 @@ export interface AcceptRunCommandParams {
   projectTaskId?: string | null;
   stageId?: string | null;
   runId?: string;
+  trigger?: ChatRunTrigger;
 }
 
 export interface AcceptRunCancellationParams {
@@ -106,6 +108,7 @@ function formatRun(row: ConversationRunRow): ChatRun {
     cancellationRequestedAt: row.cancellation_requested_at,
     terminalReason: row.terminal_reason,
     lastMessageId: row.last_message_id,
+    trigger: row.trigger ?? "user",
     context,
     retry,
     ...(provenance ? { provenance } : {}),
@@ -363,8 +366,8 @@ export class ConversationRunRepository extends BaseRepository {
     const runStatement = this.env.DB.prepare(
       `INSERT INTO conversation_run (
          id, conversation_id, project_id, project_task_id, stage_id, initiator_user_id,
-         status, attempt, event_sequence, created_at, updated_at
-       ) VALUES (?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?)
+         status, attempt, event_sequence, trigger, created_at, updated_at
+       ) VALUES (?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?, ?)
        RETURNING *`,
     ).bind(
       runId,
@@ -373,6 +376,7 @@ export class ConversationRunRepository extends BaseRepository {
       params.projectTaskId ?? null,
       params.stageId ?? null,
       params.userId,
+      params.trigger ?? "user",
       now,
       now,
     );

@@ -43,6 +43,7 @@ const run: ChatRun = {
   projectId: "project-1",
   projectTaskId: "task-1",
   initiatorUserId: 7,
+  trigger: "user",
   status: "awaiting_input",
   attempt: 1,
   createdAt: "2026-09-05T10:01:00.000Z",

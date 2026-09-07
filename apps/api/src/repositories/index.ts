@@ -16,6 +16,7 @@ import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprov
 import { ConversationOrganisationRepository } from "./ConversationOrganisationRepository";
 import { ConversationRepository } from "./ConversationRepository";
 import { ConversationRunRepository } from "./ConversationRunRepository";
+import { DelegationRepository } from "./DelegationRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { GoalRepository } from "./GoalRepository";
 import { InfraCostDailyRepository } from "./InfraCostDailyRepository";
@@ -62,6 +63,7 @@ export {
   BaseRepository,
   ConversationRepository,
   ConversationRunRepository,
+  DelegationRepository,
   ConversationOrganisationRepository,
   CapabilityConfigurationRepository,
   ComposioConnectorSessionRepository,
@@ -114,6 +116,7 @@ export class RepositoryManager {
   private capabilityConfigurationRepo: CapabilityConfigurationRepository;
   private conversationRepo: ConversationRepository;
   private conversationRunRepo: ConversationRunRepository;
+  private delegationRepo: DelegationRepository;
   private conversationOrganisationRepo: ConversationOrganisationRepository;
   private composioConnectorSessionRepo: ComposioConnectorSessionRepository;
   private connectorOperationApprovalRepo: ConnectorOperationApprovalRepository;
@@ -163,6 +166,7 @@ export class RepositoryManager {
     this.capabilityConfigurationRepo = new CapabilityConfigurationRepository(env);
     this.conversationRepo = new ConversationRepository(env);
     this.conversationRunRepo = new ConversationRunRepository(env);
+    this.delegationRepo = new DelegationRepository(env);
     this.conversationOrganisationRepo = new ConversationOrganisationRepository(env);
     this.composioConnectorSessionRepo = new ComposioConnectorSessionRepository(env);
     this.connectorOperationApprovalRepo = new ConnectorOperationApprovalRepository(env);
@@ -297,6 +301,10 @@ export class RepositoryManager {
 
   public get conversationRuns(): ConversationRunRepository {
     return this.conversationRunRepo;
+  }
+
+  public get delegations(): DelegationRepository {
+    return this.delegationRepo;
   }
 
   public get conversationOrganisation(): ConversationOrganisationRepository {

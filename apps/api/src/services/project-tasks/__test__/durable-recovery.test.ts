@@ -31,6 +31,7 @@ function run(status: ChatRun["status"]): ChatRun {
     projectId: "project-1",
     projectTaskId: "task-1",
     initiatorUserId: 7,
+    trigger: "user",
     status,
     attempt: 1,
     createdAt: "2026-09-05T12:00:00.000Z",

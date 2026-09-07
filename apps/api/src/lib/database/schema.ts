@@ -813,6 +813,9 @@ export const conversationRun = sqliteTable(
     initiator_user_id: integer()
       .notNull()
       .references(() => user.id),
+    trigger: text({ enum: ["user", "delegation", "handle", "schedule"] })
+      .notNull()
+      .default("user"),
     status: text({
       enum: [
         "accepted",
@@ -884,6 +887,60 @@ export const conversationRunEvent = sqliteTable(
 );
 
 export type ConversationRunEventRow = typeof conversationRunEvent.$inferSelect;
+
+export const delegation = sqliteTable(
+  "delegation",
+  {
+    id: text().primaryKey(),
+    parent_conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    child_conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    parent_run_id: text()
+      .notNull()
+      .references(() => conversationRun.id, { onDelete: "cascade" }),
+    depth: integer().notNull(),
+    teammate_id: text().notNull(),
+    goal: text().notNull(),
+    wait_for: text({ enum: ["all", "any", "none"] }).notNull(),
+    max_credit_micros: integer().notNull(),
+    max_steps: integer().notNull(),
+    deadline: text().notNull(),
+    state: text({
+      enum: [
+        "queued",
+        "running",
+        "awaiting_input",
+        "awaiting_approval",
+        "done",
+        "failed",
+        "cancelled",
+        "expired",
+      ],
+    })
+      .notNull()
+      .default("queued"),
+    result_json: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    parentConversationIdx: index("delegation_parent_conversation_idx").on(
+      table.parent_conversation_id,
+    ),
+    childConversationIdx: index("delegation_child_conversation_idx").on(
+      table.child_conversation_id,
+    ),
+  }),
+);
+
+export type DelegationRow = typeof delegation.$inferSelect;
 
 export const conversationRunCommand = sqliteTable(
   "conversation_run_command",

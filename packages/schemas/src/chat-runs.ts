@@ -67,6 +67,9 @@ export const chatRunIdSchema = z.string().trim().min(1).max(200);
 export const chatRunCommandKindSchema = z.enum(["turn", "interaction_response", "cancel"]);
 export type ChatRunCommandKind = z.infer<typeof chatRunCommandKindSchema>;
 
+export const chatRunTriggerSchema = z.enum(["user", "delegation", "handle", "schedule"]);
+export type ChatRunTrigger = z.infer<typeof chatRunTriggerSchema>;
+
 export const chatRunSchema = z.object({
   protocolVersion: z.literal(CHAT_RUN_PROTOCOL_VERSION),
   id: chatRunIdSchema,
@@ -75,6 +78,7 @@ export const chatRunSchema = z.object({
   projectTaskId: z.string().min(1).nullable(),
   stageId: z.string().min(1).nullable().optional(),
   initiatorUserId: z.number().int().positive(),
+  trigger: chatRunTriggerSchema.default("user"),
   status: chatRunStatusSchema,
   attempt: z.number().int().positive(),
   createdAt: z.string(),

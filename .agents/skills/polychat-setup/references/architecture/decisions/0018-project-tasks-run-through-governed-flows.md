@@ -22,7 +22,7 @@ Project the latest current-run question or approval as protocol version 1 `inter
 
 The same task-detail read returns a newest-first protocol version 1 `activity` projection reconstructed from every run scoped by project and task identity, retained run events, run-keyed message parts, goal progress, the current interaction and task completions — not a progress table. Where a legacy or trimmed run has no retained event for its current state, add a `run.snapshot` item from the run row. Each item carries stable project, task, run and source identities, an open `type`, a stable coarse category and status, safe title, optional summary and detail, time, and actionable and terminal flags. Proposed task outcomes use a null run because they predate execution. Unknown event types remain visible as generic, non-actionable activity, and a new semantic category or incompatible field meaning requires a protocol-version change. The projection excludes assistant reasoning, tool arguments and raw tool results; tool activity names the tool and visible lifecycle only, and completion output is whitespace-normalised and bounded to a short preview.
 
-Use project flows for durable multi-agent sequencing. Team-agent fields and nested delegation are retired. Personal Chat retains bounded `run_council` and `second_opinion` within the caller's turn.
+Use project flows for durable multi-agent sequencing. Team-agent fields remain retired. Delegation is defined separately in ADR 0040 and uses an ordinary child conversation and run; it does not create a second execution runtime. Personal Chat retains bounded `run_council` and `second_opinion` within the caller's turn.
 
 ## Consequences
 

@@ -70,6 +70,7 @@ export * from "./chat.js";
 export * from "./chat-context.js";
 export * from "./chat-retries.js";
 export * from "./chat-runs.js";
+export * from "./delegations.js";
 export * from "./automations.js";
 export * from "./channels.js";
 export * from "./documents.js";

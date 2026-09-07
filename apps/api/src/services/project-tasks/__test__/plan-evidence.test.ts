@@ -66,6 +66,7 @@ function run(id: string, stageId: string, status: ChatRun["status"], attempt = 1
     projectTaskId: "task-1",
     stageId,
     initiatorUserId: 7,
+    trigger: "user",
     status,
     attempt,
     createdAt: "2026-09-05T10:00:00.000Z",

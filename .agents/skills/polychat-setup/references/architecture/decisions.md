@@ -34,6 +34,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 ## Work
 
 - [0018: Run project tasks through governed flows](decisions/0018-project-tasks-run-through-governed-flows.md)
+- [0040: Delegate to a teammate in its own conversation](decisions/0040-delegate-to-a-teammate-in-its-own-conversation.md)
 - [0019: Keep repeatable scheduling in recipes](decisions/0019-keep-repeatable-scheduling-in-recipes.md)
 - [0020: Derive attention from authoritative work state and revalidate every delivery](decisions/0020-derive-attention-and-revalidate-delivery.md)
 - [0021: Separate personal conversation state from project groups](decisions/0021-separate-conversation-state-from-project-groups.md)
