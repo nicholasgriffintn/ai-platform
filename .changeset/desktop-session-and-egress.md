@@ -15,5 +15,6 @@ Other corrections:
 - Pairing secrets saved against a model runtime were stored and never sent. Probing, model discovery and model runs now carry them, as agent runs already did.
 - A model or agent run could leave its identifier in the cancellation registry when the HTTP client refused to build, so a later run reusing that identifier started cancelled.
 - The window now refuses to start against an API origin the host was not built for, rather than signing in against one API and calling another.
+- A transport error from a request carrying a pairing secret or the session cookie was stringified straight into the message the window shows. Those failures are now described by what went wrong and which runtime it was, so a credential or an address cannot be repeated back through an error.
 
 `polychat-schemas` publishes `desktopSessionTokenSchema` for the host's token reply and `isSameOrigin` alongside the other navigation guards.

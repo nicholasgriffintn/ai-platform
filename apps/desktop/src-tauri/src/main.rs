@@ -17,7 +17,10 @@ use agents::{AgentApprovalRequest, AgentChunk, AgentSession};
 use chat::{ModelRunRequest, StreamChunk};
 use diagnostics::Diagnostics;
 use discovery::DiscoveredModel;
-use egress::{DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport};
+use egress::{
+    describe_transport_failure, DesktopEndpoint, EgressRefusal, EndpointKind, EndpointTransport,
+    TransportFailure,
+};
 use futures_util::StreamExt;
 use lines::LineReader;
 use runs::{RunRegistry, StreamEvent};
@@ -37,6 +40,7 @@ const MAX_JSON_BODY: usize = 8 * 1024 * 1024;
 const BUILT_IN_APPROVED_AT: &str = "1970-01-01T00:00:00Z";
 const SESSION_SECRET: &str = "session-token";
 const DEFAULT_TOKEN_LIFETIME_SECONDS: u32 = 15 * 60;
+const API_LABEL: &str = "Polychat";
 const API_BASE_URL: &str = match option_env!("POLYCHAT_API_BASE_URL") {
     Some(value) => value,
     None if cfg!(debug_assertions) => "http://localhost:8787",
@@ -136,6 +140,7 @@ fn authorised_endpoint(store: &Store, endpoint_id: &str) -> Result<(DesktopEndpo
 async fn stream_lines(
     response: reqwest::Response,
     run_id: &str,
+    label: &str,
     registry: &RunRegistry,
     mut parse: impl FnMut(&str) -> StreamChunk,
     emit: &impl Fn(StreamEvent),
@@ -154,7 +159,7 @@ async fn stream_lines(
                 emit(StreamEvent::Failed {
                     run_id: run_id.to_string(),
                     failure: "unknown".to_string(),
-                    message: cause.to_string(),
+                    message: transport_failure(label, &cause),
                 });
 
                 return "interrupted";
@@ -215,12 +220,15 @@ fn with_pairing(
     }
 }
 
-async fn read_bounded_json(response: reqwest::Response) -> Result<serde_json::Value, String> {
+async fn read_bounded_json(
+    response: reqwest::Response,
+    label: &str,
+) -> Result<serde_json::Value, String> {
     let mut stream = response.bytes_stream();
     let mut body: Vec<u8> = Vec::new();
 
     while let Some(piece) = stream.next().await {
-        let piece = piece.map_err(|cause| cause.to_string())?;
+        let piece = piece.map_err(|cause| transport_failure(label, &cause))?;
 
         body.extend_from_slice(&piece);
 
@@ -231,7 +239,24 @@ async fn read_bounded_json(response: reqwest::Response) -> Result<serde_json::Va
         }
     }
 
-    serde_json::from_slice(&body).map_err(|cause| cause.to_string())
+    serde_json::from_slice(&body)
+        .map_err(|_| describe_transport_failure(label, TransportFailure::Unreadable))
+}
+
+fn classify_transport(cause: &reqwest::Error) -> TransportFailure {
+    if cause.is_timeout() {
+        TransportFailure::Timeout
+    } else if cause.is_connect() || cause.is_request() {
+        TransportFailure::Unreachable
+    } else if cause.is_body() || cause.is_decode() {
+        TransportFailure::Unreadable
+    } else {
+        TransportFailure::Refused
+    }
+}
+
+fn transport_failure(label: &str, cause: &reqwest::Error) -> String {
+    describe_transport_failure(label, classify_transport(cause))
 }
 
 fn user_agent() -> String {
@@ -340,7 +365,7 @@ async fn probe_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<
         },
         Err(cause) => Readiness::Unreachable {
             checked_at: timestamp(),
-            detail: Some(cause.to_string()),
+            detail: Some(transport_failure(&endpoint.label, &cause)),
         },
     })
 }
@@ -358,7 +383,7 @@ async fn discover_models(
     let response = with_pairing(http_client(DISCOVERY_TIMEOUT)?.get(target), &endpoint)?
         .send()
         .await
-        .map_err(|cause| cause.to_string())?;
+        .map_err(|cause| transport_failure(&endpoint.label, &cause))?;
 
     if !response.status().is_success() {
         return Err(format!(
@@ -368,7 +393,7 @@ async fn discover_models(
         ));
     }
 
-    let body = read_bounded_json(response).await?;
+    let body = read_bounded_json(response, &endpoint.label).await?;
 
     Ok(discovery::parse_models(&endpoint, &body, &timestamp()))
 }
@@ -439,7 +464,7 @@ async fn access_token() -> Result<SessionToken, String> {
         .header(reqwest::header::COOKIE, format!("session={session}"))
         .send()
         .await
-        .map_err(|cause| cause.to_string())?;
+        .map_err(|cause| transport_failure(API_LABEL, &cause))?;
 
     if !response.status().is_success() {
         let status = response.status().as_u16();
@@ -456,7 +481,7 @@ async fn access_token() -> Result<SessionToken, String> {
     let body = response
         .json::<serde_json::Value>()
         .await
-        .map_err(|cause| cause.to_string())?;
+        .map_err(|cause| transport_failure(API_LABEL, &cause))?;
 
     read_session_token(&body).ok_or_else(|| "Polychat returned no access token.".to_string())
 }
@@ -513,7 +538,7 @@ async fn sign_in() -> Result<(), String> {
         .json(&serde_json::json!({ "code": code }))
         .send()
         .await
-        .map_err(|cause| cause.to_string())?;
+        .map_err(|cause| transport_failure(API_LABEL, &cause))?;
 
     if !response.status().is_success() {
         let status = response.status().as_u16();
@@ -588,7 +613,7 @@ async fn list_agent_sessions(
     let response = with_pairing(http_client(DISCOVERY_TIMEOUT)?.get(target), &endpoint)?
         .send()
         .await
-        .map_err(|cause| cause.to_string())?;
+        .map_err(|cause| transport_failure(&endpoint.label, &cause))?;
 
     if !response.status().is_success() {
         return Err(format!(
@@ -598,7 +623,7 @@ async fn list_agent_sessions(
         ));
     }
 
-    let body = read_bounded_json(response).await?;
+    let body = read_bounded_json(response, &endpoint.label).await?;
 
     Ok(agents::parse_sessions(
         &endpoint,
@@ -627,7 +652,7 @@ async fn decide_approval(
     )?
     .send()
     .await
-    .map_err(|cause| cause.to_string())?;
+    .map_err(|cause| transport_failure(&endpoint.label, &cause))?;
 
     if response.status().is_success() {
         return Ok(());
@@ -681,7 +706,7 @@ async fn start_agent_run(
             emit(StreamEvent::Failed {
                 run_id: run_id.clone(),
                 failure: "unreachable".to_string(),
-                message: cause.to_string(),
+                message: transport_failure(&endpoint.label, &cause),
             });
 
             return Ok(());
@@ -856,7 +881,7 @@ async fn start_model_run(
             emit(StreamEvent::Failed {
                 run_id: run_id.clone(),
                 failure: "not-running".to_string(),
-                message: cause.to_string(),
+                message: transport_failure(&endpoint.label, &cause),
             });
 
             return Ok(());
@@ -889,6 +914,7 @@ async fn start_model_run(
     let reason = stream_lines(
         response,
         &run_id,
+        &endpoint.label,
         &registry,
         |line| chat::parse_stream_line(&endpoint, line),
         &emit,

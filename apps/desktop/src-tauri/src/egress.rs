@@ -29,6 +29,25 @@ pub struct DesktopEndpoint {
     pub last_seen_at: Option<String>,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TransportFailure {
+    Timeout,
+    Unreachable,
+    Unreadable,
+    Refused,
+}
+
+pub fn describe_transport_failure(label: &str, failure: TransportFailure) -> String {
+    let reason = match failure {
+        TransportFailure::Timeout => "did not answer in time",
+        TransportFailure::Unreachable => "could not be reached",
+        TransportFailure::Unreadable => "sent a reply this application could not read",
+        TransportFailure::Refused => "refused the request",
+    };
+
+    format!("{label} {reason}.")
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum EgressRefusal {
     UnknownEndpoint,
@@ -81,6 +100,37 @@ pub fn resolve_target(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn names_the_runtime_and_what_went_wrong_without_repeating_the_request() {
+        assert_eq!(
+            describe_transport_failure("Ollama", TransportFailure::Timeout),
+            "Ollama did not answer in time."
+        );
+        assert_eq!(
+            describe_transport_failure("LM Studio", TransportFailure::Unreachable),
+            "LM Studio could not be reached."
+        );
+    }
+
+    #[test]
+    fn never_repeats_a_credential_or_an_address_back_to_the_window() {
+        let secret = "pairing-secret-value";
+        let address = "http://127.0.0.1:11434";
+
+        for failure in [
+            TransportFailure::Timeout,
+            TransportFailure::Unreachable,
+            TransportFailure::Unreadable,
+            TransportFailure::Refused,
+        ] {
+            let described = describe_transport_failure("Ollama", failure);
+
+            assert!(!described.contains(secret));
+            assert!(!described.contains(address));
+            assert!(described.starts_with("Ollama "));
+        }
+    }
 
     fn endpoint(
         id: &str,
