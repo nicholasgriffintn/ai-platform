@@ -165,4 +165,43 @@ describe("ConversationRepository", () => {
       "DELETE FROM conversation WHERE user_id = ? AND project_id IS NULL",
     );
   });
+
+  it("keeps delegates out of lists and branch families but still finds them in search", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    await repository.getUserConversations(123);
+    await repository.listConversationThreads("conversation-1", 123, null, 200);
+    await repository.searchAccessibleConversations(123, "pricing", 8);
+
+    const queries = calls.map((call) => call.query);
+    const list = queries.find(
+      (query) =>
+        query.includes("FROM conversation c") &&
+        !query.includes("WITH RECURSIVE") &&
+        !query.includes("parent_title"),
+    );
+    const threads = queries.find((query) => query.includes("WITH RECURSIVE"));
+    const search = queries.find((query) => query.includes("parent_title"));
+
+    expect(list).toContain("'chat', 'task'");
+    expect(list).not.toContain("'delegate'");
+    expect(threads).toContain("'chat', 'task'");
+    expect(threads).not.toContain("'delegate'");
+    expect(search).toContain("'chat', 'task', 'delegate'");
+  });
+
+  it("returns the parent a delegate belongs to so search can explain the hit", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    await repository.searchAccessibleConversations(123, "pricing", 8);
+
+    const query = calls.at(-1)?.query ?? "";
+
+    expect(query).toContain("parent.title AS parent_title");
+    expect(query).toContain(
+      "LEFT JOIN conversation parent ON parent.id = c.parent_conversation_id",
+    );
+  });
 });

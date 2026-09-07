@@ -5,8 +5,12 @@ import type {
   ConversationType,
   ListedConversationType,
   ModelTier,
+  SearchableConversationType,
 } from "@ngriffin_uk/polychat-schemas";
-import { LISTED_CONVERSATION_TYPES } from "@ngriffin_uk/polychat-schemas";
+import {
+  LISTED_CONVERSATION_TYPES,
+  SEARCHABLE_CONVERSATION_TYPES,
+} from "@ngriffin_uk/polychat-schemas";
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
@@ -18,6 +22,10 @@ export type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk
 
 const listedConversationTypesSql = LISTED_CONVERSATION_TYPES.map(
   (type: ListedConversationType) => `'${type}'`,
+).join(", ");
+
+const searchableConversationTypesSql = SEARCHABLE_CONVERSATION_TYPES.map(
+  (type: SearchableConversationType) => `'${type}'`,
 ).join(", ");
 
 export interface GetUserConversationsOptions {
@@ -58,6 +66,9 @@ export interface GlobalConversationSearchRow {
   snoozed_next_response_at: string | null;
   next_response_arrived: number;
   group: string | null;
+  type: ConversationType;
+  parent_conversation_id: string | null;
+  parent_title: string | null;
 }
 
 export class ConversationRepository extends BaseRepository {
@@ -484,7 +495,8 @@ export class ConversationRepository extends BaseRepository {
     const searchTerm = `%${escapeSqlLikePattern(trimmedQuery)}%`;
 
     return this.runQuery<GlobalConversationSearchRow>(
-      `SELECT c.id, c.title, c.updated_at, c.project_id,
+      `SELECT c.id, c.title, c.updated_at, c.project_id, c.type,
+			        c.parent_conversation_id, parent.title AS parent_title,
 			        p.name AS project_name, w.id AS workspace_id, w.name AS workspace_name,
               COALESCE(state.is_pinned, 0) AS is_pinned,
               COALESCE(state.is_unread, 0) AS is_unread,
@@ -515,10 +527,11 @@ export class ConversationRepository extends BaseRepository {
 			 FROM conversation c
 			 LEFT JOIN project p ON p.id = c.project_id AND p.archived_at IS NULL
 			 LEFT JOIN workspace w ON w.id = p.workspace_id
+			 LEFT JOIN conversation parent ON parent.id = c.parent_conversation_id
 			 LEFT JOIN conversation_user_state state
          ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.is_archived = 0
-			   AND c.type IN (${listedConversationTypesSql})
+			   AND c.type IN (${searchableConversationTypesSql})
 			   AND (
 			     (c.project_id IS NULL AND c.user_id = ?)
 			     OR (
