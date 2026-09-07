@@ -65,13 +65,19 @@ describe("desktop routes", () => {
     expect(declared).toEqual(components);
   });
 
-  it("stops answering 404 for a place once a page claims it", () => {
-    const definitions = buildRouteDefinitions([
-      ...DESKTOP_PAGE_ROUTES,
-      { page: "files", paths: ["/chat/files/*"] },
-    ]);
+  it("answers 404 for a chat place no page has claimed", () => {
+    const definitions = buildRouteDefinitions(
+      DESKTOP_PAGE_ROUTES.filter(({ page }) => page !== "files"),
+    );
 
-    expect(definitions).toContainEqual({ path: "/chat/files/*", page: "files" });
-    expect(definitions).not.toContainEqual({ path: "/chat/files/*", page: NOT_FOUND_PAGE });
+    expect(definitions).toContainEqual({ path: "/chat/files/*", page: NOT_FOUND_PAGE });
+  });
+
+  it("stops answering 404 for a place once a page claims it", () => {
+    expect(DESKTOP_ROUTE_DEFINITIONS).toContainEqual({ path: "/chat/files/*", page: "files" });
+    expect(DESKTOP_ROUTE_DEFINITIONS).not.toContainEqual({
+      path: "/chat/files/*",
+      page: NOT_FOUND_PAGE,
+    });
   });
 });
