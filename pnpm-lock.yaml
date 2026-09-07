@@ -1102,16 +1102,6 @@ importers:
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
-      lucide-react:
-        specifier: 1.37.0
-        version: 1.37.0(react@19.2.8)
-      sonner:
-        specifier: 2.0.8
-        version: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-    devDependencies:
-      '@ngriffin_uk/polychat-config':
-        specifier: workspace:^
-        version: link:../config
       '@strudel/codemirror':
         specifier: 1.3.0
         version: 1.3.0(@codemirror/lint@6.9.7)
@@ -1142,6 +1132,16 @@ importers:
       '@strudel/webaudio':
         specifier: 1.3.0
         version: 1.3.0
+      lucide-react:
+        specifier: 1.37.0
+        version: 1.37.0(react@19.2.8)
+      sonner:
+        specifier: 2.0.8
+        version: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -1297,6 +1297,9 @@ importers:
       '@ngriffin_uk/polychat-component-conversation':
         specifier: workspace:^
         version: link:../component-conversation
+      '@ngriffin_uk/polychat-component-experiences':
+        specifier: workspace:^
+        version: link:../component-experiences
       '@ngriffin_uk/polychat-component-models':
         specifier: workspace:^
         version: link:../component-models

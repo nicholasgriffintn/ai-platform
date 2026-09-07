@@ -2,32 +2,32 @@ import { ContentLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-compon
 import { lazy, Suspense } from "react";
 
 const CanvasStudio = lazy(async () => {
-  const module = await import("~/components/Canvas/CanvasStudio");
+  const module = await import("./Canvas/CanvasStudio");
 
   return { default: module.CanvasStudio };
 });
 const ReplicateModelDetail = lazy(async () => {
-  const module = await import("~/components/Replicate/ReplicateModelDetail");
+  const module = await import("./Replicate/ReplicateModelDetail");
 
   return { default: module.ReplicateModelDetail };
 });
 const ReplicateModels = lazy(async () => {
-  const module = await import("~/components/Replicate/ReplicateModels");
+  const module = await import("./Replicate/ReplicateModels");
 
   return { default: module.ReplicateModels };
 });
 const ReplicatePredictionDetail = lazy(async () => {
-  const module = await import("~/components/Replicate/ReplicatePredictionDetail");
+  const module = await import("./Replicate/ReplicatePredictionDetail");
 
   return { default: module.ReplicatePredictionDetail };
 });
 const ReplicatePredictions = lazy(async () => {
-  const module = await import("~/components/Replicate/ReplicatePredictions");
+  const module = await import("./Replicate/ReplicatePredictions");
 
   return { default: module.ReplicatePredictions };
 });
 const TrainingDashboard = lazy(async () => {
-  const module = await import("~/components/Training/TrainingDashboard");
+  const module = await import("./Training/TrainingDashboard");
 
   return { default: module.TrainingDashboard };
 });

@@ -3,12 +3,13 @@ import {
   ReplicateLoading,
   ReplicatePredictionList,
 } from "@ngriffin_uk/polychat-component-experiences/media";
-import { SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import { ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   useReplicatePredictions,
   isAuthenticationError,
 } from "@ngriffin_uk/polychat-library-react";
+
+import { SignInEmptyState } from "../../Account/SignInEmptyState";
 
 export function ReplicatePredictions({
   basePath,
