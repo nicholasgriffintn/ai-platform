@@ -17,6 +17,7 @@ const CHAT_PLACE_PATHS = [
 export interface DesktopRouteDefinition {
   path: string;
   page: string;
+  layout?: string;
 }
 
 export function buildRouteDefinitions(
@@ -25,7 +26,9 @@ export function buildRouteDefinitions(
   const built = new Set(pages.flatMap(({ paths }) => paths));
 
   return [
-    ...pages.flatMap(({ page, paths }) => paths.map((path) => ({ path, page }))),
+    ...pages.flatMap(({ page, paths, layout }) =>
+      paths.map((path) => ({ path, page, ...(layout ? { layout } : {}) })),
+    ),
     ...CHAT_PLACE_PATHS.map((path) => `${MODE_BASE_PATHS.chat}/${path}`)
       .filter((path) => !built.has(path))
       .map((path) => ({ path, page: NOT_FOUND_PAGE })),
@@ -33,7 +36,9 @@ export function buildRouteDefinitions(
 }
 
 export const DESKTOP_PAGE_ROUTES = readPageRoutes(
-  import.meta.glob<{ paths: readonly string[] }>("./pages/*/routes.ts", { eager: true }),
+  import.meta.glob<{ paths: readonly string[]; layout?: string }>("./pages/*/routes.ts", {
+    eager: true,
+  }),
 );
 
 export const DESKTOP_ROUTE_DEFINITIONS: readonly DesktopRouteDefinition[] =

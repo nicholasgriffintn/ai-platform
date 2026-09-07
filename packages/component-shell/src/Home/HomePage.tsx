@@ -9,7 +9,7 @@ import {
 import { Button, PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import { useComposerPrefill, useTrackEvent } from "@ngriffin_uk/polychat-library-react";
 import { Image as ImageIcon, MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useCanvasStudio } from "../Apps/Canvas/useCanvasStudio";
 import { ChatSidebar } from "../Chat/ChatSidebar";
@@ -26,7 +26,10 @@ export interface HomePageProps {
 export function HomePage({ hostModeConfig }: HomePageProps = {}) {
   const [isCanvasMode, setIsCanvasMode] = useState(false);
   const { modeConfig: chatModeConfig } = useHomeChatModeConfig();
-  const modeConfig = { ...hostModeConfig, ...chatModeConfig };
+  const modeConfig = useMemo(
+    () => ({ ...hostModeConfig, ...chatModeConfig }),
+    [chatModeConfig, hostModeConfig],
+  );
   const canvas = useCanvasStudio({ enabled: isCanvasMode });
   const { trackEvent } = useTrackEvent();
 

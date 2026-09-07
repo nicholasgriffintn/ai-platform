@@ -136,10 +136,35 @@ describe("desktop routes", () => {
   });
 
   it("stops answering 404 for a place once a page claims it", () => {
-    expect(DESKTOP_ROUTE_DEFINITIONS).toContainEqual({ path: "/chat/files/*", page: "files" });
+    expect(DESKTOP_ROUTE_DEFINITIONS).toContainEqual({
+      path: "/chat/files/*",
+      page: "files",
+      layout: "chat",
+    });
     expect(DESKTOP_ROUTE_DEFINITIONS).not.toContainEqual({
       path: "/chat/files/*",
       page: NOT_FOUND_PAGE,
     });
+  });
+
+  it("keeps every page of a place under one layout, so the shell survives navigation", () => {
+    const layoutFor = (page: string) =>
+      DESKTOP_ROUTE_DEFINITIONS.find((definition) => definition.page === page)?.layout;
+
+    expect(layoutFor("attention")).toBe("chat");
+    expect(layoutFor("files")).toBe("chat");
+    expect(layoutFor("teammates")).toBe("chat");
+    expect(layoutFor("work")).toBe("work");
+    expect(layoutFor("project")).toBe("work");
+    expect(layoutFor("project-tasks")).toBe("work");
+  });
+
+  it("leaves the surfaces that bring their own frame outside a place layout", () => {
+    const layoutFor = (page: string) =>
+      DESKTOP_ROUTE_DEFINITIONS.find((definition) => definition.page === page)?.layout;
+
+    expect(layoutFor("chat")).toBeUndefined();
+    expect(layoutFor("profile")).toBeUndefined();
+    expect(layoutFor("not-found")).toBeUndefined();
   });
 });

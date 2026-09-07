@@ -39,6 +39,8 @@ export * from "./Legal/PrivacyPage";
 export * from "./Legal/TermsPage";
 export * from "./MetaAssistant/MetaAssistantOverlay";
 export * from "./Models/ModelsCatalogue";
+export * from "./Notifications/DeviceTaskNotificationSettings";
+export * from "./Notifications/WebPushTaskNotificationSettings";
 export * from "./Notifications/task-notification-channel";
 export * from "./Notifications/useDeviceTaskNotificationChannel";
 export * from "./Notifications/useWebPushTaskNotificationChannel";

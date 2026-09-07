@@ -1,16 +1,12 @@
 import {
+  DeviceTaskNotificationSettings,
   ShellDialogs,
   type ShellHost,
   ShellHostProvider,
-  useDeviceTaskNotificationChannel,
 } from "@ngriffin_uk/polychat-component-shell";
 import { WEB_APP_BASE_URL } from "@ngriffin_uk/polychat-library-client";
 import { useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { type ReactNode, useMemo } from "react";
-
-import { useDeepLinkNavigation } from "./hooks/useDeepLinkNavigation";
-import { useInboxNotifier } from "./hooks/useInboxNotifier";
-import { useWindowTitle } from "./hooks/useWindowTitle";
 
 export function DesktopShellHost({
   children,
@@ -21,10 +17,6 @@ export function DesktopShellHost({
   onSignIn: () => void;
   onSignOut: () => void;
 }) {
-  useInboxNotifier();
-  useDeepLinkNavigation();
-  useWindowTitle();
-
   const setShowMetaAssistant = useUIStore((state) => state.setShowMetaAssistant);
 
   const host = useMemo<ShellHost>(
@@ -33,7 +25,7 @@ export function DesktopShellHost({
       openAssistant: () => setShowMetaAssistant(true),
       openSignIn: onSignIn,
       signOut: onSignOut,
-      useTaskNotificationChannel: useDeviceTaskNotificationChannel,
+      TaskNotificationSettings: DeviceTaskNotificationSettings,
       HostDialogs: ShellDialogs,
     }),
     [onSignIn, onSignOut, setShowMetaAssistant],

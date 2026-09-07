@@ -10,9 +10,9 @@ import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState";
+import { useShellHost } from "../Host/ShellHostContext";
 import { PageShell } from "../Shell/PageShell";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
-import { TaskNotificationSettings } from "./TaskNotificationSettings";
 import { useWorkData } from "./WorkDataContext";
 
 export function WorkOverview() {
@@ -24,6 +24,7 @@ export function WorkOverview() {
   const isPro = useChatStore((state) => state.isPro);
   const canAccessWork = isAuthenticated && isPro;
   const { items: attentionItems, unread, markRead, dismiss } = useTaskAttention();
+  const { TaskNotificationSettings } = useShellHost();
 
   return (
     <>

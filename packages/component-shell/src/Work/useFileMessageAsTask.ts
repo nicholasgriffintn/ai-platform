@@ -1,5 +1,5 @@
 import { useProjectTasks, getErrorMessage } from "@ngriffin_uk/polychat-library-react";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export function useFileMessageAsTask({
@@ -11,14 +11,13 @@ export function useFileMessageAsTask({
 }) {
   const [isEnabled, setIsEnabled] = useState(false);
   const { create } = useProjectTasks(projectId);
+  const { mutateAsync } = create;
+  const isFiling = create.isPending;
 
-  return {
-    isEnabled,
-    setIsEnabled,
-    isFiling: create.isPending,
-    file: async (objective: string) => {
+  const file = useCallback(
+    async (objective: string) => {
       try {
-        const { task } = await create.mutateAsync({
+        const { task } = await mutateAsync({
           objective,
           ...(conversationId ? { originConversationId: conversationId } : {}),
         });
@@ -33,5 +32,8 @@ export function useFileMessageAsTask({
         return false;
       }
     },
-  };
+    [conversationId, mutateAsync],
+  );
+
+  return useMemo(() => ({ isEnabled, setIsEnabled, isFiling, file }), [file, isEnabled, isFiling]);
 }

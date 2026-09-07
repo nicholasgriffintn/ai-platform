@@ -2,7 +2,7 @@ import {
   type ShellHost,
   ShellDialogs,
   ShellHostProvider,
-  useWebPushTaskNotificationChannel,
+  WebPushTaskNotificationSettings,
 } from "@ngriffin_uk/polychat-component-shell";
 import { WEB_APP_BASE_URL } from "@ngriffin_uk/polychat-library-client";
 import { useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
@@ -43,7 +43,7 @@ export function WebShellHost({ children }: { children: ReactNode }) {
       openAssistant: () => setShowMetaAssistant(true),
       openSignIn: () => setShowLoginModal(true),
       signOut: () => logout(),
-      useTaskNotificationChannel: useWebPushTaskNotificationChannel,
+      TaskNotificationSettings: WebPushTaskNotificationSettings,
       HostDialogs: WebShellDialogs,
     }),
     [logout, setShowLoginModal, setShowMetaAssistant],

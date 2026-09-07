@@ -2,7 +2,7 @@ import { Button, Card, Switch } from "@ngriffin_uk/polychat-component-ui";
 import { useTaskNotificationPreferences } from "@ngriffin_uk/polychat-library-react";
 import type { TaskNotificationCategory } from "@ngriffin_uk/polychat-schemas";
 
-import { useShellHost } from "../Host/ShellHostContext";
+import type { TaskNotificationChannel } from "../Notifications/task-notification-channel";
 
 const CATEGORY_LABELS: Record<TaskNotificationCategory, string> = {
   decisions: "Decisions and approvals",
@@ -11,9 +11,7 @@ const CATEGORY_LABELS: Record<TaskNotificationCategory, string> = {
   assignments: "New assignments",
 };
 
-export function TaskNotificationSettings() {
-  const { useTaskNotificationChannel } = useShellHost();
-  const channel = useTaskNotificationChannel();
+export function TaskNotificationSettings({ channel }: { channel: TaskNotificationChannel }) {
   const { settings, isLoading, isUpdating, setCategory } = useTaskNotificationPreferences();
   const isBusy = channel.isBusy || isUpdating;
 
