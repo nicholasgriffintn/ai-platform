@@ -28,10 +28,15 @@ describe("desktop routes", () => {
     expect(pageFor("/")).toBe("root");
   });
 
+  it.each(["/chat/files", "/chat/files/made", "/chat/files/made/nested/path"])(
+    "serves the Files place at %s",
+    (pathname) => {
+      expect(pageFor(pathname)).toBe("files");
+    },
+  );
+
   it.each([
     "/chat/attention",
-    "/chat/files",
-    "/chat/files/nested/path",
     "/chat/teammates",
     "/chat/teammates/poly",
     "/chat/apps/notes/entry",

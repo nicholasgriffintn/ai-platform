@@ -1,4 +1,3 @@
-import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { ButtonLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   type FilesTab,
@@ -8,6 +7,7 @@ import {
 import { Plus } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
+import { PageShell } from "../Shell/PageShell";
 import { MemoryLibrary } from "./MemoryLibrary";
 import { OutputsLibrary } from "./OutputsLibrary";
 import { SourcesLibrary } from "./SourcesLibrary";

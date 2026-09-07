@@ -1285,6 +1285,12 @@ importers:
 
   packages/component-shell:
     dependencies:
+      '@ngriffin_uk/polychat-component-account':
+        specifier: workspace:^
+        version: link:../component-account
+      '@ngriffin_uk/polychat-component-capabilities':
+        specifier: workspace:^
+        version: link:../component-capabilities
       '@ngriffin_uk/polychat-component-content':
         specifier: workspace:^
         version: link:../component-content
@@ -1300,6 +1306,9 @@ importers:
       '@ngriffin_uk/polychat-component-ui':
         specifier: workspace:^
         version: link:../component-ui
+      '@ngriffin_uk/polychat-component-workspaces':
+        specifier: workspace:^
+        version: link:../component-workspaces
       '@ngriffin_uk/polychat-library-chat':
         specifier: workspace:^
         version: link:../library-chat

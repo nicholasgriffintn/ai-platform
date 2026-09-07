@@ -7,6 +7,7 @@ import {
   trainingRecordKey,
   TrainingSummaryBar,
 } from "@ngriffin_uk/polychat-component-experiences/training";
+import { SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import {
   Alert,
   AlertDescription,
@@ -41,8 +42,6 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { Activity, Boxes, ListChecks, Server } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 const EMPTY_MODELS: TrainingModelDefinition[] = [];
 const EMPTY_JOBS: TrainingJob[] = [];

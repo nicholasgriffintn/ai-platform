@@ -1,4 +1,5 @@
 import { ToolForm } from "@ngriffin_uk/polychat-component-capabilities";
+import { ResponseRenderer, SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import { BackLink, Card, FormLoadingSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import {
   useExecuteRunnableTool,
@@ -6,9 +7,6 @@ import {
   isAuthenticationError,
 } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
-
-import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 interface ToolRunnerProps {
   backPath: string;
