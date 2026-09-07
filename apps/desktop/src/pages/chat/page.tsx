@@ -15,7 +15,7 @@ import { useParams } from "react-router";
 
 const DESKTOP_MODE_CONFIG: ThreadModeConfig = { analyticsSource: "desktop" };
 
-export function ChatPage() {
+export default function ChatPage() {
   const { completionId } = useParams<"completionId">();
   const modeConfig = useConversationLaunchModeConfig(DESKTOP_MODE_CONFIG, completionId);
 
