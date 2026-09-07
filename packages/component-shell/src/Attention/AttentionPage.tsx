@@ -1,11 +1,13 @@
 import { SettingsSection, TaskList } from "@ngriffin_uk/polychat-component-account";
 import {
+  TaskAttentionList,
   WorkAccessEmptyState,
   WorkAttentionView,
   type WorkAttentionFilters,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  useTaskAttention,
   useTasks,
   useWorkAttention,
   getErrorMessage,
@@ -27,6 +29,7 @@ export function AttentionPage() {
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const isPro = useChatStore((state) => state.isPro);
   const { tasks, isLoadingTasks } = useTasks({ shouldRefetch: true });
+  const inbox = useTaskAttention();
   const filters: WorkAttentionFilters = {
     kind: query.kind,
     workspaceId: query.workspaceId,
@@ -75,6 +78,23 @@ export function AttentionPage() {
           }
         />
       )}
+
+      {isAuthenticated && isPro ? (
+        <div className="mt-10">
+          <SettingsSection
+            title={`Your inbox${inbox.unread > 0 ? ` · ${inbox.unread} unread` : ""}`}
+            description="Task notifications addressed to you. Opening one marks it read everywhere you are signed in."
+          >
+            <TaskAttentionList
+              items={inbox.items}
+              itemHref={(item) => item.deepLink}
+              emptyMessage="Nothing is waiting for you."
+              onRead={(item) => void inbox.markRead([item.id])}
+              onDismiss={(item) => void inbox.dismiss([item.id])}
+            />
+          </SettingsSection>
+        </div>
+      ) : null}
 
       {isAuthenticated ? (
         <div className="mt-10">

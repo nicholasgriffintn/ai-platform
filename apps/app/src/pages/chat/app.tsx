@@ -1,7 +1,6 @@
+import { AppRoute } from "@ngriffin_uk/polychat-component-shell";
 import { PERSONAL_SURFACE } from "@ngriffin_uk/polychat-library-react";
 import { useParams } from "react-router";
-
-import { AppRoute } from "~/components/Apps/AppRoute";
 
 export function meta() {
   return [{ title: "App - Polychat" }];

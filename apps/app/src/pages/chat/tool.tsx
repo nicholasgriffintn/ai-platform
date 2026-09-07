@@ -1,7 +1,6 @@
+import { ToolRunner } from "@ngriffin_uk/polychat-component-shell";
 import { getPlacePaths } from "@ngriffin_uk/polychat-library-react";
 import { useParams } from "react-router";
-
-import { ToolRunner } from "~/components/Capabilities/ToolRunner";
 
 export function meta() {
   return [{ title: "Run a tool - Polychat" }];

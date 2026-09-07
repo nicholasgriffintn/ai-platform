@@ -39,13 +39,16 @@ describe("desktop routes", () => {
     expect(pageFor("/chat/attention")).toBe("attention");
   });
 
-  it.each([
-    "/chat/teammates",
-    "/chat/teammates/poly",
-    "/chat/apps/notes/entry",
-    "/chat/tools/search",
-  ])("does not read the unbuilt chat route %s as a conversation", (pathname) => {
-    expect(pageFor(pathname)).toBe(NOT_FOUND_PAGE);
+  it("serves the Teammates place and the surfaces it links to", () => {
+    expect(pageFor("/chat/teammates")).toBe("teammates");
+    expect(pageFor("/chat/teammates/poly")).toBe("teammate");
+    expect(pageFor("/chat/tools/search")).toBe("tools");
+  });
+
+  it("serves the Apps place and the runtimes it routes into", () => {
+    expect(pageFor("/chat/apps/notes")).toBe("apps");
+    expect(pageFor("/chat/apps/notes/entry")).toBe("apps");
+    expect(pageFor("/chat/apps/replicate/predictions/abc")).toBe("apps");
   });
 
   it.each(["/work", "/work/acme/projects/p1", "/models", "/apps", "/pets", "/profile", "/pricing"])(
@@ -62,13 +65,19 @@ describe("desktop routes", () => {
     expect(declared).toEqual(components);
   });
 
-  it("stops answering 404 for a place once a page claims it", () => {
-    const definitions = buildRouteDefinitions([
-      ...DESKTOP_PAGE_ROUTES,
-      { page: "files", paths: ["/chat/files/*"] },
-    ]);
+  it("answers 404 for a chat place no page has claimed", () => {
+    const definitions = buildRouteDefinitions(
+      DESKTOP_PAGE_ROUTES.filter(({ page }) => page !== "files"),
+    );
 
-    expect(definitions).toContainEqual({ path: "/chat/files/*", page: "files" });
-    expect(definitions).not.toContainEqual({ path: "/chat/files/*", page: NOT_FOUND_PAGE });
+    expect(definitions).toContainEqual({ path: "/chat/files/*", page: NOT_FOUND_PAGE });
+  });
+
+  it("stops answering 404 for a place once a page claims it", () => {
+    expect(DESKTOP_ROUTE_DEFINITIONS).toContainEqual({ path: "/chat/files/*", page: "files" });
+    expect(DESKTOP_ROUTE_DEFINITIONS).not.toContainEqual({
+      path: "/chat/files/*",
+      page: NOT_FOUND_PAGE,
+    });
   });
 });

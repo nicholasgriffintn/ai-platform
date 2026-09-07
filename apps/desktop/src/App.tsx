@@ -37,11 +37,14 @@ function DesktopProviders({ children }: { children: ReactNode }) {
 }
 
 export function App() {
-  const { isChecking, isSigningIn, error, signIn } = useDesktopSession();
+  const { isChecking, isSigningIn, error, signIn, signOut } = useDesktopSession();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const handleSignIn = useCallback(() => {
     void signIn();
   }, [signIn]);
+  const handleSignOut = useCallback(() => {
+    void signOut();
+  }, [signOut]);
 
   return (
     <DesktopProviders>
@@ -55,7 +58,7 @@ export function App() {
       ) : (
         <LoadingProvider>
           <AppInitializer>
-            <DesktopShellHost onSignIn={handleSignIn}>
+            <DesktopShellHost onSignIn={handleSignIn} onSignOut={handleSignOut}>
               <DesktopRoutes />
             </DesktopShellHost>
             <ThemedToaster />

@@ -4,7 +4,7 @@ import { readPageRoutes, type DesktopPageRoutes } from "./pages/registry";
 
 export const NOT_FOUND_PAGE = "not-found";
 
-const UNBUILT_CHAT_PATHS = [
+const CHAT_PLACE_PATHS = [
   "attention",
   "files/*",
   "teammates",
@@ -25,7 +25,7 @@ export function buildRouteDefinitions(
 
   return [
     ...pages.flatMap(({ page, paths }) => paths.map((path) => ({ path, page }))),
-    ...UNBUILT_CHAT_PATHS.map((path) => `${MODE_BASE_PATHS.chat}/${path}`)
+    ...CHAT_PLACE_PATHS.map((path) => `${MODE_BASE_PATHS.chat}/${path}`)
       .filter((path) => !built.has(path))
       .map((path) => ({ path, page: NOT_FOUND_PAGE })),
   ];

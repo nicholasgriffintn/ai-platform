@@ -6,6 +6,7 @@ import {
   ProviderFilterBar,
 } from "@ngriffin_uk/polychat-component-account";
 import { ModelIcon } from "@ngriffin_uk/polychat-component-models";
+import { ConnectorSetupDialogs } from "@ngriffin_uk/polychat-component-shell";
 import {
   Alert,
   AlertDescription,
@@ -32,7 +33,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
-import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
 import { ProfileTab } from "~/components/Profile/ProfileTabLayout";
 
 import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel";

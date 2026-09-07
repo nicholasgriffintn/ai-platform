@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import type { ProjectTaskAttentionKind } from "./project-tasks";
+
 export const TASK_NOTIFICATION_PROTOCOL_VERSION = 1;
 
 export const taskNotificationCategorySchema = z.enum([
@@ -26,6 +28,28 @@ export const updateTaskNotificationPreferencesSchema = taskNotificationPreferenc
 export type UpdateTaskNotificationPreferences = z.infer<
   typeof updateTaskNotificationPreferencesSchema
 >;
+
+const ATTENTION_KIND_CATEGORY: Record<ProjectTaskAttentionKind, TaskNotificationCategory> = {
+  approval: "decisions",
+  input: "decisions",
+  review: "decisions",
+  blocked: "failures",
+  assigned: "assignments",
+  completion: "completions",
+};
+
+export function taskNotificationCategoryForAttentionKind(
+  kind: ProjectTaskAttentionKind,
+): TaskNotificationCategory {
+  return ATTENTION_KIND_CATEGORY[kind];
+}
+
+export function isTaskNotificationCategoryEnabled(
+  preferences: TaskNotificationPreferences,
+  category: TaskNotificationCategory,
+): boolean {
+  return preferences.enabled && preferences[category];
+}
 
 export const notificationPermissionSchema = z.enum(["prompt", "granted", "denied", "unsupported"]);
 

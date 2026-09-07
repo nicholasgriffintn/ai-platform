@@ -127,7 +127,15 @@ impl Store {
                     PRIMARY KEY (scope, id)
                 );
                 CREATE INDEX IF NOT EXISTS local_chats_by_scope
-                    ON local_chats (scope, updated_at DESC);",
+                    ON local_chats (scope, updated_at DESC);
+                CREATE TABLE IF NOT EXISTS announcements (
+                    scope TEXT NOT NULL,
+                    item_id TEXT NOT NULL,
+                    announced_at TEXT NOT NULL,
+                    PRIMARY KEY (scope, item_id)
+                );
+                CREATE INDEX IF NOT EXISTS announcements_by_scope
+                    ON announcements (scope, announced_at DESC);",
             )
         })
     }
@@ -338,6 +346,61 @@ impl Store {
     pub fn delete_all_local_chats(&self, scope: &str) -> Result<(), String> {
         self.with_connection(|connection| {
             connection.execute("DELETE FROM local_chats WHERE scope = ?1", params![scope])?;
+
+            Ok(())
+        })
+    }
+
+    pub fn unshown(&self, scope: &str, item_ids: &[String]) -> Result<Vec<String>, String> {
+        self.with_connection(|connection| {
+            let mut statement =
+                connection.prepare("SELECT 1 FROM announcements WHERE scope = ?1 AND item_id = ?2")?;
+            let mut unseen = Vec::new();
+
+            for item_id in item_ids {
+                if !statement.exists(params![scope, item_id])? {
+                    unseen.push(item_id.clone());
+                }
+            }
+
+            Ok(unseen)
+        })
+    }
+
+    pub fn record_shown(
+        &self,
+        scope: &str,
+        item_ids: &[String],
+        announced_at: &str,
+    ) -> Result<(), String> {
+        self.with_connection(|connection| {
+            let mut statement = connection.prepare(
+                "INSERT INTO announcements (scope, item_id, announced_at)
+                 VALUES (?1, ?2, ?3)
+                 ON CONFLICT(scope, item_id) DO NOTHING",
+            )?;
+
+            for item_id in item_ids {
+                statement.execute(params![scope, item_id, announced_at])?;
+            }
+
+            Ok(())
+        })
+    }
+
+    pub fn forget_shown(&self, scope: &str, keep: usize) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "DELETE FROM announcements
+                 WHERE scope = ?1
+                   AND item_id NOT IN (
+                     SELECT item_id FROM announcements
+                     WHERE scope = ?1
+                     ORDER BY announced_at DESC
+                     LIMIT ?2
+                   )",
+                params![scope, keep as i64],
+            )?;
 
             Ok(())
         })
@@ -629,6 +692,67 @@ mod tests {
             .expect("deleted");
 
         assert!(store.list_local_chats("user-1").expect("listed").is_empty());
+    }
+
+    #[test]
+    fn shows_an_item_once_on_this_device_and_keeps_scopes_apart() {
+        let store = store();
+        let items = vec!["task-1".to_string(), "task-2".to_string()];
+
+        assert_eq!(store.unshown("user-1", &items).expect("read"), items);
+
+        store
+            .record_shown("user-1", &["task-1".to_string()], "2026-09-07T09:00:00Z")
+            .expect("recorded");
+
+        assert_eq!(
+            store.unshown("user-1", &items).expect("read"),
+            vec!["task-2".to_string()]
+        );
+        assert_eq!(store.unshown("user-2", &items).expect("read"), items);
+    }
+
+    #[test]
+    fn recording_the_same_item_twice_does_not_fail() {
+        let store = store();
+        let items = vec!["task-1".to_string()];
+
+        store
+            .record_shown("user-1", &items, "2026-09-07T09:00:00Z")
+            .expect("recorded");
+        store
+            .record_shown("user-1", &items, "2026-09-07T10:00:00Z")
+            .expect("recorded again");
+
+        assert!(store.unshown("user-1", &items).expect("read").is_empty());
+    }
+
+    #[test]
+    fn forgets_the_oldest_shown_items_beyond_the_kept_window() {
+        let store = store();
+
+        for index in 0..5 {
+            store
+                .record_shown(
+                    "user-1",
+                    &[format!("task-{index}")],
+                    &format!("2026-09-0{}T09:00:00Z", index + 1),
+                )
+                .expect("recorded");
+        }
+
+        store.forget_shown("user-1", 2).expect("trimmed");
+
+        let all: Vec<String> = (0..5).map(|index| format!("task-{index}")).collect();
+
+        assert_eq!(
+            store.unshown("user-1", &all).expect("read"),
+            vec![
+                "task-0".to_string(),
+                "task-1".to_string(),
+                "task-2".to_string()
+            ]
+        );
     }
 
     #[test]
