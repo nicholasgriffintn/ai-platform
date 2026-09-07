@@ -41,6 +41,7 @@ import {
 import { runStoryTracker } from "../../lib/feature-implementation/story-tracker";
 import { truncateForModel } from "../../lib/feature-implementation/utils";
 import { deliverCommitToGitHub, prepareGitHubDelivery } from "../../lib/github-delivery";
+import { waitForInspectionWindow } from "../../lib/inspection-window";
 import { PolychatClient } from "../../lib/polychat-client";
 import { RunControlClient } from "../../lib/run-control-client";
 import { ProjectServiceSupervisor } from "../../lib/service-supervisor";
@@ -94,6 +95,7 @@ export async function executeFeatureImplementation(
   env: Env,
   emitEvent?: TaskEventEmitter,
   abortSignal?: AbortSignal,
+  emitTerminalEvent?: (result: TaskResult) => Promise<void>,
 ): Promise<TaskResult> {
   const emit = async (event: TaskEvent) => {
     if (!emitEvent) {
@@ -136,6 +138,7 @@ export async function executeFeatureImplementation(
   let serviceSupervisor: ProjectServiceSupervisor | undefined;
   let serviceFailure: Promise<never> | undefined;
   let fileWatcher: FileWatcher | undefined;
+  let environmentVariableNames: readonly string[] = [];
 
   const executionControl = createExecutionControl({
     runId,
@@ -153,6 +156,7 @@ export async function executeFeatureImplementation(
       })
     : undefined;
   const checkpoint = (abortMessage: string) => executionControl.checkpoint(abortMessage);
+  let repoTargetDir: string | undefined;
 
   try {
     await checkpoint("Sandbox run cancelled before task start");
@@ -217,7 +221,7 @@ export async function executeFeatureImplementation(
       throw new Error("Failed to resolve sandbox working directory");
     }
 
-    const repoTargetDir = resolveAbsoluteRepoTargetDir(sandboxRoot, repo.targetDir);
+    repoTargetDir = resolveAbsoluteRepoTargetDir(sandboxRoot, repo.targetDir);
     const baseRevisionResult = await sandbox.exec(
       `git -C ${quoteForShell(repoTargetDir)} rev-parse HEAD`,
     );
@@ -251,6 +255,7 @@ export async function executeFeatureImplementation(
 
     environmentEvidence = environmentPreparation.evidence;
     environmentCacheRecord = environmentPreparation.cacheRecord;
+    environmentVariableNames = environmentPreparation.environmentVariableNames ?? [];
 
     fileWatcher = startFileWatcher({
       sandbox,
@@ -572,7 +577,7 @@ export async function executeFeatureImplementation(
 
     await serviceSupervisor?.stop();
 
-    return {
+    const result: TaskResult = {
       success: true,
       logs: truncateLog(executionLogs.join("\n")),
       diff,
@@ -595,6 +600,29 @@ export async function executeFeatureImplementation(
         incompleteWork: deliveryIncompleteReason ? [deliveryIncompleteReason] : [],
       }),
     };
+
+    if (
+      (params.inspectionWindowSeconds ?? 0) > 0 &&
+      approvalClient &&
+      emitTerminalEvent &&
+      repoTargetDir
+    ) {
+      await emitTerminalEvent(result);
+      await waitForInspectionWindow({
+        sandbox,
+        repoTargetDir,
+        controlClient: approvalClient,
+        inspectionWindowSeconds: params.inspectionWindowSeconds ?? 0,
+        trustLevel: params.trustLevel ?? "balanced",
+        environmentVariables: params.environmentVariables,
+        environmentVariableNames,
+        redactionSecrets,
+        emit,
+        abortSignal,
+      });
+    }
+
+    return result;
   } catch (error) {
     console.error("Error during sandbox task execution:", error);
     const classified = classifySandboxError(error);
@@ -608,7 +636,7 @@ export async function executeFeatureImplementation(
       retryable: classified.retryable,
     });
 
-    return {
+    const result: TaskResult = {
       success: false,
       logs: truncateLog(executionLogs.join("\n")),
       branchName,
@@ -632,6 +660,29 @@ export async function executeFeatureImplementation(
         incompleteWork: ["The run ended before the objective was completed."],
       }),
     };
+
+    if (
+      (params.inspectionWindowSeconds ?? 0) > 0 &&
+      approvalClient &&
+      emitTerminalEvent &&
+      repoTargetDir
+    ) {
+      await emitTerminalEvent(result);
+      await waitForInspectionWindow({
+        sandbox,
+        repoTargetDir,
+        controlClient: approvalClient,
+        inspectionWindowSeconds: params.inspectionWindowSeconds ?? 0,
+        trustLevel: params.trustLevel ?? "balanced",
+        environmentVariables: params.environmentVariables,
+        environmentVariableNames,
+        redactionSecrets,
+        emit,
+        abortSignal,
+      });
+    }
+
+    return result;
   } finally {
     fileWatcher?.stop();
     await serviceSupervisor?.stop();

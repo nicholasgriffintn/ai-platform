@@ -80,6 +80,7 @@ export function formatProjectSummary(row: ProjectRow): ProjectSummary {
       ? safeParseJson(row.coding_environment_setup)
       : undefined,
     timeoutSeconds: row.coding_timeout_seconds,
+    inspectionWindowSeconds: row.coding_inspection_window_seconds,
   });
   const environmentCache = sandboxEnvironmentCacheRecordSchema.safeParse(
     row.coding_environment_cache ? safeParseJson(row.coding_environment_cache) : null,

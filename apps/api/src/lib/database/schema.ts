@@ -476,6 +476,7 @@ export const project = sqliteTable(
     coding_environment_cache: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
     coding_cache_generation: integer().default(0).notNull(),
     coding_timeout_seconds: integer().default(900).notNull(),
+    coding_inspection_window_seconds: integer().default(0).notNull(),
     flow: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
     created_by: integer()
       .notNull()

@@ -78,6 +78,7 @@ export const executeSandboxRunSchema = z.object({
     .optional(),
   trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
   modelSettings: sandboxModelSettingsSchema.optional(),
+  inspectionWindowSeconds: z.number().int().nonnegative().max(300).optional(),
 });
 
 export const sandboxRunDispatchPayloadSchema = z.object({
@@ -98,6 +99,7 @@ export const sandboxRunDispatchPayloadSchema = z.object({
   timeoutSeconds: z.number().int().positive().optional(),
   trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
   modelSettings: sandboxModelSettingsSchema.optional(),
+  inspectionWindowSeconds: z.number().int().nonnegative().max(300).optional(),
 });
 
 export const sandboxRunDispatchMessageSchema = z.object({
@@ -482,6 +484,9 @@ export const sandboxRunEventSchema = z
     timestamp: z.string().optional(),
     timeoutSeconds: z.number().int().positive().optional(),
     timeoutAt: z.string().optional(),
+    inspectionWindowSeconds: z.number().int().nonnegative().max(300).optional(),
+    inspectionExpiresAt: z.string().optional(),
+    inspectionExtended: z.boolean().optional(),
     result: sandboxRunResultSchema.optional(),
     approvalId: z.string().optional(),
     approvalStatus: z
@@ -535,6 +540,9 @@ export const sandboxRunDataSchema = z.object({
   cancellationReason: z.string().optional(),
   timeoutSeconds: z.number().int().positive().optional(),
   timeoutAt: z.string().optional(),
+  inspectionWindowSeconds: z.number().int().nonnegative().max(300).optional(),
+  inspectionExpiresAt: z.string().optional(),
+  inspectionExtended: z.boolean().optional(),
   pausedAt: z.string().optional(),
   resumedAt: z.string().optional(),
   pauseReason: z.string().optional(),
@@ -579,7 +587,13 @@ export const sandboxRequestOptionsSchema = z
 
 export type SandboxRequestOptions = z.infer<typeof sandboxRequestOptionsSchema>;
 
-export const sandboxRunControlStateSchema = z.enum(["queued", "running", "paused", "cancelled"]);
+export const sandboxRunControlStateSchema = z.enum([
+  "queued",
+  "running",
+  "paused",
+  "cancelled",
+  "inspection",
+]);
 
 export const sandboxRunControlActionSchema = z.enum([
   "pause",
@@ -622,7 +636,6 @@ export const sandboxRunInstructionSchema = z.object({
   serviceName: sandboxServiceNameSchema.optional(),
   serviceAction: sandboxServiceActionSchema.optional(),
   timeoutSeconds: z.number().int().positive().optional(),
-  inspectionWindowSeconds: z.number().int().nonnegative().max(300).optional(),
   escalateAfterSeconds: z.number().int().positive().optional(),
   expiresAt: z.string().optional(),
   escalationAt: z.string().optional(),
@@ -672,6 +685,7 @@ export const sandboxWorkerExecuteRequestSchema = z.object({
   installationId: z.number().int().positive().optional(),
   runId: z.string().trim().min(1).optional(),
   modelSettings: sandboxModelSettingsSchema.optional(),
+  inspectionWindowSeconds: z.number().int().nonnegative().max(300).optional(),
 });
 
 export const sandboxRunUsageReportSchema = z.object({

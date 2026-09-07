@@ -70,6 +70,7 @@ export async function executeSandboxRunStream(
         environmentSetup: payload.environmentSetup,
         environmentCache: undefined,
         environmentCacheGeneration: 0,
+        inspectionWindowSeconds: 0,
       };
 
   const runId = generateId();
@@ -94,6 +95,7 @@ export async function executeSandboxRunStream(
     updatedAt: now,
     events: [],
     timeoutSeconds: timeoutConfig.timeoutSeconds,
+    inspectionWindowSeconds: projectEnvironment.inspectionWindowSeconds ?? 0,
     timeoutAt: timeoutConfig.timeoutAt,
     workflowPhase: "queued",
   };
@@ -151,6 +153,7 @@ export async function executeSandboxRunStream(
         environmentCache: projectEnvironment.environmentCache,
         environmentCacheGeneration: projectEnvironment.environmentCacheGeneration,
         timeoutSeconds: timeoutConfig.timeoutSeconds,
+        inspectionWindowSeconds: projectEnvironment.inspectionWindowSeconds ?? 0,
         trustLevel: payload.trustLevel ?? "balanced",
         modelSettings: payload.modelSettings,
       },

@@ -515,6 +515,7 @@ export async function updateProject(
             ? JSON.stringify(codingEnvironment.environmentSetup)
             : null,
           coding_timeout_seconds: codingEnvironment?.timeoutSeconds ?? 900,
+          coding_inspection_window_seconds: codingEnvironment?.inspectionWindowSeconds ?? 0,
         };
 
   await context.repositories.workspaces.updateProject(projectId, {

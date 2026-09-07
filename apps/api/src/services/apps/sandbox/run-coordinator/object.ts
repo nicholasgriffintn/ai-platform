@@ -146,7 +146,27 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
       event.type === "run_failed" ||
       event.type === "run_cancelled"
     ) {
-      await this.revokePreviewSessions();
+      if (
+        event.type !== "run_cancelled" &&
+        typeof event.inspectionWindowSeconds === "number" &&
+        event.inspectionWindowSeconds > 0 &&
+        event.inspectionExpiresAt
+      ) {
+        const control = await this.getControl();
+
+        if (control) {
+          await this.putControl({
+            ...control,
+            state: "inspection",
+            updatedAt: event.completedAt ?? new Date().toISOString(),
+            inspectionWindowSeconds: event.inspectionWindowSeconds,
+            inspectionExpiresAt: event.inspectionExpiresAt,
+            inspectionExtended: false,
+          });
+        }
+      } else {
+        await this.revokePreviewSessions();
+      }
     } else if (event.serviceName && event.serviceStatus && event.serviceStatus !== "healthy") {
       await this.revokePreviewSessions(event.serviceName);
     }
@@ -462,7 +482,8 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           payload.state === "queued" ||
           payload.state === "running" ||
           payload.state === "paused" ||
-          payload.state === "cancelled"
+          payload.state === "cancelled" ||
+          payload.state === "inspection"
             ? payload.state
             : undefined;
         const next: CoordinatorState = {
@@ -479,6 +500,15 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
             ? { timeoutSeconds: payload.timeoutSeconds }
             : {}),
           ...(typeof payload.timeoutAt === "string" ? { timeoutAt: payload.timeoutAt } : {}),
+          ...(typeof payload.inspectionWindowSeconds === "number"
+            ? { inspectionWindowSeconds: payload.inspectionWindowSeconds }
+            : {}),
+          ...(typeof payload.inspectionExpiresAt === "string"
+            ? { inspectionExpiresAt: payload.inspectionExpiresAt }
+            : {}),
+          ...(typeof payload.inspectionExtended === "boolean"
+            ? { inspectionExtended: payload.inspectionExtended }
+            : {}),
         };
         const validated = sandboxRunControlSchema.safeParse(next);
 
@@ -699,6 +729,25 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
         if (control?.state === "cancelled") {
           return Response.json({ error: "Run no longer accepts instructions" }, { status: 409 });
+        }
+
+        if (control?.state === "inspection") {
+          if (
+            !control.inspectionExpiresAt ||
+            Date.parse(control.inspectionExpiresAt) <= Date.now()
+          ) {
+            return Response.json(
+              { error: "Sandbox inspection window has closed" },
+              { status: 410 },
+            );
+          }
+
+          if (kind !== "run_command") {
+            return Response.json(
+              { error: "Only one-shot runner commands are accepted during inspection" },
+              { status: 409 },
+            );
+          }
         }
 
         if (kind === "approval_request") {

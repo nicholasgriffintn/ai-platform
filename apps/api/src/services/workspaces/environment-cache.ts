@@ -109,6 +109,7 @@ export async function resolveProjectEnvironmentCacheForRun(params: {
   environmentSetup?: SandboxEnvironmentSetup;
   environmentCache?: SandboxEnvironmentCacheRecord;
   environmentCacheGeneration: number;
+  inspectionWindowSeconds: number;
 }> {
   const { project } = await requireProjectAccess(params.context, params.projectId);
 
@@ -130,6 +131,7 @@ export async function resolveProjectEnvironmentCacheForRun(params: {
     environmentSetup,
     environmentCache: environmentSetup ? parseCacheRecord(project) : undefined,
     environmentCacheGeneration: project.coding_cache_generation ?? 0,
+    inspectionWindowSeconds: project.coding_inspection_window_seconds ?? 0,
   };
 }
 

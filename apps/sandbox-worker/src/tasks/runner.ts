@@ -7,6 +7,7 @@ export interface SandboxTaskRunnerContext {
   secrets: TaskSecrets;
   env: Env;
   emitEvent?: TaskEventEmitter;
+  emitTerminalEvent?: (result: TaskResult) => Promise<void>;
   abortSignal?: AbortSignal;
 }
 

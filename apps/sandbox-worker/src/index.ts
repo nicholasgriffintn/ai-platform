@@ -5,7 +5,7 @@ import { SandboxCancellationError } from "./lib/cancellation";
 import { handleSandboxPreviewRequest } from "./lib/preview-gateway";
 import { buildSandboxRunUsageReport, reportSandboxRunUsage } from "./lib/usage-report";
 import { executeSandboxTask } from "./tasks";
-import type { TaskEvent, TaskParams, TaskSecrets, Env } from "./types";
+import type { TaskEvent, TaskParams, TaskResult, TaskSecrets, Env } from "./types";
 
 const SSE_HEADERS = {
   "Content-Type": "text/event-stream",
@@ -133,9 +133,58 @@ export default {
 
     const executeTask = async (emitEvent?: (event: TaskEvent) => Promise<void> | void) => {
       const startedAtMs = Date.now();
+      let terminalEventEmitted = false;
+
+      const emitTerminalEvent = async (result: TaskResult) => {
+        terminalEventEmitted = true;
+        const inspectionWindowSeconds = params.inspectionWindowSeconds ?? 0;
+        const inspectionExpiresAt =
+          inspectionWindowSeconds > 0
+            ? new Date(Date.now() + inspectionWindowSeconds * 1000).toISOString()
+            : undefined;
+
+        if (result.success) {
+          await emitEvent?.({
+            type: "run_completed",
+            runId: params.runId,
+            completedAt: new Date().toISOString(),
+            inspectionWindowSeconds: inspectionWindowSeconds || undefined,
+            inspectionExpiresAt,
+            inspectionExtended: false,
+            result,
+          });
+        } else if (result.errorType === "cancelled") {
+          await emitEvent?.({
+            type: "run_cancelled",
+            runId: params.runId,
+            completedAt: new Date().toISOString(),
+            message: result.error || "Sandbox run cancelled",
+            result,
+          });
+        } else {
+          await emitEvent?.({
+            type: "run_failed",
+            runId: params.runId,
+            completedAt: new Date().toISOString(),
+            inspectionWindowSeconds: inspectionWindowSeconds || undefined,
+            inspectionExpiresAt,
+            inspectionExtended: false,
+            error: result.error || "Sandbox task failed",
+            errorType: result.errorType,
+            result,
+          });
+        }
+      };
 
       try {
-        return await executeSandboxTask(params, secrets, env, emitEvent, request.signal);
+        return await executeSandboxTask(
+          params,
+          secrets,
+          env,
+          emitEvent,
+          request.signal,
+          emitTerminalEvent,
+        );
       } finally {
         if (params.runId) {
           await reportSandboxRunUsage({
@@ -201,7 +250,17 @@ export default {
           }
         };
 
+        let terminalEventEmitted = false;
+
         const emitEvent = (event: TaskEvent) => {
+          if (
+            event.type === "run_completed" ||
+            event.type === "run_cancelled" ||
+            event.type === "run_failed"
+          ) {
+            terminalEventEmitted = true;
+          }
+
           safeEnqueue(
             toSseChunk({
               ...event,
@@ -222,14 +281,14 @@ export default {
         try {
           const result = await executeTask(emitEvent);
 
-          if (result.success) {
+          if (!terminalEventEmitted && result.success) {
             emitEvent({
               type: "run_completed",
               runId: params.runId,
               completedAt: new Date().toISOString(),
               result,
             });
-          } else if (result.errorType === "cancelled") {
+          } else if (!terminalEventEmitted && result.errorType === "cancelled") {
             emitEvent({
               type: "run_cancelled",
               runId: params.runId,
@@ -237,7 +296,7 @@ export default {
               message: result.error || "Sandbox run cancelled",
               result,
             });
-          } else {
+          } else if (!terminalEventEmitted) {
             emitEvent({
               type: "run_failed",
               runId: params.runId,

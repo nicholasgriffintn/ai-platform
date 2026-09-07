@@ -81,6 +81,7 @@ export interface ExecuteSandboxWorkerOptions {
   environmentVariables?: Record<string, string>;
   projectId?: string;
   timeoutSeconds?: number;
+  inspectionWindowSeconds?: number;
   trustLevel?: SandboxTrustLevel;
   modelSettings?: SandboxModelSettings;
   installationId?: number;
@@ -177,6 +178,7 @@ export async function executeSandboxWorker(
     environmentVariables,
     projectId,
     timeoutSeconds,
+    inspectionWindowSeconds,
     trustLevel,
     modelSettings,
     installationId,
@@ -227,6 +229,7 @@ export async function executeSandboxWorker(
     environmentCacheGeneration,
     environmentVariables,
     timeoutSeconds,
+    inspectionWindowSeconds,
     trustLevel,
     modelSettings,
     polychatApiUrl: resolveApiBaseUrl(env),

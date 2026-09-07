@@ -28,6 +28,7 @@ export async function executeSandboxTask(
   env: Env,
   emitEvent?: TaskEventEmitter,
   abortSignal?: AbortSignal,
+  emitTerminalEvent?: (result: TaskResult) => Promise<void>,
 ): Promise<TaskResult> {
   const profile = resolveSandboxTaskProfile(params);
   const deliveryPolicy = resolveSandboxDeliveryPolicy(profile.deliveryPolicy, profile.shouldCommit);
@@ -47,5 +48,6 @@ export async function executeSandboxTask(
     env,
     emitEvent,
     abortSignal,
+    emitTerminalEvent,
   });
 }

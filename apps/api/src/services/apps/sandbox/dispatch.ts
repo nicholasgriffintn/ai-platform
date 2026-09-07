@@ -280,6 +280,7 @@ export async function processSandboxRunDispatch(params: {
       environmentVariables,
       projectId: message.payload.projectId,
       timeoutSeconds: message.payload.timeoutSeconds,
+      inspectionWindowSeconds: message.payload.inspectionWindowSeconds,
       trustLevel: message.payload.trustLevel,
       modelSettings: message.payload.modelSettings,
       installationId: message.payload.installationId,

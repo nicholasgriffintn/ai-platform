@@ -23,6 +23,7 @@ export interface ProjectCodingEnvironment {
   repository: string;
   deliveryPolicy: SandboxDeliveryPolicy;
   environmentSetup?: SandboxEnvironmentSetup;
+  inspectionWindowSeconds?: number;
 }
 
 export interface ProjectCodingEnvironmentCardProps {
@@ -41,6 +42,7 @@ export interface ProjectCodingEnvironmentCardProps {
     repository: string;
     deliveryPolicy: SandboxDeliveryPolicy;
     environmentSetup?: SandboxEnvironmentSetup;
+    inspectionWindowSeconds: number;
   }) => Promise<void>;
   onDisconnect: () => Promise<void>;
   onRebuildCache: () => Promise<void>;
@@ -72,6 +74,7 @@ export function ProjectCodingEnvironmentCard({
   const [targetBranch, setTargetBranch] = useState("");
   const [customInstructions, setCustomInstructions] = useState("");
   const [environmentSetup, setEnvironmentSetup] = useState<SandboxEnvironmentSetup | undefined>();
+  const [inspectionWindowSeconds, setInspectionWindowSeconds] = useState(0);
 
   const configuredKey = codingEnvironment
     ? `${codingEnvironment.installationId}:${codingEnvironment.repository.toLowerCase()}`
@@ -94,6 +97,7 @@ export function ProjectCodingEnvironmentCard({
     setTargetBranch(policy.mode === "commit_to_branch" ? policy.targetBranch : "");
     setCustomInstructions(policy.mode === "custom" ? policy.instructions : "");
     setEnvironmentSetup(codingEnvironment?.environmentSetup);
+    setInspectionWindowSeconds(codingEnvironment?.inspectionWindowSeconds ?? 0);
     setIsEditing(true);
   };
 
@@ -133,6 +137,7 @@ export function ProjectCodingEnvironmentCard({
       repository: selectedRepository.repo,
       deliveryPolicy: selectedDeliveryPolicy,
       environmentSetup,
+      inspectionWindowSeconds,
     });
     setIsEditing(false);
   };
@@ -233,6 +238,18 @@ export function ProjectCodingEnvironmentCard({
             </label>
           ) : null}
           <ProjectEnvironmentSetupFields value={environmentSetup} onChange={setEnvironmentSetup} />
+          <FormInput
+            label="Post-run inspection window (seconds)"
+            type="number"
+            min={0}
+            max={300}
+            value={inspectionWindowSeconds}
+            onChange={(event) =>
+              setInspectionWindowSeconds(
+                Math.min(300, Math.max(0, Number.parseInt(event.target.value || "0", 10))),
+              )
+            }
+          />
           <p className="text-xs text-muted-foreground">
             Remote GitHub writes wait for the runner’s approval after validation. Custom
             instructions never grant remote-write authority.

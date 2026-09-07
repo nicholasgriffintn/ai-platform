@@ -89,6 +89,7 @@ export interface ProjectRow {
   coding_environment_cache?: string | null;
   coding_cache_generation?: number;
   coding_timeout_seconds?: number;
+  coding_inspection_window_seconds?: number;
   flow?: string | null;
   created_by: number;
   archived_at: string | null;
@@ -481,8 +482,8 @@ export class WorkspaceRepository extends BaseRepository {
 				 coding_enabled, coding_installation_id, coding_repository,
 				 coding_prompt_strategy, coding_should_commit, coding_delivery_policy,
 				 coding_environment_setup, coding_environment_cache, coding_cache_generation,
-				 coding_timeout_seconds, created_by, default_model_tier)
-				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				 coding_timeout_seconds, coding_inspection_window_seconds, created_by, default_model_tier)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         params.id,
         params.workspaceId,
@@ -504,6 +505,7 @@ export class WorkspaceRepository extends BaseRepository {
         null,
         0,
         params.codingEnvironment?.timeoutSeconds ?? 900,
+        params.codingEnvironment?.inspectionWindowSeconds ?? 0,
         params.createdBy,
         params.defaultModelTier ?? null,
       ],
@@ -533,8 +535,8 @@ export class WorkspaceRepository extends BaseRepository {
 					  coding_enabled, coding_installation_id, coding_repository,
 					  coding_prompt_strategy, coding_should_commit, coding_delivery_policy,
 					  coding_environment_setup, coding_environment_cache, coding_cache_generation,
-					  coding_timeout_seconds, created_by, default_model_tier)
-					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					  coding_timeout_seconds, coding_inspection_window_seconds, created_by, default_model_tier)
+					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           params.id,
@@ -557,6 +559,7 @@ export class WorkspaceRepository extends BaseRepository {
           null,
           0,
           params.codingEnvironment?.timeoutSeconds ?? 900,
+          params.codingEnvironment?.inspectionWindowSeconds ?? 0,
           params.createdBy,
           params.defaultModelTier ?? null,
         ),
@@ -639,6 +642,7 @@ export class WorkspaceRepository extends BaseRepository {
         "coding_environment_cache",
         "coding_cache_generation",
         "coding_timeout_seconds",
+        "coding_inspection_window_seconds",
         "flow",
         "archived_at",
       ],

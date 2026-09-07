@@ -81,6 +81,9 @@ export async function updateRunCoordinatorControl(params: {
   pauseReason?: string;
   timeoutSeconds?: number;
   timeoutAt?: string;
+  inspectionWindowSeconds?: number;
+  inspectionExpiresAt?: string;
+  inspectionExtended?: boolean;
   expectedUpdatedAt?: string;
 }): Promise<SandboxRunControl | null> {
   if (!params.env?.SANDBOX_RUN_COORDINATOR) {
@@ -98,6 +101,9 @@ export async function updateRunCoordinatorControl(params: {
       pauseReason: params.pauseReason,
       timeoutSeconds: params.timeoutSeconds,
       timeoutAt: params.timeoutAt,
+      inspectionWindowSeconds: params.inspectionWindowSeconds,
+      inspectionExpiresAt: params.inspectionExpiresAt,
+      inspectionExtended: params.inspectionExtended,
       expectedUpdatedAt: params.expectedUpdatedAt,
     },
   );

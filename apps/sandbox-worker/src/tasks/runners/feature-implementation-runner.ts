@@ -17,6 +17,7 @@ export class AgentTaskRunner implements SandboxTaskRunner {
       context.env,
       context.emitEvent,
       context.abortSignal,
+      context.emitTerminalEvent,
     );
   }
 }

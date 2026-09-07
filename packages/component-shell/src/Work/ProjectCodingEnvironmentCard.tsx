@@ -42,7 +42,13 @@ export function ProjectCodingEnvironmentCard({
           : undefined)
       }
       isUpdatingCache={cacheAction.isPending}
-      onConnect={async ({ installationId, repository, deliveryPolicy, environmentSetup }) => {
+      onConnect={async ({
+        installationId,
+        repository,
+        deliveryPolicy,
+        environmentSetup,
+        inspectionWindowSeconds,
+      }) => {
         await updateProject.mutateAsync({
           projectId: project.id,
           input: {
@@ -53,6 +59,7 @@ export function ProjectCodingEnvironmentCard({
               deliveryPolicy,
               environmentSetup,
               timeoutSeconds: project.codingEnvironment?.timeoutSeconds ?? 900,
+              inspectionWindowSeconds,
             },
           },
         });

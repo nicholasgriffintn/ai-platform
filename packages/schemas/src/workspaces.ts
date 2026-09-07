@@ -35,6 +35,7 @@ export const projectCodingEnvironmentSchema = z
     shouldCommit: z.boolean().optional(),
     environmentSetup: sandboxEnvironmentSetupSchema.optional(),
     timeoutSeconds: z.number().int().min(30).max(7200).default(900),
+    inspectionWindowSeconds: z.number().int().min(0).max(300).default(0),
   })
   .transform(({ deliveryPolicy, shouldCommit, ...environment }) => ({
     ...environment,

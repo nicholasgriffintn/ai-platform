@@ -23,7 +23,7 @@ import {
 } from "./run-coordinator";
 import { parseSandboxRunData, type SandboxRunData } from "./run-data";
 
-type SandboxRunControlState = "queued" | "running" | "paused" | "cancelled";
+type SandboxRunControlState = "queued" | "running" | "paused" | "cancelled" | "inspection";
 
 interface SandboxRunRecord {
   id: string;
@@ -40,9 +40,12 @@ function toRunControlState(run: SandboxRunData): SandboxRunControlState {
     case "paused":
       return "paused";
     case "cancelled":
+      return "cancelled";
     case "completed":
     case "failed":
-      return "cancelled";
+      return run.inspectionExpiresAt && Date.parse(run.inspectionExpiresAt) > Date.now()
+        ? "inspection"
+        : "cancelled";
     case "running":
       return "running";
   }
@@ -172,7 +175,13 @@ export async function requestSandboxRunInstruction(params: {
     );
   }
 
-  if (isTerminalRunStatus(runRecord.run.status)) {
+  const control = await getRunCoordinatorControl(context.env, runId);
+  const inspectionActive =
+    control?.state === "inspection" &&
+    typeof control.inspectionExpiresAt === "string" &&
+    Date.parse(control.inspectionExpiresAt) > Date.now();
+
+  if (isTerminalRunStatus(runRecord.run.status) && !(inspectionActive && kind === "run_command")) {
     throw new AssistantError(
       `Cannot send instructions to a ${runRecord.run.status} run`,
       ErrorType.CONFLICT_ERROR,
@@ -234,7 +243,9 @@ export async function requestSandboxRunInstruction(params: {
                 ? "Command approval response submitted"
                 : instruction.kind === "service_action"
                   ? `${instruction.serviceAction ?? "Service"} requested for ${instruction.serviceName ?? "service"}`
-                  : "Operator message submitted",
+                  : instruction.kind === "run_command"
+                    ? "Runner inspection command submitted"
+                    : "Operator message submitted",
         instructionContent:
           typeof instruction.content === "string" && instruction.content.trim().length > 0
             ? instruction.content.slice(0, 500)
@@ -279,6 +290,9 @@ function runControlFromRecord(run: SandboxRunData): SandboxRunControl {
     pauseReason: run.pauseReason,
     timeoutSeconds: run.timeoutSeconds,
     timeoutAt: run.timeoutAt,
+    inspectionWindowSeconds: run.inspectionWindowSeconds,
+    inspectionExpiresAt: run.inspectionExpiresAt,
+    inspectionExtended: run.inspectionExtended,
   };
 }
 
@@ -299,18 +313,31 @@ export async function requestSandboxRunControlAction(params: {
     );
   }
 
-  if (runRecord.run.status === "completed" || runRecord.run.status === "failed") {
+  const current =
+    (await getRunCoordinatorControl(context.env, runId)) ?? runControlFromRecord(runRecord.run);
+  const inspectionActive =
+    current.state === "inspection" &&
+    typeof current.inspectionExpiresAt === "string" &&
+    Date.parse(current.inspectionExpiresAt) > Date.now();
+
+  if (
+    (runRecord.run.status === "completed" || runRecord.run.status === "failed") &&
+    !(input.action === "extend_inspection" && inspectionActive)
+  ) {
     throw new AssistantError(
       `Cannot ${input.action} a ${runRecord.run.status} run`,
       ErrorType.CONFLICT_ERROR,
       409,
     );
   }
-
-  const current =
-    (await getRunCoordinatorControl(context.env, runId)) ?? runControlFromRecord(runRecord.run);
   const desiredState =
-    input.action === "pause" ? "paused" : input.action === "resume" ? "running" : "cancelled";
+    input.action === "pause"
+      ? "paused"
+      : input.action === "resume"
+        ? "running"
+        : input.action === "extend_inspection"
+          ? "inspection"
+          : "cancelled";
 
   if (current.state === desiredState) {
     return current;
@@ -328,7 +355,11 @@ export async function requestSandboxRunControlAction(params: {
     (input.action === "pause" && current.state === "running") ||
     (input.action === "resume" && current.state === "paused") ||
     (input.action === "cancel" &&
-      (current.state === "queued" || current.state === "running" || current.state === "paused"));
+      (current.state === "queued" || current.state === "running" || current.state === "paused")) ||
+    (input.action === "extend_inspection" &&
+      inspectionActive &&
+      current.inspectionExtended !== true &&
+      (input.extensionSeconds ?? 0) > 0);
 
   if (!actionAllowed) {
     throw new AssistantError(
@@ -348,6 +379,15 @@ export async function requestSandboxRunControlAction(params: {
     pauseReason: input.action === "pause" ? (input.reason ?? "Paused by run owner") : undefined,
     cancellationReason:
       input.action === "cancel" ? (input.reason ?? "Cancelled by run owner") : undefined,
+    inspectionWindowSeconds:
+      input.action === "extend_inspection" ? current.inspectionWindowSeconds : undefined,
+    inspectionExpiresAt:
+      input.action === "extend_inspection" && current.inspectionExpiresAt
+        ? new Date(
+            Date.parse(current.inspectionExpiresAt) + (input.extensionSeconds ?? 0) * 1000,
+          ).toISOString()
+        : undefined,
+    inspectionExtended: input.action === "extend_inspection" ? true : undefined,
   });
 
   if (!updated) {
@@ -372,6 +412,8 @@ export async function requestSandboxRunControlAction(params: {
       runId,
       timestamp: now,
       message: input.reason,
+      inspectionExpiresAt: updated.inspectionExpiresAt,
+      inspectionExtended: input.action === "extend_inspection" ? true : undefined,
     },
   });
 

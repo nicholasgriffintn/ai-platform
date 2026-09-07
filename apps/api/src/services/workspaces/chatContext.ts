@@ -91,6 +91,7 @@ export async function resolveProjectChatContext(
       ? safeParseJson(project.coding_environment_setup)
       : undefined,
     timeoutSeconds: project.coding_timeout_seconds,
+    inspectionWindowSeconds: project.coding_inspection_window_seconds,
   });
   const toolIds = [
     ...projectTools.enabledTools,
@@ -134,6 +135,7 @@ export async function resolveProjectChatContext(
             shouldCommit: sandboxDeliveryPolicyCreatesCommit(codingEnvironment.data.deliveryPolicy),
             environmentSetup: codingEnvironment.data.environmentSetup,
             timeoutSeconds: codingEnvironment.data.timeoutSeconds,
+            inspectionWindowSeconds: codingEnvironment.data.inspectionWindowSeconds,
           }
         : undefined,
   };
