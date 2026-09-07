@@ -22,6 +22,7 @@ import { createAsyncEventQueue } from "@ngriffin_uk/polychat-utility-core";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import z from "zod/v4";
 
+import type { DesktopAnnouncement } from "./attention-announcements";
 import { describeRunFailure } from "./run-failures";
 
 export const desktopDiagnosticsSchema = z.object({
@@ -41,6 +42,8 @@ export interface ConnectedDesktopBackend extends DesktopBackend {
   collectDiagnostics: () => Promise<DesktopDiagnostics>;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
+  announceAttention: (scope: string, items: DesktopAnnouncement[]) => Promise<number>;
+  setAttentionBadge: (count: number) => Promise<void>;
   isSignedIn: () => Promise<boolean>;
   accessToken: () => Promise<DesktopSessionToken>;
 }
@@ -70,6 +73,15 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
   },
   signOut: async () => {
     await invoke("sign_out");
+  },
+  announceAttention: async (scope, items) =>
+    z
+      .number()
+      .int()
+      .nonnegative()
+      .parse(await invoke("announce_attention", { scope, items })),
+  setAttentionBadge: async (count) => {
+    await invoke("set_attention_badge", { count });
   },
   isSignedIn: async () => z.boolean().parse(await invoke("is_signed_in")),
   accessToken: async () => desktopSessionTokenSchema.parse(await invoke("access_token")),
