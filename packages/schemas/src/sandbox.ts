@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
 import { sandboxEnvironmentCacheRecordSchema } from "./sandbox-cache.js";
+import { sandboxCommandSchema } from "./sandbox-command.js";
 import { sandboxDeliveryPolicySchema } from "./sandbox-delivery.js";
 import {
   sandboxEnvironmentPreparationModeSchema,
@@ -168,12 +169,24 @@ export const submitRunInstructionSchema = z
     if (input.kind === "run_command") {
       if (!input.command) {
         context.addIssue({ code: "custom", path: ["command"], message: "command is required" });
-      } else if (/&/.test(input.command)) {
+
+        return;
+      }
+
+      if (/&/.test(input.command)) {
         context.addIssue({
           code: "custom",
           path: ["command"],
           message: "Background commands are not allowed",
         });
+      }
+
+      const runnerCommand = sandboxCommandSchema.safeParse(input.command);
+
+      if (!runnerCommand.success) {
+        for (const issue of runnerCommand.error.issues) {
+          context.addIssue({ code: "custom", path: ["command"], message: issue.message });
+        }
       }
     }
   });
@@ -568,24 +581,33 @@ export type SandboxRequestOptions = z.infer<typeof sandboxRequestOptionsSchema>;
 
 export const sandboxRunControlStateSchema = z.enum(["queued", "running", "paused", "cancelled"]);
 
-export const sandboxRunControlActionSchema = z.enum(["pause", "resume", "cancel"]);
+export const sandboxRunControlActionSchema = z.enum([
+  "pause",
+  "resume",
+  "cancel",
+  "extend_inspection",
+]);
 
 export const updateSandboxRunControlSchema = z
   .object({
     action: sandboxRunControlActionSchema,
     reason: z.string().trim().min(1).max(500).optional(),
+    extensionSeconds: z.number().int().min(1).max(300).optional(),
     expectedUpdatedAt: z.string().trim().min(1),
   })
   .strict();
 
 export const sandboxRunControlSchema = z.object({
   runId: z.string().trim().min(1),
-  state: sandboxRunControlStateSchema,
+  state: z.enum(["queued", "running", "paused", "cancelled", "inspection"]),
   updatedAt: z.string().trim().min(1),
   cancellationReason: z.string().optional(),
   pauseReason: z.string().optional(),
   timeoutSeconds: z.number().int().positive().optional(),
   timeoutAt: z.string().optional(),
+  inspectionWindowSeconds: z.number().int().nonnegative().max(300).optional(),
+  inspectionExpiresAt: z.string().optional(),
+  inspectionExtended: z.boolean().optional(),
 });
 
 export const sandboxRunInstructionSchema = z.object({
@@ -600,6 +622,7 @@ export const sandboxRunInstructionSchema = z.object({
   serviceName: sandboxServiceNameSchema.optional(),
   serviceAction: sandboxServiceActionSchema.optional(),
   timeoutSeconds: z.number().int().positive().optional(),
+  inspectionWindowSeconds: z.number().int().nonnegative().max(300).optional(),
   escalateAfterSeconds: z.number().int().positive().optional(),
   expiresAt: z.string().optional(),
   escalationAt: z.string().optional(),
