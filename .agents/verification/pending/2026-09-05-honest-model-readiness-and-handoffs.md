@@ -19,3 +19,9 @@
 - [ ] Request a branch and an in-place second opinion. Confirm alternatives retain separate response/model attribution, run identity and usage records rather than relabelling the original result.
 
 **Stop and report if:** a stale preflight permits a server-rejected action, any client silently changes the selected model, or a pending interaction can be continued under a different run/model identity.
+
+## Automated evidence — 7 September 2026
+
+- `features/model-selection.spec.ts` covers the shape of the first step without covering the step itself: it keeps an explicitly chosen model selected after the account loses access, shows the reason, disables Send, and confirms no replacement model runs until one is chosen deliberately.
+- That journey removes access by signing out rather than by removing a provider key, and runs on web only, so the step stays open.
+- Left open: every other step. Readiness expiry, Unknown against Unavailable, model changes blocked during a run or a pending interaction, attachment compatibility, the one-turn image generator, and branch and second-opinion attribution all need provider and capability failure injection this harness does not have yet.
