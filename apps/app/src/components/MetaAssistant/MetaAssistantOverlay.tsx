@@ -1,4 +1,5 @@
 import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation";
+import { SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import {
   Button,
   Dialog,
@@ -25,8 +26,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Feather, SquarePen } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
-
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 const POLY_PET_PRESET_SLUG = "pip";
 

@@ -1,7 +1,7 @@
+import { FilesPage } from "@ngriffin_uk/polychat-component-shell";
 import { getProjectBasePath } from "@ngriffin_uk/polychat-library-react";
 import { useParams } from "react-router";
 
-import { FilesPage } from "~/components/Files/FilesPage";
 import { ProjectHomeHeader } from "~/components/Work/ProjectHomeHeader";
 
 export function meta() {

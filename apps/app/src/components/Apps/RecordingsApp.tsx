@@ -2,6 +2,7 @@ import {
   RecordingCardGrid,
   RecordingNextActionCard,
 } from "@ngriffin_uk/polychat-component-experiences/content";
+import { SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import {
   ButtonLink,
   CardGridLoadingSkeleton,
@@ -18,7 +19,6 @@ import { Mic2, Plus } from "lucide-react";
 
 import { RecordingWorkflow } from "~/components/Apps/Recordings/RecordingWorkflow";
 import { RecordingView } from "~/components/Apps/Recordings/View";
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 export function RecordingsApp({ basePath, projectId, subpath }: ExperienceProps) {
   const segments = subpath.split("/").filter(Boolean);

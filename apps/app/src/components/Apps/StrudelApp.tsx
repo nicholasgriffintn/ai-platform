@@ -3,6 +3,7 @@ import {
   StrudelPatternGrid,
   StrudelPlayer,
 } from "@ngriffin_uk/polychat-component-experiences/music";
+import { SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import {
   ButtonLink,
   CardGridLoadingSkeleton,
@@ -24,7 +25,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { StrudelCreateStudio } from "~/components/Apps/Strudel/StrudelCreateStudio";
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 const STARTER_PATTERN = 's("bd sd, hh*8").bank("RolandTR909").gain(0.8)';
 

@@ -1,6 +1,7 @@
 import { SignInEmptyState as ControlledSignInEmptyState } from "@ngriffin_uk/polychat-component-ui";
-import { useUIStore } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
+
+import { useShellHost } from "../Host/ShellHostContext";
 
 interface SignInEmptyStateProps {
   title?: ReactNode;
@@ -9,7 +10,7 @@ interface SignInEmptyStateProps {
 }
 
 export function SignInEmptyState(props: SignInEmptyStateProps) {
-  const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
+  const { openSignIn } = useShellHost();
 
-  return <ControlledSignInEmptyState {...props} onSignIn={() => setShowLoginModal(true)} />;
+  return <ControlledSignInEmptyState {...props} onSignIn={openSignIn} />;
 }

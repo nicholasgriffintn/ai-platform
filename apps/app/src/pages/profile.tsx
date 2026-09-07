@@ -1,10 +1,9 @@
-import { PageShell } from "@ngriffin_uk/polychat-component-shell";
+import { PageShell, SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import { PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { useAuthStatus, getRetiredProfileTabPath } from "@ngriffin_uk/polychat-library-react";
 import { Loader2 } from "lucide-react";
 import { Navigate, useSearchParams } from "react-router";
 
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { ProfileSidebar, profileSidebarItems } from "~/components/Profile/ProfileSidebar";
 
 export function meta() {

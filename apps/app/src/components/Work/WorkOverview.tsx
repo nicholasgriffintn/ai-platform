@@ -1,4 +1,4 @@
-import { PageShell } from "@ngriffin_uk/polychat-component-shell";
+import { PageShell, SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   TaskAttentionList,
@@ -9,8 +9,6 @@ import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useTaskAttention, isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
 import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useState } from "react";
-
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
 import { TaskNotificationSettings } from "./TaskNotificationSettings";
