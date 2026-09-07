@@ -3,6 +3,7 @@ import { WEB_APP_BASE_URL } from "@ngriffin_uk/polychat-library-client";
 import { type ReactNode, useMemo } from "react";
 
 import { useAttentionNotifier } from "./hooks/useAttentionNotifier";
+import { useDeepLinkNavigation } from "./hooks/useDeepLinkNavigation";
 import { unavailableOnDesktop } from "./lib/host-features";
 
 export function DesktopShellHost({
@@ -15,6 +16,7 @@ export function DesktopShellHost({
   onSignOut: () => void;
 }) {
   useAttentionNotifier();
+  useDeepLinkNavigation();
 
   const host = useMemo<ShellHost>(
     () => ({
