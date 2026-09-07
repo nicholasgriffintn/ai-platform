@@ -45,6 +45,7 @@ function createContext({
       email: "member@example.com",
       plan_id: "pro",
     }),
+    getUserSettings: vi.fn().mockResolvedValue(null),
     repositories,
   } as unknown as ServiceContext;
 

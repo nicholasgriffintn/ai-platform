@@ -191,6 +191,7 @@ describe("ChatOrchestrator", () => {
       context: {
         requestId: "request-123",
         requireUser: vi.fn(),
+        getUserSettings: vi.fn().mockResolvedValue(null),
       },
       env: mockEnv,
       app_url: "https://test.com",

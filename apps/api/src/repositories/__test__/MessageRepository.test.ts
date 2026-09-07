@@ -158,8 +158,11 @@ describe("MessageRepository", () => {
       },
     ]);
 
-    expect(bind.mock.calls[0][2]).toBe("run-1");
-    expect(bind.mock.calls[0][18]).toBe('{"plan":["Research","Draft"]}');
+    const boundValues = bind.mock.calls[0];
+    const toolCallIdIndex = boundValues.indexOf("call-1");
+
+    expect(boundValues[2]).toBe("run-1");
+    expect(boundValues[toolCallIdIndex + 1]).toBe('{"plan":["Research","Draft"]}');
     expect(batch.mock.calls[0][0]).toHaveLength(5);
     expect(
       prepare.mock.calls.some(([query]) => query.includes("INSERT INTO conversation_run_event")),
