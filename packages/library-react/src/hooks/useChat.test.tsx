@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { apiService, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
