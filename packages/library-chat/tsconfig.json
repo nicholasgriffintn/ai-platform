@@ -1,5 +1,9 @@
 {
   "extends": "@ngriffin_uk/polychat-config/tsconfig/react-library",
-  "compilerOptions": { "noEmit": true },
-  "include": ["src/**/*", "tsup.config.ts", "vitest.config.ts"]
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "dist"]
 }

@@ -1,11 +1,11 @@
 import z from "zod/v4";
 
-import { documentMetadataSchema } from "./documents";
-import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json";
-import { externalHttpUrlSchema } from "./navigation";
-import { outputSchema } from "./outputs";
-import { skillSummarySchema } from "./skills";
-import { teammateSummarySchema } from "./teammates";
+import { documentMetadataSchema } from "./documents.js";
+import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json" with { type: "json" };
+import { externalHttpUrlSchema } from "./navigation.js";
+import { outputSchema } from "./outputs.js";
+import { skillSummarySchema } from "./skills.js";
+import { teammateSummarySchema } from "./teammates.js";
 
 export const weatherQuerySchema = z.object({
   longitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),

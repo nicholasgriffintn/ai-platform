@@ -8,27 +8,24 @@
   ],
   "type": "module",
   "sideEffects": false,
-  "main": "./dist/index.cjs",
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     },
     "./project-scope": {
       "polychat-source": "./src/project-scope.ts",
       "types": "./dist/project-scope.d.ts",
-      "import": "./dist/project-scope.js",
-      "require": "./dist/project-scope.cjs"
+      "import": "./dist/project-scope.js"
     },
     "./retry": {
       "polychat-source": "./src/retry.ts",
       "types": "./dist/retry.d.ts",
-      "import": "./dist/retry.js",
-      "require": "./dist/retry.cjs"
+      "import": "./dist/retry.js"
     }
   },
   "publishConfig": {
@@ -36,7 +33,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
@@ -49,7 +46,6 @@
     "@ngriffin_uk/polychat-config": "workspace:^",
     "@types/node": "catalog:",
     "jsdom": "catalog:",
-    "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "8.2.2",
     "vitest": "catalog:"

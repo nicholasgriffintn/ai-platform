@@ -1,6 +1,6 @@
 export const REALTIME_SESSION_FINALIZATION_TIMEOUT_MS = 5_000;
 
-type RealtimeTimer = ReturnType<typeof globalThis.setTimeout> | number;
+type RealtimeTimer = ReturnType<typeof globalThis.setTimeout>;
 
 export interface RealtimeSessionLease {
   readonly id: number;
