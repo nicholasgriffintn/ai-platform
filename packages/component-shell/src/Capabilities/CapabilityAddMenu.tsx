@@ -1,7 +1,7 @@
 import { Button, OptionsMenu, OptionsMenuAction } from "@ngriffin_uk/polychat-component-ui";
 import { Plus } from "lucide-react";
 
-import type { CapabilityAddChoice } from "~/components/Capabilities/useCapabilityAuthoring";
+import type { CapabilityAddChoice } from "./useCapabilityAuthoring";
 
 export function CapabilityAddMenu({ choices }: { choices: CapabilityAddChoice[] }) {
   if (choices.length === 0) {

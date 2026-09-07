@@ -24,8 +24,7 @@ import type {
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useNavigate } from "react-router";
 
-import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
-
+import type { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows";
 import { RecipeCapabilityCard } from "./RecipeCapabilityCard";
 import type { PersonalSkillControls } from "./useCapabilityLibraryController";
 

@@ -6,12 +6,11 @@ import {
   getTeammateEditorPath,
   type CapabilitySurface,
   resolveTeammateManagePermission,
+  NEW_TEAMMATE_ID,
 } from "@ngriffin_uk/polychat-library-react";
 import type { TeammateResponse, HireTeammateInput } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-
-import { NEW_TEAMMATE_ID } from "~/components/Teammates/useTeammateEditorController";
 
 export interface TeammateCapabilityActions {
   attachableTeammates: TeammateResponse[];

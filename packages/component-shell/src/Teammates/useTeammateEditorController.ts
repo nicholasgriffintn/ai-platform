@@ -13,6 +13,7 @@ import {
   useWorkspaces,
   getTeammatePublishTargets,
   resolveTeammateManagePermission,
+  NEW_TEAMMATE_ID,
 } from "@ngriffin_uk/polychat-library-react";
 import type {
   TeammateResponse,
@@ -25,8 +26,6 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-
-export const NEW_TEAMMATE_ID = "new";
 
 export interface TeammateEditorControllerOptions {
   teammateId: string;

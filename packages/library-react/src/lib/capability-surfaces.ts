@@ -48,6 +48,8 @@ export function getProjectSurface(workspaceId: string, projectId: string): Capab
   return { basePath: `/work/${workspaceId}/projects/${projectId}`, projectId, workspaceId };
 }
 
+export const NEW_TEAMMATE_ID = "new";
+
 export function getTeammateEditorPath(surface: CapabilitySurface, teammateId: string): string {
   return `${surface.basePath}/teammates/${teammateId}`;
 }
