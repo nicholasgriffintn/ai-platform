@@ -35,8 +35,11 @@ describe("desktop routes", () => {
     },
   );
 
+  it("serves the Attention place", () => {
+    expect(pageFor("/chat/attention")).toBe("attention");
+  });
+
   it.each([
-    "/chat/attention",
     "/chat/teammates",
     "/chat/teammates/poly",
     "/chat/apps/notes/entry",
