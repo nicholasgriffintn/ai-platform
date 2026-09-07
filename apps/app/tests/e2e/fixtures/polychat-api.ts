@@ -294,6 +294,22 @@ export class PolychatApi {
     ).status();
   }
 
+  async getProjectCapabilityIds(projectId: string): Promise<string[]> {
+    const response = await this.request.get(`${API_BASE_URL}/projects/${projectId}`, {
+      headers: BROWSER_REQUEST_HEADERS,
+    });
+
+    await requireSuccessfulResponse(response, "Load project");
+
+    const body = (await response.json()) as {
+      capabilities?: Array<{ capabilityId?: string }>;
+    };
+
+    return (body.capabilities ?? [])
+      .map((capability) => capability.capabilityId)
+      .filter((capabilityId): capabilityId is string => typeof capabilityId === "string");
+  }
+
   async addProjectCapability(projectId: string, kind: string, capabilityId: string) {
     const response = await this.request.post(`${API_BASE_URL}/projects/${projectId}/capabilities`, {
       headers: BROWSER_REQUEST_HEADERS,

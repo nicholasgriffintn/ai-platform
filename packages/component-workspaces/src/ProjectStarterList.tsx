@@ -64,6 +64,7 @@ export function ProjectStarterList({
                 size="sm"
                 variant="outline"
                 icon={<Play size={14} />}
+                aria-label={`Start ${starter.name}`}
                 isLoading={startingSlug === starter.slug}
                 onClick={() => onStart(starter.slug)}
               >
