@@ -13,6 +13,9 @@ const DEPTH_REFUSAL =
 const FAN_OUT_REFUSAL =
   "This conversation already has the maximum number of delegate runs in flight. " +
   "Wait for one to settle before delegating again.";
+const UNRESOLVED_PARENT_REFUSAL =
+  "This turn has no stored conversation and run to attribute a delegate to, so the number " +
+  "already in flight cannot be counted. Delegation needs a stored conversation.";
 
 export interface DelegationSpawnGuardResult {
   allowed: boolean;
@@ -39,7 +42,7 @@ export async function checkDelegationSpawn(
   const parentRunId = context.request.request?.run_id;
 
   if (!parentConversationId || !parentRunId || !context.request.context) {
-    return { allowed: true, depth, liveDelegations: 0 };
+    return { allowed: false, reason: UNRESOLVED_PARENT_REFUSAL, depth, liveDelegations: 0 };
   }
 
   const liveDelegations = await context.request.context.repositories.delegations.countLiveForParent(
