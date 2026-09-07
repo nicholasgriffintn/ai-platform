@@ -1,4 +1,3 @@
-import { PageShell, SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import {
   BackLink,
   ButtonLink,
@@ -18,8 +17,10 @@ import {
 import { Puzzle } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { AppChromeProvider } from "~/components/Apps/AppChrome";
-import { AppRuntime } from "~/components/Apps/AppRuntime";
+import { SignInEmptyState } from "../Account/SignInEmptyState";
+import { PageShell } from "../Shell/PageShell";
+import { AppChromeProvider } from "./AppChrome";
+import { AppRuntime } from "./AppRuntime";
 
 export function AppRoute({
   appId,

@@ -1,5 +1,4 @@
 import { ArticleReportGrid } from "@ngriffin_uk/polychat-component-experiences/content";
-import { SignInEmptyState } from "@ngriffin_uk/polychat-component-shell";
 import {
   ButtonLink,
   CardGridLoadingSkeleton,
@@ -12,8 +11,9 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { FileText, Plus } from "lucide-react";
 
-import { ArticleAnalysisSession } from "~/components/Apps/Articles/ArticleAnalysisSession";
-import { ArticleView } from "~/components/Apps/Articles/View";
+import { SignInEmptyState } from "../Account/SignInEmptyState";
+import { ArticleAnalysisSession } from "./Articles/ArticleAnalysisSession";
+import { ArticleView } from "./Articles/View";
 
 export function ArticlesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const segments = subpath.split("/").filter(Boolean);
