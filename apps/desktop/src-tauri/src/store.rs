@@ -351,7 +351,7 @@ impl Store {
         })
     }
 
-    pub fn unannounced(&self, scope: &str, item_ids: &[String]) -> Result<Vec<String>, String> {
+    pub fn unshown(&self, scope: &str, item_ids: &[String]) -> Result<Vec<String>, String> {
         self.with_connection(|connection| {
             let mut statement =
                 connection.prepare("SELECT 1 FROM announcements WHERE scope = ?1 AND item_id = ?2")?;
@@ -367,7 +367,7 @@ impl Store {
         })
     }
 
-    pub fn record_announced(
+    pub fn record_shown(
         &self,
         scope: &str,
         item_ids: &[String],
@@ -388,7 +388,7 @@ impl Store {
         })
     }
 
-    pub fn forget_announcements(&self, scope: &str, keep: usize) -> Result<(), String> {
+    pub fn forget_shown(&self, scope: &str, keep: usize) -> Result<(), String> {
         self.with_connection(|connection| {
             connection.execute(
                 "DELETE FROM announcements
@@ -695,45 +695,45 @@ mod tests {
     }
 
     #[test]
-    fn announces_an_item_once_and_keeps_scopes_apart() {
+    fn shows_an_item_once_on_this_device_and_keeps_scopes_apart() {
         let store = store();
         let items = vec!["task-1".to_string(), "task-2".to_string()];
 
-        assert_eq!(store.unannounced("user-1", &items).expect("read"), items);
+        assert_eq!(store.unshown("user-1", &items).expect("read"), items);
 
         store
-            .record_announced("user-1", &["task-1".to_string()], "2026-09-07T09:00:00Z")
+            .record_shown("user-1", &["task-1".to_string()], "2026-09-07T09:00:00Z")
             .expect("recorded");
 
         assert_eq!(
-            store.unannounced("user-1", &items).expect("read"),
+            store.unshown("user-1", &items).expect("read"),
             vec!["task-2".to_string()]
         );
-        assert_eq!(store.unannounced("user-2", &items).expect("read"), items);
+        assert_eq!(store.unshown("user-2", &items).expect("read"), items);
     }
 
     #[test]
-    fn recording_the_same_announcement_twice_does_not_fail() {
+    fn recording_the_same_item_twice_does_not_fail() {
         let store = store();
         let items = vec!["task-1".to_string()];
 
         store
-            .record_announced("user-1", &items, "2026-09-07T09:00:00Z")
+            .record_shown("user-1", &items, "2026-09-07T09:00:00Z")
             .expect("recorded");
         store
-            .record_announced("user-1", &items, "2026-09-07T10:00:00Z")
+            .record_shown("user-1", &items, "2026-09-07T10:00:00Z")
             .expect("recorded again");
 
-        assert!(store.unannounced("user-1", &items).expect("read").is_empty());
+        assert!(store.unshown("user-1", &items).expect("read").is_empty());
     }
 
     #[test]
-    fn forgets_the_oldest_announcements_beyond_the_kept_window() {
+    fn forgets_the_oldest_shown_items_beyond_the_kept_window() {
         let store = store();
 
         for index in 0..5 {
             store
-                .record_announced(
+                .record_shown(
                     "user-1",
                     &[format!("task-{index}")],
                     &format!("2026-09-0{}T09:00:00Z", index + 1),
@@ -741,12 +741,12 @@ mod tests {
                 .expect("recorded");
         }
 
-        store.forget_announcements("user-1", 2).expect("trimmed");
+        store.forget_shown("user-1", 2).expect("trimmed");
 
         let all: Vec<String> = (0..5).map(|index| format!("task-{index}")).collect();
 
         assert_eq!(
-            store.unannounced("user-1", &all).expect("read"),
+            store.unshown("user-1", &all).expect("read"),
             vec![
                 "task-0".to_string(),
                 "task-1".to_string(),

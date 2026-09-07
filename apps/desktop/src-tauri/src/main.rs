@@ -840,12 +840,12 @@ fn announce_attention(
     store: State<'_, Store>,
 ) -> Result<usize, String> {
     let ids: Vec<String> = items.iter().map(|item| item.id.clone()).collect();
-    let unannounced = store.unannounced(&scope, &ids)?;
+    let unshown = store.unshown(&scope, &ids)?;
     let pending: Vec<Announcement> = items
         .into_iter()
-        .filter(|item| unannounced.contains(&item.id))
+        .filter(|item| unshown.contains(&item.id))
         .collect();
-    let announced = pending.len();
+    let shown = pending.len();
 
     match announcements::plan(pending, announcements::MAX_INDIVIDUAL) {
         AnnouncementPlan::Nothing => return Ok(0),
@@ -859,10 +859,10 @@ fn announce_attention(
         }
     }
 
-    store.record_announced(&scope, &unannounced, &timestamp())?;
-    store.forget_announcements(&scope, announcements::LEDGER_LIMIT)?;
+    store.record_shown(&scope, &unshown, &timestamp())?;
+    store.forget_shown(&scope, announcements::LEDGER_LIMIT)?;
 
-    Ok(announced)
+    Ok(shown)
 }
 
 fn show(app: &tauri::AppHandle, title: &str, body: &str) {
