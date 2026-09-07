@@ -1,64 +1,57 @@
 # Architecture decisions
 
-Read the relevant record before changing a durable boundary. These are consolidated decisions, not an implementation changelog. The [context](context.md) describes the current code and labels accepted boundaries that are not yet implemented.
+Read the relevant record before changing a durable boundary. These are consolidated decisions, not an implementation changelog; [context](context.md) describes the current code.
 
-## Implemented boundaries
+## Platform and product shape
 
-- [0001: Keep implementation behind app and package boundaries](decisions/0001-overall-platform-architecture.md) — incorporates 0020, 0025, 0035.
-- [0006: Share capabilities across Chat and Work](decisions/0006-workspace-centred-work-mode.md) — incorporates 0007, 0008, 0016.
-- [0009: Use scoped resources and explicit authority](decisions/0009-canonical-workspace-resources.md) — incorporates 0010, 0011, 0017.
-- [0013: Bind connector execution to exact local authority](decisions/0013-composio-run-approval-and-event-boundaries.md) — incorporates 0012.
-- [0024: Run one turn engine and separate it from transport](decisions/0024-turns-outlive-the-connection.md) — incorporates 0022, 0039.
-- [0026: Run project tasks through governed flows](decisions/0026-project-task-boards.md) — incorporates 0027, 0037.
-- [0029: Discover and activate tools within the current response](decisions/0029-server-managed-tool-selection.md) — incorporates 0005, 0015, 0028.
-- [0030: Resolve model and realtime availability on the server](decisions/0030-server-owned-model-selection-policy.md) — incorporates 0002, 0031.
-- [0032: Load skills on demand and version authored content](decisions/0032-version-authored-skills-with-d1-state-and-r2-bundles.md) — incorporates 0018, 0019, 0021.
-- [0033: Keep retrieval authority in D1 and preserve vector provenance](decisions/0033-separate-embedding-runtime-and-retrieval-policy.md).
-- [0036: Compose scoped agents from platform capabilities](decisions/0036-agents-composed-from-platform-capabilities.md) — incorporates 0023, 0034.
-- [0041: Meter vendor units and admit turns against credits](decisions/0041-usage-metering-and-credits.md) — incorporates 0042.
-- [0043: Present coding work inside project conversations](decisions/0043-project-workbench-presentation.md).
-- [0044: Name themes and resolve them from one attribute](decisions/0044-named-themes-over-a-light-dark-toggle.md).
-- [0045: Require an explicit sandbox delivery policy](decisions/0045-require-explicit-sandbox-delivery-policy.md).
-- [0046: Version sandbox environment preparation](decisions/0046-version-sandbox-environment-preparation.md).
-- [0047: Scope and invalidate sandbox environment snapshots](decisions/0047-scope-and-invalidate-sandbox-environment-snapshots.md).
-- [0048: Supervise declared project services within a coding run](decisions/0048-supervise-declared-project-services.md).
-- [0049: Gate sandbox previews through current project authority](decisions/0049-gate-sandbox-previews-through-current-project-authority.md).
-- [0050: Derive global Attention from authoritative work state](decisions/0050-derive-global-attention-from-authoritative-work-state.md).
-- [0051: Separate personal conversation state from project groups](decisions/0051-separate-personal-conversation-state-from-project-groups.md).
-- [0052: Keep repeatable scheduling in recipes](decisions/0052-keep-repeatable-scheduling-in-recipes.md).
-- [0053: Deliver mobile Work notifications without moving authority](decisions/0053-deliver-mobile-work-notifications-without-moving-authority.md).
-- [0054: Ship a house type pairing through font tokens](decisions/0054-house-type-pairing.md).
-- [0055: Keep the home route an app and put the tour beneath it](decisions/0055-keep-the-home-route-an-app.md).
-- [0056: Persist one identity and lifecycle for each stored chat run](decisions/0056-persist-chat-run-identity.md).
-- [0057: Order chat run events with snapshot reset](decisions/0057-order-chat-run-events-with-snapshot-reset.md).
-- [0058: Project native task decisions from authoritative interaction state](decisions/0058-project-native-task-interactions.md).
-- [0059: Reconstruct project task activity from authoritative records](decisions/0059-reconstruct-project-task-activity.md).
-- [0060: Budget and report the context of each model step](decisions/0060-budget-and-report-run-context.md).
-- [0061: Bound model retries and surface unknown writes](decisions/0061-bound-model-retries-and-surface-unknown-writes.md).
-- [0062: Expire readiness and make model handoffs explicit](decisions/0062-expire-readiness-and-make-model-handoffs-explicit.md).
-- [0063: Derive attention from current task state and revalidate notification delivery](decisions/0063-project-current-attention-and-notification-delivery.md).
-- [0064: Snapshot effective provenance on durable results](decisions/0064-snapshot-effective-provenance-on-durable-results.md).
-- [0065: Append safe local output restores](decisions/0065-append-safe-local-output-restores.md).
-- [0066: Snapshot project flows and derive stage evidence](decisions/0066-snapshot-project-flows-and-derive-stage-evidence.md).
-- [0067: Attribute run usage and settle reservations once](decisions/0067-attribute-run-usage-and-settle-reservations-once.md).
-- [0068: Bound live streams and page durable history](decisions/0068-bound-live-streams-and-page-durable-history.md).
-- [0069: Share model definitions across provider offerings](decisions/0069-share-model-definitions-across-provider-offerings.md).
-- [0070: Use automatic generation settings](decisions/0070-use-automatic-generation-settings.md).
-- [0071: Fix model tiers instead of scoring prompts](decisions/0071-fix-model-tiers-instead-of-scoring-prompts.md).
-- [0072: One shell and one user-facing vocabulary](decisions/0072-one-shell-and-one-user-facing-vocabulary.md).
-- [0073: Meta tools belong only to the meta scope](decisions/0073-meta-tools-belong-only-to-the-meta-scope.md).
-- [0074: Teammates are hired from roles and carry a kind](decisions/0074-teammates-are-hired-from-roles-and-carry-a-kind.md).
-- [0075: Teammates replace agents everywhere](decisions/0075-teammates-replace-agents-everywhere.md).
-- [0076: Give the desktop shell a core that owns egress](decisions/0076-desktop-core-owns-egress.md).
-- [0077: Separate model runtimes from agent runtimes](decisions/0077-separate-model-runtimes-from-agent-runtimes.md).
-- [0078: Release applications from changesets and hand out builds through the API](decisions/0078-release-applications-from-changesets.md).
-- [0079: Share one connected navigation shell between web and desktop](decisions/0079-share-one-connected-navigation-shell.md).
+- [0001: Keep implementation behind app and package boundaries](decisions/0001-app-and-package-boundaries.md)
+- [0002: Share one runtime across Chat and Work](decisions/0002-chat-and-work-share-one-runtime.md)
+- [0003: Use scoped resources and explicit authority](decisions/0003-scoped-resources-and-explicit-authority.md)
+- [0004: Render one shell with one user-facing vocabulary](decisions/0004-one-shell-and-one-vocabulary.md)
 
-## Accepted designs awaiting implementation
+## Running a turn
 
-- [0038: Scope future model lifecycle to a provider surface](decisions/0038-provider-surface-model-lifecycle.md).
-- [0040: Resolve future provider governance before execution](decisions/0040-provider-execution-governance-policy.md).
+- [0005: Run one turn engine and separate it from transport](decisions/0005-one-turn-engine-separate-from-transport.md)
+- [0006: Persist run identity and an ordered event journal](decisions/0006-persist-run-identity-and-ordered-events.md)
+- [0007: Budget and report the context of each model step](decisions/0007-budget-and-report-model-context.md)
+- [0008: Bound model retries and surface unknown writes](decisions/0008-bound-model-retries-and-unknown-writes.md)
+- [0009: Bound live streams and page durable history](decisions/0009-bound-live-streams-and-page-history.md)
 
-Keep surviving record numbers stable; gaps are intentional. Records 0003 and 0004 were previously folded into 0005, now 0029. The retired 0014 package proposal is covered by 0001. Do not reuse retired numbers; the next new decision is 0080.
+## Models, tools and capabilities
 
-Add a record only for a durable trade-off that code alone cannot explain. State the problem, decision, implementation status and consequence; update this index. Keep rollout plans and copied schemas out of ADRs.
+- [0010: Discover and activate tools within the current response](decisions/0010-discover-and-activate-tools-in-response.md)
+- [0011: Resolve models, tiers and readiness on the server](decisions/0011-resolve-models-and-readiness-on-the-server.md)
+- [0012: Share model definitions across provider offerings](decisions/0012-share-model-definitions-across-offerings.md)
+- [0013: Load skills on demand and version authored content](decisions/0013-load-skills-on-demand.md)
+- [0014: Keep retrieval authority in D1 and preserve vector provenance](decisions/0014-retrieval-authority-and-vector-provenance.md)
+- [0015: Hire teammates from roles and call them teammates everywhere](decisions/0015-teammates-hired-from-roles.md)
+- [0016: Keep meta tools in the meta scope](decisions/0016-meta-tools-belong-to-the-meta-scope.md)
+- [0017: Bind connector execution to exact local authority](decisions/0017-bind-connector-execution-to-local-authority.md)
+
+## Work
+
+- [0018: Run project tasks through governed flows](decisions/0018-project-tasks-run-through-governed-flows.md)
+- [0019: Keep repeatable scheduling in recipes](decisions/0019-keep-repeatable-scheduling-in-recipes.md)
+- [0020: Derive attention from authoritative work state and revalidate every delivery](decisions/0020-derive-attention-and-revalidate-delivery.md)
+- [0021: Separate personal conversation state from project groups](decisions/0021-separate-conversation-state-from-project-groups.md)
+- [0022: Meter vendor units, admit against credits and settle once](decisions/0022-meter-vendor-units-and-settle-once.md)
+
+## Coding runs
+
+- [0023: Present coding work inside project conversations](decisions/0023-present-coding-work-in-project-conversations.md)
+- [0024: Declare sandbox delivery, environment and services explicitly](decisions/0024-declare-sandbox-delivery-environment-and-services.md)
+- [0025: Gate sandbox previews through current project authority](decisions/0025-gate-sandbox-previews-through-project-authority.md)
+- [0026: Snapshot output provenance and append safe restores](decisions/0026-output-provenance-and-safe-restores.md)
+
+## Clients
+
+- [0027: Name themes and ship a house type pairing through tokens](decisions/0027-named-themes-and-house-type.md)
+- [0028: Give the desktop shell a core that owns egress and one shared navigation shell](decisions/0028-desktop-core-owns-egress.md)
+- [0029: Separate model runtimes from agent runtimes](decisions/0029-separate-model-and-agent-runtimes.md)
+- [0030: Release applications from changesets and hand out builds through the API](decisions/0030-release-applications-from-changesets.md)
+
+## Maintaining these records
+
+Records 0001–0030 were renumbered contiguously when 44 earlier records were consolidated into these 30; earlier numbers do not map onto them and are not referenced anywhere. The next new decision is 0031. Do not reuse a retired number.
+
+Add a record only for a durable trade-off that code alone cannot explain. State the problem, the decision, its status and its consequences, then update this index. Merge a record into an existing one rather than adding a second account of the same boundary. Keep rollout plans, copied schemas and unimplemented proposals out of these files.

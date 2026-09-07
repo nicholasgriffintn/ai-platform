@@ -3,7 +3,7 @@
 - **Change:** A Tauri shell whose Rust core is the only route to the network, exposing endpoint listing and readiness probing to a sandboxed webview that holds no remote connection permission of its own.
 - **Surfaces:** `apps/desktop` only. No web, API, iOS or sandbox behaviour changes.
 - **Prerequisites:** macOS with Xcode command line tools; the pinned Rust toolchain in `apps/desktop/src-tauri/rust-toolchain.toml`; `pnpm install`; Ollama or LM Studio installed to exercise a ready state.
-- **Risk if wrong:** The webview reaches the network directly, defeating the boundary [ADR 0076](../../.agents/skills/polychat-setup/references/architecture/decisions/0076-desktop-core-owns-egress.md) exists to establish.
+- **Risk if wrong:** The webview reaches the network directly, defeating the boundary [ADR 0028](../../skills/polychat-setup/references/architecture/decisions/0028-desktop-core-owns-egress.md) exists to establish.
 - **Commits:** none recorded.
 
 ## Verify
