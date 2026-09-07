@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import type { UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 

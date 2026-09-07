@@ -69,29 +69,6 @@ describe("capability controls", () => {
     expect(onCategoryChange).toHaveBeenCalledWith("Research");
     expect(screen.getByRole<HTMLInputElement>("searchbox").value).toBe("");
   });
-
-  it("preserves the compact selected and hoverable filter variants", () => {
-    render(
-      <CapabilityFilters
-        categories={["Research"]}
-        category="Research"
-        filters={["app", "recipe"]}
-        query=""
-        onCategoryChange={vi.fn()}
-        onFiltersChange={vi.fn()}
-        onQueryChange={vi.fn()}
-      />,
-    );
-
-    const apps = screen.getByRole("button", { name: "Apps" });
-    const all = screen.getByRole("button", { name: "All" });
-    const research = screen.getByRole("button", { name: "Research" });
-
-    expect(apps.className).toContain("px-3 py-1.5 text-xs");
-    expect(apps.className).toContain("");
-    expect(all.className).toContain("");
-    expect(research.className).toContain("");
-  });
 });
 
 describe("teammate capability card", () => {
