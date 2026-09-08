@@ -112,11 +112,17 @@ export class HandoffRepository extends BaseRepository {
     return row ? parseRow(row) : null;
   }
 
-  async decide(id: string, machineId: string, state: "running" | "done" | "declined") {
-    await this.executeRun(
+  async decide(
+    id: string,
+    machineId: string,
+    state: "running" | "done" | "declined",
+  ): Promise<boolean> {
+    const result = await this.executeRun(
       `UPDATE handoff SET state = ?, updated_at = CURRENT_TIMESTAMP
        WHERE id = ? AND claimed_by = ? AND state IN ('claimed', 'running')`,
       [state, id, machineId],
     );
+
+    return result.success && result.meta.changes === 1;
   }
 }

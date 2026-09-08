@@ -82,7 +82,9 @@ export async function decideHandoff(
     throw new Error(NOT_FOUND);
   }
 
-  await context.repositories.handoffs.decide(id, machineId, state);
+  if (!(await context.repositories.handoffs.decide(id, machineId, state))) {
+    throw new Error(NOT_FOUND);
+  }
 
   return handoffSchema.parse({
     ...existing,
