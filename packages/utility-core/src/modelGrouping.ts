@@ -243,8 +243,14 @@ export function groupModelsByProvider<T extends ModelGroupingItem>(
   }, {});
   const providerLists = Object.entries(groupedByProvider)
     .sort(([providerA], [providerB]) => {
-      if (providerA === AGENT_MODEL_GROUP_KEY) return -1;
-      if (providerB === AGENT_MODEL_GROUP_KEY) return 1;
+      if (providerA === AGENT_MODEL_GROUP_KEY) {
+        return -1;
+      }
+
+      if (providerB === AGENT_MODEL_GROUP_KEY) {
+        return 1;
+      }
+
       return providerA.localeCompare(providerB);
     })
     .map(([provider, providerModels]) => {
