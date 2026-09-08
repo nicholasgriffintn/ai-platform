@@ -7,6 +7,7 @@ import {
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { TaskService } from "~/services/tasks/TaskService";
 import { createTeammateCompletion } from "~/services/teammates/createTeammateCompletion";
+import { requireProjectAccess } from "~/services/workspaces/access";
 import type { IEnv } from "~/types";
 
 import type { TaskMessage } from "../tasks/TaskService";
@@ -40,6 +41,10 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
     await enqueueDelegationWake(context, delegation, message.user_id);
 
     return { status: "error" as const, detail: "Delegating user not found" };
+  }
+
+  if (payload.projectId) {
+    await requireProjectAccess(createServiceContext({ env, user }), payload.projectId);
   }
 
   const body = createChatCompletionsJsonSchema.parse({
