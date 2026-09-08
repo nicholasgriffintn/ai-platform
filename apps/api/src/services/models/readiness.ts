@@ -23,6 +23,7 @@ export type ModelRuntimeReadinessStatus = (typeof MODEL_RUNTIME_READINESS_STATUS
 
 export interface ModelReadinessOptions {
   runtimeStatus?: ModelRuntimeReadinessStatus;
+  agentWorkspaceConfigured?: boolean;
 }
 
 function readiness(
@@ -124,6 +125,21 @@ export function resolveModelReadiness(
       model.deprecationMessage || "This model is no longer available. Choose another model.",
       now,
       { kind: "choose_model", label: "Choose model" },
+    );
+  }
+
+  if (model.kind === "agent" && !options.agentWorkspaceConfigured) {
+    const workspaceAction =
+      model.agent?.workspace?.kind === "repository"
+        ? { kind: "connect_repository" as const, label: "Connect a repository" }
+        : { kind: "choose_directory" as const, label: "Choose a directory" };
+
+    return readiness(
+      "setup_required",
+      "agent_workspace_required",
+      "Choose a workspace before starting this agent.",
+      now,
+      workspaceAction,
     );
   }
 

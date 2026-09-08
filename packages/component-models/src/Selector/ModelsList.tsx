@@ -9,6 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import {
   FEATURED_MODEL_GROUP_KEY,
+  AGENT_MODEL_GROUP_KEY,
   getSelectedModelProvider,
   groupModelsByProvider,
   partitionDeprecatedModelEntries,
@@ -255,7 +256,11 @@ export function ModelsList({
                         />
                       )}
                       <span className="line-clamp-1 min-w-0 flex-1 text-left sm:w-full sm:flex-none sm:text-center">
-                        {isFeaturedProvider ? "Featured" : providerEntry.label.split(" ")[0]}
+                        {isFeaturedProvider
+                          ? "Featured"
+                          : providerEntry.key === AGENT_MODEL_GROUP_KEY
+                            ? "Agents"
+                            : providerEntry.label.split(" ")[0]}
                       </span>
                       <span className="rounded-full bg-selection px-1.5 py-0.5 text-[10px] text-foreground">
                         {providerEntry.models.length}

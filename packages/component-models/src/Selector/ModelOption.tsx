@@ -10,6 +10,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import {
   AudioWaveform,
+  BadgeCheck,
   BrainCircuit,
   ChevronDown,
   Code2,
@@ -19,6 +20,8 @@ import {
   Hammer,
   Info,
   Search,
+  Terminal,
+  FilePenLine,
   Sparkles,
 } from "lucide-react";
 
@@ -131,6 +134,21 @@ export const ModelOption = ({
                   BYOK
                 </span>
               ) : null}
+              {model.agent?.capabilities.writesFiles ? (
+                <span className="rounded-full bg-success/12 px-1.5 py-0.5 text-[10px] leading-none font-medium text-success">
+                  <FilePenLine size={10} className="mr-0.5 inline" /> Writes files
+                </span>
+              ) : null}
+              {model.agent?.capabilities.runsCommands ? (
+                <span className="rounded-full bg-attention/12 px-1.5 py-0.5 text-[10px] leading-none font-medium text-attention">
+                  <Terminal size={10} className="mr-0.5 inline" /> Runs commands
+                </span>
+              ) : null}
+              {model.agent?.capabilities.picksOwnModel ? (
+                <span className="rounded-full bg-active-work/12 px-1.5 py-0.5 text-[10px] leading-none font-medium text-active-work">
+                  <BadgeCheck size={10} className="mr-0.5 inline" /> Your subscription
+                </span>
+              ) : null}
               {isStealthModel(model) ? (
                 <span className="rounded-full bg-attention/12 px-1.5 py-0.5 text-[10px] leading-none font-medium text-attention">
                   Stealth
@@ -140,6 +158,11 @@ export const ModelOption = ({
             {model.description ? (
               <p className="mt-0.5 text-xs leading-5 break-words whitespace-normal text-muted-foreground">
                 {model.description}
+              </p>
+            ) : null}
+            {model.kind === "agent" ? (
+              <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
+                Chooses its own model
               </p>
             ) : null}
             {model.readiness && model.readiness.state !== "ready" ? (

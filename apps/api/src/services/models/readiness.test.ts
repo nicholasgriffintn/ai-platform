@@ -21,6 +21,39 @@ function model(overrides: Partial<ModelConfigItem> = {}): ModelConfigItem {
 }
 
 describe("resolveModelReadiness", () => {
+  it("requires the declared workspace before an agent can run", () => {
+    expect(
+      resolveModelReadiness(
+        model({
+          kind: "agent",
+          agent: {
+            capabilities: {
+              streamsText: true,
+              streamsReasoning: true,
+              picksOwnModel: true,
+              listsModels: false,
+              writesFiles: true,
+              runsCommands: true,
+              reportsApprovals: true,
+              autoReview: true,
+              resumesSessions: true,
+              checkpoints: true,
+              rollsBack: true,
+            },
+            workspace: { kind: "directory" },
+            permissionModes: ["supervised"],
+          },
+        }),
+        { id: 7, plan_id: "pro" },
+        now,
+      ),
+    ).toMatchObject({
+      state: "setup_required",
+      reasonCode: "agent_workspace_required",
+      action: { kind: "choose_directory" },
+    });
+  });
+
   it("attaches readiness to every model returned by the existing catalogue", async () => {
     const env: IEnv = Object.create(null);
 

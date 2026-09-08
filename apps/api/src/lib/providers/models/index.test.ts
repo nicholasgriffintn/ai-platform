@@ -27,6 +27,23 @@ describe("featured model catalogue", () => {
   });
 });
 
+describe("agent catalogue", () => {
+  it("exposes agents as selectable device entries with declared capabilities", () => {
+    const models = getModels({ shouldUseCache: false });
+
+    expect(models["agent/claude-code"]).toMatchObject({
+      kind: "agent",
+      provider: "claude-code",
+      runsOn: "device",
+      isFree: true,
+      agent: {
+        capabilities: { writesFiles: true, runsCommands: true, picksOwnModel: true },
+        workspace: { kind: "directory" },
+      },
+    });
+  });
+});
+
 describe("Claude sampling metadata", () => {
   it("keeps xhigh-capable Claude entries free of sampling parameters", () => {
     const models = getModels({ shouldUseCache: false });

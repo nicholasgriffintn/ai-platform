@@ -5,10 +5,12 @@ export interface ModelGroupingItem {
   matchingModel: string;
   name?: string;
   provider: string;
+  kind?: "model" | "agent";
   deprecated?: boolean;
 }
 
 export const FEATURED_MODEL_GROUP_KEY = "featured";
+export const AGENT_MODEL_GROUP_KEY = "agents";
 
 const BEDROCK_PROVIDER = "bedrock";
 const BEDROCK_REGION_LABELS = {
@@ -193,7 +195,9 @@ export function getSelectedModelProvider<T extends ModelGroupingItem>(
     return null;
   }
 
-  return models.find((model) => model.id === selectedId)?.provider || null;
+  const selected = models.find((model) => model.id === selectedId);
+
+  return selected?.kind === "agent" ? AGENT_MODEL_GROUP_KEY : selected?.provider || null;
 }
 
 export function getSelectedRegionalModelId<T extends ModelGroupingItem>(
@@ -230,7 +234,7 @@ export function groupModelsByProvider<T extends ModelGroupingItem>(
       getModelGroupingDisplayName(left).localeCompare(getModelGroupingDisplayName(right)),
     );
   const groupedByProvider = models.reduce<Record<string, T[]>>((groups, model) => {
-    const provider = model.provider || "unknown";
+    const provider = model.kind === "agent" ? AGENT_MODEL_GROUP_KEY : model.provider || "unknown";
 
     groups[provider] ??= [];
     groups[provider].push(model);
@@ -238,7 +242,11 @@ export function groupModelsByProvider<T extends ModelGroupingItem>(
     return groups;
   }, {});
   const providerLists = Object.entries(groupedByProvider)
-    .sort(([providerA], [providerB]) => providerA.localeCompare(providerB))
+    .sort(([providerA], [providerB]) => {
+      if (providerA === AGENT_MODEL_GROUP_KEY) return -1;
+      if (providerB === AGENT_MODEL_GROUP_KEY) return 1;
+      return providerA.localeCompare(providerB);
+    })
     .map(([provider, providerModels]) => {
       const sortedModels = [...providerModels].sort((left, right) =>
         getModelGroupingDisplayName(left).localeCompare(getModelGroupingDisplayName(right)),
@@ -246,7 +254,7 @@ export function groupModelsByProvider<T extends ModelGroupingItem>(
 
       return {
         key: provider,
-        label: titleCaseSlug(provider),
+        label: provider === AGENT_MODEL_GROUP_KEY ? "Agents" : titleCaseSlug(provider),
         models: collapseRegionalModelVariants(sortedModels),
       };
     });

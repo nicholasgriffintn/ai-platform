@@ -2,6 +2,7 @@ import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 import catalogueData from "~/data-model/models";
 
+import { agentModelConfig } from "./agent-catalogue";
 import {
   modelCatalogueSchema,
   resolveCatalogueProvider,
@@ -11,7 +12,10 @@ import {
 const catalogue = modelCatalogueSchema.parse(catalogueData);
 const providerModels = new Map<string, ModelConfig>();
 
-export const modelConfig = resolveModelCatalogue(catalogue);
+export const modelConfig = {
+  ...resolveModelCatalogue(catalogue),
+  ...agentModelConfig,
+};
 
 export function getProviderModels(provider: string): ModelConfig {
   let config = providerModels.get(provider);

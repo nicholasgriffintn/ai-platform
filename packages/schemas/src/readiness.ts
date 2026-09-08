@@ -23,6 +23,9 @@ export const READINESS_REASON_CODES = [
   "runtime_model_loading",
   "machine_offline",
   "desktop_required",
+  "agent_workspace_required",
+  "agent_not_installed",
+  "agent_signed_out",
 ] as const;
 
 export const readinessReasonCodeSchema = z.enum(READINESS_REASON_CODES);
@@ -39,6 +42,9 @@ export const READINESS_ACTION_KINDS = [
   "open_runtimes",
   "install_desktop",
   "open_on_machine",
+  "choose_directory",
+  "connect_repository",
+  "copy_login_command",
 ] as const;
 
 export const readinessActionSchema = z.object({

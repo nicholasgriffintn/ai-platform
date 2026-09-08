@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   FEATURED_MODEL_GROUP_KEY,
+  AGENT_MODEL_GROUP_KEY,
   groupModelsByProvider,
   partitionDeprecatedModelEntries,
   type ModelGroupingItem,
@@ -58,5 +59,13 @@ describe("model grouping", () => {
       active: [entries[0]],
       deprecated: [entries[1]],
     });
+  });
+
+  it("keeps agents in their own group", () => {
+    const agent = model("codex", { kind: "agent", provider: "codex" });
+
+    expect(groupModelsByProvider([agent], {})).toMatchObject([
+      { key: AGENT_MODEL_GROUP_KEY, label: "Agents" },
+    ]);
   });
 });
