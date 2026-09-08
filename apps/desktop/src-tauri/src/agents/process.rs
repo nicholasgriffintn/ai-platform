@@ -103,13 +103,6 @@ impl DirectoryGrants {
         Ok(grant)
     }
 
-    pub fn list(&self) -> Result<Vec<DirectoryGrant>, ProcessRefusal> {
-        self.grants
-            .lock()
-            .map_err(|_| ProcessRefusal::InvalidDirectory)
-            .map(|grants| grants.values().cloned().collect())
-    }
-
     pub fn get(&self, id: &str) -> Result<DirectoryGrant, ProcessRefusal> {
         self.grants
             .lock()
@@ -179,7 +172,6 @@ pub enum AgentToolState {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum ProcessRefusal {
-    UnknownDriver,
     InvalidPrompt,
     InvalidDirectory,
     DirectoryOutsideGrant,
@@ -187,7 +179,6 @@ pub enum ProcessRefusal {
     DirtyTree,
     MissingHead,
     AlreadyRunning,
-    UnsupportedVersion,
     NotInstalled,
 }
 
@@ -258,7 +249,21 @@ pub fn probe(driver: AgentDriver, checked_at: String) -> AgentToolState {
         .unwrap_or_default()
         .to_string();
 
-    if !output.status.success() || version.is_empty() {
+    if !output.status.success() {
+        if !version.is_empty() {
+            return AgentToolState::Present {
+                checked_at,
+                version: Some(version),
+            };
+        }
+
+        return AgentToolState::SignedOut {
+            checked_at,
+            version: (!version_output.is_empty()).then_some(version_output),
+        };
+    }
+
+    if version.is_empty() {
         return AgentToolState::SignedOut {
             checked_at,
             version: (!version_output.is_empty()).then_some(version_output),

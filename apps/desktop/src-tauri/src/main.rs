@@ -830,9 +830,7 @@ async fn start_agent_process_run(
     if process::is_dirty(&directory).map_err(|cause| format!("{cause:?}"))?
         && !request.acknowledge_dirty
     {
-        return Err(
-            "The workspace has uncommitted changes; acknowledge the dirty tree first.".to_string(),
-        );
+        return Err(format!("{:?}", process::ProcessRefusal::DirtyTree));
     }
 
     let program = process::program_for(request.driver);
@@ -848,7 +846,7 @@ async fn start_agent_process_run(
     .map_err(|cause| format!("{cause:?}"))?;
 
     if !registry.begin_directory(&directory) {
-        return Err("A run is already active for this directory.".to_string());
+        return Err(format!("{:?}", process::ProcessRefusal::AlreadyRunning));
     }
 
     let child_result = Command::new(program.program)
@@ -862,7 +860,11 @@ async fn start_agent_process_run(
         Ok(child) => child,
         Err(cause) => {
             registry.finish_directory(&directory);
-            return Err(cause.to_string());
+            return Err(if cause.kind() == std::io::ErrorKind::NotFound {
+                format!("{:?}", process::ProcessRefusal::NotInstalled)
+            } else {
+                cause.to_string()
+            });
         }
     };
     let stdout = child
@@ -1192,9 +1194,9 @@ fn main() {
 
             let store = Store::open(Connection::open(directory.join("polychat.sqlite"))?)?;
 
+            let directories = store.list_agent_directories()?;
             app.manage(store);
             app.manage(RunRegistry::default());
-            let directories = store.list_agent_directories()?;
             app.manage(DirectoryGrants::from_grants(directories));
 
             Ok(())
