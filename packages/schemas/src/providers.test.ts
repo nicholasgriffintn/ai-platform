@@ -4,10 +4,10 @@ import { modelConfigItemSchema } from "./models.js";
 import { getProviderCapabilities, providerInstanceSchema } from "./providers.js";
 
 describe("provider contracts", () => {
-  it("defaults catalogue entries to models and round-trips agent entries", () => {
+  it("leaves catalogue entries unmarked and round-trips agent entries", () => {
     expect(
       modelConfigItemSchema.parse({ matchingModel: "claude-sonnet", provider: "anthropic" }),
-    ).toMatchObject({ kind: "model" });
+    ).not.toHaveProperty("kind");
 
     const agent = modelConfigItemSchema.parse({
       kind: "agent",
