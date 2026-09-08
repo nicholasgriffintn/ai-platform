@@ -74,7 +74,18 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
   }
 
   if (payload.projectId) {
-    await requireProjectAccess(createServiceContext({ env, user }), payload.projectId);
+    try {
+      await requireProjectAccess(createServiceContext({ env, user }), payload.projectId);
+    } catch {
+      await settleDelegation(
+        context,
+        delegation,
+        message.user_id,
+        "The delegating user lost access to this project before it started.",
+      );
+
+      return { status: "error" as const, detail: "Delegation project access refused" };
+    }
   }
 
   const enabledTools = payload.projectId
