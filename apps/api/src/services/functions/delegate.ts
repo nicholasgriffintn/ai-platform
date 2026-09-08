@@ -92,6 +92,38 @@ export const delegate: ApiToolDefinition = {
         content: "This provider requires a deadline budget rather than a credit-only budget.",
       };
     }
+    if (
+      teammateModel?.agent?.capabilities.writesFiles &&
+      (request.request?.mode ?? request.mode) === "chat" &&
+      !request.request?.approved_tools?.includes("delegate")
+    ) {
+      const reason = "This delegate can write files and needs your approval before it starts.";
+
+      return {
+        status: "pending",
+        name: "delegate",
+        content: reason,
+        data: {
+          renderer: "approval_request",
+          message: reason,
+          options: ["Approve", "Reject"],
+          approvalRequired: true,
+          approval: {
+            toolName: "delegate",
+            toolCallId: toolContext.toolCallId,
+            interactionId: toolContext.toolCallId,
+            reason,
+          },
+          humanInTheLoop: {
+            type: "approval",
+            status: "pending",
+            interactionId: toolContext.toolCallId,
+            toolName: "delegate",
+            requires_user_action: true,
+          },
+        },
+      };
+    }
     const parentTools = (request.request?.enabled_tools ?? []).filter(
       (tool) => !isMetaToolName(tool),
     );
