@@ -109,6 +109,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       Date.parse(resolvedModel.readiness.expiresAt) <= Date.now())
   ) {
     const reason = resolvedModel.readiness.reason || "The selected provider is not ready.";
+
     await settleDelegation(context, delegation, message.user_id, reason);
 
     return { status: "error" as const, detail: reason };
@@ -116,6 +117,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
 
   if (executionRoute === "machine") {
     const machineId = resolvedModel?.machineId;
+
     if (!machineId) {
       await settleDelegation(
         context,
@@ -137,6 +139,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         },
         draft: { text: delegation.goal, attachmentIds: [] },
       });
+
       await context.repositories.delegations.updateState(delegation.id, "awaiting_input");
       await new TaskService(context.env, context.repositories.tasks).enqueueTask({
         id: `delegation_expiry_${delegation.id}`,
@@ -161,6 +164,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       return { status: "error" as const, detail: "Machine handoff could not be created" };
     }
   }
+
   let sandboxOptions: SandboxRequestOptions | undefined;
 
   if (executionRoute === "sandbox") {
@@ -245,9 +249,11 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       const firstPendingTool = response.choices.find(
         (choice) => choice.message.status === "pending",
       )?.message;
+
       if (firstPendingTool) {
         const waitingState =
           firstPendingTool.name === "ask_user" ? "awaiting_input" : "awaiting_approval";
+
         await context.repositories.delegations.updateState(delegation.id, waitingState);
         await notifyDelegationAttention(context, delegation, message.user_id, waitingState).catch(
           () => undefined,

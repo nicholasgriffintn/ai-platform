@@ -11,6 +11,6 @@ export const messageParent: FunctionToolDescriptor = {
   description:
     "Send a message to the parent conversation through the handle granted to this delegate. Use only when the parent needs a material update.",
   type: "normal",
-  permissions: [],
+  permissions: ["delegate"],
   inputSchema: messageParentInputSchema,
 };

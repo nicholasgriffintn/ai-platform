@@ -7,8 +7,12 @@ export interface AccountModelSelection {
   computeSite: ComputeSite;
 }
 
+export type AccountModelDefaults = Partial<
+  Pick<UserSettings, "default_model_id" | "default_model_tier" | "default_compute_site">
+>;
+
 export function resolveAccountModelSelection(
-  settings: UserSettings | null | undefined,
+  settings: AccountModelDefaults | null | undefined,
 ): AccountModelSelection {
   const model = settings?.default_model_id ?? null;
 

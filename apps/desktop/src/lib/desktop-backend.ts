@@ -24,7 +24,6 @@ import {
   localMessageSchema,
   type DesktopModelRunRequest,
   type DesktopAgentProcessRunRequest,
-  type AgentDirectory,
   type AgentRuntimeVendor,
   type DesktopSessionToken,
   type DesktopStreamEvent,

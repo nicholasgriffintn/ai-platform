@@ -74,6 +74,7 @@ export const delegate: ApiToolDefinition = {
     const teammateModel = teammate.model
       ? await findModelConfig(teammate.model, context.env, undefined)
       : undefined;
+
     if (teammateModel?.agent && !teammateModel.agent.capabilities.runsUnattended) {
       return {
         status: "error",
@@ -81,6 +82,7 @@ export const delegate: ApiToolDefinition = {
         content: "This provider cannot run unattended.",
       };
     }
+
     if (
       teammateModel?.agent?.capabilities.picksOwnModel &&
       args.budget?.max_credit_micros !== undefined &&
@@ -92,6 +94,7 @@ export const delegate: ApiToolDefinition = {
         content: "This provider requires a deadline budget rather than a credit-only budget.",
       };
     }
+
     if (
       teammateModel?.agent?.capabilities.writesFiles &&
       (request.request?.mode ?? request.mode) === "chat" &&
@@ -124,6 +127,7 @@ export const delegate: ApiToolDefinition = {
         },
       };
     }
+
     const parentTools = (request.request?.enabled_tools ?? []).filter(
       (tool) => !isMetaToolName(tool),
     );
@@ -183,6 +187,7 @@ export const delegate: ApiToolDefinition = {
         deadline,
       },
     });
+
     await context.repositories.conversationHandles.createSpawnHandle({
       id: `handle_${delegationId}`,
       conversationId: parentConversationId,

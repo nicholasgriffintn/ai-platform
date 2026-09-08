@@ -1,5 +1,5 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import { formatStatsDuration } from "@ngriffin_uk/polychat-library-chat";
+import { formatStatsDuration } from "@ngriffin_uk/polychat-library-chat/response-stats";
 import type { Delegation, DelegationState } from "@ngriffin_uk/polychat-schemas";
 
 const stateLabels: Record<DelegationState, string> = {

@@ -1,6 +1,5 @@
 import { RunChangesView, RunFilesView } from "@ngriffin_uk/polychat-component-content";
-import { RunActivityPanel } from "@ngriffin_uk/polychat-component-conversation";
-import { DelegationCard } from "@ngriffin_uk/polychat-component-conversation";
+import { RunActivityPanel, DelegationCard } from "@ngriffin_uk/polychat-component-conversation";
 import type { ConversationRunSteering } from "@ngriffin_uk/polychat-component-conversation";
 import {
   ProjectWorkbenchApprovals,

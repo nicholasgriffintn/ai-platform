@@ -110,7 +110,10 @@ export function getPermissionModeLabel(mode: PermissionMode): string {
   return PERMISSION_MODE_LABELS[mode];
 }
 
-const GATED_PERMISSION_MODES: readonly PermissionMode[] = ["supervised", "auto_accept_edits"];
+const GATED_PERMISSION_MODES: ReadonlySet<PermissionMode> = new Set<PermissionMode>([
+  "supervised",
+  "auto_accept_edits",
+]);
 
 export function getPermissionModeUnavailableReason(
   capabilities: Pick<ProviderCapabilities, "autoReview" | "reportsApprovals"> | undefined,
@@ -134,7 +137,7 @@ export function getPermissionModeUnavailableReason(
     return "Auto is unavailable because this provider does not report its own review.";
   }
 
-  if (GATED_PERMISSION_MODES.includes(mode) && !capabilities.reportsApprovals) {
+  if (GATED_PERMISSION_MODES.has(mode) && !capabilities.reportsApprovals) {
     return "This provider cannot receive approval requests.";
   }
 

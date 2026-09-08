@@ -1,8 +1,8 @@
 import type {
   ConversationHandleListResponse,
   DelegationListResponse,
+  ConversationHandle,
 } from "@ngriffin_uk/polychat-schemas";
-import type { ConversationHandle } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";

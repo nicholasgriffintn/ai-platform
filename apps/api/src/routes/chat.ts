@@ -675,6 +675,7 @@ addRoute(app, "get", "/completions/:completion_id/delegations", {
       };
       const serviceContext = getServiceContext(context);
       const conversation = await requireConversationAccess(serviceContext, completion_id);
+
       return ResponseFactory.success(context, {
         delegations:
           await serviceContext.repositories.delegations.listByParentConversationId(completion_id),
@@ -699,6 +700,7 @@ addRoute(app, "post", "/completions/:completion_id/delegations/cancel", {
       };
       const serviceContext = getServiceContext(context);
       const conversation = await requireConversationAccess(serviceContext, completion_id);
+
       if (conversation.user_id !== serviceContext.requireUser().id) {
         throw new AssistantError(
           "Only the person who started the delegation can cancel it",
@@ -706,7 +708,9 @@ addRoute(app, "post", "/completions/:completion_id/delegations/cancel", {
           403,
         );
       }
+
       await cancelDelegationsForConversation(serviceContext, completion_id);
+
       return ResponseFactory.success(context, { cancelled: true });
     })(raw),
 });

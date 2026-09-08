@@ -140,7 +140,7 @@ addRoute(app, "delete", "/conversation-handles/:handleId", {
   },
   handler: async ({ raw }) => {
     const user = raw.get("user");
-    const { handleId } = raw.req.valid("param" as never) as { handleId: string };
+    const { handleId } = raw.req.valid("param") as { handleId: string };
     const revoked = await getServiceContext(raw).repositories.conversationHandles.revokeForUser(
       handleId,
       user.id,
@@ -170,7 +170,7 @@ addRoute(app, "post", "/conversation-handles", {
   },
   handler: async ({ raw }) => {
     const user = raw.get("user");
-    const input = raw.req.valid("json" as never) as {
+    const input = raw.req.valid("json") as {
       conversationId: string;
       delegationId: string;
       expiresAt?: string | null;
@@ -193,6 +193,7 @@ addRoute(app, "post", "/conversation-handles", {
     }
 
     const expiresAt = input.expiresAt ?? delegation.budget.deadline;
+
     if (Date.parse(expiresAt) > Date.parse(delegation.budget.deadline)) {
       throw new AssistantError(
         "A handle cannot outlive its delegation",

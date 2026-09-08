@@ -22,6 +22,7 @@ import { create_image } from "./image";
 import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
 import { search_memories, store_memory } from "./memory";
+import { messageParent } from "./message-parent";
 import { metaToolDescriptors } from "./meta";
 import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
@@ -84,6 +85,7 @@ const descriptors: FunctionToolDescriptor[] = [
   create_automation,
   create_note,
   delegate,
+  messageParent,
   generate_pattern,
   get_note,
   extract_text_from_document,

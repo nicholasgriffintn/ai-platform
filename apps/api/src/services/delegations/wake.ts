@@ -1,9 +1,9 @@
+import type { delegationStateSchema } from "@ngriffin_uk/polychat-schemas";
 import {
   createChatCompletionsJsonSchema,
-  delegationStateSchema,
   delegationWakeTaskDataSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import z from "zod/v4";
+import type z from "zod/v4";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
@@ -41,6 +41,7 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
   }
 
   const user = await context.repositories.users.getUserById(message.user_id ?? 0);
+
   if (!user) {
     return { status: "error" as const, detail: "Delegating user not found" };
   }
@@ -65,5 +66,6 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
   });
 
   await handleCreateChatCompletions({ env, request: body, user, context });
+
   return { status: "success" as const, detail: "Parent resumed" };
 }

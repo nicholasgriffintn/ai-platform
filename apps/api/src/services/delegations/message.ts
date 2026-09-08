@@ -62,6 +62,7 @@ export async function deliverDelegationMessage(
         },
       );
       await context.repositories.conversations.markUnreadForUser(handle.conversationId, user.id);
+
       return true;
     },
   );

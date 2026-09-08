@@ -1,5 +1,4 @@
 import { DELEGATION_MESSAGE_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
-import z from "zod/v4";
 
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IFunctionResponse } from "~/types";
@@ -53,6 +52,7 @@ export const messageParent: ApiToolDefinition = {
         priority: 4,
         task_data: { delegationId: delegation.id, message: args.message },
       });
+
       return {
         status: "success",
         name: "message_parent",

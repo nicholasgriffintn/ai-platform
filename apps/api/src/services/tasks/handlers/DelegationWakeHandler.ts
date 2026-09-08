@@ -15,6 +15,7 @@ export class DelegationWakeHandler implements TaskHandler {
     }
 
     const result = await wakeDelegationParent(message, env);
+
     return { status: result.status === "error" ? "error" : result.status, message: result.detail };
   }
 }

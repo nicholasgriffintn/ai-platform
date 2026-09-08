@@ -10,6 +10,7 @@ function stringValue(value: unknown): string | undefined {
 
 function nestedText(value: unknown, depth = 0): string | undefined {
   const direct = stringValue(value);
+
   if (direct || depth >= 4) {
     return direct;
   }
@@ -19,6 +20,7 @@ function nestedText(value: unknown, depth = 0): string | undefined {
       .map((item) => nestedText(item, depth + 1))
       .filter((item): item is string => Boolean(item))
       .join("");
+
     return text || undefined;
   }
 
@@ -38,6 +40,7 @@ function nestedText(value: unknown, depth = 0): string | undefined {
     "update",
   ]) {
     const text = nestedText(value[key], depth + 1);
+
     if (text) {
       return text;
     }
@@ -49,13 +52,16 @@ function nestedText(value: unknown, depth = 0): string | undefined {
 export function parseAgentProcessOutput(runId: string, line: string): DesktopStreamEvent {
   try {
     const parsed: unknown = JSON.parse(line);
+
     if (isRecord(parsed)) {
       const delta = nestedText(parsed);
+
       if (delta) {
         return { type: "text", runId, delta };
       }
 
       const type = stringValue(parsed.type);
+
       if (type) {
         return { type: "text", runId, delta: `[${type}]\n` };
       }

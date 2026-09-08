@@ -62,6 +62,7 @@ async function readRunResult(response: Response): Promise<{
 
       buffer += decoder.decode(value, { stream: true });
       const chunks = buffer.split("\n\n");
+
       buffer = chunks.pop() ?? "";
       readChunk(chunks.join("\n\n"));
     }
@@ -106,7 +107,7 @@ export class PolychatSandboxProvider implements AIProvider {
 
     const response = await executeSandboxRunStream({
       env: params.env,
-      context: params.context!,
+      context: params.context,
       user,
       payload: {
         installationId: options.data.installationId,

@@ -22,6 +22,7 @@ interface GitHubPullRequest {
 
 function repositoryPath(repository: string): string {
   const [owner, name] = repository.split("/");
+
   return `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}`;
 }
 
@@ -36,11 +37,13 @@ export function createGitHubForgeAdapter(token: string): ForgeAdapter {
         "User-Agent": "Polychat",
         "X-GitHub-Api-Version": "2022-11-28",
       },
-      body: body ? JSON.stringify(body) : undefined,
+      ...(method === "POST" && body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
+
     if (!response.ok) {
       throw new Error(`GitHub returned ${response.status}`);
     }
+
     return (await response.json()) as GitHubPullRequest;
   }
 
@@ -54,6 +57,7 @@ export function createGitHubForgeAdapter(token: string): ForgeAdapter {
     ) {
       throw new Error("GitHub returned an incomplete pull request");
     }
+
     return forgePullRequestSchema.parse({
       ref: { forge: "github", repository, number: payload.number },
       url: payload.html_url,
@@ -66,6 +70,7 @@ export function createGitHubForgeAdapter(token: string): ForgeAdapter {
   return {
     async createPullRequest(input) {
       const request = createPullRequestInputSchema.parse(input);
+
       return parse(
         request.repository,
         await requestApi(repositoryPath(request.repository) + "/pulls", "POST", {
@@ -78,6 +83,7 @@ export function createGitHubForgeAdapter(token: string): ForgeAdapter {
     },
     async getPullRequest(ref) {
       const request = forgePullRequestRefSchema.parse(ref);
+
       return parse(
         request.repository,
         await requestApi(`${repositoryPath(request.repository)}/pulls/${request.number}`, "GET"),

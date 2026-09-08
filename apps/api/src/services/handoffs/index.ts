@@ -37,11 +37,13 @@ export async function claimHandoff(
   const machine = (await context.repositories.machines.listForUser(user.id)).find(
     (candidate) => candidate.machineId === machineId,
   );
+
   if (!machine || !isMachineOnline(machine)) {
     throw new Error(NOT_FOUND);
   }
 
   const handoff = await context.repositories.handoffs.claim(id, machineId);
+
   if (!handoff) {
     throw new Error(NOT_FOUND);
   }
@@ -51,6 +53,7 @@ export async function claimHandoff(
 
 export async function getHandoff(context: ServiceContext, id: string): Promise<Handoff> {
   const handoff = await context.repositories.handoffs.getForUser(id, context.requireUser().id);
+
   if (!handoff) {
     throw new Error(NOT_FOUND);
   }
@@ -68,11 +71,13 @@ export async function decideHandoff(
   const machine = (await context.repositories.machines.listForUser(user.id)).find(
     (candidate) => candidate.machineId === machineId,
   );
+
   if (!machine) {
     throw new Error(NOT_FOUND);
   }
 
   const existing = await context.repositories.handoffs.getForUser(id, user.id);
+
   if (!existing || existing.claimedBy !== machineId) {
     throw new Error(NOT_FOUND);
   }
