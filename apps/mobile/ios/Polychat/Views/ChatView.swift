@@ -141,6 +141,23 @@ struct ChatView: View {
                     isMessageInputFocused = false
                 }
             )
+            if let machineRun = currentRun, machineRun.provenance?.site == "machine", !machineRun.isActive {
+                HStack(spacing: 12) {
+                    Image(systemName: "desktopcomputer")
+                        .foregroundStyle(.secondary)
+                    Text("This conversation last ran on \(machineRun.provenance?.vendor ?? "another machine").")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Continue here") {
+                        conversationManager.setTierForCurrentConversation("medium")
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.polychat.elevatedBackground)
+            }
             MessageInputView(
                 messageText: $messageText,
                 selectedAttachments: $selectedAttachments,

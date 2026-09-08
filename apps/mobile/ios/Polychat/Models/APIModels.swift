@@ -221,6 +221,7 @@ public struct ChatRun: Codable, Equatable {
     public let lastMessageId: String?
     public let context: ChatContextSnapshot?
     public let retry: ChatRetrySnapshot?
+    public let provenance: RunProvenance?
     public let usage: ChatRunUsage?
 
     public init(
@@ -242,6 +243,7 @@ public struct ChatRun: Codable, Equatable {
         lastMessageId: String?,
         context: ChatContextSnapshot? = nil,
         retry: ChatRetrySnapshot? = nil,
+        provenance: RunProvenance? = nil,
         usage: ChatRunUsage? = nil
     ) {
         self.protocolVersion = protocolVersion
@@ -262,8 +264,16 @@ public struct ChatRun: Codable, Equatable {
         self.lastMessageId = lastMessageId
         self.context = context
         self.retry = retry
+        self.provenance = provenance
         self.usage = usage
     }
+}
+
+public struct RunProvenance: Codable, Equatable {
+    public let site: String
+    public let model: String
+    public let vendor: String
+    public let machineId: String?
 }
 
 public struct ChatRunUsage: Codable, Equatable {
