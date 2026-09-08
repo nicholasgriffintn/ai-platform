@@ -1,5 +1,6 @@
 import {
   createChatCompletionsJsonSchema,
+  DELEGATION_EXPIRY_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
   delegationRunTaskDataSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -118,6 +119,14 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
           firstPendingTool.name === "ask_user" ? "awaiting_input" : "awaiting_approval";
         await context.repositories.delegations.updateState(delegation.id, waitingState);
         await notifyDelegationAttention(context, delegation, message.user_id, waitingState);
+        await new TaskService(context.env, context.repositories.tasks).enqueueTask({
+          id: `delegation_expiry_${delegation.id}`,
+          task_type: DELEGATION_EXPIRY_TASK_TYPE,
+          user_id: message.user_id,
+          priority: 4,
+          scheduled_at: delegation.budget.deadline,
+          task_data: { delegationId: delegation.id },
+        });
 
         return {
           status: "success" as const,
