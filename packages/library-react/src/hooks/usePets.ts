@@ -96,18 +96,21 @@ export function useActivePet(
   const { isAuthenticated, isLoading: isAuthLoading, userSettings } = useAuthStatus();
   const { pets, isLoadingPets } = usePets(1);
 
-  const selection = {
-    pet_source: userSettings?.pet_source ?? "preset",
-    pet_id: userSettings?.pet_id ?? DEFAULT_PET_PRESET_SLUG,
-  } as const;
-  const overrides = parsePetModelOverrides(
-    userSettings?.pet_model_overrides ?? EMPTY_PET_MODEL_OVERRIDES,
-  );
+  const selection = isAuthenticated
+    ? {
+        pet_source: userSettings?.pet_source ?? "preset",
+        pet_id: userSettings?.pet_id ?? DEFAULT_PET_PRESET_SLUG,
+      }
+    : { pet_source: "preset" as const, pet_id: DEFAULT_PET_PRESET_SLUG };
+  const overrides = isAuthenticated
+    ? parsePetModelOverrides(userSettings?.pet_model_overrides ?? EMPTY_PET_MODEL_OVERRIDES)
+    : EMPTY_PET_MODEL_OVERRIDES;
+  const effectiveConversationState = isAuthenticated ? conversationState : undefined;
   const modelSelection = resolvePetSelectionForModel(
     selection,
     overrides,
     model,
-    conversationState,
+    effectiveConversationState,
   );
   const listedCustomPet =
     modelSelection.pet_source === "custom"
@@ -121,7 +124,7 @@ export function useActivePet(
   const listedDefaultPet =
     selection.pet_source === "custom" ? pets.find((pet) => pet.id === selection.pet_id) : undefined;
   const needsDefaultPet =
-    !conversationState &&
+    !effectiveConversationState &&
     selection.pet_source === "custom" &&
     selection.pet_id !== modelSelection.pet_id &&
     !listedDefaultPet;
@@ -132,7 +135,13 @@ export function useActivePet(
   const customPets = [pets, fetchedCustomPet, fetchedDefaultPet]
     .flat()
     .filter((pet): pet is UserPet => Boolean(pet));
-  const resolved = resolvePetForModel(selection, overrides, model, conversationState, customPets);
+  const resolved = resolvePetForModel(
+    selection,
+    overrides,
+    model,
+    effectiveConversationState,
+    customPets,
+  );
 
   const isSelectionReady =
     !isAuthLoading &&
