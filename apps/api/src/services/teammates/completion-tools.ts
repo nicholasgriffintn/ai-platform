@@ -4,6 +4,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Teammate } from "~/lib/database/schema";
 import { request_approval, ask_user } from "~/services/functions/human_in_the_loop";
 import { registerMCPClient } from "~/services/functions/mcp";
+import { messageParent } from "~/services/functions/message-parent";
 import {
   connectMCPServerReady,
   parseMCPServerConfigs,
@@ -20,7 +21,7 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/teammates/completion-tools" });
 
-const CORE_TEAMMATE_TOOLS: ApiToolDefinition[] = [request_approval, ask_user];
+const CORE_TEAMMATE_TOOLS: ApiToolDefinition[] = [request_approval, ask_user, messageParent];
 
 type CompletionTeammate = Pick<
   Teammate,

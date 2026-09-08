@@ -74,6 +74,18 @@ export interface GlobalConversationSearchRow {
 }
 
 export class ConversationRepository extends BaseRepository {
+  public async markUnreadForUser(conversationId: string, userId: number): Promise<void> {
+    await this.executeRun(
+      `INSERT INTO conversation_user_state (conversation_id, user_id, is_unread, updated_at)
+       VALUES (?, ?, 1, CURRENT_TIMESTAMP)
+       ON CONFLICT(conversation_id, user_id) DO UPDATE SET
+         is_unread = 1,
+         revision = revision + 1,
+         updated_at = CURRENT_TIMESTAMP`,
+      [conversationId, userId],
+    );
+  }
+
   public async createConversation(
     conversationId: string,
     userId: number,
