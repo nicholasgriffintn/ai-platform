@@ -51,6 +51,7 @@ export interface ChatSettingsPanelProps {
   onChatSettingsChange: (settings: Record<string, any>) => void;
   permissionMode?: PermissionMode;
   permissionModeOptions?: Array<{ label: string; value: PermissionMode }>;
+  permissionModeDescription?: string;
   onPermissionModeChange?: (value: string) => void;
 }
 
@@ -77,6 +78,7 @@ export function ChatSettingsPanel({
   onChatSettingsChange,
   permissionMode,
   permissionModeOptions,
+  permissionModeDescription,
   onPermissionModeChange,
 }: ChatSettingsPanelProps) {
   const samplingCapabilities = getModelSamplingCapabilities(selectedModelConfig);
@@ -139,7 +141,10 @@ export function ChatSettingsPanel({
                   onChange={onPermissionModeChange}
                   disabled={isDisabled}
                   options={permissionModeOptions}
-                  description="Controls whether this conversation pauses before file and command actions."
+                  description={
+                    permissionModeDescription ??
+                    "Controls whether this conversation pauses before file and command actions."
+                  }
                 />
               )}
               {selectedModelConfig?.supportedServiceTiers?.includes("fast") &&

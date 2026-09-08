@@ -85,6 +85,17 @@ export type AgentDirectory = z.infer<typeof agentDirectorySchema>;
 export type ProviderInstance = z.infer<typeof providerInstanceSchema>;
 export type ProviderAdapter = z.infer<typeof providerAdapterSchema>;
 
+const PERMISSION_MODE_LABELS: Record<PermissionMode, string> = {
+  supervised: "Supervised",
+  auto_accept_edits: "Auto-accept edits",
+  auto: "Auto",
+  full_access: "Full access",
+};
+
+export function getPermissionModeLabel(mode: PermissionMode): string {
+  return PERMISSION_MODE_LABELS[mode];
+}
+
 const GATED_PERMISSION_MODES: readonly PermissionMode[] = ["supervised", "auto_accept_edits"];
 
 export function getPermissionModeUnavailableReason(

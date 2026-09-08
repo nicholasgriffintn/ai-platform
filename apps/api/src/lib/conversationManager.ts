@@ -4,6 +4,7 @@ import type {
   ModelTier,
   PermissionMode,
 } from "@ngriffin_uk/polychat-schemas";
+import { permissionModeSchema } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
 import type {
@@ -257,6 +258,20 @@ export class ConversationManager {
     }
   }
 
+  private async getInheritedPermissionMode(
+    parentConversationId?: string,
+  ): Promise<PermissionMode | undefined> {
+    if (!parentConversationId) {
+      return undefined;
+    }
+
+    const parent =
+      await this.database.repositories.conversations.getConversation(parentConversationId);
+    const parsed = permissionModeSchema.safeParse(parent?.permission_mode);
+
+    return parsed.success ? parsed.data : undefined;
+  }
+
   private getBranchParentIds(options?: ConversationWriteOptions): {
     parentConversationId?: string;
     parentMessageId?: string;
@@ -321,6 +336,11 @@ export class ConversationManager {
 
       await this.assertWriteOwnership();
 
+      const permissionMode =
+        options?.permission_mode ??
+        (await this.getInheritedPermissionMode(parentConversationId)) ??
+        undefined;
+
       return await this.database.repositories.conversations.createConversation(
         conversation_id,
         this.user.id,
@@ -332,7 +352,7 @@ export class ConversationManager {
           type: options?.type,
           model_id: options?.model_id,
           model_tier: options?.model_tier,
-          permission_mode: options?.permission_mode,
+          permission_mode: permissionMode,
         },
       );
     }

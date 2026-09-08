@@ -12,11 +12,10 @@ import {
   EMPTY_MODEL_CONFIG,
   getAvailableModels,
   getDefaultReasoningEffort,
-  getReasoningOptions,
-} from "@ngriffin_uk/polychat-schemas";
-import {
+  getPermissionModeLabel,
   getPermissionModeUnavailableReason,
-  type PermissionMode,
+  getReasoningOptions,
+  permissionModeSchema,
   type ReasoningEffort,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo, useState } from "react";
@@ -102,72 +101,34 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
     });
   };
 
-  const permissionModeOptions: Array<{ label: string; value: PermissionMode }> = [
-    {
-      value: "supervised",
-      label: getPermissionModeUnavailableReason(
-        selectedModelConfig?.agent?.capabilities,
-        "supervised",
-        selectedModelConfig?.agent?.permissionModes,
-      )
-        ? "Supervised (unavailable)"
-        : "Supervised",
-    },
-    {
-      value: "auto_accept_edits",
-      label: getPermissionModeUnavailableReason(
-        selectedModelConfig?.agent?.capabilities,
-        "auto_accept_edits",
-        selectedModelConfig?.agent?.permissionModes,
-      )
-        ? "Auto-accept edits (unavailable)"
-        : "Auto-accept edits",
-    },
-    {
-      value: "auto",
-      label: getPermissionModeUnavailableReason(
-        selectedModelConfig?.agent?.capabilities,
-        "auto",
-        selectedModelConfig?.agent?.permissionModes,
-      )
-        ? "Auto (unavailable)"
-        : "Auto",
-    },
-    {
-      value: "full_access",
-      label: getPermissionModeUnavailableReason(
-        selectedModelConfig?.agent?.capabilities,
-        "full_access",
-        selectedModelConfig?.agent?.permissionModes,
-      )
-        ? "Full access (unavailable)"
-        : "Full access",
-    },
-  ];
+  const agentCapabilities = selectedModelConfig?.agent?.capabilities;
+  const agentPermissionModes = selectedModelConfig?.agent?.permissionModes;
+  const permissionModeReasons = new Map(
+    permissionModeSchema.options.map((mode) => [
+      mode,
+      getPermissionModeUnavailableReason(agentCapabilities, mode, agentPermissionModes),
+    ]),
+  );
+  const permissionModeOptions = permissionModeSchema.options.map((mode) => ({
+    value: mode,
+    label: permissionModeReasons.get(mode)
+      ? `${getPermissionModeLabel(mode)} (unavailable)`
+      : getPermissionModeLabel(mode),
+  }));
+  const permissionModeDescription =
+    (permissionMode ? permissionModeReasons.get(permissionMode) : undefined) ??
+    "Controls whether this conversation pauses before file and command actions.";
   const canUsePermissionMode = Boolean(
-    selectedModelConfig?.agent?.capabilities.writesFiles ||
-    selectedModelConfig?.agent?.capabilities.runsCommands,
+    agentCapabilities?.writesFiles || agentCapabilities?.runsCommands,
   );
   const handlePermissionModeChange = (value: string) => {
-    if (
-      value === "supervised" ||
-      value === "auto_accept_edits" ||
-      value === "auto" ||
-      value === "full_access"
-    ) {
-      if (
-        !selectedModelConfig?.agent?.capabilities ||
-        getPermissionModeUnavailableReason(
-          selectedModelConfig.agent.capabilities,
-          value,
-          selectedModelConfig.agent.permissionModes,
-        )
-      ) {
-        return;
-      }
+    const parsed = permissionModeSchema.safeParse(value);
 
-      setPermissionMode(value);
+    if (!parsed.success || permissionModeReasons.get(parsed.data)) {
+      return;
     }
+
+    setPermissionMode(parsed.data);
   };
 
   const handleCompactionChange = (value: string) => {
@@ -266,6 +227,7 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
       onVerbosityChange={handleVerbosityChange}
       permissionMode={canUsePermissionMode ? permissionMode : undefined}
       permissionModeOptions={canUsePermissionMode ? permissionModeOptions : undefined}
+      permissionModeDescription={permissionModeDescription}
       onPermissionModeChange={canUsePermissionMode ? handlePermissionModeChange : undefined}
     />
   );

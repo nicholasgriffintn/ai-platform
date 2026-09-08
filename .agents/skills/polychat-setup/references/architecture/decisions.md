@@ -30,6 +30,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0016: Keep meta tools in the meta scope](decisions/0016-meta-tools-belong-to-the-meta-scope.md)
 - [0017: Bind connector execution to exact local authority](decisions/0017-bind-connector-execution-to-local-authority.md)
 - [0035: Resolve model tiers once, on the server](decisions/0035-resolve-model-tiers-on-the-server.md)
+- [0039: Set permission mode on the conversation](decisions/0039-set-permission-mode-on-the-conversation.md)
 
 ## Work
 
