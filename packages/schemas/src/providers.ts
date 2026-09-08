@@ -44,6 +44,7 @@ export const permissionModeSchema = z.enum([
   "auto",
   "full_access",
 ]);
+export const DEFAULT_PERMISSION_MODE = "auto_accept_edits" as const;
 
 export const agentDirectorySchema = z
   .object({
@@ -83,6 +84,37 @@ export type PermissionMode = z.infer<typeof permissionModeSchema>;
 export type AgentDirectory = z.infer<typeof agentDirectorySchema>;
 export type ProviderInstance = z.infer<typeof providerInstanceSchema>;
 export type ProviderAdapter = z.infer<typeof providerAdapterSchema>;
+
+const GATED_PERMISSION_MODES: readonly PermissionMode[] = ["supervised", "auto_accept_edits"];
+
+export function getPermissionModeUnavailableReason(
+  capabilities: Pick<ProviderCapabilities, "autoReview" | "reportsApprovals"> | undefined,
+  mode: PermissionMode,
+  supportedModes: readonly PermissionMode[] = [
+    "supervised",
+    "auto_accept_edits",
+    "auto",
+    "full_access",
+  ],
+): string | undefined {
+  if (!capabilities) {
+    return undefined;
+  }
+
+  if (!supportedModes.includes(mode)) {
+    return "This provider does not support that permission mode.";
+  }
+
+  if (mode === "auto" && !capabilities.autoReview) {
+    return "Auto is unavailable because this provider does not report its own review.";
+  }
+
+  if (GATED_PERMISSION_MODES.includes(mode) && !capabilities.reportsApprovals) {
+    return "This provider cannot receive approval requests.";
+  }
+
+  return undefined;
+}
 
 const MODEL_CAPABILITIES: ProviderCapabilities = {
   streamsText: true,

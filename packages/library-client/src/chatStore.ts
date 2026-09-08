@@ -6,6 +6,7 @@ import type {
   ComputeSite,
   HomeChatModeId,
   ModelTier,
+  PermissionMode,
 } from "@ngriffin_uk/polychat-schemas";
 import type { User, UserSettings } from "@ngriffin_uk/polychat-schemas/user-profile";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
@@ -66,7 +67,10 @@ export interface ChatStore {
   setConversationModelSelection: (selection: {
     model?: string | null;
     modelTier?: ModelTier | null;
+    permissionMode?: PermissionMode;
   }) => void;
+  permissionMode: PermissionMode;
+  setPermissionMode: (mode: PermissionMode) => void;
   useMultiModel: boolean;
   setUseMultiModel: (useMultiModel: boolean) => void;
   selectedTeammateId: string | null;
@@ -111,6 +115,7 @@ export const useChatStore = create<ChatStore>()(
             ? {
                 ...resolveAccountModelSelection(state.userSettings),
                 modelSelectionOrigin: "account" as const,
+                permissionMode: "auto_accept_edits" as const,
               }
             : {}),
           locallyCreatedConversationIds: {
@@ -165,8 +170,15 @@ export const useChatStore = create<ChatStore>()(
       setModel: (model) => set({ model, modelSelectionOrigin: "local" }),
       modelTier: null,
       setModelTier: (modelTier) => set({ modelTier, modelSelectionOrigin: "local" }),
-      setConversationModelSelection: ({ model = null, modelTier = null }) =>
-        set({ model, modelTier, modelSelectionOrigin: "conversation" }),
+      setConversationModelSelection: ({ model = null, modelTier = null, permissionMode }) =>
+        set({
+          model,
+          modelTier,
+          permissionMode: permissionMode ?? "auto_accept_edits",
+          modelSelectionOrigin: "conversation",
+        }),
+      permissionMode: "auto_accept_edits",
+      setPermissionMode: (permissionMode) => set({ permissionMode }),
       useMultiModel: false,
       setUseMultiModel: (useMultiModel) => set({ useMultiModel }),
       selectedTeammateId: null,
@@ -261,6 +273,7 @@ export const useChatStore = create<ChatStore>()(
         homeChatMode: state.homeChatMode,
         model: state.model,
         modelTier: state.modelTier,
+        permissionMode: state.permissionMode,
         useMultiModel: state.useMultiModel,
         chatSettings: state.chatSettings,
         selectedTeammateId: state.selectedTeammateId,

@@ -800,6 +800,11 @@ export const conversation = sqliteTable(
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
     model_id: text(),
     model_tier: text({ enum: ["low", "medium", "high", "ultra"] }),
+    permission_mode: text({
+      enum: ["supervised", "auto_accept_edits", "auto", "full_access"],
+    })
+      .notNull()
+      .default("auto_accept_edits"),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),

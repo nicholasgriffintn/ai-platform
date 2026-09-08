@@ -5,6 +5,7 @@ import type {
   ConversationType,
   ListedConversationType,
   ModelTier,
+  PermissionMode,
   SearchableConversationType,
 } from "@ngriffin_uk/polychat-schemas";
 import {
@@ -50,6 +51,7 @@ export interface CreateConversationOptions {
   type?: ConversationType;
   model_id?: string | null;
   model_tier?: ModelTier | null;
+  permission_mode?: PermissionMode;
 }
 
 export interface GlobalConversationSearchRow {
@@ -84,6 +86,7 @@ export class ConversationRepository extends BaseRepository {
     const type = options.type ?? "chat";
     const modelId = options.model_id ?? null;
     const modelTier = options.model_tier ?? null;
+    const permissionMode = options.permission_mode ?? "auto_accept_edits";
 
     const result = this.runQuery<Record<string, unknown>>(
       `INSERT INTO conversation (
@@ -96,10 +99,11 @@ export class ConversationRepository extends BaseRepository {
 		 project_id,
          model_id,
          model_tier,
+         permission_mode,
          created_at, 
          updated_at
        )
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
        RETURNING *`,
       [
         conversationId,
@@ -111,6 +115,7 @@ export class ConversationRepository extends BaseRepository {
         projectId ?? null,
         modelId,
         modelTier,
+        permissionMode,
       ],
       true,
     );
@@ -424,6 +429,7 @@ export class ConversationRepository extends BaseRepository {
       "share_id",
       "model_id",
       "model_tier",
+      "permission_mode",
     ];
 
     const result = this.buildUpdateQuery("conversation", updates, allowedFields, "id = ?", [

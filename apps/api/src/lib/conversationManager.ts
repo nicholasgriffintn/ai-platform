@@ -1,4 +1,9 @@
-import type { ConversationType, ModelConfigItem, ModelTier } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ConversationType,
+  ModelConfigItem,
+  ModelTier,
+  PermissionMode,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
 import type {
@@ -74,6 +79,7 @@ interface ConversationWriteOptions {
   type?: ConversationType;
   model_id?: string | null;
   model_tier?: ModelTier | null;
+  permission_mode?: PermissionMode;
 }
 
 export class ConversationManager {
@@ -326,6 +332,7 @@ export class ConversationManager {
           type: options?.type,
           model_id: options?.model_id,
           model_tier: options?.model_tier,
+          permission_mode: options?.permission_mode,
         },
       );
     }
@@ -345,6 +352,10 @@ export class ConversationManager {
 
     if (options?.model_tier !== undefined) {
       selectionUpdates.model_tier = options.model_tier;
+    }
+
+    if (options?.permission_mode !== undefined) {
+      selectionUpdates.permission_mode = options.permission_mode;
     }
 
     if (Object.keys(selectionUpdates).length > 0) {
@@ -1160,6 +1171,7 @@ export class ConversationManager {
     updates: {
       title?: string;
       archived?: boolean;
+      permission_mode?: PermissionMode;
     },
   ): Promise<Record<string, unknown>> {
     if (!this.store) {
@@ -1195,6 +1207,10 @@ export class ConversationManager {
 
     if (updates.archived !== undefined) {
       updateObj.is_archived = updates.archived;
+    }
+
+    if (updates.permission_mode !== undefined) {
+      updateObj.permission_mode = updates.permission_mode;
     }
 
     await this.assertWriteOwnership();

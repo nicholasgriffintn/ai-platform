@@ -7,6 +7,10 @@ import type {
   RecipeConnectorProvider,
   SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  DEFAULT_PERMISSION_MODE,
+  getPermissionModeUnavailableReason,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { mergeEnabledGoalToolNames } from "~/lib/chat/policy/goal-tools";
 import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/lib/chat/policy/memory";
@@ -316,6 +320,19 @@ export class RequestPreparer {
     const primaryModel = primaryModelConfig.matchingModel;
     const primaryProvider = primaryModelConfig.provider;
 
+    if (primaryModelConfig.kind === "agent" && primaryModelConfig.agent) {
+      const permissionMode = scope.options.permission_mode ?? DEFAULT_PERMISSION_MODE;
+      const unavailableReason = getPermissionModeUnavailableReason(
+        primaryModelConfig.agent.capabilities,
+        permissionMode,
+        primaryModelConfig.agent.permissionModes,
+      );
+
+      if (unavailableReason) {
+        throw new AssistantError(unavailableReason, ErrorType.PARAMS_ERROR);
+      }
+    }
+
     assertBackgroundRequestIsSupported(scope.options, primaryProvider);
 
     const conversationManager = ConversationManager.getInstance({
@@ -363,6 +380,7 @@ export class RequestPreparer {
           primaryModel,
           modelId: validationContext.selectedModels?.[0] ?? primaryModel,
           modelTier: validationContext.modelTier ?? null,
+          permissionMode: scope.options.permission_mode,
           platform,
           mode,
         })

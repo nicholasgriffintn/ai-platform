@@ -14,7 +14,11 @@ import {
   getDefaultReasoningEffort,
   getReasoningOptions,
 } from "@ngriffin_uk/polychat-schemas";
-import type { ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
+import {
+  getPermissionModeUnavailableReason,
+  type PermissionMode,
+  type ReasoningEffort,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMemo, useState } from "react";
 
 import { ChatSettingsPanel } from "../../../Composer/ChatSettingsPanel.js";
@@ -51,6 +55,8 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
     setChatSettings,
     setUseMultiModel,
     useMultiModel,
+    permissionMode,
+    setPermissionMode,
   } = useChatStore();
   const [showSettings, setShowSettings] = useState(false);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
@@ -94,6 +100,74 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
       ...chatSettings,
       [key]: numValue,
     });
+  };
+
+  const permissionModeOptions: Array<{ label: string; value: PermissionMode }> = [
+    {
+      value: "supervised",
+      label: getPermissionModeUnavailableReason(
+        selectedModelConfig?.agent?.capabilities,
+        "supervised",
+        selectedModelConfig?.agent?.permissionModes,
+      )
+        ? "Supervised (unavailable)"
+        : "Supervised",
+    },
+    {
+      value: "auto_accept_edits",
+      label: getPermissionModeUnavailableReason(
+        selectedModelConfig?.agent?.capabilities,
+        "auto_accept_edits",
+        selectedModelConfig?.agent?.permissionModes,
+      )
+        ? "Auto-accept edits (unavailable)"
+        : "Auto-accept edits",
+    },
+    {
+      value: "auto",
+      label: getPermissionModeUnavailableReason(
+        selectedModelConfig?.agent?.capabilities,
+        "auto",
+        selectedModelConfig?.agent?.permissionModes,
+      )
+        ? "Auto (unavailable)"
+        : "Auto",
+    },
+    {
+      value: "full_access",
+      label: getPermissionModeUnavailableReason(
+        selectedModelConfig?.agent?.capabilities,
+        "full_access",
+        selectedModelConfig?.agent?.permissionModes,
+      )
+        ? "Full access (unavailable)"
+        : "Full access",
+    },
+  ];
+  const canUsePermissionMode = Boolean(
+    selectedModelConfig?.agent?.capabilities.writesFiles ||
+    selectedModelConfig?.agent?.capabilities.runsCommands,
+  );
+  const handlePermissionModeChange = (value: string) => {
+    if (
+      value === "supervised" ||
+      value === "auto_accept_edits" ||
+      value === "auto" ||
+      value === "full_access"
+    ) {
+      if (
+        !selectedModelConfig?.agent?.capabilities ||
+        getPermissionModeUnavailableReason(
+          selectedModelConfig.agent.capabilities,
+          value,
+          selectedModelConfig.agent.permissionModes,
+        )
+      ) {
+        return;
+      }
+
+      setPermissionMode(value);
+    }
   };
 
   const handleCompactionChange = (value: string) => {
@@ -190,6 +264,9 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
       onServiceTierChange={handleServiceTierChange}
       serviceTierDescription={serviceTierDescription}
       onVerbosityChange={handleVerbosityChange}
+      permissionMode={canUsePermissionMode ? permissionMode : undefined}
+      permissionModeOptions={canUsePermissionMode ? permissionModeOptions : undefined}
+      onPermissionModeChange={canUsePermissionMode ? handlePermissionModeChange : undefined}
     />
   );
 };

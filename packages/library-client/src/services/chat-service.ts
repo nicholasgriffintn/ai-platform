@@ -36,6 +36,7 @@ import {
   type ChatMode,
   type ComputeSite,
   type RecordOffPlatformUsageRequest,
+  type PermissionMode,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   CHAT_STREAM_PROGRESS_BATCH_EVENTS,
@@ -69,6 +70,7 @@ export interface ConversationUpdateRequest {
   parent_conversation_id?: string;
   parent_message_id?: string;
   title?: string;
+  permission_mode?: PermissionMode;
 }
 
 export interface ConversationCompactionResult {
@@ -121,6 +123,7 @@ export interface StreamChatCompletionsParams {
   model?: string;
   modelConfig?: ModelConfigItem;
   modelTier?: ModelTier;
+  permissionMode?: PermissionMode;
   models?: string[];
   onProgress: StreamProgressHandler;
   onStateChange: (state: string, data?: any) => void;
@@ -189,6 +192,7 @@ export class ChatService {
         messages: string[];
         model?: string | null;
         model_tier?: ModelTier | null;
+        permission_mode?: PermissionMode;
         created_at?: string;
         updated_at?: string;
         last_message_at: string;
@@ -767,6 +771,7 @@ export class ChatService {
     streamingEnabled = true,
     useMultiModel = false,
     allowTools = true,
+    permissionMode,
   }: StreamChatCompletionsParams): Promise<Message> {
     let headers = {};
 
@@ -813,6 +818,7 @@ export class ChatService {
       ...generationSettings,
       models,
       model_tier: modelTier,
+      permission_mode: permissionMode,
       provider,
       mode,
       compute_site: computeSite,

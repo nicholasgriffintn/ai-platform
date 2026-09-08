@@ -224,6 +224,7 @@ export function useChat(
     setConversationModelSelection({
       model: query.data.model,
       modelTier: query.data.model_tier,
+      permissionMode: query.data.permission_mode,
     });
   }, [completion_id, currentConversationId, query.data, setConversationModelSelection]);
 

@@ -18,6 +18,7 @@ import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
 import { chatMessageSelectionSchema } from "./message-selection.js";
 import { metaAssistantRequestSchema } from "./meta-assistant.js";
 import { modelTierSchema } from "./model-lineup.js";
+import { permissionModeSchema } from "./providers.js";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
 import { runProvenanceSchema } from "./run-provenance.js";
 import { sandboxRequestOptionsSchema } from "./sandbox.js";
@@ -360,6 +361,9 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .describe(
       "Model tier used when no explicit model is requested. Omit it to use the project default tier in project conversations, otherwise Medium.",
     ),
+  permission_mode: permissionModeSchema
+    .optional()
+    .describe("Permission policy for file and command actions in this conversation."),
   compaction: chatCompactionModeSchema
     .optional()
     .describe(

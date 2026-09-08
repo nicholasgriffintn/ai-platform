@@ -15,6 +15,7 @@ import type {
   ModelTier,
   MessageRole as SchemaMessageRole,
   ModelServiceTier,
+  PermissionMode,
   ReasoningEffort,
   ThreadOperation,
   RunProvenance,
@@ -256,6 +257,7 @@ export interface Conversation {
   last_message_at?: string;
   model?: string | null;
   model_tier?: ModelTier | null;
+  permission_mode?: PermissionMode;
   has_branches?: boolean;
   parent_conversation_id?: string;
   parent_message_id?: string;

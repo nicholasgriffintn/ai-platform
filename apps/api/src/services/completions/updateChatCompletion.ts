@@ -1,4 +1,8 @@
-import { canReplaceStoredConversationMessages } from "@ngriffin_uk/polychat-schemas";
+import {
+  canReplaceStoredConversationMessages,
+  permissionModeSchema,
+  type PermissionMode,
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
   cloneMessagesForBranch,
@@ -18,6 +22,7 @@ interface ChatCompletionUpdateParams {
   messages?: Message[];
   parent_conversation_id?: string;
   parent_message_id?: string;
+  permission_mode?: PermissionMode;
 }
 
 export const handleUpdateChatCompletion = async (
@@ -87,6 +92,8 @@ export const handleUpdateChatCompletion = async (
           await guardedConversationManager.replaceMessages(completion_id, persistedMessages, {
             metadata: branchMetadata,
             type: parentConversation.type === "task" ? "task" : "chat",
+            permission_mode: permissionModeSchema.safeParse(parentConversation.permission_mode)
+              .data,
           });
         } else {
           if (!canReplaceStoredConversationMessages(messages)) {

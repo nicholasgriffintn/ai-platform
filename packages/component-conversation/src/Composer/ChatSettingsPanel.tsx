@@ -15,6 +15,7 @@ import {
   formatReasoningLabel,
   getModelSamplingCapabilities,
   type ModelServiceTier,
+  type PermissionMode,
   type ReasoningEffort,
 } from "@ngriffin_uk/polychat-schemas";
 import { Settings } from "lucide-react";
@@ -48,6 +49,9 @@ export interface ChatSettingsPanelProps {
   serviceTierDescription?: string;
   onVerbosityChange: (value: string) => void;
   onChatSettingsChange: (settings: Record<string, any>) => void;
+  permissionMode?: PermissionMode;
+  permissionModeOptions?: Array<{ label: string; value: PermissionMode }>;
+  onPermissionModeChange?: (value: string) => void;
 }
 
 export function ChatSettingsPanel({
@@ -71,6 +75,9 @@ export function ChatSettingsPanel({
   serviceTierDescription,
   onVerbosityChange,
   onChatSettingsChange,
+  permissionMode,
+  permissionModeOptions,
+  onPermissionModeChange,
 }: ChatSettingsPanelProps) {
   const samplingCapabilities = getModelSamplingCapabilities(selectedModelConfig);
   const resetNumericSetting = (key: string) => onNumericSettingChange(key, "");
@@ -122,6 +129,17 @@ export function ChatSettingsPanel({
                     label: formatReasoningLabel(option),
                   }))}
                   description="Controls configured thinking when the model supports it."
+                />
+              )}
+              {permissionMode && permissionModeOptions && onPermissionModeChange && (
+                <CompactSettingSelect
+                  id="permission_mode"
+                  label="Agent permissions"
+                  value={permissionMode}
+                  onChange={onPermissionModeChange}
+                  disabled={isDisabled}
+                  options={permissionModeOptions}
+                  description="Controls whether this conversation pauses before file and command actions."
                 />
               )}
               {selectedModelConfig?.supportedServiceTiers?.includes("fast") &&

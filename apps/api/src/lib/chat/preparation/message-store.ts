@@ -1,4 +1,4 @@
-import type { ModelTier } from "@ngriffin_uk/polychat-schemas";
+import type { ModelTier, PermissionMode } from "@ngriffin_uk/polychat-schemas";
 
 import { getAllAttachments } from "~/lib/chat/messages/attachments";
 import { messagesMatchStoredPrefix } from "~/lib/chat/messages/comparison";
@@ -20,6 +20,7 @@ export interface StoreUserTurnParams {
   primaryModel: string;
   modelId?: string;
   modelTier?: ModelTier | null;
+  permissionMode?: PermissionMode;
   platform: Platform;
   mode: ChatMode;
 }
@@ -91,6 +92,7 @@ export async function storeUserTurn({
   primaryModel,
   modelId,
   modelTier,
+  permissionMode,
   platform,
   mode,
 }: StoreUserTurnParams): Promise<void> {
@@ -155,5 +157,6 @@ export async function storeUserTurn({
     type: options.conversation_type ?? (options.options?.recipe ? "task" : "chat"),
     model_id: modelId ?? primaryModel,
     model_tier: modelTier,
+    permission_mode: permissionMode,
   });
 }

@@ -73,6 +73,7 @@ export function createConversationThread({
     parent_conversation_id: parentConversationId,
     parent_message_id: parentMessageId,
     project_id: conversation.project_id,
+    permission_mode: conversation.permission_mode,
     isLocalOnly,
     created_at: now,
     updated_at: now,

@@ -47,6 +47,7 @@ class ChatExecutionRequest {
       message: prepared.messageWithContext,
       mode: prepared.currentMode,
       tool_policy_mode: chatOptions.tool_policy_mode,
+      permission_mode: chatOptions.permission_mode,
       should_think: chatOptions.should_think,
       response_format: chatOptions.response_format,
       lang: chatOptions.lang,

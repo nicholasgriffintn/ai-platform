@@ -15,6 +15,7 @@ import type {
   DelegationContext,
   ChatRunTrigger,
   ToolPermission,
+  PermissionMode,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "../lib/context/serviceContext";
@@ -205,6 +206,7 @@ export interface IBody {
   mode?: ChatMode;
   compute_site?: ComputeSite;
   tool_policy_mode?: AgentMode;
+  permission_mode?: PermissionMode;
   approved_tools?: string[];
   connector_approval_id?: string;
   tool_permissions_map?: Record<string, string[]>;
