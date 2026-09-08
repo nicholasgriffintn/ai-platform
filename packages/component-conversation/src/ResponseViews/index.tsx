@@ -36,10 +36,38 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
     />
   ),
   document_search: ({ data }) => <DocumentSearchView data={data} />,
-  delegation_card: ({ data }) => {
+  delegation_card: ({ data, onToolInteraction }) => {
     const parsed = delegationListResponseSchema.safeParse(data);
 
-    return parsed.success ? <DelegationCard delegations={parsed.data.delegations} /> : null;
+    if (!parsed.success) {
+      return null;
+    }
+
+    const first = parsed.data.delegations[0];
+
+    return (
+      <DelegationCard
+        delegations={parsed.data.delegations}
+        onStopAll={
+          first && onToolInteraction
+            ? () =>
+                void onToolInteraction("delegate", "submitPrompt", {
+                  action: "stop_all",
+                  conversationId: first.parentConversationId,
+                })
+            : undefined
+        }
+        onOpenDelegation={
+          onToolInteraction
+            ? (delegation) =>
+                void onToolInteraction("delegate", "useAsPrompt", {
+                  action: "open",
+                  childConversationId: delegation.childConversationId,
+                })
+            : undefined
+        }
+      />
+    );
   },
   list_tasks: ({ data }) => <ProjectTaskListView data={data} />,
   project_task_list: ({ data }) => <ProjectTaskListView data={data} />,
