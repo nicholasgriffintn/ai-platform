@@ -1647,6 +1647,16 @@
         "description": "Earlier Kimi frontier model for long-context agents, coding, and multimodal work",
         "contextWindow": 262114,
         "maxTokens": 262114,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "video",
@@ -6682,6 +6692,8 @@
       "model": "glm/glm-5-3-fast",
       "matchingModel": "zai/glm-5.3-fast",
       "overrides": {
+        "contextWindow": 1048576,
+        "releaseDate": "August 14, 2026",
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0021,
         "costPer1kOutputTokens": 0.0066

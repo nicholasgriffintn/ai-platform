@@ -191,6 +191,16 @@
       "matchingModel": "moonshotai/Kimi-K2.5",
       "overrides": {
         "name": "Kimi-K2.5",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "video",
@@ -1199,6 +1209,7 @@
       "overrides": {
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044
@@ -1208,7 +1219,6 @@
       "model": "glm/glm-5-3-flash",
       "matchingModel": "zai-org/GLM-5.3-Flash",
       "overrides": {
-        "openWeights": true,
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 1048576,
         "modalities": {

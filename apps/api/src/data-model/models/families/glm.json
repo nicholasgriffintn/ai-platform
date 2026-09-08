@@ -747,7 +747,6 @@
       "defaults": {
         "name": "GLM-5.3",
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
-        "maxTokens": 131072,
         "releaseDate": "August 14, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -800,9 +799,7 @@
       "defaults": {
         "name": "GLM 5.3 Fast",
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
-        "contextWindow": 1048576,
         "maxTokens": 262144,
-        "releaseDate": "August 14, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -816,7 +813,6 @@
     "glm-5-3-flash": {
       "defaults": {
         "name": "GLM-5.3-Flash",
-        "openWeights": false,
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "maxTokens": 131072,
         "releaseDate": "August 26, 2026",
@@ -834,7 +830,6 @@
     "glm-5-3-flash-2x-usage": {
       "defaults": {
         "name": "GLM-5.3-Flash (2x usage)",
-        "openWeights": false,
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "contextWindow": 1000000,
         "maxTokens": 131072,
@@ -864,7 +859,6 @@
     "glm-5-3-flash-eu": {
       "defaults": {
         "name": "GLM-5.3-Flash (EU)",
-        "openWeights": false,
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "contextWindow": 1000000,
         "maxTokens": 262144,

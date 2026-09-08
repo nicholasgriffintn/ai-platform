@@ -203,25 +203,6 @@
         "supportsResponseFormat"
       ]
     },
-    "moonshotai/Kimi-K2.5": {
-      "model": "kimi-k2/kimi-k2-5",
-      "matchingModel": "moonshotai/Kimi-K2.5",
-      "overrides": {
-        "maxTokens": 32768,
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
-        "speed": 3,
-        "releaseDate": "January 27, 2026",
-        "lastUpdated": "January 27, 2026",
-        "costPer1kInputTokens": 0.00045,
-        "costPer1kOutputTokens": 0.00225,
-        "supportsAttachments": true
-      }
-    },
     "openai/gpt-oss-120b": {
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "openai/gpt-oss-120b",
@@ -1205,6 +1186,7 @@
       "matchingModel": "zai-org/GLM-5.3",
       "overrides": {
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.004
