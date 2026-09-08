@@ -127,7 +127,7 @@ export const modelServiceTierSchema = z.enum(["default", "fast"]);
 const modelStatusSchema = z.enum(["alpha", "beta", "deprecated"]);
 
 export const modelConfigItemSchema = z.object({
-  kind: z.enum(["model", "agent"]).default("model"),
+  kind: z.enum(["model", "agent"]).optional(),
   id: z.string().optional(),
   matchingModel: z.string(),
   name: z.string().optional(),
