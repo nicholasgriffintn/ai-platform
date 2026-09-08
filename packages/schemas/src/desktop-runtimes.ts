@@ -280,6 +280,18 @@ export const externalAgentLaunchSchema = z.object({
 
 export type ExternalAgentLaunch = z.infer<typeof externalAgentLaunchSchema>;
 
+export const externalAgentComparisonSchema = z.object({
+  driver: z.literal("antigravity"),
+  directoryId: z.string().min(1),
+  baseHead: z.string().min(1),
+  currentHead: z.string().min(1),
+  dirty: z.boolean(),
+  changedFiles: z.array(z.string().min(1)).max(200),
+  diff: z.string().max(2_000_000),
+});
+
+export type ExternalAgentComparison = z.infer<typeof externalAgentComparisonSchema>;
+
 export type AgentToolState = z.infer<typeof agentToolStateSchema>;
 
 export const desktopAgentProcessRunRequestSchema = z.object({

@@ -155,6 +155,18 @@ pub struct ExternalAgentLaunch {
     pub dirty: bool,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExternalAgentComparison {
+    pub driver: AgentDriver,
+    pub directory_id: String,
+    pub base_head: String,
+    pub current_head: String,
+    pub dirty: bool,
+    pub changed_files: Vec<String>,
+    pub diff: String,
+}
+
 #[derive(Clone, Debug, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum AgentToolState {
@@ -459,6 +471,41 @@ pub fn launch_external_agent(
     Err(ProcessRefusal::UnsupportedDriver)
 }
 
+pub fn compare_external_agent(
+    driver: AgentDriver,
+    directory_id: String,
+    directory: &Path,
+    base_head: String,
+) -> Result<ExternalAgentComparison, ProcessRefusal> {
+    if base_head.trim().is_empty() {
+        return Err(ProcessRefusal::MissingHead);
+    }
+
+    let current_head = git_head(directory)?;
+    let dirty = is_dirty(directory)?;
+    let changed_files = git_output(directory, &["diff", "--name-only", &base_head, "--"])?
+        .lines()
+        .map(str::trim)
+        .filter(|path| !path.is_empty())
+        .take(200)
+        .map(ToOwned::to_owned)
+        .collect();
+    let diff = git_output(directory, &["diff", "--no-ext-diff", &base_head, "--"])?
+        .chars()
+        .take(2_000_000)
+        .collect();
+
+    Ok(ExternalAgentComparison {
+        driver,
+        directory_id,
+        base_head,
+        current_head,
+        dirty,
+        changed_files,
+        diff,
+    })
+}
+
 fn codex_sandbox_argument(mode: PermissionMode) -> &'static str {
     match mode {
         PermissionMode::Supervised | PermissionMode::AutoAcceptEdits => "workspace-write",
@@ -525,6 +572,20 @@ pub fn git_head(path: &Path) -> Result<String, ProcessRefusal> {
         .ok()
         .filter(|head| !head.is_empty())
         .ok_or(ProcessRefusal::MissingHead)
+}
+
+fn git_output(path: &Path, args: &[&str]) -> Result<String, ProcessRefusal> {
+    let output = Command::new("git")
+        .args(args)
+        .current_dir(path)
+        .output()
+        .map_err(|_| ProcessRefusal::MissingHead)?;
+
+    if !output.status.success() {
+        return Err(ProcessRefusal::MissingHead);
+    }
+
+    String::from_utf8(output.stdout).map_err(|_| ProcessRefusal::MissingHead)
 }
 
 pub fn is_dirty(path: &Path) -> Result<bool, ProcessRefusal> {
