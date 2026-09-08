@@ -1,7 +1,4 @@
-import {
-  clearModelResponseSettings,
-  resolveConversationStorageMode,
-} from "@ngriffin_uk/polychat-library-chat";
+import { clearModelResponseSettings } from "@ngriffin_uk/polychat-library-chat";
 import type { ChatSettings } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { getDefaultLiveModelId } from "@ngriffin_uk/polychat-library-realtime/live-providers";
@@ -20,7 +17,6 @@ import {
   getToolCallModels,
   isTextInputChatModel,
   type ComputeSite,
-  type ConversationRetention,
   type ModelCatalogItem,
   type ModelConfig,
   type ModelConfigItem,
@@ -29,7 +25,6 @@ import {
   type ModelSelectorScope,
   type ModelTier,
   type ModelTierLineup,
-  type RetentionReason,
   type ResolvedModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
@@ -97,10 +92,6 @@ export interface ModelSelectionState {
   isModelLocked: boolean;
   selectModel: (modelId: string) => boolean;
   selectTier: (selection: ModelTierSelection) => void;
-  retention: ConversationRetention;
-  retentionReason: RetentionReason;
-  isRetentionLocked: boolean;
-  onRetentionChange: (retention: ConversationRetention) => void;
 }
 
 export function useModelSelection({
@@ -113,7 +104,6 @@ export function useModelSelection({
   const queryClient = useQueryClient();
   const { trackEvent, trackFeatureUsage } = useTrackEvent();
   const {
-    isAuthenticated,
     isPro,
     isAuthenticationLoading,
     model,
@@ -128,9 +118,6 @@ export function useModelSelection({
     setChatSettings,
     selectedTeammateId,
     setSelectedTeammateId,
-    temporaryChat,
-    setTemporaryChat,
-    temporaryChatsDefault,
   } = useChatStore();
   const { teammates } = useTeammates();
   const [isOpen, setIsOpen] = useState(false);
@@ -468,24 +455,6 @@ export function useModelSelection({
     }
   }, [chatMode, currentTeammateModel, model, selectModelWithDefaults]);
 
-  const retentionMode = resolveConversationStorageMode({
-    isAuthenticated,
-    isPro,
-    temporaryChat,
-    temporaryChatsDefault,
-    runsOnDevice: computeSite !== "hosted",
-  });
-  const onRetentionChange = useCallback(
-    (nextRetention: ConversationRetention) => {
-      if (!isAuthenticated || !isPro) {
-        return;
-      }
-
-      setTemporaryChat(nextRetention === "temporary");
-    },
-    [isAuthenticated, isPro, setTemporaryChat],
-  );
-
   useEffect(() => {
     const handleShortcut = (event: Event) => {
       const shortcut = getModelSelectorShortcut(event);
@@ -501,14 +470,6 @@ export function useModelSelection({
       }
 
       if (!isOpen) {
-        return;
-      }
-
-      if (shortcut === "toggle-retention") {
-        if (!retentionMode.isProjectScoped) {
-          onRetentionChange(retentionMode.retention === "kept" ? "temporary" : "kept");
-        }
-
         return;
       }
 
@@ -536,9 +497,7 @@ export function useModelSelection({
     computeSite,
     handleComputeSiteChange,
     isOpen,
-    onRetentionChange,
     openSelector,
-    retentionMode,
     runtimeOptionsState.options,
     selectedMachineId,
   ]);
@@ -595,9 +554,5 @@ export function useModelSelection({
     isModelLocked,
     selectModel,
     selectTier,
-    retention: retentionMode.retention,
-    retentionReason: retentionMode.reason,
-    isRetentionLocked: !isAuthenticated || !isPro || retentionMode.isProjectScoped,
-    onRetentionChange,
   };
 }

@@ -6,8 +6,7 @@ import {
 import { buildAgentTraceEntries } from "@ngriffin_uk/polychat-library-chat/agent-trace";
 import type { ChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { API_BASE_URL, useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { useChat, useConversationStorage } from "@ngriffin_uk/polychat-library-react";
-import { Ghost } from "lucide-react";
+import { useChat } from "@ngriffin_uk/polychat-library-react";
 import { useMemo } from "react";
 
 import { ConversationRetentionControl } from "./ConversationRetentionControl.js";
@@ -24,8 +23,7 @@ export function ConversationProductHeader({
   projectColour,
   requestOptions,
 }: ConversationProductHeaderProps) {
-  const { currentConversationId, isAuthenticated, isPro, setCurrentConversationId } =
-    useChatStore();
+  const { currentConversationId, isAuthenticated, setCurrentConversationId } = useChatStore();
   const { data: conversation, isLoading } = useChat(currentConversationId);
   const conversationProjectId = conversation?.project_id;
   const storageRequestOptions = useMemo(
@@ -35,8 +33,6 @@ export function ConversationProductHeader({
   const storageModeOptions = requestOptions?.metadata?.project_id
     ? requestOptions
     : storageRequestOptions;
-  const { determineStorageMode } = useConversationStorage(storageModeOptions);
-  const storageMode = determineStorageMode(currentConversationId);
   const traceEntries = useMemo(
     () => buildAgentTraceEntries(conversation?.messages ?? []),
     [conversation?.messages],
@@ -51,13 +47,6 @@ export function ConversationProductHeader({
       projectColour={projectColour}
       context={
         <div className="flex min-w-0 items-center gap-2">
-          {storageMode.retention === "temporary" ? (
-            <Ghost
-              size={16}
-              className="shrink-0 text-muted-foreground"
-              aria-label="Temporary conversation"
-            />
-          ) : null}
           <ConversationTitleContext
             title={title}
             parentConversationId={conversation?.parent_conversation_id}
@@ -77,12 +66,13 @@ export function ConversationProductHeader({
             />
           ) : null}
           <AgentTraceButton entries={traceEntries} compactOnMobile />
-          {conversation?.isLocalOnly &&
-            !conversation.project_id &&
-            !isLoading &&
-            currentConversationId &&
-            isAuthenticated &&
-            isPro && <ConversationRetentionControl conversationId={currentConversationId} />}
+          {!conversation?.project_id && !isLoading && (
+            <ConversationRetentionControl
+              conversationId={currentConversationId}
+              isLocalOnly={Boolean(conversation?.isLocalOnly)}
+              requestOptions={storageModeOptions}
+            />
+          )}
           {!conversation?.isLocalOnly &&
             !conversation?.project_id &&
             !isLoading &&

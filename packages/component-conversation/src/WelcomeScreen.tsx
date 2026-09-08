@@ -1,5 +1,8 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { getPetSpriteHeight } from "@ngriffin_uk/polychat-schemas";
 import type { ReactNode } from "react";
+
+export const WELCOME_PET_SIZE = 128;
 
 export interface WelcomeScreenProps {
   title?: string;
@@ -23,7 +26,12 @@ export const WelcomeScreen = ({
 
   return (
     <div className="w-full px-4 pt-4 pb-2 text-center" aria-busy={isLoading} aria-live="polite">
-      <div className="mx-auto flex h-32 w-32 items-end justify-center">{pet}</div>
+      <div
+        className="mx-auto flex justify-center"
+        style={{ minHeight: getPetSpriteHeight(WELCOME_PET_SIZE) }}
+      >
+        {pet}
+      </div>
       <h2 className="flex min-h-16 items-end justify-center font-display text-3xl font-medium tracking-tight text-balance text-foreground md:min-h-12 md:text-5xl">
         <span
           key={resolvedTitle}

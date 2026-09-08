@@ -15,7 +15,6 @@ import type { KeyboardEvent, RefObject } from "react";
 
 import { ModelsList } from "./ModelsList";
 import { ModelTierPicker, type ModelTierSelection } from "./ModelTierPicker";
-import { RetentionRow } from "./RetentionRow";
 import { RuntimeRail, type RuntimeRailOption } from "./RuntimeRail";
 
 export interface ModelSelectorPanelLayout {
@@ -226,15 +225,6 @@ export function ModelSelectorPanel({
           onInfoHoverEnd={onInfoHoverEnd}
         />
       </div>
-
-      {onRetentionChange && (
-        <RetentionRow
-          retention={retention}
-          reason={retentionReason}
-          onChange={onRetentionChange}
-          isLocked={isRetentionLocked}
-        />
-      )}
 
       {onOpenModelSources && (
         <div className="border-t border-border px-3 py-2">

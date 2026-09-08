@@ -6,6 +6,16 @@ export const PET_FRAME_WIDTH = 192;
 export const PET_FRAME_HEIGHT = 208;
 export const PET_SHEET_COLUMNS = 8;
 
+export function getPetSpriteHeight(
+  size: number,
+  layout: { frameWidth: number; frameHeight: number } = {
+    frameWidth: PET_FRAME_WIDTH,
+    frameHeight: PET_FRAME_HEIGHT,
+  },
+): number {
+  return (layout.frameHeight * size) / layout.frameWidth;
+}
+
 export const PET_CLIP_NAMES = [
   "idle",
   "blink",

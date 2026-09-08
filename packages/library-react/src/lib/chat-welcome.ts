@@ -10,6 +10,7 @@ export interface ChatWelcomeContext {
   accountName?: string | null;
   jobRole?: string | null;
   hasPreviousChats: boolean;
+  isTemporary?: boolean;
 }
 
 type WelcomeTemplate = (name: string) => ChatWelcome;
@@ -51,6 +52,41 @@ const RETURNING_WELCOMES: ChatWelcome[] = [
     title: "Back so soon?",
     description: "Good. The perch was getting quiet.",
   },
+];
+
+const TEMPORARY_WELCOMES: ChatWelcome[] = [
+  {
+    title: "This one won’t be remembered.",
+    description:
+      "A temporary chat stays on this device, and fades when you leave. Say what you like.",
+  },
+  {
+    title: "Nothing sticks in here.",
+    description: "Think out loud, try the daft version, ask the thing you’d rather not keep.",
+  },
+  {
+    title: "Just passing through?",
+    description: "Whatever we cover here stays on this device and goes when you’re done.",
+  },
+  {
+    title: "Off the record.",
+    description: "No transcript, no trail. Ask away and leave when you’re ready.",
+  },
+];
+
+const NAMED_TEMPORARY_WELCOMES: WelcomeTemplate[] = [
+  (name) => ({
+    title: `Between us, ${name}.`,
+    description: "A temporary chat stays on this device and fades when you leave.",
+  }),
+  (name) => ({
+    title: `Nothing sticks in here, ${name}.`,
+    description: "Think out loud, try the daft version, ask the thing you’d rather not keep.",
+  }),
+  (name) => ({
+    title: `Just passing through, ${name}?`,
+    description: "Whatever we cover here stays on this device and goes when you’re done.",
+  }),
 ];
 
 const NAMED_NEW_WELCOMES: WelcomeTemplate[] = [
@@ -151,6 +187,13 @@ function selectWelcome(welcomes: ChatWelcome[], randomValue: number): ChatWelcom
 
 export function createChatWelcome(context: ChatWelcomeContext, randomValue: number): ChatWelcome {
   const name = getDisplayName(context);
+
+  if (context.isTemporary) {
+    return selectWelcome(
+      name ? NAMED_TEMPORARY_WELCOMES.map((template) => template(name)) : TEMPORARY_WELCOMES,
+      randomValue,
+    );
+  }
 
   if (name) {
     const templates = context.hasPreviousChats ? NAMED_RETURNING_WELCOMES : NAMED_NEW_WELCOMES;

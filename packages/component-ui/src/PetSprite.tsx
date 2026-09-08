@@ -1,3 +1,4 @@
+import { getPetSpriteHeight } from "@ngriffin_uk/polychat-schemas";
 import type { CSSProperties } from "react";
 
 import { resolvePetSheetUrl } from "./Pet/petSheets";
@@ -52,8 +53,7 @@ export function PetSprite({
   className,
   onClipEnd,
 }: PetSpriteProps) {
-  const scale = size / layout.frameWidth;
-  const height = layout.frameHeight * scale;
+  const height = getPetSpriteHeight(size, layout);
   const duration = clip.frames / Math.max(clip.fps, 1);
 
   const style: PetSpriteStyle = {

@@ -65,7 +65,7 @@ import { toast } from "sonner";
 import { ConversationComposerDock, ConversationMessageColumn } from "../ConversationColumn.js";
 import { GoalStatusCard } from "../GoalStatusCard.js";
 import { PetPerch } from "../PetPerch.js";
-import { WelcomeScreen } from "../WelcomeScreen.js";
+import { WELCOME_PET_SIZE, WelcomeScreen } from "../WelcomeScreen.js";
 import {
   ChatInput,
   type ChatInputHandle,
@@ -851,7 +851,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               isLoading={modeConfig?.welcomeLoading}
               pet={
                 <Pet
-                  size={128}
+                  size={WELCOME_PET_SIZE}
                   placement="top"
                   model={selectedModelConfig}
                   modelReady={!model || !isModelsLoading}
@@ -942,7 +942,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         ) : null}
         {modeConfig?.composerBanner}
         <ChatInput
-          retention={storageMode.retention}
           goalState={goalState}
           ref={chatInputRef}
           handleSubmit={handleSubmit}

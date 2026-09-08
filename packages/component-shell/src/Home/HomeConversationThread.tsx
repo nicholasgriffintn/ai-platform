@@ -14,6 +14,7 @@ import {
   createChatWelcome,
   useChats,
   useCancelDelegations,
+  useConversationRetention,
   useConversationRoute,
 } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useMemo, useState } from "react";
@@ -39,6 +40,8 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const { data: conversations, isLoading: areConversationsLoading } = useChats();
+  const { mode: retentionMode } = useConversationRetention(modeConfig?.requestOptions);
+  const isTemporary = !completionId && retentionMode.retention === "temporary";
   const [welcomeSeed, setWelcomeSeed] = useState<number | null>(null);
 
   useEffect(() => {
@@ -52,11 +55,13 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
           accountName: user?.name,
           jobRole: userSettings?.job_role,
           hasPreviousChats: Boolean(user?.message_count || conversations.length),
+          isTemporary,
         },
         welcomeSeed ?? 0,
       ),
     [
       conversations.length,
+      isTemporary,
       user?.message_count,
       user?.name,
       userSettings?.job_role,

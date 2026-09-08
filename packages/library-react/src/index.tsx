@@ -170,6 +170,7 @@ export * from "./chat/useChat.js";
 export * from "./chat/useChatManager.js";
 export * from "./chat/useChatRunReplay.js";
 export * from "./chat/useConversationActions.js";
+export * from "./chat/useConversationRetention.js";
 export * from "./chat/useConversationStorage.js";
 export * from "./chat/useDeviceModels.js";
 export * from "./chat/useMachines.js";

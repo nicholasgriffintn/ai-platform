@@ -11,7 +11,6 @@ export * from "./Selector/ModelOption";
 export * from "./Selector/ModelSelectorPanel";
 export * from "./Selector/ModelSelectorTrigger";
 export * from "./Selector/ModelsList";
-export * from "./Selector/RetentionRow";
 export * from "./Selector/RuntimeRail";
 export * from "./Selector/useHoverPreviewDismiss";
 export * from "./InlineModelPicker";
