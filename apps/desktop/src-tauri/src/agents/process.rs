@@ -40,6 +40,7 @@ pub struct AgentProgram {
     pub driver: AgentDriver,
     pub program: &'static str,
     pub version_args: &'static [&'static str],
+    pub readiness_args: Option<&'static [&'static str]>,
     pub min_version: &'static str,
 }
 
@@ -188,42 +189,49 @@ pub fn program_for(driver: AgentDriver) -> AgentProgram {
             driver,
             program: "claude",
             version_args: &["--version"],
+            readiness_args: None,
             min_version: "1.0.0",
         },
         AgentDriver::Codex => AgentProgram {
             driver,
             program: "codex",
             version_args: &["--version"],
+            readiness_args: Some(&["login", "status"]),
             min_version: "1.0.0",
         },
         AgentDriver::Cursor => AgentProgram {
             driver,
             program: "cursor-agent",
             version_args: &["--version"],
+            readiness_args: None,
             min_version: "1.0.0",
         },
         AgentDriver::Grok => AgentProgram {
             driver,
             program: "grok",
             version_args: &["--version"],
+            readiness_args: None,
             min_version: "1.0.0",
         },
         AgentDriver::OpenCode => AgentProgram {
             driver,
             program: "opencode",
             version_args: &["--version"],
+            readiness_args: None,
             min_version: "1.0.0",
         },
         AgentDriver::Antigravity => AgentProgram {
             driver,
             program: "antigravity",
             version_args: &["--version"],
+            readiness_args: None,
             min_version: "1.0.0",
         },
         AgentDriver::PolychatSandbox => AgentProgram {
             driver,
             program: "polychat-sandbox",
             version_args: &["--version"],
+            readiness_args: None,
             min_version: "1.0.0",
         },
     }
@@ -278,6 +286,16 @@ pub fn probe(driver: AgentDriver, checked_at: String) -> AgentToolState {
         };
     }
 
+    if let Some(readiness_args) = program.readiness_args {
+        let readiness = Command::new(program.program).args(readiness_args).output();
+        if readiness.is_err() || !readiness.is_ok_and(|output| output.status.success()) {
+            return AgentToolState::Present {
+                checked_at,
+                version: Some(version),
+            };
+        }
+    }
+
     AgentToolState::Ready {
         checked_at,
         version,
@@ -311,21 +329,33 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
         return Err(ProcessRefusal::InvalidPrompt);
     }
 
-    let mut argv = vec![
-        "-p".to_string(),
-        params.prompt.clone(),
-        "--output-format".to_string(),
-        "stream-json".to_string(),
-        "--permission-mode".to_string(),
-        permission_argument(params.permission_mode).to_string(),
-    ];
+    let mut argv = match driver {
+        AgentDriver::Codex => vec![
+            "exec".to_string(),
+            "--json".to_string(),
+            "--sandbox".to_string(),
+            codex_sandbox_argument(params.permission_mode).to_string(),
+        ],
+        _ => vec![
+            "-p".to_string(),
+            params.prompt.clone(),
+            "--output-format".to_string(),
+            "stream-json".to_string(),
+            "--permission-mode".to_string(),
+            permission_argument(params.permission_mode).to_string(),
+        ],
+    };
 
     if let Some(session) = params
         .session
         .as_deref()
         .filter(|value| !value.trim().is_empty())
     {
-        argv.extend(["--resume".to_string(), session.to_string()]);
+        if driver == AgentDriver::Codex {
+            argv.extend(["resume".to_string(), session.to_string()]);
+        } else {
+            argv.extend(["--resume".to_string(), session.to_string()]);
+        }
     }
 
     if let Some(model) = params
@@ -336,9 +366,21 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
         argv.extend(["--model".to_string(), model.to_string()]);
     }
 
+    if driver == AgentDriver::Codex {
+        argv.push(params.prompt.clone());
+    }
+
     let _ = program_for(driver);
 
     Ok(argv)
+}
+
+fn codex_sandbox_argument(mode: PermissionMode) -> &'static str {
+    match mode {
+        PermissionMode::Supervised | PermissionMode::AutoAcceptEdits => "workspace-write",
+        PermissionMode::Auto => "workspace-write",
+        PermissionMode::FullAccess => "danger-full-access",
+    }
 }
 
 pub fn canonical_directory(path: &Path) -> Result<PathBuf, ProcessRefusal> {
@@ -449,6 +491,33 @@ mod tests {
         assert_eq!(
             build_argv(AgentDriver::ClaudeCode, &params),
             Err(ProcessRefusal::InvalidPrompt)
+        );
+    }
+
+    #[test]
+    fn builds_codex_exec_arguments_from_typed_values() {
+        let params = RunParams {
+            prompt: "inspect the repo".to_string(),
+            session: Some("thread-1".to_string()),
+            permission_mode: PermissionMode::AutoAcceptEdits,
+            model: Some("gpt-5-codex".to_string()),
+        };
+
+        let argv = build_argv(AgentDriver::Codex, &params).expect("argv");
+
+        assert_eq!(
+            argv,
+            [
+                "exec",
+                "--json",
+                "--sandbox",
+                "workspace-write",
+                "resume",
+                "thread-1",
+                "--model",
+                "gpt-5-codex",
+                "inspect the repo",
+            ]
         );
     }
 

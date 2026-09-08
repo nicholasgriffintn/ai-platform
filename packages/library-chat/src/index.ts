@@ -7,6 +7,11 @@ export * from "./local-chat-export.js";
 export * from "./local-conversation-store.js";
 export * from "./chat-settings.js";
 export * from "./account-model-defaults.js";
+export * from "./agents/codex.js";
+export * from "./agents/cursor.js";
+export * from "./agents/grok.js";
+export * from "./agents/opencode.js";
+export { parseAgentProcessOutput } from "./agents/process-output.js";
 export * from "./compute-site-selection.js";
 export type { AttachmentData } from "./attachments.js";
 export {

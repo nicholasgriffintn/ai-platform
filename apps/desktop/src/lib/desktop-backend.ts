@@ -3,6 +3,7 @@ import {
   type DesktopBackend,
   type DesktopRun,
 } from "@ngriffin_uk/polychat-library-chat";
+import { parseAgentProcessOutput } from "@ngriffin_uk/polychat-library-chat";
 import {
   desktopEndpointSchema,
   desktopRuntimeReadinessSchema,
@@ -184,7 +185,7 @@ function startRun(
     if (event.data.type === "raw-output" && parseRawOutput) {
       for (const line of event.data.data.split("\n")) {
         if (line.trim()) {
-          queue.push(parseAgentOutput(runId, line));
+          queue.push(parseAgentProcessOutput(runId, line));
         }
       }
     } else if (event.data.type !== "raw-output") {
@@ -207,30 +208,6 @@ function startRun(
     },
     events: queue.events,
   });
-}
-
-const agentOutputSchema = z
-  .object({
-    delta: z.string().optional(),
-    text: z.string().optional(),
-    content: z.string().optional(),
-  })
-  .passthrough();
-
-function parseAgentOutput(runId: string, line: string): DesktopStreamEvent {
-  try {
-    const output = agentOutputSchema.safeParse(JSON.parse(line));
-    if (output.success) {
-      const delta = output.data.delta ?? output.data.text ?? output.data.content;
-      if (delta) {
-        return { type: "text", runId, delta };
-      }
-    }
-  } catch {
-    return { type: "text", runId, delta: `${line}\n` };
-  }
-
-  return { type: "text", runId, delta: `${line}\n` };
 }
 
 setDesktopExecutionBackend(tauriDesktopBackend);
