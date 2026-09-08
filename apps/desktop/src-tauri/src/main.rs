@@ -11,6 +11,7 @@ mod link;
 mod links;
 mod runs;
 mod secrets;
+mod service;
 mod store;
 
 use std::process::Stdio;
@@ -1213,6 +1214,22 @@ fn raise(app: &tauri::AppHandle) {
 }
 
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    if args.get(1).map(String::as_str) == Some("service") {
+        if let Err(error) = service::dispatch(&args, API_BASE_URL) {
+            eprintln!("{error}");
+            std::process::exit(1);
+        }
+        return;
+    }
+    if args.iter().any(|arg| arg == "--service") {
+        if let Err(error) = service::run(API_BASE_URL) {
+            eprintln!("{error}");
+            std::process::exit(1);
+        }
+        return;
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             raise(app);
