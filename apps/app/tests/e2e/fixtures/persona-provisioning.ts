@@ -67,11 +67,12 @@ export async function provisionPersonaSession(
   persona: AuthenticatedPersona,
   seed: string,
   billing?: BillingSeed,
+  onboardingSeen: string[] = ["model-sources:web"],
 ) {
   const identity = personaIdentity(seed);
   const sessionToken = personaSessionToken(persona, identity);
 
-  await postPersona({ identity, persona, sessionToken, billing: billing ?? null });
+  await postPersona({ identity, persona, sessionToken, billing: billing ?? null, onboardingSeen });
 
   return {
     email: `${persona}-${identity}@e2e.polychat.invalid`,
