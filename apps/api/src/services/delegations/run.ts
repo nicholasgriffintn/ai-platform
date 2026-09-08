@@ -7,6 +7,7 @@ import {
   resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicyCreatesCommit,
   type SandboxRequestOptions,
+  type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
@@ -22,6 +23,22 @@ import { intersectEnabledTools } from "~/utils/enabledTools";
 import { safeParseJson } from "~/utils/json";
 
 import type { TaskMessage } from "../tasks/TaskService";
+
+export type DelegationExecutionRoute = "hosted" | "sandbox" | "machine";
+
+export function resolveDelegationExecutionRoute(
+  model: Pick<ModelConfigItem, "provider" | "runsOn"> | null | undefined,
+): DelegationExecutionRoute {
+  if (model?.provider === "polychat-sandbox") {
+    return "sandbox";
+  }
+
+  if (model?.runsOn === "device") {
+    return "machine";
+  }
+
+  return "hosted";
+}
 
 export async function runDelegationTask(message: TaskMessage, env: IEnv) {
   const payload = delegationRunTaskDataSchema.parse(message.task_data);
@@ -88,9 +105,21 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
   const teammateModel = teammate?.model
     ? await findModelConfig(teammate.model, env, undefined, user.id)
     : null;
+  const executionRoute = resolveDelegationExecutionRoute(teammateModel);
+
+  if (executionRoute === "machine") {
+    await settleDelegation(
+      context,
+      delegation,
+      message.user_id,
+      "This delegate needs its approved machine handoff before it can run.",
+    );
+
+    return { status: "error" as const, detail: "Machine handoff is not available" };
+  }
   let sandboxOptions: SandboxRequestOptions | undefined;
 
-  if (teammateModel?.provider === "polychat-sandbox") {
+  if (executionRoute === "sandbox") {
     const project = payload.projectId
       ? await context.repositories.workspaces.getProject(payload.projectId)
       : null;
