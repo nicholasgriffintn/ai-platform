@@ -72,6 +72,15 @@ public struct HandoffResponse: Codable {
     public let expiresAt: String
 }
 
+struct HandoffDecisionRequest: Encodable {
+    let machineId: String
+    let state: String
+}
+
+struct HandoffDecisionEnvelope: Codable {
+    let handoff: HandoffResponse
+}
+
 public struct HandoffTarget: Codable {
     public let kind: String
     public let machineId: String

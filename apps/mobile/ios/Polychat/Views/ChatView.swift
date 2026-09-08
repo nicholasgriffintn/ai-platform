@@ -158,6 +158,21 @@ struct ChatView: View {
                 .padding(.vertical, 8)
                 .background(Color.polychat.elevatedBackground)
             }
+            if let handoff = conversationManager.currentHandoff,
+               handoff.state == "pending" || handoff.state == "claimed" || handoff.state == "running" {
+                HStack {
+                    Text("Waiting for \(handoff.target.machineId) to pick up this turn.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Cancel") {
+                        Task { await conversationManager.cancelCurrentHandoff() }
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
             MessageInputView(
                 messageText: $messageText,
                 selectedAttachments: $selectedAttachments,

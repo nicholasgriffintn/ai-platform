@@ -207,6 +207,15 @@ final class APIClient: ObservableObject {
         )
     }
 
+    func cancelMachineHandoff(id: String, machineId: String) async throws -> HandoffResponse {
+        let response: HandoffDecisionEnvelope = try await send(
+            path: "/handoffs/\(id)/decision",
+            method: "POST",
+            body: HandoffDecisionRequest(machineId: machineId, state: "declined")
+        )
+        return response.handoff
+    }
+
     private func chatCompletionStream(
         _ requestBody: ChatCompletionRequest
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {

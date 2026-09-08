@@ -64,6 +64,7 @@ protocol ConversationAPIClient {
         modelId: String,
         draft: HandoffDraft?
     ) async throws -> HandoffResponse
+    func cancelMachineHandoff(id: String, machineId: String) async throws -> HandoffResponse
     func fetchProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskDetailResponse
     func answerProjectTaskQuestions(
         projectId: String,

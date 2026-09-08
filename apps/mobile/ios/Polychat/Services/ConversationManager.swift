@@ -6,6 +6,7 @@ class ConversationManager: ObservableObject {
     @Published var currentConversation: Conversation?
     @Published var conversations: [Conversation] = []
     @Published var selectedModelId: String?
+    @Published private(set) var currentHandoff: HandoffResponse?
     @Published var isLoading: Bool = false
     @Published var loadingConversationID: String?
     @Published private(set) var isLoadingEarlierMessages = false
@@ -719,6 +720,7 @@ class ConversationManager: ObservableObject {
                     modelId: selectedModel?.id ?? "",
                     draft: draft
                 )
+                currentHandoff = handoff
                 updateAssistantMessage(
                     conversationId: conversationId,
                     messageId: assistantMessageId,
@@ -912,6 +914,18 @@ class ConversationManager: ObservableObject {
                 fallbackMessageId: assistantMessageId,
                 markLoadedFromAPI: didReceiveStreamEvent
             )
+        }
+    }
+
+    func cancelCurrentHandoff() async {
+        guard let handoff = currentHandoff else { return }
+        do {
+            currentHandoff = try await apiClient?.cancelMachineHandoff(
+                id: handoff.id,
+                machineId: handoff.target.machineId
+            )
+        } catch {
+            self.error = "The machine handoff could not be cancelled: \(error.localizedDescription)"
         }
     }
 
