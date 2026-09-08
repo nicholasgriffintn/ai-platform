@@ -8,13 +8,15 @@ import {
   WeatherView,
   WebSearchView,
 } from "@ngriffin_uk/polychat-component-content";
+import { delegationListResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
+import { DelegationCard } from "./DelegationCard.js";
 import { DocumentSearchView } from "./DocumentSearchView.js";
 import { ProjectTaskListView } from "./ProjectTaskListView.js";
 import { ResearchView } from "./ResearchView.js";
 import { SandboxView } from "./SandboxView.js";
 
-export { DocumentSearchView, ProjectTaskListView, ResearchView, SandboxView };
+export { DelegationCard, DocumentSearchView, ProjectTaskListView, ResearchView, SandboxView };
 
 export const sharedResponseViews: CustomResponseViewRegistry = {
   approval_request: ({ data, embedded, onToolInteraction }) => (
@@ -34,6 +36,11 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
     />
   ),
   document_search: ({ data }) => <DocumentSearchView data={data} />,
+  delegation_card: ({ data }) => {
+    const parsed = delegationListResponseSchema.safeParse(data);
+
+    return parsed.success ? <DelegationCard delegations={parsed.data.delegations} /> : null;
+  },
   list_tasks: ({ data }) => <ProjectTaskListView data={data} />,
   project_task_list: ({ data }) => <ProjectTaskListView data={data} />,
   research: ({ data, embedded }) => <ResearchView data={data} embedded={embedded} />,

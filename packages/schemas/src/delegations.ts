@@ -61,6 +61,11 @@ export const delegationSchema = z.object({
 });
 export type Delegation = z.infer<typeof delegationSchema>;
 
+export const delegationListResponseSchema = z.object({
+  delegations: z.array(delegationSchema),
+});
+export type DelegationListResponse = z.infer<typeof delegationListResponseSchema>;
+
 export const DELEGATION_RUN_EVENT_TYPES = [
   "delegation.created",
   "delegation.status_changed",

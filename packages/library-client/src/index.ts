@@ -15,6 +15,7 @@ export * from "./conversation-organisation.js";
 export * from "./conversation-response.js";
 export * from "./conversation-threads.js";
 export * from "./desktop-downloads.js";
+export * from "./delegations.js";
 export * from "./drawings.js";
 export * from "./fetch-wrapper.js";
 export * from "./global-search.js";

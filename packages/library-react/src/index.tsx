@@ -25,6 +25,7 @@ export * from "./hooks/useConversationRoute.js";
 export * from "./hooks/useCopyToClipboard.js";
 export * from "./hooks/useDeferredPetPreview.js";
 export * from "./hooks/useDrawings.js";
+export * from "./hooks/useDelegations.js";
 export * from "./hooks/useFileUploadAnalytics.js";
 export * from "./hooks/useGovernance.js";
 export * from "./hooks/useIsHydrated.js";

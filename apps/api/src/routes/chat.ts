@@ -42,6 +42,7 @@ import {
   chatRunRecoveryResponseSchema,
   chatRunReplayQuerySchema,
   chatRunReplayResponseSchema,
+  delegationListResponseSchema,
   chatRunSnapshotResponseSchema,
   cancelChatRunRequestSchema,
   messageSchema,
@@ -96,6 +97,7 @@ import { handleListChatCompletions } from "~/services/completions/listChatComple
 import { handleShareConversation } from "~/services/completions/shareConversation";
 import { handleUnshareConversation } from "~/services/completions/unshareConversation";
 import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
+import { requireConversationAccess } from "~/services/conversations/access";
 import type { ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { readNumericField, readRecordObjectField } from "~/utils/recordFields";
@@ -652,6 +654,30 @@ addRoute(app, "get", "/completions/:completion_id/goal", {
       const response = await handleGetConversationGoal(getServiceContext(context), completion_id);
 
       return ResponseFactory.success(context, response);
+    })(raw),
+});
+
+addRoute(app, "get", "/completions/:completion_id/delegations", {
+  tags: ["chat"],
+  summary: "List conversation delegations",
+  description:
+    "Returns delegations spawned by this conversation after checking conversation access.",
+  paramSchema: getChatCompletionParamsSchema,
+  responses: {
+    200: { description: "Conversation delegations", schema: delegationListResponseSchema },
+    404: { description: "Completion not found", schema: errorResponseSchema },
+  },
+  handler: async ({ raw }) =>
+    (async (context: Context) => {
+      const { completion_id } = context.req.valid("param" as never) as {
+        completion_id: string;
+      };
+      const serviceContext = getServiceContext(context);
+      await requireConversationAccess(serviceContext, completion_id);
+      return ResponseFactory.success(context, {
+        delegations:
+          await serviceContext.repositories.delegations.listByParentConversationId(completion_id),
+      });
     })(raw),
 });
 

@@ -24,6 +24,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   run_council: { renderer: "council_conclusion", icon: "bot" },
   second_opinion_turn: { renderer: "second_opinion_turn", icon: "bot" },
   second_opinion: { renderer: "second_opinion", icon: "bot" },
+  delegate: { renderer: "delegation_card", icon: "bot" },
   run_sandbox_task: { renderer: "sandbox_result", icon: "terminal" },
   request_approval: { renderer: "approval_request", icon: "alert-triangle" },
   ask_user: { renderer: "user_question", icon: "lightbulb" },

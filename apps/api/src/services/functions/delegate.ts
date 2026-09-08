@@ -114,7 +114,7 @@ export const delegate: ApiToolDefinition = {
         ...(projectId ? { project_id: projectId } : {}),
       },
     );
-    await context.repositories.delegations.createDelegation({
+    const delegation = await context.repositories.delegations.createDelegation({
       id: delegationId,
       parentConversationId,
       childConversationId,
@@ -143,7 +143,12 @@ export const delegate: ApiToolDefinition = {
       status: "success",
       name: "delegate",
       content: `Delegated the work to ${teammate.name ?? "a teammate"}. It will report back when it settles.`,
-      data: { delegationId, childConversationId, teammateId: teammate.id },
+      data: {
+        delegationId,
+        childConversationId,
+        teammateId: teammate.id,
+        delegations: [delegation],
+      },
     };
   },
 };
