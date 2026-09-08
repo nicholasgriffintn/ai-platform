@@ -11,6 +11,7 @@ import {
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
+import { createHandoff } from "~/services/handoffs";
 import { notifyMobileWork } from "~/services/mobile-push";
 import { isTaskNotificationPreferenceEnabled } from "~/services/notifications/preferences";
 import { TaskService } from "~/services/tasks/TaskService";
@@ -89,17 +90,55 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
   const teammateModel = teammate?.model
     ? await findModelConfig(teammate.model, env, undefined, user.id)
     : null;
-  const executionRoute = resolveDelegationExecutionRoute(teammateModel);
+  const machineSelection = teammate?.model?.match(/^machine:([^:]+):(.+)$/);
+  const resolvedModel =
+    teammateModel ??
+    (machineSelection
+      ? {
+          provider: "machine",
+          runsOn: "device" as const,
+          machineId: machineSelection[1],
+          matchingModel: machineSelection[2],
+        }
+      : null);
+  const executionRoute = resolveDelegationExecutionRoute(resolvedModel);
 
   if (executionRoute === "machine") {
-    await settleDelegation(
-      context,
-      delegation,
-      message.user_id,
-      "This delegate needs its approved machine handoff before it can run.",
-    );
+    const machineId = resolvedModel?.machineId;
+    if (!machineId) {
+      await settleDelegation(
+        context,
+        delegation,
+        message.user_id,
+        "The machine target is missing.",
+      );
 
-    return { status: "error" as const, detail: "Machine handoff is not available" };
+      return { status: "error" as const, detail: "Machine target is missing" };
+    }
+
+    try {
+      await createHandoff(createServiceContext({ env, user }), {
+        conversationId: delegation.childConversationId,
+        machineId,
+        requested: {
+          computeSite: "machine",
+          ...(teammate?.model ? { modelId: teammate.model } : {}),
+        },
+        draft: { text: delegation.goal, attachmentIds: [] },
+      });
+      await context.repositories.delegations.updateState(delegation.id, "awaiting_input");
+
+      return { status: "success" as const, detail: "Machine handoff queued." };
+    } catch (error) {
+      await settleDelegation(
+        context,
+        delegation,
+        message.user_id,
+        error instanceof Error ? error.message : "The machine handoff could not be created.",
+      );
+
+      return { status: "error" as const, detail: "Machine handoff could not be created" };
+    }
   }
   let sandboxOptions: SandboxRequestOptions | undefined;
 
