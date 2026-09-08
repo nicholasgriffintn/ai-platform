@@ -31,10 +31,11 @@ describe("findModelRuntimeEndpoint", () => {
 
   it("never hands back an agent runtime or an unknown vendor", () => {
     const endpoints = [
-      endpoint({ id: "agent", kind: "agent", vendor: "hermes" }),
+      endpoint({ id: "agent", kind: "agent", vendor: "claude-code" }),
       endpoint({ id: "oll", vendor: "ollama" }),
     ];
 
+    expect(findModelRuntimeEndpoint(endpoints, "claude-code")).toBeUndefined();
     expect(findModelRuntimeEndpoint(endpoints, "hermes")).toBeUndefined();
     expect(findModelRuntimeEndpoint(endpoints, "openai")).toBeUndefined();
     expect(findModelRuntimeEndpoint(endpoints, undefined)).toBeUndefined();
