@@ -1,3 +1,4 @@
+/** @vitest-environment jsdom */
 import type { LastModelSelection } from "@ngriffin_uk/polychat-schemas";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";

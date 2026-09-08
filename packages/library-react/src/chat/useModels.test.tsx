@@ -26,6 +26,7 @@ vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   },
   useChatStore: (selector: (state: { isAuthenticated: boolean }) => unknown) =>
     selector({ isAuthenticated: true }),
+  useSyncStore: { getState: () => ({ status: "idle" }) },
 }));
 
 function model(matchingModel: string, provider: string) {

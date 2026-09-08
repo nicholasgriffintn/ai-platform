@@ -7,6 +7,7 @@ import {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { StoredMachine } from "~/repositories/MachineRepository";
+import { publishMachineEvent } from "~/services/sync/conversation-events";
 
 function toMachineRecord(machine: StoredMachine, now: number): MachineRecord {
   return machineRecordSchema.parse({
@@ -42,6 +43,8 @@ export async function heartbeatMachine(
   }
 
   await context.repositories.machines.upsert(id, heartbeat);
+  publishMachineEvent(context, id, heartbeat.machineId);
+
   const [machine] = (await context.repositories.machines.listForUser(id)).filter(
     (candidate) => candidate.machineId === heartbeat.machineId,
   );

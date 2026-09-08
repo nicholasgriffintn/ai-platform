@@ -58,6 +58,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0034: Advertise machines through a control plane that never carries content](decisions/0034-advertise-machines-through-a-control-plane-that-never-carries-content.md)
 - [0036: Reach a device runtime only after someone connects it](decisions/0036-reach-a-device-runtime-only-after-someone-connects-it.md)
 - [0038: Spawn only programs the core was compiled knowing](decisions/0038-spawn-only-compiled-agent-programs.md)
+- [0041: Carry live updates on one per-user socket](decisions/0041-carry-live-updates-on-one-per-user-socket.md)
 
 ## Maintaining these records
 

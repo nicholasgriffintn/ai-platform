@@ -13,6 +13,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ProjectTaskRow } from "~/lib/database/schema";
+import { publishProjectEvent } from "~/services/sync/conversation-events";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
@@ -443,7 +444,18 @@ export class ProjectTaskRepository extends BaseRepository {
       true,
     );
 
-    return row ? formatProjectTask(row) : null;
+    if (!row) {
+      return null;
+    }
+
+    const task = formatProjectTask(row);
+
+    await publishProjectEvent({ env: this.env }, task.projectId, "project_task.changed", {
+      taskId: task.id,
+      status: task.status,
+    });
+
+    return task;
   }
 
   async queueTaskForRun(params: {

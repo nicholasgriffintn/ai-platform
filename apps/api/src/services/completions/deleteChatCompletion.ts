@@ -1,5 +1,7 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
+import { conversationAudience } from "~/services/sync/audience";
+import { publishConversationDeleted } from "~/services/sync/conversation-events";
 
 interface DeleteChatCompletionResult {
   success: boolean;
@@ -19,9 +21,13 @@ export const handleDeleteChatCompletion = async (
     user,
   });
 
+  const audience = await conversationAudience(context.env, completion_id);
+
   await conversationManager.updateConversation(completion_id, {
     archived: true,
   });
+
+  publishConversationDeleted(context, completion_id, audience);
 
   return {
     success: true,

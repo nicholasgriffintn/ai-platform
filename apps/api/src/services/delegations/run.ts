@@ -6,13 +6,17 @@ import {
   resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicyCreatesCommit,
   SANDBOX_TIMEOUT_MIN_SECONDS,
+  type Delegation,
+  type DelegationResult,
+  type DelegationState,
   type SandboxRequestOptions,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { createServiceContext } from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
 import { notifyMobileWork } from "~/services/mobile-push";
 import { isTaskNotificationPreferenceEnabled } from "~/services/notifications/preferences";
+import { publishDelegationChanged } from "~/services/sync/conversation-events";
 import { TaskService } from "~/services/tasks/TaskService";
 import { createTeammateCompletion } from "~/services/teammates/createTeammateCompletion";
 import { requireProjectAccess } from "~/services/workspaces/access";
@@ -26,6 +30,21 @@ import type { TaskMessage } from "../tasks/TaskService";
 import { resolveDelegationExecutionRoute } from "./routing";
 import { scheduleDelegationWake } from "./schedule-wake";
 
+async function transitionDelegation(
+  context: ServiceContext,
+  id: string,
+  state: DelegationState,
+  result: DelegationResult | null = null,
+): Promise<Delegation | null> {
+  const updated = await context.repositories.delegations.updateState(id, state, result);
+
+  if (updated) {
+    await publishDelegationChanged(context, updated);
+  }
+
+  return updated;
+}
+
 export async function runDelegationTask(message: TaskMessage, env: IEnv) {
   const payload = delegationRunTaskDataSchema.parse(message.task_data);
   const context = createServiceContext({ env });
@@ -37,7 +56,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
 
   try {
     if (Date.parse(delegation.budget.deadline) <= Date.now()) {
-      await context.repositories.delegations.updateState(delegation.id, "expired", {
+      await transitionDelegation(context, delegation.id, "expired", {
         summary: "The delegation deadline passed before it started.",
         outputIds: [],
       });
@@ -49,7 +68,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
     const user = await context.repositories.users.getUserById(message.user_id ?? 0);
 
     if (!user) {
-      await context.repositories.delegations.updateState(delegation.id, "failed", {
+      await transitionDelegation(context, delegation.id, "failed", {
         summary: "The delegating user no longer exists.",
         outputIds: [],
       });
@@ -242,7 +261,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         const waitingState =
           firstPendingTool.name === "ask_user" ? "awaiting_input" : "awaiting_approval";
 
-        await context.repositories.delegations.updateState(delegation.id, waitingState);
+        await transitionDelegation(context, delegation.id, waitingState);
         await notifyDelegationAttention(context, delegation, message.user_id, waitingState).catch(
           () => undefined,
         );
@@ -284,7 +303,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       throw new Error("The delegate returned no result for its parent.");
     }
 
-    await context.repositories.delegations.updateState(delegation.id, failed ? "failed" : "done", {
+    await transitionDelegation(context, delegation.id, failed ? "failed" : "done", {
       summary,
       outputIds: [],
     });
@@ -294,7 +313,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
   } catch (error) {
     const summary = error instanceof Error ? error.message : "Delegate run failed.";
 
-    await context.repositories.delegations.updateState(delegation.id, "failed", {
+    await transitionDelegation(context, delegation.id, "failed", {
       summary: summary.slice(0, 2000),
       outputIds: [],
     });
@@ -362,7 +381,7 @@ async function settleDelegation(
   userId: number | undefined,
   summary: string,
 ) {
-  await context.repositories.delegations.updateState(delegation.id, "failed", {
+  await transitionDelegation(context, delegation.id, "failed", {
     summary,
     outputIds: [],
   });

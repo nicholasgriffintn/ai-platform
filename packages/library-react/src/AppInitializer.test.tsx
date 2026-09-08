@@ -1,10 +1,19 @@
 // @vitest-environment jsdom
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { AppInitializer } from "./AppInitializer.js";
 import { useUIStore } from "./state/stores/uiStore.js";
+
+function renderWithQueryClient(ui: Parameters<typeof render>[0]) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+}
 
 vi.mock("./hooks/useAuth.js", () => ({ useAuthStatus: () => undefined }));
 vi.mock("./hooks/use-analytics-identity.js", () => ({ useAnalyticsIdentity: () => undefined }));
@@ -20,7 +29,7 @@ describe("AppInitializer", () => {
     }));
     useUIStore.setState({ isMobileLoading: true });
 
-    render(
+    renderWithQueryClient(
       <AppInitializer>
         <span>chat</span>
       </AppInitializer>,
@@ -35,7 +44,7 @@ describe("AppInitializer", () => {
     vi.stubGlobal("matchMedia", undefined);
     useUIStore.setState({ isMobileLoading: true });
 
-    render(
+    renderWithQueryClient(
       <AppInitializer>
         <span>chat</span>
       </AppInitializer>,

@@ -26,6 +26,7 @@ import { ConversationCoordinator } from "./services/conversations/coordinator/ob
 import { MachineRunCoordinator } from "./services/machines/run-coordinator";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
 import { RealtimeProxyCoordinator } from "./services/realtime/proxy-coordinator/object";
+import { UserSyncCoordinator } from "./services/sync/coordinator/object";
 import { QueueExecutor } from "./services/tasks/QueueExecutor";
 import { ScheduleExecutor } from "./services/tasks/ScheduleExecutor";
 import type { TaskMessage } from "./services/tasks/TaskService";
@@ -317,4 +318,5 @@ export {
   ConversationCoordinator,
   RealtimeProxyCoordinator,
   SandboxRunCoordinator,
+  UserSyncCoordinator,
 };

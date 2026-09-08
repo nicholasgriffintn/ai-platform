@@ -7,6 +7,7 @@ import {
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { getNextUsageEventsPageParam } from "../chat/usage-ledger.js";
+import { liveOrPoll } from "../sync/live-or-poll.js";
 
 export const USAGE_QUERY_KEYS = {
   balance: ["usage", "balance"] as const,
@@ -38,7 +39,12 @@ export function useUsageBalance(enabled = true) {
     queryKey: USAGE_QUERY_KEYS.balance,
     queryFn: () => getUsageBalance(),
     enabled,
-    refetchInterval: (query) => getUsageBalanceRefreshInterval(query.state.data?.resets_at),
+    refetchInterval: (query) =>
+      liveOrPoll(
+        query,
+        (query) => getUsageBalanceRefreshInterval(query.state.data?.resets_at),
+        "usage.changed",
+      ),
   });
 }
 

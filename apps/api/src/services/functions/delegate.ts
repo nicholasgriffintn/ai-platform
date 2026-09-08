@@ -10,6 +10,7 @@ import { userCreditActor } from "~/lib/usage/creditActor";
 import { readCreditPosition } from "~/lib/usage/credits";
 import { checkDelegationSpawn } from "~/services/delegations/guards";
 import { resolveDelegationExecutionRoute } from "~/services/delegations/routing";
+import { publishDelegationChanged } from "~/services/sync/conversation-events";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireTeammateAccess } from "~/services/teammates/access";
 import { hireTeammate } from "~/services/teammates/hire";
@@ -231,10 +232,16 @@ export const delegate: ApiToolDefinition = {
     } catch (error) {
       const summary = getErrorMessage(error, "The delegate could not be started.");
 
-      await context.repositories.delegations.updateState(delegationId, "failed", {
-        summary: summary.slice(0, 2000),
-        outputIds: [],
-      });
+      const failedDelegation = await context.repositories.delegations.updateState(
+        delegationId,
+        "failed",
+        { summary: summary.slice(0, 2000), outputIds: [] },
+      );
+
+      if (failedDelegation) {
+        await publishDelegationChanged(context, failedDelegation);
+      }
+
       throw error;
     }
 

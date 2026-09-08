@@ -10,6 +10,8 @@ import type {
 import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
 import type { ConversationRunRepository } from "~/repositories/ConversationRunRepository";
 import { isThreadLeaseOwnershipLostError } from "~/services/conversations/coordinator/client";
+import { publishConversationChanged, publishRunChanged } from "~/services/sync/conversation-events";
+import type { SyncPublisher } from "~/services/sync/publish";
 import { TaskExecutionOwnershipLostError } from "~/services/tasks/task-execution-lease";
 import { resolveChatProjectAccess } from "~/services/workspaces/chatProjectAccess";
 import type { CoreChatOptions } from "~/types";
@@ -138,10 +140,18 @@ export class ChatRunLifecycle {
     >,
     readonly receipt: ChatRunCommandReceipt,
     private readonly env?: CoreChatOptions["env"],
+    private readonly publisher?: SyncPublisher,
   ) {}
 
   get run(): ChatRun {
     return this.receipt.run;
+  }
+
+  private async announce(run: ChatRun): Promise<void> {
+    const publisher = this.publisher ?? { env: this.env };
+
+    await publishRunChanged(publisher, run);
+    await publishConversationChanged(publisher, run.conversationId, { runId: run.id });
   }
 
   async isCancellationRequested(): Promise<boolean> {
@@ -260,6 +270,8 @@ export class ChatRunLifecycle {
 
     this.receipt.run = transitioned;
 
+    await this.announce(transitioned);
+
     if (transitioned.status === "cancelled" && transitioned.cancellationRequestedAt && this.env) {
       recordChatRunOperationalMetric(this.env, {
         signal: "cancellation_latency",
@@ -288,6 +300,8 @@ export class ChatRunLifecycle {
 
     if (transitioned) {
       this.receipt.run = transitioned;
+
+      await this.announce(transitioned);
 
       if (interrupted && this.env) {
         recordChatRunOperationalMetric(this.env, {
@@ -330,7 +344,12 @@ export async function findAcceptedChatRunCommand(
   }
 
   return receipt
-    ? new ChatRunLifecycle(scope.context.repositories.conversationRuns, receipt, scope.context.env)
+    ? new ChatRunLifecycle(
+        scope.context.repositories.conversationRuns,
+        receipt,
+        scope.context.env,
+        scope.context,
+      )
     : null;
 }
 
@@ -370,6 +389,13 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
     receipt.run = running;
   }
 
+  if (!receipt.duplicate) {
+    await publishRunChanged(scope.context, receipt.run);
+    await publishConversationChanged(scope.context, receipt.run.conversationId, {
+      runId: receipt.run.id,
+    });
+  }
+
   if (!receipt.duplicate && scope.projectTask && scope.projectTask.runId !== receipt.run.id) {
     const durableExecution = options.durable_execution;
     const updated = await scope.context.repositories.projectTasks.updateTask(
@@ -392,5 +418,6 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
     scope.context.repositories.conversationRuns,
     receipt,
     scope.context.env,
+    scope.context,
   );
 }
