@@ -5,6 +5,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
+import { notifyMobileWork } from "~/services/mobile-push";
+import { isTaskNotificationPreferenceEnabled } from "~/services/notifications/preferences";
 import { TaskService } from "~/services/tasks/TaskService";
 import { createTeammateCompletion } from "~/services/teammates/createTeammateCompletion";
 import { requireProjectAccess } from "~/services/workspaces/access";
@@ -115,6 +117,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         const waitingState =
           firstPendingTool.name === "ask_user" ? "awaiting_input" : "awaiting_approval";
         await context.repositories.delegations.updateState(delegation.id, waitingState);
+        await notifyDelegationAttention(context, delegation, message.user_id, waitingState);
 
         return {
           status: "success" as const,
@@ -144,6 +147,58 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
 
     return { status: "error" as const, detail: summary };
   }
+}
+
+async function notifyDelegationAttention(
+  context: ReturnType<typeof createServiceContext>,
+  delegation: Awaited<ReturnType<typeof context.repositories.delegations.getById>>,
+  userId: number | null | undefined,
+  state: "awaiting_input" | "awaiting_approval",
+) {
+  if (!delegation || !userId) {
+    return;
+  }
+
+  const parent = await context.repositories.conversations.getConversation(
+    delegation.parentConversationId,
+  );
+  const projectId = typeof parent?.project_id === "string" ? parent.project_id : null;
+
+  if (!projectId) {
+    return;
+  }
+
+  const project = await context.repositories.workspaces.getProject(projectId);
+  const preferences = await context.repositories.taskNotifications.getPreferences(userId);
+  const categoryEnabled = isTaskNotificationPreferenceEnabled(preferences, "decisions");
+
+  if (!project || !categoryEnabled) {
+    return;
+  }
+
+  const membership = await context.repositories.workspaces.getMembership(
+    project.workspace_id,
+    userId,
+  );
+
+  if (!membership) {
+    return;
+  }
+
+  await notifyMobileWork({
+    context,
+    userId,
+    notificationId: `delegation:${delegation.id}:${state}`,
+    kind: state === "awaiting_approval" ? "approval" : "input",
+    target: {
+      workspaceId: project.workspace_id,
+      projectId,
+      conversationId: delegation.parentConversationId,
+      taskId: null,
+      runId: delegation.childConversationId,
+      interactionId: null,
+    },
+  });
 }
 
 async function settleDelegation(
