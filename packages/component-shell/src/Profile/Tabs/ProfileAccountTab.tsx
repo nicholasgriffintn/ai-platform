@@ -1,4 +1,7 @@
-import { AccountOverview } from "@ngriffin_uk/polychat-component-account";
+import {
+  AccountOverview,
+  ConversationHandleSettings,
+} from "@ngriffin_uk/polychat-component-account";
 import { useAuthStatus, useUsageBalance, useUIStore } from "@ngriffin_uk/polychat-library-react";
 
 import { ProfileTab } from "../ProfileTabLayout.js";
@@ -17,6 +20,7 @@ export function ProfileAccountTab() {
         usageBalance={usageBalance.data}
         onSignIn={() => setShowLoginModal(true)}
       />
+      {isAuthenticated && <ConversationHandleSettings />}
     </ProfileTab>
   );
 }

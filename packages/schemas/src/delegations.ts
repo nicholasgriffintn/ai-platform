@@ -82,6 +82,14 @@ export const conversationHandleParamsSchema = z.object({
   handleId: z.string().min(1),
 });
 
+export const conversationHandleGrantSchema = z
+  .object({
+    conversationId: z.string().min(1),
+    delegationId: z.string().min(1),
+    expiresAt: z.string().nullable().optional(),
+  })
+  .strict();
+
 export const conversationHandleListResponseSchema = z.object({
   handles: z.array(conversationHandleSchema),
 });

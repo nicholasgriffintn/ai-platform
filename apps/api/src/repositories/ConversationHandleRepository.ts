@@ -52,6 +52,29 @@ export class ConversationHandleRepository extends BaseRepository {
     return formatHandle(row);
   }
 
+  async createUserHandle(input: {
+    id: string;
+    conversationId: string;
+    delegationId: string;
+    grantedAt: string;
+    expiresAt: string | null;
+  }): Promise<ConversationHandle> {
+    const row = await this.runQuery<ConversationHandleRow>(
+      `INSERT INTO conversation_handle
+        (id, conversation_id, delegation_id, granted_by, granted_at, expires_at)
+       VALUES (?, ?, ?, 'user', ?, ?)
+       RETURNING *`,
+      [input.id, input.conversationId, input.delegationId, input.grantedAt, input.expiresAt],
+      true,
+    );
+
+    if (!row) {
+      throw new Error("Failed to create conversation handle");
+    }
+
+    return formatHandle(row);
+  }
+
   async getUsableHandle(
     id: string,
     delegationId: string,

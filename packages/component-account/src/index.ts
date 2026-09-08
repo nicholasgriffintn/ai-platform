@@ -42,6 +42,7 @@ export * from "./Billing/UsageLedgerTable";
 export * from "./Billing/UsageSummaryCard";
 export * from "./Billing/usage-display";
 export * from "./Account/AccountOverview";
+export * from "./Account/ConversationHandleSettings";
 export * from "./Sources/SourceList";
 export * from "./Providers/ProviderFilterBar";
 export * from "./Sandbox/SandboxConnectionDialog";
