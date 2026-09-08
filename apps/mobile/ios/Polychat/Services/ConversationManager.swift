@@ -1242,6 +1242,16 @@ class ConversationManager: ObservableObject {
             updateConversationInArray(conversation)
         }
     }
+
+    func setTierForCurrentConversation(_ tier: String) {
+        selectedModelId = nil
+        modelsStore?.selectTier(tier)
+        currentConversation?.modelId = nil
+        currentConversation?.modelTier = tier
+        if let conversation = currentConversation {
+            updateConversationInArray(conversation)
+        }
+    }
     
     func generateTitleIfNeeded(for conversation: Conversation) async {
         let shouldGenerateTitles = UserDefaults.standard.object(forKey: "autoTitleGeneration") as? Bool ?? true

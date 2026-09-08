@@ -2,6 +2,7 @@ import Foundation
 
 protocol ModelsAPIClient {
     func fetchModels() async throws -> ModelsResponse
+    func fetchModelTiers() async throws -> ModelTiersResponse
 }
 
 protocol RecipesAPIClient {

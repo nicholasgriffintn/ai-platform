@@ -6,6 +6,7 @@ class ModelsStore: ObservableObject {
     @Published var models: [ModelConfigItem] = []
     @Published var selectedModelId: String? = nil
     @Published var selectedModelTier: String? = nil
+    @Published private(set) var tierModelIds: [String: String] = [:]
     @Published var isLoading: Bool = false
     @Published var error: String? = nil
     @Published var selectionIssue: String? = nil
@@ -63,6 +64,16 @@ class ModelsStore: ObservableObject {
                 )
             }
 
+            if let tierResponse = try? await apiClient.fetchModelTiers(),
+               let hostedLineup = tierResponse.runtimes["hosted"] {
+                tierModelIds = [
+                    "low": hostedLineup.modelId(for: "low"),
+                    "medium": hostedLineup.modelId(for: "medium"),
+                    "high": hostedLineup.modelId(for: "high"),
+                    "ultra": hostedLineup.modelId(for: "ultra")
+                ].compactMapValues { $0 }
+            }
+
             let hasAccountDefaults = accountDefaultModelId != nil ||
                 accountDefaultModelTier != nil ||
                 accountDefaultComputeSite != nil
@@ -93,6 +104,15 @@ class ModelsStore: ObservableObject {
         userDefaults.removeObject(forKey: selectedModelTierKey)
         updateSelectionIssue()
         saveSelectedModel()
+    }
+
+    func selectTier(_ tier: String) {
+        guard tierModelIds[tier] != nil else { return }
+        selectedModelId = nil
+        selectedModelTier = tier
+        userDefaults.removeObject(forKey: selectedModelKey)
+        userDefaults.set(tier, forKey: selectedModelTierKey)
+        updateSelectionIssue()
     }
 
     func applyAccountDefaults(_ settings: AuthUserSettings?) {

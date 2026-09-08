@@ -228,6 +228,10 @@ struct ChatView: View {
                     conversationManager.setModelForCurrentConversation(modelId)
                     chatSettings.serviceTier = nil
                 },
+                onSelectTier: { tier in
+                    conversationManager.setTierForCurrentConversation(tier)
+                    chatSettings.serviceTier = nil
+                },
                 validateSelection: { model in
                     let decision = ModelContinuity.evaluate(
                         model: model,

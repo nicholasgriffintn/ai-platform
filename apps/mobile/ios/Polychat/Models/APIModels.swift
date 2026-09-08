@@ -1,4 +1,44 @@
 import Foundation
+
+public struct ModelTiersResponse: Codable {
+    public let runtimes: [String: ModelTierLineup]
+    public let defaultTier: String
+
+    enum CodingKeys: String, CodingKey {
+        case runtimes
+        case defaultTier = "default"
+    }
+}
+
+public struct ModelTierLineup: Codable {
+    public let low: ModelTierRoleSelection
+    public let medium: ModelTierRoleSelection
+    public let high: ModelTierRoleSelection
+    public let ultra: ModelTierRoleSelection
+
+    func modelId(for tier: String) -> String? {
+        switch tier {
+        case "low": return low.agent?.id
+        case "medium": return medium.agent?.id
+        case "high": return high.agent?.id
+        case "ultra": return ultra.agent?.id
+        default: return nil
+        }
+    }
+}
+
+public struct ModelTierRoleSelection: Codable {
+    public let agent: ResolvedModelTier?
+    public let coding: ResolvedModelTier?
+}
+
+public struct ResolvedModelTier: Codable {
+    public let id: String
+    public let name: String
+    public let provider: String
+    public let effort: String?
+}
+
 public struct ChatCompletionResponse: Codable {
     public let choices: [ChatChoice]
     public let run: ChatRunCommandReceipt?

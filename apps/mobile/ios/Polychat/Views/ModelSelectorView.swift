@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ModelSelectorView: View {
     var onSelectModel: ((String) -> Void)?
+    var onSelectTier: ((String) -> Void)?
     var validateSelection: ((ModelConfigItem) -> String?)?
 
     @EnvironmentObject var modelsStore: ModelsStore
@@ -157,6 +158,16 @@ struct ModelSelectorView: View {
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
+                ForEach(["low", "medium", "high", "ultra"], id: \.self) { tier in
+                    Button(tier.capitalized) {
+                        modelsStore.selectTier(tier)
+                        onSelectTier?(tier)
+                        dismiss()
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(modelsStore.selectedModelTier == tier ? .accentColor : nil)
+                    .disabled(modelsStore.tierModelIds[tier] == nil)
+                }
                 Toggle(isOn: $showingFeaturedOnly) {
                     Label("Featured", systemImage: "star.fill")
                 }

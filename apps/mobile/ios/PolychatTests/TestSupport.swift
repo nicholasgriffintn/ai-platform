@@ -289,13 +289,24 @@ func makeIsolatedUserDefaults() throws -> UserDefaults {
 
 final class ModelsAPIClientStub: ModelsAPIClient {
     var result: Result<ModelsResponse, Error>
+    var tierResult: Result<ModelTiersResponse, Error>
 
-    init(result: Result<ModelsResponse, Error>) {
+    init(
+        result: Result<ModelsResponse, Error>,
+        tierResult: Result<ModelTiersResponse, Error> = .success(
+            ModelTiersResponse(runtimes: [:], defaultTier: "medium")
+        )
+    ) {
         self.result = result
+        self.tierResult = tierResult
     }
 
     func fetchModels() async throws -> ModelsResponse {
         try result.get()
+    }
+
+    func fetchModelTiers() async throws -> ModelTiersResponse {
+        try tierResult.get()
     }
 }
 
