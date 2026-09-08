@@ -8,7 +8,9 @@ import { createServiceContext } from "~/lib/context/serviceContext";
 import { TaskService } from "~/services/tasks/TaskService";
 import { createTeammateCompletion } from "~/services/teammates/createTeammateCompletion";
 import { requireProjectAccess } from "~/services/workspaces/access";
+import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import type { IEnv } from "~/types";
+import { intersectEnabledTools } from "~/utils/enabledTools";
 
 import type { TaskMessage } from "../tasks/TaskService";
 
@@ -43,9 +45,35 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
     return { status: "error" as const, detail: "Delegating user not found" };
   }
 
+  const parentConversation = await context.repositories.conversations.getConversation(
+    delegation.parentConversationId,
+  );
+  const parentProjectId =
+    typeof parentConversation?.project_id === "string" ? parentConversation.project_id : null;
+
+  if (!parentConversation || parentProjectId !== (payload.projectId ?? null)) {
+    await settleDelegation(
+      context,
+      delegation,
+      message.user_id,
+      "The delegation scope changed before it started.",
+    );
+
+    return { status: "error" as const, detail: "Delegation project scope changed" };
+  }
+
   if (payload.projectId) {
     await requireProjectAccess(createServiceContext({ env, user }), payload.projectId);
   }
+
+  const enabledTools = payload.projectId
+    ? intersectEnabledTools(
+        resolveProjectTools(
+          await context.repositories.workspaces.listProjectCapabilities(payload.projectId),
+        ).enabledTools,
+        payload.enabledTools,
+      )
+    : payload.enabledTools;
 
   const body = createChatCompletionsJsonSchema.parse({
     completion_id: delegation.childConversationId,
@@ -53,7 +81,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
     messages: [{ role: "user", content: delegation.goal }],
     stream: false,
     store: true,
-    enabled_tools: payload.enabledTools,
+    enabled_tools: enabledTools,
     delegation_context: {
       delegationId: delegation.id,
       depth: delegation.depth,
@@ -116,6 +144,19 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
 
     return { status: "error" as const, detail: summary };
   }
+}
+
+async function settleDelegation(
+  context: ReturnType<typeof createServiceContext>,
+  delegation: { id: string; parentConversationId: string; parentRunId: string },
+  userId: number | undefined,
+  summary: string,
+) {
+  await context.repositories.delegations.updateState(delegation.id, "failed", {
+    summary,
+    outputIds: [],
+  });
+  await enqueueDelegationWake(context, delegation, userId);
 }
 
 async function enqueueDelegationWake(
