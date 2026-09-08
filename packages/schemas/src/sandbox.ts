@@ -607,7 +607,7 @@ export const updateSandboxRunControlSchema = z
     action: sandboxRunControlActionSchema,
     reason: z.string().trim().min(1).max(500).optional(),
     extensionSeconds: z.number().int().min(1).max(300).optional(),
-    expectedUpdatedAt: z.string().trim().min(1),
+    expectedUpdatedAt: z.string().trim().min(1).optional(),
   })
   .strict();
 

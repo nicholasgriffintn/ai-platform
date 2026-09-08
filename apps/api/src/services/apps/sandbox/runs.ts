@@ -25,6 +25,9 @@ import { parseSandboxRunData, type SandboxRunData } from "./run-data";
 
 type SandboxRunControlState = "queued" | "running" | "paused" | "cancelled" | "inspection";
 
+const INSPECTION_WINDOW_CLOSED =
+  "The sandbox inspection window has closed and the environment has been destroyed.";
+
 interface SandboxRunRecord {
   id: string;
   createdByUserId: number;
@@ -183,7 +186,9 @@ export async function requestSandboxRunInstruction(params: {
 
   if (isTerminalRunStatus(runRecord.run.status) && !(inspectionActive && kind === "run_command")) {
     throw new AssistantError(
-      `Cannot send instructions to a ${runRecord.run.status} run`,
+      kind === "run_command" && typeof control?.inspectionExpiresAt === "string"
+        ? INSPECTION_WINDOW_CLOSED
+        : `Cannot send instructions to a ${runRecord.run.status} run`,
       ErrorType.CONFLICT_ERROR,
       409,
     );
@@ -325,11 +330,14 @@ export async function requestSandboxRunControlAction(params: {
     !(input.action === "extend_inspection" && inspectionActive)
   ) {
     throw new AssistantError(
-      `Cannot ${input.action} a ${runRecord.run.status} run`,
+      input.action === "extend_inspection"
+        ? INSPECTION_WINDOW_CLOSED
+        : `Cannot ${input.action} a ${runRecord.run.status} run`,
       ErrorType.CONFLICT_ERROR,
       409,
     );
   }
+
   const desiredState =
     input.action === "pause"
       ? "paused"
@@ -339,7 +347,7 @@ export async function requestSandboxRunControlAction(params: {
           ? "inspection"
           : "cancelled";
 
-  if (current.state === desiredState) {
+  if (current.state === desiredState && input.action !== "extend_inspection") {
     return current;
   }
 
@@ -393,7 +401,7 @@ export async function requestSandboxRunControlAction(params: {
   if (!updated) {
     const latest = await getRunCoordinatorControl(context.env, runId);
 
-    if (latest?.state === desiredState) {
+    if (latest?.state === desiredState && input.action !== "extend_inspection") {
       return latest;
     }
 
