@@ -32,6 +32,7 @@ use store::{LocalConversation, LocalMessage, Store};
 use tauri::ipc::Channel;
 use tauri::{Emitter, Manager, State};
 use tauri_plugin_deep_link::DeepLinkExt;
+use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_notification::NotificationExt;
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 use tokio::io::{AsyncBufReadExt, BufReader};
@@ -795,6 +796,15 @@ fn save_agent_directory(
 }
 
 #[tauri::command]
+fn pick_agent_directory(app: tauri::AppHandle) -> Result<Option<String>, String> {
+    Ok(app
+        .dialog()
+        .file()
+        .blocking_pick_folder()
+        .map(|path| path.to_string()))
+}
+
+#[tauri::command]
 fn revoke_agent_directory(
     directory_id: String,
     directories: State<'_, DirectoryGrants>,
@@ -1224,6 +1234,7 @@ fn main() {
             start_agent_run,
             list_agent_directories,
             save_agent_directory,
+            pick_agent_directory,
             revoke_agent_directory,
             probe_agent_tool,
             start_agent_process_run,

@@ -135,6 +135,11 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
     agentToolStateSchema.parse(await invoke("probe_agent_tool", { driver })),
   listAgentDirectories: async () =>
     agentDirectorySchema.array().parse(await invoke("list_agent_directories")),
+  pickAgentDirectory: async () =>
+    z
+      .string()
+      .nullable()
+      .parse(await invoke("pick_agent_directory")),
   saveAgentDirectory: async (path) =>
     agentDirectorySchema.parse(await invoke("save_agent_directory", { path })),
   revokeAgentDirectory: async (directoryId) => {

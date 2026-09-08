@@ -2,5 +2,5 @@
   "identifier": "default",
   "description": "The only permissions the Polychat window holds. Network egress, storage and secrets stay in Rust commands rather than webview capabilities. Setting the window title lets the renderer name the place you are in.",
   "windows": ["main"],
-  "permissions": ["core:default", "core:window:allow-set-title"]
+  "permissions": ["core:default", "core:window:allow-set-title", "dialog:default"]
 }

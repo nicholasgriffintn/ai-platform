@@ -36,6 +36,7 @@ export interface DesktopBackend {
   startAgentProcessRun: (request: DesktopAgentProcessRunRequest) => Promise<DesktopRun>;
   probeAgentTool: (driver: AgentRuntimeVendor) => Promise<AgentToolState>;
   listAgentDirectories: () => Promise<AgentDirectory[]>;
+  pickAgentDirectory: () => Promise<string | null>;
   saveAgentDirectory: (path: string) => Promise<AgentDirectory>;
   revokeAgentDirectory: (directoryId: string) => Promise<void>;
   decideApproval: (endpointId: string, decision: AgentApprovalDecision) => Promise<void>;
@@ -145,6 +146,7 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
       checkedAt: new Date(0).toISOString(),
     }),
     listAgentDirectories: async () => seed.agentDirectories ?? [],
+    pickAgentDirectory: async () => null,
     saveAgentDirectory: async (path) => ({
       id: `fake-directory-${path}`,
       path,
