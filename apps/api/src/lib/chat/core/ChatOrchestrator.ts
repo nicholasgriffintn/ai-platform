@@ -333,7 +333,10 @@ export class ChatOrchestrator {
     }
 
     const executionRequest = createChatExecutionRequest({
-      chatOptions,
+      chatOptions: {
+        ...chatOptions,
+        permission_mode: prepared.permissionMode ?? chatOptions.permission_mode,
+      },
       prepared: {
         ...prepared,
         enabledTools: enabled_tools,
@@ -350,6 +353,7 @@ export class ChatOrchestrator {
         approved_tools,
         enabled_tools,
         conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
+        permission_mode: prepared.permissionMode ?? chatOptions.permission_mode,
         options: prepared.requestOptions,
       },
       input: messageWithContext,

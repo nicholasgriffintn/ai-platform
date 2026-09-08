@@ -85,6 +85,19 @@ export type AgentDirectory = z.infer<typeof agentDirectorySchema>;
 export type ProviderInstance = z.infer<typeof providerInstanceSchema>;
 export type ProviderAdapter = z.infer<typeof providerAdapterSchema>;
 
+export function resolveEffectivePermissionMode(
+  requested: PermissionMode | undefined,
+  stored: unknown,
+): PermissionMode {
+  if (requested) {
+    return requested;
+  }
+
+  const parsed = permissionModeSchema.safeParse(stored);
+
+  return parsed.success ? parsed.data : DEFAULT_PERMISSION_MODE;
+}
+
 const PERMISSION_MODE_LABELS: Record<PermissionMode, string> = {
   supervised: "Supervised",
   auto_accept_edits: "Auto-accept edits",

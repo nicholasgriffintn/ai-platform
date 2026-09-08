@@ -1,15 +1,14 @@
-import type {
-  ChatHostedToolSettings,
-  ConversationType,
-  Goal,
-  ModelConfigInfo,
-  ModelConfigItem,
-  RecipeConnectorProvider,
-  SkillAvailability,
-} from "@ngriffin_uk/polychat-schemas";
 import {
-  DEFAULT_PERMISSION_MODE,
   getPermissionModeUnavailableReason,
+  resolveEffectivePermissionMode,
+  type ChatHostedToolSettings,
+  type ConversationType,
+  type Goal,
+  type ModelConfigInfo,
+  type ModelConfigItem,
+  type PermissionMode,
+  type RecipeConnectorProvider,
+  type SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { mergeEnabledGoalToolNames } from "~/lib/chat/policy/goal-tools";
@@ -91,6 +90,7 @@ export interface PreparedRequest {
   userSettings: any;
   currentMode: ChatMode;
   conversationType?: ConversationType;
+  permissionMode?: PermissionMode;
   isProUser: boolean;
   enabledTools: string[];
   activeGoal: Goal | null;
@@ -183,6 +183,18 @@ export class RequestPreparer {
     return memoizeRequest(options.context?.requestCache, `user-settings:${user.id}`, () =>
       repositories.userSettings.getUserSettings(user.id),
     );
+  }
+
+  private async resolveStoredPermissionMode(scope: RequestScope): Promise<unknown> {
+    if (!scope.options.completion_id) {
+      return undefined;
+    }
+
+    const conversation = await scope.repositories.conversations.getConversation(
+      scope.options.completion_id,
+    );
+
+    return conversation?.permission_mode;
   }
 
   private resolveRequestTools(scope: RequestScope) {
@@ -320,8 +332,14 @@ export class RequestPreparer {
     const primaryModel = primaryModelConfig.matchingModel;
     const primaryProvider = primaryModelConfig.provider;
 
+    let permissionMode: PermissionMode | undefined;
+
     if (primaryModelConfig.kind === "agent" && primaryModelConfig.agent) {
-      const permissionMode = scope.options.permission_mode ?? DEFAULT_PERMISSION_MODE;
+      permissionMode = resolveEffectivePermissionMode(
+        scope.options.permission_mode,
+        await this.resolveStoredPermissionMode(scope),
+      );
+
       const unavailableReason = getPermissionModeUnavailableReason(
         primaryModelConfig.agent.capabilities,
         permissionMode,
@@ -380,7 +398,7 @@ export class RequestPreparer {
           primaryModel,
           modelId: validationContext.selectedModels?.[0] ?? primaryModel,
           modelTier: validationContext.modelTier ?? null,
-          permissionMode: scope.options.permission_mode,
+          permissionMode: permissionMode ?? scope.options.permission_mode,
           platform,
           mode,
         })
@@ -446,6 +464,7 @@ export class RequestPreparer {
       userSettings,
       currentMode: mode,
       conversationType: scope.options.conversation_type,
+      permissionMode,
       isProUser: scope.isProUser,
       enabledTools: hasFixedToolScope
         ? [...(enabledTools ?? [])]

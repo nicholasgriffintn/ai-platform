@@ -14,6 +14,7 @@
 - [ ] With a provider that does not report its own review, confirm Auto reads as unavailable and the reason appears under the control.
 - [ ] Select an unavailable mode and confirm the setting does not change.
 - [ ] Change mode mid-conversation and confirm earlier turns are unaffected and the next run uses the new mode.
+- [ ] Send a turn from a client that omits the mode and confirm the run uses the conversation's stored mode rather than the default.
 - [ ] Confirm approvals still arrive inline in the thread and resolve there.
 
 **Stop and report if:** a run proceeds under a mode other than the one displayed, a branch resets to the default, or the control appears for a provider that neither writes files nor runs commands.

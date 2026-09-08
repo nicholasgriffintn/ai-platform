@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { modelConfigItemSchema } from "./models.js";
-import { getProviderCapabilities, providerInstanceSchema } from "./providers.js";
+import {
+  getProviderCapabilities,
+  providerInstanceSchema,
+  resolveEffectivePermissionMode,
+} from "./providers.js";
 
 describe("provider contracts", () => {
   it("leaves catalogue entries unmarked and round-trips agent entries", () => {
@@ -22,6 +26,13 @@ describe("provider contracts", () => {
 
     expect(agent.kind).toBe("agent");
     expect(agent.agent?.workspace).toEqual({ kind: "repository" });
+  });
+
+  it("keeps a conversation's stored permission mode when a request names none", () => {
+    expect(resolveEffectivePermissionMode(undefined, "supervised")).toBe("supervised");
+    expect(resolveEffectivePermissionMode("full_access", "supervised")).toBe("full_access");
+    expect(resolveEffectivePermissionMode(undefined, undefined)).toBe("auto_accept_edits");
+    expect(resolveEffectivePermissionMode(undefined, "nonsense")).toBe("auto_accept_edits");
   });
 
   it("declares provider-specific capability differences", () => {
