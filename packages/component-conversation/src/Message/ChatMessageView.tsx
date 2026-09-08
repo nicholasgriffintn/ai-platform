@@ -18,7 +18,6 @@ import { useState } from "react";
 import { EditableMessageContent } from "./EditableMessageContent.js";
 import { MessageActions } from "./MessageActions.js";
 import { MessageContent } from "./MessageContent.js";
-import { MessageProvenanceMark } from "./MessageProvenanceMark.js";
 import { MessageSelectionQuote } from "./MessageSelectionQuote.js";
 import { useResolvedToolCallIds } from "./ResolvedToolCalls.js";
 import { ToolMessage } from "./ToolMessage.js";
@@ -241,9 +240,9 @@ export const ChatMessageView = ({
         <div
           className={`flex flex-col gap-2 py-2 ${message.role === "user" || isTemporary ? "px-3" : ""}`}
         >
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-3">
             {assistantModelName && (
-              <div className="mt-1 mr-2 flex flex-shrink-0 items-center gap-1">
+              <div className="flex flex-shrink-0 items-center gap-1">
                 <ModelIcon
                   modelName={assistantModelName}
                   provider={modelConfig?.provider ?? message.provider}
@@ -252,7 +251,6 @@ export const ChatMessageView = ({
                   title={assistantModelName}
                   mono
                 />
-                <MessageProvenanceMark provenance={message.provenance} />
               </div>
             )}
             <div className="flex-1 overflow-x-auto">
@@ -315,6 +313,7 @@ export const ChatMessageView = ({
                 isArchivedByCompaction={isArchivedByCompaction}
                 responseDurationMs={responseDurationMs}
                 modelConfig={modelConfig}
+                provenance={message.provenance}
               />
             )}
         </div>

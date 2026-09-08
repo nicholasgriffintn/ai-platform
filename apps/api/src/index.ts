@@ -312,3 +312,5 @@ const handler = {
 export default withSentry<IEnv>(getSentryOptions, handler);
 
 export { ConversationCoordinator, RealtimeProxyCoordinator, SandboxRunCoordinator };
+
+export { MachineConnectionCoordinator } from "./services/machines/connections";

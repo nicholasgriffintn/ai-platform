@@ -29,6 +29,7 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { MessageInfo } from "./MessageInfo.js";
+import { MessageProvenanceMark } from "./MessageProvenanceMark.js";
 import { MessageStats } from "./MessageStats.js";
 
 export interface MessageActionsProps {
@@ -85,6 +86,7 @@ export const MessageActions = ({
   responseDurationMs,
   modelConfig,
   renderModelSelector,
+  provenance,
 }: MessageActionsProps) => {
   const [showThreadModelSelector, setShowThreadModelSelector] = useState(false);
   const [isPlayingSpeech, setIsPlayingSpeech] = useState(false);
@@ -342,6 +344,7 @@ export const MessageActions = ({
             buttonClassName={messageActionButtonClassName}
           />
         )}
+        {provenance ? <MessageProvenanceMark provenance={message.provenance} /> : null}
       </div>
       {canSubmitFeedback && !isSharedView && message.role !== "user" && message.log_id && (
         <div className="flex items-center space-x-1">

@@ -252,7 +252,7 @@ export const MessageList = ({
     <ResolvedToolCallsProvider resolvedToolCallIds={resolvedToolCallIds}>
       <section
         className={`relative flex flex-1 flex-col border-l-2 pl-3 ${
-          isTemporary ? "border-dotted border-muted-foreground/50" : "border-border"
+          isTemporary ? "border-dotted border-muted-foreground/50" : "border-none"
         }`}
         data-conversation-id={currentConversationId || undefined}
         data-retention={retention}

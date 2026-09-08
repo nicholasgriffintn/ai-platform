@@ -445,14 +445,6 @@ export function RuntimeSettings({
           </div>
         </form>
       </SettingsSection>
-
-      <div className="flex items-start gap-2 rounded-lg border border-active-work/25 bg-active-work/10 p-4 text-sm text-muted-foreground">
-        <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-active-work" aria-hidden="true" />
-        <p>
-          Connecting first checks that the runtime answers. Failed checks do not create an endpoint
-          or store a pairing secret.
-        </p>
-      </div>
     </div>
   );
 }
