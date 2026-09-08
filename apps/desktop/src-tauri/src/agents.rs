@@ -3,6 +3,8 @@ use serde_json::{json, Value};
 
 use crate::egress::DesktopEndpoint;
 
+pub mod process;
+
 #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct AgentSession {

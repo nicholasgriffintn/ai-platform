@@ -13,8 +13,10 @@ mod runs;
 mod secrets;
 mod store;
 
+use std::process::Stdio;
 use std::time::Duration;
 
+use agents::process::{self, AgentDriver, AgentToolState, DirectoryGrants, ProcessRunRequest};
 use agents::{AgentApprovalRequest, AgentChunk, AgentSession};
 use announcements::{Announcement, AnnouncementPlan};
 use chat::{ModelRunRequest, StreamChunk};
@@ -32,6 +34,8 @@ use tauri::{Emitter, Manager, State};
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_notification::NotificationExt;
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
+use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::process::Command;
 use url::Url;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(3);
@@ -712,6 +716,7 @@ async fn start_agent_run(
         run_id: run_id.clone(),
         endpoint_id: endpoint.id.clone(),
         at: timestamp(),
+        head: None,
     });
 
     let response = match attempt.send().await {
@@ -763,6 +768,155 @@ async fn start_agent_run(
 
     registry.forget(&run_id);
     emit(StreamEvent::Finished {
+        run_id,
+        reason: reason.to_string(),
+        at: timestamp(),
+    });
+
+    Ok(())
+}
+
+#[tauri::command]
+fn list_agent_directories(store: State<'_, Store>) -> Result<Vec<process::DirectoryGrant>, String> {
+    store.list_agent_directories()
+}
+
+#[tauri::command]
+fn save_agent_directory(
+    path: String,
+    directories: State<'_, DirectoryGrants>,
+    store: State<'_, Store>,
+) -> Result<process::DirectoryGrant, String> {
+    let directory = directories
+        .add(std::path::Path::new(&path))
+        .map_err(|cause| format!("{cause:?}"))?;
+    store.save_agent_directory(&directory)?;
+    Ok(directory)
+}
+
+#[tauri::command]
+fn revoke_agent_directory(
+    directory_id: String,
+    directories: State<'_, DirectoryGrants>,
+    store: State<'_, Store>,
+) -> Result<(), String> {
+    directories
+        .remove(&directory_id)
+        .map_err(|cause| format!("{cause:?}"))?;
+    store.revoke_agent_directory(&directory_id)
+}
+
+#[tauri::command]
+fn probe_agent_tool(driver: AgentDriver) -> AgentToolState {
+    process::probe(driver, timestamp())
+}
+
+#[tauri::command]
+async fn start_agent_process_run(
+    run_id: String,
+    request: ProcessRunRequest,
+    on_event: Channel<StreamEvent>,
+    directories: State<'_, DirectoryGrants>,
+    registry: State<'_, RunRegistry>,
+    store: State<'_, Store>,
+) -> Result<(), String> {
+    let grant = directories
+        .get(&request.directory_id)
+        .map_err(|cause| format!("{cause:?}"))?;
+    let directory = process::ensure_directory_grant(&grant.path, &grant)
+        .map_err(|cause| format!("{cause:?}"))?;
+    let starting_head = process::git_head(&directory).map_err(|cause| format!("{cause:?}"))?;
+
+    if process::is_dirty(&directory).map_err(|cause| format!("{cause:?}"))?
+        && !request.acknowledge_dirty
+    {
+        return Err(
+            "The workspace has uncommitted changes; acknowledge the dirty tree first.".to_string(),
+        );
+    }
+
+    let program = process::program_for(request.driver);
+    let argv = process::build_argv(
+        request.driver,
+        &process::RunParams {
+            prompt: request.prompt,
+            session: request.session,
+            permission_mode: request.permission_mode,
+            model: request.model,
+        },
+    )
+    .map_err(|cause| format!("{cause:?}"))?;
+
+    if !registry.begin_directory(&directory) {
+        return Err("A run is already active for this directory.".to_string());
+    }
+
+    let child_result = Command::new(program.program)
+        .args(argv)
+        .current_dir(&directory)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn();
+    let mut child = match child_result {
+        Ok(child) => child,
+        Err(cause) => {
+            registry.finish_directory(&directory);
+            return Err(cause.to_string());
+        }
+    };
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| "The agent produced no output stream.".to_string())?;
+    let mut lines = BufReader::new(stdout).lines();
+
+    registry.begin(&run_id);
+    let _ = on_event.send(StreamEvent::Started {
+        run_id: run_id.clone(),
+        endpoint_id: request.directory_id.clone(),
+        at: timestamp(),
+        head: Some(starting_head),
+    });
+    let used_at = timestamp();
+    directories
+        .touch(&request.directory_id, used_at.clone())
+        .map_err(|cause| format!("{cause:?}"))?;
+    store.mark_agent_directory_used(&request.directory_id, &used_at)?;
+    let _ = on_event.send(StreamEvent::Progress {
+        run_id: run_id.clone(),
+        state: "generating".to_string(),
+    });
+
+    while let Some(line) = lines.next_line().await.map_err(|cause| cause.to_string())? {
+        if registry.is_cancelled(&run_id) {
+            let _ = child.kill().await;
+            registry.finish_directory(&directory);
+            registry.forget(&run_id);
+            let _ = on_event.send(StreamEvent::Finished {
+                run_id,
+                reason: "cancelled".to_string(),
+                at: timestamp(),
+            });
+
+            return Ok(());
+        }
+
+        let _ = on_event.send(StreamEvent::RawOutput {
+            run_id: run_id.clone(),
+            data: format!("{line}\n"),
+        });
+    }
+
+    let status = child.wait().await.map_err(|cause| cause.to_string())?;
+    registry.finish_directory(&directory);
+    registry.forget(&run_id);
+    let reason = if status.success() {
+        "complete"
+    } else {
+        "interrupted"
+    };
+    let _ = on_event.send(StreamEvent::Finished {
         run_id,
         reason: reason.to_string(),
         at: timestamp(),
@@ -897,6 +1051,11 @@ fn cancel_model_run(run_id: String, registry: State<'_, RunRegistry>) {
     registry.cancel(&run_id);
 }
 
+#[tauri::command]
+fn cancel_agent_process_run(run_id: String, registry: State<'_, RunRegistry>) {
+    registry.cancel(&run_id);
+}
+
 fn executing_host(endpoint: &DesktopEndpoint) -> String {
     Url::parse(&endpoint.url)
         .ok()
@@ -933,6 +1092,7 @@ async fn start_model_run(
         run_id: run_id.clone(),
         endpoint_id: endpoint.id.clone(),
         at: timestamp(),
+        head: None,
     });
     emit(StreamEvent::Progress {
         run_id: run_id.clone(),
@@ -1034,6 +1194,8 @@ fn main() {
 
             app.manage(store);
             app.manage(RunRegistry::default());
+            let directories = store.list_agent_directories()?;
+            app.manage(DirectoryGrants::from_grants(directories));
 
             Ok(())
         })
@@ -1058,9 +1220,15 @@ fn main() {
             start_model_run,
             list_agent_sessions,
             start_agent_run,
+            list_agent_directories,
+            save_agent_directory,
+            revoke_agent_directory,
+            probe_agent_tool,
+            start_agent_process_run,
             decide_approval,
             collect_diagnostics,
             cancel_model_run,
+            cancel_agent_process_run,
             announce_attention,
             set_attention_badge
         ])

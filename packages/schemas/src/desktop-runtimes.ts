@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { isLoopbackUrl } from "./navigation.js";
+import { permissionModeSchema } from "./providers.js";
 
 export const DESKTOP_RUNTIME_PROTOCOL_VERSION = 1 as const;
 
@@ -253,6 +254,37 @@ export const desktopAgentRunRequestSchema = z.object({
 
 export type DesktopAgentRunRequest = z.infer<typeof desktopAgentRunRequestSchema>;
 
+export const agentToolStateSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("missing"), checkedAt: z.string() }),
+  z.object({ state: z.literal("present"), checkedAt: z.string(), version: z.string().nullable() }),
+  z.object({
+    state: z.literal("signed_out"),
+    checkedAt: z.string(),
+    version: z.string().nullable(),
+  }),
+  z.object({ state: z.literal("ready"), checkedAt: z.string(), version: z.string() }),
+  z.object({
+    state: z.literal("unsupported_version"),
+    checkedAt: z.string(),
+    version: z.string(),
+    minimum: z.string(),
+  }),
+]);
+
+export type AgentToolState = z.infer<typeof agentToolStateSchema>;
+
+export const desktopAgentProcessRunRequestSchema = z.object({
+  driver: agentRuntimeVendorSchema,
+  directoryId: z.string().min(1),
+  prompt: z.string().min(1),
+  session: z.string().min(1).nullable(),
+  permissionMode: permissionModeSchema,
+  model: z.string().min(1).nullable(),
+  acknowledgeDirty: z.boolean(),
+});
+
+export type DesktopAgentProcessRunRequest = z.infer<typeof desktopAgentProcessRunRequestSchema>;
+
 export const desktopRunProgressSchema = z.enum(["queued", "loading-model", "generating"]);
 export type DesktopRunProgress = z.infer<typeof desktopRunProgressSchema>;
 
@@ -262,11 +294,17 @@ export const desktopStreamEventSchema = z.discriminatedUnion("type", [
     runId: z.string().min(1),
     endpointId: z.string().min(1),
     at: z.string(),
+    head: z.string().min(1).nullable(),
   }),
   z.object({
     type: z.literal("progress"),
     runId: z.string().min(1),
     state: desktopRunProgressSchema,
+  }),
+  z.object({
+    type: z.literal("raw-output"),
+    runId: z.string().min(1),
+    data: z.string(),
   }),
   z.object({
     type: z.literal("text"),

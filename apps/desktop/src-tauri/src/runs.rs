@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::path::Path;
 use std::sync::Mutex;
 
 use serde::Serialize;
@@ -13,11 +14,14 @@ pub enum StreamEvent {
         run_id: String,
         endpoint_id: String,
         at: String,
+        head: Option<String>,
     },
     #[serde(rename_all = "camelCase")]
     Progress { run_id: String, state: String },
     #[serde(rename_all = "camelCase")]
     Text { run_id: String, delta: String },
+    #[serde(rename_all = "camelCase")]
+    RawOutput { run_id: String, data: String },
     #[serde(rename_all = "camelCase")]
     ApprovalRequired {
         run_id: String,
@@ -40,6 +44,7 @@ pub enum StreamEvent {
 #[derive(Default)]
 pub struct RunRegistry {
     active: Mutex<HashSet<String>>,
+    active_directories: Mutex<HashSet<String>>,
     cancelled: Mutex<HashSet<String>>,
 }
 
@@ -47,6 +52,20 @@ impl RunRegistry {
     pub fn begin(&self, run_id: &str) {
         if let Ok(mut active) = self.active.lock() {
             active.insert(run_id.to_string());
+        }
+    }
+
+    pub fn begin_directory(&self, directory: &Path) -> bool {
+        let Ok(mut active) = self.active_directories.lock() else {
+            return false;
+        };
+
+        active.insert(directory.to_string_lossy().into_owned())
+    }
+
+    pub fn finish_directory(&self, directory: &Path) {
+        if let Ok(mut active) = self.active_directories.lock() {
+            active.remove(directory.to_string_lossy().as_ref());
         }
     }
 

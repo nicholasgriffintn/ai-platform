@@ -3,6 +3,7 @@ use std::sync::Mutex;
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 
+use crate::agents::process::DirectoryGrant;
 use crate::egress::{DesktopEndpoint, EndpointKind, EndpointTransport};
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -112,6 +113,14 @@ impl Store {
                     pairing_secret_stored INTEGER NOT NULL,
                     approved_at TEXT NOT NULL,
                     last_seen_at TEXT
+                );
+                CREATE TABLE IF NOT EXISTS agent_directories (
+                    id TEXT PRIMARY KEY,
+                    path TEXT NOT NULL UNIQUE,
+                    label TEXT NOT NULL,
+                    approved_at TEXT NOT NULL,
+                    last_used_at TEXT,
+                    is_git_repo INTEGER NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS conversations (
                     id TEXT PRIMARY KEY,
@@ -250,6 +259,72 @@ impl Store {
         self.with_connection(|connection| {
             connection.execute("DELETE FROM endpoints WHERE id = ?1", params![endpoint_id])?;
 
+            Ok(())
+        })
+    }
+
+    pub fn list_agent_directories(&self) -> Result<Vec<DirectoryGrant>, String> {
+        self.with_connection(|connection| {
+            let mut statement = connection.prepare(
+                "SELECT id, path, label, approved_at, last_used_at, is_git_repo
+                 FROM agent_directories
+                 ORDER BY approved_at, id",
+            )?;
+            let rows = statement.query_map([], |row| {
+                Ok(DirectoryGrant {
+                    id: row.get(0)?,
+                    path: row.get::<_, String>(1)?.into(),
+                    label: row.get(2)?,
+                    approved_at: row.get(3)?,
+                    last_used_at: row.get(4)?,
+                    is_git_repo: row.get::<_, i64>(5)? != 0,
+                })
+            })?;
+            rows.collect()
+        })
+    }
+
+    pub fn save_agent_directory(&self, directory: &DirectoryGrant) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "INSERT INTO agent_directories
+                    (id, path, label, approved_at, last_used_at, is_git_repo)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+                 ON CONFLICT(id) DO UPDATE SET
+                    path = excluded.path,
+                    label = excluded.label,
+                    approved_at = excluded.approved_at,
+                    last_used_at = excluded.last_used_at,
+                    is_git_repo = excluded.is_git_repo",
+                params![
+                    directory.id,
+                    directory.path.to_string_lossy(),
+                    directory.label,
+                    directory.approved_at,
+                    directory.last_used_at,
+                    i64::from(directory.is_git_repo),
+                ],
+            )?;
+            Ok(())
+        })
+    }
+
+    pub fn revoke_agent_directory(&self, directory_id: &str) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "DELETE FROM agent_directories WHERE id = ?1",
+                params![directory_id],
+            )?;
+            Ok(())
+        })
+    }
+
+    pub fn mark_agent_directory_used(&self, directory_id: &str, at: &str) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "UPDATE agent_directories SET last_used_at = ?2 WHERE id = ?1",
+                params![directory_id, at],
+            )?;
             Ok(())
         })
     }

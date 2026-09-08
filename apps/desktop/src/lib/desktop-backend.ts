@@ -9,10 +9,15 @@ import {
   agentRuntimeSessionSchema,
   desktopSessionTokenSchema,
   desktopStreamEventSchema,
+  agentDirectorySchema,
+  agentToolStateSchema,
   discoveredModelSchema,
   localConversationSchema,
   localMessageSchema,
   type DesktopModelRunRequest,
+  type DesktopAgentProcessRunRequest,
+  type AgentDirectory,
+  type AgentRuntimeVendor,
   type DesktopSessionToken,
   type DesktopStreamEvent,
   type ModelRuntimeFailure,
@@ -118,6 +123,23 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
       },
       "agent-error",
     ),
+  startAgentProcessRun: async (request: DesktopAgentProcessRunRequest) =>
+    startRun(
+      "start_agent_process_run",
+      { request },
+      "agent-error",
+      "cancel_agent_process_run",
+      true,
+    ),
+  probeAgentTool: async (driver: AgentRuntimeVendor) =>
+    agentToolStateSchema.parse(await invoke("probe_agent_tool", { driver })),
+  listAgentDirectories: async () =>
+    agentDirectorySchema.array().parse(await invoke("list_agent_directories")),
+  saveAgentDirectory: async (path) =>
+    agentDirectorySchema.parse(await invoke("save_agent_directory", { path })),
+  revokeAgentDirectory: async (directoryId) => {
+    await invoke("revoke_agent_directory", { directoryId });
+  },
   startModelRun: async (request: DesktopModelRunRequest): Promise<DesktopRun> =>
     startRun("start_model_run", { request }, "unknown"),
 };
@@ -128,6 +150,8 @@ function startRun(
   command: string,
   args: Record<string, unknown>,
   refusalFailure: RunFailure,
+  cancelCommand = "cancel_model_run",
+  parseRawOutput = false,
 ): Promise<DesktopRun> {
   const runId = globalThis.crypto.randomUUID();
   const queue = createAsyncEventQueue<DesktopStreamEvent>();
@@ -152,7 +176,15 @@ function startRun(
       return;
     }
 
-    queue.push(event.data);
+    if (event.data.type === "raw-output" && parseRawOutput) {
+      for (const line of event.data.data.split("\n")) {
+        if (line.trim()) {
+          queue.push(parseAgentOutput(runId, line));
+        }
+      }
+    } else if (event.data.type !== "raw-output") {
+      queue.push(event.data);
+    }
 
     if (event.data.type === "finished" || event.data.type === "failed") {
       queue.close();
@@ -166,10 +198,34 @@ function startRun(
   return Promise.resolve({
     runId,
     cancel: () => {
-      void invoke("cancel_model_run", { runId });
+      void invoke(cancelCommand, { runId });
     },
     events: queue.events,
   });
+}
+
+const agentOutputSchema = z
+  .object({
+    delta: z.string().optional(),
+    text: z.string().optional(),
+    content: z.string().optional(),
+  })
+  .passthrough();
+
+function parseAgentOutput(runId: string, line: string): DesktopStreamEvent {
+  try {
+    const output = agentOutputSchema.safeParse(JSON.parse(line));
+    if (output.success) {
+      const delta = output.data.delta ?? output.data.text ?? output.data.content;
+      if (delta) {
+        return { type: "text", runId, delta };
+      }
+    }
+  } catch {
+    return { type: "text", runId, delta: `${line}\n` };
+  }
+
+  return { type: "text", runId, delta: `${line}\n` };
 }
 
 setDesktopExecutionBackend(tauriDesktopBackend);

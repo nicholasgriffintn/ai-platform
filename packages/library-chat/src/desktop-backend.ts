@@ -2,6 +2,10 @@ import type {
   AgentApprovalDecision,
   AgentRuntimeSession,
   DesktopAgentRunRequest,
+  DesktopAgentProcessRunRequest,
+  AgentDirectory,
+  AgentRuntimeVendor,
+  AgentToolState,
   DesktopEndpoint,
   DesktopModelRunRequest,
   DesktopRuntimeReadiness,
@@ -29,6 +33,11 @@ export interface DesktopBackend {
   startModelRun: (request: DesktopModelRunRequest) => Promise<DesktopRun>;
   listAgentSessions: (endpointId: string) => Promise<AgentRuntimeSession[]>;
   startAgentRun: (request: DesktopAgentRunRequest) => Promise<DesktopRun>;
+  startAgentProcessRun: (request: DesktopAgentProcessRunRequest) => Promise<DesktopRun>;
+  probeAgentTool: (driver: AgentRuntimeVendor) => Promise<AgentToolState>;
+  listAgentDirectories: () => Promise<AgentDirectory[]>;
+  saveAgentDirectory: (path: string) => Promise<AgentDirectory>;
+  revokeAgentDirectory: (directoryId: string) => Promise<void>;
   decideApproval: (endpointId: string, decision: AgentApprovalDecision) => Promise<void>;
   listConversations: (accountId: string) => Promise<LocalConversation[]>;
   saveConversation: (conversation: LocalConversation) => Promise<void>;
@@ -41,6 +50,7 @@ export interface FakeDesktopBackendSeed {
   readiness?: Record<string, DesktopRuntimeReadiness>;
   models?: DiscoveredModel[];
   sessions?: AgentRuntimeSession[];
+  agentDirectories?: AgentDirectory[];
   script?: DesktopStreamEvent[];
   conversations?: LocalConversation[];
   messages?: LocalMessage[];
@@ -129,6 +139,21 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
       (seed.sessions ?? []).filter((session) => session.endpointId === endpointId),
     startModelRun: async () => createRun(seed.script ?? []),
     startAgentRun: async () => createRun(seed.script ?? []),
+    startAgentProcessRun: async () => createRun(seed.script ?? []),
+    probeAgentTool: async () => ({
+      state: "missing",
+      checkedAt: new Date(0).toISOString(),
+    }),
+    listAgentDirectories: async () => seed.agentDirectories ?? [],
+    saveAgentDirectory: async (path) => ({
+      id: `fake-directory-${path}`,
+      path,
+      label: path,
+      approvedAt: new Date(0).toISOString(),
+      lastUsedAt: null,
+      isGitRepo: false,
+    }),
+    revokeAgentDirectory: async () => {},
     decideApproval: async (endpointId, decision) => {
       decisions.push({ endpointId, decision });
     },
