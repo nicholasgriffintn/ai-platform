@@ -62,6 +62,19 @@ export const delegationSchema = z.object({
 });
 export type Delegation = z.infer<typeof delegationSchema>;
 
+export const conversationHandleSchema = z
+  .object({
+    id: z.string().min(1),
+    conversationId: z.string().min(1),
+    grantedTo: z.object({ kind: z.literal("delegation"), delegationId: z.string().min(1) }),
+    grantedBy: z.enum(["spawn", "user"]),
+    grantedAt: z.string(),
+    expiresAt: z.string().nullable(),
+    revokedAt: z.string().nullable(),
+  })
+  .strict();
+export type ConversationHandle = z.infer<typeof conversationHandleSchema>;
+
 export const delegationListResponseSchema = z.object({
   delegations: z.array(delegationSchema),
 });

@@ -151,6 +151,13 @@ export const delegate: ApiToolDefinition = {
         deadline,
       },
     });
+    await context.repositories.conversationHandles.createSpawnHandle({
+      id: `handle_${delegationId}`,
+      conversationId: parentConversationId,
+      delegationId,
+      grantedAt: new Date().toISOString(),
+      expiresAt: deadline,
+    });
 
     await new TaskService(context.env, context.repositories.tasks).enqueueTask({
       id: `delegation_task_${delegationId}`,

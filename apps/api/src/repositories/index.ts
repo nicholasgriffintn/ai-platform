@@ -13,6 +13,7 @@ import { CapabilityConfigurationRepository } from "./CapabilityConfigurationRepo
 import { ChannelBindingRepository } from "./ChannelBindingRepository";
 import { ComposioConnectorSessionRepository } from "./ComposioConnectorSessionRepository";
 import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprovalRepository";
+import { ConversationHandleRepository } from "./ConversationHandleRepository";
 import { ConversationOrganisationRepository } from "./ConversationOrganisationRepository";
 import { ConversationRepository } from "./ConversationRepository";
 import { ConversationRunRepository } from "./ConversationRunRepository";
@@ -118,6 +119,7 @@ export class RepositoryManager {
   private userPetRepo: UserPetRepository;
   private capabilityConfigurationRepo: CapabilityConfigurationRepository;
   private conversationRepo: ConversationRepository;
+  private conversationHandleRepo: ConversationHandleRepository;
   private conversationRunRepo: ConversationRunRepository;
   private delegationRepo: DelegationRepository;
   private conversationOrganisationRepo: ConversationOrganisationRepository;
@@ -169,6 +171,7 @@ export class RepositoryManager {
     this.userPetRepo = new UserPetRepository(env);
     this.capabilityConfigurationRepo = new CapabilityConfigurationRepository(env);
     this.conversationRepo = new ConversationRepository(env);
+    this.conversationHandleRepo = new ConversationHandleRepository(env);
     this.conversationRunRepo = new ConversationRunRepository(env);
     this.delegationRepo = new DelegationRepository(env);
     this.conversationOrganisationRepo = new ConversationOrganisationRepository(env);
@@ -305,6 +308,10 @@ export class RepositoryManager {
 
   public get conversations(): ConversationRepository {
     return this.conversationRepo;
+  }
+
+  public get conversationHandles(): ConversationHandleRepository {
+    return this.conversationHandleRepo;
   }
 
   public get conversationRuns(): ConversationRunRepository {

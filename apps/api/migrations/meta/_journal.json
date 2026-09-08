@@ -330,6 +330,13 @@
       "when": 1788826387496,
       "tag": "0046_closed_slayback",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "6",
+      "when": 1788828275409,
+      "tag": "0047_shocking_snowbird",
+      "breakpoints": true
     }
   ]
 }

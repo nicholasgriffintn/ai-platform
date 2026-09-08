@@ -975,6 +975,29 @@ export const delegation = sqliteTable(
 
 export type DelegationRow = typeof delegation.$inferSelect;
 
+export const conversationHandle = sqliteTable(
+  "conversation_handle",
+  {
+    id: text().primaryKey(),
+    conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    delegation_id: text()
+      .notNull()
+      .references(() => delegation.id, { onDelete: "cascade" }),
+    granted_by: text({ enum: ["spawn", "user"] }).notNull(),
+    granted_at: text().notNull(),
+    expires_at: text(),
+    revoked_at: text(),
+  },
+  (table) => ({
+    delegationIdx: uniqueIndex("conversation_handle_delegation_idx").on(table.delegation_id),
+    conversationIdx: index("conversation_handle_conversation_idx").on(table.conversation_id),
+  }),
+);
+
+export type ConversationHandleRow = typeof conversationHandle.$inferSelect;
+
 export const conversationRunCommand = sqliteTable(
   "conversation_run_command",
   {
