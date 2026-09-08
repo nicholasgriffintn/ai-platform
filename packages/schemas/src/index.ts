@@ -89,6 +89,7 @@ export * from "./cron.js";
 export * from "./desktop-runtimes.js";
 export * from "./machines.js";
 export * from "./handoffs.js";
+export * from "./forge.js";
 export * from "./goals.js";
 export * from "./internal-service-auth.js";
 export * from "./memory-documents.js";
