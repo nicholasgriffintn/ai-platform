@@ -538,6 +538,7 @@ test.describe("Work experience", () => {
     test("accepts an invitation and manages the resulting workspace member", async ({
       page,
       browser,
+      homePage,
       polychatApi,
       workPage,
     }, testInfo) => {
@@ -551,6 +552,23 @@ test.describe("Work experience", () => {
       const workspaceId = workPage.currentWorkspaceId();
       const projectPath = new URL(page.url()).pathname;
       const projectSettingsPath = `${projectPath}/settings`;
+
+      await workPage.openNewProjectConversation();
+      await homePage.selectModel("GPT OSS 120B");
+      const conversationRequest = await homePage.sendMessageAndRequireCompletion(
+        "A project reply saved only by its owner",
+      );
+
+      await homePage.waitForChatResponse(0);
+      const conversationId = homePage.completionIdFromRequest(conversationRequest);
+      const messageId = await homePage.getLatestAssistantMessage().getAttribute("data-id");
+
+      if (!messageId) {
+        throw new Error("Project reply has no message id");
+      }
+
+      expect(await polychatApi.saveMessageStatus(conversationId, messageId)).toBe(200);
+      await workPage.navigate(projectPath);
 
       await workPage.setProjectRoutingPreference("low");
       const memberSkill = await polychatApi.createProjectSkill(
@@ -611,6 +629,17 @@ test.describe("Work experience", () => {
           inviteeWorkPage.page.getByRole("button", { name: "More project actions" }),
         ).toHaveCount(0);
         const inviteeApi = new PolychatApi(inviteeContext.request);
+
+        expect((await inviteeApi.listSavedMessages()).messages).toHaveLength(0);
+        expect(await inviteeApi.conversationStatus(conversationId)).toBe(200);
+        expect(await inviteeApi.instantiateStarterStatus(workspaceId)).toBe(403);
+        expect(
+          await new PolychatApi(outsiderContext.request).conversationThreadsStatus(conversationId),
+        ).toBe(404);
+        await inviteeWorkPage.navigate(`/work/${workspaceId}/governance`);
+        await expect(
+          inviteeWorkPage.page.getByRole("button", { name: /^Start Build an internal tool$/ }),
+        ).toHaveCount(0);
         const visibleSkill = await inviteeApi.getProjectSkill(projectId, memberSkill.name);
 
         expect(visibleSkill.content).toContain("stable member-visible instructions");

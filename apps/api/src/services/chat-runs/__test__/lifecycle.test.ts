@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { ConversationRunRepository } from "~/repositories/ConversationRunRepository";
 import type { CoreChatOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -55,7 +54,13 @@ function createLifecycle() {
     ...runningRun,
     status: params.status,
   }));
-  const repository = { transition } as unknown as ConversationRunRepository;
+  const repository = {
+    transition,
+    getById: vi.fn().mockResolvedValue(runningRun),
+    updateContext: vi.fn(),
+    updateRetry: vi.fn(),
+    updateProvenance: vi.fn(),
+  };
   const commandReceipt = receipt();
 
   return {

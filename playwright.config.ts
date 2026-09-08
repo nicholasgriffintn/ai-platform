@@ -12,7 +12,7 @@ dotenv.config({ path: path.resolve(configDir, ".env"), quiet: true });
 
 export default defineConfig({
   fullyParallel: true,
-  workers: 2,
+  workers: process.env.CI ? 2 : "50%",
   timeout: 30 * 1000,
   retries: process.env.CI ? 1 : 0,
   testDir: "./apps/app/tests/e2e",
@@ -23,7 +23,7 @@ export default defineConfig({
     trace: "on-first-retry",
     viewport: { width: 1280, height: 720 },
     screenshot: "only-on-failure",
-    video: "retain-on-failure",
+    video: "on-first-retry",
   },
   webServer: [
     {

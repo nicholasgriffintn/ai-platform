@@ -132,7 +132,10 @@ async function buildRunCommand(
 
 export class ChatRunLifecycle {
   constructor(
-    private readonly repository: ConversationRunRepository,
+    private readonly repository: Pick<
+      ConversationRunRepository,
+      "getById" | "updateContext" | "updateRetry" | "updateProvenance" | "transition"
+    >,
     readonly receipt: ChatRunCommandReceipt,
     private readonly env?: CoreChatOptions["env"],
   ) {}
@@ -222,13 +225,30 @@ export class ChatRunLifecycle {
       result.finalMessage?.id ??
       result.memoryMessages.at(-1)?.id ??
       result.toolResponses.at(-1)?.id;
-    const transitioned = await this.repository.transition({
+    let transitioned = await this.repository.transition({
       runId: this.run.id,
       attempt: this.run.attempt,
       status,
       ...(lastMessageId ? { lastMessageId } : {}),
       ...(status === "failed" ? { terminalReason: "Response failed safety checks" } : {}),
     });
+
+    if (!transitioned) {
+      const current = await this.repository.getById(this.run.id);
+
+      if (current?.attempt === this.run.attempt) {
+        if (current.status === "cancelled") {
+          transitioned = current;
+        } else if (current.status === "cancelling") {
+          transitioned = await this.repository.transition({
+            runId: current.id,
+            attempt: current.attempt,
+            status: "cancelled",
+            terminalReason: "Run cancelled",
+          });
+        }
+      }
+    }
 
     if (!transitioned) {
       throw new AssistantError(
@@ -240,7 +260,7 @@ export class ChatRunLifecycle {
 
     this.receipt.run = transitioned;
 
-    if (status === "cancelled" && transitioned.cancellationRequestedAt && this.env) {
+    if (transitioned.status === "cancelled" && transitioned.cancellationRequestedAt && this.env) {
       recordChatRunOperationalMetric(this.env, {
         signal: "cancellation_latency",
         runId: transitioned.id,

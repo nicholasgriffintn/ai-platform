@@ -23,6 +23,8 @@ test.describe("Project workbench layout", () => {
     await workPage.navigate(projectUrl);
     await workPage.openNewProjectConversation();
     await expect(workbench.dock).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Coding task:/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: "As task", exact: true })).toHaveCount(0);
     await expect(page.getByRole("main", { name: "Conversation", exact: true })).toBeVisible();
     await expect(workbench.dock.getByRole("tab")).toHaveText([
       "Activity",

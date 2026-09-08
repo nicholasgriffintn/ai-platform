@@ -275,6 +275,11 @@ function toolCallStreamingResponse(toolCall) {
  */
 const TOOL_CALL_TRIGGERS = [
   {
+    marker: "List my saved messages for the release check",
+    name: "list_saved_messages",
+    arguments: () => JSON.stringify({ limit: 10 }),
+  },
+  {
     marker: "Request approval for the release check",
     name: "request_approval",
     arguments: () => JSON.stringify({ message: "Recover this interrupted stream after approval?" }),

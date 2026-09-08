@@ -19,3 +19,5 @@
 ## Database invariants
 
 The integration test runs the real delegation repository against isolated D1 storage and the generated table migration. Concurrent insertion enforces the three-run limit, stored parentage prevents recursive delegation even with a forged depth, settled runs release capacity, and late output cannot replace cancellation. Queued execution rechecks access to its parent conversation before starting.
+
+Database-backed audit checks cover concurrent fan-out, terminal state protection and a later child scheduling a wake after an earlier wake has settled. Runtime settlement forwards the assistant result, preserves provider failure, and applies the deadline to generation. Expiry jobs use scheduled delivery.

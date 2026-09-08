@@ -1,12 +1,16 @@
-// @vitest-environment jsdom
-
 import { setDeviceModelSource } from "@ngriffin_uk/polychat-library-chat";
+// @vitest-environment jsdom
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
-import { QueryClient, QueryClientProvider, focusManager } from "@tanstack/react-query";
-import { act, renderHook, waitFor } from "@testing-library/react";
-import { useMemo, type ReactNode } from "react";
+import { focusManager } from "@tanstack/react-query";
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
+import { useMemo } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  createQueryClient,
+  createWrapper,
+  clearQueryClients,
+} from "../lib/testing/query-client.js";
 import { useDeviceModels } from "./useDeviceModels.js";
 import { useModels } from "./useModels.js";
 
@@ -28,24 +32,14 @@ function model(matchingModel: string, provider: string) {
   return { matchingModel, provider };
 }
 
-function createQueryClient(): QueryClient {
-  return new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-}
-
-function createWrapper(queryClient: QueryClient) {
-  return function Wrapper({ children }: { children: ReactNode }) {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
-  };
-}
-
 describe("device model queries", () => {
   beforeEach(() => {
     mocks.fetchModels.mockResolvedValue({ hosted: model("hosted-model", "hosted") });
   });
 
   afterEach(() => {
+    cleanup();
+    clearQueryClients();
     setDeviceModelSource(null);
     focusManager.setFocused(undefined);
     vi.clearAllMocks();

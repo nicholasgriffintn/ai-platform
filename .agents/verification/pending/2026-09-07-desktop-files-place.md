@@ -11,9 +11,14 @@
 - [ ] On the web, open Files from the chat sidebar and confirm Made, Given and Memory each list their contents and switch by tab.
 - [ ] Add a source, then delete it, and confirm both the list and the API agree.
 - [ ] Open an output, edit a document revision and restore an earlier one.
-- [ ] Create a share link for an output and then revoke it.
-- [ ] Open a project's Files inside Work and confirm it still scopes to that project.
+- [x] Create a share link for an output and then revoke it.
+- [x] Open a project's Files inside Work and confirm it still scopes to that project.
 - [ ] In the desktop window, open Files from the sidebar and repeat the list, add and delete checks.
 - [ ] Sign out on the web and confirm the Files empty state opens the login modal; do the same in the desktop window and confirm it opens browser sign-in instead.
 
 **Stop and report if:** an output's share link cannot be created or revoked, or a memory document saves under the wrong scope.
+
+## Reconciled automated evidence — 8 September 2026
+
+- `features/work.spec.ts` and `WorkPage.shareAndRevokeOutput` create an output share, observe Active share links, revoke it and confirm the section disappears. `features/places.spec.ts` follows project Files and its Given/Made/Memory tabs while retaining the project URL and sidebar selection.
+- These existing journeys are covered by the successful 239-journey release run recorded in [local evidence](../2026-09-05-local-evidence.md). This is recorded web evidence, not a new run or desktop verification.

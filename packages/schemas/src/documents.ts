@@ -93,6 +93,10 @@ export const describeDocumentResponseSchema = z.object({
   metadata: documentMetadataSchema,
 });
 
+export const describeDocumentInputSchema = z.object({
+  expectedRevision: z.number().int().positive(),
+});
+
 export type DocumentMetadata = z.infer<typeof documentMetadataSchema>;
 export type DocumentOutputContent = z.infer<typeof documentOutputContentSchema>;
 export type WriteDocumentInput = z.infer<typeof writeDocumentInputSchema>;

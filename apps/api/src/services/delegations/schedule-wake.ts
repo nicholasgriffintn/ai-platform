@@ -12,7 +12,7 @@ export async function scheduleDelegationWake(
   }
 
   await tasks.enqueueTask({
-    id: `delegation_wake_${delegation.parentRunId}`,
+    id: `delegation_wake_${delegation.id}`,
     task_type: DELEGATION_WAKE_TASK_TYPE,
     user_id: userId,
     priority: 4,

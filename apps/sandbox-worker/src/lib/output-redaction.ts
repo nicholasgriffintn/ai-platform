@@ -12,12 +12,13 @@ export function redactSandboxOutput(value: string, secrets: readonly string[] = 
     .replace(/:\/\/([^/@:\s]+):([^/@\s]+)@/g, "://[redacted]@");
 }
 
-export function redactSandboxResult<T extends { stdout: string; stderr: string }>(
-  result: T,
+export function redactSandboxResult(
+  result: { success: boolean; exitCode: number; stdout: string; stderr: string },
   secrets: readonly string[] = [],
-): T {
+) {
   return {
-    ...result,
+    success: result.success,
+    exitCode: result.exitCode,
     stdout: redactSandboxOutput(result.stdout, secrets),
     stderr: redactSandboxOutput(result.stderr, secrets),
   };
@@ -94,4 +95,11 @@ export function createSandboxOutputRedactor(secrets: readonly string[] = []) {
       return value;
     },
   };
+}
+
+export function redactSandboxError(error: unknown, secrets: readonly string[] = []): string {
+  return redactSandboxOutput(
+    error instanceof Error ? error.message : "Sandbox operation failed",
+    secrets,
+  );
 }

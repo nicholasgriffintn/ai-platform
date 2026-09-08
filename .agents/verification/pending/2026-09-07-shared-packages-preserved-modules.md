@@ -11,8 +11,12 @@
 - [ ] Deploy the sandbox and training Workers to preview and confirm each starts and handles one request.
 - [ ] Load `/`, `/pricing`, `/privacy`, `/terms`, `/discover` and `/downloads` on a web preview and confirm each renders with no failed chunk request.
 - [ ] On `/`, scroll to the Discover tour and confirm it appears after its chunk loads; on `/discover`, confirm the same content renders immediately without a visible loading gap.
-- [ ] Open the keyboard shortcuts dialog from a conversation and confirm it loads and closes.
+- [x] Open the keyboard shortcuts dialog from a conversation and confirm it loads and closes.
 - [ ] Open a chat conversation and a Work project conversation, confirm messages stream and attachments upload.
 - [ ] Run the desktop build, launch the packaged app and confirm the sidebar, discover page and a conversation all render.
 
 **Stop and report if:** a Worker logs a module resolution failure, a route fails to fetch a chunk, or the Discover tour never appears on the home page.
+
+## Automated evidence — 8 September 2026, container aaec9551
+
+- `features/app.spec.ts` passed the complete Chat, Work, settings, shortcuts, Terms and Privacy journey. The shortcuts dialog loads from Chat, shows its contents and closes before navigation continues. Preview and packaged-desktop checks remain open.

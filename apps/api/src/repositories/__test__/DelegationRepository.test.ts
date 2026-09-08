@@ -1,9 +1,13 @@
 import { readFile } from "node:fs/promises";
 
 import { Miniflare } from "miniflare";
-import { afterAll, beforeAll, expect, it } from "vitest";
+import { afterAll, beforeAll, expect, it, vi } from "vitest";
+
+import { scheduleDelegationWake } from "~/services/delegations/schedule-wake";
+import { TaskService } from "~/services/tasks/TaskService";
 
 import { DelegationRepository } from "../DelegationRepository";
+import { TaskRepository } from "../TaskRepository";
 
 const runtime = new Miniflare({
   modules: true,
@@ -12,6 +16,7 @@ const runtime = new Miniflare({
   d1Databases: ["DB"],
 });
 let repository: DelegationRepository;
+let tasks: TaskRepository;
 
 beforeAll(async () => {
   const database = await runtime.getD1Database("DB");
@@ -26,6 +31,23 @@ beforeAll(async () => {
   await database.prepare("INSERT INTO conversation_run VALUES ('run'), ('other-run')").run();
   await database.prepare(migration.split("--> statement-breakpoint")[0]).run();
   repository = new DelegationRepository({ DB: database });
+  const baseline = await readFile(
+    new URL("../../../migrations/0000_baseline.sql", import.meta.url),
+    "utf8",
+  );
+  const taskTable = baseline
+    .split("--> statement-breakpoint")
+    .find((statement) => statement.includes("CREATE TABLE `tasks`"));
+
+  if (!taskTable) {
+    throw new Error("Task migration missing");
+  }
+
+  await database.prepare("CREATE TABLE user (id INTEGER PRIMARY KEY)").run();
+  await database.prepare("CREATE TABLE project (id TEXT PRIMARY KEY)").run();
+  await database.prepare("INSERT INTO user VALUES (1)").run();
+  await database.prepare(taskTable).run();
+  tasks = new TaskRepository({ DB: database });
 });
 
 afterAll(async () => {
@@ -88,4 +110,22 @@ it("enforces concurrent fan-out at insertion and frees capacity only when a run 
   expect(
     await repository.createDelegation({ ...params, id: "other", parentRunId: "other-run" }),
   ).toMatchObject({ state: "queued" });
+});
+
+it("schedules another wake after an earlier child settled before its siblings", async () => {
+  const send = vi.fn().mockResolvedValue(undefined);
+  const service = new TaskService(
+    { TASK_QUEUE: { send, sendBatch: vi.fn(), metrics: vi.fn() } },
+    tasks,
+  );
+  const group = { parentConversationId: "parent", parentRunId: "run" };
+
+  await scheduleDelegationWake(service, { ...group, id: "first" }, 1);
+  const queued = await tasks.getPendingTasks();
+
+  expect(queued).toHaveLength(1);
+  await tasks.updateTask(queued[0].id, { status: "completed" });
+  await scheduleDelegationWake(service, { ...group, id: "second" }, 1);
+  expect(send).toHaveBeenCalledTimes(2);
+  expect(await tasks.getPendingTasks()).toHaveLength(1);
 });

@@ -18,7 +18,7 @@ jobs:
     name: Version packages
     runs-on: ubuntu-latest
     outputs:
-      pending: ${{ steps.changesets.outputs.hasChangesets }}
+      pending: ${{ steps.changesets.outputs['has-changesets'] }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -40,11 +40,10 @@ jobs:
         id: changesets
         uses: changesets/action@v2.1.1
         with:
+          github-token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
           version-script: pnpm changeset:version
           pr-title: "chore: version packages"
           commit-message: "chore: version packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
   plan:
     name: Plan app releases

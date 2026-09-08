@@ -1,9 +1,37 @@
 import { documentExportFilename } from "@ngriffin_uk/polychat-schemas";
 
+import { OutputApi } from "../fixtures/output-api";
 import { expect, test } from "../fixtures/polychat-test";
 
 test.describe("Documents as finished work", () => {
   test.use({ persona: "pro" });
+
+  test("refuses a description from a stale tab and requires its loaded revision", async ({
+    homePage,
+    page,
+    polychatApi,
+  }) => {
+    const written = await polychatApi.writeDocumentOutput("Description conflict", "First body");
+    const outputs = new OutputApi(page.request);
+
+    expect(await outputs.documentActionStatus(written.id, "describe", {})).toBe(400);
+    await homePage.navigate(`/chat/files/made/${written.id}`);
+    await expect(page.getByRole("textbox", { name: "Document content" })).toHaveValue("First body");
+    expect(
+      await polychatApi.reviseOutputStatus(written.id, "Another writer's body", written.revision),
+    ).toBe(200);
+    const response = page.waitForResponse((response) =>
+      new URL(response.url()).pathname.endsWith(`/outputs/${written.id}/describe`),
+    );
+
+    await page.getByRole("button", { name: "Regenerate via AI", exact: true }).click();
+    expect((await response).status()).toBe(409);
+    await expect(page.getByRole("alert")).toContainText("Output has changed");
+    await expect(page.getByRole("textbox", { name: "Document content" })).toHaveValue(
+      "Another writer's body",
+    );
+    expect((await polychatApi.getOutput(written.id)).revision).toBe(written.revision + 1);
+  });
 
   test("opens a document a teammate wrote, edits it, and exports the saved version", async ({
     homePage,
@@ -11,10 +39,22 @@ test.describe("Documents as finished work", () => {
     polychatApi,
   }) => {
     const title = "Launch week brief";
-    const written = await polychatApi.writeDocumentOutput(
+    const outputs = new OutputApi(page.request);
+    const written = await outputs.create({
+      capabilityId: "document-writer",
+      kind: "document",
+      status: "ready",
       title,
-      "# Launch week brief\n\nThe first draft, as written.",
-    );
+      content: {
+        format: "markdown",
+        body: "# Launch week brief\n\nThe first draft, as written.",
+        metadata: {
+          summary: "Approved launch summary",
+          tags: ["release"],
+          sourceType: "assistant",
+        },
+      },
+    });
 
     expect(written.revision).toBe(1);
     await homePage.navigate(`/chat/files/made/${written.id}`);
@@ -39,6 +79,13 @@ test.describe("Documents as finished work", () => {
     expect(revised.content).toEqual({
       format: "markdown",
       body: "# Launch week brief\n\nThe edited draft, as revised.",
+      metadata: {
+        summary: "Approved launch summary",
+        tags: ["release"],
+        sourceType: "assistant",
+        wordCount: 9,
+        readingTime: 1,
+      },
     });
 
     const exported = await polychatApi.exportOutputDocument(written.id);
@@ -107,5 +154,17 @@ test.describe("Documents as finished work", () => {
 
     await homePage.navigate(`/chat/files/made/${image.id}`);
     await expect(page.getByRole("textbox", { name: "Document content" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Rewrite", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Regenerate via AI", exact: true })).toHaveCount(
+      0,
+    );
+    const outputs = new OutputApi(page.request);
+
+    expect(await outputs.documentActionStatus(image.id, "format", {})).toBe(400);
+    expect(
+      await outputs.documentActionStatus(image.id, "describe", {
+        expectedRevision: image.revision,
+      }),
+    ).toBe(400);
   });
 });

@@ -15,7 +15,7 @@ Read only the guides relevant to the task:
 - Production rollout: [deployment](references/deployment.md).
 - Rebranding: [white-labelling](references/white-labelling.md).
 - Optional Workers: [sandbox](references/components/sandbox-worker.md), [training](references/components/training-worker.md).
-- Operations: [releases](references/operations/releases.md), [connectors](references/operations/composio-connectors.md), [billing](references/operations/stripe-billing.md), [usage](references/operations/loop-cost-controls.md), [model catalogue](references/operations/model-catalogue.md), [streaming](references/operations/streaming-responsiveness.md), [OCR](references/operations/ocr.md), [agent gateways](references/operations/agent-gateways.md).
+- Operations: [releases](references/operations/releases.md), [connectors](references/operations/composio-connectors.md), [billing](references/operations/stripe-billing.md), [usage](references/operations/loop-cost-controls.md), [model catalogue](references/operations/model-catalogue.md), [streaming](references/operations/streaming-responsiveness.md), [OCR](references/operations/ocr.md), [agent gateways](references/operations/agent-gateways.md), [pet sprite sheets](references/operations/pet-sprite-sheets.md).
 - Architecture: [context](references/architecture/context.md) for current ownership, and the relevant [decision](references/architecture/decisions.md) for rationale.
 - Validation: [E2E](references/testing/e2e.md) and [human verification](references/verification.md).
 

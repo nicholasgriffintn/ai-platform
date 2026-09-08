@@ -678,18 +678,26 @@ export class ConversationRunRepository extends BaseRepository {
     lastMessageId?: string | null;
   }): Promise<ChatRun | null> {
     const current = await this.getById(params.runId);
+    const status =
+      current?.status === "cancelling" &&
+      params.status !== "accepted" &&
+      params.status !== "running" &&
+      params.status !== "cancelling"
+        ? "cancelled"
+        : params.status;
+    const terminalReason = status === params.status ? params.terminalReason : "Run cancelled";
 
     if (
       !current ||
       current.attempt !== params.attempt ||
       isTerminalChatRunStatus(current.status) ||
-      !canTransitionChatRun(current.status, params.status)
+      !canTransitionChatRun(current.status, status)
     ) {
       return null;
     }
 
     const now = new Date().toISOString();
-    const completedAt = isTerminalChatRunStatus(params.status) ? now : null;
+    const completedAt = isTerminalChatRunStatus(status) ? now : null;
     const updateStatement = this.env.DB.prepare(
       `UPDATE conversation_run
        SET status = ?, updated_at = ?,
@@ -702,13 +710,13 @@ export class ConversationRunRepository extends BaseRepository {
        WHERE id = ? AND attempt = ? AND status = ?
        RETURNING *`,
     ).bind(
-      params.status,
+      status,
       now,
-      params.status,
+      status,
       now,
       completedAt,
       completedAt,
-      params.terminalReason?.slice(0, 500) ?? null,
+      terminalReason?.slice(0, 500) ?? null,
       params.lastMessageId ?? null,
       params.runId,
       params.attempt,
@@ -721,8 +729,8 @@ export class ConversationRunRepository extends BaseRepository {
       occurredAt: now,
       data: {
         previousStatus: current.status,
-        status: params.status,
-        terminalReason: params.terminalReason?.slice(0, 500) ?? null,
+        status,
+        terminalReason: terminalReason?.slice(0, 500) ?? null,
         lastMessageId: params.lastMessageId ?? null,
       },
       expectedAttempt: params.attempt,

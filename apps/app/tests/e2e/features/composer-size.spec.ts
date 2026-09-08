@@ -1,4 +1,5 @@
 import { expect, test } from "../fixtures/polychat-test";
+import { ComposerDraftPage } from "../page-objects/ComposerDraftPage";
 
 const LONG_DRAFT = Array.from(
   { length: 400 },
@@ -48,29 +49,33 @@ test.describe("Composer size", () => {
     });
   }
 
-  test("keeps the caret in view while typing at the cap", async ({ homePage }) => {
+  test("keeps the caret in view while typing at the cap", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
     await expect(homePage.chatInput).toBeEditable();
     await homePage.chatInput.fill(LONG_DRAFT);
     await homePage.chatInput.press("End");
     await homePage.chatInput.pressSequentially(" tail");
 
-    const caretInView = await homePage.chatInput.evaluate((element) => {
-      const selection = window.getSelection();
-      const range = selection?.getRangeAt(0).cloneRange();
-
-      if (!range) {
-        return false;
-      }
-
-      range.collapse(false);
-      const caret = range.getBoundingClientRect();
-      const input = element.getBoundingClientRect();
-
-      return caret.top >= input.top - 1 && caret.bottom <= input.bottom + 1;
-    });
-
-    expect(caretInView).toBe(true);
+    expect(await new ComposerDraftPage(page).caretIsVisible()).toBe(true);
     await expect(homePage.chatInput).toHaveText(/tail$/);
+  });
+
+  test("keeps an inserted skill and the caret visible in a capped draft", async ({
+    homePage,
+    page,
+  }) => {
+    const composer = new ComposerDraftPage(page);
+
+    await homePage.navigate("/chat");
+    await composer.input.fill(LONG_DRAFT);
+    await composer.input.press("ControlOrMeta+End");
+    await composer.input.pressSequentially(" /hacker-new");
+    await composer.chooseHackerNews("mouse");
+    await expect(composer.skillChip).toHaveText("/hacker-news");
+    await expect(composer.skillChip).toBeInViewport();
+    await expect(composer.input).toContainText(LONG_DRAFT);
+    await composer.input.pressSequentially(" Continue this draft");
+    await expect(composer.input).toContainText("Continue this draft");
+    expect(await composer.caretIsVisible()).toBe(true);
   });
 });

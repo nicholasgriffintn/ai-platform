@@ -14,9 +14,12 @@ export function DelegationTimelineView({
   const parentConversationId = parsed.success
     ? parsed.data.delegations[0]?.parentConversationId
     : undefined;
+  const parentRunId = parsed.success ? parsed.data.delegations[0]?.parentRunId : undefined;
   const query = useDelegations(parentConversationId ?? "");
   const cancelDelegations = useCancelDelegations();
-  const delegations = query.data?.delegations ?? (parsed.success ? parsed.data.delegations : []);
+  const delegations = (
+    query.data?.delegations ?? (parsed.success ? parsed.data.delegations : [])
+  ).filter((delegation) => delegation.parentRunId === parentRunId);
   const first = delegations[0];
 
   if (!first) {
@@ -26,9 +29,13 @@ export function DelegationTimelineView({
   return (
     <DelegationCard
       delegations={delegations}
-      onStopAll={() => {
-        void cancelDelegations.mutateAsync(first.parentConversationId);
-      }}
+      onStopAll={
+        query.data?.canControl
+          ? () => {
+              void cancelDelegations.mutateAsync(first.parentConversationId);
+            }
+          : undefined
+      }
       onOpenDelegation={
         onToolInteraction
           ? (delegation) =>

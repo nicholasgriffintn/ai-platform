@@ -49,3 +49,27 @@ This records automated local evidence only. It does not certify a deployed relea
 - Checkout remained on local `main` throughout. No branch, worktree, push or pull request was created.
 - No deployment, migration, desktop packaged-runtime, physical-device, production integration, or operator check was performed.
 - The pending queue remains the source of truth for those human and deployment checks.
+
+## Runtime audit after a664f7c947072fbccdec3ae40dfa41ac97ed4847
+
+The runtime audit covers desktop discovery and agent execution, machine relay, browser inference, delegation, cancellation, sandbox inspection and output handling. Keep the active picker redesign separate from this evidence.
+
+- Remove unused agent HTTP bridges, Antigravity commands, forge responses and machine handoffs. Run supported agents through installed native programs; routine CI substitutes external processes and model services rather than installing vendor CLIs.
+- Preserve device identity through selection and reload, and execute web requests through the authenticated desktop consumer. Native readiness uses the shared wire casing and real discovery results.
+- Serialise browser engine operations and pass conversation history per request. Do not share history between conversations.
+- Enforce delegation fan-out in D1, preserve terminal state, schedule a separate wake for each settling child, forward the actual assistant result and retain provider failures. Bound generation and sandbox execution by the delegate deadline.
+- Bound inspection commands by the remaining window and refuse queued commands after expiry. Redact split output, errors and SDK results before exposing them.
+- Preserve accepted cancellation when completion arrives late. Duplicate cancellation receipts may contain newer run state; they retain the command identity and cancellation outcome.
+- Correct the release action's token input and renamed output against the [v2.1.1 contract](https://raw.githubusercontent.com/changesets/action/v2.1.1/action.yml).
+
+Automated evidence:
+
+- The focused container run covered 57 model, chat and billing journeys: 56 passed directly and cancellation passed only on retry. After fixing that race, all three isolated repetitions of the cancellation journey passed.
+- Machine journeys exercised web-to-desktop replies, source retention after reload, exclusive claims, forged updates and cancellation through production Polychat paths with external services substituted.
+- The latest focused API checks passed: 19 cancellation/lifecycle tests and 14 delegation/task tests, including real D1 fan-out and wake scheduling. The earlier complete API run passed 2,051 tests.
+- React test setup now uses Vitest's browser environment and cleans up query clients; all 223 tests passed without teardown errors. Remove redundant constant and invented-input assertions instead of expanding superficial coverage.
+- Sandbox validation passed 85 tests and its typecheck. Native validation previously passed 70 tests with two opt-in live-provider tests ignored; Rust lint passed. iOS validation previously passed 111 tests and its UI journey.
+- Root lint and formatting passed. Root typecheck passed before concurrent Pet edits; the final run is blocked by the current Pet preset layout contract and Node types in its new image tests. Do not treat that final run as passing.
+- The containers used isolated databases and network namespaces and were removed after testing. Development server ports were not taken over. No vendor credentials, deployment or remote migration was used for these browser checks.
+
+This does not verify the complete macOS Keychain sign-in/relaunch flow or real browser GPU inference. The disposable signed-credential rebuild check and SDK-boundary concurrency tests are narrower evidence. Keep those human checks pending.

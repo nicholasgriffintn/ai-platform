@@ -1,9 +1,7 @@
-import {
-  DELEGATION_WAKE_TASK_TYPE,
-  delegationExpiryTaskDataSchema,
-} from "@ngriffin_uk/polychat-schemas";
+import { delegationExpiryTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
+import { scheduleDelegationWake } from "~/services/delegations/schedule-wake";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
 
@@ -31,16 +29,11 @@ export class DelegationExpiryHandler implements TaskHandler {
     );
 
     if (updated) {
-      await new TaskService(context.env, context.repositories.tasks).enqueueTask({
-        id: `delegation_wake_${delegation.parentRunId}`,
-        task_type: DELEGATION_WAKE_TASK_TYPE,
-        user_id: message.user_id,
-        priority: 4,
-        task_data: {
-          parentConversationId: delegation.parentConversationId,
-          parentRunId: delegation.parentRunId,
-        },
-      });
+      await scheduleDelegationWake(
+        new TaskService(context.env, context.repositories.tasks),
+        delegation,
+        message.user_id,
+      );
     }
 
     return updated

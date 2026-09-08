@@ -1,7 +1,10 @@
 import { useDeferredPetPreview, usePetShowreel } from "@ngriffin_uk/polychat-library-react";
-import { type PetSheetLayout, resolvePetClipIn } from "@ngriffin_uk/polychat-schemas";
+import {
+  POLYCHAT_SHEET_LAYOUT,
+  resolvePetClipIn,
+  type PetSheetLayout,
+} from "@ngriffin_uk/polychat-schemas";
 
-import { resolvePetSheetLayout } from "./Pet/petSheets";
 import { PetSprite } from "./PetSprite";
 
 export interface PetPreviewProps {
@@ -17,7 +20,7 @@ export interface PetPreviewProps {
 export function PetPreview({
   sheetUrl,
   label,
-  layout = resolvePetSheetLayout(sheetUrl),
+  layout = POLYCHAT_SHEET_LAYOUT,
   size = 64,
   paused = false,
   deferLoading = false,

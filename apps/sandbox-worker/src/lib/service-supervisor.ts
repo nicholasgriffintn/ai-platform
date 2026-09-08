@@ -20,7 +20,7 @@ import { delay } from "./delay";
 import { hasSandboxErrorCode } from "./errors";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { listeningPortsFromProcNet, READ_LISTENING_SOCKETS_COMMAND } from "./network-ports";
-import { createSandboxOutputRedactor, redactSandboxOutput } from "./output-redaction";
+import { createSandboxOutputRedactor, redactSandboxError } from "./output-redaction";
 import type { RunControlClient } from "./run-control-client";
 import { withSandboxEnvironment } from "./sandbox-environment-runtime";
 
@@ -103,10 +103,6 @@ function serviceIsActive(service: ManagedService): boolean {
   );
 }
 
-function serviceErrorMessage(error: unknown): string {
-  return redactSandboxOutput(error instanceof Error ? error.message : "Service operation failed");
-}
-
 export class ProjectServiceSupervisor {
   private readonly options: ProjectServiceSupervisorOptions;
   private readonly abortController = new AbortController();
@@ -143,8 +139,6 @@ export class ProjectServiceSupervisor {
 
     for (const definition of definitions) {
       await this.options.checkpoint(`Sandbox run cancelled before starting ${definition.name}`);
-      this.queueLogEvent(service, "stdout", "", true);
-      this.queueLogEvent(service, "stderr", "", true);
       assertSafeCommand(definition.command, { trustLevel: "trusted" });
       const approval = await resolveCommandApproval({
         command: definition.command,
@@ -432,7 +426,10 @@ export class ProjectServiceSupervisor {
       try {
         await this.waitForPortRelease(definition.expectedPort);
       } catch (error) {
-        const message = serviceErrorMessage(error);
+        const message = redactSandboxError(
+          error,
+          Object.values(this.options.environmentVariables ?? {}),
+        );
 
         service.status = "failed";
         service.error = message;
@@ -549,7 +546,10 @@ export class ProjectServiceSupervisor {
       const timedOut =
         error instanceof ProcessReadyTimeoutError ||
         hasSandboxErrorCode(error, "PROCESS_READY_TIMEOUT");
-      const message = serviceErrorMessage(error);
+      const message = redactSandboxError(
+        error,
+        Object.values(this.options.environmentVariables ?? {}),
+      );
 
       service.status = timedOut ? "timed_out" : "failed";
       service.error = message;
@@ -682,7 +682,10 @@ export class ProjectServiceSupervisor {
     } catch (error) {
       service.observationFailures += 1;
       service.status = "unhealthy";
-      service.error = serviceErrorMessage(error);
+      service.error = redactSandboxError(
+        error,
+        Object.values(this.options.environmentVariables ?? {}),
+      );
 
       await this.emit({
         type: "service_observation_failed",
@@ -740,7 +743,10 @@ export class ProjectServiceSupervisor {
 
           service.observationFailures += 1;
           service.status = "unhealthy";
-          service.error = serviceErrorMessage(error);
+          service.error = redactSandboxError(
+            error,
+            Object.values(this.options.environmentVariables ?? {}),
+          );
 
           await this.emit({
             type: "service_unhealthy",
@@ -1031,7 +1037,7 @@ export class ProjectServiceSupervisor {
           serviceAction: instruction.serviceAction,
           serviceStatus: service?.status,
           servicePort: service?.definition.expectedPort,
-          error: serviceErrorMessage(error),
+          error: redactSandboxError(error, Object.values(this.options.environmentVariables ?? {})),
         });
       }
     }
