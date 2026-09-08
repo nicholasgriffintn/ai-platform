@@ -44,6 +44,7 @@ import { OvhCloudProvider } from "../../capabilities/chat/providers/ovhcloud";
 import { ParallelProvider } from "../../capabilities/chat/providers/parallel";
 import { PerplexityProvider } from "../../capabilities/chat/providers/perplexity";
 import { PollyProvider } from "../../capabilities/chat/providers/polly";
+import { PolychatSandboxProvider } from "../../capabilities/chat/providers/polychat-sandbox";
 import { PoolsideProvider } from "../../capabilities/chat/providers/poolside";
 import { RegoloProvider } from "../../capabilities/chat/providers/regolo-ai";
 import { ReplicateProvider } from "../../capabilities/chat/providers/replicate";
@@ -278,6 +279,11 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
     name: "opencode-go",
     create: () => new OpencodeGoProvider(),
     metadata: { vendor: "OpenCode Go", categories: ["chat"] },
+  },
+  {
+    name: "polychat-sandbox",
+    create: () => new PolychatSandboxProvider(),
+    metadata: { vendor: "Polychat", categories: ["chat"], tags: ["coding"] },
   },
   {
     name: "cortecs",

@@ -3,9 +3,14 @@ import {
   DELEGATION_EXPIRY_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
   delegationRunTaskDataSchema,
+  projectCodingEnvironmentSchema,
+  resolveSandboxDeliveryPolicy,
+  sandboxDeliveryPolicyCreatesCommit,
+  type SandboxRequestOptions,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
+import { findModelConfig } from "~/lib/providers/models";
 import { notifyMobileWork } from "~/services/mobile-push";
 import { isTaskNotificationPreferenceEnabled } from "~/services/notifications/preferences";
 import { TaskService } from "~/services/tasks/TaskService";
@@ -14,6 +19,7 @@ import { requireProjectAccess } from "~/services/workspaces/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import type { IEnv } from "~/types";
 import { intersectEnabledTools } from "~/utils/enabledTools";
+import { safeParseJson } from "~/utils/json";
 
 import type { TaskMessage } from "../tasks/TaskService";
 
@@ -78,6 +84,57 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       )
     : payload.enabledTools;
 
+  const teammate = await context.repositories.teammates.getTeammateById(delegation.teammateId);
+  const teammateModel = teammate?.model
+    ? await findModelConfig(teammate.model, env, undefined, user.id)
+    : null;
+  let sandboxOptions: SandboxRequestOptions | undefined;
+
+  if (teammateModel?.provider === "polychat-sandbox") {
+    const project = payload.projectId
+      ? await context.repositories.workspaces.getProject(payload.projectId)
+      : null;
+    const codingEnvironment = project
+      ? projectCodingEnvironmentSchema.safeParse({
+          installationId: project.coding_installation_id,
+          repository: project.coding_repository,
+          promptStrategy: project.coding_prompt_strategy,
+          deliveryPolicy: resolveSandboxDeliveryPolicy(
+            project.coding_delivery_policy ? safeParseJson(project.coding_delivery_policy) : null,
+            Boolean(project.coding_should_commit),
+          ),
+          environmentSetup: project.coding_environment_setup
+            ? safeParseJson(project.coding_environment_setup)
+            : undefined,
+          timeoutSeconds: project.coding_timeout_seconds,
+          inspectionWindowSeconds: project.coding_inspection_window_seconds,
+        })
+      : null;
+
+    if (!codingEnvironment?.success) {
+      await settleDelegation(
+        context,
+        delegation,
+        message.user_id,
+        "The sandbox provider needs a connected project repository.",
+      );
+
+      return { status: "error" as const, detail: "Sandbox repository is not configured" };
+    }
+
+    sandboxOptions = {
+      enabled: true,
+      installationId: codingEnvironment.data.installationId,
+      repo: codingEnvironment.data.repository,
+      deliveryPolicy: codingEnvironment.data.deliveryPolicy,
+      shouldCommit: sandboxDeliveryPolicyCreatesCommit(codingEnvironment.data.deliveryPolicy),
+      promptStrategy: codingEnvironment.data.promptStrategy,
+      environmentSetup: codingEnvironment.data.environmentSetup,
+      timeoutSeconds: codingEnvironment.data.timeoutSeconds,
+      inspectionWindowSeconds: codingEnvironment.data.inspectionWindowSeconds,
+    };
+  }
+
   const body = createChatCompletionsJsonSchema.parse({
     completion_id: delegation.childConversationId,
     command_id: `delegation_run_${delegation.id}`,
@@ -91,6 +148,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       rootConversationId: delegation.parentConversationId,
     },
     ...(payload.projectId ? { metadata: { project_id: payload.projectId } } : {}),
+    ...(sandboxOptions ? { options: { sandbox: sandboxOptions } } : {}),
   });
 
   try {
