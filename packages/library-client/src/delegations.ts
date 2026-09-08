@@ -14,3 +14,10 @@ export async function listConversationDelegations(
 
   return returnFetchedData(response);
 }
+
+export async function cancelConversationDelegations(conversationId: string): Promise<void> {
+  await fetchApiOrThrow(`/chat/completions/${conversationId}/delegations/cancel`, {
+    method: "POST",
+    headers: await apiService.getHeaders(),
+  });
+}

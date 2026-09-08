@@ -27,6 +27,7 @@ import {
   deriveProjectWorkbenchPresentation,
   deriveProjectWorkbenchServices,
   formatProjectWorkbenchPreviewFeedback,
+  useCancelDelegations,
   useDelegations,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
@@ -93,6 +94,7 @@ export function ProjectWorkbenchConversation({
     isRunLoading: runsQuery.isLoading,
   });
   const delegationsQuery = useDelegations(conversationId ?? "");
+  const cancelDelegations = useCancelDelegations();
   const isWorkbenchEligible = hasCodingEnvironment || runsQuery.runs.length > 0;
 
   if (!hasCodingEnvironment && (runsQuery.isLoading || !isWorkbenchEligible)) {
@@ -247,8 +249,18 @@ export function ProjectWorkbenchConversation({
       />
     ),
     proof: renderPanel("proof"),
-    delegates: delegationsQuery.data?.delegations[0] ? (
-      <DelegatePanel conversationId={delegationsQuery.data.delegations[0].childConversationId} />
+    delegates: delegationsQuery.data?.delegations.length ? (
+      <div className="space-y-4">
+        <DelegationCard
+          delegations={delegationsQuery.data.delegations}
+          onStopAll={() => {
+            if (conversationId) {
+              void cancelDelegations.mutateAsync(conversationId);
+            }
+          }}
+        />
+        <DelegatePanel conversationId={delegationsQuery.data.delegations[0].childConversationId} />
+      </div>
     ) : (
       <DelegationCard delegations={[]} />
     ),

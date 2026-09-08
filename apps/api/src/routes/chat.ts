@@ -98,6 +98,7 @@ import { handleShareConversation } from "~/services/completions/shareConversatio
 import { handleUnshareConversation } from "~/services/completions/unshareConversation";
 import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
 import { requireConversationAccess } from "~/services/conversations/access";
+import { cancelDelegationsForConversation } from "~/services/delegations/cancel-tree";
 import type { ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { readNumericField, readRecordObjectField } from "~/utils/recordFields";
@@ -678,6 +679,27 @@ addRoute(app, "get", "/completions/:completion_id/delegations", {
         delegations:
           await serviceContext.repositories.delegations.listByParentConversationId(completion_id),
       });
+    })(raw),
+});
+
+addRoute(app, "post", "/completions/:completion_id/delegations/cancel", {
+  tags: ["chat"],
+  summary: "Cancel conversation delegations",
+  description: "Cancels all live delegations spawned by this conversation after checking access.",
+  paramSchema: getChatCompletionParamsSchema,
+  responses: {
+    200: { description: "Delegations cancelled" },
+    404: { description: "Completion not found", schema: errorResponseSchema },
+  },
+  handler: async ({ raw }) =>
+    (async (context: Context) => {
+      const { completion_id } = context.req.valid("param" as never) as {
+        completion_id: string;
+      };
+      const serviceContext = getServiceContext(context);
+      await requireConversationAccess(serviceContext, completion_id);
+      await cancelDelegationsForConversation(serviceContext, completion_id);
+      return ResponseFactory.success(context, { cancelled: true });
     })(raw),
 });
 

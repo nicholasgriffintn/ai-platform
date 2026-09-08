@@ -50,3 +50,16 @@ export async function cancelDelegationTree(
 
   await cancelChildren(await context.repositories.delegations.listByParentRunId(parentRunId));
 }
+
+export async function cancelDelegationsForConversation(
+  context: ServiceContext,
+  parentConversationId: string,
+): Promise<void> {
+  const delegations =
+    await context.repositories.delegations.listByParentConversationId(parentConversationId);
+  const parentRunIds = new Set(delegations.map((delegation) => delegation.parentRunId));
+
+  for (const parentRunId of parentRunIds) {
+    await cancelDelegationTree(context, parentRunId);
+  }
+}
