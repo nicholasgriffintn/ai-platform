@@ -483,6 +483,16 @@
       "matchingModel": "kimi-k2.5",
       "overrides": {
         "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "video",

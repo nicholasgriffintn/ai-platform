@@ -805,8 +805,9 @@
       "matchingModel": "accounts/fireworks/models/glm-5p3",
       "overrides": {
         "name": "GLM 5.3",
-        "contextWindow": 1000000,
-        "lastUpdated": "September 4, 2026",
+        "contextWindow": 1048573,
+        "maxTokens": 262144,
+        "lastUpdated": "September 7, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
         "reasoningConfig": {
@@ -824,7 +825,7 @@
       "matchingModel": "accounts/fireworks/models/glm-5p3-flash",
       "overrides": {
         "name": "GLM 5.3 Flash",
-        "contextWindow": 1000000,
+        "contextWindow": 1048573,
         "modalities": {
           "input": [
             "text",
@@ -836,7 +837,7 @@
             "text"
           ]
         },
-        "lastUpdated": "September 4, 2026",
+        "lastUpdated": "September 7, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true,
@@ -872,6 +873,17 @@
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
+      }
+    },
+    "accounts/fireworks/routers/glm-5p3-fast": {
+      "model": "glm/glm-5-3-fast",
+      "matchingModel": "accounts/fireworks/routers/glm-5p3-fast",
+      "overrides": {
+        "contextWindow": 1048572,
+        "releaseDate": "August 28, 2026",
+        "lastUpdated": "September 7, 2026",
+        "costPer1kInputTokens": 0.0021,
+        "costPer1kOutputTokens": 0.0066
       }
     }
   }

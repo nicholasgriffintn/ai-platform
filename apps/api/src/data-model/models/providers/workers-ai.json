@@ -451,9 +451,9 @@
         "speed": 4
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "@cf/ai4bharat/indictrans2-en-indic-1B": {
@@ -830,7 +830,6 @@
       "matchingModel": "@cf/zai-org/glm-5.3-flash",
       "overrides": {
         "name": "Glm 5.3 Flash",
-        "openWeights": true,
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
         "contextWindow": 1310720,
         "maxTokens": 1048576,

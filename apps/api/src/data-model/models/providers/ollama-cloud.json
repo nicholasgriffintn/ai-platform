@@ -133,7 +133,6 @@
       "model": "glm/glm-5-3-flash",
       "matchingModel": "glm-5.3-flash",
       "overrides": {
-        "openWeights": true,
         "contextWindow": 1000000,
         "modalities": {
           "input": [
@@ -367,6 +366,7 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "lastUpdated": "August 14, 2026"
       }
     }

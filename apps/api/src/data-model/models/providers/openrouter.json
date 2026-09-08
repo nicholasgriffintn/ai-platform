@@ -455,7 +455,7 @@
       "matchingModel": "moonshotai/kimi-k2-thinking",
       "overrides": {
         "description": "Thinking Kimi model for slower research passes, planning, and hard technical questions",
-        "maxTokens": 100352,
+        "maxTokens": 235929,
         "strengths": [
           "coding",
           "analysis",
@@ -1001,8 +1001,8 @@
         "maxTokens": 147456,
         "knowledgeCutoffDate": "July 31, 2024",
         "lastUpdated": "March 24, 2025",
-        "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.001
+        "costPer1kInputTokens": 0.00029,
+        "costPer1kOutputTokens": 0.00114
       }
     },
     "deepseek/deepseek-chat-v3.1": {
@@ -1010,11 +1010,12 @@
       "matchingModel": "deepseek/deepseek-chat-v3.1",
       "overrides": {
         "name": "DeepSeek V3.1",
-        "maxTokens": 144900,
+        "maxTokens": 32768,
+        "contextComplexity": 3,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "August 21, 2025",
-        "costPer1kInputTokens": 0.00055,
-        "costPer1kOutputTokens": 0.00165
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00095
       }
     },
     "deepseek/deepseek-r1-0528-qwen3-8b:free": {
@@ -1571,7 +1572,7 @@
       "matchingModel": "minimax/minimax-m1",
       "overrides": {
         "lastUpdated": "June 17, 2025",
-        "costPer1kInputTokens": 0.00055,
+        "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0022,
         "supportsResponseFormat": false
       }
@@ -2895,12 +2896,11 @@
       "overrides": {
         "description": "Late GLM-4 workhorse for coding agents, reasoning, and structured tasks",
         "contextWindow": 204800,
-        "maxTokens": 16384,
-        "contextComplexity": 3,
+        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "September 30, 2025",
-        "costPer1kInputTokens": 0.00043,
-        "costPer1kOutputTokens": 0.00175
+        "costPer1kInputTokens": 0.00055,
+        "costPer1kOutputTokens": 0.0022
       }
     },
     "z-ai/glm-4.6:exacto": {
@@ -2937,11 +2937,10 @@
         "name": "GLM 4.7 Flash",
         "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
         "contextWindow": 202752,
-        "maxTokens": 16384,
-        "contextComplexity": 3,
+        "maxTokens": 117964,
         "speed": 4,
         "lastUpdated": "January 19, 2026",
-        "costPer1kInputTokens": 0.00006,
+        "costPer1kInputTokens": 0.0000605,
         "costPer1kOutputTokens": 0.0004
       }
     },
@@ -3024,8 +3023,8 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.00255,
-        "costPer1kOutputTokens": 0.01275,
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.014,
         "supportsAttachments": true
       }
     },
@@ -5653,13 +5652,13 @@
       "overrides": {
         "openWeights": true,
         "contextWindow": 131072,
-        "maxTokens": 16384,
+        "maxTokens": 8192,
         "speed": 3,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "April 28, 2025",
-        "costPer1kInputTokens": 0.00012,
-        "costPer1kOutputTokens": 0.00024
+        "costPer1kInputTokens": 0.0002275,
+        "costPer1kOutputTokens": 0.00091
       }
     },
     "qwen/qwen3-235b-a22b": {
@@ -5686,8 +5685,7 @@
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
-        "costPer1kOutputTokens": 0.0005,
-        "supportsResponseFormat": false
+        "costPer1kOutputTokens": 0.0005
       }
     },
     "qwen/qwen3-32b": {
@@ -6807,8 +6805,8 @@
         ],
         "speed": 3,
         "lastUpdated": "June 12, 2026",
-        "costPer1kInputTokens": 0.00066,
-        "costPer1kOutputTokens": 0.0034,
+        "costPer1kInputTokens": 0.00071,
+        "costPer1kOutputTokens": 0.0035,
         "supportsAttachments": true
       }
     },
@@ -7027,8 +7025,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 6, 2026",
-        "costPer1kInputTokens": 0.0000825,
-        "costPer1kOutputTokens": 0.00033
+        "costPer1kInputTokens": 0.000132,
+        "costPer1kOutputTokens": 0.000528
       }
     },
     "tencent/hy3:free": {
