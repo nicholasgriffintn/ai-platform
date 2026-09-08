@@ -42,10 +42,22 @@ Start dependencies in topological order after environment preparation and before
 
 Only the initiating runner may submit start, restart or stop through the existing idempotent run-instruction endpoint. Stop dependants before their dependency, restart previously active dependants in dependency order, and stop every remaining process in reverse order when the run finishes.
 
+### Environment variables
+
+Store project environment variables as an explicit, separately authorised set rather than reading ambient configuration. Only a workspace owner or admin may write them, values are encrypted at rest, never returned by a list response and excluded from the environment cache key. Inject only the variables a run's setup configuration declares by name, intersected with the stored set, and add every injected value to the run's redaction secrets so bounded output cannot leak one. A declaration naming an unstored variable is a missing input, not an error to work around.
+
+### Inspection
+
+A runner may ask one bounded, policy-checked question of a live environment. Accept a one-shot `run_command` instruction through the existing idempotent run-instruction endpoint, restricted to the initiating runner exactly as service controls are, validated by the same command policy and trust-level approval rules as an agent command, and recorded with bounded redacted output like any other command. It grants nothing: a runner command cannot commit, push, change delivery or alter the validation outcome.
+
+Because a terminal run tears its environment down, allow a project to hold the environment open for a short bounded window after terminal status. The window is off by default, capped in the shared schema, and the runner may extend it once by an explicitly bounded amount. While the window is open the run accepts runner commands and nothing else. When it closes, revoke outstanding preview sessions, destroy the environment and refuse further commands with that reason rather than failing against a dead sandbox. A held environment is metered through the existing run usage path.
+
 ## Consequences
 
 Delivery requires more explicit configuration and an approval after validation, and direct branch delivery may stop when GitHub cannot prove the target is safe. In return, saved intent, runtime authority and the resulting GitHub action stay separately reviewable, and migration does not silently add remote writes.
 
 Projects gain a reproducible preparation input, and runs explain setup failure before agent work begins. Repository configuration remains untrusted code and may require an approval or fail under the selected command policy. Repeated runs by the same authorised runner resume from a traceable environment without cached files becoming authority; missing, expired or failed snapshots cost setup time but do not fail an otherwise valid run. Conservative per-runner scoping leaves cross-member performance gains unused, and operators must maintain an R2 lifecycle rule for the backup prefix because SDK expiry prevents restore without deleting objects.
 
-Services are reproducible run inputs rather than ad hoc terminal state, and their failure and timeout paths stay visible after reload. A repository whose declared port is already occupied fails closed instead of attaching to an unknown process. Services are run-scoped, not persistent daemons, and a background watcher without a health endpoint can prove only that its process is alive. A configuration may reference a separately governed environment variable, but storing or mounting those credentials remains a distinct future authority decision.
+Services are reproducible run inputs rather than ad hoc terminal state, and their failure and timeout paths stay visible after reload. A repository whose declared port is already occupied fails closed instead of attaching to an unknown process. Services are run-scoped, not persistent daemons, and a background watcher without a health endpoint can prove only that its process is alive. Environment variables are governed separately from the configuration that names them, so a run can fail for a missing input that its declaration looks complete without.
+
+A run stays legible after it ends, at the cost of container time a project must opt into. The inspection window is deliberately short and extendable once, so it cannot become a persistent shell by increment, and holding an environment open defers preview revocation until the window closes rather than abandoning it.

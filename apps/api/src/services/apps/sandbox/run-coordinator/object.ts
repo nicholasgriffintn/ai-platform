@@ -878,6 +878,8 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           return Response.json({ instruction: envelope.instruction, envelope });
         }
 
+        let runnerCommand: string | undefined;
+
         if (kind === "run_command") {
           const parsedCommand = sandboxCommandSchema.safeParse(body.command);
 
@@ -891,6 +893,8 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
               { status: 400 },
             );
           }
+
+          runnerCommand = parsedCommand.data;
         }
 
         const instruction: SandboxRunInstruction = {
@@ -899,7 +903,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           runId: control?.runId ?? "unknown",
           kind,
           content: contentRaw || undefined,
-          command: kind === "run_command" ? String(body.command).trim() : undefined,
+          command: runnerCommand,
           serviceName:
             kind === "service_action" && parsedServiceName.success
               ? parsedServiceName.data

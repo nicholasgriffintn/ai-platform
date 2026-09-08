@@ -365,6 +365,7 @@ function runStatus(event: SandboxRunEvent): RunActivityStatus | undefined {
 function runTitle(event: SandboxRunEvent): string {
   const command = safeDetail(event.command);
   const index = event.commandIndex ? ` ${event.commandIndex}/${event.commandTotal ?? "?"}` : "";
+  const commandLabel = event.action === "runner" ? "Runner command" : "Command";
 
   switch (event.type) {
     case "run_queued":
@@ -486,11 +487,11 @@ function runTitle(event: SandboxRunEvent): string {
     case "command_batch_ready":
       return "Command budget prepared";
     case "command_started":
-      return command ? `Command${index} · ${command}` : `Command${index} started`;
+      return command ? `${commandLabel}${index} · ${command}` : `${commandLabel}${index} started`;
     case "command_completed":
-      return command ? `Command${index} · ${command}` : `Command${index} completed`;
+      return command ? `${commandLabel}${index} · ${command}` : `${commandLabel}${index} completed`;
     case "command_failed":
-      return command ? `Command failed · ${command}` : "Command failed";
+      return command ? `${commandLabel} failed · ${command}` : `${commandLabel} failed`;
     case "script_started":
       return `${event.language ?? "Script"} execution started`;
     case "script_completed":
@@ -543,6 +544,10 @@ function runTitle(event: SandboxRunEvent): string {
       return "GitHub delivery failed";
     case "delivery_skipped":
       return "GitHub delivery skipped";
+    case "run_extend_inspection_requested":
+      return "Inspection window extended";
+    case "inspection_window_expired":
+      return "Inspection window closed";
     default:
       return event.message?.trim() || event.type.replaceAll("_", " ");
   }

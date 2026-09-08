@@ -172,17 +172,21 @@ describe("sandbox runs service", () => {
     it("pushes the expiry out when the runner extends the window", async () => {
       heldRun();
       mockGetRunCoordinatorControl.mockResolvedValue(heldControl());
-      mockUpdateRunCoordinatorControl.mockImplementation(async ({ inspectionExpiresAt }: any) => ({
+      mockUpdateRunCoordinatorControl.mockImplementation(async ({ inspectionExpiresAt }) => ({
         ...heldControl({ inspectionExtended: true }),
         inspectionExpiresAt,
       }));
-      mockAppendRunCoordinatorEvent.mockResolvedValue(undefined as never);
+      mockAppendRunCoordinatorEvent.mockResolvedValue(undefined);
 
       const control = await requestSandboxRunControlAction({
         context,
         userId: 42,
         runId: "run-123",
-        input: { action: "extend_inspection", extensionSeconds: 60 },
+        input: {
+          action: "extend_inspection",
+          extensionSeconds: 60,
+          expectedUpdatedAt: "2026-02-17T12:05:00.000Z",
+        },
       });
 
       expect(mockUpdateRunCoordinatorControl).toHaveBeenCalledWith(
@@ -204,7 +208,11 @@ describe("sandbox runs service", () => {
           context,
           userId: 42,
           runId: "run-123",
-          input: { action: "extend_inspection", extensionSeconds: 60 },
+          input: {
+            action: "extend_inspection",
+            extensionSeconds: 60,
+            expectedUpdatedAt: "2026-02-17T12:05:00.000Z",
+          },
         }),
       ).rejects.toThrow(/Cannot extend_inspection/);
       expect(mockUpdateRunCoordinatorControl).not.toHaveBeenCalled();
