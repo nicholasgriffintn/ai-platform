@@ -7,7 +7,6 @@ import {
   resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicyCreatesCommit,
   type SandboxRequestOptions,
-  type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
@@ -23,22 +22,7 @@ import { intersectEnabledTools } from "~/utils/enabledTools";
 import { safeParseJson } from "~/utils/json";
 
 import type { TaskMessage } from "../tasks/TaskService";
-
-export type DelegationExecutionRoute = "hosted" | "sandbox" | "machine";
-
-export function resolveDelegationExecutionRoute(
-  model: Pick<ModelConfigItem, "provider" | "runsOn"> | null | undefined,
-): DelegationExecutionRoute {
-  if (model?.provider === "polychat-sandbox") {
-    return "sandbox";
-  }
-
-  if (model?.runsOn === "device") {
-    return "machine";
-  }
-
-  return "hosted";
-}
+import { resolveDelegationExecutionRoute } from "./routing";
 
 export async function runDelegationTask(message: TaskMessage, env: IEnv) {
   const payload = delegationRunTaskDataSchema.parse(message.task_data);
