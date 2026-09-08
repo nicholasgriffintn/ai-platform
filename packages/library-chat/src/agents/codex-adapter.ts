@@ -38,7 +38,7 @@ export interface StartThreadInput {
 export interface CodexAdapterOptions {
   transport: JsonRpcTransport;
   emit: (event: AgentSessionEvent) => void;
-  clientVersion: string;
+  clientVersion?: string;
   now?: () => string;
 }
 
@@ -89,7 +89,11 @@ export function createCodexAdapter(options: CodexAdapterOptions): AgentSessionAd
   const initialise = async (): Promise<void> => {
     initialised ??= (async () => {
       await client.request("initialize", {
-        clientInfo: { name: CLIENT_NAME, title: CLIENT_TITLE, version: options.clientVersion },
+        clientInfo: {
+          name: CLIENT_NAME,
+          title: CLIENT_TITLE,
+          ...(options.clientVersion ? { version: options.clientVersion } : {}),
+        },
       });
       await client.notify("initialized", {});
     })();

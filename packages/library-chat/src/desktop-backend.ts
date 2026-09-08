@@ -1,4 +1,6 @@
 import type {
+  AgentSessionEvent,
+  AgentThreadBinding,
   DesktopAgentProcessRunRequest,
   AgentDirectory,
   AgentRuntimeVendor,
@@ -18,6 +20,17 @@ export interface DesktopRun {
   cancel: () => void;
 }
 
+export interface DesktopAgentSession {
+  sessionKey: string;
+  directoryPath: string;
+  head: string | null;
+  adopted: boolean;
+  events: AsyncIterable<AgentSessionEvent>;
+  transport: AsyncIterable<string>;
+  send: (payload: string) => Promise<void>;
+  stop: () => Promise<void>;
+}
+
 export interface DesktopBackend {
   listEndpoints: () => Promise<DesktopEndpoint[]>;
   saveEndpoint: (endpoint: DesktopEndpoint, pairingSecret?: string) => Promise<void>;
@@ -30,6 +43,15 @@ export interface DesktopBackend {
   startModelRun: (request: DesktopModelRunRequest) => Promise<DesktopRun>;
   startAgentProcessRun: (request: DesktopAgentProcessRunRequest) => Promise<DesktopRun>;
   probeAgentTool: (driver: AgentRuntimeVendor) => Promise<AgentToolState>;
+  agentSupportsSessions: (driver: AgentRuntimeVendor) => Promise<boolean>;
+  startAgentSession: (
+    driver: AgentRuntimeVendor,
+    directoryId: string,
+    conversationId: string,
+  ) => Promise<DesktopAgentSession>;
+  readAgentThread: (conversationId: string) => Promise<AgentThreadBinding | null>;
+  saveAgentThread: (binding: AgentThreadBinding) => Promise<void>;
+  forgetAgentThread: (conversationId: string) => Promise<void>;
   listAgentDirectories: () => Promise<AgentDirectory[]>;
   pickAgentDirectory: () => Promise<string | null>;
   saveAgentDirectory: (path: string) => Promise<AgentDirectory>;

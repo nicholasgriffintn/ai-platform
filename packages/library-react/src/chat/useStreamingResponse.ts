@@ -50,7 +50,7 @@ import { toRunMessages } from "../lib/run-messages.js";
 import { useConversationScope } from "../state/conversation-scope.js";
 import { useLoadingActions } from "../state/LoadingContext.js";
 import { useUsageStore } from "../state/usageStore.js";
-import { streamAgentProcessRun } from "./agent-run.js";
+import { streamAgentRun } from "./agent-run.js";
 import { streamMachineModelRun } from "./machine-run.js";
 import { useMessageOperations } from "./useMessageOperations.js";
 import { useModels } from "./useModels.js";
@@ -476,10 +476,12 @@ export function useStreamingResponse(
             } else if (deviceBackend) {
               response =
                 requestedModel.kind === "agent"
-                  ? await streamAgentProcessRun({
+                  ? await streamAgentRun({
                       ...runOptions,
                       backend: deviceBackend,
                       permissionMode,
+                      reasoningEffort: null,
+                      selectedModel: null,
                       onStatus: (message) =>
                         useStreamActivityStore
                           .getState()

@@ -19,6 +19,7 @@ const MAX_DIAGNOSTIC_CHARS: usize = 2000;
 pub struct SessionStartRequest {
     pub driver: AgentDriver,
     pub directory_id: String,
+    pub conversation_id: String,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -63,8 +64,8 @@ pub struct AgentSessionRegistry {
     sessions: Mutex<HashMap<String, Arc<AsyncMutex<SessionHandle>>>>,
 }
 
-pub fn session_key(driver: AgentDriver, directory_id: &str) -> String {
-    format!("{}:{directory_id}", driver_slug(driver))
+pub fn session_key(driver: AgentDriver, conversation_id: &str) -> String {
+    format!("{}:{conversation_id}", driver_slug(driver))
 }
 
 fn driver_slug(driver: AgentDriver) -> &'static str {
@@ -111,7 +112,7 @@ pub async fn start(
         .map_err(|cause| format!("{cause:?}"))?;
     let directory = process::ensure_directory_grant(&grant.path, &grant)
         .map_err(|cause| format!("{cause:?}"))?;
-    let key = session_key(request.driver, &request.directory_id);
+    let key = session_key(request.driver, &request.conversation_id);
     let head = grant
         .is_git_repo
         .then(|| process::git_head(&directory).ok())
@@ -301,14 +302,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn keys_a_session_by_driver_and_directory() {
+    fn keys_a_session_by_driver_and_conversation() {
         assert_eq!(
-            session_key(AgentDriver::Codex, "directory-1"),
-            "codex:directory-1"
+            session_key(AgentDriver::Codex, "conversation-1"),
+            "codex:conversation-1"
         );
         assert_ne!(
-            session_key(AgentDriver::Codex, "directory-1"),
-            session_key(AgentDriver::ClaudeCode, "directory-1")
+            session_key(AgentDriver::Codex, "conversation-1"),
+            session_key(AgentDriver::ClaudeCode, "conversation-1")
         );
     }
 
@@ -316,32 +317,32 @@ mod tests {
     fn reports_whether_a_session_is_running() {
         let registry = AgentSessionRegistry::default();
 
-        assert!(!registry.is_running("codex:directory-1"));
+        assert!(!registry.is_running("codex:conversation-1"));
     }
 
     #[test]
     fn serialises_events_in_the_shape_the_bridge_expects() {
         assert_eq!(
             serde_json::to_value(SessionEvent::Message {
-                session_key: "codex:directory-1".to_string(),
+                session_key: "codex:conversation-1".to_string(),
                 data: "{\"id\":1}".to_string(),
             })
             .unwrap(),
             serde_json::json!({
                 "type": "message",
-                "sessionKey": "codex:directory-1",
+                "sessionKey": "codex:conversation-1",
                 "data": "{\"id\":1}"
             })
         );
         assert_eq!(
             serde_json::to_value(SessionEvent::Diagnostic {
-                session_key: "codex:directory-1".to_string(),
+                session_key: "codex:conversation-1".to_string(),
                 message: "boom".to_string(),
             })
             .unwrap(),
             serde_json::json!({
                 "type": "diagnostic",
-                "sessionKey": "codex:directory-1",
+                "sessionKey": "codex:conversation-1",
                 "message": "boom"
             })
         );

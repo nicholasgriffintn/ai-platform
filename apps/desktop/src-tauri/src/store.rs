@@ -28,6 +28,19 @@ pub struct LocalMessage {
     pub created_at: String,
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct AgentThreadBinding {
+    pub conversation_id: String,
+    pub driver: String,
+    pub directory_id: String,
+    pub thread_id: Option<String>,
+    pub model: Option<String>,
+    pub reasoning_effort: Option<String>,
+    pub permission_mode: String,
+    pub updated_at: String,
+}
+
 pub struct Store {
     connection: Mutex<Connection>,
 }
@@ -58,6 +71,19 @@ fn transport_to_text(transport: EndpointTransport) -> &'static str {
         EndpointTransport::Network => "network",
         EndpointTransport::Loopback => "loopback",
     }
+}
+
+fn agent_thread_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<AgentThreadBinding> {
+    Ok(AgentThreadBinding {
+        conversation_id: row.get(0)?,
+        driver: row.get(1)?,
+        directory_id: row.get(2)?,
+        thread_id: row.get(3)?,
+        model: row.get(4)?,
+        reasoning_effort: row.get(5)?,
+        permission_mode: row.get(6)?,
+        updated_at: row.get(7)?,
+    })
 }
 
 fn new_machine_id() -> String {
@@ -122,6 +148,19 @@ impl Store {
                     last_used_at TEXT,
                     is_git_repo INTEGER NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS agent_threads (
+                    conversation_id TEXT PRIMARY KEY,
+                    driver TEXT NOT NULL,
+                    directory_id TEXT NOT NULL
+                        REFERENCES agent_directories (id) ON DELETE CASCADE,
+                    thread_id TEXT,
+                    model TEXT,
+                    reasoning_effort TEXT,
+                    permission_mode TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS agent_threads_by_directory
+                    ON agent_threads (directory_id);
                 CREATE TABLE IF NOT EXISTS conversations (
                     id TEXT PRIMARY KEY,
                     account_id TEXT NOT NULL,
@@ -312,8 +351,70 @@ impl Store {
     pub fn revoke_agent_directory(&self, directory_id: &str) -> Result<(), String> {
         self.with_connection(|connection| {
             connection.execute(
+                "DELETE FROM agent_threads WHERE directory_id = ?1",
+                params![directory_id],
+            )?;
+            connection.execute(
                 "DELETE FROM agent_directories WHERE id = ?1",
                 params![directory_id],
+            )?;
+            Ok(())
+        })
+    }
+
+    pub fn read_agent_thread(
+        &self,
+        conversation_id: &str,
+    ) -> Result<Option<AgentThreadBinding>, String> {
+        self.with_connection(|connection| {
+            connection
+                .query_row(
+                    "SELECT conversation_id, driver, directory_id, thread_id, model,
+                            reasoning_effort, permission_mode, updated_at
+                     FROM agent_threads
+                     WHERE conversation_id = ?1",
+                    params![conversation_id],
+                    agent_thread_from_row,
+                )
+                .optional()
+        })
+    }
+
+    pub fn save_agent_thread(&self, binding: &AgentThreadBinding) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "INSERT INTO agent_threads
+                    (conversation_id, driver, directory_id, thread_id, model,
+                     reasoning_effort, permission_mode, updated_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+                 ON CONFLICT(conversation_id) DO UPDATE SET
+                    driver = excluded.driver,
+                    directory_id = excluded.directory_id,
+                    thread_id = excluded.thread_id,
+                    model = excluded.model,
+                    reasoning_effort = excluded.reasoning_effort,
+                    permission_mode = excluded.permission_mode,
+                    updated_at = excluded.updated_at",
+                params![
+                    binding.conversation_id,
+                    binding.driver,
+                    binding.directory_id,
+                    binding.thread_id,
+                    binding.model,
+                    binding.reasoning_effort,
+                    binding.permission_mode,
+                    binding.updated_at,
+                ],
+            )?;
+            Ok(())
+        })
+    }
+
+    pub fn forget_agent_thread(&self, conversation_id: &str) -> Result<(), String> {
+        self.with_connection(|connection| {
+            connection.execute(
+                "DELETE FROM agent_threads WHERE conversation_id = ?1",
+                params![conversation_id],
             )?;
             Ok(())
         })
@@ -874,6 +975,135 @@ mod tests {
                 "task-1".to_string(),
                 "task-2".to_string()
             ]
+        );
+    }
+
+    fn directory(id: &str) -> DirectoryGrant {
+        DirectoryGrant {
+            id: id.to_string(),
+            path: format!("/projects/{id}").into(),
+            label: id.to_string(),
+            approved_at: "2026-09-08T09:00:00Z".to_string(),
+            last_used_at: None,
+            is_git_repo: true,
+        }
+    }
+
+    fn binding(conversation_id: &str, directory_id: &str) -> AgentThreadBinding {
+        AgentThreadBinding {
+            conversation_id: conversation_id.to_string(),
+            driver: "claude-code".to_string(),
+            directory_id: directory_id.to_string(),
+            thread_id: Some("thread-1".to_string()),
+            model: Some("claude-opus-5".to_string()),
+            reasoning_effort: Some("high".to_string()),
+            permission_mode: "auto_accept_edits".to_string(),
+            updated_at: "2026-09-08T09:30:00Z".to_string(),
+        }
+    }
+
+    #[test]
+    fn remembers_the_folder_thread_and_model_a_conversation_was_bound_to() {
+        let store = store();
+
+        store
+            .save_agent_directory(&directory("dir-1"))
+            .expect("saved");
+        store
+            .save_agent_thread(&binding("a", "dir-1"))
+            .expect("saved");
+
+        let read = store.read_agent_thread("a").expect("read");
+
+        assert_eq!(read, Some(binding("a", "dir-1")));
+        assert_eq!(store.read_agent_thread("b").expect("read"), None);
+    }
+
+    #[test]
+    fn binding_a_conversation_again_replaces_its_earlier_binding() {
+        let store = store();
+
+        store
+            .save_agent_directory(&directory("dir-1"))
+            .expect("saved");
+        store
+            .save_agent_directory(&directory("dir-2"))
+            .expect("saved");
+        store
+            .save_agent_thread(&binding("a", "dir-1"))
+            .expect("saved");
+
+        let mut moved = binding("a", "dir-2");
+        moved.thread_id = Some("thread-2".to_string());
+        moved.reasoning_effort = None;
+
+        store.save_agent_thread(&moved).expect("saved");
+
+        assert_eq!(store.read_agent_thread("a").expect("read"), Some(moved));
+    }
+
+    #[test]
+    fn revoking_a_folder_grant_unbinds_the_conversations_that_used_it() {
+        let store = store();
+
+        store
+            .save_agent_directory(&directory("dir-1"))
+            .expect("saved");
+        store
+            .save_agent_directory(&directory("dir-2"))
+            .expect("saved");
+        store
+            .save_agent_thread(&binding("a", "dir-1"))
+            .expect("saved");
+        store
+            .save_agent_thread(&binding("b", "dir-2"))
+            .expect("saved");
+
+        store.revoke_agent_directory("dir-1").expect("revoked");
+
+        assert_eq!(store.read_agent_thread("a").expect("read"), None);
+        assert!(store.read_agent_thread("b").expect("read").is_some());
+    }
+
+    #[test]
+    fn forgetting_a_binding_leaves_the_other_conversations_bound() {
+        let store = store();
+
+        store
+            .save_agent_directory(&directory("dir-1"))
+            .expect("saved");
+        store
+            .save_agent_thread(&binding("a", "dir-1"))
+            .expect("saved");
+        store
+            .save_agent_thread(&binding("b", "dir-1"))
+            .expect("saved");
+
+        store.forget_agent_thread("a").expect("forgotten");
+
+        assert_eq!(store.read_agent_thread("a").expect("read"), None);
+        assert!(store.read_agent_thread("b").expect("read").is_some());
+    }
+
+    #[test]
+    fn agent_thread_binding_wire_contract_matches_desktop() {
+        let mut unbound = binding("a", "dir-1");
+        unbound.thread_id = None;
+        unbound.model = None;
+        unbound.reasoning_effort = None;
+
+        assert_eq!(
+            serde_json::to_value(&unbound).expect("serialised"),
+            serde_json::json!({
+                "conversationId": "a",
+                "driver": "claude-code",
+                "directoryId": "dir-1",
+                "threadId": null,
+                "model": null,
+                "reasoningEffort": null,
+                "permissionMode": "auto_accept_edits",
+                "updatedAt": "2026-09-08T09:30:00Z"
+            })
         );
     }
 

@@ -42,7 +42,11 @@ export {
   type ConversationStorageMode,
   type RetentionReason,
 } from "./conversation-storage-policy.js";
-export { type DesktopBackend, type DesktopRun } from "./desktop-backend.js";
+export {
+  type DesktopAgentSession,
+  type DesktopBackend,
+  type DesktopRun,
+} from "./desktop-backend.js";
 export {
   compareConversationsBySort,
   conversationActivityCutoff,

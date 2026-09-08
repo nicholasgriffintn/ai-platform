@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 
+import { agentModelConfig } from "./agent-catalogue.js";
 import { modelConfigItemSchema } from "./models.js";
 import {
+  getPermissionModeUnavailableReason,
   getProviderCapabilities,
   providerInstanceSchema,
   resolveEffectivePermissionMode,
 } from "./providers.js";
+
+const BATCH_AGENT_DRIVERS = ["claude-code", "cursor", "grok", "opencode"] as const;
 
 describe("provider contracts", () => {
   it("leaves catalogue entries unmarked and round-trips agent entries", () => {
@@ -44,6 +48,54 @@ describe("provider contracts", () => {
     });
     expect(getProviderCapabilities("ollama").listsModels).toBe(true);
     expect(getProviderCapabilities("codex").picksOwnModel).toBe(true);
+  });
+
+  it("offers approval-gated permission modes only to agents that can answer approvals", () => {
+    expect(agentModelConfig["agent/codex"]?.agent?.permissionModes).toEqual([
+      "supervised",
+      "auto_accept_edits",
+      "auto",
+      "full_access",
+    ]);
+
+    for (const driver of BATCH_AGENT_DRIVERS) {
+      const modes = agentModelConfig[`agent/${driver}`]?.agent?.permissionModes ?? [];
+
+      expect(modes).not.toContain("supervised");
+      expect(modes).not.toContain("auto_accept_edits");
+      expect(modes.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("explains an approval-gated mode a batch agent cannot honour", () => {
+    const batch = getProviderCapabilities("claude-code");
+
+    expect(getPermissionModeUnavailableReason(batch, "supervised", ["auto", "full_access"])).toBe(
+      "Supervised is unavailable because this provider cannot answer approval requests. Choose a mode that runs without them.",
+    );
+    expect(
+      getPermissionModeUnavailableReason(batch, "full_access", ["auto", "full_access"]),
+    ).toBeUndefined();
+    expect(
+      getPermissionModeUnavailableReason(getProviderCapabilities("codex"), "supervised"),
+    ).toBeUndefined();
+  });
+
+  it("separates session-capable agents from batch agents", () => {
+    expect(getProviderCapabilities("codex")).toMatchObject({
+      reportsApprovals: true,
+      resumesSessions: true,
+      listsModels: true,
+    });
+
+    for (const driver of BATCH_AGENT_DRIVERS) {
+      expect(getProviderCapabilities(driver)).toMatchObject({
+        reportsApprovals: false,
+        resumesSessions: false,
+        listsModels: false,
+        writesFiles: true,
+      });
+    }
   });
 
   it("keeps instance identity independent from its driver", () => {

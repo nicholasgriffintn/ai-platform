@@ -30,7 +30,7 @@ use futures_util::StreamExt;
 use runs::{RunRegistry, StreamEvent};
 use rusqlite::Connection;
 use serde::Serialize;
-use store::{LocalConversation, LocalMessage, Store};
+use store::{AgentThreadBinding, LocalConversation, LocalMessage, Store};
 use tauri::ipc::Channel;
 use tauri::{Emitter, Manager, State};
 use tauri_plugin_deep_link::DeepLinkExt;
@@ -612,6 +612,24 @@ fn revoke_agent_directory(
 }
 
 #[tauri::command]
+fn read_agent_thread(
+    conversation_id: String,
+    store: State<'_, Store>,
+) -> Result<Option<AgentThreadBinding>, String> {
+    store.read_agent_thread(&conversation_id)
+}
+
+#[tauri::command]
+fn save_agent_thread(binding: AgentThreadBinding, store: State<'_, Store>) -> Result<(), String> {
+    store.save_agent_thread(&binding)
+}
+
+#[tauri::command]
+fn forget_agent_thread(conversation_id: String, store: State<'_, Store>) -> Result<(), String> {
+    store.forget_agent_thread(&conversation_id)
+}
+
+#[tauri::command]
 async fn probe_agent_tool(driver: AgentDriver) -> AgentToolState {
     process::probe(driver, timestamp()).await
 }
@@ -839,6 +857,9 @@ fn main() {
             save_agent_directory,
             pick_agent_directory,
             revoke_agent_directory,
+            read_agent_thread,
+            save_agent_thread,
+            forget_agent_thread,
             probe_agent_tool,
             start_agent_process_run,
             start_agent_session,
