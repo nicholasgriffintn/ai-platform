@@ -709,6 +709,28 @@ class ConversationManager: ObservableObject {
                              userInfo: [NSLocalizedDescriptionKey: "API client not configured"])
             }
 
+            if let machineId = selectedModel?.machineId {
+                let draft = requestMessages.last(where: { $0.role == "user" }).map {
+                    HandoffDraft(text: $0.textContent, attachmentIds: [])
+                }
+                let handoff = try await apiClient.createMachineHandoff(
+                    conversationId: conversationId,
+                    machineId: machineId,
+                    modelId: selectedModel?.id ?? "",
+                    draft: draft
+                )
+                updateAssistantMessage(
+                    conversationId: conversationId,
+                    messageId: assistantMessageId,
+                    content: "Sent to \(selectedModel?.name ?? "your machine"). It will answer there; this phone does not receive a live token stream.",
+                    modelId: selectedModel?.id,
+                    fallbackMessageId: nil
+                )
+                if handoff.state == "pending" {
+                    return
+                }
+            }
+
             let stream = connectorApprovalId.map {
                 apiClient.streamApprovedConnectorOperation(
                     messages: requestMessages,

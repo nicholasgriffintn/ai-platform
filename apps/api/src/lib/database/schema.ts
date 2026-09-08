@@ -11,6 +11,7 @@ import type {
   ToolPermission,
   MachineCapability,
   MachineRuntime,
+  HandoffRequested,
 } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
 import {
@@ -218,6 +219,35 @@ export const machine = sqliteTable(
   (table) => ({
     primaryKey: primaryKey({ columns: [table.user_id, table.machine_id] }),
     userIdx: index("machine_user_idx").on(table.user_id, table.last_seen_at),
+  }),
+);
+
+export const handoff = sqliteTable(
+  "handoff",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    conversation_id: text().notNull(),
+    machine_id: text().notNull(),
+    requested: text({ mode: "json" }).$type<HandoffRequested>().notNull(),
+    draft: text({ mode: "json" }).$type<{ text: string; attachmentIds: string[] } | null>(),
+    state: text({ enum: ["pending", "claimed", "running", "done", "declined", "expired"] })
+      .notNull()
+      .default("pending"),
+    claimed_by: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    expires_at: text().notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdx: index("handoff_user_idx").on(table.user_id, table.created_at),
+    pendingIdx: index("handoff_pending_idx").on(table.machine_id, table.state, table.expires_at),
   }),
 );
 

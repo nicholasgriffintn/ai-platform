@@ -10,6 +10,73 @@ public struct ModelTiersResponse: Codable {
     }
 }
 
+public struct MachineRecord: Codable, Identifiable {
+    public let machineId: String
+    public let label: String
+    public let platform: String
+    public let appVersion: String
+    public let runtimes: [MachineRuntime]
+    public let capabilities: [String]
+    public let lastSeenAt: String
+    public let online: Bool
+
+    public var id: String { machineId }
+
+}
+
+public struct MachineRuntime: Codable {
+    public let kind: String
+    public let vendor: String
+    public let readiness: MachineReadiness
+    public let models: [MachineModel]
+}
+
+public struct MachineReadiness: Codable {
+    public let status: String
+    public let checkedAt: String
+    public let version: String?
+    public let detail: String?
+}
+
+public struct MachineModel: Codable {
+    public let nativeId: String
+    public let displayName: String
+    public let contextTokens: Int?
+    public let parameterSizeBytes: Int?
+    public let capabilities: [String]
+    public let loaded: Bool
+}
+
+public struct HandoffRequest: Encodable {
+    let conversationId: String
+    let machineId: String
+    let requested: HandoffRequested
+    let draft: HandoffDraft?
+}
+
+struct HandoffRequested: Encodable {
+    let computeSite: String
+    let modelId: String
+}
+
+struct HandoffDraft: Encodable {
+    let text: String
+    let attachmentIds: [String]
+}
+
+public struct HandoffResponse: Codable {
+    public let id: String
+    public let conversationId: String
+    public let target: HandoffTarget
+    public let state: String
+    public let expiresAt: String
+}
+
+public struct HandoffTarget: Codable {
+    public let kind: String
+    public let machineId: String
+}
+
 public struct ModelTierLineup: Codable {
     public let low: ModelTierRoleSelection
     public let medium: ModelTierRoleSelection
@@ -499,6 +566,7 @@ public struct ModelConfigItem: Codable, Identifiable {
     public let isDefault: Bool?
     public let isExecutable: Bool?
     public let runsOn: String?
+    public let machineId: String?
     public let isPlatformEnabled: Bool?
     public let isFree: Bool?
     public let isByokEnabled: Bool?
@@ -534,7 +602,7 @@ public struct ModelConfigItem: Codable, Identifiable {
     
     enum CodingKeys: String, CodingKey, CaseIterable {
         case id, name, provider, description, strengths, contextWindow, pricing, modalities, supportsToolCalls
-        case multimodal, isFeatured, isDefault, isExecutable, runsOn, isPlatformEnabled, isFree, isByokEnabled
+        case multimodal, isFeatured, isDefault, isExecutable, runsOn, machineId, isPlatformEnabled, isFree, isByokEnabled
         case readiness, status, deprecated
         case reasoningConfig, supportedServiceTiers, serviceTierMultipliers
         case supportsAttachments, supportsDocuments, supportsAudio, supportsImageEdits, supportsResponseFormat
@@ -599,6 +667,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         isDefault: Bool? = nil,
         isExecutable: Bool? = nil,
         runsOn: String? = nil,
+        machineId: String? = nil,
         isPlatformEnabled: Bool? = nil,
         isFree: Bool? = nil,
         isByokEnabled: Bool? = nil,
@@ -629,6 +698,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         self.isDefault = isDefault
         self.isExecutable = isExecutable
         self.runsOn = runsOn
+        self.machineId = machineId
         self.isPlatformEnabled = isPlatformEnabled
         self.isFree = isFree
         self.isByokEnabled = isByokEnabled
@@ -667,6 +737,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         isDefault = try container.decodeIfPresent(Bool.self, forKey: .isDefault)
         isExecutable = try container.decodeIfPresent(Bool.self, forKey: .isExecutable)
         runsOn = try container.decodeIfPresent(String.self, forKey: .runsOn)
+        machineId = try container.decodeIfPresent(String.self, forKey: .machineId)
         isPlatformEnabled = try container.decodeIfPresent(Bool.self, forKey: .isPlatformEnabled)
         isFree = try container.decodeIfPresent(Bool.self, forKey: .isFree)
         isByokEnabled = try container.decodeIfPresent(Bool.self, forKey: .isByokEnabled)
@@ -703,6 +774,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         try container.encodeIfPresent(isDefault, forKey: .isDefault)
         try container.encodeIfPresent(isExecutable, forKey: .isExecutable)
         try container.encodeIfPresent(runsOn, forKey: .runsOn)
+        try container.encodeIfPresent(machineId, forKey: .machineId)
         try container.encodeIfPresent(isPlatformEnabled, forKey: .isPlatformEnabled)
         try container.encodeIfPresent(isFree, forKey: .isFree)
         try container.encodeIfPresent(isByokEnabled, forKey: .isByokEnabled)

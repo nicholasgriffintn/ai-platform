@@ -189,6 +189,24 @@ final class APIClient: ObservableObject {
         return chatCompletionStream(requestBody)
     }
 
+    func createMachineHandoff(
+        conversationId: String,
+        machineId: String,
+        modelId: String,
+        draft: HandoffDraft?
+    ) async throws -> HandoffResponse {
+        try await send(
+            path: "/handoffs",
+            method: "POST",
+            body: HandoffRequest(
+                conversationId: conversationId,
+                machineId: machineId,
+                requested: HandoffRequested(computeSite: "machine", modelId: modelId),
+                draft: draft
+            )
+        )
+    }
+
     private func chatCompletionStream(
         _ requestBody: ChatCompletionRequest
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
@@ -213,6 +231,10 @@ final class APIClient: ObservableObject {
 
     func fetchModelTiers() async throws -> ModelTiersResponse {
         try await send(path: "/models/tiers", method: "GET")
+    }
+
+    func fetchMachines() async throws -> [MachineRecord] {
+        try await send(path: "/machines", method: "GET")
     }
 
     func fetchAssistantRecipes() async throws -> AssistantRecipesResponse {

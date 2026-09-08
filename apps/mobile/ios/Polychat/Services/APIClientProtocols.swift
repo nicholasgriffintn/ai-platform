@@ -3,6 +3,11 @@ import Foundation
 protocol ModelsAPIClient {
     func fetchModels() async throws -> ModelsResponse
     func fetchModelTiers() async throws -> ModelTiersResponse
+    func fetchMachines() async throws -> [MachineRecord]
+}
+
+extension ModelsAPIClient {
+    func fetchMachines() async throws -> [MachineRecord] { [] }
 }
 
 protocol RecipesAPIClient {
@@ -53,6 +58,12 @@ protocol ConversationAPIClient {
         modelTier: String?,
         computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
+    func createMachineHandoff(
+        conversationId: String,
+        machineId: String,
+        modelId: String,
+        draft: HandoffDraft?
+    ) async throws -> HandoffResponse
     func fetchProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskDetailResponse
     func answerProjectTaskQuestions(
         projectId: String,

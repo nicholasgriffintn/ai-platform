@@ -4,6 +4,7 @@ import SwiftUI
 @MainActor
 class ModelsStore: ObservableObject {
     @Published var models: [ModelConfigItem] = []
+    @Published private(set) var machines: [MachineRecord] = []
     @Published var selectedModelId: String? = nil
     @Published var selectedModelTier: String? = nil
     @Published private(set) var tierModelIds: [String: String] = [:]
@@ -48,6 +49,7 @@ class ModelsStore: ObservableObject {
                     isDefault: model.isDefault,
                     isExecutable: model.isExecutable,
                     runsOn: model.runsOn,
+                    machineId: model.machineId,
                     isPlatformEnabled: model.isPlatformEnabled,
                     isFree: model.isFree,
                     isByokEnabled: model.isByokEnabled,
@@ -73,6 +75,33 @@ class ModelsStore: ObservableObject {
                     "ultra": hostedLineup.modelId(for: "ultra")
                 ].compactMapValues { $0 }
             }
+
+            machines = (try? await apiClient.fetchMachines()) ?? []
+            let machineModels = machines.flatMap { machine in
+                machine.runtimes.flatMap { runtime in
+                    runtime.models.map { model in
+                        ModelConfigItem(
+                            id: "machine:\(machine.machineId):\(model.nativeId)",
+                            name: model.displayName,
+                            provider: "\(machine.label) · \(runtime.vendor)",
+                            description: machine.online ? "Runs on \(machine.label). Polychat will hand this turn to that machine; it does not stream to this phone." : "\(machine.label) is offline.",
+                            strengths: model.capabilities,
+                            contextWindow: model.contextTokens,
+                            pricing: nil,
+                            modalities: ModelConfigItem.ModelModalities(input: ["text"], output: ["text"]),
+                            supportsToolCalls: model.capabilities.contains("tool-use"),
+                            multimodal: model.capabilities.contains("vision"),
+                            isFeatured: true,
+                            isExecutable: machine.online,
+                            runsOn: "machine",
+                            machineId: machine.machineId,
+                            isPlatformEnabled: machine.online,
+                            isFree: false
+                        )
+                    }
+                }
+            }
+            models.append(contentsOf: machineModels)
 
             let hasAccountDefaults = accountDefaultModelId != nil ||
                 accountDefaultModelTier != nil ||

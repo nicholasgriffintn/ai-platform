@@ -88,6 +88,7 @@ export * from "./credit-bands.js";
 export * from "./cron.js";
 export * from "./desktop-runtimes.js";
 export * from "./machines.js";
+export * from "./handoffs.js";
 export * from "./goals.js";
 export * from "./internal-service-auth.js";
 export * from "./memory-documents.js";
