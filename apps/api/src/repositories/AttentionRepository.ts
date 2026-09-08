@@ -146,8 +146,50 @@ const CANDIDATES_QUERY = `
               AND response.role = 'assistant'
               AND julianday(response.created_at) > julianday(org.snoozed_next_response_at)
           )
-        )
       )
+    )
+
+    UNION ALL
+
+    SELECT
+      'delegation:' || d.id AS id,
+      CASE
+        WHEN d.state = 'awaiting_approval' THEN 'approval'
+        WHEN d.state = 'awaiting_input' THEN 'input'
+        WHEN d.state IN ('failed', 'expired') THEN 'failed'
+        WHEN d.state IN ('queued', 'running') THEN 'running'
+        ELSE 'completed'
+      END AS kind,
+      'run' AS item_type,
+      d.id AS resource_id,
+      p.workspace_id,
+      w.name AS workspace_name,
+      p.id AS project_id,
+      p.name AS project_name,
+      d.parent_conversation_id AS conversation_id,
+      parent.user_id AS owner_user_id,
+      COALESCE(owner.name, owner.email) AS owner_name,
+      COALESCE(org.is_unread, 0) AS is_unread,
+      0 AS next_response_arrived,
+      d.teammate_id || ': ' || d.goal AS title,
+      CASE
+        WHEN d.state IN ('awaiting_approval', 'awaiting_input') THEN 'The delegate needs your response'
+        WHEN d.state IN ('failed', 'expired') THEN COALESCE(json_extract(d.result_json, '$.summary'), 'The delegation did not complete')
+        ELSE NULL
+      END AS detail,
+      COALESCE(d.updated_at, d.created_at) AS occurred_at
+    FROM delegation d
+    JOIN conversation parent ON parent.id = d.parent_conversation_id AND parent.project_id IS NOT NULL
+    JOIN project p ON p.id = parent.project_id AND p.archived_at IS NULL
+    JOIN workspace w ON w.id = p.workspace_id
+    JOIN workspace_member viewer ON viewer.workspace_id = p.workspace_id AND viewer.user_id = ?
+    LEFT JOIN conversation_user_state org
+      ON org.conversation_id = d.parent_conversation_id AND org.user_id = ?
+    JOIN user owner ON owner.id = parent.user_id
+    WHERE (
+      d.state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')
+      OR datetime(COALESCE(d.updated_at, d.created_at)) >= datetime('now', '-7 days')
+    )
   )`;
 
 function filtersQuery(query: WorkAttentionQuery): { sql: string; values: unknown[] } {
@@ -216,7 +258,7 @@ function formatItem(row: AttentionRow): WorkAttentionItem {
 export class AttentionRepository extends BaseRepository {
   async list(userId: number, query: WorkAttentionQuery) {
     const filters = filtersQuery(query);
-    const baseValues = [userId, userId, userId, userId, SANDBOX_RUNS_CAPABILITY_ID];
+    const baseValues = [userId, userId, userId, userId, SANDBOX_RUNS_CAPABILITY_ID, userId, userId];
     const [rows, count] = await Promise.all([
       this.runQuery<AttentionRow>(
         `${CANDIDATES_QUERY}
@@ -237,7 +279,7 @@ export class AttentionRepository extends BaseRepository {
   }
 
   async listFacets(userId: number) {
-    const baseValues = [userId, userId, userId, userId, SANDBOX_RUNS_CAPABILITY_ID];
+    const baseValues = [userId, userId, userId, userId, SANDBOX_RUNS_CAPABILITY_ID, userId, userId];
     const [workspaces, projects, owners] = await Promise.all([
       this.runQuery<{ id: string; name: string }>(
         `${CANDIDATES_QUERY}
