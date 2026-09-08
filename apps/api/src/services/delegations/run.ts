@@ -1,9 +1,11 @@
 import {
   createChatCompletionsJsonSchema,
+  DELEGATION_WAKE_TASK_TYPE,
   delegationRunTaskDataSchema,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
+import { TaskService } from "~/services/tasks/TaskService";
 import { createTeammateCompletion } from "~/services/teammates/createTeammateCompletion";
 import type { IEnv } from "~/types";
 
@@ -23,6 +25,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       summary: "The delegation deadline passed before it started.",
       outputIds: [],
     });
+    await enqueueDelegationWake(context, delegation, message.user_id);
 
     return { status: "skipped" as const, detail: "Delegation expired before it started" };
   }
@@ -34,6 +37,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       summary: "The delegating user no longer exists.",
       outputIds: [],
     });
+    await enqueueDelegationWake(context, delegation, message.user_id);
 
     return { status: "error" as const, detail: "Delegating user not found" };
   }
@@ -76,6 +80,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       summary,
       outputIds: [],
     });
+    await enqueueDelegationWake(context, delegation, message.user_id);
 
     return { status: "success" as const, detail: summary };
   } catch (error) {
@@ -85,7 +90,29 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       summary: summary.slice(0, 2000),
       outputIds: [],
     });
+    await enqueueDelegationWake(context, delegation, message.user_id);
 
     return { status: "error" as const, detail: summary };
   }
+}
+
+async function enqueueDelegationWake(
+  context: ReturnType<typeof createServiceContext>,
+  delegation: { id: string; parentConversationId: string; parentRunId: string },
+  userId: number | undefined,
+) {
+  if (userId === undefined) {
+    return;
+  }
+
+  await new TaskService(context.env, context.repositories.tasks).enqueueTask({
+    id: `delegation_wake_${delegation.parentRunId}`,
+    task_type: DELEGATION_WAKE_TASK_TYPE,
+    user_id: userId,
+    priority: 4,
+    task_data: {
+      parentConversationId: delegation.parentConversationId,
+      parentRunId: delegation.parentRunId,
+    },
+  });
 }

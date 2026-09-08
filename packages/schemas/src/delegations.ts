@@ -6,6 +6,7 @@ export const DELEGATION_MAX_DEPTH = 1 as const;
 export const DELEGATION_MAX_FAN_OUT = 3 as const;
 export const DELEGATION_MAX_CREDIT_SHARE = 0.25 as const;
 export const DELEGATION_RUN_TASK_TYPE = "delegation_run" as const;
+export const DELEGATION_WAKE_TASK_TYPE = "delegation_wake" as const;
 
 export function resolveDelegationCreditCeiling(remainingCreditMicros: number): number {
   return Math.max(0, Math.floor(remainingCreditMicros * DELEGATION_MAX_CREDIT_SHARE));
@@ -80,3 +81,9 @@ export const delegationRunTaskDataSchema = z.object({
   enabledTools: z.array(z.string()),
 });
 export type DelegationRunTaskData = z.infer<typeof delegationRunTaskDataSchema>;
+
+export const delegationWakeTaskDataSchema = z.object({
+  parentConversationId: z.string().min(1),
+  parentRunId: chatRunIdSchema,
+});
+export type DelegationWakeTaskData = z.infer<typeof delegationWakeTaskDataSchema>;
