@@ -13,6 +13,11 @@
 - [ ] Confirm the catalogue card says when to reach for it, what it works from and what it leaves behind.
 - [ ] Ask a conversation for a beat or a loop. Confirm `generate_pattern` runs and returns a pattern you can play, not an audio file.
 - [ ] Ask for a finished piece of audio and confirm `create_music` runs instead.
-- [ ] Confirm the old canvas entry point still reaches the same studio.
+- [x] Confirm the old canvas entry point still reaches the same studio.
 
 **Stop and report if:** Image Studio opens in a project for someone who is not a member, or a pattern request produces rendered audio instead.
+
+## Automated evidence — 8 September 2026
+
+- Local Chromium `features/chat.spec.ts` passes the Canvas journey through the legacy entry point, switching across video, drawing and image generation surfaces and closing back to Chat. This confirms the old Canvas entry point still reaches the same studio.
+- The Apps-library, project-scope, pattern-tool and `create_music` checks remain open.

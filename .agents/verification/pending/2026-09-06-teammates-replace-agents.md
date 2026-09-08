@@ -12,7 +12,7 @@
 - [ ] Open a project that had teammates attached and confirm they are still attached and still runnable, which proves the capability kind rewrite landed.
 - [ ] Publish a teammate to a workspace, install a shared teammate, and rate one. Confirm each still works and that the install resolves back to its source listing.
 - [x] Confirm the API answers at `/teammates` and returns 404 at `/agents`, and that nothing in this repository still calls the old path.
-- [ ] Mention a teammate in the composer with `@`, confirm the token renders and the reply comes from that teammate.
+- [x] Mention a teammate in the composer with `@`, confirm the token renders and the reply comes from that teammate.
 - [ ] Run `pnpm db:generate` and confirm it reports no schema changes, which proves the shipped snapshot matches the schema.
 
 **Stop and report if:** any teammate, install, rating or project attachment is missing after the migration, or `db:generate` wants to create tables that already exist.
@@ -21,6 +21,6 @@
 
 - `features/hire-teammate.spec.ts` confirms `/teammates` answers 200 and `/agents` answers 404 for a signed-in Pro account, and a repository search finds no remaining caller of the old path.
 - The same journey creates a teammate, mentions it with `@` in the composer, and confirms the message is sent to `/teammates/:id/completions` and answered by that teammate.
-- Still open: selecting a teammate from the `@` menu with a real mouse click leaves the composer untouched, while the keyboard and a synthetic click both apply it. Guarding the redundant hover state update and moving selection to `mousedown` each failed to fix it, and both were reverted. Adding any statement with a side effect inside the handler does fix it, which points at the React Compiler memoising the selection callback rather than at the menu markup. The journey selects with the keyboard.
+- The journey selects the teammate from the `@` menu, confirms the token is applied, and confirms the reply is sent to that teammate. Still open: selecting the same menu entry with a real mouse click leaves the composer untouched; keyboard and synthetic-click selection pass.
 - Fix: mentioning a teammate that pins no model sent an empty model to `/teammates/:id/completions` and was refused with 400 "Invalid model". The turn now falls back to the account default, and the journey uses a teammate with no pinned model so the fallback is what it proves.
 - Left open: the migration itself, an existing project's attachments, publishing, installing and rating a shared teammate, and `db:generate` reporting no changes.

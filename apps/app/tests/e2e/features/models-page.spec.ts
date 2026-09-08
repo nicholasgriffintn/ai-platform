@@ -43,6 +43,24 @@ test("marks every provider with artwork in the filter and in its section", async
   );
 });
 
+test("keeps provider marks visible across the named palettes", async ({ appPage, page }) => {
+  await page.goto("/models", { waitUntil: "domcontentloaded" });
+
+  for (const theme of ["Light", "Paper", "Dawn", "Dark", "Blue", "Fern", "Plum"] as const) {
+    await appPage.openSettings("Guest");
+    await appPage.selectTheme(theme);
+
+    for (const provider of ["standardcompute", "the-grid-ai"]) {
+      const section = page.locator(`section#provider-${provider}`);
+
+      await expect(section).toBeVisible();
+      await expect(
+        section.locator(":scope > div").first().locator("svg, span[aria-hidden='true']"),
+      ).toHaveCount(1);
+    }
+  }
+});
+
 test("names a headline model on every tier card", async ({ page }) => {
   await page.goto("/models", { waitUntil: "domcontentloaded" });
 

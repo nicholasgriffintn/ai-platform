@@ -14,7 +14,7 @@
 - [x] Follow one app card's link. Confirm the composer opens with that ask typed and the address bar no longer carries the prompt.
 - [x] Follow one teammate card's link and confirm the same.
 - [x] Refresh after following a link. Confirm the composer is not retyped.
-- [ ] Follow a link while a conversation is already open and confirm nothing is sent, only typed.
+- [x] Follow a link while a conversation is already open and confirm nothing is sent, only typed.
 - [x] Confirm `/capabilities` is a 404 and that the Discover tour and sidebar both point at `/apps`.
 - [x] Confirm a hand-written very long `prompt` parameter is truncated rather than breaking the page.
 
@@ -27,4 +27,4 @@
 - Following an app card and a teammate card each types the ask into the composer, leaves the address bar without the `prompt` parameter, sends no completion request, and leaves the composer empty after a reload.
 - A 2,500-character `prompt` parameter renders truncated to the 2,000-character cap.
 - `/capabilities` now answers 404 rather than 200 with the not-found page; the Discover teammates band and the sidebar entry both open `/apps`.
-- Left open: following a link while a conversation is already open.
+- A logged-out Chromium journey now follows an app link from an already-open conversation, confirms the ask is typed into the composer, and observes zero completion requests.

@@ -316,12 +316,12 @@ test.describe("Work experience", () => {
       expect(inherited.metadata).toMatchObject({ project_id: projectId });
       await homePage.waitForChatResponse(0);
 
-      await homePage.selectModelTier("Ultra");
+      await homePage.selectModelTier("High");
       const explicitTier = await homePage.sendMessageAndRequireCompletion(
-        "Override the saved project tier with Ultra",
+        "Override the saved project tier with High",
       );
 
-      expect(explicitTier.model_tier).toBe("ultra");
+      expect(explicitTier.model_tier).toBe("high");
       await homePage.waitForChatResponse(1);
 
       await homePage.selectModel("GPT-5.5");

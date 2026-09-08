@@ -24,6 +24,11 @@ This records automated local evidence only. It does not certify a deployed relea
 - The affected Sandbox membership/service journeys passed in isolation; expected container errors remained inside the negative-path assertions.
 - `features/work.spec.ts -g 'sends a project conversation using its Work context'`: 1 passed.
 - `features/file-as-task.spec.ts -g 'files what was typed, links back to the conversation, and still answers with the toggle off'`: 1 passed in isolation.
+- Queue check-offs made from this evidence: the legacy Canvas entry point, Work project tier inheritance/override, and teammate @ mention items are now checked in their pending verification files. The replay item remains open because its passing journey is a single stored run, not a multi-step task. Unsupported operator, cross-device, deployment, mouse-selection and failure-injection items remain unchecked.
+- The Work tier E2E was updated to exercise the checklist's High override explicitly and passed in isolation; the replay item remains open because the passing journey is a single stored run, not a multi-step task.
+- The places E2E also supports the one-shell `/chat/teammates` and retired top-level `/teammates` item, which is now checked; Poly and legacy-route checks remain open.
+- The public catalogue E2E now covers following an app link from an already-open conversation without sending; that pending item is checked.
+- The models-page E2E now covers provider marks across all seven named palettes, including Standard Compute and The Grid AI; that pending item is checked. The Discover models band remains open.
 - `pnpm typecheck`: passed.
 - `pnpm check`: passed again after the final page-object change; existing warnings remain, with no lint or formatting errors.
 - `git diff --check`: passed.

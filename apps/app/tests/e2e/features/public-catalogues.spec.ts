@@ -119,6 +119,42 @@ test("describes every app, shows its connected services and types an ask exactly
   expect(completions).toHaveLength(0);
 });
 
+test.describe("Catalogue links from an open conversation", () => {
+  test.use({ persona: "logged-out" });
+
+  test("types an app ask without sending it", async ({ appPage, homePage, page }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT OSS 120B");
+    const request = await homePage.sendMessageAndRequireCompletion(
+      "Keep this conversation open while I browse the catalogue",
+    );
+    const conversationId = homePage.completionIdFromRequest(request);
+
+    await homePage.navigate(`/chat/${conversationId}`);
+    await appPage.followSidebarLink("Capabilities");
+
+    const cataloguePage = new PublicCataloguePage(page);
+    const catalogue = await cataloguePage.openCatalogue();
+    const app = catalogue.experiences[0];
+
+    if (!app) {
+      throw new Error("The catalogue must contain an app");
+    }
+
+    const completions = trackCompletionRequests(page);
+
+    await cataloguePage.openSection("Apps");
+    await cataloguePage
+      .card("Apps", app.name)
+      .getByRole("link", { name: `Open ${app.name}` })
+      .click();
+
+    await expect(homePage.chatInput).toHaveText(`${app.when} Use ${app.name}.`);
+    await expect(page).toHaveURL(/^[^?]*\/?$/);
+    expect(completions).toHaveLength(0);
+  });
+});
+
 test("keeps an oversized deep link typed rather than breaking the page", async ({
   homePage,
   page,

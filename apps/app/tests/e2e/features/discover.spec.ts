@@ -41,6 +41,21 @@ test("opens each public tour section and restores a direct pricing link", async 
   await expect(discover.section("pricing").getByRole("heading", { level: 2 })).toBeInViewport();
 });
 
+test("keeps the named provider marks in the Discover models band", async ({ page }) => {
+  const discover = new DiscoverPage(page);
+
+  await discover.navigate("/discover");
+  const models = discover.section("models");
+
+  await models.scrollIntoViewIfNeeded();
+  for (const provider of ["standardcompute", "the-grid-ai"]) {
+    const mark = models.locator(`li[title^="${provider}:"]`);
+
+    await expect(mark).toHaveCount(1);
+    await expect(mark.locator("svg")).toHaveCount(1);
+  }
+});
+
 test.describe("Signed-in tour placement", () => {
   test.use({ persona: "free" });
 
