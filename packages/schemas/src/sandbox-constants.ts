@@ -1,3 +1,5 @@
+import type { ReasoningEffort } from "./reasoning.js";
+
 export const SANDBOX_PROMPT_STRATEGIES = [
   "auto",
   "feature-delivery",
@@ -35,29 +37,9 @@ export interface SandboxModelSettings {
   max_tokens?: number;
   presence_penalty?: number;
   frequency_penalty?: number;
-  reasoning_effort?:
-    | "none"
-    | "simulated-thinking"
-    | "thinking"
-    | "default"
-    | "minimal"
-    | "low"
-    | "medium"
-    | "high"
-    | "xhigh"
-    | "max";
+  reasoning_effort?: ReasoningEffort;
   reasoning?: {
-    effort?:
-      | "none"
-      | "simulated-thinking"
-      | "thinking"
-      | "default"
-      | "minimal"
-      | "low"
-      | "medium"
-      | "high"
-      | "xhigh"
-      | "max";
+    effort?: ReasoningEffort;
   };
   verbosity?: "low" | "medium" | "high" | "caveman";
 }

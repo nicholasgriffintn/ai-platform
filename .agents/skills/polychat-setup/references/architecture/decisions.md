@@ -59,6 +59,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0036: Reach a device runtime only after someone connects it](decisions/0036-reach-a-device-runtime-only-after-someone-connects-it.md)
 - [0038: Spawn only programs the core was compiled knowing](decisions/0038-spawn-only-compiled-agent-programs.md)
 - [0041: Carry live updates on one per-user socket](decisions/0041-carry-live-updates-on-one-per-user-socket.md)
+- [0042: An agent session is a long-lived handle, not a one-shot process](decisions/0042-an-agent-session-is-a-long-lived-handle.md)
 
 ## Maintaining these records
 

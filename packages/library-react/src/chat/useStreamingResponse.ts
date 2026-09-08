@@ -18,6 +18,7 @@ import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model
 import {
   CHATS_QUERY_KEY,
   apiService,
+  useAgentApprovalStore,
   useChatStore,
   useStreamActivityStore,
 } from "@ngriffin_uk/polychat-library-client";
@@ -50,7 +51,7 @@ import { toRunMessages } from "../lib/run-messages.js";
 import { useConversationScope } from "../state/conversation-scope.js";
 import { useLoadingActions } from "../state/LoadingContext.js";
 import { useUsageStore } from "../state/usageStore.js";
-import { streamAgentProcessRun } from "./agent-run.js";
+import { streamAgentRun } from "./agent-run.js";
 import { streamMachineModelRun } from "./machine-run.js";
 import { useMessageOperations } from "./useMessageOperations.js";
 import { useModels } from "./useModels.js";
@@ -97,6 +98,7 @@ export function useStreamingResponse(
     (state) => state.completeStreamActivityMessage,
   );
   const endStreamActivity = useStreamActivityStore((state) => state.endStreamActivity);
+  const clearAgentApprovals = useAgentApprovalStore((state) => state.clearApprovals);
   const recordStreamActivityState = useStreamActivityStore(
     (state) => state.recordStreamActivityState,
   );
@@ -476,14 +478,22 @@ export function useStreamingResponse(
             } else if (deviceBackend) {
               response =
                 requestedModel.kind === "agent"
-                  ? await streamAgentProcessRun({
+                  ? await streamAgentRun({
                       ...runOptions,
                       backend: deviceBackend,
                       permissionMode,
+                      reasoningEffort: null,
+                      selectedModel: null,
                       onStatus: (message) =>
                         useStreamActivityStore
                           .getState()
                           .updateStreamLoadingMessage(conversationId, message),
+                      onApproval: (approval, answer) =>
+                        useAgentApprovalStore
+                          .getState()
+                          .requestApproval(conversationId, approval, answer),
+                      onApprovalResolved: (requestId) =>
+                        useAgentApprovalStore.getState().resolveApproval(conversationId, requestId),
                     })
                   : await streamDeviceModelRun({ ...runOptions, backend: deviceBackend });
             }
@@ -891,11 +901,13 @@ export function useStreamingResponse(
         streamSettled = true;
         stopLoading("stream-response");
         endStreamActivity(conversationId);
+        clearAgentApprovals(conversationId);
       }
     },
     [
       beginStreamActivity,
       cancelObservedRun,
+      clearAgentApprovals,
       generateResponse,
       stopLoading,
       endStreamActivity,

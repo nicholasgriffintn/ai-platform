@@ -1,6 +1,11 @@
-import type { DesktopBackend, DesktopRun } from "@ngriffin_uk/polychat-library-chat";
+import type {
+  DesktopAgentSession,
+  DesktopBackend,
+  DesktopRun,
+} from "@ngriffin_uk/polychat-library-chat";
 import type {
   AgentDirectory,
+  AgentThreadBinding,
   DesktopEndpoint,
   DesktopRuntimeReadiness,
   DesktopStreamEvent,
@@ -17,11 +22,16 @@ export interface FakeDesktopBackendSeed {
   script?: DesktopStreamEvent[];
   conversations?: LocalConversation[];
   messages?: LocalMessage[];
+  sessionDrivers?: string[];
+  sessionTransport?: string[];
+  agentThreads?: AgentThreadBinding[];
 }
 
 export interface FakeDesktopBackend extends DesktopBackend {
   cancelledRuns: string[];
   probedEndpoints: { endpointId: string; url: string }[];
+  sentSessionPayloads: string[];
+  stoppedSessions: string[];
 }
 
 const UNREACHABLE: DesktopRuntimeReadiness = {
@@ -33,6 +43,11 @@ const UNREACHABLE: DesktopRuntimeReadiness = {
 export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): FakeDesktopBackend {
   const cancelledRuns: string[] = [];
   const probedEndpoints: { endpointId: string; url: string }[] = [];
+  const sentSessionPayloads: string[] = [];
+  const stoppedSessions: string[] = [];
+  const agentThreads = new Map<string, AgentThreadBinding>(
+    (seed.agentThreads ?? []).map((binding) => [binding.conversationId, binding]),
+  );
   let runCounter = 0;
 
   function createRun(script: DesktopStreamEvent[]): DesktopRun {
@@ -66,9 +81,61 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
   const conversations: LocalConversation[] = [...(seed.conversations ?? [])];
   const messages: LocalMessage[] = [...(seed.messages ?? [])];
 
+  function createSession(
+    driver: string,
+    directoryId: string,
+    conversationId: string,
+  ): DesktopAgentSession {
+    const sessionKey = `${driver}:${conversationId}`;
+    let stopped = false;
+
+    return {
+      sessionKey,
+      directoryPath: `/fake/${directoryId}`,
+      head: null,
+      adopted: false,
+      events: {
+        // eslint-disable-next-line require-yield
+        async *[Symbol.asyncIterator]() {
+          return;
+        },
+      },
+      transport: {
+        async *[Symbol.asyncIterator]() {
+          for (const line of seed.sessionTransport ?? []) {
+            if (stopped) {
+              return;
+            }
+
+            yield line;
+          }
+        },
+      },
+      send: async (payload) => {
+        sentSessionPayloads.push(payload);
+      },
+      stop: async () => {
+        stopped = true;
+        stoppedSessions.push(sessionKey);
+      },
+    };
+  }
+
   return {
     cancelledRuns,
     probedEndpoints,
+    sentSessionPayloads,
+    stoppedSessions,
+    agentSupportsSessions: async (driver) => (seed.sessionDrivers ?? ["codex"]).includes(driver),
+    startAgentSession: async (driver, directoryId, conversationId) =>
+      createSession(driver, directoryId, conversationId),
+    readAgentThread: async (conversationId) => agentThreads.get(conversationId) ?? null,
+    saveAgentThread: async (binding) => {
+      agentThreads.set(binding.conversationId, binding);
+    },
+    forgetAgentThread: async (conversationId) => {
+      agentThreads.delete(conversationId);
+    },
     listEndpoints: async () => saved,
     saveEndpoint: async (endpoint) => {
       const existing = saved.findIndex((candidate) => candidate.id === endpoint.id);

@@ -110,9 +110,8 @@ export function getPermissionModeLabel(mode: PermissionMode): string {
   return PERMISSION_MODE_LABELS[mode];
 }
 
-const GATED_PERMISSION_MODES: ReadonlySet<PermissionMode> = new Set<PermissionMode>([
+const APPROVAL_DEPENDENT_MODES: ReadonlySet<PermissionMode> = new Set<PermissionMode>([
   "supervised",
-  "auto_accept_edits",
 ]);
 
 export function getPermissionModeUnavailableReason(
@@ -129,16 +128,16 @@ export function getPermissionModeUnavailableReason(
     return undefined;
   }
 
-  if (!supportedModes.includes(mode)) {
-    return "This provider does not support that permission mode.";
-  }
-
   if (mode === "auto" && !capabilities.autoReview) {
     return "Auto is unavailable because this provider does not report its own review.";
   }
 
-  if (GATED_PERMISSION_MODES.has(mode) && !capabilities.reportsApprovals) {
-    return "This provider cannot receive approval requests.";
+  if (APPROVAL_DEPENDENT_MODES.has(mode) && !capabilities.reportsApprovals) {
+    return `${getPermissionModeLabel(mode)} is unavailable because this provider cannot answer approval requests. Choose a mode that runs without them.`;
+  }
+
+  if (!supportedModes.includes(mode)) {
+    return "This provider does not support that permission mode.";
   }
 
   return undefined;
@@ -179,16 +178,29 @@ const AGENT_CAPABILITIES: ProviderCapabilities = {
   runsUnattended: true,
 };
 
+const SESSION_AGENT_CAPABILITIES: ProviderCapabilities = {
+  ...AGENT_CAPABILITIES,
+  listsModels: true,
+};
+
+const BATCH_AGENT_CAPABILITIES: ProviderCapabilities = {
+  ...AGENT_CAPABILITIES,
+  reportsApprovals: false,
+  resumesSessions: false,
+  checkpoints: false,
+  rollsBack: false,
+};
+
 const PROVIDER_CAPABILITIES: Record<ProviderDriver, ProviderCapabilities> = {
   anthropic: MODEL_CAPABILITIES,
   ollama: LOCAL_MODEL_CAPABILITIES,
   lmstudio: LOCAL_MODEL_CAPABILITIES,
   llamacpp: LOCAL_MODEL_CAPABILITIES,
-  "claude-code": AGENT_CAPABILITIES,
-  codex: AGENT_CAPABILITIES,
-  cursor: AGENT_CAPABILITIES,
-  grok: AGENT_CAPABILITIES,
-  opencode: AGENT_CAPABILITIES,
+  "claude-code": BATCH_AGENT_CAPABILITIES,
+  codex: SESSION_AGENT_CAPABILITIES,
+  cursor: BATCH_AGENT_CAPABILITIES,
+  grok: BATCH_AGENT_CAPABILITIES,
+  opencode: BATCH_AGENT_CAPABILITIES,
   antigravity: {
     ...AGENT_CAPABILITIES,
     streamsText: false,

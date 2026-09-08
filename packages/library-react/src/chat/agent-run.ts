@@ -2,8 +2,25 @@ import type { PermissionMode } from "@ngriffin_uk/polychat-schemas";
 import { agentRuntimeVendorSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { toRunMessages } from "../lib/run-messages.js";
+import {
+  AgentSessionUnavailableError,
+  streamAgentSessionRun,
+  type AgentSessionRunOptions,
+} from "./agent-session-run.js";
 import { consumeDesktopRun } from "./desktop-run-stream.js";
 import type { DeviceModelRunOptions } from "./device-run.js";
+
+export async function streamAgentRun(options: AgentSessionRunOptions): Promise<string> {
+  try {
+    return await streamAgentSessionRun(options);
+  } catch (cause) {
+    if (!(cause instanceof AgentSessionUnavailableError)) {
+      throw cause;
+    }
+  }
+
+  return streamAgentProcessRun(options);
+}
 
 export async function streamAgentProcessRun({
   backend,

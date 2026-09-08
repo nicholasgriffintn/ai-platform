@@ -1,6 +1,7 @@
 import {
   parseAgentProcessOutput,
   setDesktopExecutionBackend,
+  type DesktopAgentSession,
   type DesktopBackend,
   type DesktopRun,
 } from "@ngriffin_uk/polychat-library-chat";
@@ -10,6 +11,7 @@ import {
   desktopSessionTokenSchema,
   desktopStreamEventSchema,
   agentDirectorySchema,
+  agentThreadBindingSchema,
   agentToolStateSchema,
   discoveredModelSchema,
   localConversationSchema,
@@ -17,6 +19,8 @@ import {
   type DesktopModelRunRequest,
   type DesktopAgentProcessRunRequest,
   type AgentRuntimeVendor,
+  type AgentSessionEvent,
+  type AgentThreadBinding,
   type DesktopSessionToken,
   type DesktopStreamEvent,
   type ModelRuntimeFailure,
@@ -51,6 +55,87 @@ export interface ConnectedDesktopBackend extends DesktopBackend {
   setAttentionBadge: (count: number) => Promise<void>;
   isSignedIn: () => Promise<boolean>;
   accessToken: () => Promise<DesktopSessionToken>;
+}
+
+const sessionDescriptorSchema = z.object({
+  sessionKey: z.string().min(1),
+  directoryPath: z.string().min(1),
+  head: z.string().nullable(),
+  adopted: z.boolean(),
+});
+
+const sessionEventSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("ready"), sessionKey: z.string(), at: z.string() }),
+  z.object({ type: z.literal("message"), sessionKey: z.string(), data: z.string() }),
+  z.object({ type: z.literal("diagnostic"), sessionKey: z.string(), message: z.string() }),
+  z.object({
+    type: z.literal("exited"),
+    sessionKey: z.string(),
+    code: z.number().nullable(),
+    at: z.string(),
+  }),
+]);
+
+async function startAgentSession(
+  driver: AgentRuntimeVendor,
+  directoryId: string,
+  conversationId: string,
+): Promise<DesktopAgentSession> {
+  const queue = createAsyncEventQueue<AgentSessionEvent>();
+  const lines = createAsyncEventQueue<string>();
+  const channel = new Channel();
+
+  channel.onmessage = (raw) => {
+    const event = sessionEventSchema.safeParse(raw);
+
+    if (!event.success) {
+      queue.push({ type: "diagnostic", message: "The desktop bridge sent an unreadable event." });
+
+      return;
+    }
+
+    if (event.data.type === "message") {
+      lines.push(event.data.data);
+
+      return;
+    }
+
+    if (event.data.type === "diagnostic") {
+      queue.push({ type: "diagnostic", message: event.data.message });
+
+      return;
+    }
+
+    if (event.data.type === "exited") {
+      queue.push({ type: "session.exited", reason: "The agent process stopped." });
+      lines.close();
+      queue.close();
+    }
+  };
+
+  const descriptor = sessionDescriptorSchema.parse(
+    await invoke("start_agent_session", {
+      request: { driver, directoryId, conversationId },
+      onEvent: channel,
+    }),
+  );
+
+  return {
+    sessionKey: descriptor.sessionKey,
+    directoryPath: descriptor.directoryPath,
+    head: descriptor.head,
+    adopted: descriptor.adopted,
+    events: queue.events,
+    transport: lines.events,
+    send: async (payload: string) => {
+      await invoke("send_agent_session", { sessionKey: descriptor.sessionKey, payload });
+    },
+    stop: async () => {
+      await invoke("stop_agent_session", { sessionKey: descriptor.sessionKey });
+      lines.close();
+      queue.close();
+    },
+  };
 }
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
@@ -111,6 +196,19 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
     ),
   probeAgentTool: async (driver: AgentRuntimeVendor) =>
     agentToolStateSchema.parse(await invoke("probe_agent_tool", { driver })),
+  agentSupportsSessions: async (driver: AgentRuntimeVendor) =>
+    z.boolean().parse(await invoke("agent_supports_sessions", { driver })),
+  startAgentSession,
+  readAgentThread: async (conversationId: string) =>
+    agentThreadBindingSchema
+      .nullable()
+      .parse((await invoke("read_agent_thread", { conversationId })) ?? null),
+  saveAgentThread: async (binding: AgentThreadBinding) => {
+    await invoke("save_agent_thread", { binding });
+  },
+  forgetAgentThread: async (conversationId: string) => {
+    await invoke("forget_agent_thread", { conversationId });
+  },
   listAgentDirectories: async () =>
     agentDirectorySchema.array().parse(await invoke("list_agent_directories")),
   pickAgentDirectory: async () =>

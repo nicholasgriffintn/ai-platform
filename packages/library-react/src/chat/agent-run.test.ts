@@ -36,7 +36,7 @@ it.each(["cancel-picker", "abort-run"])(
         conversationId: "conversation-1",
         model: agentModelConfig["agent/claude-code"],
         messages: [{ id: "message-1", role: "user", content: "Hello" }],
-        permissionMode: "supervised",
+        permissionMode: "full_access",
         signal: controller.signal,
         onContent: vi.fn(),
         onStatus,
