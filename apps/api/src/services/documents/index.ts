@@ -103,8 +103,14 @@ export async function redescribeDocument(
   context: ServiceContext,
   user: IUser,
   outputId: string,
+  expectedRevision?: number,
 ): Promise<{ metadata: DocumentMetadata }> {
   const { output, body } = await requireDocument(context, user.id, outputId);
+
+  if (expectedRevision !== undefined && expectedRevision !== output.revision) {
+    throw new AssistantError("Output has changed", ErrorType.CONFLICT_ERROR, 409);
+  }
+
   const metadata = await describeDocument({
     context,
     user,

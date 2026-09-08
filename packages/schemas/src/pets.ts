@@ -205,7 +205,6 @@ export const PET_PRESETS: readonly PetPreset[] = [
     label: "Wisp",
     description: "Present, briefly. Remembers nothing and is at peace with it.",
     sheetUrl: "/pets/wisp.png",
-    layoutId: CODEX_SHEET_LAYOUT_ID,
   },
 ];
 

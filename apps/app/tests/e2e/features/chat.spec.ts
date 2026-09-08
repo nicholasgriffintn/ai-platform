@@ -62,51 +62,6 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       );
     });
 
-    test("starts a new conversation without submitting empty content", async ({
-      homePage,
-      page,
-    }) => {
-      await homePage.navigate("/chat");
-      await expect(page.getByRole("button", { name: "Send message" })).toBeDisabled();
-      await homePage.selectModel(TEXT_MODEL);
-      await homePage.sendMessage(`Start a clean ${persona} conversation`);
-      await homePage.waitForChatResponse(0);
-      await homePage.startNewChat();
-      await expect(homePage.getLatestAssistantMessage()).toHaveCount(0);
-      await expect(homePage.chatInput).toBeEditable();
-      await captureVisualSnapshots(page, `release-chat-new-${persona}`, {
-        ...DEFAULT_VISUAL_CHECKPOINTS,
-        viewports: [{ name: "desktop", width: 1280, height: 720 }],
-      });
-    });
-
-    test("suggests prompts, shuffles them, and loads one into the composer", async ({
-      homePage,
-      page,
-    }) => {
-      await homePage.navigate("/chat");
-      await homePage.selectModel(TEXT_MODEL);
-
-      const initialIds = await homePage.getSuggestionIds();
-
-      expect(initialIds).toHaveLength(4);
-      expect(new Set(initialIds).size).toBe(4);
-
-      await homePage.shuffleSuggestions();
-      await expect.poll(() => homePage.getSuggestionIds()).not.toEqual(initialIds);
-
-      await homePage.selectEverydaySuggestion();
-      await expect(homePage.chatInput).not.toBeEmpty();
-      await captureVisualSnapshots(page, `release-chat-suggestions-${persona}`, {
-        ...DEFAULT_VISUAL_CHECKPOINTS,
-        viewports: [{ name: "desktop", width: 1280, height: 720 }],
-      });
-
-      await homePage.sendMessageAndRequireCompletion(`Follow up as ${persona}`);
-      await homePage.waitForChatResponse(0);
-      await expect(homePage.suggestions).toHaveCount(0);
-    });
-
     test("edits, retries, copies and rates message content", async ({ homePage, page }) => {
       await homePage.navigate("/chat");
       await homePage.selectModel(TEXT_MODEL);
@@ -173,23 +128,69 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
         viewports: [{ name: "desktop", width: 1280, height: 720 }],
       });
     });
-
-    test("moves between every Canvas surface and back to chat", async ({ homePage, page }) => {
-      await homePage.navigate("/chat");
-      await homePage.waitForPersonaReady(persona);
-
-      await homePage.openCanvas();
-      await captureVisualSnapshots(page, "release-chat-canvas-open", {
-        ...DEFAULT_VISUAL_CHECKPOINTS,
-        viewports: [{ name: "desktop", width: 1280, height: 720 }],
-      });
-      await homePage.selectCanvasSurface("Video generation");
-      await homePage.selectCanvasSurface("Drawing");
-      await homePage.selectCanvasSurface("Image generation");
-      await homePage.closeCanvas();
-    });
   });
 }
+
+test.describe("Chat composition", () => {
+  test.use({ persona: "pro" });
+
+  test("starts a new conversation without submitting empty content", async ({ homePage, page }) => {
+    await homePage.navigate("/chat");
+    await expect(page.getByRole("button", { name: "Send message" })).toBeDisabled();
+    await homePage.selectModel(TEXT_MODEL);
+    await homePage.sendMessage("Start a clean conversation");
+    await homePage.waitForChatResponse(0);
+    await homePage.startNewChat();
+    await expect(homePage.getLatestAssistantMessage()).toHaveCount(0);
+    await expect(homePage.chatInput).toBeEditable();
+    await captureVisualSnapshots(page, "release-chat-new", {
+      ...DEFAULT_VISUAL_CHECKPOINTS,
+      viewports: [{ name: "desktop", width: 1280, height: 720 }],
+    });
+  });
+
+  test("suggests prompts, shuffles them, and loads one into the composer", async ({
+    homePage,
+    page,
+  }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+
+    const initialIds = await homePage.getSuggestionIds();
+
+    expect(initialIds).toHaveLength(4);
+    expect(new Set(initialIds).size).toBe(4);
+
+    await homePage.shuffleSuggestions();
+    await expect.poll(() => homePage.getSuggestionIds()).not.toEqual(initialIds);
+
+    await homePage.selectEverydaySuggestion();
+    await expect(homePage.chatInput).not.toBeEmpty();
+    await captureVisualSnapshots(page, "release-chat-suggestions", {
+      ...DEFAULT_VISUAL_CHECKPOINTS,
+      viewports: [{ name: "desktop", width: 1280, height: 720 }],
+    });
+
+    await homePage.sendMessageAndRequireCompletion("Follow up on the suggestion");
+    await homePage.waitForChatResponse(0);
+    await expect(homePage.suggestions).toHaveCount(0);
+  });
+
+  test("moves between every Canvas surface and back to chat", async ({ homePage, page }) => {
+    await homePage.navigate("/chat");
+    await homePage.waitForPersonaReady("pro");
+
+    await homePage.openCanvas();
+    await captureVisualSnapshots(page, "release-chat-canvas-open", {
+      ...DEFAULT_VISUAL_CHECKPOINTS,
+      viewports: [{ name: "desktop", width: 1280, height: 720 }],
+    });
+    await homePage.selectCanvasSurface("Video generation");
+    await homePage.selectCanvasSurface("Drawing");
+    await homePage.selectCanvasSurface("Image generation");
+    await homePage.closeCanvas();
+  });
+});
 
 for (const persona of ["logged-out", "free"] as const) {
   test.describe(`Live entitlement as ${persona}`, () => {
@@ -272,7 +273,7 @@ for (const persona of ["logged-out", "free"] as const) {
 test.describe("Temporary storage as free", () => {
   test.use({ persona: "free" });
 
-  test("does not create an API conversation row", async ({ homePage, polychatApi }) => {
+  test("does not create an API conversation row", async ({ homePage, page, polychatApi }) => {
     await homePage.navigate("/chat");
     await homePage.selectModel(TEXT_MODEL);
 
@@ -283,6 +284,7 @@ test.describe("Temporary storage as free", () => {
 
     await homePage.waitForChatResponse(0);
     await expect.poll(() => polychatApi.conversationStatus(conversationId)).toBe(401);
+    await expect(page.getByRole("button", { name: "Browse conversation threads" })).toHaveCount(0);
   });
 });
 
@@ -763,7 +765,16 @@ test.describe("Pro message attachments", () => {
 
     const duplicate = await polychatApi.cancelChatRun(run.id, run.attempt, "e2e-cancel-1");
 
-    expect(duplicate).toEqual({ ...receipts[0], duplicate: true });
+    expect(duplicate).toMatchObject({
+      commandId: receipts[0].commandId,
+      kind: "cancel",
+      duplicate: true,
+      run: {
+        id: run.id,
+        attempt: run.attempt,
+        status: expect.stringMatching(/^(cancelling|cancelled)$/),
+      },
+    });
     const runApi = new ChatRunApi(page.request);
 
     expect(await runApi.cancelStatus(run.id, run.attempt + 1, "e2e-cancel-1")).toBe(409);

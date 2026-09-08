@@ -10,6 +10,7 @@ import {
   restoreOutputRevision,
   updateOutput,
 } from "@ngriffin_uk/polychat-library-client";
+import { buildDocumentContent, type DocumentMetadata } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const OUTPUT_QUERY_KEYS = {
@@ -81,13 +82,15 @@ export function useSaveDocumentRevision() {
       outputId,
       body,
       expectedRevision,
+      metadata,
     }: {
       outputId: string;
       body: string;
       expectedRevision: number;
+      metadata?: DocumentMetadata;
     }) =>
       updateOutput(outputId, {
-        content: { format: "markdown", body },
+        content: buildDocumentContent(body, metadata),
         expectedRevision,
       }),
     onSettled: (_output, _error, variables) =>
@@ -110,8 +113,9 @@ export function useDescribeDocument() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (outputId: string) => describeOutputDocument(outputId),
-    onSettled: (_result, _error, outputId) =>
+    mutationFn: ({ outputId, expectedRevision }: { outputId: string; expectedRevision: number }) =>
+      describeOutputDocument(outputId, expectedRevision),
+    onSettled: (_result, _error, { outputId }) =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.detail(outputId) }),
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.history(outputId) }),

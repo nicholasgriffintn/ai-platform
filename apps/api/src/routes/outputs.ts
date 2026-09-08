@@ -1,6 +1,7 @@
 import {
   createOutputSchema,
   describeDocumentResponseSchema,
+  describeDocumentInputSchema,
   formatDocumentInputSchema,
   formatDocumentResponseSchema,
   documentExportFilename,
@@ -105,11 +106,12 @@ addRoute(app, "post", "/:outputId/describe", {
   summary: "Describe a document and keep the description on it",
   auth: true,
   paramSchema: outputParams,
+  bodySchema: describeDocumentInputSchema,
   responses: {
     200: { description: "Document description", schema: describeDocumentResponseSchema },
   },
-  handler: ({ params, serviceContext, user }) =>
-    redescribeDocument(serviceContext, user, params.outputId),
+  handler: ({ body, params, serviceContext, user }) =>
+    redescribeDocument(serviceContext, user, params.outputId, body.expectedRevision),
 });
 
 addRoute(app, "get", "/:outputId/export", {

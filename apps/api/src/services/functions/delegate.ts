@@ -10,13 +10,14 @@ import { userCreditActor } from "~/lib/usage/creditActor";
 import { readCreditPosition } from "~/lib/usage/credits";
 import { checkDelegationSpawn } from "~/services/delegations/guards";
 import { resolveDelegationExecutionRoute } from "~/services/delegations/routing";
+import { publishDelegationChanged } from "~/services/sync/conversation-events";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireTeammateAccess } from "~/services/teammates/access";
 import { hireTeammate } from "~/services/teammates/hire";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { intersectEnabledTools } from "~/utils/enabledTools";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
 import { delegate as delegateDescriptor, type DelegateInput } from "./definitions/delegate";
@@ -211,22 +212,38 @@ export const delegate: ApiToolDefinition = {
         throw error;
       });
 
-    await context.repositories.conversationHandles.createSpawnHandle({
-      id: `handle_${delegationId}`,
-      conversationId: parentConversationId,
-      delegationId,
-      grantedAt: new Date().toISOString(),
-      expiresAt: deadline,
-    });
+    try {
+      await context.repositories.conversationHandles.createSpawnHandle({
+        id: `handle_${delegationId}`,
+        conversationId: parentConversationId,
+        delegationId,
+        grantedAt: new Date().toISOString(),
+        expiresAt: deadline,
+      });
 
-    await new TaskService(context.env, context.repositories.tasks).enqueueTask({
-      id: `delegation_task_${delegationId}`,
-      task_type: DELEGATION_RUN_TASK_TYPE,
-      user_id: user.id,
-      project_id: projectId ?? undefined,
-      priority: 4,
-      task_data: { delegationId, projectId, enabledTools },
-    });
+      await new TaskService(context.env, context.repositories.tasks).enqueueTask({
+        id: `delegation_task_${delegationId}`,
+        task_type: DELEGATION_RUN_TASK_TYPE,
+        user_id: user.id,
+        project_id: projectId ?? undefined,
+        priority: 4,
+        task_data: { delegationId, projectId, enabledTools },
+      });
+    } catch (error) {
+      const summary = getErrorMessage(error, "The delegate could not be started.");
+
+      const failedDelegation = await context.repositories.delegations.updateState(
+        delegationId,
+        "failed",
+        { summary: summary.slice(0, 2000), outputIds: [] },
+      );
+
+      if (failedDelegation) {
+        await publishDelegationChanged(context, failedDelegation);
+      }
+
+      throw error;
+    }
 
     return {
       status: "success",

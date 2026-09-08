@@ -1,5 +1,5 @@
 import { RunChangesView, RunFilesView } from "@ngriffin_uk/polychat-component-content";
-import { RunActivityPanel, DelegationCard } from "@ngriffin_uk/polychat-component-conversation";
+import { RunActivityPanel } from "@ngriffin_uk/polychat-component-conversation";
 import type { ConversationRunSteering } from "@ngriffin_uk/polychat-component-conversation";
 import {
   ProjectWorkbenchApprovals,
@@ -33,7 +33,7 @@ import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { Activity } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 
-import { DelegatePanel } from "../Delegations/DelegatePanel.js";
+import { ProjectDelegatesPanel } from "../Delegations/ProjectDelegatesPanel.js";
 
 export interface ProjectWorkbenchConversationSlots {
   runSteering?: ConversationRunSteering;
@@ -248,23 +248,16 @@ export function ProjectWorkbenchConversation({
       />
     ),
     proof: renderPanel("proof"),
-    delegates: delegationsQuery.data?.delegations.length ? (
-      <div className="space-y-4">
-        <DelegationCard
-          delegations={delegationsQuery.data.delegations}
-          onStopAll={() => {
-            if (conversationId) {
-              void cancelDelegations.mutateAsync(conversationId);
-            }
-          }}
-        />
-        <DelegatePanel
-          conversationId={delegationsQuery.data.delegations[0].childConversationId}
-          canControl={delegationsQuery.data.canControl}
-        />
-      </div>
-    ) : (
-      <DelegationCard delegations={[]} />
+    delegates: (
+      <ProjectDelegatesPanel
+        delegations={delegationsQuery.data?.delegations ?? []}
+        canControl={delegationsQuery.data?.canControl ?? false}
+        onStopAll={() => {
+          if (conversationId) {
+            void cancelDelegations.mutateAsync(conversationId);
+          }
+        }}
+      />
     ),
   };
 

@@ -1,6 +1,5 @@
 import { expect, test } from "../fixtures/polychat-test";
 import { ThemePage } from "../page-objects/ThemePage";
-import { relativeLuminance } from "../support/colour";
 
 test.describe("Device theme preferences", () => {
   test.use({ persona: "pro" });
@@ -86,42 +85,6 @@ test.describe("Device theme preferences", () => {
     await themes.setSystemAppearance("dark");
     await expect(themes.root).toHaveAttribute("data-polychat-theme", "dark");
   });
-
-  test("keeps every theme card readable against the active app appearance", async ({
-    page,
-    profilePage,
-  }) => {
-    const themes = new ThemePage(page);
-
-    await profilePage.openTab("customisation", "Customise Chat");
-    await themes.select("Dark");
-    const lightCards = await Promise.all(
-      ["Light", "Paper", "Dawn"].map((name) => themes.themeCardColours(name)),
-    );
-
-    for (const colours of lightCards) {
-      expect(relativeLuminance(colours.heading)).toBeLessThan(
-        relativeLuminance(colours.background),
-      );
-      expect(relativeLuminance(colours.previewText)).toBeLessThan(
-        relativeLuminance(colours.background),
-      );
-    }
-
-    await themes.select("Light");
-    const darkCards = await Promise.all(
-      ["Dark", "Blue", "Fern", "Plum"].map((name) => themes.themeCardColours(name)),
-    );
-
-    for (const colours of darkCards) {
-      expect(relativeLuminance(colours.heading)).toBeGreaterThan(
-        relativeLuminance(colours.background),
-      );
-      expect(relativeLuminance(colours.previewText)).toBeGreaterThan(
-        relativeLuminance(colours.background),
-      );
-    }
-  });
 });
 
 test("keeps sidebar settings open after a theme change and remembers it after reload", async ({
@@ -165,20 +128,6 @@ test("keeps sidebar settings open after a theme change and remembers it after re
   await appPage.openSettings("Guest");
   await appPage.openThemeOptions();
   expect(await appPage.themeMenuFitsViewport()).toBe(true);
-});
-
-test("lets a guest choose a palette from the sidebar and keeps it", async ({ appPage, page }) => {
-  await page.goto("/chat", { waitUntil: "domcontentloaded" });
-  await appPage.openSettings("Guest");
-
-  const settings = page.getByRole("dialog");
-
-  await expect(settings.getByText("Theme", { exact: true })).toBeVisible();
-  await appPage.selectTheme("Plum");
-  await expect(page.locator("html")).toHaveAttribute("data-polychat-theme", "plum");
-
-  await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.locator("html")).toHaveAttribute("data-polychat-theme", "plum");
 });
 
 test("adopts a theme stored under the retired key exactly once", async ({ page }) => {

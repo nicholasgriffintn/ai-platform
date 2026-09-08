@@ -74,35 +74,58 @@ test.describe("Authentication experience", () => {
     });
   });
 
-  for (const persona of ["free", "pro"] as const) {
-    test.describe(`${persona} account`, () => {
-      test.use({ persona });
+  test.describe("signed-in account", () => {
+    test.use({ persona: "pro" });
 
-      test("signs out and returns to a protected signed-out state", async ({
-        authPage,
+    test("signs out and returns to a protected signed-out state", async ({
+      authPage,
+      page,
+      profilePage,
+    }) => {
+      await profilePage.openAccount();
+      await expect(authPage.isLoggedIn()).resolves.toBe(true);
+      await profilePage.logout();
+      await expect(page.getByText("Sign in to view your profile", { exact: true })).toBeVisible();
+      await captureVisualSnapshots(
         page,
-        profilePage,
-      }) => {
-        await profilePage.openAccount();
-        await expect(authPage.isLoggedIn()).resolves.toBe(true);
-        await profilePage.logout();
-        await expect(page.getByText("Sign in to view your profile", { exact: true })).toBeVisible();
-        await captureVisualSnapshots(
-          page,
-          `release-auth-signed-out-profile-${persona}`,
-          DEFAULT_VISUAL_CHECKPOINTS,
-        );
-        await expect(authPage.isLoggedIn()).resolves.toBe(false);
-      });
+        "release-auth-signed-out-profile",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
+      await expect(authPage.isLoggedIn()).resolves.toBe(false);
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.getByText("Sign in to view your profile", { exact: true })).toBeVisible();
+      await expect(authPage.isLoggedIn()).resolves.toBe(false);
     });
-  }
+  });
 
   test.describe("pro passkey", () => {
     test.use({ persona: "pro" });
 
-    test("signs in with a registered passkey", async ({ authPage }) => {
+    test("signs in with a registered passkey", async ({ authPage, homePage }) => {
       await authPage.registerSignOutAndSignInWithPasskey();
       await expect(authPage.isLoggedIn()).resolves.toBe(true);
+      await homePage.navigate("/chat");
+      await homePage.selectModel("GPT OSS 120B");
+      await homePage.sendMessageAndRequireCompletion("Reply after passkey sign-in");
+      await homePage.waitForChatResponse(0);
+      await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+    });
+
+    test("signs out from the shell and stays signed out after reload", async ({
+      appPage,
+      authPage,
+      homePage,
+      page,
+      profilePage,
+    }) => {
+      await homePage.navigate("/chat");
+      await appPage.openSettings("Pro");
+      await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      await expect(appPage.settingsButton.getByText("Guest", { exact: true })).toBeVisible();
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(appPage.settingsButton.getByText("Guest", { exact: true })).toBeVisible();
+      await profilePage.openAccount();
+      await expect(authPage.isLoggedIn()).resolves.toBe(false);
     });
   });
 });

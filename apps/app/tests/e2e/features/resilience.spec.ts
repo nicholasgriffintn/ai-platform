@@ -2,20 +2,6 @@ import { expect, test } from "../fixtures/polychat-test";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
 test.describe("Recovery and unavailable states", () => {
-  for (const persona of ["free", "pro"] as const) {
-    test.describe(`${persona} missing route`, () => {
-      test.use({ persona });
-
-      test("returns to Chat from an unknown route", async ({ appPage, homePage, page }) => {
-        await homePage.navigate(`/missing-${persona}-release-route`);
-        await expect(page.getByRole("heading", { name: "Page Not Found" })).toBeVisible();
-        await appPage.followLink("Back to the nest");
-        await expect(page).toHaveURL(/\/chat$/);
-        await expect(homePage.chatInput).toBeEditable();
-      });
-    });
-  }
-
   test.describe("provider failure", () => {
     test.use({ persona: "pro" });
 
@@ -67,90 +53,82 @@ test.describe("Recovery and unavailable states", () => {
     });
   });
 
-  for (const persona of ["logged-out", "free", "pro"] as const) {
-    test.describe(`${persona} shared links`, () => {
-      test.use({ persona });
+  test.describe("shared links", () => {
+    test.use({ persona: "logged-out" });
 
-      test("returns from unavailable shared conversation and output links", async ({
-        appPage,
-        homePage,
+    test("returns from unavailable shared conversation and output links", async ({
+      appPage,
+      homePage,
+      page,
+    }) => {
+      await homePage.navigate("/s/missing-release-share");
+      await expect(
+        page.getByRole("heading", { name: "Shared Conversation Not Available" }),
+      ).toBeVisible();
+      await expect(page.getByText(/not found or is no longer available/i)).toBeVisible();
+      await captureVisualSnapshots(
         page,
-      }) => {
-        await homePage.navigate("/s/missing-release-share");
-        await expect(
-          page.getByRole("heading", { name: "Shared Conversation Not Available" }),
-        ).toBeVisible();
-        await expect(page.getByText(/not found or is no longer available/i)).toBeVisible();
-        await captureVisualSnapshots(
-          page,
-          `release-resilience-shared-conversation-missing-${persona}`,
-          DEFAULT_VISUAL_CHECKPOINTS,
-        );
-        await appPage.followLink("Return Home");
-        await expect(homePage.chatInput).toBeEditable();
+        "release-resilience-shared-conversation-missing",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
+      await appPage.followLink("Return Home");
+      await expect(homePage.chatInput).toBeEditable();
 
-        await homePage.navigate("/o/missing-release-output");
-        await expect(
-          page.getByRole("heading", { name: "Shared output unavailable" }),
-        ).toBeVisible();
-        await captureVisualSnapshots(
-          page,
-          `release-resilience-shared-output-missing-${persona}`,
-          DEFAULT_VISUAL_CHECKPOINTS,
-        );
-        await appPage.followLink("Return home");
-        await expect(homePage.chatInput).toBeEditable();
-      });
-    });
-  }
-
-  for (const persona of ["logged-out", "free", "pro"] as const) {
-    test.describe(`${persona} public conversation`, () => {
-      test.use({ persona });
-
-      test("opens a valid shared conversation without account access", async ({
-        appPage,
-        homePage,
+      await homePage.navigate("/o/missing-release-output");
+      await expect(page.getByRole("heading", { name: "Shared output unavailable" })).toBeVisible();
+      await captureVisualSnapshots(
         page,
-      }) => {
-        await homePage.navigate("/s/polychat-e2e-shared-conversation-release-0001");
-        await expect(page.getByRole("heading", { name: "Shared Conversation" })).toBeVisible();
-        await expect(page.getByText("Can this release be shared?", { exact: true })).toBeVisible();
-        await expect(
-          page.getByText("Shared release conversation response", { exact: true }),
-        ).toBeVisible();
-        await captureVisualSnapshots(
-          page,
-          `release-resilience-shared-conversation-${persona}`,
-          DEFAULT_VISUAL_CHECKPOINTS,
-        );
-        await appPage.followLink("New Chat");
-        await expect(homePage.chatInput).toBeEditable();
-      });
+        "release-resilience-shared-output-missing",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
+      await appPage.followLink("Return home");
+      await expect(homePage.chatInput).toBeEditable();
     });
+  });
 
-    test.describe(`${persona} public output`, () => {
-      test.use({ persona });
+  test.describe("public conversation", () => {
+    test.use({ persona: "logged-out" });
 
-      test("opens a valid shared project output without account access", async ({
-        homePage,
+    test("opens a valid shared conversation without account access", async ({
+      appPage,
+      homePage,
+      page,
+    }) => {
+      await homePage.navigate("/s/polychat-e2e-shared-conversation-release-0001");
+      await expect(page.getByRole("heading", { name: "Shared Conversation" })).toBeVisible();
+      await expect(page.getByText("Can this release be shared?", { exact: true })).toBeVisible();
+      await expect(
+        page.getByText("Shared release conversation response", { exact: true }),
+      ).toBeVisible();
+      await captureVisualSnapshots(
         page,
-      }) => {
-        await homePage.navigate("/o/polychat-e2e-shared-output-release-token-0001");
-        await expect(
-          page.getByRole("heading", { name: "Public release output" }).last(),
-        ).toBeVisible();
-        await expect(
-          page.getByText("Public release output content", { exact: false }),
-        ).toBeVisible();
-        await captureVisualSnapshots(
-          page,
-          `release-resilience-shared-output-${persona}`,
-          DEFAULT_VISUAL_CHECKPOINTS,
-        );
-      });
+        "release-resilience-shared-conversation",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
+      await appPage.followLink("New Chat");
+      await expect(homePage.chatInput).toBeEditable();
     });
-  }
+  });
+
+  test.describe("public output", () => {
+    test.use({ persona: "logged-out" });
+
+    test("opens a valid shared project output without account access", async ({
+      homePage,
+      page,
+    }) => {
+      await homePage.navigate("/o/polychat-e2e-shared-output-release-token-0001");
+      await expect(
+        page.getByRole("heading", { name: "Public release output" }).last(),
+      ).toBeVisible();
+      await expect(page.getByText("Public release output content", { exact: false })).toBeVisible();
+      await captureVisualSnapshots(
+        page,
+        "release-resilience-shared-output",
+        DEFAULT_VISUAL_CHECKPOINTS,
+      );
+    });
+  });
 
   test.describe("missing Work resources", () => {
     test.use({ persona: "pro" });

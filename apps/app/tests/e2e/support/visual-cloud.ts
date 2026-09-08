@@ -36,6 +36,10 @@ const DEFAULT_VIEWPORTS: SnapshotViewport[] = [
 const DEFAULT_SCHEMES: ColourScheme[] = ["light", "dark"];
 
 function canCaptureVisualSnapshot(): boolean {
+  if (!process.env.PVC_ENVIRONMENT) {
+    return false;
+  }
+
   if (!process.env.PVC_SERVER_URL || !process.env.PVC_TOKEN) {
     return false;
   }

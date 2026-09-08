@@ -9,6 +9,24 @@ export class ComposerDraftPage extends BasePage {
     return this.input.locator('[data-composer-token-kind="action"]');
   }
 
+  async caretIsVisible() {
+    return this.input.evaluate((element) => {
+      const selection = window.getSelection();
+
+      if (!selection?.rangeCount) {
+        return false;
+      }
+
+      const range = selection.getRangeAt(0).cloneRange();
+
+      range.collapse(false);
+      const caret = range.getBoundingClientRect();
+      const input = element.getBoundingClientRect();
+
+      return caret.top >= input.top - 1 && caret.bottom <= input.bottom + 1;
+    });
+  }
+
   async placeCaretInCommand(draft: string) {
     await this.input.fill(draft);
     for (let position = draft.length; position > 3; position -= 1) {

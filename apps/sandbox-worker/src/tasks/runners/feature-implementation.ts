@@ -42,6 +42,7 @@ import { runStoryTracker } from "../../lib/feature-implementation/story-tracker"
 import { truncateForModel } from "../../lib/feature-implementation/utils";
 import { deliverCommitToGitHub, prepareGitHubDelivery } from "../../lib/github-delivery";
 import { waitForInspectionWindow } from "../../lib/inspection-window";
+import { redactSandboxOutput } from "../../lib/output-redaction";
 import { PolychatClient } from "../../lib/polychat-client";
 import { RunControlClient } from "../../lib/run-control-client";
 import { ProjectServiceSupervisor } from "../../lib/service-supervisor";
@@ -624,8 +625,10 @@ export async function executeFeatureImplementation(
 
     return result;
   } catch (error) {
-    console.error("Error during sandbox task execution:", error);
     const classified = classifySandboxError(error);
+
+    classified.message = redactSandboxOutput(classified.message, redactionSecrets);
+    console.error("Error during sandbox task execution:", classified);
 
     await serviceSupervisor?.stop();
 

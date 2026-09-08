@@ -1,11 +1,11 @@
 import {
   createChatCompletionsJsonSchema,
   DELEGATION_EXPIRY_TASK_TYPE,
-  DELEGATION_WAKE_TASK_TYPE,
   delegationRunTaskDataSchema,
   projectCodingEnvironmentSchema,
   resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicyCreatesCommit,
+  SANDBOX_TIMEOUT_MIN_SECONDS,
   type Delegation,
   type DelegationResult,
   type DelegationState,
@@ -24,9 +24,11 @@ import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import type { IEnv } from "~/types";
 import { intersectEnabledTools } from "~/utils/enabledTools";
 import { safeParseJson } from "~/utils/json";
+import { extractTextFromMessageContent } from "~/utils/messages";
 
 import type { TaskMessage } from "../tasks/TaskService";
 import { resolveDelegationExecutionRoute } from "./routing";
+import { scheduleDelegationWake } from "./schedule-wake";
 
 async function transitionDelegation(
   context: ServiceContext,
@@ -194,6 +196,14 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         return { status: "error" as const, detail: "Sandbox repository is not configured" };
       }
 
+      const remainingSeconds = Math.floor(
+        (Date.parse(delegation.budget.deadline) - Date.now()) / 1000,
+      );
+
+      if (remainingSeconds < SANDBOX_TIMEOUT_MIN_SECONDS) {
+        throw new Error("The delegation deadline is too close to start a sandbox run.");
+      }
+
       sandboxOptions = {
         enabled: true,
         installationId: codingEnvironment.data.installationId,
@@ -202,7 +212,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         shouldCommit: sandboxDeliveryPolicyCreatesCommit(codingEnvironment.data.deliveryPolicy),
         promptStrategy: codingEnvironment.data.promptStrategy,
         environmentSetup: codingEnvironment.data.environmentSetup,
-        timeoutSeconds: codingEnvironment.data.timeoutSeconds,
+        timeoutSeconds: Math.min(codingEnvironment.data.timeoutSeconds, remainingSeconds),
         inspectionWindowSeconds: codingEnvironment.data.inspectionWindowSeconds,
       };
     }
@@ -232,6 +242,9 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       anonymousUser: undefined,
       conversationType: "delegate",
       trigger: "delegation",
+      signal: AbortSignal.timeout(
+        Math.min(2_147_483_647, Math.max(1, Date.parse(delegation.budget.deadline) - Date.now())),
+      ),
       maxStepsOverride: delegation.budget.maxSteps,
       durableExecution: {
         kind: "delegation",
@@ -257,6 +270,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
           task_type: DELEGATION_EXPIRY_TASK_TYPE,
           user_id: message.user_id,
           priority: 4,
+          schedule_type: "scheduled",
           scheduled_at: delegation.budget.deadline,
           task_data: { delegationId: delegation.id },
         });
@@ -268,16 +282,34 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       }
     }
 
-    const summary =
-      response instanceof Response ? "Delegate run accepted." : "Delegate run completed.";
+    if (response instanceof Response) {
+      throw new Error("The delegate did not return a completed result.");
+    }
 
-    await transitionDelegation(context, delegation.id, "done", {
+    const assistantMessages = response.choices
+      .map((choice) => choice.message)
+      .filter((entry) => entry.role === "assistant");
+    const failed = assistantMessages.some(
+      (entry) => entry.status === "failed" || entry.status === "error",
+    );
+    const summary = assistantMessages
+      .map((entry) => extractTextFromMessageContent(entry.content))
+      .filter(Boolean)
+      .join("\n")
+      .trim()
+      .slice(0, 2000);
+
+    if (!summary) {
+      throw new Error("The delegate returned no result for its parent.");
+    }
+
+    await transitionDelegation(context, delegation.id, failed ? "failed" : "done", {
       summary,
       outputIds: [],
     });
     await enqueueDelegationWake(context, delegation, message.user_id);
 
-    return { status: "success" as const, detail: summary };
+    return { status: failed ? ("error" as const) : ("success" as const), detail: summary };
   } catch (error) {
     const summary = error instanceof Error ? error.message : "Delegate run failed.";
 
@@ -361,18 +393,9 @@ async function enqueueDelegationWake(
   delegation: { id: string; parentConversationId: string; parentRunId: string },
   userId: number | undefined,
 ) {
-  if (userId === undefined) {
-    return;
-  }
-
-  await new TaskService(context.env, context.repositories.tasks).enqueueTask({
-    id: `delegation_wake_${delegation.parentRunId}`,
-    task_type: DELEGATION_WAKE_TASK_TYPE,
-    user_id: userId,
-    priority: 4,
-    task_data: {
-      parentConversationId: delegation.parentConversationId,
-      parentRunId: delegation.parentRunId,
-    },
-  });
+  await scheduleDelegationWake(
+    new TaskService(context.env, context.repositories.tasks),
+    delegation,
+    userId,
+  );
 }

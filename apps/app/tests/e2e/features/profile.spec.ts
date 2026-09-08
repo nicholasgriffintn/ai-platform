@@ -302,6 +302,7 @@ test.describe("Account-owned resources", () => {
   test("groups reusable source material in a collection and deletes both", async ({
     page,
     profilePage,
+    polychatApi,
   }) => {
     await profilePage.createSourceCollectionWithSource(
       "Release validation collection",
@@ -309,19 +310,29 @@ test.describe("Account-owned resources", () => {
       "Source material for the release-validation journey.",
     );
     await expect(page.getByText("Release validation source", { exact: true })).toBeVisible();
+    expect(await polychatApi.listSources()).toEqual(
+      expect.arrayContaining([expect.objectContaining({ title: "Release validation source" })]),
+    );
     await profilePage.deleteSourceCollectionAndSource(
       "Release validation collection",
       "Release validation source",
     );
     await expect(page.getByText("Release validation source", { exact: true })).toHaveCount(0);
     await expect(page.getByText("Release validation collection", { exact: true })).toHaveCount(0);
+    expect(await polychatApi.listSources()).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ title: "Release validation source" })]),
+    );
     await captureVisualSnapshots(page, "release-profile-sources", {
       ...DEFAULT_VISUAL_CHECKPOINTS,
       viewports: [{ name: "desktop", width: 1280, height: 720 }],
     });
   });
 
-  test("creates, edits and deletes an teammate", async ({ capabilitiesPage, page }) => {
+  test("creates, edits and deletes an teammate", async ({
+    capabilitiesPage,
+    page,
+    polychatApi,
+  }) => {
     const teammateName = "Release validation teammate";
 
     await capabilitiesPage.open();
@@ -338,6 +349,9 @@ test.describe("Account-owned resources", () => {
     });
     await capabilitiesPage.createTeammate();
     await expect(page).toHaveURL(/\/chat\/teammates\/[^/]+$/);
+    expect(await polychatApi.listTeammates()).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: teammateName })]),
+    );
 
     await capabilitiesPage.reload();
     expect(await capabilitiesPage.readTeammateModelSettings()).toEqual({
@@ -350,9 +364,20 @@ test.describe("Account-owned resources", () => {
     await expect(capabilitiesPage.capabilityCard(teammateName)).toContainText(
       "Checks release readiness. Updated.",
     );
+    expect(await polychatApi.listTeammates()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: teammateName,
+          description: "Checks release readiness. Updated.",
+        }),
+      ]),
+    );
 
     await capabilitiesPage.deleteTeammateFromLibrary(teammateName);
     await expect(page.getByText(teammateName, { exact: true })).toHaveCount(0);
+    expect(await polychatApi.listTeammates()).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: teammateName })]),
+    );
   });
 
   test("keeps credit-accounting tasks out of the account task list", async ({

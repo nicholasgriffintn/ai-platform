@@ -21,3 +21,5 @@
 - [ ] Read the persisted run record and client responses for any process id, container address or Sandbox SDK URL.
 
 **Stop and report if:** a runner command succeeds for anyone but the initiating runner, a command bypasses the policy, a preview keeps working after the window closes, or an environment stays held past its expiry.
+
+Automated inspection checks confirm an expired window refuses remaining queued commands and passes the remaining deadline to the sandbox command API. Stream checks cover credentials split across SDK output events before output reaches the client.

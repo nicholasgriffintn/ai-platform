@@ -109,10 +109,12 @@ export async function formatOutputDocument(
 
 export async function describeOutputDocument(
   outputId: string,
+  expectedRevision: number,
 ): Promise<{ metadata: DocumentMetadata }> {
   const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/describe`, {
     method: "POST",
     headers: await getHeaders(),
+    body: { expectedRevision },
   });
 
   return returnFetchedData<{ metadata: DocumentMetadata }>(response);

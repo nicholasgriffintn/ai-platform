@@ -1,9 +1,3 @@
-import {
-  findPetSheetLayout,
-  PET_PRESETS,
-  type PetSheetLayout,
-} from "@ngriffin_uk/polychat-schemas";
-
 import ash from "../pets/ash.png";
 import bit from "../pets/bit.png";
 import flask from "../pets/flask.png";
@@ -26,14 +20,6 @@ const BUILT_IN_PET_SHEETS = new Map<string, string>([
   ["/pets/wisp.png", wisp],
 ]);
 
-const BUILT_IN_PET_LAYOUTS = new Map(
-  PET_PRESETS.map((preset) => [preset.sheetUrl, preset.layoutId]),
-);
-
 export function resolvePetSheetUrl(sheetUrl: string): string {
   return BUILT_IN_PET_SHEETS.get(sheetUrl) ?? sheetUrl;
-}
-
-export function resolvePetSheetLayout(sheetUrl: string): PetSheetLayout {
-  return findPetSheetLayout(BUILT_IN_PET_LAYOUTS.get(sheetUrl));
 }

@@ -3,6 +3,8 @@ import {
   DOCUMENT_CAPABILITY_ID,
   DOCUMENT_OUTPUT_KIND,
   outputSchema,
+  sourceListResponseSchema,
+  teammateListResponseSchema,
   authoredSkillHistoryResponseSchema,
   authoredSkillVersionedDocumentSchema,
   chatRunCommandReceiptResponseSchema,
@@ -17,24 +19,14 @@ import {
   type AuthoredSkillDocument,
   type AuthoredSkillHistoryResponse,
 } from "@ngriffin_uk/polychat-schemas";
-import type { APIRequestContext, APIResponse } from "@playwright/test";
+import type { APIRequestContext } from "@playwright/test";
 
+import { requireSuccessfulResponse } from "../support/api-response";
 import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
+import { skillDocument } from "../support/skill-document";
 
 const API_BASE_URL = E2E_API_BASE_URL;
 const BROWSER_REQUEST_HEADERS = { origin: E2E_APP_BASE_URL };
-
-async function requireSuccessfulResponse(response: APIResponse, operation: string): Promise<void> {
-  if (response.ok()) {
-    return;
-  }
-
-  throw new Error(`${operation} failed (${response.status()}): ${await response.text()}`);
-}
-
-function skillDocument(name: string, instructions: string): string {
-  return `---\nname: ${name}\ndescription: Exercise the authored skill release lifecycle.\n---\n\n# Instructions\n${instructions}`;
-}
 
 export class PolychatApi {
   constructor(private readonly request: APIRequestContext) {}
@@ -306,6 +298,22 @@ export class PolychatApi {
     return (await this.request.get(`${API_BASE_URL}/teammates`)).status();
   }
 
+  async listTeammates() {
+    const response = await this.request.get(`${API_BASE_URL}/teammates`);
+
+    await requireSuccessfulResponse(response, "List teammates");
+
+    return teammateListResponseSchema.parse(await response.json());
+  }
+
+  async listSources() {
+    const response = await this.request.get(`${API_BASE_URL}/sources`);
+
+    await requireSuccessfulResponse(response, "List sources");
+
+    return sourceListResponseSchema.parse(await response.json()).sources;
+  }
+
   async retiredAgentsRouteStatus(): Promise<number> {
     return (await this.request.get(`${API_BASE_URL}/agents`)).status();
   }
@@ -517,6 +525,18 @@ export class PolychatApi {
   async conversationThreadsStatus(conversationId: string): Promise<number> {
     return (
       await this.request.get(`${API_BASE_URL}/chat/completions/${conversationId}/threads`)
+    ).status();
+  }
+
+  async instantiateStarterStatus(workspaceId: string): Promise<number> {
+    return (
+      await this.request.post(
+        `${API_BASE_URL}/templates/starters/build-an-internal-tool/instantiate`,
+        {
+          headers: BROWSER_REQUEST_HEADERS,
+          data: { workspaceId },
+        },
+      )
     ).status();
   }
 

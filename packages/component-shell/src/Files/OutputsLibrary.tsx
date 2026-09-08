@@ -28,6 +28,7 @@ import {
   documentExportFilename,
   readDocumentBody,
   readDocumentMetadata,
+  deriveDocumentStatistics,
 } from "@ngriffin_uk/polychat-schemas";
 import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
 import { Puzzle } from "lucide-react";
@@ -142,6 +143,7 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
                   outputId: output.id,
                   body,
                   expectedRevision: output.revision,
+                  metadata: documentMetadata ?? undefined,
                 });
               }}
               isRewriting={formatDocument.isPending}
@@ -161,11 +163,18 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
         )}
         {documentBody !== null ? (
           <DocumentMetadataPanel
-            metadata={documentMetadata ?? undefined}
+            metadata={{ ...documentMetadata, ...deriveDocumentStatistics(documentBody) }}
             canRegenerate
             isRegeneratingMetadata={describeDocument.isPending}
-            onRegenerateMetadata={() => describeDocument.mutate(output.id)}
+            onRegenerateMetadata={() =>
+              describeDocument.mutate({ outputId: output.id, expectedRevision: output.revision })
+            }
           />
+        ) : null}
+        {describeDocument.error ? (
+          <p role="alert" className="text-sm text-failure">
+            {describeDocument.error.message}
+          </p>
         ) : null}
         {outputHistory ? (
           <OutputRevisionReview

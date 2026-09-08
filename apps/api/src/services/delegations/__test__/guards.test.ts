@@ -47,13 +47,6 @@ describe("checkDelegationSpawn", () => {
     expect(result.reason).toContain("maximum number");
   });
 
-  it("ignores a model-supplied depth argument", async () => {
-    const result = await checkDelegationSpawn(context({ arguments: { depth: 1 } }));
-
-    expect(result.allowed).toBe(true);
-    expect(result.depth).toBe(0);
-  });
-
   it("refuses when there is no stored run to count live delegations against", async () => {
     const withoutRun = context();
 

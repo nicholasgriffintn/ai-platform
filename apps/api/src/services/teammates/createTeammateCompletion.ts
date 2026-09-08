@@ -65,6 +65,7 @@ export async function createTeammateCompletion({
     modelToUse || "",
     env,
     body.provider ?? fallbackModel?.provider,
+    user?.id,
   );
 
   if (!modelDetails) {

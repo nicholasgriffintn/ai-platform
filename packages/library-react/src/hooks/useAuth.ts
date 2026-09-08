@@ -24,6 +24,7 @@ export function useAuthStatus() {
   const authStatusQuery = useQuery({
     queryKey: AUTH_QUERY_KEYS.authStatus,
     queryFn: async () => {
+      const previousIdentity = useChatStore.getState();
       const isAuth = await authService.checkAuthStatus();
 
       const user = authService.getUser();
@@ -41,7 +42,10 @@ export function useAuthStatus() {
         clearAuthenticatedUserConfiguration();
       }
 
-      useUsageStore.getState().setUsageLimits(null);
+      if (previousIdentity.isAuthenticated !== isAuth || previousIdentity.user?.id !== user?.id) {
+        useUsageStore.getState().setUsageLimits(null);
+      }
+
       setIsAuthenticationLoading(false);
 
       return isAuth;
