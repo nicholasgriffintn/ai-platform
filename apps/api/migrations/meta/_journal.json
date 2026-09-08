@@ -344,6 +344,20 @@
       "when": 1788833313664,
       "tag": "0048_striped_kronos",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "6",
+      "when": 1788895582852,
+      "tag": "0049_melted_freak",
+      "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "6",
+      "when": 1788897394728,
+      "tag": "0050_brave_goblin_queen",
+      "breakpoints": true
     }
   ]
 }

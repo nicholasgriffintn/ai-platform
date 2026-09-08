@@ -38,10 +38,10 @@ export interface TaskMessage {
 export const MAX_QUEUE_DELAY_SECONDS = 60 * 60 * 12;
 
 export class TaskService {
-  private env: IEnv;
+  private env: Pick<IEnv, "TASK_QUEUE">;
   private taskRepository: TaskRepository;
 
-  constructor(env: IEnv, taskRepository: TaskRepository) {
+  constructor(env: Pick<IEnv, "TASK_QUEUE">, taskRepository: TaskRepository) {
     this.env = env;
     this.taskRepository = taskRepository;
   }

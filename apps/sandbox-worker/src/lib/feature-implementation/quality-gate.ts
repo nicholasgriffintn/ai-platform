@@ -154,6 +154,7 @@ export async function runQualityGate(params: {
       `cd ${quoteForShell(repoTargetDir)} && ${withSandboxEnvironment(command, params.environmentVariables, params.environmentVariableNames ?? [])}`,
       {
         abortSignal,
+        redactionSecrets: Object.values(params.environmentVariables ?? {}),
         onOutput: async (output) => {
           await emit({
             type: "quality_gate_output",

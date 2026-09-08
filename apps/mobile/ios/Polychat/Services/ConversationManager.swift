@@ -6,7 +6,7 @@ class ConversationManager: ObservableObject {
     @Published var currentConversation: Conversation?
     @Published var conversations: [Conversation] = []
     @Published var selectedModelId: String?
-    @Published private(set) var currentHandoff: HandoffResponse?
+    @Published private(set) var activeMachineRun: (id: String, machineId: String, conversationId: String)?
     @Published var isLoading: Bool = false
     @Published var loadingConversationID: String?
     @Published private(set) var isLoadingEarlierMessages = false
@@ -409,6 +409,15 @@ class ConversationManager: ObservableObject {
     }
 
     func cancelCurrentRun() async {
+        if let run = activeMachineRun, let apiClient {
+            do {
+                try await apiClient.cancelMachineModelRun(id: run.id, machineId: run.machineId)
+            } catch {
+                self.error = "The device run could not be stopped: \(error.localizedDescription)"
+            }
+            return
+        }
+
         guard let apiClient,
               let conversation = currentConversation,
               let run = conversation.latestRun,
@@ -679,6 +688,7 @@ class ConversationManager: ObservableObject {
 
         defer {
             progressCoalescer?.stop()
+            if activeMachineRun?.conversationId == conversationId { activeMachineRun = nil }
         }
 
         do {
@@ -710,30 +720,16 @@ class ConversationManager: ObservableObject {
                              userInfo: [NSLocalizedDescriptionKey: "API client not configured"])
             }
 
-            if let machineId = selectedModel?.machineId {
-                let draft = requestMessages.last(where: { $0.role == "user" }).map {
-                    HandoffDraft(text: $0.textContent, attachmentIds: [])
-                }
-                let handoff = try await apiClient.createMachineHandoff(
-                    conversationId: conversationId,
-                    machineId: machineId,
-                    modelId: selectedModel?.id ?? "",
-                    draft: draft
+            let stream: AsyncThrowingStream<ChatStreamEvent, Error>
+            if let machineId = selectedModel?.machineId, let modelId = selectedModel?.id {
+                let runId = UUID().uuidString
+                activeMachineRun = (runId, machineId, conversationId)
+                stream = apiClient.streamMachineModelRun(
+                    id: runId, machineId: machineId, modelId: modelId,
+                    messages: requestMessages, conversationId: conversationId
                 )
-                currentHandoff = handoff
-                updateAssistantMessage(
-                    conversationId: conversationId,
-                    messageId: assistantMessageId,
-                    content: "Sent to \(selectedModel?.name ?? "your machine"). It will answer there; this phone does not receive a live token stream.",
-                    modelId: selectedModel?.id,
-                    fallbackMessageId: nil
-                )
-                if handoff.state == "pending" {
-                    return
-                }
-            }
-
-            let stream = connectorApprovalId.map {
+            } else {
+            stream = connectorApprovalId.map {
                 apiClient.streamApprovedConnectorOperation(
                     messages: requestMessages,
                     modelId: modelToUse,
@@ -755,6 +751,8 @@ class ConversationManager: ObservableObject {
                 modelTier: requestedModelTier,
                 computeSite: "hosted"
             )
+
+            }
 
             var streamedReasoning = ""
             var responseModelId = modelToUse ?? "auto"
@@ -885,6 +883,14 @@ class ConversationManager: ObservableObject {
                 )
             }
 
+            if selectedModel?.machineId != nil,
+               let stored = conversations.first(where: { $0.id == conversationId }) {
+                try await apiClient.updateConversation(
+                    id: conversationId, title: stored.title, messages: stored.messages,
+                    parentConversationId: nil, parentMessageId: nil
+                )
+            }
+
             if let detail = try? await apiClient.fetchConversation(
                 id: conversationId,
                 refreshPending: false
@@ -914,18 +920,6 @@ class ConversationManager: ObservableObject {
                 fallbackMessageId: assistantMessageId,
                 markLoadedFromAPI: didReceiveStreamEvent
             )
-        }
-    }
-
-    func cancelCurrentHandoff() async {
-        guard let handoff = currentHandoff else { return }
-        do {
-            currentHandoff = try await apiClient?.cancelMachineHandoff(
-                id: handoff.id,
-                machineId: handoff.target.machineId
-            )
-        } catch {
-            self.error = "The machine handoff could not be cancelled: \(error.localizedDescription)"
         }
     }
 

@@ -88,8 +88,6 @@ export * from "./credit-bands.js";
 export * from "./cron.js";
 export * from "./desktop-runtimes.js";
 export * from "./machines.js";
-export * from "./handoffs.js";
-export * from "./forge.js";
 export * from "./goals.js";
 export * from "./internal-service-auth.js";
 export * from "./memory-documents.js";
@@ -168,7 +166,11 @@ export * from "./headers.js";
 export * from "./research.js";
 export * from "./recipe-trigger-configuration.js";
 export * from "./strudel.js";
-
 export * from "./conversation-threads.js";
 export * from "./desktop-releases.js";
 export * from "./model-selection-ui.js";
+export * from "./machine-runs.js";
+export * from "./agent-catalogue.js";
+export * from "./agent-output.js";
+
+export * from "./ollama.js";

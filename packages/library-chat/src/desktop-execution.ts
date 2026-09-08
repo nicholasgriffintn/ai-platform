@@ -1,4 +1,4 @@
-import type { DesktopEndpoint, ModelRuntimeVendor } from "@ngriffin_uk/polychat-schemas";
+import type { DesktopEndpoint } from "@ngriffin_uk/polychat-schemas";
 
 import type { DesktopBackend } from "./desktop-backend.js";
 
@@ -15,12 +15,16 @@ export function desktopExecutionBackend(): DesktopBackend | null {
 export function findModelRuntimeEndpoint(
   endpoints: DesktopEndpoint[],
   vendor: string | undefined,
+  endpointId?: string,
 ): DesktopEndpoint | undefined {
   if (!vendor) {
     return undefined;
   }
 
   return endpoints.find(
-    (endpoint) => endpoint.kind === "model" && endpoint.vendor === (vendor as ModelRuntimeVendor),
+    (endpoint) =>
+      endpoint.kind === "model" &&
+      endpoint.vendor === vendor &&
+      (!endpointId || endpoint.id === endpointId),
   );
 }

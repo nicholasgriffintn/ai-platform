@@ -43,48 +43,31 @@ public struct MachineModel: Codable {
     public let displayName: String
     public let contextTokens: Int?
     public let parameterSizeBytes: Int?
-    public let capabilities: [String]
+    public let capabilities: MachineModelCapabilities
     public let loaded: Bool
 }
 
-public struct HandoffRequest: Encodable {
+struct MachineRunRequest: Encodable {
+    let id: String
     let conversationId: String
-    let machineId: String
-    let requested: HandoffRequested
-    let draft: HandoffDraft?
+    let vendor: String
+    let nativeModelId: String
+    let messages: [ChatMessage]
 }
 
-struct HandoffRequested: Encodable {
-    let computeSite: String
-    let modelId: String
-}
-
-struct HandoffDraft: Encodable {
-    let text: String
-    let attachmentIds: [String]
-}
-
-public struct HandoffResponse: Codable {
-    public let id: String
-    public let conversationId: String
-    public let target: HandoffTarget
-    public let state: String
-    public let expiresAt: String
-}
-
-struct HandoffDecisionRequest: Encodable {
-    let machineId: String
+struct MachineRunSnapshot: Decodable {
+    let id: String
     let state: String
+    let text: String
+    let error: String?
 }
 
-struct HandoffDecisionEnvelope: Codable {
-    let handoff: HandoffResponse
+public struct MachineModelCapabilities: Codable {
+    public let tools: Bool
+    public let vision: Bool
+    public let thinking: Bool
 }
 
-public struct HandoffTarget: Codable {
-    public let kind: String
-    public let machineId: String
-}
 
 public struct ModelTierLineup: Codable {
     public let low: ModelTierRoleSelection

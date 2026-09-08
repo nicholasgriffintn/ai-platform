@@ -1,0 +1,2 @@
+[target.'cfg(target_os = "macos")']
+runner = ["node", "../../../scripts/run-desktop-macos.mjs"]

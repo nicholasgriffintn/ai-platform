@@ -27,7 +27,15 @@ export function useModels() {
     const machineModels = machines.data ? buildMachineModels(machines.data) : undefined;
 
     return hostedModels.data || deviceModels.data || machineModels
-      ? { ...hostedModels.data, ...machineModels, ...deviceModels.data }
+      ? {
+          ...Object.fromEntries(
+            Object.entries(hostedModels.data ?? {}).filter(
+              ([, model]) => model.kind !== "agent" || model.runsOn !== "device",
+            ),
+          ),
+          ...machineModels,
+          ...deviceModels.data,
+        }
       : undefined;
   }, [hostedModels.data, deviceModels.data, machines.data]);
   const isMachineQueryActive = !hasLocalDeviceModelSource;
@@ -36,9 +44,10 @@ export function useModels() {
     ...hostedModels,
     data,
     isLoading:
-      hostedModels.isLoading ||
-      deviceModels.isLoading ||
-      (isMachineQueryActive && machines.isLoading),
+      data === undefined &&
+      (hostedModels.isLoading ||
+        deviceModels.isLoading ||
+        (isMachineQueryActive && machines.isLoading)),
     isFetching:
       hostedModels.isFetching ||
       deviceModels.isFetching ||

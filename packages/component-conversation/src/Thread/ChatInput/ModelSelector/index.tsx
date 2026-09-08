@@ -24,7 +24,7 @@ export const ModelSelector = ({
 }: ModelSelectorProps) => {
   const selection = useModelSelection({ ...selectionOptions, modelScope });
   const controller = useModelSelectorController({
-    isOpen: selection.isOpen,
+    isOpen: selection.isOpen && !selection.isLoading,
     onOpen: selection.openSelector,
     onClose: selection.closeSelector,
   });

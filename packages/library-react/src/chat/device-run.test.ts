@@ -1,11 +1,11 @@
-import { createFakeDesktopBackend } from "@ngriffin_uk/polychat-library-chat";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import type { DesktopEndpoint } from "@ngriffin_uk/polychat-schemas";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+import { createFakeDesktopBackend } from "../lib/testing/desktop-backend.js";
 import { streamDeviceModelRun } from "./device-run.js";
 
-const ollamaEndpoint = {
+const ollamaEndpoint: DesktopEndpoint = {
   id: "ollama-local",
   kind: "model",
   vendor: "ollama",
@@ -15,7 +15,7 @@ const ollamaEndpoint = {
   pairingSecretStored: false,
   approvedAt: "2026-01-01T00:00:00Z",
   lastSeenAt: null,
-} as DesktopEndpoint;
+};
 
 const model = {
   id: "ollama-gemma3-4b",
@@ -30,6 +30,26 @@ const messages: Message[] = [
 ];
 
 describe("streamDeviceModelRun", () => {
+  it("uses the endpoint that discovered the model when two runtimes share a vendor", async () => {
+    const backend = createFakeDesktopBackend({
+      endpoints: [ollamaEndpoint, { ...ollamaEndpoint, id: "home-server" }],
+      script: [
+        { type: "finished", runId: "run-1", reason: "complete", at: "2026-01-01T00:00:00Z" },
+      ],
+    });
+    const start = vi.spyOn(backend, "startModelRun");
+
+    await streamDeviceModelRun({
+      backend,
+      conversationId: "conversation-1",
+      messages,
+      model: { ...model, runtimeEndpointId: "home-server" },
+      onContent: () => undefined,
+      signal: new AbortController().signal,
+    });
+    expect(start).toHaveBeenCalledWith(expect.objectContaining({ endpointId: "home-server" }));
+  });
+
   it("streams the runtime's text back and returns the whole reply", async () => {
     const backend = createFakeDesktopBackend({
       endpoints: [ollamaEndpoint],

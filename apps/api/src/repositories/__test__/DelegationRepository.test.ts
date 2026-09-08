@@ -1,75 +1,91 @@
-import { describe, expect, it, vi } from "vitest";
+import { readFile } from "node:fs/promises";
+
+import { Miniflare } from "miniflare";
+import { afterAll, beforeAll, expect, it } from "vitest";
 
 import { DelegationRepository } from "../DelegationRepository";
 
-const row = {
-  id: "delegation-1",
-  parent_conversation_id: "conversation-1",
-  child_conversation_id: "delegate_delegation-1",
-  parent_run_id: "run-1",
-  depth: 1,
-  teammate_id: "teammate-1",
-  goal: "Review the change",
-  wait_for: "all",
-  max_credit_micros: 100_000,
-  max_steps: 10,
-  deadline: "2026-09-08T12:00:00.000Z",
-  state: "queued",
-  result_json: null,
-  created_at: "2026-09-08T11:00:00.000Z",
-  updated_at: "2026-09-08T11:00:00.000Z",
-} as const;
+const runtime = new Miniflare({
+  modules: true,
+  script: "export default { fetch() { return new Response('test'); } }",
+  compatibilityDate: "2026-08-01",
+  d1Databases: ["DB"],
+});
+let repository: DelegationRepository;
 
-describe("DelegationRepository", () => {
-  it("expires only a delegation that is still live", async () => {
-    const first = vi.fn().mockResolvedValue(null);
-    const bind = vi.fn(() => ({ first }));
-    const queries: string[] = [];
-    const prepare = vi.fn((query: string) => {
-      queries.push(query);
+beforeAll(async () => {
+  const database = await runtime.getD1Database("DB");
+  const migration = await readFile(
+    new URL("../../../migrations/0043_steady_mulholland_black.sql", import.meta.url),
+    "utf8",
+  );
 
-      return { bind };
-    });
-    const repository = new DelegationRepository({ DB: { prepare } } as any);
+  await database.prepare("CREATE TABLE conversation (id TEXT PRIMARY KEY)").run();
+  await database.prepare("CREATE TABLE conversation_run (id TEXT PRIMARY KEY)").run();
+  await database.prepare("INSERT INTO conversation VALUES ('parent'), ('child')").run();
+  await database.prepare("INSERT INTO conversation_run VALUES ('run'), ('other-run')").run();
+  await database.prepare(migration.split("--> statement-breakpoint")[0]).run();
+  repository = new DelegationRepository({ DB: database });
+});
 
-    const expired = await repository.expireIfLive(row.id, "Deadline passed");
+afterAll(async () => {
+  await runtime.dispose();
+});
 
-    expect(expired).toBeNull();
-    expect(queries[0]).toContain(
-      "state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')",
-    );
+it("enforces concurrent fan-out at insertion and frees capacity only when a run settles", async () => {
+  const params = {
+    parentConversationId: "parent",
+    childConversationId: "child",
+    parentRunId: "run",
+    depth: 1,
+    teammateId: "teammate",
+    goal: "Review the change",
+    waitFor: "all" as const,
+    budget: {
+      maxCreditMicros: 100_000,
+      maxSteps: 10,
+      deadline: new Date(Date.now() + 60_000).toISOString(),
+    },
+  };
+  const results = await Promise.allSettled(
+    Array.from({ length: 8 }, (_, index) =>
+      repository.createDelegation({ ...params, id: `delegation-${index}` }),
+    ),
+  );
+
+  expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(3);
+  expect(await repository.countLiveForParent("parent", "run")).toBe(3);
+  const [first] = await repository.listByParentRunId("run");
+
+  expect(first.state).toBe("queued");
+  expect(await repository.claimDelegation(first.id)).toMatchObject({ state: "running" });
+  expect(await repository.claimDelegation(first.id)).toBeNull();
+  await repository.updateState(first.id, "done", { summary: "Complete", outputIds: [] });
+  expect(await repository.expireIfLive(first.id, "Deadline passed")).toBeNull();
+  expect(await repository.getById(first.id)).toMatchObject({ state: "done" });
+  expect(await repository.createDelegation({ ...params, id: "replacement" })).toMatchObject({
+    state: "queued",
   });
-
-  it("persists and formats a queued delegation", async () => {
-    const first = vi.fn().mockResolvedValue(row);
-    const prepare = vi.fn((query: string) => ({
-      bind: vi.fn(() => ({ first })),
-      query,
-    }));
-    const repository = new DelegationRepository({ DB: { prepare } } as any);
-
-    const delegation = await repository.createDelegation({
-      id: row.id,
-      parentConversationId: row.parent_conversation_id,
-      childConversationId: row.child_conversation_id,
-      parentRunId: row.parent_run_id,
-      depth: row.depth,
-      teammateId: row.teammate_id,
-      goal: row.goal,
-      waitFor: row.wait_for,
-      budget: {
-        maxCreditMicros: row.max_credit_micros,
-        maxSteps: row.max_steps,
-        deadline: row.deadline,
-      },
-    });
-
-    expect(delegation).toMatchObject({
-      id: row.id,
-      childConversationId: row.child_conversation_id,
-      state: "queued",
-      result: null,
-    });
-    expect(prepare.mock.calls[0]?.[0]).toContain("INSERT INTO delegation");
-  });
+  await expect(repository.createDelegation({ ...params, id: "over-limit" })).rejects.toThrow(
+    "limit",
+  );
+  expect(await repository.cancelIfLive("replacement")).toMatchObject({ state: "cancelled" });
+  expect(
+    await repository.updateState("replacement", "done", { summary: "Late result", outputIds: [] }),
+  ).toBeNull();
+  expect(await repository.getById("replacement")).toMatchObject({ state: "cancelled" });
+  await expect(
+    repository.createDelegation({ ...params, id: "nested", parentRunId: "other-run", depth: 2 }),
+  ).rejects.toThrow("depth");
+  await expect(
+    repository.createDelegation({
+      ...params,
+      id: "nested-with-forged-depth",
+      parentConversationId: "child",
+      parentRunId: "other-run",
+    }),
+  ).rejects.toThrow("depth");
+  expect(
+    await repository.createDelegation({ ...params, id: "other", parentRunId: "other-run" }),
+  ).toMatchObject({ state: "queued" });
 });

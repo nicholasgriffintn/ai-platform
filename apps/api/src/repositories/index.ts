@@ -20,7 +20,6 @@ import { ConversationRunRepository } from "./ConversationRunRepository";
 import { DelegationRepository } from "./DelegationRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { GoalRepository } from "./GoalRepository";
-import { HandoffRepository } from "./HandoffRepository";
 import { InfraCostDailyRepository } from "./InfraCostDailyRepository";
 import { MachineRepository } from "./MachineRepository";
 import { MemoryDocumentRepository } from "./MemoryDocumentRepository";
@@ -73,7 +72,6 @@ export {
   ConnectorOperationApprovalRepository,
   EmbeddingRepository,
   GoalRepository,
-  HandoffRepository,
   InfraCostDailyRepository,
   MemorySynthesisRepository,
   MessageRepository,
@@ -129,7 +127,6 @@ export class RepositoryManager {
   private connectorOperationApprovalRepo: ConnectorOperationApprovalRepository;
   private messageRepo: MessageRepository;
   private machineRepo: MachineRepository;
-  private handoffRepo: HandoffRepository;
   private mobilePushRepo: MobilePushRepository;
   private embeddingRepo: EmbeddingRepository;
   private goalRepo: GoalRepository;
@@ -182,7 +179,6 @@ export class RepositoryManager {
     this.connectorOperationApprovalRepo = new ConnectorOperationApprovalRepository(env);
     this.messageRepo = new MessageRepository(env);
     this.machineRepo = new MachineRepository(env);
-    this.handoffRepo = new HandoffRepository(env);
     this.mobilePushRepo = new MobilePushRepository(env);
     this.embeddingRepo = new EmbeddingRepository(env);
     this.goalRepo = new GoalRepository(env);
@@ -348,10 +344,6 @@ export class RepositoryManager {
 
   public get machines(): MachineRepository {
     return this.machineRepo;
-  }
-
-  public get handoffs(): HandoffRepository {
-    return this.handoffRepo;
   }
 
   public get mobilePush(): MobilePushRepository {

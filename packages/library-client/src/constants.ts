@@ -97,6 +97,7 @@ const COMMON_CSP = {
     "https://generativelanguage.googleapis.com",
     "wss://generativelanguage.googleapis.com",
     "https://huggingface.co",
+    "https://us.aws.cdn.hf.co",
     "https://raw.githubusercontent.com",
     "https://cdn-lfs-us-1.hf.co",
     "https://assistant-assets.nickgriffin.uk",

@@ -22,6 +22,10 @@ async function refreshPendingMessages(
   messages: Message[],
   user: ReturnType<ServiceContext["requireUser"]>,
 ): Promise<Message[]> {
+  if (!messages.some((message) => isAsyncInvocationPending(message.data?.asyncInvocation))) {
+    return messages;
+  }
+
   const refreshed = await withThreadLockIfFree(
     { env: context.env, conversationId: completionId, kind: "async_result" },
     (lease) => {

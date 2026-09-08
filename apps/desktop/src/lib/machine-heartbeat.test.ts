@@ -11,8 +11,6 @@ const diagnostics: DesktopDiagnostics = {
   apiBaseUrl: "https://api.polychat.app",
   databasePath: "/tmp/polychat.sqlite",
   endpointCount: 1,
-  keychainAvailable: true,
-  signedIn: true,
   collectedAt: "2026-09-07T09:00:00.000Z",
 };
 
@@ -46,7 +44,7 @@ describe("machine heartbeat", () => {
     expect(payload).toMatchObject({
       machineId: "machine-1",
       platform: "macos",
-      capabilities: ["model-run"],
+      capabilities: ["model-run", "model-relay"],
       runtimes: [
         {
           kind: "model",

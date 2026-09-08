@@ -9,6 +9,7 @@ import { findModelConfig } from "~/lib/providers/models";
 import { userCreditActor } from "~/lib/usage/creditActor";
 import { readCreditPosition } from "~/lib/usage/credits";
 import { checkDelegationSpawn } from "~/services/delegations/guards";
+import { resolveDelegationExecutionRoute } from "~/services/delegations/routing";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireTeammateAccess } from "~/services/teammates/access";
 import { hireTeammate } from "~/services/teammates/hire";
@@ -72,8 +73,25 @@ export const delegate: ApiToolDefinition = {
           user,
         );
     const teammateModel = teammate.model
-      ? await findModelConfig(teammate.model, context.env, undefined)
+      ? await findModelConfig(teammate.model, context.env, undefined, user.id)
       : undefined;
+
+    if (teammate.model && !teammateModel) {
+      return {
+        status: "error",
+        name: "delegate",
+        content: "The teammate's selected model is unavailable for delegation.",
+      };
+    }
+
+    if (resolveDelegationExecutionRoute(teammateModel) === "machine") {
+      return {
+        status: "error",
+        name: "delegate",
+        content:
+          "Use the chat model selector to run this provider. Background delegation is not supported for device providers.",
+      };
+    }
 
     if (teammateModel?.agent && !teammateModel.agent.capabilities.runsUnattended) {
       return {
@@ -172,21 +190,26 @@ export const delegate: ApiToolDefinition = {
         ...(projectId ? { project_id: projectId } : {}),
       },
     );
-    const delegation = await context.repositories.delegations.createDelegation({
-      id: delegationId,
-      parentConversationId,
-      childConversationId,
-      parentRunId: request.request?.run_id ?? toolContext.completionId,
-      depth: guard.depth + 1,
-      teammateId: teammate.id,
-      goal: args.goal,
-      waitFor: args.wait_for,
-      budget: {
-        maxCreditMicros,
-        maxSteps: args.budget?.max_steps ?? 20,
-        deadline,
-      },
-    });
+    const delegation = await context.repositories.delegations
+      .createDelegation({
+        id: delegationId,
+        parentConversationId,
+        childConversationId,
+        parentRunId: request.request?.run_id ?? toolContext.completionId,
+        depth: guard.depth + 1,
+        teammateId: teammate.id,
+        goal: args.goal,
+        waitFor: args.wait_for,
+        budget: {
+          maxCreditMicros,
+          maxSteps: args.budget?.max_steps ?? 20,
+          deadline,
+        },
+      })
+      .catch(async (error: unknown) => {
+        await context.repositories.conversations.deleteConversation(childConversationId);
+        throw error;
+      });
 
     await context.repositories.conversationHandles.createSpawnHandle({
       id: `handle_${delegationId}`,

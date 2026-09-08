@@ -23,8 +23,6 @@ export const AGENT_RUNTIME_VENDORS = [
   "cursor",
   "grok",
   "opencode",
-  "antigravity",
-  "polychat-sandbox",
 ] as const;
 export const agentRuntimeVendorSchema = z.enum(AGENT_RUNTIME_VENDORS);
 export type AgentRuntimeVendor = z.infer<typeof agentRuntimeVendorSchema>;
@@ -156,18 +154,6 @@ export const AGENT_RUNTIME_FAILURES = [
 export const agentRuntimeFailureSchema = z.enum(AGENT_RUNTIME_FAILURES);
 export type AgentRuntimeFailure = z.infer<typeof agentRuntimeFailureSchema>;
 
-export const agentRuntimeSessionSchema = z.object({
-  endpointId: z.string().min(1),
-  nativeId: z.string().min(1),
-  title: z.string().max(200).nullable(),
-  origin: z.string().max(80).nullable(),
-  state: z.enum(["idle", "running", "awaiting-approval", "failed"]),
-  executingHost: z.string().min(1),
-  updatedAt: z.string(),
-});
-
-export type AgentRuntimeSession = z.infer<typeof agentRuntimeSessionSchema>;
-
 export const AGENT_APPROVAL_KINDS = [
   "command",
   "file-write",
@@ -188,14 +174,6 @@ export const agentApprovalRequestSchema = z.object({
 });
 
 export type AgentApprovalRequest = z.infer<typeof agentApprovalRequestSchema>;
-
-export const agentApprovalDecisionSchema = z.object({
-  requestId: z.string().min(1),
-  approved: z.boolean(),
-  decidedAt: z.string(),
-});
-
-export type AgentApprovalDecision = z.infer<typeof agentApprovalDecisionSchema>;
 
 export const desktopSessionTokenSchema = z.object({
   token: z.string().min(1),
@@ -245,15 +223,6 @@ export const desktopModelRunRequestSchema = z.object({
 
 export type DesktopModelRunRequest = z.infer<typeof desktopModelRunRequestSchema>;
 
-export const desktopAgentRunRequestSchema = z.object({
-  endpointId: z.string().min(1),
-  sessionNativeId: z.string().min(1).nullable(),
-  conversationId: z.string().min(1),
-  prompt: z.string().min(1),
-});
-
-export type DesktopAgentRunRequest = z.infer<typeof desktopAgentRunRequestSchema>;
-
 export const agentToolStateSchema = z.discriminatedUnion("state", [
   z.object({ state: z.literal("missing"), checkedAt: z.string() }),
   z.object({ state: z.literal("present"), checkedAt: z.string(), version: z.string().nullable() }),
@@ -270,37 +239,6 @@ export const agentToolStateSchema = z.discriminatedUnion("state", [
     minimum: z.string(),
   }),
 ]);
-
-export const externalAgentLaunchSchema = z.object({
-  driver: z.literal("antigravity"),
-  directoryId: z.string().min(1),
-  head: z.string().min(1),
-  dirty: z.boolean(),
-});
-
-export type ExternalAgentLaunch = z.infer<typeof externalAgentLaunchSchema>;
-
-export const externalAgentComparisonSchema = z.object({
-  driver: z.literal("antigravity"),
-  directoryId: z.string().min(1),
-  baseHead: z.string().min(1),
-  currentHead: z.string().min(1),
-  dirty: z.boolean(),
-  changedFiles: z.array(z.string().min(1)).max(200),
-  diff: z.string().max(2_000_000),
-});
-
-export const externalAgentCommitSchema = z.object({
-  driver: agentRuntimeVendorSchema,
-  directoryId: z.string().min(1),
-  baseHead: z.string().min(1),
-  commitHead: z.string().min(1),
-  message: z.string().min(1).max(256),
-});
-
-export type ExternalAgentCommit = z.infer<typeof externalAgentCommitSchema>;
-
-export type ExternalAgentComparison = z.infer<typeof externalAgentComparisonSchema>;
 
 export type AgentToolState = z.infer<typeof agentToolStateSchema>;
 

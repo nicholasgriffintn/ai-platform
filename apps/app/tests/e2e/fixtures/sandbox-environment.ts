@@ -1,4 +1,4 @@
-import type { SandboxEnvironmentSetup } from "@ngriffin_uk/polychat-schemas";
+import type { SandboxEnvironmentSetupInput } from "@ngriffin_uk/polychat-schemas";
 
 export const SUPERVISED_SANDBOX_ENVIRONMENT = {
   source: "polychat",
@@ -29,7 +29,7 @@ export const SUPERVISED_SANDBOX_ENVIRONMENT = {
       },
     ],
   },
-} satisfies SandboxEnvironmentSetup;
+} satisfies SandboxEnvironmentSetupInput;
 
 export const WORKBENCH_STATUS_SANDBOX_ENVIRONMENT = {
   source: "polychat",
@@ -40,7 +40,7 @@ export const WORKBENCH_STATUS_SANDBOX_ENVIRONMENT = {
     runtimes: [{ name: "node", version: "22" }],
     setupTimeoutSeconds: 30,
   },
-} satisfies SandboxEnvironmentSetup;
+} satisfies SandboxEnvironmentSetupInput;
 
 export const BOUNDED_LOG_SANDBOX_ENVIRONMENT = {
   ...SUPERVISED_SANDBOX_ENVIRONMENT,
@@ -68,7 +68,7 @@ export const BOUNDED_LOG_SANDBOX_ENVIRONMENT = {
       },
     ],
   },
-} satisfies SandboxEnvironmentSetup;
+} satisfies SandboxEnvironmentSetupInput;
 
 export const INVALID_SERVICE_SANDBOX_ENVIRONMENTS = [
   {
@@ -187,7 +187,7 @@ export const INVALID_SERVICE_SANDBOX_ENVIRONMENTS = [
       },
     },
   },
-] satisfies Array<{ name: string; error: RegExp; setup: SandboxEnvironmentSetup }>;
+] satisfies Array<{ name: string; error: RegExp; setup: SandboxEnvironmentSetupInput }>;
 
 export const OCCUPIED_PORT_SANDBOX_ENVIRONMENT = {
   source: "polychat",
@@ -220,7 +220,7 @@ export const OCCUPIED_PORT_SANDBOX_ENVIRONMENT = {
       },
     ],
   },
-} satisfies SandboxEnvironmentSetup;
+} satisfies SandboxEnvironmentSetupInput;
 
 export const UNHEALTHY_SANDBOX_ENVIRONMENT = {
   source: "polychat",
@@ -243,4 +243,4 @@ export const UNHEALTHY_SANDBOX_ENVIRONMENT = {
       },
     ],
   },
-} satisfies SandboxEnvironmentSetup;
+} satisfies SandboxEnvironmentSetupInput;

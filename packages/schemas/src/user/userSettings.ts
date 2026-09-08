@@ -31,6 +31,22 @@ export const awsRegionSchema = z
 
 export const onboardingSeenSchema = z.array(z.string());
 
+export const lastModelSelectionSchema = z
+  .object({
+    modelId: z.string().trim().min(1).max(512),
+    name: z.string().trim().min(1).max(512),
+    provider: z.string().max(128).optional(),
+    computeSite: computeSiteSchema,
+    machineId: z.string().trim().min(1).max(256).optional(),
+    locationLabel: z.string().trim().min(1).max(512),
+    originInstallationId: z.string().max(128).optional(),
+  })
+  .refine((selection) => selection.computeSite !== "machine" || Boolean(selection.machineId), {
+    message: "A machine selection requires a machine ID",
+    path: ["machineId"],
+  });
+export type LastModelSelection = z.infer<typeof lastModelSelectionSchema>;
+
 export const updateUserSettingsSchema = z
   .object({
     nickname: z.string().nullable().optional(),
@@ -62,6 +78,7 @@ export const updateUserSettingsSchema = z
     default_model_tier: modelTierSchema.nullable().optional(),
     default_model_id: z.string().trim().min(1).nullable().optional(),
     default_compute_site: computeSiteSchema.nullable().optional(),
+    last_model_selection: lastModelSelectionSchema.nullable().optional(),
     pet_source: z.enum(["preset", "custom"]).optional(),
     pet_id: z.string().trim().min(1).max(60).optional(),
     pet_travel_enabled: z.boolean().optional(),

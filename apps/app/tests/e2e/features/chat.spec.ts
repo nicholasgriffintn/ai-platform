@@ -550,7 +550,7 @@ test.describe("Pro message attachments", () => {
 
   test("sends an image message", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
-    await homePage.selectModel("Llama 4 Scout 17B");
+    await homePage.selectModel("Llama 4 Scout 17B 16E Instruct");
     await homePage.uploadFile({
       name: "release-image.png",
       mimeType: "image/png",

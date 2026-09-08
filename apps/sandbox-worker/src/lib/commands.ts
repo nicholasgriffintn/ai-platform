@@ -1,6 +1,8 @@
 import { type getSandbox, parseSSEStream, type ExecEvent } from "@cloudflare/sandbox";
 import type { SandboxTaskType, SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
 
+import { createSandboxOutputRedactor, redactSandboxResult } from "./output-redaction";
+
 const MAX_LOG_CHARS = 80000;
 
 const GITHUB_HTTPS_REPO_REGEX =
@@ -77,30 +79,54 @@ export async function runSandboxCommand(
   command: string,
   options?: {
     abortSignal?: AbortSignal;
+    timeoutMs?: number;
+    redactionSecrets?: readonly string[];
     onOutput?: (output: { stream: "stdout" | "stderr"; data: string }) => Promise<void> | void;
   },
 ): Promise<SandboxCommandResult> {
   options?.abortSignal?.throwIfAborted();
 
   if (!sandbox.execStream) {
-    return sandbox.exec(command);
+    const result =
+      options?.timeoutMs === undefined
+        ? await sandbox.exec(command)
+        : await sandbox.exec(command, { timeout: options.timeoutMs });
+
+    return redactSandboxResult(result, options?.redactionSecrets);
   }
 
   const stdout: string[] = [];
   const stderr: string[] = [];
+  const redactors = {
+    stdout: createSandboxOutputRedactor(options?.redactionSecrets),
+    stderr: createSandboxOutputRedactor(options?.redactionSecrets),
+  };
   let completedResult: SandboxCommandResult | undefined;
-  const stream = await sandbox.execStream(command);
+  const stream =
+    options?.timeoutMs === undefined
+      ? await sandbox.execStream(command)
+      : await sandbox.execStream(command, { timeout: options.timeoutMs });
 
   for await (const event of parseSSEStream<ExecEvent>(stream, options?.abortSignal)) {
     if (event.type === "stdout" && event.data) {
       stdout.push(event.data);
-      await options?.onOutput?.({ stream: "stdout", data: event.data });
+      const data = redactors.stdout.push(event.data);
+
+      if (data) {
+        await options?.onOutput?.({ stream: "stdout", data });
+      }
+
       continue;
     }
 
     if (event.type === "stderr" && event.data) {
       stderr.push(event.data);
-      await options?.onOutput?.({ stream: "stderr", data: event.data });
+      const data = redactors.stderr.push(event.data);
+
+      if (data) {
+        await options?.onOutput?.({ stream: "stderr", data });
+      }
+
       continue;
     }
 
@@ -125,14 +151,22 @@ export async function runSandboxCommand(
     }
   }
 
-  return (
-    completedResult ?? {
-      success: false,
-      exitCode: 1,
-      stdout: stdout.join(""),
-      stderr: stderr.join("") || "Sandbox command stream ended without completion",
+  for (const source of ["stdout", "stderr"] as const) {
+    const data = redactors[source].flush();
+
+    if (data) {
+      await options?.onOutput?.({ stream: source, data });
     }
-  );
+  }
+
+  const result = completedResult ?? {
+    success: false,
+    exitCode: 1,
+    stdout: stdout.join(""),
+    stderr: stderr.join("") || "Sandbox command stream ended without completion",
+  };
+
+  return redactSandboxResult(result, options?.redactionSecrets);
 }
 
 export async function execOrThrow(sandbox: SandboxExecInstance, command: string, logs: string[]) {

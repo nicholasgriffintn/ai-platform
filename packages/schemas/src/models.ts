@@ -171,6 +171,7 @@ export const modelConfigItemSchema = z.object({
   readiness: readinessSchema.optional(),
   runsOn: z.enum(["server", "device"]).optional(),
   machineId: z.string().min(1).optional(),
+  runtimeEndpointId: z.string().min(1).optional(),
   isPlatformEnabled: z.boolean().optional(),
   isByokEnabled: z.boolean().optional(),
   hiddenFromDefaultList: z.boolean().optional(),

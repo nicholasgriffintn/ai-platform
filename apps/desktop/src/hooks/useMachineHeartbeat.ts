@@ -1,12 +1,14 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { machineRunClient, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useEffect } from "react";
 
+import { tauriDesktopBackend } from "../lib/desktop-backend";
 import {
   advertiseCurrentMachine,
   createMachineHeartbeatScheduler,
   removeMachineAdvertisement,
 } from "../lib/machine-heartbeat";
 import { MACHINE_ENDPOINTS_CHANGED_EVENT } from "../lib/machine-heartbeat-events";
+import { runMachineConsumer } from "../lib/machine-runner";
 
 export function useMachineHeartbeat(): void {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
@@ -26,8 +28,24 @@ export function useMachineHeartbeat(): void {
       return;
     }
 
+    const controller = new AbortController();
+    let consumerStarted = false;
+    const heartbeat = async () => {
+      const machine = await advertiseCurrentMachine();
+
+      if (machine && !consumerStarted && !controller.signal.aborted) {
+        consumerStarted = true;
+        void runMachineConsumer({
+          backend: tauriDesktopBackend,
+          client: machineRunClient,
+          machineId: machine.machineId,
+          signal: controller.signal,
+        });
+      }
+    };
+
     const scheduler = createMachineHeartbeatScheduler({
-      heartbeat: advertiseCurrentMachine,
+      heartbeat,
     });
     const handleEndpointsChanged = () => scheduler.trigger();
 
@@ -35,6 +53,7 @@ export function useMachineHeartbeat(): void {
     window.addEventListener(MACHINE_ENDPOINTS_CHANGED_EVENT, handleEndpointsChanged);
 
     return () => {
+      controller.abort();
       scheduler.stop();
       window.removeEventListener(MACHINE_ENDPOINTS_CHANGED_EVENT, handleEndpointsChanged);
     };

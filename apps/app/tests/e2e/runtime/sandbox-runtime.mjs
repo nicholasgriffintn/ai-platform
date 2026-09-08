@@ -39,6 +39,10 @@ export function stopSandboxContainers() {
 export function resolveSandboxContainerEngine() {
   execFileSync("docker", ["image", "inspect", SANDBOX_IMAGE], { stdio: "ignore" });
 
+  if (process.env.DOCKER_HOST) {
+    return process.env.DOCKER_HOST;
+  }
+
   return execFileSync("docker", ["context", "inspect", "--format", "{{.Endpoints.docker.Host}}"], {
     encoding: "utf8",
   }).trim();

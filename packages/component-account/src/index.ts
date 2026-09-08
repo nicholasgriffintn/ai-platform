@@ -52,3 +52,5 @@ export * from "./SignInDialog";
 export * from "./Sources/SourceListHeader";
 export * from "./Runtimes/RuntimeSettings";
 export * from "./Runtimes/runtime-candidates";
+
+export * from "./Runtimes/AgentRuntimeSettings";

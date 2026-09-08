@@ -1,4 +1,4 @@
-import type { SandboxEnvironmentSetup } from "@ngriffin_uk/polychat-schemas";
+import type { SandboxEnvironmentSetupInput } from "@ngriffin_uk/polychat-schemas";
 
 import { expect, test } from "../fixtures/polychat-test";
 import { SandboxApi } from "../fixtures/sandbox-api";
@@ -18,12 +18,12 @@ const CACHED_ENVIRONMENT = {
     runtimes: [{ name: "node", version: "22" }],
     setupTimeoutSeconds: 30,
   },
-} satisfies SandboxEnvironmentSetup;
+} satisfies SandboxEnvironmentSetupInput;
 
 const SETUP_ONLY_ENVIRONMENT = {
   ...CACHED_ENVIRONMENT,
   definition: { ...CACHED_ENVIRONMENT.definition, resumeCommands: [] },
-} satisfies SandboxEnvironmentSetup;
+} satisfies SandboxEnvironmentSetupInput;
 
 test.describe("Sandbox environment snapshots", () => {
   test.use({ persona: "pro" });

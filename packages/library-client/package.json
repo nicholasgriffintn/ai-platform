@@ -26,6 +26,11 @@
       "polychat-source": "./src/retry.ts",
       "types": "./dist/retry.d.ts",
       "import": "./dist/retry.js"
+    },
+    "./machine-runs": {
+      "polychat-source": "./src/machine-runs.ts",
+      "types": "./dist/machine-runs.d.ts",
+      "import": "./dist/machine-runs.js"
     }
   },
   "publishConfig": {

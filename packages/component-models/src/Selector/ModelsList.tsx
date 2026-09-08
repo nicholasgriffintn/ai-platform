@@ -17,14 +17,22 @@ import {
   type RegionalModelListEntry,
 } from "@ngriffin_uk/polychat-utility-core";
 import { scrollIntoContainerView } from "@ngriffin_uk/polychat-utility-react";
-import { Sparkles } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Clock3, Sparkles, WandSparkles } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
+import { limitModelGroups } from "../lib/model-groups";
 import { ModelIcon } from "../ModelIcon/ModelIcon";
 import { ModelOption } from "./ModelOption";
 
+const EMPTY_RECENT_MODELS: ModelCatalogItem[] = [];
+
 interface ModelsListProps {
   models: ModelCatalogItem[];
+  recentModels?: ModelCatalogItem[];
+  modelLocations?: Record<string, string>;
+  autoContent?: ReactNode;
+  showAuto?: boolean;
+  onAutoChange?: (active: boolean) => void;
   featuredModelIds: Record<string, ModelCatalogItem>;
   isDisabled?: boolean;
   isPro: boolean;
@@ -33,12 +41,18 @@ interface ModelsListProps {
   mono?: boolean;
   disabled?: boolean;
   isSearchActive?: boolean;
+  searchKey?: string;
   onInfoHoverStart?: (model: ModelConfigItem, anchorRect: DOMRect) => void;
   onInfoHoverEnd?: () => void;
 }
 
 export function ModelsList({
   models,
+  recentModels = EMPTY_RECENT_MODELS,
+  modelLocations,
+  autoContent,
+  showAuto = false,
+  onAutoChange,
   featuredModelIds,
   isDisabled,
   isPro,
@@ -47,9 +61,12 @@ export function ModelsList({
   mono,
   disabled,
   isSearchActive = false,
+  searchKey = "",
   onInfoHoverStart,
   onInfoHoverEnd,
 }: ModelsListProps) {
+  const [searchPage, setSearchPage] = useState({ key: "", limit: 50 });
+  const searchLimit = searchPage.key === searchKey ? searchPage.limit : 50;
   const modelListRef = useRef<HTMLDivElement>(null);
   const syncedSelectedIdRef = useRef<string | null | undefined>(undefined);
   const selectedModelProvider = useMemo(
@@ -63,20 +80,31 @@ export function ModelsList({
     {},
   );
   const modelsById = useMemo(() => {
-    return models.reduce<Record<string, ModelCatalogItem>>((acc, model) => {
+    return [...recentModels, ...models].reduce<Record<string, ModelCatalogItem>>((acc, model) => {
       acc[model.id] = model;
 
       return acc;
     }, {});
-  }, [models]);
+  }, [models, recentModels]);
 
   const handleModelSelect = (modelId: string, modelInfo: ModelCatalogItem) => {
     onSelect(modelId, modelInfo);
   };
 
   const providerEntries = useMemo<ModelProviderListEntry<ModelCatalogItem>[]>(
-    () => groupModelsByProvider(models, featuredModelIds),
-    [models, featuredModelIds],
+    () => [
+      ...(recentModels.length
+        ? [
+            {
+              key: "recent",
+              label: "Last used",
+              models: recentModels.map((model) => ({ model, regionOptions: [] })),
+            },
+          ]
+        : []),
+      ...groupModelsByProvider(models, featuredModelIds),
+    ],
+    [models, featuredModelIds, recentModels],
   );
 
   useEffect(() => {
@@ -137,8 +165,10 @@ export function ModelsList({
   const showDeprecatedForSelectedProvider =
     showDeprecatedByProvider[selectedProviderEntry?.key || ""] ?? false;
   const searchResultEntries = providerEntries.filter(
-    (providerEntry) => providerEntry.key !== FEATURED_MODEL_GROUP_KEY,
+    (providerEntry) =>
+      providerEntry.key !== FEATURED_MODEL_GROUP_KEY && providerEntry.key !== "recent",
   );
+  const visibleSearchEntries = limitModelGroups(searchResultEntries, searchLimit);
   const visibleModelCount = isSearchActive
     ? searchResultEntries.reduce((total, providerEntry) => total + providerEntry.models.length, 0)
     : visibleModels.length;
@@ -179,7 +209,7 @@ export function ModelsList({
     }
   }, [isSearchActive, selectedId, visibleModels]);
 
-  if (!providerEntries.length) {
+  if (!providerEntries.length && !autoContent) {
     return (
       <div className="p-2">
         <p className="pb-4 text-left text-sm text-muted-foreground">
@@ -203,6 +233,7 @@ export function ModelsList({
       <ModelOption
         key={modelItem.id}
         model={modelItem}
+        locationLabel={modelLocations?.[modelItem.id]}
         isSelected={isRegionalModelEntrySelected(modelEntry, selectedId)}
         isActive={false}
         onClick={() => handleModelSelect(selectedRegionModelId, selectedRegionModel)}
@@ -224,9 +255,28 @@ export function ModelsList({
           <div className="border-b border-border/70 sm:flex sm:w-16 sm:flex-col sm:border-r sm:border-b-0 md:w-20">
             <div className="overflow-x-auto px-2 py-2 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:px-2">
               <div className="flex gap-2 sm:block sm:space-y-1">
+                {autoContent && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onInfoHoverEnd?.();
+                      onAutoChange?.(true);
+                    }}
+                    aria-pressed={showAuto}
+                    className={cn(
+                      "flex min-w-[88px] shrink-0 items-center gap-2 rounded-lg border px-2 py-2 text-xs sm:w-full sm:min-w-0 sm:flex-col sm:gap-1 sm:px-1 sm:text-[11px]",
+                      showAuto
+                        ? "border-creative/45 bg-creative/12 text-creative"
+                        : "border-transparent text-muted-foreground hover:border-border-strong hover:bg-surface-elevated",
+                    )}
+                  >
+                    <WandSparkles className="h-4 w-4" aria-hidden="true" />
+                    <span>Auto</span>
+                  </button>
+                )}
                 {providerEntries.map((providerEntry) => {
                   const isFeaturedProvider = providerEntry.key === FEATURED_MODEL_GROUP_KEY;
-                  const isSelected = selectedProvider === providerEntry.key;
+                  const isSelected = !showAuto && selectedProvider === providerEntry.key;
 
                   return (
                     <button
@@ -234,6 +284,7 @@ export function ModelsList({
                       type="button"
                       onClick={() => {
                         onInfoHoverEnd?.();
+                        onAutoChange?.(false);
                         setSelectedProvider(providerEntry.key);
                       }}
                       className={cn(
@@ -245,7 +296,9 @@ export function ModelsList({
                       aria-pressed={isSelected}
                       title={providerEntry.label}
                     >
-                      {isFeaturedProvider ? (
+                      {providerEntry.key === "recent" ? (
+                        <Clock3 className="h-4 w-4" aria-hidden="true" />
+                      ) : isFeaturedProvider ? (
                         <Sparkles className="h-4 w-4" />
                       ) : (
                         <ModelIcon
@@ -258,9 +311,11 @@ export function ModelsList({
                       <span className="line-clamp-1 min-w-0 flex-1 text-left sm:w-full sm:flex-none sm:text-center">
                         {isFeaturedProvider
                           ? "Featured"
-                          : providerEntry.key === AGENT_MODEL_GROUP_KEY
-                            ? "Agents"
-                            : providerEntry.label.split(" ")[0]}
+                          : providerEntry.key === "recent"
+                            ? "Last used"
+                            : providerEntry.key === AGENT_MODEL_GROUP_KEY
+                              ? "Agents"
+                              : providerEntry.label.split(" ")[0]}
                       </span>
                       <span className="rounded-full bg-selection px-1.5 py-0.5 text-[10px] text-foreground">
                         {providerEntry.models.length}
@@ -277,11 +332,17 @@ export function ModelsList({
           <div className="flex-shrink-0 border-b border-border/70 px-3 py-2">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
               <h4 className="text-sm font-semibold break-words whitespace-normal text-foreground">
-                {isSearchActive ? "Search results" : selectedProviderEntry?.label || "Models"}
+                {isSearchActive
+                  ? "Search results"
+                  : showAuto
+                    ? "Auto"
+                    : selectedProviderEntry?.label || "Models"}
               </h4>
-              <span className="flex-shrink-0 text-xs text-muted-foreground">
-                {visibleModelCount} model{visibleModelCount === 1 ? "" : "s"}
-              </span>
+              {!showAuto && (
+                <span className="flex-shrink-0 text-xs text-muted-foreground">
+                  {visibleModelCount} model{visibleModelCount === 1 ? "" : "s"}
+                </span>
+              )}
             </div>
           </div>
           <div
@@ -290,9 +351,11 @@ export function ModelsList({
             onMouseLeave={() => onInfoHoverEnd?.()}
           >
             <div role="group" aria-label="Available models">
-              {isSearchActive ? (
+              {showAuto ? (
+                autoContent
+              ) : isSearchActive ? (
                 <div className="space-y-4">
-                  {searchResultEntries.map((providerEntry) => {
+                  {visibleSearchEntries.map((providerEntry) => {
                     const { active: activeModels, deprecated: deprecatedModels } =
                       partitionDeprecatedModelEntries(providerEntry.models);
                     const showDeprecated = showDeprecatedByProvider[providerEntry.key] ?? false;
@@ -362,7 +425,19 @@ export function ModelsList({
                 </div>
               )}
             </div>
-            {!isSearchActive && visibleModels.length === 0 && (
+            {isSearchActive && visibleModelCount > searchLimit && (
+              <button
+                type="button"
+                className="mt-3 w-full rounded-md border border-border px-3 py-2 text-sm text-foreground hover:bg-surface-elevated"
+                onClick={() => setSearchPage({ key: searchKey, limit: searchLimit + 50 })}
+              >
+                Show more results ({visibleModelCount - searchLimit} remaining)
+              </button>
+            )}
+            {isSearchActive && visibleModelCount === 0 && (
+              <p className="p-3 text-xs text-muted-foreground">No models match your search.</p>
+            )}
+            {!showAuto && !isSearchActive && visibleModels.length === 0 && (
               <div className="rounded-lg border border-dashed border-border-strong p-3 text-xs text-muted-foreground">
                 No models available in this category.
               </div>

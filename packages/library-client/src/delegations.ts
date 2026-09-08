@@ -1,7 +1,6 @@
 import type {
   ConversationHandleListResponse,
   DelegationListResponse,
-  ConversationHandle,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
@@ -40,18 +39,4 @@ export async function revokeConversationHandle(handleId: string): Promise<void> 
     method: "DELETE",
     headers: await apiService.getHeaders(),
   });
-}
-
-export async function grantConversationHandle(input: {
-  conversationId: string;
-  delegationId: string;
-  expiresAt?: string | null;
-}): Promise<ConversationHandle> {
-  const response = await fetchApiOrThrow("/user/conversation-handles", {
-    method: "POST",
-    headers: { ...(await apiService.getHeaders()), "content-type": "application/json" },
-    body: JSON.stringify(input),
-  });
-
-  return (await returnFetchedData<ConversationHandleListResponse>(response)).handles[0];
 }

@@ -13,9 +13,8 @@ pub enum AgentDriver {
     Codex,
     Cursor,
     Grok,
+    #[serde(rename = "opencode")]
     OpenCode,
-    Antigravity,
-    PolychatSandbox,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
@@ -136,6 +135,7 @@ impl DirectoryGrants {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProcessRunRequest {
     pub driver: AgentDriver,
     pub directory_id: String,
@@ -146,39 +146,12 @@ pub struct ProcessRunRequest {
     pub acknowledge_dirty: bool,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ExternalAgentLaunch {
-    pub driver: AgentDriver,
-    pub directory_id: String,
-    pub head: String,
-    pub dirty: bool,
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ExternalAgentComparison {
-    pub driver: AgentDriver,
-    pub directory_id: String,
-    pub base_head: String,
-    pub current_head: String,
-    pub dirty: bool,
-    pub changed_files: Vec<String>,
-    pub diff: String,
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ExternalAgentCommit {
-    pub driver: AgentDriver,
-    pub directory_id: String,
-    pub base_head: String,
-    pub commit_head: String,
-    pub message: String,
-}
-
 #[derive(Clone, Debug, Serialize)]
-#[serde(tag = "state", rename_all = "snake_case")]
+#[serde(
+    tag = "state",
+    rename_all = "snake_case",
+    rename_all_fields = "camelCase"
+)]
 pub enum AgentToolState {
     Missing {
         checked_at: String,
@@ -213,11 +186,6 @@ pub enum ProcessRefusal {
     MissingHead,
     AlreadyRunning,
     NotInstalled,
-    UnsupportedDriver,
-    InvalidCommitMessage,
-    ReviewStateChanged,
-    NoChanges,
-    CommitFailed,
 }
 
 pub fn program_for(driver: AgentDriver) -> AgentProgram {
@@ -226,7 +194,7 @@ pub fn program_for(driver: AgentDriver) -> AgentProgram {
             driver,
             program: "claude",
             version_args: &["--version"],
-            readiness_args: None,
+            readiness_args: Some(&["auth", "status"]),
             min_version: "1.0.0",
         },
         AgentDriver::Codex => AgentProgram {
@@ -234,7 +202,7 @@ pub fn program_for(driver: AgentDriver) -> AgentProgram {
             program: "codex",
             version_args: &["--version"],
             readiness_args: Some(&["login", "status"]),
-            min_version: "1.0.0",
+            min_version: "0.153.4",
         },
         AgentDriver::Cursor => AgentProgram {
             driver,
@@ -248,7 +216,7 @@ pub fn program_for(driver: AgentDriver) -> AgentProgram {
             program: "grok",
             version_args: &["--version"],
             readiness_args: Some(&["models"]),
-            min_version: "1.0.0",
+            min_version: "0.1.42",
         },
         AgentDriver::OpenCode => AgentProgram {
             driver,
@@ -257,30 +225,22 @@ pub fn program_for(driver: AgentDriver) -> AgentProgram {
             readiness_args: Some(&["auth", "list"]),
             min_version: "1.0.0",
         },
-        AgentDriver::Antigravity => AgentProgram {
-            driver,
-            program: "antigravity",
-            version_args: &["--version"],
-            readiness_args: None,
-            min_version: "1.0.0",
-        },
-        AgentDriver::PolychatSandbox => AgentProgram {
-            driver,
-            program: "polychat-sandbox",
-            version_args: &["--version"],
-            readiness_args: None,
-            min_version: "1.0.0",
-        },
     }
 }
 
-pub fn probe(driver: AgentDriver, checked_at: String) -> AgentToolState {
+pub async fn probe(driver: AgentDriver, checked_at: String) -> AgentToolState {
     let program = program_for(driver);
-    let output = Command::new(program.program)
-        .args(program.version_args)
-        .output();
-    let Ok(output) = output else {
-        return AgentToolState::Missing { checked_at };
+    let output = match crate::programs::probe_output(program.program, program.version_args).await {
+        Ok(output) => output,
+        Err(cause) if cause.kind() == std::io::ErrorKind::NotFound => {
+            return AgentToolState::Missing { checked_at }
+        }
+        Err(_) => {
+            return AgentToolState::Present {
+                checked_at,
+                version: None,
+            }
+        }
     };
 
     let version_output = String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -324,8 +284,14 @@ pub fn probe(driver: AgentDriver, checked_at: String) -> AgentToolState {
     }
 
     if let Some(readiness_args) = program.readiness_args {
-        let readiness = Command::new(program.program).args(readiness_args).output();
-        if readiness.is_err() || !readiness.is_ok_and(|output| output.status.success()) {
+        let readiness = crate::programs::probe_output(program.program, readiness_args).await;
+        if readiness.is_err()
+            || !readiness.is_ok_and(|output| {
+                output.status.success()
+                    && (driver != AgentDriver::OpenCode
+                        || opencode_has_credentials(&String::from_utf8_lossy(&output.stdout)))
+            })
+        {
             return AgentToolState::SignedOut {
                 checked_at,
                 version: Some(version),
@@ -337,6 +303,17 @@ pub fn probe(driver: AgentDriver, checked_at: String) -> AgentToolState {
         checked_at,
         version,
     }
+}
+
+fn opencode_has_credentials(output: &str) -> bool {
+    output
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .windows(2)
+        .any(|words| {
+            words[0].parse::<usize>().is_ok_and(|count| count > 0)
+                && matches!(words[1], "credentials" | "environment")
+        })
 }
 
 fn compare_versions(left: &str, right: &str) -> std::cmp::Ordering {
@@ -391,12 +368,25 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
             }
             argv
         }
-        AgentDriver::Grok => vec![
-            "--no-auto-update".to_string(),
-            "-p".to_string(),
-            "--output-format".to_string(),
-            "streaming-json".to_string(),
-        ],
+        AgentDriver::Grok => {
+            if !matches!(
+                params.permission_mode,
+                PermissionMode::Supervised | PermissionMode::Auto
+            ) {
+                return Err(ProcessRefusal::UnsupportedPermissionMode);
+            }
+            let mut argv = vec![
+                "--no-auto-update".to_string(),
+                "-p".to_string(),
+                params.prompt.clone(),
+                "--output-format".to_string(),
+                "json".to_string(),
+            ];
+            if params.permission_mode == PermissionMode::Auto {
+                argv.push("--always-approve".to_string());
+            }
+            argv
+        }
         AgentDriver::OpenCode => {
             if !matches!(
                 params.permission_mode,
@@ -405,21 +395,18 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
                 return Err(ProcessRefusal::UnsupportedPermissionMode);
             }
 
-            let mut argv = vec![
+            vec![
                 "run".to_string(),
                 "--format".to_string(),
                 "json".to_string(),
-            ];
-            if params.permission_mode == PermissionMode::Auto {
-                argv.push("--auto".to_string());
-            }
-            argv
+            ]
         }
-        _ => vec![
+        AgentDriver::ClaudeCode => vec![
             "-p".to_string(),
             params.prompt.clone(),
             "--output-format".to_string(),
             "stream-json".to_string(),
+            "--verbose".to_string(),
             "--permission-mode".to_string(),
             permission_argument(params.permission_mode).to_string(),
         ],
@@ -447,7 +434,7 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
 
     if matches!(
         driver,
-        AgentDriver::Codex | AgentDriver::Cursor | AgentDriver::Grok | AgentDriver::OpenCode
+        AgentDriver::Codex | AgentDriver::Cursor | AgentDriver::OpenCode
     ) {
         argv.push(params.prompt.clone());
     }
@@ -455,99 +442,6 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
     let _ = program_for(driver);
 
     Ok(argv)
-}
-
-pub fn launch_external_agent(
-    driver: AgentDriver,
-    directory_id: String,
-    directory: &Path,
-) -> Result<ExternalAgentLaunch, ProcessRefusal> {
-    let head = git_head(directory)?;
-    let dirty = is_dirty(directory)?;
-
-    #[cfg(target_os = "macos")]
-    if driver == AgentDriver::Antigravity {
-        Command::new("open")
-            .args(["-a", "Antigravity"])
-            .arg(directory)
-            .spawn()
-            .map_err(|_| ProcessRefusal::NotInstalled)?;
-
-        return Ok(ExternalAgentLaunch {
-            driver,
-            directory_id,
-            head,
-            dirty,
-        });
-    }
-
-    let _ = (driver, directory_id, head, dirty);
-    Err(ProcessRefusal::UnsupportedDriver)
-}
-
-pub fn compare_external_agent(
-    driver: AgentDriver,
-    directory_id: String,
-    directory: &Path,
-    base_head: String,
-) -> Result<ExternalAgentComparison, ProcessRefusal> {
-    if base_head.trim().is_empty() {
-        return Err(ProcessRefusal::MissingHead);
-    }
-
-    let current_head = git_head(directory)?;
-    let dirty = is_dirty(directory)?;
-    let changed_files = git_output(directory, &["diff", "--name-only", &base_head, "--"])?
-        .lines()
-        .map(str::trim)
-        .filter(|path| !path.is_empty())
-        .take(200)
-        .map(ToOwned::to_owned)
-        .collect();
-    let diff = git_output(directory, &["diff", "--no-ext-diff", &base_head, "--"])?
-        .chars()
-        .take(2_000_000)
-        .collect();
-
-    Ok(ExternalAgentComparison {
-        driver,
-        directory_id,
-        base_head,
-        current_head,
-        dirty,
-        changed_files,
-        diff,
-    })
-}
-
-pub fn commit_external_agent(
-    driver: AgentDriver,
-    directory_id: String,
-    directory: &Path,
-    base_head: String,
-    message: String,
-) -> Result<ExternalAgentCommit, ProcessRefusal> {
-    let message = message.trim();
-    if message.is_empty() || message.len() > 256 {
-        return Err(ProcessRefusal::InvalidCommitMessage);
-    }
-    if git_head(directory)? != base_head {
-        return Err(ProcessRefusal::ReviewStateChanged);
-    }
-    if !is_dirty(directory)? {
-        return Err(ProcessRefusal::NoChanges);
-    }
-    run_git(directory, &["add", "--all"])?;
-    run_git(directory, &["commit", "-m", message, "--"])?;
-    let commit_head = git_head(directory)?;
-
-    Ok(ExternalAgentCommit {
-        driver,
-        directory_id,
-        base_head,
-        commit_head,
-        message: message.to_string(),
-    })
 }
 
 fn codex_sandbox_argument(mode: PermissionMode) -> &'static str {
@@ -618,33 +512,6 @@ pub fn git_head(path: &Path) -> Result<String, ProcessRefusal> {
         .ok_or(ProcessRefusal::MissingHead)
 }
 
-fn git_output(path: &Path, args: &[&str]) -> Result<String, ProcessRefusal> {
-    let output = Command::new("git")
-        .args(args)
-        .current_dir(path)
-        .output()
-        .map_err(|_| ProcessRefusal::MissingHead)?;
-
-    if !output.status.success() {
-        return Err(ProcessRefusal::MissingHead);
-    }
-
-    String::from_utf8(output.stdout).map_err(|_| ProcessRefusal::MissingHead)
-}
-
-fn run_git(path: &Path, args: &[&str]) -> Result<(), ProcessRefusal> {
-    let output = Command::new("git")
-        .args(args)
-        .current_dir(path)
-        .output()
-        .map_err(|_| ProcessRefusal::CommitFailed)?;
-    if output.status.success() {
-        Ok(())
-    } else {
-        Err(ProcessRefusal::CommitFailed)
-    }
-}
-
 pub fn is_dirty(path: &Path) -> Result<bool, ProcessRefusal> {
     let output = Command::new("git")
         .args(["status", "--porcelain"])
@@ -661,6 +528,32 @@ pub fn is_dirty(path: &Path) -> Result<bool, ProcessRefusal> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn opencode_readiness_requires_a_configured_provider() {
+        assert!(!super::opencode_has_credentials("└  0 credentials\n"));
+        assert!(super::opencode_has_credentials("└  1 credentials\n"));
+        assert!(super::opencode_has_credentials(
+            "└  0 credentials\n┌  Environment\n└  1 environment variable\n"
+        ));
+        assert!(!super::opencode_has_credentials("Unexpected output"));
+    }
+    #[test]
+    fn agent_probe_wire_contract_matches_desktop() {
+        let probe = super::AgentToolState::Ready {
+            checked_at: "2026-09-08T10:00:00Z".to_string(),
+            version: "1.0.0".to_string(),
+        };
+        assert_eq!(
+            serde_json::to_value(probe).unwrap(),
+            serde_json::json!({
+                "state": "ready", "checkedAt": "2026-09-08T10:00:00Z", "version": "1.0.0"
+            })
+        );
+        assert_eq!(
+            serde_json::from_str::<super::AgentDriver>("\"opencode\"").unwrap(),
+            super::AgentDriver::OpenCode
+        );
+    }
     use super::*;
 
     #[cfg(unix)]
@@ -750,7 +643,7 @@ mod tests {
     }
 
     #[test]
-    fn builds_grok_streaming_arguments() {
+    fn builds_grok_headless_arguments() {
         let params = RunParams {
             prompt: "inspect the repo".to_string(),
             session: Some("session-1".to_string()),
@@ -765,13 +658,13 @@ mod tests {
             [
                 "--no-auto-update",
                 "-p",
+                "inspect the repo",
                 "--output-format",
-                "streaming-json",
+                "json",
                 "--resume",
                 "session-1",
                 "--model",
                 "grok-build",
-                "inspect the repo",
             ]
         );
     }
@@ -793,7 +686,6 @@ mod tests {
                 "run",
                 "--format",
                 "json",
-                "--auto",
                 "--session",
                 "session-1",
                 "--model",

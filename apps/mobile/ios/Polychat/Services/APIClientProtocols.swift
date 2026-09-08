@@ -58,13 +58,8 @@ protocol ConversationAPIClient {
         modelTier: String?,
         computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
-    func createMachineHandoff(
-        conversationId: String,
-        machineId: String,
-        modelId: String,
-        draft: HandoffDraft?
-    ) async throws -> HandoffResponse
-    func cancelMachineHandoff(id: String, machineId: String) async throws -> HandoffResponse
+    func streamMachineModelRun(id: String, machineId: String, modelId: String, messages: [ChatMessage], conversationId: String) -> AsyncThrowingStream<ChatStreamEvent, Error>
+    func cancelMachineModelRun(id: String, machineId: String) async throws
     func fetchProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskDetailResponse
     func answerProjectTaskQuestions(
         projectId: String,

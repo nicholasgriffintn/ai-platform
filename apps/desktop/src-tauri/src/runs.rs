@@ -1,10 +1,8 @@
 use std::collections::HashSet;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use serde::Serialize;
-
-use crate::agents::AgentApprovalRequest;
 
 #[derive(Serialize, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
@@ -22,11 +20,6 @@ pub enum StreamEvent {
     Text { run_id: String, delta: String },
     #[serde(rename_all = "camelCase")]
     RawOutput { run_id: String, data: String },
-    #[serde(rename_all = "camelCase")]
-    ApprovalRequired {
-        run_id: String,
-        request: AgentApprovalRequest,
-    },
     #[serde(rename_all = "camelCase")]
     Failed {
         run_id: String,
@@ -48,7 +41,35 @@ pub struct RunRegistry {
     cancelled: Mutex<HashSet<String>>,
 }
 
+pub struct DirectoryRunGuard<'a> {
+    registry: &'a RunRegistry,
+    directory: PathBuf,
+    run_id: String,
+}
+
+impl Drop for DirectoryRunGuard<'_> {
+    fn drop(&mut self) {
+        self.registry.finish_directory(&self.directory);
+        self.registry.forget(&self.run_id);
+    }
+}
+
 impl RunRegistry {
+    pub fn acquire_directory(
+        &self,
+        directory: &Path,
+        run_id: &str,
+    ) -> Option<DirectoryRunGuard<'_>> {
+        if !self.begin_directory(directory) {
+            return None;
+        }
+        self.begin(run_id);
+        Some(DirectoryRunGuard {
+            registry: self,
+            directory: directory.to_path_buf(),
+            run_id: run_id.to_string(),
+        })
+    }
     pub fn begin(&self, run_id: &str) {
         if let Ok(mut active) = self.active.lock() {
             active.insert(run_id.to_string());
@@ -106,6 +127,18 @@ impl RunRegistry {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn releases_a_directory_and_cancellation_when_a_run_exits_early() {
+        let registry = RunRegistry::default();
+        let directory = Path::new("/tmp/polychat-run");
+        let guard = registry.acquire_directory(directory, "run-1").unwrap();
+        assert!(registry.acquire_directory(directory, "run-2").is_none());
+        registry.cancel("run-1");
+        drop(guard);
+        assert!(!registry.is_cancelled("run-1"));
+        assert!(registry.acquire_directory(directory, "run-2").is_some());
+    }
 
     #[test]
     fn reports_only_the_run_that_was_cancelled() {

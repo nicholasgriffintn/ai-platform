@@ -22,6 +22,8 @@ pub struct ModelRunRequest {
 #[derive(Debug, PartialEq, Eq)]
 pub enum StreamChunk {
     Text(String),
+    FinalText(String),
+    Failed(String),
     Done,
     Ignored,
 }
@@ -85,8 +87,18 @@ fn parse_newline_delimited_line(line: &str) -> StreamChunk {
     }
 
     let Ok(value) = serde_json::from_str::<Value>(trimmed) else {
-        return StreamChunk::Ignored;
+        return StreamChunk::Failed("The runtime sent invalid JSON.".to_string());
     };
+
+    if let Some(error) = value.get("error") {
+        return StreamChunk::Failed(
+            error
+                .as_str()
+                .or_else(|| error.get("message").and_then(Value::as_str))
+                .unwrap_or("The runtime reported an error.")
+                .to_string(),
+        );
+    }
 
     let text = value
         .get("message")
@@ -95,7 +107,11 @@ fn parse_newline_delimited_line(line: &str) -> StreamChunk {
         .unwrap_or_default();
 
     if !text.is_empty() {
-        return StreamChunk::Text(text.to_string());
+        return if value.get("done").and_then(Value::as_bool) == Some(true) {
+            StreamChunk::FinalText(text.to_string())
+        } else {
+            StreamChunk::Text(text.to_string())
+        };
     }
 
     if value.get("done").and_then(Value::as_bool) == Some(true) {
@@ -118,8 +134,18 @@ fn parse_server_sent_line(line: &str) -> StreamChunk {
     }
 
     let Ok(value) = serde_json::from_str::<Value>(payload) else {
-        return StreamChunk::Ignored;
+        return StreamChunk::Failed("The runtime sent invalid JSON.".to_string());
     };
+
+    if let Some(error) = value.get("error") {
+        return StreamChunk::Failed(
+            error
+                .as_str()
+                .or_else(|| error.get("message").and_then(Value::as_str))
+                .unwrap_or("The runtime reported an error.")
+                .to_string(),
+        );
+    }
 
     let text = value
         .get("choices")
@@ -181,7 +207,18 @@ mod tests {
             StreamChunk::Done
         );
         assert_eq!(parse_stream_line(&ollama, "   "), StreamChunk::Ignored);
-        assert_eq!(parse_stream_line(&ollama, "not json"), StreamChunk::Ignored);
+        assert!(matches!(
+            parse_stream_line(&ollama, "not json"),
+            StreamChunk::Failed(_)
+        ));
+        assert_eq!(
+            parse_stream_line(&ollama, r#"{"message":{"content":"4"},"done":true}"#),
+            StreamChunk::FinalText("4".into())
+        );
+        assert_eq!(
+            parse_stream_line(&ollama, r#"{"error":"model unloaded"}"#),
+            StreamChunk::Failed("model unloaded".into())
+        );
     }
 
     #[test]

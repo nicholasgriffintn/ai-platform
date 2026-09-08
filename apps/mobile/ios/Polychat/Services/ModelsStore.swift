@@ -78,22 +78,22 @@ class ModelsStore: ObservableObject {
 
             machines = (try? await apiClient.fetchMachines()) ?? []
             let machineModels = machines.flatMap { machine in
-                machine.runtimes.flatMap { runtime in
+                machine.runtimes.filter { $0.kind == "model" && $0.readiness.status == "ready" }.flatMap { runtime in
                     runtime.models.map { model in
                         ModelConfigItem(
-                            id: "machine:\(machine.machineId):\(model.nativeId)",
+                            id: "machine/\(machine.machineId)/\(runtime.vendor)/\(model.nativeId)",
                             name: model.displayName,
-                            provider: "\(machine.label) · \(runtime.vendor)",
-                            description: machine.online ? "Runs on \(machine.label). Polychat will hand this turn to that machine; it does not stream to this phone." : "\(machine.label) is offline.",
-                            strengths: model.capabilities,
+                            provider: runtime.vendor,
+                            description: machine.online ? "Runs on \(machine.label)." : "\(machine.label) is offline.",
+                            strengths: [],
                             contextWindow: model.contextTokens,
                             pricing: nil,
                             modalities: ModelConfigItem.ModelModalities(input: ["text"], output: ["text"]),
-                            supportsToolCalls: model.capabilities.contains("tool-use"),
-                            multimodal: model.capabilities.contains("vision"),
+                            supportsToolCalls: false,
+                            multimodal: false,
                             isFeatured: true,
-                            isExecutable: machine.online,
-                            runsOn: "machine",
+                            isExecutable: machine.online && machine.capabilities.contains("model-relay"),
+                            runsOn: "device",
                             machineId: machine.machineId,
                             isPlatformEnabled: machine.online,
                             isFree: false

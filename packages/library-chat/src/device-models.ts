@@ -32,7 +32,7 @@ type DeviceModelDetails = Pick<
 export function toDeviceModel(
   vendor: string,
   model: DeviceModelDetails,
-  options: { machineId?: string; machineLabel?: string } = {},
+  options: { machineId?: string; machineLabel?: string; executable?: boolean } = {},
 ): ModelConfigItem {
   const id = deviceModelId(vendor, model.nativeId, options.machineId);
   const isRemoteMachine = Boolean(options.machineId);
@@ -48,14 +48,14 @@ export function toDeviceModel(
       ? `Runs on ${options.machineLabel ?? "another machine"} through ${vendor}.`
       : `Runs on this machine through ${vendor}.`,
     contextWindow: model.contextTokens ?? undefined,
-    multimodal: model.capabilities.vision,
-    supportsToolCalls: model.capabilities.tools,
-    supportsAttachments: model.capabilities.vision,
+    multimodal: false,
+    supportsToolCalls: false,
+    supportsAttachments: false,
     modalities: {
-      input: model.capabilities.vision ? ["text", "image"] : ["text"],
+      input: ["text"],
       output: ["text"],
     },
-    isExecutable: !isRemoteMachine,
+    isExecutable: options.executable ?? !isRemoteMachine,
     isFeatured: false,
     isPlatformEnabled: true,
   };
@@ -68,7 +68,10 @@ export function buildDeviceModels(
 
   for (const runtime of discovered) {
     for (const model of runtime.models) {
-      models[deviceModelId(runtime.vendor, model.nativeId)] = toDeviceModel(runtime.vendor, model);
+      models[deviceModelId(runtime.vendor, model.nativeId)] = {
+        ...toDeviceModel(runtime.vendor, model),
+        runtimeEndpointId: model.endpointId,
+      };
     }
   }
 
@@ -94,6 +97,7 @@ export function buildMachineModels(machines: readonly MachineRecord[]): ModelCon
         models[id] = toDeviceModel(runtime.vendor, model, {
           machineId: machine.machineId,
           machineLabel: machine.label,
+          executable: machine.capabilities.includes("model-relay"),
         });
       }
     }

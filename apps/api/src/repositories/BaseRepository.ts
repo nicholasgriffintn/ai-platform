@@ -9,11 +9,11 @@ const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_$]*$/;
 
 const logger = getLogger({ prefix: "repositories/BaseRepository" });
 
-export abstract class BaseRepository {
-  protected env: IEnv;
+export abstract class BaseRepository<Environment extends Pick<IEnv, "DB"> = IEnv> {
+  protected env: Environment;
   protected database: DatabaseClient;
 
-  constructor(env: IEnv) {
+  constructor(env: Environment) {
     if (!env?.DB) {
       throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
     }

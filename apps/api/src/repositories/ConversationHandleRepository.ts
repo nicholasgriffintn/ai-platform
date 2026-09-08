@@ -1,20 +1,9 @@
-import { conversationHandleSchema, type ConversationHandle } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationHandle } from "@ngriffin_uk/polychat-schemas";
 
 import type { ConversationHandleRow } from "~/lib/database/schema";
+import { formatConversationHandle } from "~/utils/conversation-handles";
 
 import { BaseRepository } from "./BaseRepository";
-
-function formatHandle(row: ConversationHandleRow): ConversationHandle {
-  return conversationHandleSchema.parse({
-    id: row.id,
-    conversationId: row.conversation_id,
-    grantedTo: { kind: "delegation", delegationId: row.delegation_id },
-    grantedBy: row.granted_by,
-    grantedAt: row.granted_at,
-    expiresAt: row.expires_at,
-    revokedAt: row.revoked_at,
-  });
-}
 
 export class ConversationHandleRepository extends BaseRepository {
   async listForUser(userId: number): Promise<ConversationHandle[]> {
@@ -26,7 +15,7 @@ export class ConversationHandleRepository extends BaseRepository {
       [userId],
     );
 
-    return rows.map(formatHandle);
+    return rows.map(formatConversationHandle);
   }
 
   async createSpawnHandle(input: {
@@ -49,30 +38,7 @@ export class ConversationHandleRepository extends BaseRepository {
       throw new Error("Failed to create conversation handle");
     }
 
-    return formatHandle(row);
-  }
-
-  async createUserHandle(input: {
-    id: string;
-    conversationId: string;
-    delegationId: string;
-    grantedAt: string;
-    expiresAt: string | null;
-  }): Promise<ConversationHandle> {
-    const row = await this.runQuery<ConversationHandleRow>(
-      `INSERT INTO conversation_handle
-        (id, conversation_id, delegation_id, granted_by, granted_at, expires_at)
-       VALUES (?, ?, ?, 'user', ?, ?)
-       RETURNING *`,
-      [input.id, input.conversationId, input.delegationId, input.grantedAt, input.expiresAt],
-      true,
-    );
-
-    if (!row) {
-      throw new Error("Failed to create conversation handle");
-    }
-
-    return formatHandle(row);
+    return formatConversationHandle(row);
   }
 
   async getUsableHandle(
@@ -88,7 +54,7 @@ export class ConversationHandleRepository extends BaseRepository {
       true,
     );
 
-    return row ? formatHandle(row) : null;
+    return row ? formatConversationHandle(row) : null;
   }
 
   async revoke(
@@ -104,7 +70,7 @@ export class ConversationHandleRepository extends BaseRepository {
       true,
     );
 
-    return row ? formatHandle(row) : null;
+    return row ? formatConversationHandle(row) : null;
   }
 
   async revokeForUser(
@@ -126,6 +92,6 @@ export class ConversationHandleRepository extends BaseRepository {
       true,
     );
 
-    return row ? formatHandle(row) : null;
+    return row ? formatConversationHandle(row) : null;
   }
 }

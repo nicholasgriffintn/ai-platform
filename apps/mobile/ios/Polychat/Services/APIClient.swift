@@ -189,31 +189,30 @@ final class APIClient: ObservableObject {
         return chatCompletionStream(requestBody)
     }
 
-    func createMachineHandoff(
-        conversationId: String,
+    func streamMachineModelRun(
+        id: String,
         machineId: String,
         modelId: String,
-        draft: HandoffDraft?
-    ) async throws -> HandoffResponse {
-        try await send(
-            path: "/handoffs",
-            method: "POST",
-            body: HandoffRequest(
-                conversationId: conversationId,
-                machineId: machineId,
-                requested: HandoffRequested(computeSite: "machine", modelId: modelId),
-                draft: draft
-            )
+        messages: [ChatMessage],
+        conversationId: String
+    ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
+        MachineModelStream.make(
+            id: id, machineId: machineId, modelId: modelId,
+            messages: messages, conversationId: conversationId,
+            create: { request in
+                try await self.send(path: "/machines/\(machineId)/runs", method: "POST", body: request)
+            },
+            read: {
+                try await self.send(path: "/machines/\(machineId)/runs/\(id)", method: "GET")
+            },
+            cancel: { try await self.cancelMachineModelRun(id: id, machineId: machineId) }
         )
     }
 
-    func cancelMachineHandoff(id: String, machineId: String) async throws -> HandoffResponse {
-        let response: HandoffDecisionEnvelope = try await send(
-            path: "/handoffs/\(id)/decision",
-            method: "POST",
-            body: HandoffDecisionRequest(machineId: machineId, state: "declined")
+    func cancelMachineModelRun(id: String, machineId: String) async throws {
+        let _: MachineRunSnapshot = try await send(
+            path: "/machines/\(machineId)/runs/\(id)/cancel", method: "POST", emptyBody: true
         )
-        return response.handoff
     }
 
     private func chatCompletionStream(

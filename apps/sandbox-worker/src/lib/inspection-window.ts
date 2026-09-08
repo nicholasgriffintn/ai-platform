@@ -6,8 +6,13 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { throwIfAborted } from "./cancellation";
-import { assertSafeCommand, quoteForShell, runSandboxCommand } from "./commands";
-import type { SandboxInstance } from "./feature-implementation/types";
+import {
+  assertSafeCommand,
+  quoteForShell,
+  runSandboxCommand,
+  type SandboxExecInstance,
+} from "./commands";
+import { delay } from "./delay";
 import { redactSandboxOutput } from "./output-redaction";
 import type { RunControlClient } from "./run-control-client";
 import { withSandboxEnvironment } from "./sandbox-environment-runtime";
@@ -17,20 +22,18 @@ const MAX_INSPECTION_COMMANDS = 12;
 const MAX_OUTPUT_CHARS = 12_000;
 const CONTROL_PROPAGATION_GRACE_MS = 5000;
 
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function remainingInspectionSeconds(control: SandboxRunControl): number {
   if (!control.inspectionExpiresAt) {
     return 0;
   }
 
-  return Math.max(0, (Date.parse(control.inspectionExpiresAt) - Date.now()) / 1000);
+  const expiresAt = Date.parse(control.inspectionExpiresAt);
+
+  return Number.isFinite(expiresAt) ? Math.max(0, (expiresAt - Date.now()) / 1000) : 0;
 }
 
 export async function waitForInspectionWindow(params: {
-  sandbox: SandboxInstance;
+  sandbox: SandboxExecInstance;
   repoTargetDir: string;
   controlClient: RunControlClient;
   inspectionWindowSeconds: number;
@@ -59,7 +62,7 @@ export async function waitForInspectionWindow(params: {
         Date.now() - startedAt < CONTROL_PROPAGATION_GRACE_MS &&
         params.inspectionWindowSeconds > 0
       ) {
-        await wait(POLL_INTERVAL_MS);
+        await delay(POLL_INTERVAL_MS, params.abortSignal);
         continue;
       }
 
@@ -71,7 +74,7 @@ export async function waitForInspectionWindow(params: {
     if (remainingSeconds <= 0) {
       await params.emit({
         type: "inspection_window_expired",
-        message: "Sandbox inspection window closed; the environment has been destroyed.",
+        message: "Sandbox inspection window closed.",
       });
 
       return;
@@ -80,6 +83,18 @@ export async function waitForInspectionWindow(params: {
     const instructions = await params.controlClient.listInstructions(cursor, params.abortSignal);
 
     for (const envelope of instructions) {
+      throwIfAborted(params.abortSignal, "Sandbox inspection window cancelled");
+      const timeoutMs = Math.ceil(remainingInspectionSeconds(control) * 1000);
+
+      if (timeoutMs <= 0) {
+        await params.emit({
+          type: "inspection_window_expired",
+          message: "Sandbox inspection window closed.",
+        });
+
+        return;
+      }
+
       cursor = Math.max(cursor, envelope.index);
       const instruction = envelope.instruction;
 
@@ -144,6 +159,8 @@ export async function waitForInspectionWindow(params: {
         `cd ${quoteForShell(params.repoTargetDir)} && ${withSandboxEnvironment(parsedCommand.data, params.environmentVariables, params.environmentVariableNames)}`,
         {
           abortSignal: params.abortSignal,
+          timeoutMs,
+          redactionSecrets: params.redactionSecrets,
           onOutput: async (output) => {
             await params.emit({
               type: "command_output",
@@ -180,6 +197,9 @@ export async function waitForInspectionWindow(params: {
       });
     }
 
-    await wait(Math.min(POLL_INTERVAL_MS, Math.max(100, remainingSeconds * 1000)));
+    await delay(
+      Math.min(POLL_INTERVAL_MS, Math.max(100, remainingSeconds * 1000)),
+      params.abortSignal,
+    );
   }
 }

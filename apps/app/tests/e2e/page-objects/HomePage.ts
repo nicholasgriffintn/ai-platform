@@ -1,4 +1,5 @@
 import type { Dialog, Locator, Page, Response } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { BasePage } from "./BasePage";
 
@@ -25,6 +26,30 @@ export class HomePage extends BasePage {
   async sendMessage(message: string) {
     await this.fillInput(this.chatInput, message);
     await this.clickElement(this.sendButton);
+  }
+
+  async selectMachineModel(machineName: string, modelName: string) {
+    await this.modelSelector.click();
+    await this.page.getByRole("radio", { name: machineName, exact: true }).click();
+    await this.page.getByRole("textbox", { name: "Search models" }).fill(modelName);
+    await this.page.getByRole("option").filter({ hasText: modelName }).first().click();
+  }
+
+  async verifyMachineSelection(machineName: string, modelName: string) {
+    await this.modelSelector.click();
+    const source = this.page.getByRole("radio", { name: machineName, exact: true });
+
+    await expect(source).toHaveAttribute("aria-checked", "true");
+
+    await this.page
+      .getByRole("option")
+      .filter({ hasText: modelName })
+      .first()
+      .waitFor({ state: "visible" });
+    await this.page.keyboard.press("Escape");
+    await this.page
+      .getByRole("dialog", { name: "Model selection dialog" })
+      .waitFor({ state: "hidden" });
   }
 
   async sendMessageAndReadCompletionRequest(message: string) {
@@ -77,20 +102,13 @@ export class HomePage extends BasePage {
 
   async selectModel(modelName: string) {
     await this.clickElement(this.modelSelector);
-    const modelsTab = this.page.getByRole("tab", { name: "Models", exact: true });
+    const modelsButton = this.page.getByRole("button", { name: "Models", exact: true });
     const search = this.page.getByRole("textbox", { name: "Search models" });
 
-    if (await modelsTab.isVisible()) {
-      await modelsTab.click();
+    if (await modelsButton.isVisible()) {
+      await modelsButton.click();
     }
 
-    await search.waitFor({ state: "visible", timeout: 10_000 }).catch(async () => {
-      if ((await this.modelSelector.getAttribute("aria-expanded")) !== "true") {
-        await this.clickElement(this.modelSelector);
-      }
-
-      await search.waitFor({ state: "visible", timeout: 10_000 });
-    });
     await this.fillInput(search, modelName);
     const options = this.page.locator('[role="option"]:not([aria-disabled="true"])');
     const candidate = options.filter({ hasText: modelName }).first();
@@ -103,33 +121,16 @@ export class HomePage extends BasePage {
       }
     }
 
-    await this.waitForElement(candidate);
-    let lastClickError: unknown;
+    const exactCandidate = options
+      .filter({ has: this.page.getByText(modelName, { exact: true }) })
+      .first();
 
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      const liveOptions = this.page.locator('[role="option"]:not([aria-disabled="true"])');
-      const liveCandidate = liveOptions.filter({ hasText: modelName }).first();
-      const liveNamed = liveOptions
-        .filter({ has: this.page.getByText(modelName, { exact: true }) })
-        .first();
-      const target = (await liveNamed.count()) > 0 ? liveNamed : liveCandidate;
-
-      try {
-        await target.click({ timeout: 5_000 });
-
-        return;
-      } catch (error) {
-        lastClickError = error;
-        await this.page.waitForTimeout(150);
-      }
-    }
-
-    throw lastClickError;
+    await exactCandidate.click();
   }
 
   async selectModelTier(tier: "Default" | "Low" | "Medium" | "High" | "Ultra") {
     await this.clickElement(this.modelSelector);
-    const tiersTab = this.page.getByRole("tab", { name: "Tiers", exact: true });
+    const tiersTab = this.page.getByRole("button", { name: "Auto", exact: true });
 
     if (await tiersTab.isVisible()) {
       await tiersTab.click();

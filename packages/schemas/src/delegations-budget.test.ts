@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  DELEGATION_MAX_FAN_OUT,
-  DELEGATION_MAX_CREDIT_SHARE,
-  resolveDelegationCreditCeiling,
-} from "./delegations.js";
+import { DELEGATION_MAX_FAN_OUT, resolveDelegationCreditCeiling } from "./delegations.js";
 
 describe("resolveDelegationCreditCeiling", () => {
   it("gives a delegate a share of what is left rather than the whole balance", () => {
@@ -24,11 +20,6 @@ describe("resolveDelegationCreditCeiling", () => {
   });
 
   it("keeps the share a whole number of micros", () => {
-    expect(Number.isInteger(resolveDelegationCreditCeiling(3))).toBe(true);
     expect(resolveDelegationCreditCeiling(3)).toBe(0);
-  });
-
-  it("stays below a full balance for any share under one", () => {
-    expect(DELEGATION_MAX_CREDIT_SHARE).toBeLessThan(1);
   });
 });

@@ -22,6 +22,15 @@ Use one isolated identity per independent test, deterministic responses and obse
 
 ## Run
 
+Use containers when development servers are already running. The runner snapshots tracked and unignored source, installs from the lockfile and starts its own Docker engine, app, API and database without publishing host ports. It removes its containers on exit and saves reports under `test-results/container/`.
+
+```sh
+pnpm test:e2e:container apps/app/tests/e2e/features/machine-runs.spec.ts
+POLYCHAT_E2E_LIVE_RUNTIMES=1 pnpm test:e2e:container apps/app/tests/e2e/features/machine-models.spec.ts
+```
+
+Routine machine journeys mock only the external Ollama HTTP responses and exercise the production machine consumer and API. Native process tests substitute a deterministic executable at the process boundary; CI does not install vendor CLIs. `POLYCHAT_E2E_LIVE_RUNTIMES=1` opts into real Ollama output and downloads `gemma3:1b`; native live checks remain explicitly ignored by default. macOS Keychain behaviour requires separate desktop verification.
+
 These commands launch the test runtime. Start Docker, keep ports 8787 and 5173 free and build the E2E app first. The sandbox image uses the installed Cloudflare SDK version and an isolated fixture repository; Git rewrites its fixture GitHub URL to the container's local repository, and GitHub API calls use the external-service mock.
 
 ```sh

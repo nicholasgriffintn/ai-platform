@@ -23,6 +23,7 @@ import { tagDescriptions } from "./openapi/documentation";
 import { registerApiRoutes } from "./routes/register";
 import { SandboxRunCoordinator } from "./services/apps/sandbox/run-coordinator/object";
 import { ConversationCoordinator } from "./services/conversations/coordinator/object";
+import { MachineRunCoordinator } from "./services/machines/run-coordinator";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
 import { RealtimeProxyCoordinator } from "./services/realtime/proxy-coordinator/object";
 import { QueueExecutor } from "./services/tasks/QueueExecutor";
@@ -311,4 +312,9 @@ const handler = {
 
 export default withSentry<IEnv>(getSentryOptions, handler);
 
-export { ConversationCoordinator, RealtimeProxyCoordinator, SandboxRunCoordinator };
+export {
+  MachineRunCoordinator,
+  ConversationCoordinator,
+  RealtimeProxyCoordinator,
+  SandboxRunCoordinator,
+};

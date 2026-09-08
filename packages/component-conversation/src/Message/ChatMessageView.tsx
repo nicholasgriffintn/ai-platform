@@ -313,7 +313,6 @@ export const ChatMessageView = ({
                 isArchivedByCompaction={isArchivedByCompaction}
                 responseDurationMs={responseDurationMs}
                 modelConfig={modelConfig}
-                provenance={message.provenance}
               />
             )}
         </div>

@@ -1,17 +1,17 @@
-# A conversation can be handed to a machine and taken back
+# Chat with a model running on another device
 
-- **Change:** a turn can be queued for a machine to pick up, surfaced and cancellable from mobile, and expired when nothing claims it.
-- **Surfaces:** API handoff endpoints, iOS app, desktop machine client.
-- **Prerequisites:** migration `0048_striped_kronos` adds the `handoff` table.
-- **Risk if wrong:** a turn is claimed twice, runs after cancellation, or waits forever with no visible state.
-- **Commits:** 40237dffd, 88eb57e37, f52893484, 1e253207b, 2ed89cf31.
+- **Change:** Web and iOS send text turns through the authenticated desktop relay and display the returned reply. Remove the unconsumed handoff queue and its placeholder replies.
+- **Surfaces:** Web and iOS chat, desktop discovery and execution, API machine routes.
+- **Prerequisites:** Configure `MACHINE_RUN_COORDINATOR` and its Durable Object migration from the API example configuration. Database migration `0049_melted_freak` removes the unused handoff queue; it has not been applied to an existing database by this audit.
+- **Risk if wrong:** A model appears selectable but cannot reply, output is lost on reload, or another account can access the run.
 
 ## Verify
 
-- [ ] Queue a handoff and confirm it appears as pending on the iOS app.
-- [ ] Claim it from a machine and confirm the state changes for the person watching.
-- [ ] Cancel a pending handoff from mobile and confirm the machine cannot then claim it.
-- [ ] Let a handoff pass its expiry unclaimed and confirm it reports expired rather than staying pending.
-- [ ] Attempt to claim the same handoff from two machines and confirm only one wins.
+- [ ] Open desktop with an Ollama model connected; select that desktop model in web and iOS, send a text message, and read the reply on the requesting device.
+- [ ] Reload the conversation and confirm the model selection and reply remain.
+- [ ] Stop a running response and confirm late output does not restart it.
+- [ ] Close or disconnect the desktop during a response and confirm the requester receives an actionable failure.
 
-**Stop and report if:** a cancelled or expired handoff still runs, or two machines both claim one.
+**Automated evidence:** The isolated web E2E journey covers selection, reply completion, reload, account ownership and cancellation with only the outbound Ollama service mocked. The iOS suite covers the advertised model contract and incremental relay output.
+
+**Stop and report if:** a disconnected runtime looks executable indefinitely, a cancelled run resumes, or a request reads another account's output.

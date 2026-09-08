@@ -325,6 +325,7 @@ export async function handleRunCommandAction(
     `cd ${quoteForShell(context.repoTargetDir)} && ${withSandboxEnvironment(decision.command, context.environmentVariables, context.environmentVariableNames)}`,
     {
       abortSignal: context.abortSignal,
+      redactionSecrets: context.redactionSecrets,
       onOutput: async (output) => {
         await context.emit({
           type: "command_output",
@@ -509,6 +510,7 @@ export async function handleRunParallelAction(
         `cd ${quoteForShell(context.repoTargetDir)} && ${withSandboxEnvironment(command, context.environmentVariables, context.environmentVariableNames)}`,
         {
           abortSignal: context.abortSignal,
+          redactionSecrets: context.redactionSecrets,
           onOutput: async (output) => {
             await context.emit({
               type: "command_output",

@@ -46,9 +46,12 @@ import { GOAL_QUERY_KEY } from "../chat/useGoal.js";
 import { USAGE_QUERY_KEYS } from "../chat/useUsage.js";
 import { updateConversationInChatCaches } from "../conversation-cache.js";
 import { getErrorMessage } from "../errors.js";
+import { toRunMessages } from "../lib/run-messages.js";
 import { useConversationScope } from "../state/conversation-scope.js";
 import { useLoadingActions } from "../state/LoadingContext.js";
 import { useUsageStore } from "../state/usageStore.js";
+import { streamAgentProcessRun } from "./agent-run.js";
+import { streamMachineModelRun } from "./machine-run.js";
 import { useMessageOperations } from "./useMessageOperations.js";
 import { useModels } from "./useModels.js";
 import { useWebLLMModels } from "./useWebLLMModels.js";
@@ -226,9 +229,9 @@ export function useStreamingResponse(
       const runsInBrowser =
         !runsOnThisDevice && effectiveComputeSite === "browser" && isBrowserModel(requestedModel);
       const localRunProvenance =
-        requestedModel && runsOnThisDevice
+        requestedModel && (runsOnThisDevice || runsOnAnotherMachine)
           ? createRunProvenance({
-              site: "device",
+              site: runsOnAnotherMachine ? "machine" : "device",
               model: requestedModel.matchingModel,
               vendor: requestedModel.provider,
               ...(requestedModel.machineId ? { machineId: requestedModel.machineId } : {}),
@@ -458,30 +461,47 @@ export function useStreamingResponse(
       const streamProgress = createStreamProgressCoalescer(handleMessageUpdate);
 
       try {
-        if (runsOnAnotherMachine) {
-          throw new Error(
-            "This model is advertised by another machine and remote machine execution is not available yet.",
-          );
-        }
-
-        if (runsOnThisDevice && deviceBackend && requestedModel) {
+        if ((runsOnAnotherMachine || runsOnThisDevice) && requestedModel) {
           try {
-            response = await streamDeviceModelRun({
-              backend: deviceBackend,
+            const runOptions = {
               conversationId,
               messages,
               model: requestedModel,
               onContent: streamProgress.handleUpdate,
               signal: requestSignal,
-            });
+            };
+
+            if (runsOnAnotherMachine) {
+              response = await streamMachineModelRun(runOptions);
+            } else if (deviceBackend) {
+              response =
+                requestedModel.kind === "agent"
+                  ? await streamAgentProcessRun({
+                      ...runOptions,
+                      backend: deviceBackend,
+                      permissionMode,
+                      onStatus: (message) =>
+                        useStreamActivityStore
+                          .getState()
+                          .updateStreamLoadingMessage(conversationId, message),
+                    })
+                  : await streamDeviceModelRun({ ...runOptions, backend: deviceBackend });
+            }
           } finally {
             streamProgress.stop();
           }
 
           assistantResponseRef.current = response;
-          await updateAssistantMessage(conversationId, response, undefined, undefined, {
-            messageId: placeholderMessage.id,
-          });
+          await Promise.all(pendingMessageTasks);
+          await enqueueMessageWrite(() =>
+            updateAssistantMessage(
+              conversationId,
+              response,
+              undefined,
+              { status: "completed" },
+              { messageId: placeholderMessage.id },
+            ),
+          );
 
           generatedMessage = { ...placeholderMessage, content: response, status: "completed" };
           generatedMessages.push(generatedMessage);
@@ -501,22 +521,13 @@ export function useStreamingResponse(
             });
           };
 
-          const lastMessage = messages[messages.length - 1];
-          const lastMessageContent = getMessageTextContent(lastMessage);
-
           try {
             response = await webLLMService.generate(
-              conversationId,
-              lastMessageContent,
-              async (_chatId: string, content: any, _model: any, _mode: any, role: string) => {
-                if (role !== "user") {
-                  streamProgress.handleUpdate(content);
-                }
-
-                return [];
-              },
+              currentModel,
+              toRunMessages(messages),
               handleProgress,
             );
+            streamProgress.handleUpdate(response);
           } finally {
             streamProgress.stop();
           }
@@ -696,7 +707,10 @@ export function useStreamingResponse(
             .catch(() => undefined);
         }
 
-        if ((runsOnThisDevice || runsInBrowser) && storageMode.retention === "kept") {
+        if (
+          (runsOnAnotherMachine || runsOnThisDevice || runsInBrowser) &&
+          storageMode.retention === "kept"
+        ) {
           const conversation = queryClient.getQueryData<Conversation>([
             CHATS_QUERY_KEY,
             conversationId,

@@ -29,6 +29,7 @@ import { ModelIcon } from "../ModelIcon/ModelIcon";
 
 interface ModelOptionProps {
   model: ModelConfigItem;
+  locationLabel?: string;
   isSelected: boolean;
   isActive: boolean;
   onClick: () => void;
@@ -43,6 +44,7 @@ interface ModelOptionProps {
 
 export const ModelOption = ({
   model,
+  locationLabel,
   isSelected,
   isActive,
   onClick,
@@ -155,6 +157,7 @@ export const ModelOption = ({
                 </span>
               ) : null}
             </div>
+            {locationLabel && <p className="mt-1 text-xs text-muted-foreground">{locationLabel}</p>}
             {model.description ? (
               <p className="mt-0.5 text-xs leading-5 break-words whitespace-normal text-muted-foreground">
                 {model.description}
@@ -172,7 +175,7 @@ export const ModelOption = ({
             ) : null}
           </div>
         </div>
-        <div className="flex w-full flex-wrap items-center gap-1.5 pl-[2.6rem] sm:w-[124px] sm:flex-shrink-0 sm:justify-end sm:pl-0">
+        <div className="flex w-full flex-wrap items-center gap-2 pl-[2.6rem] sm:w-[132px] sm:flex-shrink-0 sm:justify-end sm:pl-0">
           {hasRegionOptions && (
             <label
               className="relative flex max-w-[112px] items-center"

@@ -84,7 +84,7 @@ export async function buildMachineHeartbeatPayload(
     platform: diagnostics.platform,
     appVersion: diagnostics.appVersion,
     runtimes,
-    capabilities: modelEndpoints.length > 0 ? ["model-run"] : [],
+    capabilities: modelEndpoints.length > 0 ? ["model-run", "model-relay"] : [],
   });
 }
 

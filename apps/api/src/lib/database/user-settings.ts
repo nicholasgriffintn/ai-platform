@@ -50,6 +50,8 @@ export function prepareUserSettingsUpdates(
     default_model_tier: settings.default_model_tier ?? null,
     default_model_id: settings.default_model_id ?? null,
     default_compute_site: settings.default_compute_site ?? null,
+    last_model_selection:
+      settings.last_model_selection == null ? null : JSON.stringify(settings.last_model_selection),
     pet_source: settings.pet_source ?? null,
     pet_id: settings.pet_id ?? null,
     pet_travel_enabled:

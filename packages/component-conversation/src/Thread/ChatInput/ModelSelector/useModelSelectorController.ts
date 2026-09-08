@@ -27,10 +27,15 @@ export function useModelSelectorController({
   const [hoverPreview, setHoverPreview] = useState<ModelHoverPreviewState | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const triggerWrapperRef = useRef<HTMLDivElement>(null);
+  const [triggerWrapper, setTriggerWrapper] = useState<HTMLDivElement | null>(null);
+  const triggerWrapperRef = useRef<HTMLDivElement | null>(null);
+  const attachTriggerWrapper = useCallback((element: HTMLDivElement | null) => {
+    triggerWrapperRef.current = element;
+    setTriggerWrapper(element);
+  }, []);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const hoverPreviewRef = useRef<HTMLDivElement | null>(null);
-  const panelLayout = useModelSelectorLayout(isOpen, triggerWrapperRef);
+  const panelLayout = useModelSelectorLayout(isOpen, triggerWrapper);
 
   const clearHoverPreview = useCallback(() => setHoverPreview(null), []);
   const {
@@ -131,7 +136,7 @@ export function useModelSelectorController({
     const firstOption = dropdownRef.current?.querySelector("[data-model-option]");
 
     (firstOption as HTMLElement | null)?.focus({ preventScroll: true });
-  }, [isMobile, isOpen]);
+  }, [isMobile, isOpen, panelLayout?.container]);
 
   const handleInfoHoverStart = useCallback(
     (modelInfo: ModelConfigItem, anchorRect: DOMRect) => {
@@ -162,7 +167,7 @@ export function useModelSelectorController({
   return {
     dropdownRef,
     triggerRef,
-    triggerWrapperRef,
+    attachTriggerWrapper,
     searchInputRef,
     hoverPreviewRef,
     panelLayout,

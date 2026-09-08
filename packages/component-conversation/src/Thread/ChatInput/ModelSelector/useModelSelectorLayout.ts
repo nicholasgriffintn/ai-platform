@@ -1,9 +1,9 @@
 import type { ModelSelectorPanelLayout } from "@ngriffin_uk/polychat-component-models";
-import { type RefObject, useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 
 export function useModelSelectorLayout(
   isOpen: boolean,
-  triggerWrapperRef: RefObject<HTMLDivElement | null>,
+  wrapper: HTMLDivElement | null,
 ): ModelSelectorPanelLayout | null {
   const [layout, setLayout] = useState<ModelSelectorPanelLayout | null>(null);
 
@@ -14,58 +14,36 @@ export function useModelSelectorLayout(
       return;
     }
 
-    const updateDialogLayout = () => {
-      const wrapper = triggerWrapperRef.current;
+    const shell = wrapper?.closest<HTMLElement>("[data-chat-input-shell]");
 
-      if (!wrapper) {
-        return;
-      }
+    if (!wrapper || !shell) {
+      return;
+    }
 
-      const chatInputShell = wrapper.closest("[data-chat-input-shell]");
-
-      if (!(chatInputShell instanceof HTMLElement)) {
-        setLayout(null);
-
-        return;
-      }
-
+    const updateLayout = () => {
+      const shellRect = shell.getBoundingClientRect();
       const wrapperRect = wrapper.getBoundingClientRect();
-      const shellRect = chatInputShell.getBoundingClientRect();
+      const scale = shell.offsetHeight > 0 ? shellRect.height / shell.offsetHeight : 1;
 
       setLayout({
-        left: shellRect.left - wrapperRect.left,
-        width: shellRect.width,
-        maxHeight: Math.max(120, wrapperRect.top - 16),
+        container: shell,
+        bottom: (shellRect.bottom - wrapperRect.top) / (scale || 1),
+        maxHeight: Math.max(120, (wrapperRect.top - 16) / (scale || 1)),
       });
     };
 
-    updateDialogLayout();
+    updateLayout();
+    const observer = new ResizeObserver(updateLayout);
 
-    if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", updateDialogLayout);
-
-      return () => window.removeEventListener("resize", updateDialogLayout);
-    }
-
-    const observer = new ResizeObserver(updateDialogLayout);
-    const wrapper = triggerWrapperRef.current;
-    const chatInputShell = wrapper?.closest("[data-chat-input-shell]");
-
-    if (wrapper) {
-      observer.observe(wrapper);
-    }
-
-    if (chatInputShell instanceof HTMLElement) {
-      observer.observe(chatInputShell);
-    }
-
-    window.addEventListener("resize", updateDialogLayout);
+    observer.observe(shell);
+    observer.observe(wrapper);
+    window.addEventListener("resize", updateLayout);
 
     return () => {
       observer.disconnect();
-      window.removeEventListener("resize", updateDialogLayout);
+      window.removeEventListener("resize", updateLayout);
     };
-  }, [isOpen, triggerWrapperRef]);
+  }, [isOpen, wrapper]);
 
   return layout;
 }

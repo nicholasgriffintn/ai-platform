@@ -86,8 +86,8 @@ export const MessageActions = ({
   responseDurationMs,
   modelConfig,
   renderModelSelector,
-  provenance,
 }: MessageActionsProps) => {
+  const provenance = message.provenance;
   const [showThreadModelSelector, setShowThreadModelSelector] = useState(false);
   const [isPlayingSpeech, setIsPlayingSpeech] = useState(false);
   const speechAudioRef = useRef<HTMLAudioElement | null>(null);

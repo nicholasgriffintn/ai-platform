@@ -235,7 +235,7 @@ export function ModelTierPicker({
     previewTier === null ? selectedTier : previewTier === INHERITED_MODEL_TIER ? null : previewTier;
 
   return (
-    <div className="grid min-h-0 gap-3 p-3 md:grid-cols-[minmax(12rem,0.82fr)_minmax(16rem,1.18fr)]">
+    <div className="grid min-h-0 gap-3 md:grid-cols-[minmax(12rem,0.82fr)_minmax(16rem,1.18fr)]">
       <div className="space-y-1.5">
         {choices.map((tier) => {
           const Icon = getModelTierIcon(tier);

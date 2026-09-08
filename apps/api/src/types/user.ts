@@ -1,6 +1,7 @@
 import type {
   ComputeSite,
   GuardrailsProviderId,
+  LastModelSelection,
   ModelTier,
   PetModelOverrides,
 } from "@ngriffin_uk/polychat-schemas";
@@ -63,6 +64,7 @@ export interface IUserSettings {
   default_model_tier: ModelTier | null;
   default_model_id: string | null;
   default_compute_site: ComputeSite | null;
+  last_model_selection?: LastModelSelection | null;
   pet_source: "preset" | "custom" | null;
   pet_id: string | null;
   pet_travel_enabled: boolean;

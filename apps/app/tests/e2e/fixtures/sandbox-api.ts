@@ -7,7 +7,7 @@ import {
   sandboxPreviewAccessSchema,
   projectDetailSchema,
   SANDBOX_RUNS_CAPABILITY_ID,
-  type SandboxEnvironmentSetup,
+  type SandboxEnvironmentSetupInput,
   type SandboxDeliveryPolicy,
 } from "@ngriffin_uk/polychat-schemas";
 import type { APIRequestContext } from "@playwright/test";
@@ -37,7 +37,7 @@ export class SandboxApi {
   ) {}
 
   async configureProject(
-    environmentSetup?: SandboxEnvironmentSetup,
+    environmentSetup?: SandboxEnvironmentSetupInput,
     timeoutSeconds = 120,
     repository = REPOSITORY,
     deliveryPolicy: SandboxDeliveryPolicy = { mode: "leave_uncommitted" },
@@ -68,7 +68,7 @@ export class SandboxApi {
   }
 
   async saveEnvironment(
-    environmentSetup?: SandboxEnvironmentSetup,
+    environmentSetup?: SandboxEnvironmentSetupInput,
     timeoutSeconds = 120,
     repository = REPOSITORY,
     deliveryPolicy: SandboxDeliveryPolicy = { mode: "leave_uncommitted" },

@@ -598,6 +598,7 @@ export async function prepareSandboxEnvironment(params: {
         `cd ${quoteForShell(params.repoTargetDir)} && ${withSandboxEnvironment(command, params.environmentVariables, resolved.definition.environment)}`,
         {
           abortSignal: commandSignal,
+          redactionSecrets,
           onOutput: async ({ stream, data }) => {
             await params.emit({
               type: "environment_setup_command_output",

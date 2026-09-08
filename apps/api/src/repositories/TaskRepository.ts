@@ -1,6 +1,7 @@
 import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 
 import type { Task, TaskExecution } from "~/lib/database/schema";
+import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
 
@@ -28,7 +29,7 @@ export interface UpdateTaskParams {
   error_message?: string;
 }
 
-export class TaskRepository extends BaseRepository {
+export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
   private parseTask(task: Task): Task {
     return {
       ...task,

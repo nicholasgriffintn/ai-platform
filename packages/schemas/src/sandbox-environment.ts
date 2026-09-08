@@ -77,6 +77,7 @@ export const sandboxEnvironmentPreparationStatusSchema = z.enum(["completed", "f
 
 export type SandboxEnvironmentDefinition = z.infer<typeof sandboxEnvironmentDefinitionSchema>;
 export type SandboxEnvironmentSetup = z.infer<typeof sandboxEnvironmentSetupSchema>;
+export type SandboxEnvironmentSetupInput = z.input<typeof sandboxEnvironmentSetupSchema>;
 export type SandboxEnvironmentPreparationMode = z.infer<
   typeof sandboxEnvironmentPreparationModeSchema
 >;

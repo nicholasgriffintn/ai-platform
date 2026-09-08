@@ -38,7 +38,7 @@ export function ModelSelectorView({
   };
 
   return (
-    <div ref={controller.triggerWrapperRef} className="relative">
+    <div ref={controller.attachTriggerWrapper} className="relative">
       <ShortcutTooltip keys={["/model"]} label="Select model">
         <ModelSelectorTrigger
           ref={controller.triggerRef}
@@ -95,6 +95,9 @@ export function ModelSelectorView({
           onModelTierChange={handleTierSelect}
           onTierShortcut={selection.selectTierById}
           models={selection.models}
+          recentModels={selection.recentModels}
+          modelLocations={selection.modelLocations}
+          recentSyncError={selection.recentSyncError}
           featuredModelIds={selection.featuredModelIds}
           isDisabled={isDisabled}
           isModelLocked={selection.isModelLocked}

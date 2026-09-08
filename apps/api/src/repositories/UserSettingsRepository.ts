@@ -1,4 +1,8 @@
-import { onboardingSeenSchema, parsePetModelOverrides } from "@ngriffin_uk/polychat-schemas";
+import {
+  lastModelSelectionSchema,
+  onboardingSeenSchema,
+  parsePetModelOverrides,
+} from "@ngriffin_uk/polychat-schemas";
 import { decodeBase64 } from "hono/utils/encode";
 
 import { prepareUserSettingsUpdates } from "~/lib/database/user-settings";
@@ -263,6 +267,7 @@ export class UserSettingsRepository extends BaseRepository {
       "default_model_tier",
       "default_model_id",
       "default_compute_site",
+      "last_model_selection",
       "pet_source",
       "pet_id",
       "pet_travel_enabled",
@@ -281,6 +286,11 @@ export class UserSettingsRepository extends BaseRepository {
       return null;
     }
 
+    const lastModelSelection = lastModelSelectionSchema.safeParse(
+      typeof result.last_model_selection === "string"
+        ? safeParseJson(result.last_model_selection)
+        : result.last_model_selection,
+    );
     const onboardingSeen = onboardingSeenSchema.safeParse(
       typeof result.onboarding_seen === "string"
         ? safeParseJson(result.onboarding_seen)
@@ -303,6 +313,7 @@ export class UserSettingsRepository extends BaseRepository {
           : result.pet_model_overrides,
       ),
       onboarding_seen: onboardingSeen.success ? onboardingSeen.data : [],
+      last_model_selection: lastModelSelection.success ? lastModelSelection.data : null,
     } as IUserSettings;
   }
 

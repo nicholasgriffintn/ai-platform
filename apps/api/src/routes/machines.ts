@@ -11,7 +11,11 @@ import z from "zod/v4";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { forgetMachine, heartbeatMachine, listMachines } from "~/services/machines";
 
+import machineRuns from "./machine-runs";
+
 const app = new Hono();
+
+app.route("/", machineRuns);
 
 addRoute(app, "post", "/heartbeat", {
   tags: ["machines"],

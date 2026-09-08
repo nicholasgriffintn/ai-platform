@@ -37,7 +37,7 @@ describe("buildDeviceModels", () => {
     expect(model.isExecutable).toBe(true);
   });
 
-  it("carries the capabilities the runtime reported rather than assuming them", () => {
+  it("offers only the input and tools the desktop execution path supports", () => {
     const models = buildDeviceModels([
       {
         vendor: "lmstudio",
@@ -52,8 +52,9 @@ describe("buildDeviceModels", () => {
     const model = models["lmstudio/qwen3-vl"];
 
     expect(model.supportsToolCalls).toBe(false);
-    expect(model.multimodal).toBe(true);
-    expect(model.modalities?.input).toContain("image");
+    expect(model.multimodal).toBe(false);
+    expect(model.supportsAttachments).toBe(false);
+    expect(model.modalities?.input).toEqual(["text"]);
   });
 });
 

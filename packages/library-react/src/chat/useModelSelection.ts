@@ -31,6 +31,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTrackEvent } from "../hooks/use-track-event.js";
+import { AUTH_QUERY_KEYS } from "../hooks/useAuth.js";
 import { useRealtimeProviders } from "../hooks/useRealtimeProviders.js";
 import { useTeammates } from "../hooks/useTeammates.js";
 import {
@@ -38,8 +39,11 @@ import {
   MODEL_SELECTOR_SHORTCUT_EVENT,
 } from "../lib/keyboard-shortcuts.js";
 import { resolveModelTierLineup } from "../lib/model-lineup-view.js";
+import { getPickerLocationLabel, getPickerModelSite } from "../lib/model-picker.js";
 import { useIsLoading, useLoadingMessage, useLoadingProgress } from "../state/LoadingContext.js";
 import { DEVICE_MODELS_QUERY_KEY } from "./useDeviceModels.js";
+import { useLastModelSelection } from "./useLastModelSelection.js";
+import { useModelPickerCatalogue } from "./useModelPickerCatalogue.js";
 import { useModelRuntimeOptions, type ModelRuntimeOption } from "./useModelRuntimeOptions.js";
 import { useModels } from "./useModels.js";
 import { useWebLLMModels } from "./useWebLLMModels.js";
@@ -88,6 +92,9 @@ export interface ModelSelectionState {
   triggerTitle: string;
   featuredModelIds: Record<string, ModelCatalogItem>;
   models: ModelCatalogItem[];
+  recentModels: ModelCatalogItem[];
+  modelLocations: Record<string, string>;
+  recentSyncError?: string;
   isPro: boolean;
   isModelLocked: boolean;
   selectModel: (modelId: string) => boolean;
@@ -102,6 +109,7 @@ export function useModelSelection({
   onBeforeModelChange,
 }: ModelSelectionOptions = {}): ModelSelectionState {
   const queryClient = useQueryClient();
+  const lastUsed = useLastModelSelection();
   const { trackEvent, trackFeatureUsage } = useTrackEvent();
   const {
     isPro,
@@ -123,16 +131,20 @@ export function useModelSelection({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCapability, setSelectedCapability] = useState<ModelModality | null>(null);
-  const [selectedMachineId, setSelectedMachineId] = useState<string | undefined>();
+  const [machineSelection, setSelectedMachineId] = useState<string | undefined>();
   const isTextOnlyScope = modelScope === "text-only";
   const isLiveScope = modelScope === "live";
   const isChatAndLiveScope = modelScope === "chat-and-live";
   const isModelListOnlyScope = isTextOnlyScope || isLiveScope || isChatAndLiveScope;
   const selectedTierLabel = modelTier ? getModelTierDefinition(modelTier).label : "Default";
   const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading: isLoadingModels } = useModels();
+  const selectedMachineId =
+    computeSite === "machine"
+      ? (machineSelection ?? (model ? apiModels[model]?.machineId : undefined))
+      : undefined;
   const { data: realtimeProviderOptions = [], isLoading: isLoadingRealtimeProviders } =
     useRealtimeProviders(isPro);
-  const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
+  const webLLMModels = useWebLLMModels({ enabled: isOpen || computeSite === "browser" });
   const isModelLoading = useIsLoading("model-init");
   const modelLoadingProgress = useLoadingProgress("model-init");
   const modelLoadingMessage = useLoadingMessage("model-init");
@@ -147,6 +159,16 @@ export function useModelSelection({
   );
   const functionModels = useMemo(() => getToolCallModels(siteModels), [siteModels]);
   const featuredModelIds = useMemo(() => getFeaturedModelIds(siteModels), [siteModels]);
+  const { allScopeModels, recentModels, modelLocations } = useModelPickerCatalogue({
+    installationId: lastUsed.installationId,
+    availableModels,
+    modelScope,
+    agentMode: chatMode === "agent",
+    modelProviderFilter,
+    featuredOnly,
+    lastSelection: lastUsed.selection,
+    runtimeOptions: runtimeOptionsState.options,
+  });
   const baseFilteredModels = useMemo(
     () =>
       isLiveScope
@@ -213,7 +235,9 @@ export function useModelSelection({
   const models = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    return Object.entries(filteredModels).reduce<ModelCatalogItem[]>(
+    const searchModels = normalizedQuery ? allScopeModels : filteredModels;
+
+    return Object.entries(searchModels).reduce<ModelCatalogItem[]>(
       (matchingModels, [id, modelConfig]) => {
         const matchesSearch =
           normalizedQuery.length === 0 ||
@@ -231,7 +255,7 @@ export function useModelSelection({
       },
       [],
     );
-  }, [filteredModels, searchQuery, selectedCapability]);
+  }, [allScopeModels, filteredModels, searchQuery, selectedCapability]);
   const tierLineup = useMemo(
     () => resolveModelTierLineup(siteModels, computeSite, selectedMachineId),
     [computeSite, selectedMachineId, siteModels],
@@ -302,6 +326,8 @@ export function useModelSelection({
 
   const openSelector = useCallback(() => {
     void runtimeOptionsState.refresh();
+    void queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.authStatus });
+    void queryClient.invalidateQueries({ queryKey: [DEVICE_MODELS_QUERY_KEY] });
     setIsOpen(true);
   }, [queryClient, runtimeOptionsState]);
   const closeSelector = useCallback(() => setIsOpen(false), []);
@@ -317,6 +343,9 @@ export function useModelSelection({
       if (nextComputeSite === "device" || nextComputeSite === "machine") {
         void queryClient.invalidateQueries({ queryKey: [DEVICE_MODELS_QUERY_KEY] });
       }
+
+      setSearchQuery("");
+      setSelectedCapability(null);
 
       if (computeSite === nextComputeSite && selectedMachineId === machineId) {
         void runtimeOptionsState.refresh();
@@ -361,7 +390,7 @@ export function useModelSelection({
     (newModel: string) => {
       const nextModel = availableModels[newModel];
 
-      if (!nextModel) {
+      if (!nextModel || nextModel.isExecutable === false) {
         return false;
       }
 
@@ -376,18 +405,22 @@ export function useModelSelection({
         return false;
       }
 
-      const nextComputeSite: ComputeSite = nextModel.machineId
-        ? "machine"
-        : nextModel.provider === "web-llm"
-          ? "browser"
-          : nextModel.runsOn === "device"
-            ? "device"
-            : "hosted";
+      const nextComputeSite = getPickerModelSite(nextModel);
 
+      setSearchQuery("");
+      setSelectedCapability(null);
       setComputeSite(nextComputeSite);
       setSelectedMachineId(nextModel.machineId);
       selectModelWithDefaults(newModel);
       onModelChange?.(newModel, nextModel);
+      lastUsed.remember({
+        modelId: newModel,
+        name: nextModel.name || newModel,
+        provider: nextModel.provider,
+        computeSite: nextComputeSite,
+        machineId: nextModel.machineId,
+        locationLabel: getPickerLocationLabel(nextModel, runtimeOptionsState.options),
+      });
       trackEvent({
         name: "set_model",
         category: "conversation",
@@ -399,6 +432,8 @@ export function useModelSelection({
     },
     [
       availableModels,
+      lastUsed.remember,
+      runtimeOptionsState.options,
       onBeforeModelChange,
       onModelChange,
       selectModelWithDefaults,
@@ -519,14 +554,14 @@ export function useModelSelection({
     ? `${selectedTeammate?.name} - ${teammateModelLabel}`
     : model === null
       ? `${selectedTierLabel} tier`
-      : selectedModelLabel;
+      : `${selectedModelLabel} · ${getPickerLocationLabel(selectedModelInfo ?? automaticModelOption, runtimeOptionsState.options)}`;
   const triggerTitle = isTeammateLabel
     ? `${selectedTeammate?.name} - ${teammateModelLabel}`
     : isModelLocked
       ? `${teammateModelLabel} (set by teammate)`
       : model === null
         ? `${selectedTierLabel} tier`
-        : selectedModelLabel;
+        : `${selectedModelLabel} · ${getPickerLocationLabel(selectedModelInfo ?? automaticModelOption, runtimeOptionsState.options)}`;
 
   return {
     isOpen,
@@ -539,7 +574,9 @@ export function useModelSelection({
     selectedCapability,
     setSelectedCapability,
     showTiers: !isModelListOnlyScope && computeSite === "hosted",
-    runtimeOptions: runtimeOptionsState.options,
+    runtimeOptions: isModelListOnlyScope
+      ? runtimeOptionsState.options.filter((option) => option.site === "hosted")
+      : runtimeOptionsState.options,
     selectedMachineId,
     computeSite,
     onComputeSiteChange: handleComputeSiteChange,
@@ -560,6 +597,9 @@ export function useModelSelection({
     triggerTitle,
     featuredModelIds,
     models,
+    recentModels,
+    modelLocations,
+    recentSyncError: lastUsed.syncError,
     isPro,
     isModelLocked,
     selectModel,

@@ -10,7 +10,5 @@ pub struct Diagnostics {
     pub api_base_url: String,
     pub database_path: String,
     pub endpoint_count: usize,
-    pub keychain_available: bool,
-    pub signed_in: bool,
     pub collected_at: String,
 }

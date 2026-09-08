@@ -1,4 +1,8 @@
-import { buildDeviceModels, setDeviceModelSource } from "@ngriffin_uk/polychat-library-chat";
+import {
+  buildDeviceModels,
+  discoverAgentModels,
+  setDeviceModelSource,
+} from "@ngriffin_uk/polychat-library-chat";
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 import { tauriDesktopBackend } from "./desktop-backend";
@@ -14,7 +18,7 @@ export async function discoverDeviceModels(): Promise<ModelConfig> {
     })),
   );
 
-  return buildDeviceModels(discovered);
+  return { ...buildDeviceModels(discovered), ...(await discoverAgentModels(tauriDesktopBackend)) };
 }
 
 setDeviceModelSource(discoverDeviceModels);

@@ -7,10 +7,6 @@ export * from "./local-chat-export.js";
 export * from "./local-conversation-store.js";
 export * from "./chat-settings.js";
 export * from "./account-model-defaults.js";
-export * from "./agents/codex.js";
-export * from "./agents/cursor.js";
-export * from "./agents/grok.js";
-export * from "./agents/opencode.js";
 export { parseAgentProcessOutput } from "./agents/process-output.js";
 export * from "./compute-site-selection.js";
 export type { AttachmentData } from "./attachments.js";
@@ -33,13 +29,7 @@ export {
   type ConversationStorageMode,
   type RetentionReason,
 } from "./conversation-storage-policy.js";
-export {
-  createFakeDesktopBackend,
-  type DesktopBackend,
-  type DesktopRun,
-  type FakeDesktopBackend,
-  type FakeDesktopBackendSeed,
-} from "./desktop-backend.js";
+export { type DesktopBackend, type DesktopRun } from "./desktop-backend.js";
 export {
   compareConversationsBySort,
   conversationActivityCutoff,
@@ -59,3 +49,4 @@ export {
   type TurnActivityProjection,
   type TurnActivityTool,
 } from "./turn-activity.js";
+export * from "./agent-models.js";

@@ -1,7 +1,7 @@
 import type { ComputeSite } from "./compute-sites.js";
 import type { ModelTier } from "./model-lineup.js";
 import type { PetModelOverrides } from "./pets.js";
-import type { GuardrailsProviderId } from "./user/userSettings.js";
+import type { GuardrailsProviderId, LastModelSelection } from "./user/userSettings.js";
 
 export interface User {
   id: number;
@@ -63,6 +63,7 @@ export interface UserSettings {
   default_model_tier?: ModelTier | null;
   default_model_id?: string | null;
   default_compute_site?: ComputeSite | null;
+  last_model_selection?: LastModelSelection | null;
   pet_source?: "preset" | "custom";
   pet_id?: string;
   pet_travel_enabled?: boolean;

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { assertSafeCommand, buildSummary, runSandboxCommand } from "../commands";
+import { createSseStream } from "./sse-stream";
 
 describe("assertSafeCommand", () => {
   it("allows non-mutating commands in read-only mode", () => {
@@ -31,20 +32,6 @@ describe("assertSafeCommand", () => {
 });
 
 describe("runSandboxCommand", () => {
-  function createSseStream(events: Array<Record<string, unknown>>): ReadableStream<Uint8Array> {
-    const encoder = new TextEncoder();
-
-    return new ReadableStream<Uint8Array>({
-      start(controller) {
-        for (const event of events) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
-        }
-
-        controller.close();
-      },
-    });
-  }
-
   it("collects streamed command output and returns the completion result", async () => {
     const exec = vi.fn();
     const execStream = vi.fn().mockResolvedValue(
@@ -94,6 +81,26 @@ describe("runSandboxCommand", () => {
       stdout: "building\n",
       stderr: "warning\n",
     });
+  });
+
+  it("redacts credentials split across SDK events before emitting or returning output", async () => {
+    const output: string[] = [];
+    const execStream = vi.fn().mockResolvedValue(
+      createSseStream([
+        { type: "stdout", data: "ready\nprivate-" },
+        { type: "stdout", data: "credential\nfinished\n" },
+        { type: "complete", exitCode: 0 },
+      ]),
+    );
+    const result = await runSandboxCommand({ exec: vi.fn(), execStream }, "pnpm test", {
+      redactionSecrets: ["private-credential"],
+      onOutput: ({ data }) => {
+        output.push(data);
+      },
+    });
+
+    expect(output.join("")).toBe("ready\n[redacted credential]\nfinished\n");
+    expect(result.stdout).toBe(output.join(""));
   });
 
   it("falls back to buffered exec for sandbox test doubles without execStream", async () => {

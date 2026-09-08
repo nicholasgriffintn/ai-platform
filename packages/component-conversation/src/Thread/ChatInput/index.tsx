@@ -26,7 +26,7 @@ import type {
   ComposerCommandAction,
 } from "@ngriffin_uk/polychat-utility-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { File, FileText, Ghost, Paperclip, Pause, Send, Volume2 } from "lucide-react";
+import { File, FileText, Paperclip, Pause, Send, Volume2 } from "lucide-react";
 import {
   type ChangeEvent,
   type KeyboardEvent,

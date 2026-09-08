@@ -43,12 +43,8 @@ export function resolveComputeSiteForClient(options: {
     return { computeSite: "device", modelId: requestedModelId };
   }
 
-  if (requestedSite === "machine" && requestedModel?.machineId && hasDesktopBackend) {
-    return {
-      computeSite: "hosted",
-      reason:
-        "Connected-machine compute is not available in this client. Using hosted compute instead.",
-    };
+  if (requestedSite === "machine" && requestedModel?.machineId) {
+    return { computeSite: "machine", modelId: requestedModelId };
   }
 
   const canKeepHostedModel =

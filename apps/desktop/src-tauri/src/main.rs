@@ -6,26 +6,26 @@ mod chat;
 mod diagnostics;
 mod discovery;
 mod egress;
+mod encoding;
 mod lines;
 mod link;
 mod links;
+mod model_runner;
+mod programs;
 mod runs;
 mod secrets;
 mod service;
 mod store;
 
-use std::process::Stdio;
 use std::time::Duration;
 
 use agents::process::{self, AgentDriver, AgentToolState, DirectoryGrants, ProcessRunRequest};
-use agents::{AgentApprovalRequest, AgentChunk, AgentSession};
 use announcements::{Announcement, AnnouncementPlan};
-use chat::{ModelRunRequest, StreamChunk};
+use chat::ModelRunRequest;
 use diagnostics::Diagnostics;
 use discovery::DiscoveredModel;
 use egress::{describe_transport_failure, DesktopEndpoint, EgressRefusal, TransportFailure};
 use futures_util::StreamExt;
-use lines::LineReader;
 use runs::{RunRegistry, StreamEvent};
 use rusqlite::Connection;
 use serde::Serialize;
@@ -36,8 +36,6 @@ use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_notification::NotificationExt;
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
-use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::process::Command;
 use url::Url;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(3);
@@ -46,7 +44,6 @@ const RUN_IDLE_TIMEOUT: Duration = Duration::from_secs(120);
 const CANCEL_POLL: Duration = Duration::from_millis(200);
 const MAX_JSON_BODY: usize = 8 * 1024 * 1024;
 const FALLBACK_TIMESTAMP: &str = "1970-01-01T00:00:00Z";
-const SESSION_SECRET: &str = "session-token";
 const DEFAULT_TOKEN_LIFETIME_SECONDS: u32 = 15 * 60;
 const API_LABEL: &str = "Polychat";
 const API_BASE_URL: &str = match option_env!("POLYCHAT_API_BASE_URL") {
@@ -112,61 +109,6 @@ fn authorised_endpoint(store: &Store, endpoint_id: &str) -> Result<(DesktopEndpo
         .ok_or_else(|| refusal_detail(EgressRefusal::UnknownEndpoint))?;
 
     Ok((endpoint, target))
-}
-
-async fn stream_lines(
-    response: reqwest::Response,
-    run_id: &str,
-    label: &str,
-    registry: &RunRegistry,
-    mut parse: impl FnMut(&str) -> StreamChunk,
-    emit: &impl Fn(StreamEvent),
-) -> &'static str {
-    let mut stream = response.bytes_stream();
-    let mut reader = LineReader::default();
-
-    loop {
-        let Some(piece) = next_piece(&mut stream, run_id, registry).await else {
-            return "cancelled";
-        };
-
-        let piece = match piece {
-            Some(Ok(piece)) => piece,
-            Some(Err(cause)) => {
-                emit(StreamEvent::Failed {
-                    run_id: run_id.to_string(),
-                    failure: "unknown".to_string(),
-                    message: transport_failure(label, &cause),
-                });
-
-                return "interrupted";
-            }
-            None => return "complete",
-        };
-
-        reader.push(&piece);
-
-        if reader.overflowed() {
-            emit(StreamEvent::Failed {
-                run_id: run_id.to_string(),
-                failure: "unknown".to_string(),
-                message: "The runtime sent a single line too large to read.".to_string(),
-            });
-
-            return "interrupted";
-        }
-
-        while let Some(line) = reader.next_line() {
-            match parse(&line) {
-                StreamChunk::Text(delta) => emit(StreamEvent::Text {
-                    run_id: run_id.to_string(),
-                    delta,
-                }),
-                StreamChunk::Done => return "complete",
-                StreamChunk::Ignored => {}
-            }
-        }
-    }
 }
 
 type PieceResult = Option<Result<bytes::Bytes, reqwest::Error>>;
@@ -476,7 +418,7 @@ fn delete_all_local_chats(scope: String, store: State<'_, Store>) -> Result<(), 
 
 #[tauri::command]
 async fn access_token() -> Result<SessionToken, String> {
-    let Some(session) = secrets::read(SESSION_SECRET)? else {
+    let Some(session) = secrets::read(secrets::SESSION)? else {
         return Err("Sign in before using Polychat.".to_string());
     };
 
@@ -491,7 +433,7 @@ async fn access_token() -> Result<SessionToken, String> {
         let status = response.status().as_u16();
 
         if status == 401 {
-            secrets::forget(SESSION_SECRET)?;
+            secrets::forget(secrets::SESSION)?;
         }
 
         let detail = response.text().await.unwrap_or_default();
@@ -526,13 +468,17 @@ fn read_session_token(body: &serde_json::Value) -> Option<SessionToken> {
 }
 
 #[tauri::command]
-fn is_signed_in() -> Result<bool, String> {
-    Ok(secrets::read(SESSION_SECRET)?.is_some())
+async fn is_signed_in() -> Result<bool, String> {
+    tauri::async_runtime::spawn_blocking(|| {
+        secrets::read(secrets::SESSION).map(|secret| secret.is_some())
+    })
+    .await
+    .map_err(|cause| cause.to_string())?
 }
 
 #[tauri::command]
 fn sign_out() -> Result<(), String> {
-    secrets::forget(SESSION_SECRET)
+    secrets::forget(secrets::SESSION)
 }
 
 #[tauri::command]
@@ -571,7 +517,7 @@ async fn sign_in() -> Result<(), String> {
     let session = read_session_cookie(response.headers())
         .ok_or_else(|| "Sign-in returned no session.".to_string())?;
 
-    secrets::store(SESSION_SECRET, &session)
+    secrets::store(secrets::SESSION, &session)
 }
 
 fn read_session_cookie(headers: &reqwest::header::HeaderMap) -> Option<String> {
@@ -622,163 +568,6 @@ fn new_client_state() -> String {
 }
 
 #[tauri::command]
-async fn list_agent_sessions(
-    endpoint_id: String,
-    store: State<'_, Store>,
-) -> Result<Vec<AgentSession>, String> {
-    let (endpoint, base) = authorised_endpoint(&store, &endpoint_id)?;
-    let target = base
-        .join(agents::sessions_path(&endpoint))
-        .map_err(|cause| cause.to_string())?;
-
-    let response = with_pairing(http_client(DISCOVERY_TIMEOUT)?.get(target), &endpoint)?
-        .send()
-        .await
-        .map_err(|cause| transport_failure(&endpoint.label, &cause))?;
-
-    if !response.status().is_success() {
-        return Err(format!(
-            "{} answered with status {}",
-            endpoint.label,
-            response.status().as_u16()
-        ));
-    }
-
-    let body = read_bounded_json(response, &endpoint.label).await?;
-
-    Ok(agents::parse_sessions(
-        &endpoint,
-        &body,
-        &executing_host(&endpoint),
-    ))
-}
-
-#[tauri::command]
-async fn decide_approval(
-    endpoint_id: String,
-    request_id: String,
-    approved: bool,
-    store: State<'_, Store>,
-) -> Result<(), String> {
-    let (endpoint, base) = authorised_endpoint(&store, &endpoint_id)?;
-    let target = base
-        .join(&agents::decision_path(&endpoint, &request_id))
-        .map_err(|cause| cause.to_string())?;
-
-    let response = with_pairing(
-        http_client(REQUEST_TIMEOUT)?
-            .post(target)
-            .json(&agents::decision_body(approved)),
-        &endpoint,
-    )?
-    .send()
-    .await
-    .map_err(|cause| transport_failure(&endpoint.label, &cause))?;
-
-    if response.status().is_success() {
-        return Ok(());
-    }
-
-    Err(format!(
-        "{} refused the decision with status {}",
-        endpoint.label,
-        response.status().as_u16()
-    ))
-}
-
-#[tauri::command]
-async fn start_agent_run(
-    run_id: String,
-    endpoint_id: String,
-    session_native_id: String,
-    prompt: String,
-    on_event: Channel<StreamEvent>,
-    registry: State<'_, RunRegistry>,
-    store: State<'_, Store>,
-) -> Result<(), String> {
-    let (endpoint, base) = authorised_endpoint(&store, &endpoint_id)?;
-    let target = base
-        .join(&agents::prompt_path(&endpoint, &session_native_id))
-        .map_err(|cause| cause.to_string())?;
-    let host = executing_host(&endpoint);
-    let attempt = with_pairing(
-        streaming_client()?
-            .post(target)
-            .json(&agents::prompt_body(&prompt)),
-        &endpoint,
-    )?;
-
-    let emit = |event: StreamEvent| {
-        let _ = on_event.send(event);
-    };
-
-    registry.begin(&run_id);
-
-    emit(StreamEvent::Started {
-        run_id: run_id.clone(),
-        endpoint_id: endpoint.id.clone(),
-        at: timestamp(),
-        head: None,
-    });
-
-    let response = match attempt.send().await {
-        Ok(response) => response,
-        Err(_cause) => {
-            registry.forget(&run_id);
-            emit(StreamEvent::Failed {
-                run_id: run_id.clone(),
-                failure: "unreachable".to_string(),
-                message: format!("{} is unreachable", endpoint.label),
-            });
-
-            return Ok(());
-        }
-    };
-
-    if !response.status().is_success() {
-        let failure = match response.status().as_u16() {
-            401 | 403 => "unauthorised",
-            404 => "session-gone",
-            _ => "agent-error",
-        };
-        let status = response.status().as_u16();
-
-        registry.forget(&run_id);
-        emit(StreamEvent::Failed {
-            run_id: run_id.clone(),
-            failure: failure.to_string(),
-            message: format!("{} answered with status {status}", endpoint.label),
-        });
-
-        return Ok(());
-    }
-
-    emit(StreamEvent::Progress {
-        run_id: run_id.clone(),
-        state: "generating".to_string(),
-    });
-
-    let reason = stream_agent(
-        response,
-        &run_id,
-        &registry,
-        &session_native_id,
-        &host,
-        &emit,
-    )
-    .await;
-
-    registry.forget(&run_id);
-    emit(StreamEvent::Finished {
-        run_id,
-        reason: reason.to_string(),
-        at: timestamp(),
-    });
-
-    Ok(())
-}
-
-#[tauri::command]
 fn list_agent_directories(store: State<'_, Store>) -> Result<Vec<process::DirectoryGrant>, String> {
     store.list_agent_directories()
 }
@@ -797,12 +586,16 @@ fn save_agent_directory(
 }
 
 #[tauri::command]
-fn pick_agent_directory(app: tauri::AppHandle) -> Result<Option<String>, String> {
-    Ok(app
-        .dialog()
-        .file()
-        .blocking_pick_folder()
-        .map(|path| path.to_string()))
+async fn pick_agent_directory(app: tauri::AppHandle) -> Result<Option<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        app.dialog()
+            .file()
+            .set_title("Choose the project folder for your coding agent. It will work with files in this folder.")
+            .blocking_pick_folder()
+            .map(|path| path.to_string())
+    })
+    .await
+    .map_err(|cause| cause.to_string())
 }
 
 #[tauri::command]
@@ -818,67 +611,8 @@ fn revoke_agent_directory(
 }
 
 #[tauri::command]
-fn probe_agent_tool(driver: AgentDriver) -> AgentToolState {
-    process::probe(driver, timestamp())
-}
-
-#[tauri::command]
-fn launch_antigravity(
-    directory_id: String,
-    directories: State<'_, DirectoryGrants>,
-) -> Result<process::ExternalAgentLaunch, String> {
-    let grant = directories
-        .get(&directory_id)
-        .map_err(|cause| format!("{cause:?}"))?;
-    let directory = process::ensure_directory_grant(&grant.path, &grant)
-        .map_err(|cause| format!("{cause:?}"))?;
-
-    process::launch_external_agent(AgentDriver::Antigravity, directory_id, &directory)
-        .map_err(|cause| format!("{cause:?}"))
-}
-
-#[tauri::command]
-fn compare_antigravity(
-    directory_id: String,
-    base_head: String,
-    directories: State<'_, DirectoryGrants>,
-) -> Result<process::ExternalAgentComparison, String> {
-    let grant = directories
-        .get(&directory_id)
-        .map_err(|cause| format!("{cause:?}"))?;
-    let directory = process::ensure_directory_grant(&grant.path, &grant)
-        .map_err(|cause| format!("{cause:?}"))?;
-
-    process::compare_external_agent(
-        AgentDriver::Antigravity,
-        directory_id,
-        &directory,
-        base_head,
-    )
-    .map_err(|cause| format!("{cause:?}"))
-}
-
-#[tauri::command]
-fn commit_antigravity(
-    directory_id: String,
-    base_head: String,
-    message: String,
-    directories: State<'_, DirectoryGrants>,
-) -> Result<process::ExternalAgentCommit, String> {
-    let grant = directories
-        .get(&directory_id)
-        .map_err(|cause| format!("{cause:?}"))?;
-    let directory = process::ensure_directory_grant(&grant.path, &grant)
-        .map_err(|cause| format!("{cause:?}"))?;
-
-    process::commit_external_agent(
-        AgentDriver::Antigravity,
-        directory_id,
-        &directory,
-        base_head,
-        message,
-    )
-    .map_err(|cause| format!("{cause:?}"))
+async fn probe_agent_tool(driver: AgentDriver) -> AgentToolState {
+    process::probe(driver, timestamp()).await
 }
 
 #[tauri::command]
@@ -890,160 +624,7 @@ async fn start_agent_process_run(
     registry: State<'_, RunRegistry>,
     store: State<'_, Store>,
 ) -> Result<(), String> {
-    let grant = directories
-        .get(&request.directory_id)
-        .map_err(|cause| format!("{cause:?}"))?;
-    let directory = process::ensure_directory_grant(&grant.path, &grant)
-        .map_err(|cause| format!("{cause:?}"))?;
-    let starting_head = process::git_head(&directory).map_err(|cause| format!("{cause:?}"))?;
-
-    if process::is_dirty(&directory).map_err(|cause| format!("{cause:?}"))?
-        && !request.acknowledge_dirty
-    {
-        return Err(format!("{:?}", process::ProcessRefusal::DirtyTree));
-    }
-
-    let program = process::program_for(request.driver);
-    let argv = process::build_argv(
-        request.driver,
-        &process::RunParams {
-            prompt: request.prompt,
-            session: request.session,
-            permission_mode: request.permission_mode,
-            model: request.model,
-        },
-    )
-    .map_err(|cause| format!("{cause:?}"))?;
-
-    if !registry.begin_directory(&directory) {
-        return Err(format!("{:?}", process::ProcessRefusal::AlreadyRunning));
-    }
-
-    let child_result = Command::new(program.program)
-        .args(argv)
-        .current_dir(&directory)
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn();
-    let mut child = match child_result {
-        Ok(child) => child,
-        Err(cause) => {
-            registry.finish_directory(&directory);
-            return Err(if cause.kind() == std::io::ErrorKind::NotFound {
-                format!("{:?}", process::ProcessRefusal::NotInstalled)
-            } else {
-                cause.to_string()
-            });
-        }
-    };
-    let stdout = child
-        .stdout
-        .take()
-        .ok_or_else(|| "The agent produced no output stream.".to_string())?;
-    let mut lines = BufReader::new(stdout).lines();
-
-    registry.begin(&run_id);
-    let _ = on_event.send(StreamEvent::Started {
-        run_id: run_id.clone(),
-        endpoint_id: request.directory_id.clone(),
-        at: timestamp(),
-        head: Some(starting_head),
-    });
-    let used_at = timestamp();
-    directories
-        .touch(&request.directory_id, used_at.clone())
-        .map_err(|cause| format!("{cause:?}"))?;
-    store.mark_agent_directory_used(&request.directory_id, &used_at)?;
-    let _ = on_event.send(StreamEvent::Progress {
-        run_id: run_id.clone(),
-        state: "generating".to_string(),
-    });
-
-    while let Some(line) = lines.next_line().await.map_err(|cause| cause.to_string())? {
-        if registry.is_cancelled(&run_id) {
-            let _ = child.kill().await;
-            registry.finish_directory(&directory);
-            registry.forget(&run_id);
-            let _ = on_event.send(StreamEvent::Finished {
-                run_id,
-                reason: "cancelled".to_string(),
-                at: timestamp(),
-            });
-
-            return Ok(());
-        }
-
-        let _ = on_event.send(StreamEvent::RawOutput {
-            run_id: run_id.clone(),
-            data: format!("{line}\n"),
-        });
-    }
-
-    let status = child.wait().await.map_err(|cause| cause.to_string())?;
-    registry.finish_directory(&directory);
-    registry.forget(&run_id);
-    let reason = if status.success() {
-        "complete"
-    } else {
-        "interrupted"
-    };
-    let _ = on_event.send(StreamEvent::Finished {
-        run_id,
-        reason: reason.to_string(),
-        at: timestamp(),
-    });
-
-    Ok(())
-}
-
-async fn stream_agent(
-    response: reqwest::Response,
-    run_id: &str,
-    registry: &RunRegistry,
-    session_native_id: &str,
-    host: &str,
-    emit: &impl Fn(StreamEvent),
-) -> &'static str {
-    let mut stream = response.bytes_stream();
-    let mut reader = LineReader::default();
-
-    loop {
-        let Some(piece) = next_piece(&mut stream, run_id, registry).await else {
-            return "cancelled";
-        };
-
-        let piece = match piece {
-            Some(Ok(piece)) => piece,
-            Some(Err(_)) => return "interrupted",
-            None => return "complete",
-        };
-
-        reader.push(&piece);
-
-        if reader.overflowed() {
-            return "interrupted";
-        }
-
-        while let Some(line) = reader.next_line() {
-            match agents::parse_agent_line(&line, session_native_id, host) {
-                AgentChunk::Text(delta) => emit(StreamEvent::Text {
-                    run_id: run_id.to_string(),
-                    delta,
-                }),
-                AgentChunk::Approval(request) => emit(approval_event(run_id, request)),
-                AgentChunk::Done => return "complete",
-                AgentChunk::Ignored => {}
-            }
-        }
-    }
-}
-
-fn approval_event(run_id: &str, request: AgentApprovalRequest) -> StreamEvent {
-    StreamEvent::ApprovalRequired {
-        run_id: run_id.to_string(),
-        request,
-    }
+    agents::runner::run(run_id, request, on_event, &directories, &registry, &store).await
 }
 
 #[tauri::command]
@@ -1064,8 +645,6 @@ fn collect_diagnostics(
         api_base_url: API_BASE_URL.to_string(),
         database_path: directory.join("polychat.sqlite").display().to_string(),
         endpoint_count: store.list_endpoints()?.len(),
-        keychain_available: secrets::read(SESSION_SECRET).is_ok(),
-        signed_in: secrets::read(SESSION_SECRET)?.is_some(),
         collected_at: timestamp(),
     })
 }
@@ -1128,13 +707,6 @@ fn cancel_agent_process_run(run_id: String, registry: State<'_, RunRegistry>) {
     registry.cancel(&run_id);
 }
 
-fn executing_host(endpoint: &DesktopEndpoint) -> String {
-    Url::parse(&endpoint.url)
-        .ok()
-        .and_then(|url| url.host_str().map(str::to_string))
-        .unwrap_or_else(|| endpoint.label.clone())
-}
-
 #[tauri::command]
 async fn start_model_run(
     run_id: String,
@@ -1143,89 +715,10 @@ async fn start_model_run(
     registry: State<'_, RunRegistry>,
     store: State<'_, Store>,
 ) -> Result<(), String> {
-    let (endpoint, base) = authorised_endpoint(&store, &request.endpoint_id)?;
-    let target = base
-        .join(chat::chat_path(&endpoint))
-        .map_err(|cause| cause.to_string())?;
-    let attempt = with_pairing(
-        streaming_client()?
-            .post(target)
-            .json(&chat::chat_body(&endpoint, &request)),
-        &endpoint,
-    )?;
-
-    let emit = |event: StreamEvent| {
+    model_runner::run_model(run_id, request, &registry, &store, |event| {
         let _ = on_event.send(event);
-    };
-
-    registry.begin(&run_id);
-
-    emit(StreamEvent::Started {
-        run_id: run_id.clone(),
-        endpoint_id: endpoint.id.clone(),
-        at: timestamp(),
-        head: None,
-    });
-    emit(StreamEvent::Progress {
-        run_id: run_id.clone(),
-        state: "loading-model".to_string(),
-    });
-
-    let response = match attempt.send().await {
-        Ok(response) => response,
-        Err(cause) => {
-            registry.forget(&run_id);
-            emit(StreamEvent::Failed {
-                run_id: run_id.clone(),
-                failure: "not-running".to_string(),
-                message: transport_failure(&endpoint.label, &cause),
-            });
-
-            return Ok(());
-        }
-    };
-
-    if !response.status().is_success() {
-        let failure = match response.status().as_u16() {
-            404 => "model-not-found",
-            401 | 403 => "unauthorised",
-            _ => "unknown",
-        };
-        let status = response.status().as_u16();
-
-        registry.forget(&run_id);
-        emit(StreamEvent::Failed {
-            run_id: run_id.clone(),
-            failure: failure.to_string(),
-            message: format!("{} answered with status {status}", endpoint.label),
-        });
-
-        return Ok(());
-    }
-
-    emit(StreamEvent::Progress {
-        run_id: run_id.clone(),
-        state: "generating".to_string(),
-    });
-
-    let reason = stream_lines(
-        response,
-        &run_id,
-        &endpoint.label,
-        &registry,
-        |line| chat::parse_stream_line(&endpoint, line),
-        &emit,
-    )
-    .await;
-
-    registry.forget(&run_id);
-    emit(StreamEvent::Finished {
-        run_id,
-        reason: reason.to_string(),
-        at: timestamp(),
-    });
-
-    Ok(())
+    })
+    .await
 }
 
 fn raise(app: &tauri::AppHandle) {
@@ -1239,29 +732,31 @@ fn raise(app: &tauri::AppHandle) {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args.get(1).map(String::as_str) == Some("service") {
-        if let Err(error) = service::dispatch(&args, API_BASE_URL) {
+        if let Err(error) = service::dispatch(&args) {
             eprintln!("{error}");
             std::process::exit(1);
         }
         return;
     }
+    let mut context = tauri::generate_context!();
     if args.iter().any(|arg| arg == "--service") {
-        if let Err(error) = service::run(API_BASE_URL) {
-            eprintln!("{error}");
-            std::process::exit(1);
+        for window in &mut context.config_mut().app.windows {
+            window.visible = false;
         }
-        return;
     }
 
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
-            raise(app);
+            if !argv.iter().any(|arg| arg == "--service") {
+                raise(app);
+            }
 
             if let Some(url) = links::find_deep_link(&argv) {
                 let _ = app.emit(links::DEEP_LINK_EVENT, url.clone());
             }
         }))
         .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let opened = app.handle().clone();
@@ -1306,25 +801,19 @@ fn main() {
             delete_local_chat,
             delete_all_local_chats,
             start_model_run,
-            list_agent_sessions,
-            start_agent_run,
             list_agent_directories,
             save_agent_directory,
             pick_agent_directory,
             revoke_agent_directory,
             probe_agent_tool,
-            launch_antigravity,
-            compare_antigravity,
-            commit_antigravity,
             start_agent_process_run,
-            decide_approval,
             collect_diagnostics,
             cancel_model_run,
             cancel_agent_process_run,
             announce_attention,
             set_attention_badge
         ])
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("Polychat desktop failed to start");
 }
 

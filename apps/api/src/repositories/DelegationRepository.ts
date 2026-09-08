@@ -1,13 +1,15 @@
 import {
-  delegationSchema,
+  DELEGATION_MAX_DEPTH,
+  DELEGATION_MAX_FAN_OUT,
   type Delegation,
   type DelegationResult,
   type DelegationState,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { DelegationRow } from "~/lib/database/schema";
+import type { IEnv } from "~/types";
+import { formatDelegation } from "~/utils/delegations";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
 
 import { BaseRepository } from "./BaseRepository";
 
@@ -23,48 +25,19 @@ export interface CreateDelegationParams {
   budget: Delegation["budget"];
 }
 
-function parseResult(value: unknown): DelegationResult | null {
-  if (!value) {
-    return null;
-  }
-
-  const parsed = delegationSchema.shape.result.safeParse(
-    typeof value === "string" ? safeParseJson<unknown>(value) : value,
-  );
-
-  return parsed.success ? parsed.data : null;
-}
-
-function formatDelegation(row: DelegationRow): Delegation {
-  return delegationSchema.parse({
-    id: row.id,
-    parentConversationId: row.parent_conversation_id,
-    childConversationId: row.child_conversation_id,
-    parentRunId: row.parent_run_id,
-    depth: row.depth,
-    teammateId: row.teammate_id,
-    goal: row.goal,
-    waitFor: row.wait_for,
-    budget: {
-      maxCreditMicros: row.max_credit_micros,
-      maxSteps: row.max_steps,
-      deadline: row.deadline,
-    },
-    state: row.state,
-    result: parseResult(row.result_json),
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  });
-}
-
-export class DelegationRepository extends BaseRepository {
+export class DelegationRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async createDelegation(params: CreateDelegationParams): Promise<Delegation> {
     const row = await this.runQuery<DelegationRow>(
       `INSERT INTO delegation (
          id, parent_conversation_id, child_conversation_id, parent_run_id,
          depth, teammate_id, goal, wait_for, max_credit_micros, max_steps, deadline,
          state, result_json
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'queued', ?)
+       ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'queued', ?
+       WHERE ? BETWEEN 1 AND ?
+         AND NOT EXISTS (SELECT 1 FROM delegation WHERE child_conversation_id = ?)
+         AND (SELECT COUNT(*) FROM delegation
+              WHERE parent_conversation_id = ? AND parent_run_id = ?
+                AND state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')) < ?
        RETURNING *`,
       [
         params.id,
@@ -79,12 +52,22 @@ export class DelegationRepository extends BaseRepository {
         params.budget.maxSteps,
         params.budget.deadline,
         null,
+        params.depth,
+        DELEGATION_MAX_DEPTH,
+        params.parentConversationId,
+        params.parentConversationId,
+        params.parentRunId,
+        DELEGATION_MAX_FAN_OUT,
       ],
       true,
     );
 
     if (!row) {
-      throw new AssistantError("Failed to create delegation", ErrorType.DATABASE_ERROR);
+      throw new AssistantError(
+        "The delegation depth or concurrent run limit has been reached.",
+        ErrorType.PARAMS_ERROR,
+        409,
+      );
     }
 
     return formatDelegation(row);
@@ -167,6 +150,7 @@ export class DelegationRepository extends BaseRepository {
       `UPDATE delegation
        SET state = ?, result_json = ?, updated_at = CURRENT_TIMESTAMP
        WHERE id = ?
+         AND state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')
        RETURNING *`,
       [state, result ? JSON.stringify(result) : null, id],
       true,

@@ -1,9 +1,6 @@
+import { setDesktopExecutionBackend } from "@ngriffin_uk/polychat-library-chat";
+import { apiService, useChatStore } from "@ngriffin_uk/polychat-library-client";
 // @vitest-environment jsdom
-
-import {
-  createFakeDesktopBackend,
-  setDesktopExecutionBackend,
-} from "@ngriffin_uk/polychat-library-chat";
 import type {
   DesktopEndpointCandidate,
   DesktopRuntimeReadiness,
@@ -11,9 +8,11 @@ import type {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { createFakeDesktopBackend } from "../lib/testing/desktop-backend.js";
 import { DEVICE_MODELS_QUERY_KEY } from "./useDeviceModels.js";
+import { useModels } from "./useModels.js";
 import { useRuntimeEndpoints } from "./useRuntimeEndpoints.js";
 
 const candidate: DesktopEndpointCandidate = {
@@ -44,6 +43,27 @@ function createWrapper(queryClient: QueryClient) {
 describe("useRuntimeEndpoints", () => {
   afterEach(() => {
     setDesktopExecutionBackend(null);
+    vi.restoreAllMocks();
+    useChatStore.setState({ isAuthenticated: false });
+  });
+
+  it("keeps the loaded catalogue visible while sign-in starts machine discovery", async () => {
+    vi.spyOn(apiService, "fetchModels").mockResolvedValue({});
+    vi.spyOn(apiService, "fetchMachines").mockImplementation(() => new Promise(() => {}));
+    useChatStore.setState({ isAuthenticated: false });
+    const queryClient = createQueryClient();
+    const { result, unmount } = renderHook(() => useModels(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    act(() => useChatStore.setState({ isAuthenticated: true }));
+    await waitFor(() => expect(apiService.fetchMachines).toHaveBeenCalledOnce());
+    expect(result.current.isFetching).toBe(true);
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.data).toEqual({});
+    unmount();
+    queryClient.clear();
   });
 
   it("lists saved endpoints without probing them when the page opens", async () => {

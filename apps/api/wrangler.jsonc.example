@@ -89,6 +89,7 @@
   ],
   "durable_objects": {
     "bindings": [
+      { "name": "MACHINE_RUN_COORDINATOR", "class_name": "MachineRunCoordinator" },
       {
         "name": "SANDBOX_RUN_COORDINATOR",
         "class_name": "SandboxRunCoordinator"
@@ -111,7 +112,8 @@
       "new_sqlite_classes": [
         "ConversationCoordinator"
       ]
-    }
+    },
+    { "tag": "v4-machine-runs", "new_sqlite_classes": ["MachineRunCoordinator"] }
   ],
   "analytics_engine_datasets": [
     {

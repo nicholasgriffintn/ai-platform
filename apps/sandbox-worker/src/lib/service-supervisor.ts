@@ -20,7 +20,7 @@ import { delay } from "./delay";
 import { hasSandboxErrorCode } from "./errors";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { listeningPortsFromProcNet, READ_LISTENING_SOCKETS_COMMAND } from "./network-ports";
-import { redactSandboxOutput } from "./output-redaction";
+import { createSandboxOutputRedactor, redactSandboxOutput } from "./output-redaction";
 import type { RunControlClient } from "./run-control-client";
 import { withSandboxEnvironment } from "./sandbox-environment-runtime";
 
@@ -32,6 +32,7 @@ const MAX_SERVICE_LOG_EVENT_CHARS = 2_000;
 const MAX_OBSERVATION_FAILURES = 3;
 
 interface ManagedService {
+  redactors: Record<"stdout" | "stderr", ReturnType<typeof createSandboxOutputRedactor>>;
   definition: SandboxServiceDefinition;
   absoluteWorkingDirectory: string;
   status: SandboxServiceStatus;
@@ -142,6 +143,8 @@ export class ProjectServiceSupervisor {
 
     for (const definition of definitions) {
       await this.options.checkpoint(`Sandbox run cancelled before starting ${definition.name}`);
+      this.queueLogEvent(service, "stdout", "", true);
+      this.queueLogEvent(service, "stderr", "", true);
       assertSafeCommand(definition.command, { trustLevel: "trusted" });
       const approval = await resolveCommandApproval({
         command: definition.command,
@@ -166,6 +169,14 @@ export class ProjectServiceSupervisor {
 
       const absoluteWorkingDirectory = await this.resolveWorkingDirectory(definition);
       const managed: ManagedService = {
+        redactors: {
+          stdout: createSandboxOutputRedactor(
+            Object.values(this.options.environmentVariables ?? {}),
+          ),
+          stderr: createSandboxOutputRedactor(
+            Object.values(this.options.environmentVariables ?? {}),
+          ),
+        },
         definition,
         absoluteWorkingDirectory,
         status: "stopped",
@@ -252,6 +263,8 @@ export class ProjectServiceSupervisor {
 
     for (const service of this.ordered.slice().reverse()) {
       await this.stopManagedService(service, "Run finished");
+      this.queueLogEvent(service, "stdout", "", true);
+      this.queueLogEvent(service, "stderr", "", true);
     }
 
     await this.flushLogEvents();
@@ -309,15 +322,19 @@ export class ProjectServiceSupervisor {
     throw new Error(`Declared port ${port} is already in use`);
   }
 
-  private queueLogEvent(service: ManagedService, stream: "stdout" | "stderr", data: string): void {
-    if (!data || service.logTruncationReported) {
+  private queueLogEvent(
+    service: ManagedService,
+    stream: "stdout" | "stderr",
+    data: string,
+    final = false,
+  ): void {
+    if ((!data && !final) || service.logTruncationReported) {
       return;
     }
 
-    const safeOutput = redactSandboxOutput(
-      data,
-      Object.values(this.options.environmentVariables ?? {}),
-    );
+    const safeOutput = final
+      ? service.redactors[stream].flush()
+      : service.redactors[stream].push(data);
     const remaining = MAX_SERVICE_LOG_CHARS - service.logCharacters;
 
     if (remaining <= 0 || service.logEvents >= MAX_SERVICE_LOG_EVENTS) {
@@ -408,6 +425,8 @@ export class ProjectServiceSupervisor {
     const definition = service.definition;
 
     await this.options.checkpoint(`Sandbox run cancelled before starting ${definition.name}`);
+    this.queueLogEvent(service, "stdout", "", true);
+    this.queueLogEvent(service, "stderr", "", true);
 
     if (definition.expectedPort !== undefined) {
       try {

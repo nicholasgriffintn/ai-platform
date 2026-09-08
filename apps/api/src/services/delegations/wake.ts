@@ -65,7 +65,12 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
     store: true,
   });
 
-  await handleCreateChatCompletions({ env, request: body, user, context });
+  await handleCreateChatCompletions({
+    env,
+    request: body,
+    user,
+    context: createServiceContext({ env, user }),
+  });
 
   return { status: "success" as const, detail: "Parent resumed" };
 }

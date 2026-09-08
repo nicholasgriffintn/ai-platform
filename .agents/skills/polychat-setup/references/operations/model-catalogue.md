@@ -44,3 +44,22 @@ pnpm --filter @assistant/api models:sync --convert-from /tmp/original-src --snap
 Use only trusted original TypeScript sources for this explicit migration command. The converter evaluates their constants, spreads and constructors, preserves provider ordering, and compares every resolved offering with its source before writing. Only descriptions, family metadata and missing display names may change during conversion; prices, reasoning, capabilities and execution settings must match. This importer is migration tooling; the application and normal sync consume only the new catalogue.
 
 Repeat a command with identical input and expect `changedFiles: 0`. Validate the API typecheck and `scripts/sync-models-dev` tests after edits. Generated catalogue files remain excluded from lint and formatting; validate their schema, references and generated imports instead.
+
+## Keep browser search lightweight
+
+Search the browser catalogue without importing the WebLLM inference engine. `packages/library-react/src/lib/web-llm-catalogue.json` contains model IDs and URLs from the installed WebLLM package; refresh it after upgrading that dependency and verify it before shipping:
+
+```sh
+node scripts/refresh-web-llm-catalogue.mjs
+node scripts/refresh-web-llm-catalogue.mjs --check
+```
+
+Both commands read the installed package locally. Keep engine loading behind browser-model selection; opening or searching the picker must not initialise it.
+
+Serialise browser engine loading, generation and unloading through `WebLLMService`. Reuse an already loaded model and wait for active generation before switching models. Supply the current conversation history with every request; do not retain shared chat history in the engine service.
+
+## Preserve model selection context
+
+Use the location tabs to browse and the search field to search all available locations. Show Auto in the category rail and label search results with their location; specialised live and text-only pickers retain their supported scope. Let the picker wrapper own outer spacing around Auto.
+
+Persist the last explicit model choice in the account's `last_model_selection` setting, including its location. Treat it as a shortcut, not execution authority: unavailable choices remain visible but disabled, and current catalogue eligibility wins. Signed-out choices last only for the mounted picker; account choices refresh when opening it, use the last completed settings write, and report sync failures without undoing the current selection.

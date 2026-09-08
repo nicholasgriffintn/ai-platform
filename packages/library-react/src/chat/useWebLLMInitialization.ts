@@ -1,5 +1,6 @@
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { useEffect, useRef } from "react";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useLoadingActions } from "../state/LoadingContext.js";
@@ -10,13 +11,13 @@ import { WebLLMService } from "./web-llm.js";
  * Hook for initializing WebLLM local models.
  * Handles model loading, progress tracking, and error states.
  */
-export function useWebLLMInitialization(apiModels: Record<string, any> = {}) {
+export function useWebLLMInitialization(apiModels: ModelConfig = {}) {
   const { startLoading, updateLoading, stopLoading } = useLoadingActions();
   const { computeSite, model, setModel } = useChatStore();
   const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
 
-  const webLLMService = useRef<WebLLMService>(WebLLMService.getInstance());
-  const initializingRef = useRef<boolean>(false);
+  const [webLLMService] = useState(() => WebLLMService.getInstance());
+  const [isInitializing, setIsInitializing] = useState(false);
 
   const matchingModel =
     model === null ? undefined : computeSite === "browser" ? webLLMModels[model] : apiModels[model];
@@ -26,19 +27,19 @@ export function useWebLLMInitialization(apiModels: Record<string, any> = {}) {
     let mounted = true;
 
     const initializeLocalModel = async () => {
-      if (!mounted || initializingRef.current) {
+      if (!mounted) {
         return;
       }
 
       if (model && computeSite === "browser" && matchingModel?.provider === "web-llm") {
         try {
-          initializingRef.current = true;
+          setIsInitializing(true);
 
           startLoading(loadingId, `Initializing ${matchingModel.name || model}...`);
 
           updateLoading(loadingId, 0, `Preparing to load ${matchingModel.name || model}...`);
 
-          await webLLMService.current.init(model, (progress) => {
+          await webLLMService.init(model, (progress) => {
             if (!mounted) {
               return;
             }
@@ -60,12 +61,12 @@ export function useWebLLMInitialization(apiModels: Record<string, any> = {}) {
         } finally {
           if (mounted) {
             stopLoading(loadingId);
-            initializingRef.current = false;
+            setIsInitializing(false);
           }
         }
-      } else if (initializingRef.current) {
+      } else {
         stopLoading(loadingId);
-        initializingRef.current = false;
+        setIsInitializing(false);
       }
     };
 
@@ -76,15 +77,21 @@ export function useWebLLMInitialization(apiModels: Record<string, any> = {}) {
     return () => {
       mounted = false;
       clearTimeout(timer);
-      if (initializingRef.current) {
-        stopLoading(loadingId);
-        initializingRef.current = false;
-      }
+      stopLoading(loadingId);
     };
-  }, [computeSite, model, matchingModel, startLoading, updateLoading, stopLoading, setModel]);
+  }, [
+    computeSite,
+    model,
+    matchingModel,
+    startLoading,
+    updateLoading,
+    stopLoading,
+    setModel,
+    webLLMService,
+  ]);
 
   return {
-    webLLMService: webLLMService.current,
-    isInitializing: initializingRef.current,
+    webLLMService: webLLMService,
+    isInitializing,
   };
 }

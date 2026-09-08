@@ -13,12 +13,13 @@ export function buildModelRuntimeOptions(
   includeBrowser = true,
 ): ModelRuntimeOption[] {
   const options: ModelRuntimeOption[] = [
-    { site: "hosted", label: "Polychat" },
-    ...(includeBrowser ? [{ site: "browser" as const, label: "Browser" }] : []),
+    { site: "hosted", label: "Cloud" },
+    ...(includeBrowser ? [{ site: "browser" as const, label: "This browser" }] : []),
   ];
 
   if (
-    endpoints.some((endpoint) => endpoint.kind === "model" && endpoint.transport === "loopback")
+    endpoints.some((endpoint) => endpoint.kind === "model") ||
+    Object.values(models).some((model) => model.runsOn === "device" && !model.machineId)
   ) {
     options.push({ site: "device", label: "This device" });
   }

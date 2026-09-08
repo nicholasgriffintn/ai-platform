@@ -1,24 +1,16 @@
 import {
   parseAgentProcessOutput,
   setDesktopExecutionBackend,
-  parseCodexOutput,
-  parseCursorOutput,
-  parseGrokOutput,
-  parseOpenCodeOutput,
   type DesktopBackend,
   type DesktopRun,
 } from "@ngriffin_uk/polychat-library-chat";
 import {
   desktopEndpointSchema,
   desktopRuntimeReadinessSchema,
-  agentRuntimeSessionSchema,
   desktopSessionTokenSchema,
   desktopStreamEventSchema,
   agentDirectorySchema,
   agentToolStateSchema,
-  externalAgentLaunchSchema,
-  externalAgentComparisonSchema,
-  externalAgentCommitSchema,
   discoveredModelSchema,
   localConversationSchema,
   localMessageSchema,
@@ -46,8 +38,6 @@ export const desktopDiagnosticsSchema = z.object({
   apiBaseUrl: z.string(),
   databasePath: z.string(),
   endpointCount: z.number().int().nonnegative(),
-  keychainAvailable: z.boolean(),
-  signedIn: z.boolean(),
   collectedAt: z.string(),
 });
 
@@ -61,18 +51,6 @@ export interface ConnectedDesktopBackend extends DesktopBackend {
   setAttentionBadge: (count: number) => Promise<void>;
   isSignedIn: () => Promise<boolean>;
   accessToken: () => Promise<DesktopSessionToken>;
-  launchAntigravity: (
-    directoryId: string,
-  ) => Promise<import("@ngriffin_uk/polychat-schemas").ExternalAgentLaunch>;
-  compareAntigravity: (
-    directoryId: string,
-    baseHead: string,
-  ) => Promise<import("@ngriffin_uk/polychat-schemas").ExternalAgentComparison>;
-  commitAntigravity: (
-    directoryId: string,
-    baseHead: string,
-    message: string,
-  ) => Promise<import("@ngriffin_uk/polychat-schemas").ExternalAgentCommit>;
 }
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
@@ -123,45 +101,16 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
     ),
   discoverModels: async (endpointId) =>
     discoveredModelSchema.array().parse(await invoke("discover_models", { endpointId })),
-  listAgentSessions: async (endpointId) =>
-    agentRuntimeSessionSchema.array().parse(await invoke("list_agent_sessions", { endpointId })),
-  decideApproval: async (endpointId, decision) => {
-    await invoke("decide_approval", {
-      endpointId,
-      requestId: decision.requestId,
-      approved: decision.approved,
-    });
-  },
-  startAgentRun: async (request) =>
-    startRun(
-      "start_agent_run",
-      {
-        endpointId: request.endpointId,
-        sessionNativeId: request.sessionNativeId ?? "",
-        prompt: request.prompt,
-      },
-      "agent-error",
-    ),
   startAgentProcessRun: async (request: DesktopAgentProcessRunRequest) =>
     startRun(
       "start_agent_process_run",
       { request },
       "agent-error",
       "cancel_agent_process_run",
-      (runId, line) => parseAgentOutput(request.driver, runId, line),
+      parseAgentProcessOutput,
     ),
   probeAgentTool: async (driver: AgentRuntimeVendor) =>
     agentToolStateSchema.parse(await invoke("probe_agent_tool", { driver })),
-  launchAntigravity: async (directoryId) =>
-    externalAgentLaunchSchema.parse(await invoke("launch_antigravity", { directoryId })),
-  compareAntigravity: async (directoryId, baseHead) =>
-    externalAgentComparisonSchema.parse(
-      await invoke("compare_antigravity", { directoryId, baseHead }),
-    ),
-  commitAntigravity: async (directoryId, baseHead, message) =>
-    externalAgentCommitSchema.parse(
-      await invoke("commit_antigravity", { directoryId, baseHead, message }),
-    ),
   listAgentDirectories: async () =>
     agentDirectorySchema.array().parse(await invoke("list_agent_directories")),
   pickAgentDirectory: async () =>
@@ -236,25 +185,6 @@ function startRun(
     },
     events: queue.events,
   });
-}
-
-function parseAgentOutput(
-  driver: AgentRuntimeVendor,
-  runId: string,
-  line: string,
-): DesktopStreamEvent {
-  switch (driver) {
-    case "codex":
-      return parseCodexOutput(runId, line);
-    case "cursor":
-      return parseCursorOutput(runId, line);
-    case "grok":
-      return parseGrokOutput(runId, line);
-    case "opencode":
-      return parseOpenCodeOutput(runId, line);
-    default:
-      return parseAgentProcessOutput(runId, line);
-  }
 }
 
 setDesktopExecutionBackend(tauriDesktopBackend);

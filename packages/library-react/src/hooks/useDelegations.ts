@@ -1,6 +1,5 @@
 import {
   cancelConversationDelegations,
-  grantConversationHandle,
   listConversationHandles,
   listConversationDelegations,
   revokeConversationHandle,
@@ -31,20 +30,17 @@ export function useCancelDelegations() {
   });
 }
 
-export function useConversationHandles() {
+export function useConversationHandles(enabled = true) {
   const queryClient = useQueryClient();
   const handles = useQuery({
     queryKey: conversationHandlesQueryKey,
     queryFn: listConversationHandles,
+    enabled,
   });
   const revoke = useMutation({
     mutationFn: revokeConversationHandle,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: conversationHandlesQueryKey }),
   });
-  const grant = useMutation({
-    mutationFn: grantConversationHandle,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: conversationHandlesQueryKey }),
-  });
 
-  return { ...handles, grant, revoke };
+  return { ...handles, revoke };
 }

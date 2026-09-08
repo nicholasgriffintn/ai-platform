@@ -1,10 +1,21 @@
 import { Card } from "@ngriffin_uk/polychat-component-ui";
-import { useConversationHandles } from "@ngriffin_uk/polychat-library-react";
+import type { ConversationHandle } from "@ngriffin_uk/polychat-schemas";
 
-export function ConversationHandleSettings() {
-  const { data, isLoading, revoke } = useConversationHandles();
-  const handles = data?.handles ?? [];
+interface ConversationHandleSettingsProps {
+  handles: ConversationHandle[];
+  isLoading: boolean;
+  isRevoking: boolean;
+  hasError: boolean;
+  onRevoke: (id: string) => void;
+}
 
+export function ConversationHandleSettings({
+  handles,
+  isLoading,
+  isRevoking,
+  hasError,
+  onRevoke,
+}: ConversationHandleSettingsProps) {
   return (
     <Card className="gap-3 p-5">
       <div>
@@ -13,6 +24,11 @@ export function ConversationHandleSettings() {
           Delegates can message only conversations with an active handle.
         </p>
       </div>
+      {hasError && (
+        <p role="alert" className="text-sm text-failure">
+          Conversation access could not be updated. Try again.
+        </p>
+      )}
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading access…</p>
       ) : handles.length === 0 ? (
@@ -33,8 +49,8 @@ export function ConversationHandleSettings() {
               <button
                 type="button"
                 className="shrink-0 text-xs text-failure"
-                disabled={revoke.isPending}
-                onClick={() => revoke.mutate(handle.id)}
+                disabled={isRevoking}
+                onClick={() => onRevoke(handle.id)}
               >
                 Revoke
               </button>

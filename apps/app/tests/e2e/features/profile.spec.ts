@@ -277,7 +277,7 @@ test.describe("Account-owned resources", () => {
     await expect(page.getByRole("link", { name: /^Ash\./ })).toBeVisible();
     await homePage.selectModel("GPT OSS 120B");
     await expect(page.getByRole("link", { name: /^Ash\./ })).toBeVisible();
-    await homePage.selectModel("Llama 4 Scout 17B");
+    await homePage.selectModel("Llama 4 Scout 17B 16E Instruct");
     await expect(page.getByRole("link", { name: /^Pip\./ })).toBeVisible();
 
     await profilePage.openTab("pets", "Your pet");

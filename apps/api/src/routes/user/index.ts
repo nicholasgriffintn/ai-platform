@@ -10,7 +10,6 @@ import {
   providerSyncStatusSchema,
   conversationHandleListResponseSchema,
   conversationHandleParamsSchema,
-  conversationHandleGrantSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { type Context, Hono } from "hono";
 
@@ -29,7 +28,6 @@ import {
   syncUserProviders,
 } from "~/services/user/userOperations";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import apiKeys from "./apiKeys";
 import exportHistoryRoute from "./export-history";
@@ -152,65 +150,6 @@ addRoute(app, "delete", "/conversation-handles/:handleId", {
     }
 
     return ResponseFactory.success(raw, { success: true });
-  },
-});
-
-addRoute(app, "post", "/conversation-handles", {
-  tags: ["user"],
-  summary: "Grant a conversation handle",
-  description: "Grants a delegation permission to message one of the user's conversations.",
-  bodySchema: conversationHandleGrantSchema,
-  responses: {
-    201: {
-      description: "Conversation handle granted",
-      schema: conversationHandleListResponseSchema,
-    },
-    400: { description: "Invalid handle grant", schema: errorResponseSchema },
-    404: { description: "Delegation or conversation not found", schema: errorResponseSchema },
-  },
-  handler: async ({ raw }) => {
-    const user = raw.get("user");
-    const input = raw.req.valid("json") as {
-      conversationId: string;
-      delegationId: string;
-      expiresAt?: string | null;
-    };
-    const context = getServiceContext(raw);
-    const delegation = await context.repositories.delegations.getById(input.delegationId);
-    const target = await context.repositories.conversations.getConversation(input.conversationId);
-    const parent = delegation
-      ? await context.repositories.conversations.getConversation(delegation.parentConversationId)
-      : null;
-
-    if (
-      !delegation ||
-      !target ||
-      !parent ||
-      parent.user_id !== user.id ||
-      target.user_id !== user.id
-    ) {
-      throw new AssistantError("Delegation or conversation not found", ErrorType.NOT_FOUND, 404);
-    }
-
-    const expiresAt = input.expiresAt ?? delegation.budget.deadline;
-
-    if (Date.parse(expiresAt) > Date.parse(delegation.budget.deadline)) {
-      throw new AssistantError(
-        "A handle cannot outlive its delegation",
-        ErrorType.PARAMS_ERROR,
-        400,
-      );
-    }
-
-    const handle = await context.repositories.conversationHandles.createUserHandle({
-      id: `handle_${generateId()}`,
-      conversationId: input.conversationId,
-      delegationId: input.delegationId,
-      grantedAt: new Date().toISOString(),
-      expiresAt,
-    });
-
-    return ResponseFactory.success(raw, { handles: [handle] }, 201);
   },
 });
 
