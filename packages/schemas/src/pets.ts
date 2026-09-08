@@ -136,6 +136,7 @@ export interface PetPreset {
   label: string;
   description: string;
   sheetUrl: string;
+  layoutId?: string;
 }
 
 export const PET_PRESETS: readonly PetPreset[] = [
@@ -194,6 +195,7 @@ export const PET_PRESETS: readonly PetPreset[] = [
     label: "Wisp",
     description: "Present, briefly. Remembers nothing and is at peace with it.",
     sheetUrl: "/pets/wisp.png",
+    layoutId: CODEX_SHEET_LAYOUT_ID,
   },
 ];
 
@@ -411,7 +413,7 @@ export function resolvePet(
     id: preset.slug,
     name: preset.label,
     sheetUrl: preset.sheetUrl,
-    layout: POLYCHAT_SHEET_LAYOUT,
+    layout: findPetSheetLayout(preset.layoutId),
   };
 }
 

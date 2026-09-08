@@ -4,6 +4,7 @@ import {
   EMPTY_PET_MODEL_OVERRIDES,
   parsePetModelOverrides,
   removeCustomPetFromModelOverrides,
+  resolvePet,
   resolvePetForModel,
   resolvePetSelectionForModel,
   type PetModelOverrides,
@@ -27,6 +28,18 @@ const overrides: PetModelOverrides = {
 };
 
 describe("model-aware pet selection", () => {
+  it("uses the Codex sheet layout for Wisp", () => {
+    expect(resolvePet({ pet_source: "preset", pet_id: "wisp" }).layout).toMatchObject({
+      id: "codex-v1",
+      frameWidth: 192,
+      frameHeight: 208,
+      columns: 8,
+      rows: 9,
+      sheetWidth: 1536,
+      sheetHeight: 1872,
+    });
+  });
+
   it("uses a temporary conversation override before model rules", () => {
     expect(
       resolvePetSelectionForModel(

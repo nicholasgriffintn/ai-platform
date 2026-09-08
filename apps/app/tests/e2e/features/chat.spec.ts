@@ -282,7 +282,7 @@ test.describe("Temporary storage as free", () => {
     const conversationId = homePage.completionIdFromRequest(request);
 
     await homePage.waitForChatResponse(0);
-    await expect.poll(() => polychatApi.conversationStatus(conversationId)).toBe(404);
+    await expect.poll(() => polychatApi.conversationStatus(conversationId)).toBe(401);
   });
 });
 

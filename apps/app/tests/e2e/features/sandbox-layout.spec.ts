@@ -30,6 +30,7 @@ test.describe("Project workbench layout", () => {
       "Changes",
       "Files",
       "Proof",
+      "Delegates",
     ]);
     await expect(workbench.status).toHaveAttribute("aria-live", "polite");
     await expect(workbench.status).toHaveText(/Ready:\s+Coding environment configured/);
@@ -78,6 +79,7 @@ test.describe("Project workbench layout", () => {
       "Changes",
       "Files",
       "Proof",
+      "Delegates",
     ]);
     await expect(
       workbench.mobileDialog.getByRole("tab", { name: "Changes", exact: true }),

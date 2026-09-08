@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolvePetSheetUrl } from "./petSheets";
+import { resolvePetSheetLayout, resolvePetSheetUrl } from "./petSheets";
 
 describe("resolvePetSheetUrl", () => {
   it.each(["/pets/ash.png", "/pets/wisp.png"])(
@@ -22,4 +22,14 @@ describe("resolvePetSheetUrl", () => {
       expect(resolvePetSheetUrl(sheet)).toBe(sheet);
     },
   );
+});
+
+describe("resolvePetSheetLayout", () => {
+  it("uses the nine-row Codex layout for Wisp", () => {
+    expect(resolvePetSheetLayout("/pets/wisp.png").id).toBe("codex-v1");
+  });
+
+  it("uses the Polychat layout for other built-in sheets", () => {
+    expect(resolvePetSheetLayout("/pets/pip.png").id).toBe("polychat-v1");
+  });
 });

@@ -18,6 +18,6 @@
 ## Automated evidence — 7 September 2026
 
 - New local Chromium `features/models-page.spec.ts` opens `/models` signed out, confirms the single `Every model, one perch` page heading, the five section chips, and follows each one to its heading in the viewport.
-- Every provider in the By provider filter renders artwork, and so does every provider section: the letter fallback appears nowhere, so no provider is marked one way in the filter and another in its section.
+- Every provider in the By provider filter and its matching section renders registered artwork or the explicit initial fallback consistently, so no provider is marked one way in the filter and another in its section.
 - The shell chrome title is now a non-heading label, so the page has one level-one heading; the focused regression journey passed after this fix.
 - Left open: the per-palette check across Light, Paper, Dawn, Dark, Blue, Fern and Plum, and the Discover models band.

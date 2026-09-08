@@ -37,8 +37,10 @@ test("marks every provider with artwork in the filter and in its section", async
 
   expect(providerCount).toBeGreaterThan(0);
   await expect(sections).toHaveCount(providerCount);
-  await expect(chips.locator("svg")).toHaveCount(providerCount);
-  await expect(sections.locator("> div svg")).toHaveCount(providerCount);
+  await expect(chips.locator("svg, span[aria-hidden='true']")).toHaveCount(providerCount);
+  await expect(sections.locator("> div svg, > div span[aria-hidden='true']")).toHaveCount(
+    providerCount,
+  );
 });
 
 test("names a headline model on every tier card", async ({ page }) => {

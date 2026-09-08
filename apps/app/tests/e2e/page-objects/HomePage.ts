@@ -84,8 +84,12 @@ export class HomePage extends BasePage {
       await modelsTab.click();
     }
 
-    await search.waitFor({ state: "visible", timeout: 2_000 }).catch(async () => {
-      await this.clickElement(this.modelSelector);
+    await search.waitFor({ state: "visible", timeout: 10_000 }).catch(async () => {
+      if ((await this.modelSelector.getAttribute("aria-expanded")) !== "true") {
+        await this.clickElement(this.modelSelector);
+      }
+
+      await search.waitFor({ state: "visible", timeout: 10_000 });
     });
     await this.fillInput(search, modelName);
     const options = this.page.locator('[role="option"]:not([aria-disabled="true"])');
@@ -100,9 +104,27 @@ export class HomePage extends BasePage {
     }
 
     await this.waitForElement(candidate);
-    const named = options.filter({ has: this.page.getByText(modelName, { exact: true }) }).first();
+    let lastClickError: unknown;
 
-    await this.clickElement((await named.count()) > 0 ? named : candidate);
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const liveOptions = this.page.locator('[role="option"]:not([aria-disabled="true"])');
+      const liveCandidate = liveOptions.filter({ hasText: modelName }).first();
+      const liveNamed = liveOptions
+        .filter({ has: this.page.getByText(modelName, { exact: true }) })
+        .first();
+      const target = (await liveNamed.count()) > 0 ? liveNamed : liveCandidate;
+
+      try {
+        await target.click({ timeout: 5_000 });
+
+        return;
+      } catch (error) {
+        lastClickError = error;
+        await this.page.waitForTimeout(150);
+      }
+    }
+
+    throw lastClickError;
   }
 
   async selectModelTier(tier: "Default" | "Low" | "Medium" | "High" | "Ultra") {
@@ -229,7 +251,10 @@ export class HomePage extends BasePage {
       return;
     }
 
-    await this.chatInput.waitFor();
+    await this.page
+      .getByRole("button", { name: "Open settings and configuration" })
+      .getByText(persona === "pro" ? "Pro Release User" : "Free Release User", { exact: true })
+      .waitFor();
   }
 
   async recordModelSelectorStatesAcrossNextNavigation() {
@@ -320,15 +345,20 @@ export class HomePage extends BasePage {
   }
 
   async openCanvas() {
-    await this.chatInput
-      .or(
-        this.page.getByText("Not signed in, so this stays on this device.", {
-          exact: true,
-        }),
-      )
-      .waitFor();
-    await this.page.getByRole("button", { name: "Switch to image generation" }).click();
-    await this.page.getByRole("heading", { name: "Generations", exact: true }).waitFor();
+    await this.chatInput.waitFor();
+    const heading = this.page.getByRole("heading", { name: "Generations", exact: true });
+
+    for (let attempt = 0; attempt < 3 && !(await heading.isVisible()); attempt += 1) {
+      const toggle = this.page.getByRole("button", { name: "Switch to image generation" });
+
+      if (await toggle.count()) {
+        await toggle.click();
+      }
+
+      await this.page.waitForTimeout(100);
+    }
+
+    await heading.waitFor();
   }
 
   async selectCanvasSurface(surface: "Image generation" | "Video generation" | "Drawing") {

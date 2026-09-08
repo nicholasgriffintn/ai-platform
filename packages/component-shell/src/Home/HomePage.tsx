@@ -36,7 +36,7 @@ export function HomePage({ hostModeConfig }: HomePageProps = {}) {
   useComposerPrefill();
 
   const toggleCanvasMode = () => {
-    setIsCanvasMode(!isCanvasMode);
+    setIsCanvasMode((current) => !current);
 
     trackEvent({
       name: isCanvasMode ? "switch_to_chat" : "switch_to_canvas",

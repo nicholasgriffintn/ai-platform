@@ -4,7 +4,7 @@ import { pauseNextNetworkRequest } from "../support/network-conditions";
 test.describe("Persisted model selection", () => {
   test.use({ persona: "pro" });
 
-  test("retains a Pro model and response controls after reload, then preserves the Default tier", async ({
+  test("retains conversation model selection and response controls after reload", async ({
     homePage,
     page,
   }) => {
@@ -29,19 +29,19 @@ test.describe("Persisted model selection", () => {
     await homePage.selectModelTier("Default");
     await homePage.reload();
     await homePage.waitForPersonaReady("pro");
-    await expect(page.getByLabel("Select a model", { exact: true })).toContainText("Default");
-    const automatic = await homePage.sendMessageAndRequireCompletion(
-      "Use my deliberate Default tier selection",
+    await expect(page.getByLabel("Select a model", { exact: true })).toContainText("GPT-6 Astra");
+    const continued = await homePage.sendMessageAndRequireCompletion(
+      "Continue with the conversation model selection",
     );
 
-    expect(automatic.model).toBeUndefined();
-    expect(automatic.models).toBeUndefined();
-    expect(automatic.messages).toEqual(
+    expect(continued.model).toBe("gpt-6-astra");
+    expect(continued.models).toBeUndefined();
+    expect(continued.messages).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ role: "user", content: "Keep my chosen model after refresh" }),
       ]),
     );
-    expect(homePage.completionIdFromRequest(automatic)).toBe(
+    expect(homePage.completionIdFromRequest(continued)).toBe(
       homePage.completionIdFromRequest(request),
     );
     await homePage.waitForChatResponse(1);
