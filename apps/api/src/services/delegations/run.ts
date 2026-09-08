@@ -78,6 +78,23 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         maxCreditMicros: delegation.budget.maxCreditMicros,
       },
     });
+
+    if (!(response instanceof Response)) {
+      const firstPendingTool = response.choices.find(
+        (choice) => choice.message.status === "pending",
+      )?.message;
+      if (firstPendingTool) {
+        const waitingState =
+          firstPendingTool.name === "ask_user" ? "awaiting_input" : "awaiting_approval";
+        await context.repositories.delegations.updateState(delegation.id, waitingState);
+
+        return {
+          status: "success" as const,
+          detail: `Delegate is ${waitingState.replace("awaiting_", "awaiting ")}.`,
+        };
+      }
+    }
+
     const summary =
       response instanceof Response ? "Delegate run accepted." : "Delegate run completed.";
 
