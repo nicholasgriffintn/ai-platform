@@ -175,6 +175,22 @@ export class DelegationRepository extends BaseRepository {
     return row ? formatDelegation(row) : null;
   }
 
+  async expireIfLive(id: string, summary: string): Promise<Delegation | null> {
+    const row = await this.runQuery<DelegationRow>(
+      `UPDATE delegation
+       SET state = 'expired',
+           result_json = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')
+       RETURNING *`,
+      [JSON.stringify({ summary, outputIds: [] }), id],
+      true,
+    );
+
+    return row ? formatDelegation(row) : null;
+  }
+
   async cancelIfLive(id: string): Promise<Delegation | null> {
     const row = await this.runQuery<DelegationRow>(
       `UPDATE delegation

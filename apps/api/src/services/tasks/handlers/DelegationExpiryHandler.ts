@@ -25,10 +25,10 @@ export class DelegationExpiryHandler implements TaskHandler {
       return { status: "skipped", message: "Delegation is no longer due to expire" };
     }
 
-    const updated = await context.repositories.delegations.updateState(delegation.id, "expired", {
-      summary: "The delegate deadline passed while it was waiting for a response.",
-      outputIds: [],
-    });
+    const updated = await context.repositories.delegations.expireIfLive(
+      delegation.id,
+      "The delegate deadline passed while it was waiting for a response.",
+    );
 
     if (updated) {
       await new TaskService(context.env, context.repositories.tasks).enqueueTask({
@@ -43,6 +43,8 @@ export class DelegationExpiryHandler implements TaskHandler {
       });
     }
 
-    return { status: "success", message: "Delegation expired" };
+    return updated
+      ? { status: "success", message: "Delegation expired" }
+      : { status: "skipped", message: "Delegation had already settled" };
   }
 }

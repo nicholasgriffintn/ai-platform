@@ -21,6 +21,25 @@ const row = {
 } as const;
 
 describe("DelegationRepository", () => {
+  it("expires only a delegation that is still live", async () => {
+    const first = vi.fn().mockResolvedValue(null);
+    const bind = vi.fn(() => ({ first }));
+    const queries: string[] = [];
+    const prepare = vi.fn((query: string) => {
+      queries.push(query);
+
+      return { bind };
+    });
+    const repository = new DelegationRepository({ DB: { prepare } } as any);
+
+    const expired = await repository.expireIfLive(row.id, "Deadline passed");
+
+    expect(expired).toBeNull();
+    expect(queries[0]).toContain(
+      "state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')",
+    );
+  });
+
   it("persists and formats a queued delegation", async () => {
     const first = vi.fn().mockResolvedValue(row);
     const prepare = vi.fn((query: string) => ({
