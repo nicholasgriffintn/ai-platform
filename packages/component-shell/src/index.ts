@@ -23,6 +23,7 @@ export * from "./Conversations/ConversationItemActions.js";
 export * from "./Conversations/ConversationPage.js";
 export * from "./Discover/HomeDiscover.js";
 export * from "./Delegations/DelegatePanel.js";
+export * from "./Delegations/DelegationTimelineView.js";
 export * from "./Files/FilesPage.js";
 export * from "./Files/MemoryLibrary.js";
 export * from "./Files/MemorySynthesisPanel.js";
