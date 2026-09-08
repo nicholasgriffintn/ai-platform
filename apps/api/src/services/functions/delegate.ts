@@ -5,6 +5,7 @@ import {
   resolveDelegationCreditCeiling,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { findModelConfig } from "~/lib/providers/models";
 import { userCreditActor } from "~/lib/usage/creditActor";
 import { readCreditPosition } from "~/lib/usage/credits";
 import { checkDelegationSpawn } from "~/services/delegations/guards";
@@ -70,6 +71,27 @@ export const delegate: ApiToolDefinition = {
           },
           user,
         );
+    const teammateModel = teammate.model
+      ? await findModelConfig(teammate.model, context.env, undefined)
+      : undefined;
+    if (teammateModel?.agent && !teammateModel.agent.capabilities.runsUnattended) {
+      return {
+        status: "error",
+        name: "delegate",
+        content: "This provider cannot run unattended.",
+      };
+    }
+    if (
+      teammateModel?.agent?.capabilities.picksOwnModel &&
+      args.budget?.max_credit_micros !== undefined &&
+      args.budget.deadline === undefined
+    ) {
+      return {
+        status: "error",
+        name: "delegate",
+        content: "This provider requires a deadline budget rather than a credit-only budget.",
+      };
+    }
     const parentTools = (request.request?.enabled_tools ?? []).filter(
       (tool) => !isMetaToolName(tool),
     );

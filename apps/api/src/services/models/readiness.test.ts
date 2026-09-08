@@ -39,6 +39,7 @@ describe("resolveModelReadiness", () => {
               resumesSessions: true,
               checkpoints: true,
               rollsBack: true,
+              runsUnattended: true,
             },
             workspace: { kind: "directory" },
             permissionModes: ["supervised"],

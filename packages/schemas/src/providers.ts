@@ -29,6 +29,7 @@ export const providerCapabilitiesSchema = z
     resumesSessions: z.boolean(),
     checkpoints: z.boolean(),
     rollsBack: z.boolean(),
+    runsUnattended: z.boolean(),
   })
   .strict();
 
@@ -152,6 +153,7 @@ const MODEL_CAPABILITIES: ProviderCapabilities = {
   resumesSessions: false,
   checkpoints: false,
   rollsBack: false,
+  runsUnattended: false,
 };
 
 const LOCAL_MODEL_CAPABILITIES: ProviderCapabilities = {
@@ -171,6 +173,7 @@ const AGENT_CAPABILITIES: ProviderCapabilities = {
   resumesSessions: true,
   checkpoints: true,
   rollsBack: true,
+  runsUnattended: true,
 };
 
 const PROVIDER_CAPABILITIES: Record<ProviderDriver, ProviderCapabilities> = {
@@ -188,10 +191,12 @@ const PROVIDER_CAPABILITIES: Record<ProviderDriver, ProviderCapabilities> = {
     streamsText: false,
     reportsApprovals: false,
     rollsBack: false,
+    runsUnattended: false,
   },
   "polychat-sandbox": {
     ...AGENT_CAPABILITIES,
     picksOwnModel: false,
+    runsUnattended: true,
   },
 };
 
