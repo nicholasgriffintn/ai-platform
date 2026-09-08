@@ -281,12 +281,6 @@ export const chatCompletionToolSchema = z.object({
     .describe("Function tool definition."),
 });
 
-export const chatCompletionFunctionSchema = z.object({
-  name: z.string().describe("Function name."),
-  description: z.string().optional().describe("Function description shown to the model."),
-  parameters: recordSchema.optional().prefault({}).describe("Function parameters JSON schema."),
-});
-
 export const chatToolChoiceSchema = z.union([
   z.literal("none"),
   z.literal("auto"),
@@ -496,14 +490,6 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .describe("One-time approval for the exact connector action in this request."),
   tools: z.array(chatCompletionToolSchema).optional().describe("OpenAI-compatible function tools."),
   tool_choice: chatToolChoiceSchema.optional().describe("OpenAI-compatible tool choice."),
-  functions: z
-    .array(chatCompletionFunctionSchema)
-    .optional()
-    .describe("Deprecated OpenAI function definitions."),
-  function_call: z
-    .union([z.literal("none"), z.literal("auto"), z.object({ name: z.string() })])
-    .optional()
-    .describe("Deprecated OpenAI function choice."),
   parallel_tool_calls: z
     .boolean()
     .optional()
@@ -606,29 +592,12 @@ export const chatRunCommandInputSchema = chatCompletionsRequestFieldsSchema.omit
   stream: true,
 });
 
-const retiredChatRetrievalFields = {
-  use_rag: z.boolean().optional().describe("Deprecated compatibility field; ignored."),
-  rag_options: recordSchema.optional().describe("Deprecated compatibility field; ignored."),
-};
-
-const stripRetiredChatRetrievalFields = <
-  T extends { use_rag?: boolean; rag_options?: Record<string, unknown> },
->({
-  use_rag: _useRag,
-  rag_options: _ragOptions,
-  ...request
-}: T) => request;
-
 export const partialChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchema
   .partial()
-  .extend(retiredChatRetrievalFields)
-  .strict()
-  .transform(stripRetiredChatRetrievalFields);
+  .strict();
 
 export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchema
-  .extend(retiredChatRetrievalFields)
   .strict()
-  .transform(stripRetiredChatRetrievalFields)
   .superRefine((request, ctx) => {
     if (request.model && request.models?.length) {
       ctx.addIssue({

@@ -73,7 +73,7 @@ test.describe("Composer size", () => {
     await composer.chooseHackerNews("mouse");
     await expect(composer.skillChip).toHaveText("/hacker-news");
     await expect(composer.skillChip).toBeInViewport();
-    await expect(composer.input).toContainText(LONG_DRAFT);
+    await expect(composer.input).toContainText(LONG_DRAFT, { useInnerText: true });
     await composer.input.pressSequentially(" Continue this draft");
     await expect(composer.input).toContainText("Continue this draft");
     expect(await composer.caretIsVisible()).toBe(true);

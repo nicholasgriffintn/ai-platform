@@ -32,6 +32,40 @@ function paramsForMode(mode: string): Parameters<typeof getToolsForProvider>[0] 
 }
 
 describe("getToolsForProvider", () => {
+  it.each([
+    ["meta", "save_skill"],
+    ["meta", "analyse_article"],
+    ["meta", "process_recording"],
+    ["chat", "find_places"],
+  ] as const)(
+    "does not smuggle %s-disallowed %s through supplied tools",
+    (conversationType, name) => {
+      const names = toolNames(
+        getToolsForProvider(
+          {
+            model: "gpt-5",
+            mode: "normal",
+            conversation_type: conversationType,
+            enabled_tools: [name],
+            tools: [
+              {
+                type: "function",
+                function: {
+                  name,
+                  description: name,
+                  parameters: { type: "object", properties: {} },
+                },
+              },
+            ],
+          },
+          modelConfig,
+          "openai",
+        ).tools,
+      );
+
+      expect(names).not.toContain(name);
+    },
+  );
   it("offers the agent control tools in an agent execution mode", () => {
     const names = toolNames(
       getToolsForProvider(paramsForMode("build"), modelConfig, "openai").tools,

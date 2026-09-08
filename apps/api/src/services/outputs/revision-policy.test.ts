@@ -3,6 +3,27 @@ import { describe, expect, it } from "vitest";
 import { getOutputRestoreCapability } from "./revision-policy";
 
 describe("output restore policy", () => {
+  it.each(["documents", "document-writer"])(
+    "restores local documents produced by %s",
+    (capabilityId) => {
+      expect(
+        getOutputRestoreCapability({
+          capability_id: capabilityId,
+          kind: "document",
+          status: "ready",
+          storage_key: null,
+        }),
+      ).toEqual({ supported: true, reason: null, fields: ["title", "content"] });
+      expect(
+        getOutputRestoreCapability({
+          capability_id: capabilityId,
+          kind: "document",
+          status: "ready",
+          storage_key: "document.md",
+        }),
+      ).toMatchObject({ supported: false });
+    },
+  );
   it("allows only enumerated local content outputs", () => {
     expect(
       getOutputRestoreCapability({

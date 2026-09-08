@@ -8,11 +8,20 @@
 
 ## Verify
 
-- [ ] Mark a workspace teammate as a default. Confirm it appears in every project in that workspace, including ones created before the change.
-- [ ] Remove it from one project as an admin. Confirm it disappears there and stays in the other projects and in the workspace.
-- [ ] Restore it to that project and confirm it returns.
-- [ ] As an ordinary project member, confirm removing a workspace teammate is refused.
-- [ ] Attach a teammate to a single project directly and confirm it is unaffected by the default rules.
-- [ ] Confirm a teammate that is both attached directly and a default is listed once.
+- [x] Mark a workspace teammate as a default. Confirm it appears in every project in that workspace, including ones created before the change.
+- [x] Remove it from one project as an admin. Confirm it disappears there and stays in the other projects and in the workspace.
+- [x] Restore it to that project and confirm it returns.
+- [x] As an ordinary project member, confirm removing a workspace teammate is refused.
+- [x] Attach a teammate to a single project directly and confirm it is unaffected by the default rules.
+- [x] Confirm a teammate that is both attached directly and a default is listed once.
 
 **Stop and report if:** a project shows a teammate it removed, or a member without admin rights can change what the workspace grants.
+
+## Additional automated service evidence — 8 September 2026
+
+- `workspace-defaults.test.ts` exercises the production project teammate resolver with the same teammate attached directly and provided as a default; the result contains it exactly once. Mutation and cross-project persistence checks remain open.
+- These tests passed in the existing 66-test service batch; no additional run was started.
+
+## Browser and API evidence — 8 September 2026
+
+- The channel-binding and workspace-default journeys passed in `test-results/container/b735eb00/results.json`. They exercise real API persistence, separate owner/member sessions, duplicate and scope refusals, removal and restoration, and project library visibility across existing and newly created projects.

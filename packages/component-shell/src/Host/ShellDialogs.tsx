@@ -2,7 +2,6 @@ import type { ModelSource } from "@ngriffin_uk/polychat-component-models";
 import {
   useUIStore,
   appendOnboardingSeen,
-  hasLegacyProviderSetupDismissal,
   MODEL_SOURCES_ONBOARDING_KEYS,
   useAuthStatus,
   useUser,
@@ -71,9 +70,7 @@ export function ShellDialogs() {
     onboardingHandledFor.current = accountKey;
     const nextOnboardingSeen = appendOnboardingSeen(userSettings.onboarding_seen, onboardingKey);
 
-    if (!(surface === "web" && hasLegacyProviderSetupDismissal())) {
-      setShowModelSources(true);
-    }
+    setShowModelSources(true);
 
     void updateUserSettings({ onboarding_seen: nextOnboardingSeen }).catch(() => undefined);
   }, [

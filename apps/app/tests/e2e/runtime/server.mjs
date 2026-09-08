@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { Miniflare } from "miniflare";
 
+import { resolveMetaModelTool } from "./meta-model.mjs";
 import { resolveProjectTaskModelResponse } from "./project-task-model.mjs";
 import { normaliseResponsesRequest, responsesToolCallResponse } from "./provider-request.mjs";
 import {
@@ -112,6 +113,12 @@ export class MockAi extends WorkerEntrypoint {
   }
 
 	async run(model, body) {
+		if (body?.messages?.some((message) => typeof message?.content === "string" && message.content.startsWith("Read the document and describe it as JSON"))) {
+		  return { response: JSON.stringify({ summary: "Release document summary", tags: ["release"], keyTopics: ["Launch"], contentType: "text", sentiment: "neutral" }) };
+		}
+		if (body?.messages?.some((message) => typeof message?.content === "string" && message.content.startsWith("Rewrite the document you are given"))) {
+		  return { response: "# Rewritten release brief" };
+		}
 		if (
 			body?.response_format?.json_schema?.name === "prompt_requirements" ||
 			body?.messages?.some(
@@ -274,6 +281,51 @@ function toolCallStreamingResponse(toolCall) {
  * provider mock free of model behaviour: a test asks for the tool by name in its prompt.
  */
 const TOOL_CALL_TRIGGERS = [
+  {
+    marker: "Save the agreed release skill",
+    name: "save_skill",
+    arguments: () =>
+      JSON.stringify({
+        name: "release-playbook",
+        description: "Use for release verification.",
+        instructions: "Return the original release procedure.",
+      }),
+  },
+  {
+    marker: "Propose the corrected release skill",
+    name: "propose_skill_revision",
+    arguments: () =>
+      JSON.stringify({
+        name: "release-playbook",
+        instructions: "Return the corrected release procedure.",
+        changeNote: "Use the corrected procedure",
+      }),
+  },
+  {
+    marker: "Propose a nonexistent release skill",
+    name: "propose_skill_revision",
+    arguments: () =>
+      JSON.stringify({
+        name: "nonexistent-release-playbook",
+        instructions: "Return the corrected release procedure.",
+        changeNote: "Refuse an unknown skill",
+      }),
+  },
+  {
+    marker: "Load the accepted release skill",
+    name: "load_skill",
+    arguments: () => JSON.stringify({ skill: "release-playbook" }),
+  },
+  {
+    marker: "Save a conflicting built-in release skill",
+    name: "save_skill",
+    arguments: () =>
+      JSON.stringify({
+        name: "hacker-news",
+        description: "Use for release verification.",
+        instructions: "Never replace the built-in.",
+      }),
+  },
   {
     marker: "List my saved messages for the release check",
     name: "list_saved_messages",
@@ -665,6 +717,36 @@ async function mockExternalRequest(request) {
   const body = await request.json();
 
   if (
+    body?.messages?.some(
+      (message) =>
+        typeof message?.content === "string" &&
+        message.content.startsWith("Read the document and describe it as JSON"),
+    )
+  ) {
+    return Response.json(
+      openAiResponse(
+        JSON.stringify({
+          summary: "Release document summary",
+          tags: ["release"],
+          keyTopics: ["Launch"],
+          contentType: "text",
+          sentiment: "neutral",
+        }),
+      ),
+    );
+  }
+
+  if (
+    body?.messages?.some(
+      (message) =>
+        typeof message?.content === "string" &&
+        message.content.startsWith("Rewrite the document you are given"),
+    )
+  ) {
+    return Response.json(openAiResponse("# Rewritten release brief"));
+  }
+
+  if (
     body?.response_format?.json_schema?.name === "prompt_requirements" ||
     body?.messages?.some(
       (message) =>
@@ -726,6 +808,7 @@ async function mockExternalRequest(request) {
     const taskResponse = resolveProjectTaskModelResponse(normalised);
     const toolCall =
       resolveSandboxModelTool(normalised) ??
+      resolveMetaModelTool(normalised, prompt) ??
       taskResponse?.toolCall ??
       resolveToolCallTrigger(prompt);
 
@@ -772,6 +855,7 @@ async function mockExternalRequest(request) {
   const taskResponse = resolveProjectTaskModelResponse(body);
   const toolCall =
     resolveSandboxModelTool(body) ??
+    resolveMetaModelTool(body, prompt) ??
     (taskResponse ? taskResponse.toolCall : resolveToolCallTrigger(prompt));
 
   if (toolCall) {
@@ -799,6 +883,17 @@ async function mockExternalRequest(request) {
             totalTokenCount: 12,
           },
         });
+  }
+
+  if (body.stream && prompt.includes("Stream a tall response")) {
+    const paragraph = (label) =>
+      Array.from({ length: 40 }, (_, line) => `${label} line ${line + 1}`).join("\n\n");
+
+    return streamingResponse(
+      `E2E response: ${paragraph("opening")}`,
+      `\n\n${paragraph("closing")}`,
+      1_500,
+    );
   }
 
   if (body.stream && prompt.includes("Recover this interrupted stream")) {

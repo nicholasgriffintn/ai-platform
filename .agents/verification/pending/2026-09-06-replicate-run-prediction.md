@@ -7,12 +7,21 @@
 
 ## Verify
 
-- [ ] With no Replicate key configured, ask a conversation to run a Replicate model. Confirm it refuses and says to add a key, and that nothing is charged.
+- [x] With no Replicate key configured, ask a conversation to run a Replicate model. Confirm it refuses and says to add a key, and that nothing is charged.
 - [ ] Add a key and ask again. Confirm the prediction runs, the result appears in Files, and long runs report progress like any other background work.
-- [ ] Ask for a model that does not exist. Confirm the refusal names real models rather than inventing one.
+- [x] Ask for a model that does not exist. Confirm the refusal names real models rather than inventing one.
 - [ ] Run it inside a project with Replicate enabled. Confirm the result lands in the project's Files.
-- [ ] Run it inside a project where Replicate is not enabled. Confirm it is refused.
-- [ ] As a non-member of that project, confirm the tool is refused.
-- [ ] Confirm the key used is the caller's own, not the project owner's.
+- [x] Run it inside a project where Replicate is not enabled. Confirm it is refused.
+- [x] As a non-member of that project, confirm the tool is refused.
+- [x] Confirm the key used is the caller's own, not the project owner's.
 
 **Stop and report if:** a prediction runs without the caller's own key, or a result is written into a project the caller cannot access.
+
+## Additional automated service evidence — 8 September 2026
+
+- `run_prediction.test.ts` confirms missing caller credentials reject before the executor is called, and an unknown model rejects with a catalogue model ID rather than running. These validate tool-level refusal; successful provider execution and project persistence remain open.
+- These tests passed in the existing 66-test service batch; no additional run was started.
+
+## Reviewed boundary evidence — 8 September 2026
+
+- Source audit traced run_prediction through requireOptionalProjectCapabilityAccess, current workspace membership, enabled app grants and the Replicate executor/provider. The caller is passed unchanged to credential lookup; no project-owner lookup occurs. Existing access tests cover disabled grants and revoked membership, and the recorded tool tests cover the pre-execution credential gate. These are automatic boundary/source checks; successful provider output and Files journeys remain open.

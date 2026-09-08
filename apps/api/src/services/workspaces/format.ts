@@ -74,7 +74,6 @@ export function formatProjectSummary(row: ProjectRow): ProjectSummary {
     promptStrategy: row.coding_prompt_strategy,
     deliveryPolicy: resolveSandboxDeliveryPolicy(
       row.coding_delivery_policy ? safeParseJson(row.coding_delivery_policy) : null,
-      Boolean(row.coding_should_commit),
     ),
     environmentSetup: row.coding_environment_setup
       ? safeParseJson(row.coding_environment_setup)

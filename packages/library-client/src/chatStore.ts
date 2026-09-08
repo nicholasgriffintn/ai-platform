@@ -1,4 +1,7 @@
-import { migrateChatStore, resolveAccountModelSelection } from "@ngriffin_uk/polychat-library-chat";
+import {
+  discardOutdatedChatStore,
+  resolveAccountModelSelection,
+} from "@ngriffin_uk/polychat-library-chat";
 import type { ChatSettings } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import type {
   AssistantActionSelection,
@@ -266,7 +269,7 @@ export const useChatStore = create<ChatStore>()(
     {
       name: "chat-store",
       version: 4,
-      migrate: migrateChatStore,
+      migrate: discardOutdatedChatStore,
       partialize: (state) => ({
         chatMode: state.chatMode,
         computeSite: state.computeSite,

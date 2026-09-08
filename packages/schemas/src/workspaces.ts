@@ -7,7 +7,6 @@ import { projectFlowSchema } from "./project-tasks.js";
 import { sandboxEnvironmentCacheSummarySchema } from "./sandbox-cache.js";
 import {
   DEFAULT_SANDBOX_DELIVERY_POLICY,
-  resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicySchema,
 } from "./sandbox-delivery.js";
 import { sandboxEnvironmentSetupSchema } from "./sandbox-environment.js";
@@ -32,18 +31,13 @@ export const projectCodingEnvironmentSchema = z
       .regex(/^[\w.-]+\/[\w.-]+$/, "Repository must be in owner/repository format"),
     promptStrategy: projectCodingPromptStrategySchema.default("auto"),
     deliveryPolicy: sandboxDeliveryPolicySchema.optional(),
-    shouldCommit: z.boolean().optional(),
     environmentSetup: sandboxEnvironmentSetupSchema.optional(),
     timeoutSeconds: z.number().int().min(30).max(7200).default(900),
     inspectionWindowSeconds: z.number().int().min(0).max(300).default(0),
   })
-  .transform(({ deliveryPolicy, shouldCommit, ...environment }) => ({
+  .transform(({ deliveryPolicy, ...environment }) => ({
     ...environment,
-    deliveryPolicy:
-      deliveryPolicy ??
-      (shouldCommit === undefined
-        ? DEFAULT_SANDBOX_DELIVERY_POLICY
-        : resolveSandboxDeliveryPolicy(undefined, shouldCommit)),
+    deliveryPolicy: deliveryPolicy ?? DEFAULT_SANDBOX_DELIVERY_POLICY,
   }));
 
 export const workspaceMemberSchema = z.object({

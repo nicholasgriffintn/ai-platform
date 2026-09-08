@@ -129,22 +129,3 @@ test("keeps sidebar settings open after a theme change and remembers it after re
   await appPage.openThemeOptions();
   expect(await appPage.themeMenuFitsViewport()).toBe(true);
 });
-
-test("adopts a theme stored under the retired key exactly once", async ({ page }) => {
-  await page.goto("/chat", { waitUntil: "domcontentloaded" });
-  await page.evaluate(() => {
-    window.localStorage.removeItem("polychat-theme");
-    window.localStorage.setItem("theme", "dark");
-  });
-  await page.reload({ waitUntil: "domcontentloaded" });
-
-  await expect(page.locator("html")).toHaveAttribute("data-polychat-theme", "dark");
-  await expect
-    .poll(() =>
-      page.evaluate(() => ({
-        current: window.localStorage.getItem("polychat-theme"),
-        retired: window.localStorage.getItem("theme"),
-      })),
-    )
-    .toEqual({ current: "dark", retired: null });
-});

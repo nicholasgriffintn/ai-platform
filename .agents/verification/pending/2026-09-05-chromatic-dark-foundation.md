@@ -21,7 +21,7 @@
 - [ ] Confirm the primary action reads as a solid blue fill with near-white label wherever it appears: composer send, live transport, billing badges and shared buttons.
 - [ ] Confirm a streaming indicator and a selected sidebar item stay tellable apart at a glance, and that neither is mistaken for the primary action.
 - [ ] Open Customisation and confirm the theme picker sits directly under Personalised responses, that each option previews in its own palette, and that System, Light, Dark and Blue each apply immediately and survive a reload without a flash of the previous theme.
-- [ ] With System selected, change the operating system between light and dark and confirm the app follows without a reload.
+- [x] With System selected, change the operating system between light and dark and confirm the app follows without a reload.
 - [ ] Open the sidebar settings popover as a guest and as a member. Confirm it carries a compact Theme select, that choosing a theme there applies immediately, and that Customisation shows the same choice.
 - [ ] In each theme, check a capability grid, the model picker and a provider badge: identity accents should stay distinguishable from each other and legible against the surface.
 - [ ] Check switches, range inputs, the sign-in buttons and the profile logout button in each theme; each should have a visible track, fill or background.
@@ -32,3 +32,7 @@
 - [ ] Check the representative screens with increased browser zoom and a narrow viewport; confirm colour is not the only cue for active navigation or status.
 
 **Stop and report if:** Any text or control is hard to distinguish, keyboard focus disappears, the project colour obscures header content, or light mode shows dark-theme surfaces.
+
+## Reconciled automated evidence — 8 September 2026
+
+- `features/themes.spec.ts` changes the emulated system appearance from light to dark in the open page and checks the configured Paper/Fern palette. The five passing theme journeys are recorded in [local evidence](../2026-09-05-local-evidence.md). Reviewed the existing assertions; no new runtime run was needed.

@@ -13,7 +13,7 @@
 - [ ] New chat from the Work sidebar outside a project opens the workspace and project picker and lands on that project's new conversation; inside a project it starts a conversation there; from Chat or a places page it opens a fresh personal conversation.
 - [ ] The profile sidebar rows match the chat sidebar: same padding, radius and hover, grouped sections, a Back to Home row at the top and a quiet Logout row at the bottom; Ask Poly and the settings control share the same full-width hover and active highlight.
 - [ ] In Poly, the composer shows a send button, no empty row beneath it, and the pet is Pip whichever pet the user has chosen; "New conversation" sits in the overlay header beside the close control.
-- [ ] Type into Poly's composer with a draft already in the main chat composer, and confirm neither draft changes the other; sending from one leaves the other intact.
+- [x] Type into Poly's composer with a draft already in the main chat composer, and confirm neither draft changes the other; sending from one leaves the other intact.
 - [ ] Open `/work/<ws>/projects/<p>/chat?completion_id=<id>` and confirm it redirects to `/work/<ws>/projects/<p>/chat/<id>` with the conversation loaded and highlighted in the sidebar.
 - [ ] Open `/work/<ws>/projects/<p>/sources` and `/outputs/<id>`; confirm they land on Files › Given and Files › Made respectively, and that `/files` lists personal Given and Made.
 - [ ] Open `/work/attention` and confirm it redirects to `/attention`, which shows project attention items and a "Your background tasks" section for a signed-in user.
@@ -21,7 +21,7 @@
 - [ ] Open Poly (Ask Poly or ⌘J) while signed in with cloud storage, ask "Archive the conversation I have open", and confirm the open conversation is archived and disappears from the sidebar; the underlying page keeps its own conversation.
 - [ ] Ask Poly "Open Attention" and confirm the page navigates while the overlay stays open; ask it to find a conversation by title and open it.
 - [ ] Confirm Poly's conversation does not appear in the Chat sidebar list or in ⌘K search, and that a signed-out or local-only session sees the explanatory state instead of the composer.
-- [ ] In an ordinary chat, confirm `find_places` and the other meta tools are not offered or callable.
+- [x] In an ordinary chat, confirm `find_places` and the other meta tools are not offered or callable.
 
 ## Automated evidence — 8 September 2026
 
@@ -29,3 +29,7 @@
 - Poly overlay, meta-tool, profile-sidebar and legacy project-route checks remain open.
 
 **Stop and report if:** Poly archives, opens or reads a conversation the user does not own or is not a project member of, or a meta tool runs from a non-meta conversation.
+
+## Further verified evidence — 8 September 2026
+
+- Container `379708a8` passed both Poly and Discover regressions. Poly preserves the underlying draft and refuses a provider-requested save_skill at the execution boundary; the shared scope filter and supplied-tool regression cover article/recording exclusions and the reverse non-meta restriction. Discover now includes every provider rather than hiding those after the first twelve.

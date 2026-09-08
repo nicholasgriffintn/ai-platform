@@ -18,6 +18,14 @@ export class AppPage extends BasePage {
     this.usageMeter = page.getByRole("meter", { name: /credits used this month/ });
   }
 
+  readStoredAccessTokenValues() {
+    return this.page.evaluate(() =>
+      Object.entries(window.localStorage).flatMap(([key, value]) =>
+        /token|api[_-]?key/i.test(key) ? [[key, value] as const] : [],
+      ),
+    );
+  }
+
   async followSkipLink() {
     await this.page.keyboard.press("Tab");
     await this.skipLink.press("Enter");

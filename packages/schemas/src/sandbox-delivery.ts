@@ -54,7 +54,7 @@ export const DEFAULT_SANDBOX_DELIVERY_POLICY = {
 
 export function resolveSandboxDeliveryPolicy(
   value: unknown,
-  legacyShouldCommit?: boolean,
+  shouldCommit?: boolean,
 ): SandboxDeliveryPolicy {
   const parsed = sandboxDeliveryPolicySchema.safeParse(value);
 
@@ -62,11 +62,11 @@ export function resolveSandboxDeliveryPolicy(
     return parsed.data;
   }
 
-  if (legacyShouldCommit === false) {
+  if (shouldCommit === false) {
     return { mode: "leave_uncommitted" };
   }
 
-  if (legacyShouldCommit === true) {
+  if (shouldCommit === true) {
     return { mode: "review_branch", destination: "branch" };
   }
 

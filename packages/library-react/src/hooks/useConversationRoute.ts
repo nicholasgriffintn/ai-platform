@@ -6,7 +6,6 @@ import { useChat } from "../chat/useChat.js";
 import {
   getPersonalConversationPath,
   getProjectConversationPath,
-  resolvePersonalConversationId,
 } from "../lib/conversation-route.js";
 
 export type ConversationRouteSurface =
@@ -30,7 +29,7 @@ export function useConversationRoute({
     if (
       !conversationId ||
       !hasUserMessage ||
-      resolvePersonalConversationId(pathConversationId, location.search) ||
+      pathConversationId ||
       useChatStore.getState().currentConversationId !== conversationId
     ) {
       return;

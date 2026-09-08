@@ -88,6 +88,8 @@ try {
     "GIT_COMMITTER_EMAIL",
     "-v",
     "polychat-e2e-pnpm:/pnpm-store",
+    "-v",
+    "polychat-e2e-task-cache:/task-cache",
     image,
     "sleep",
     "infinity",
@@ -102,6 +104,13 @@ try {
     "--frozen-lockfile",
     "--store-dir",
     "/pnpm-store",
+  ]);
+  command("docker", [
+    "exec",
+    runner,
+    "node",
+    "-e",
+    "const fs = require('node:fs'); fs.mkdirSync('node_modules/.vite', { recursive: true }); fs.symlinkSync('/task-cache', 'node_modules/.vite/task-cache', 'dir');",
   ]);
   command("docker", ["exec", runner, "pnpm", "build:e2e"]);
   if (process.env.POLYCHAT_E2E_LIVE_RUNTIMES) {

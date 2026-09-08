@@ -28,8 +28,6 @@ export const THEME_STORAGE_KEY = "polychat-theme";
 
 export const THEME_PAIR_STORAGE_KEY = "polychat-theme-pair";
 
-export const LEGACY_THEME_STORAGE_KEY = "theme";
-
 export const SYSTEM_DARK_QUERY = "(prefers-color-scheme: dark)";
 
 export const DEFAULT_THEME_PREFERENCE: ThemePreference = "system";
@@ -198,7 +196,7 @@ export function applyTheme(root: HTMLElement, id: ThemeId): void {
 }
 
 export const THEME_BOOTSTRAP_SCRIPT = `(function(){try{
-var stored=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)})||localStorage.getItem(${JSON.stringify(LEGACY_THEME_STORAGE_KEY)});
+var stored=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});
 var pair=(localStorage.getItem(${JSON.stringify(THEME_PAIR_STORAGE_KEY)})||"").split(":");
 var ids=${JSON.stringify(THEMES.map((theme) => theme.id))};
 var lightIds=${JSON.stringify(LIGHT_THEME_IDS)};

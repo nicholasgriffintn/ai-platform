@@ -48,6 +48,7 @@
   --color-attention: var(--polychat-attention);
   --color-failure: var(--polychat-failure);
   --color-selection: var(--polychat-selection);
+  --color-highlight: var(--polychat-highlight);
   --color-border-strong: var(--polychat-border-strong);
   --color-accent-red: var(--polychat-accent-red);
   --color-accent-rose: var(--polychat-accent-rose);
@@ -126,7 +127,7 @@
     @apply bg-background text-foreground;
   }
   ::selection {
-    background: var(--polychat-selection);
+    background: var(--polychat-highlight);
     color: var(--polychat-text);
   }
   .font-display {

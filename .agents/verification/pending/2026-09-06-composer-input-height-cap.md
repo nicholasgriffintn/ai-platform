@@ -9,7 +9,7 @@
 
 - [x] Paste several hundred lines into the composer on a desktop viewport. The composer stops growing, the input scrolls, and the send button and footer controls stay on screen.
 - [x] Keep typing at the end of that draft and confirm the caret stays visible without manual scrolling.
-- [ ] Trigger a slash command or teammate mention so a token is inserted into a long draft, and confirm the caret stays visible and the token renders in place.
+- [x] Trigger a slash command or teammate mention so a token is inserted into a long draft, and confirm the caret stays visible and the token renders in place.
 - [x] Repeat the paste check on a short window (roughly 600px tall) and on a mobile viewport; the composer should still fit within the viewport.
 - [x] Confirm an empty composer still shows its placeholder at its normal single-line height.
 
@@ -21,3 +21,7 @@
 - At each size the empty composer stays under a single-line height, the filled input stops at `min(18rem, 40dvh)` while its scroll height keeps growing, and both the input and the send control remain in the viewport with no horizontal page scroll.
 - Typing at the end of a capped draft leaves the caret inside the visible input box and the text is appended.
 - Left open: the caret after a token is inserted into a long draft by a slash command or mention.
+
+## Automated evidence — 8 September 2026
+
+- All eight composer size and draft journeys passed in `test-results/container/f7e4e1a8/results.json`. The 400-line draft retains every line after inserting a real skill token, keeps the token and caret visible, and accepts further typing. Five DOM regression cases also cover line breaks, empty lines and cursor offsets.

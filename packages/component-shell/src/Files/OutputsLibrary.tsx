@@ -166,6 +166,7 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
             metadata={{ ...documentMetadata, ...deriveDocumentStatistics(documentBody) }}
             canRegenerate
             isRegeneratingMetadata={describeDocument.isPending}
+            regenerationDisabled={saveDocument.isPending}
             onRegenerateMetadata={() =>
               describeDocument.mutate({ outputId: output.id, expectedRevision: output.revision })
             }

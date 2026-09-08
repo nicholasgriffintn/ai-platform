@@ -8,12 +8,21 @@
 
 ## Verify
 
-- [ ] Connect a Slack channel to a project as a workspace admin. Confirm it is accepted, and that the same attempt as an ordinary member is refused.
-- [ ] Try to connect a Telegram chat to a project. Confirm it is refused, since Telegram is personal only.
-- [ ] Connect the same external channel twice and confirm the second attempt is refused rather than creating a duplicate.
-- [ ] Disconnect a binding and confirm it stops resolving.
-- [ ] Replay a captured Slack request an hour later and confirm it is refused on its timestamp.
-- [ ] Send a Slack request signed with the wrong secret and confirm it is refused.
+- [x] Connect a Slack channel to a project as a workspace admin. Confirm it is accepted, and that the same attempt as an ordinary member is refused.
+- [x] Try to connect a Telegram chat to a project. Confirm it is refused, since Telegram is personal only.
+- [x] Connect the same external channel twice and confirm the second attempt is refused rather than creating a duplicate.
+- [x] Disconnect a binding and confirm it stops resolving.
+- [x] Replay a captured Slack request an hour later and confirm it is refused on its timestamp.
+- [x] Send a Slack request signed with the wrong secret and confirm it is refused.
 - [ ] Confirm inbound SMS still works exactly as before.
 
 **Stop and report if:** a request with a wrong or missing signature reaches a conversation, or a binding is created by someone who could not otherwise write to that project.
+
+## Automated service evidence — 8 September 2026
+
+- The webhook service tests send correctly signed but hour-old requests and fresh requests signed with a different secret. Both are refused before queueing. The real adapter signature/timestamp checks run in these tests.
+- The batched API run passed 66 tests across nine files in 2.61 seconds. Evidence is from service-level failure injection with repository and outbound effects substituted, not a live external integration.
+
+## Browser and API evidence — 8 September 2026
+
+- The channel-binding and workspace-default journeys passed in `test-results/container/b735eb00/results.json`. They exercise real API persistence, separate owner/member sessions, duplicate and scope refusals, removal and restoration, and project library visibility across existing and newly created projects.

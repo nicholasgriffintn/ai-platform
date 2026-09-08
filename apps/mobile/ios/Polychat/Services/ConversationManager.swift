@@ -194,6 +194,7 @@ class ConversationManager: ObservableObject {
 
     func observeCurrentRun() async {
         var replayState: ChatRunReplayState?
+        var snapshotOnly = false
 
         while !Task.isCancelled {
             guard let apiClient,
@@ -211,7 +212,7 @@ class ConversationManager: ObservableObject {
             }
 
             do {
-                if replayState == nil {
+                if replayState == nil || snapshotOnly {
                     let snapshot = try await apiClient.fetchChatRunSnapshot(id: run.id)
                     replayState = ChatRunReplayState(cursor: snapshot.cursor, snapshot: snapshot)
                 } else if let currentState = replayState {
@@ -220,6 +221,7 @@ class ConversationManager: ObservableObject {
                         after: currentState.cursor
                     )
                     let outcome = ChatRunReplay.apply(state: currentState, response: replay)
+                    snapshotOnly = outcome.unsupportedProtocol
 
                     if outcome.requiresSnapshot {
                         let snapshot = try await apiClient.fetchChatRunSnapshot(id: run.id)

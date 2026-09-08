@@ -6,6 +6,8 @@ import { fetchApi } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
 import { getNotificationInstallationId } from "./installation.js";
 
+const TOKEN_REFRESH_MARGIN_MS = 3 * 60 * 1000;
+
 interface MagicLinkSuccessResponse {
   success: boolean;
 }
@@ -111,7 +113,7 @@ class AuthService {
 
   public async getToken(): Promise<string | null> {
     try {
-      if (this.tokenExpiry && Date.now() < this.tokenExpiry.getTime() - 2 * 60 * 1000) {
+      if (this.tokenExpiry && Date.now() < this.tokenExpiry.getTime() - TOKEN_REFRESH_MARGIN_MS) {
         const existingToken = await apiKeyService.getApiKey();
 
         if (existingToken) {
@@ -158,7 +160,7 @@ class AuthService {
       return;
     }
 
-    const refreshTime = this.tokenExpiry.getTime() - Date.now() - 3 * 60 * 1000;
+    const refreshTime = this.tokenExpiry.getTime() - Date.now() - TOKEN_REFRESH_MARGIN_MS;
 
     if (refreshTime <= 0) {
       this.refreshTimer = setTimeout(async () => {

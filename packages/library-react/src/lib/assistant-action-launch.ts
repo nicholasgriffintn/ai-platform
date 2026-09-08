@@ -13,7 +13,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 const ACTION_CONTEXT_PARAM = "assistant_action_context";
-const LEGACY_RECIPE_CONTEXT_PARAM = "recipe_context";
 const AUTO_SUBMIT_PARAM = "auto_submit";
 const QUERY_PARAM = "query";
 const ENABLED_TOOLS_PARAM = "enabled_tools";
@@ -22,7 +21,6 @@ const RECIPE_ID_PARAM = "recipe";
 const TEAMMATE_ID_PARAM = "teammate";
 const ASSISTANT_ACTION_LAUNCH_PARAMS = [
   ACTION_CONTEXT_PARAM,
-  LEGACY_RECIPE_CONTEXT_PARAM,
   AUTO_SUBMIT_PARAM,
   QUERY_PARAM,
   ENABLED_TOOLS_PARAM,
@@ -38,7 +36,6 @@ export interface AssistantActionLaunchState {
   enabledTools: string[];
   hasEnabledTools: boolean;
   actionContext: string | null;
-  recipeContext: string | null;
   autoSubmit: boolean;
 }
 
@@ -160,7 +157,6 @@ export function parseAssistantActionLaunchState(search: string): AssistantAction
     enabledTools: normaliseAssistantActionToolIds(params.get(ENABLED_TOOLS_PARAM) ?? undefined),
     hasEnabledTools: params.has(ENABLED_TOOLS_PARAM),
     actionContext: params.get(ACTION_CONTEXT_PARAM),
-    recipeContext: params.get(LEGACY_RECIPE_CONTEXT_PARAM),
     autoSubmit: params.get(AUTO_SUBMIT_PARAM) === "1",
   };
 }
@@ -176,12 +172,9 @@ export function removeConsumedAssistantActionLaunchParams(search: string): strin
 }
 
 export function loadAssistantActionRequestOptions(
-  state: Pick<AssistantActionLaunchState, "actionContext" | "recipeContext">,
+  state: Pick<AssistantActionLaunchState, "actionContext">,
 ): ChatRequestOptions | undefined {
-  return readAssistantActionRequestOptions(
-    parseJson(state.actionContext),
-    parseJson(state.recipeContext),
-  );
+  return readAssistantActionRequestOptions(parseJson(state.actionContext));
 }
 
 function createAssistantActionChatUrl(launch: AssistantActionChatLaunch): string {
@@ -205,7 +198,6 @@ export function createRecipeAssistantActionLaunch(
 ): AssistantActionChatLaunchPayload {
   const requestOptions = loadAssistantActionRequestOptions({
     actionContext: JSON.stringify(createAssistantRecipeActionContext(response)),
-    recipeContext: null,
   });
 
   return {

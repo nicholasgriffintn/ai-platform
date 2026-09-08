@@ -1,10 +1,6 @@
 import type { ChatSettings } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 
 type ChatCompactionMode = NonNullable<ChatSettings["compaction"]>;
-type PersistedChatSettings = ChatSettings & {
-  rag_options?: unknown;
-  use_rag?: unknown;
-};
 
 type RequestGenerationSettings = Omit<
   ChatSettings,
@@ -34,11 +30,9 @@ export function projectChatRequestSettings(
     compaction,
     enabled_tools: enabledTools,
     localOnly: _localOnly,
-    rag_options: _retiredRagOptions,
     tool_options: hostedToolOptions,
-    use_rag: _retiredUseRag,
     ...generationSettings
-  } = chatSettings as PersistedChatSettings;
+  } = chatSettings;
 
   return {
     enabledTools,

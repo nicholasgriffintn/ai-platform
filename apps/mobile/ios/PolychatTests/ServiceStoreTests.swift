@@ -504,6 +504,30 @@ struct ServiceStoreTests {
     }
 
     @MainActor
+    @Test func conversationManagerUsesOnlySnapshotsAfterAnUnsupportedReplayProtocol() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.chatRunEventSnapshots = ["running", "running", "succeeded"].enumerated().map { index, status in
+            ChatRunSnapshotResponse(protocolVersion: 1, cursor: index + 1, run: makeChatRun(status: status), messages: [])
+        }
+        apiClient.chatRunReplayResponse = ChatRunReplayResponse(
+            protocolVersion: 2, runId: "run-1", fromCursor: 1, nextCursor: 2,
+            resetRequired: false, events: [], snapshot: nil
+        )
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient, chatRunReplayPolicy: makeInstantChatRunReplayPolicy())
+        var conversation = makeConversation(id: "conversation-1")
+        conversation.latestRun = makeChatRun(status: "running")
+        manager.currentConversation = conversation
+        manager.conversations = [conversation]
+
+        await manager.observeCurrentRun()
+
+        #expect(apiClient.fetchChatRunSnapshotCallCount == 3)
+        #expect(apiClient.fetchChatRunEventsCallCount == 1)
+        #expect(manager.currentConversation?.latestRun?.status == "succeeded")
+    }
+
+    @MainActor
     @Test func conversationManagerSurfacesStreamErrors() async throws {
         let apiClient = ConversationAPIClientStub()
         apiClient.streamError = APIClientError.httpStatus(500, "Model unavailable")

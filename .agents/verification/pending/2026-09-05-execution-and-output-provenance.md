@@ -10,8 +10,8 @@
 
 - [ ] Create an output from a stored run, including a model handoff. Confirm web output detail and iPhone Run Context show the model and provider actually used, the exact run attempt, loaded skill revision and approval outcome rather than the composer default.
 - [ ] Change the selected model, provider configuration and stable skill revision. Reopen the original output and confirm its captured origin is unchanged.
-- [ ] Update the output, then inspect its historical revision. Confirm the revision retains the same provenance captured before current settings changed.
-- [ ] Open the output as its personal owner and as a current project member where applicable. Remove membership and confirm project provenance becomes unavailable with the output; another personal user must receive not found.
+- [x] Update the output, then inspect its historical revision. Confirm the revision retains the same provenance captured before current settings changed.
+- [x] Open the output as its personal owner and as a current project member where applicable. Remove membership and confirm project provenance becomes unavailable with the output; another personal user must receive not found.
 - [ ] Delete or revoke access to an attached source. Reopen output detail and its revisions, confirm the source is labelled unavailable and no link implies that content remains accessible.
 - [ ] Open an output created before migration `0027`, and a new output from a producer without complete execution facts. Confirm they say legacy and partial respectively without inventing a run or model.
 - [ ] Inspect an authenticated output response, an output-list response and a public share response. Confirm detail includes bounded provenance, while lists and public shares omit it.
@@ -19,3 +19,11 @@
 - [ ] Exercise an old iPhone client against a run containing provider and approval provenance. Confirm optional fields do not prevent the run from decoding.
 
 **Stop and report if:** current settings rewrite old origin facts, an unauthorised user receives provenance, an inaccessible source remains presented as available, or persisted provenance contains prompt, argument, content, credential or cost data.
+
+## Reconciled automated evidence — 8 September 2026
+
+- The historical revision service test verifies the original provenance survives history reads; the successful API suite is recorded in [local evidence](../2026-09-05-local-evidence.md). The new passing revision E2E in container `b2276b14` revises and restores a note, verifies old revisions remain and checks original provenance is unchanged.
+
+## Reviewed boundary evidence — 8 September 2026
+
+- The passing project-access and output-revisions E2Es exercise current-member reads, revocation and another personal owner receiving 404. The reviewed output service authorises before shaping provenance, so the same resource refusal also protects its origin facts.

@@ -123,7 +123,6 @@ export * from "./lib/pet/compose-sheet.js";
 export * from "./lib/pet/lore.js";
 export * from "./lib/pet/model-targets.js";
 export * from "./lib/plan-format.js";
-export * from "./lib/profile-tabs.js";
 export * from "./lib/project-capability-catalog.js";
 export * from "./lib/project-coding-presentation.js";
 export * from "./lib/project-workbench-preview.js";

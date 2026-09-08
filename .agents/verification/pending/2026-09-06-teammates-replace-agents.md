@@ -13,7 +13,7 @@
 - [ ] Publish a teammate to a workspace, install a shared teammate, and rate one. Confirm each still works and that the install resolves back to its source listing.
 - [x] Confirm the API answers at `/teammates` and returns 404 at `/agents`, and that nothing in this repository still calls the old path.
 - [x] Mention a teammate in the composer with `@`, confirm the token renders and the reply comes from that teammate.
-- [ ] Run `pnpm db:generate` and confirm it reports no schema changes, which proves the shipped snapshot matches the schema.
+- [x] Run `pnpm --filter @assistant/api db:generate` and confirm it reports no schema changes, which proves the shipped snapshot matches the schema.
 
 **Stop and report if:** any teammate, install, rating or project attachment is missing after the migration, or `db:generate` wants to create tables that already exist.
 
@@ -24,3 +24,7 @@
 - The journey selects the teammate from the `@` menu, confirms the token is applied, and confirms the reply is sent to that teammate. Still open: selecting the same menu entry with a real mouse click leaves the composer untouched; keyboard and synthetic-click selection pass.
 - Fix: mentioning a teammate that pins no model sent an empty model to `/teammates/:id/completions` and was refused with 400 "Invalid model". The turn now falls back to the account default, and the journey uses a teammate with no pinned model so the fallback is what it proves.
 - Left open: the migration itself, an existing project's attachments, publishing, installing and rating a shared teammate, and `db:generate` reporting no changes.
+
+## Further automated evidence — 8 September 2026
+
+- The documented API schema-generation command completed successfully with no schema changes and no migration generated.

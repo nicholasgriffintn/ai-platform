@@ -59,6 +59,7 @@
     --polychat-failure: oklch(0.55 0.19 25);
     --polychat-focus: oklch(0.55 0.105 232);
     --polychat-selection: oklch(0.93 0.032 255);
+    --polychat-highlight: oklch(0.8 0.09 262);
     --polychat-border: oklch(0.9 0.012 255);
     --polychat-border-strong: oklch(0.65 0.022 255);
     --polychat-overlay: oklch(0.12 0.02 255 / 52%);
@@ -84,6 +85,7 @@
     --polychat-failure: oklch(0.71 0.17 25);
     --polychat-focus: oklch(0.8 0.12 232);
     --polychat-selection: oklch(0.28 0.042 255);
+    --polychat-highlight: oklch(0.46 0.09 262);
     --polychat-border: oklch(0.26 0.016 255);
     --polychat-border-strong: oklch(0.5 0.02 255);
     --polychat-overlay: oklch(0.05 0.015 255 / 74%);
@@ -109,6 +111,7 @@
     --polychat-failure: oklch(0.7 0.17 25);
     --polychat-focus: oklch(0.78 0.12 232);
     --polychat-selection: oklch(0.32 0.045 255);
+    --polychat-highlight: oklch(0.47 0.09 262);
     --polychat-border: oklch(0.32 0.018 255);
     --polychat-border-strong: oklch(0.52 0.022 255);
     --polychat-overlay: oklch(0.08 0.018 255 / 70%);
@@ -134,6 +137,7 @@
     --polychat-failure: oklch(0.55 0.19 25);
     --polychat-focus: oklch(0.52 0.085 200);
     --polychat-selection: oklch(0.92 0.03 85);
+    --polychat-highlight: oklch(0.8 0.1 60);
     --polychat-border: oklch(0.88 0.022 85);
     --polychat-border-strong: oklch(0.62 0.03 80);
     --polychat-overlay: oklch(0.25 0.03 60 / 50%);
@@ -159,6 +163,7 @@
     --polychat-failure: oklch(0.55 0.19 20);
     --polychat-focus: oklch(0.55 0.13 300);
     --polychat-selection: oklch(0.92 0.04 290);
+    --polychat-highlight: oklch(0.8 0.095 300);
     --polychat-border: oklch(0.89 0.02 290);
     --polychat-border-strong: oklch(0.64 0.03 290);
     --polychat-overlay: oklch(0.15 0.03 290 / 52%);
@@ -184,6 +189,7 @@
     --polychat-failure: oklch(0.72 0.17 25);
     --polychat-focus: oklch(0.8 0.11 165);
     --polychat-selection: oklch(0.29 0.035 180);
+    --polychat-highlight: oklch(0.45 0.08 165);
     --polychat-border: oklch(0.27 0.018 185);
     --polychat-border-strong: oklch(0.5 0.02 185);
     --polychat-overlay: oklch(0.06 0.015 185 / 72%);
@@ -209,6 +215,7 @@
     --polychat-failure: oklch(0.72 0.17 20);
     --polychat-focus: oklch(0.8 0.11 350);
     --polychat-selection: oklch(0.29 0.045 330);
+    --polychat-highlight: oklch(0.45 0.09 340);
     --polychat-border: oklch(0.27 0.02 330);
     --polychat-border-strong: oklch(0.5 0.025 330);
     --polychat-overlay: oklch(0.06 0.02 330 / 72%);

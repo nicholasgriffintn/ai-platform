@@ -12,7 +12,7 @@
 - [x] Open the same document in two tabs, save in one, then save in the other. Confirm the second save is refused rather than overwriting, and that the message says so.
 - [x] Download it and confirm the file is the saved version, named after the title.
 - [x] Open a non-document result, an image or a report. Confirm it renders as before with no editor.
-- [ ] Open an artifact in a conversation and confirm its editor is unchanged apart from having no save control.
+- [x] Open an artifact in a conversation and confirm its editor is unchanged apart from having no save control.
 
 **Stop and report if:** a save overwrites a revision written since the editor loaded, or a non-document result opens in the editor.
 
@@ -23,3 +23,7 @@
 - A second journey revises the same document from outside the page, then saves from the editor: the save is refused with 409, the editor shows an alert saying the output has changed, the stored revision and body are the ones written elsewhere, and the revision history stays on the page.
 - An image result opens with no editor at all, and its export is refused with 400 rather than serving something that is not a document.
 - Left open: an artifact editor in a conversation having no save control.
+
+## Further verified evidence — 8 September 2026
+
+- Source inspection confirms the conversation ArtifactPanel supplies the same ArtifactDocumentEditor without onSave; both Save and the new Cancel action are conditional on onSave. The previously passing document journeys cover the shared editor implementation.

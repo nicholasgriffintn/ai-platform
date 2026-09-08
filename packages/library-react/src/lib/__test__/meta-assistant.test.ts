@@ -48,6 +48,20 @@ describe("buildMetaAssistantUiContext", () => {
 });
 
 describe("meta navigation", () => {
+  it("opens Work Files and Teammates under their authorised project", () => {
+    for (const place of ["files", "teammates"] as const) {
+      expect(
+        getMetaNavigationHref({
+          kind: "place",
+          mode: "work",
+          place,
+          workspaceId: "w1",
+          projectId: "p1",
+        }),
+      ).toBe(`/work/w1/projects/p1/${place}`);
+      expect(getMetaNavigationHref({ kind: "place", mode: "work", place })).toBe("/work");
+    }
+  });
   it("resolves every target kind to a host path", () => {
     expect(
       getMetaNavigationHref({

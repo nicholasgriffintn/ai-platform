@@ -10,7 +10,7 @@
 - [x] Open a project's library. Confirm Training is not offered.
 - [x] Try to enable Training in a project through the API directly. Confirm it is refused with the reason, not a generic error.
 - [x] Open You › Advanced. Confirm Training sits beside Sandbox and works exactly as it did from the Apps list.
-- [ ] Confirm Training still opens from the personal Apps list.
+- [x] Confirm Training still opens from the personal Apps list.
 - [x] Open the public catalogue and confirm Training is marked "Personal only".
 - [x] Confirm every other App is still enableable in a project.
 - [ ] If any project already has a Training grant from before this change, confirm what happens when it is opened, and remove the grant.
@@ -23,3 +23,7 @@
 - `features/profile.spec.ts` opens You › Training and walks the jobs, deployments and models tabs, which behave as they did from the project Apps list.
 - `features/public-catalogues.spec.ts` confirms the catalogue's personal-only app carries the Personal only mark on its card.
 - Left open: the personal Apps list entry point and any pre-existing project grant.
+
+## Automated browser evidence — 8 September 2026
+
+- The document and app-lifecycle journeys passed in `test-results/container/9b0ba7be/results.json`. They load all seven personal app runtimes from the library, return through the shared back link, refuse unenabled project apps, preserve note autosaves across reopening, and verify cancellable document drafts, word counts, saved revisions and fresh descriptions. Outbound document generation is deterministic; local API persistence and UI are real.

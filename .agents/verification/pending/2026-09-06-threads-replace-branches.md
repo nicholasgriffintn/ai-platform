@@ -10,8 +10,8 @@
 
 - [x] Open a saved conversation with related conversations. Confirm the header offers Threads, that it lists the family with the current one marked, and that selecting one opens it.
 - [x] Start a thread from an assistant reply and from a user message. Confirm both appear in the family and the new conversation answers.
-- [ ] Confirm a local-only conversation and a shared read-only view still do not offer Threads.
-- [ ] As a person outside a project, confirm the thread family for a project conversation is still refused.
+- [x] Confirm a local-only conversation and a shared read-only view still do not offer Threads.
+- [x] As a person outside a project, confirm the thread family for a project conversation is still refused.
 - [x] Confirm `/chat/completions/:id/branches` returns 404 and `/threads` returns the family. The old path is gone, not aliased.
 
 **Stop and report if:** a thread family shows a conversation the viewer could not previously see, or starting a thread copies history rather than linking it.
@@ -23,3 +23,8 @@
 - It confirms `/chat/completions/:id/branches` answers 404 while `/threads` returns the family, and that a signed-in outsider is refused the family of a personal conversation.
 - Fix: the header only offered Threads on the conversation that was branched from, and only until the page reloaded, because `has_branches` was set optimistically on the parent and never returned by the API. The conversation response now reports family membership, and a stored thread carries it too.
 - Left open: local-only and shared read-only conversations, and a project conversation's family refused to a non-member.
+
+## Automated evidence — 8 September 2026, container b2276b14
+
+- `features/saved-messages.spec.ts` confirms no Threads action in the shared read-only view; the previously passing temporary Chat journey in container `1e9e88ba` confirms the local-only case. `features/work.spec.ts` confirms an outsider receives 404 for a project conversation thread family.
+- The targeted batch recorded 14 passing journeys and one failing composer assertion. Only the passing journeys support these check-offs.

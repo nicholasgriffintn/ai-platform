@@ -5,14 +5,8 @@ export const MAX_OUTPUT_PROVENANCE_SKILLS = 64;
 export const MAX_OUTPUT_PROVENANCE_SOURCES = 100;
 export const MAX_OUTPUT_PROVENANCE_APPROVALS = 100;
 
-export const provenanceCompletenessSchema = z.enum(["complete", "partial", "legacy"]);
-export const outputProvenanceOriginSchema = z.enum([
-  "generated",
-  "user",
-  "imported",
-  "unknown",
-  "legacy",
-]);
+export const provenanceCompletenessSchema = z.enum(["complete", "partial"]);
+export const outputProvenanceOriginSchema = z.enum(["generated", "user", "imported", "unknown"]);
 
 export const provenanceRunSchema = z
   .object({

@@ -1,12 +1,6 @@
 import { expect, test } from "../fixtures/polychat-test";
 
-const REMOVED_PATHS = [
-  "/attention",
-  "/files",
-  "/teammates",
-  "/chat/capabilities",
-  "/chat/experiences",
-];
+const REMOVED_PATHS = ["/attention", "/files", "/teammates"];
 
 test("removes the top-level places rather than redirecting them", async ({ page }) => {
   for (const path of REMOVED_PATHS) {

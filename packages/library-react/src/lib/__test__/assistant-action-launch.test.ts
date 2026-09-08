@@ -7,7 +7,6 @@ import {
   createConnectorAssistantActionLaunch,
   createRecipeManagementActionPath,
   createRecipeAssistantActionLaunch,
-  loadAssistantActionRequestOptions,
   parseAssistantActionLaunchState,
   createTeammateConversationActionPath,
   readTeammateConversationLaunchIntent,
@@ -41,21 +40,17 @@ describe("assistant action launch URL contract", () => {
 
   it("removes consumed launch state without removing unrelated URL parameters", () => {
     const search = new URLSearchParams({
-      completion_id: "conversation-1",
       query: "Run the planner recipe.",
       enabled_tools: "use_recipe_connector",
       auto_submit: "1",
       assistant_action_context: "{}",
-      recipe_context: "{}",
       action: "setup",
       recipe: "morning-briefing",
       teammate: "researcher",
       view: "compact",
     }).toString();
 
-    expect(removeConsumedAssistantActionLaunchParams(search)).toBe(
-      "completion_id=conversation-1&view=compact",
-    );
+    expect(removeConsumedAssistantActionLaunchParams(search)).toBe("view=compact");
   });
 
   it("carries an teammate into a conversation and reads it back", () => {
@@ -177,39 +172,6 @@ describe("assistant action launch URL contract", () => {
       }),
     ).toEqual({
       externalUrl: "https://accounts.google.com/oauth",
-    });
-  });
-
-  it("keeps reading legacy recipe contexts during the URL migration", () => {
-    const params = new URLSearchParams();
-
-    params.set(
-      "recipe_context",
-      JSON.stringify({
-        recipe: {
-          id: "gmail",
-          installationId: "installation-1",
-          channel: "web",
-          allowedConnectorProviders: ["gmail"],
-          allowedConnectorOperations: { gmail: ["search_messages"] },
-          configuration: { defaultSearch: "from:team" },
-        },
-      }),
-    );
-
-    const state = parseAssistantActionLaunchState(params.toString());
-
-    expect(loadAssistantActionRequestOptions(state)).toEqual({
-      options: {
-        recipe: {
-          id: "gmail",
-          installationId: "installation-1",
-          channel: "web",
-          allowedConnectorProviders: ["gmail"],
-          allowedConnectorOperations: { gmail: ["search_messages"] },
-          configuration: { defaultSearch: "from:team" },
-        },
-      },
     });
   });
 });

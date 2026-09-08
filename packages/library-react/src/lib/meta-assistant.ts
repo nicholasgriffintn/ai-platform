@@ -7,7 +7,11 @@ import {
 import { matchPath } from "react-router";
 
 import { createConversationLaunchPath } from "./assistant-action-launch.js";
-import { getPersonalConversationPath, getProjectConversationPath } from "./conversation-route.js";
+import {
+  getPersonalConversationPath,
+  getProjectConversationPath,
+  getProjectBasePath,
+} from "./conversation-route.js";
 import {
   getActivePlace,
   getPlacePaths,
@@ -105,6 +109,12 @@ export function getMetaNavigationHref(target: MetaNavigationTarget): string {
     case "workspace":
       return `/work/${encodeURIComponent(target.workspaceId)}`;
     case "place":
+      if (target.mode === "work" && (target.place === "files" || target.place === "teammates")) {
+        return target.workspaceId && target.projectId
+          ? `${getProjectBasePath(target.workspaceId, target.projectId)}/${target.place}`
+          : MODE_BASE_PATHS.work;
+      }
+
       return target.place === "you" ? PROFILE_PATH : getPlacePaths(target.mode)[target.place];
   }
 }

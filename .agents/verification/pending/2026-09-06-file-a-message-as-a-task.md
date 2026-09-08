@@ -11,7 +11,7 @@
 - [x] In an ordinary project conversation, turn on "As task", type an objective and send. Confirm the composer clears, a toast names the task, and the task appears on the board in Backlog.
 - [x] Open that task. Confirm it says it was filed from a conversation and the link returns to the conversation you filed it from.
 - [x] Turn the toggle off and send an ordinary message. Confirm it is answered as normal and no task is filed.
-- [ ] Open a coding conversation for a project with a coding environment. Confirm the coding task-type control is there and the "As task" toggle is not.
+- [x] Open a coding conversation for a project with a coding environment. Confirm the coding task-type control is there and the "As task" toggle is not.
 - [x] File a task from a brand new conversation before it has any messages, and confirm the task is created without an origin rather than failing.
 - [x] Create a task from the board. Confirm it has no origin conversation and the task detail does not show the link.
 
@@ -24,3 +24,8 @@
 - Filing from a conversation with no messages yet creates the task with no origin rather than failing, and a task created from the board carries no origin link either.
 - The toast copy itself is not asserted; the board entry and the cleared composer are.
 - Left open: a coding conversation showing the task-type control instead of the toggle.
+
+## Automated evidence — 8 September 2026, container b2276b14
+
+- `features/sandbox-layout.spec.ts` opens a coding-enabled project conversation and confirms the Coding task selector is visible and As task is absent.
+- The targeted batch recorded 14 passing journeys and one failing composer assertion. Only the passing journeys support these check-offs.

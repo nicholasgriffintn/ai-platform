@@ -21,7 +21,7 @@
 - **Risk if wrong:** any Anthropic conversation that includes a tool call fails on the next turn with "text content blocks must be non-empty".
 
 - [ ] Continue a conversation on an Anthropic model after a turn that called a tool and produced no visible text, and confirm the next turn streams normally.
-- [ ] Confirm assistant turns that did produce text still show that text on reload.
+- [x] Confirm assistant turns that did produce text still show that text on reload.
 
 ## Follow-up: recipe runs are grounded and stay in their declared tool scope
 
@@ -35,3 +35,7 @@
 - [ ] Run a recipe that uses a connector and confirm the connector tool still works.
 
 **Stop and report if:** a briefing contains claims absent from its tool results, or a recipe loses access to a tool it declares.
+
+## Reconciled automated evidence — 8 September 2026
+
+- `features/chat.spec.ts` reloads both device-local and server-stored conversations and asserts the assistant reply remains. Passing results are recorded in `test-results/container/1e9e88ba/results.json`. This checks text persistence, not the separate recipe execution or citation requirements.

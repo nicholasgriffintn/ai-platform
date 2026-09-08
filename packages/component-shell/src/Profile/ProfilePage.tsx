@@ -1,7 +1,7 @@
 import { PageStatus } from "@ngriffin_uk/polychat-component-ui";
-import { getRetiredProfileTabPath, useAuthStatus } from "@ngriffin_uk/polychat-library-react";
+import { useAuthStatus } from "@ngriffin_uk/polychat-library-react";
 import { Loader2 } from "lucide-react";
-import { Navigate, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
@@ -23,11 +23,6 @@ export function ProfilePage({ additionalItems = [] }: ProfilePageProps) {
   const activeTabId = searchParams.get("tab") || sidebarItems[0].id;
   const activeItem = sidebarItems.find((item) => item.id === activeTabId);
   const ActiveComponent = activeItem?.component;
-  const retiredTabPath = activeItem ? undefined : getRetiredProfileTabPath(activeTabId);
-
-  if (retiredTabPath) {
-    return <Navigate to={retiredTabPath} replace />;
-  }
 
   return (
     <PageShell

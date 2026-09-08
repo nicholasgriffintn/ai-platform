@@ -17,6 +17,7 @@ export interface DocumentMetadataPanelProps {
   canRegenerate?: boolean;
   onRegenerateMetadata?: () => void;
   isRegeneratingMetadata?: boolean;
+  regenerationDisabled?: boolean;
 }
 
 export function DocumentMetadataPanel({
@@ -26,6 +27,7 @@ export function DocumentMetadataPanel({
   canRegenerate = false,
   onRegenerateMetadata,
   isRegeneratingMetadata = false,
+  regenerationDisabled = false,
 }: DocumentMetadataPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editingMetadata, setEditingMetadata] = useState(metadata || {});
@@ -98,7 +100,7 @@ export function DocumentMetadataPanel({
                 variant="outline"
                 size="sm"
                 onClick={onRegenerateMetadata}
-                disabled={isRegeneratingMetadata}
+                disabled={isRegeneratingMetadata || regenerationDisabled}
               >
                 {isRegeneratingMetadata ? "Regenerating..." : "Regenerate via AI"}
               </Button>
@@ -276,7 +278,7 @@ export function DocumentMetadataPanel({
               variant="outline"
               size="sm"
               onClick={onRegenerateMetadata}
-              disabled={isRegeneratingMetadata}
+              disabled={isRegeneratingMetadata || regenerationDisabled}
             >
               {isRegeneratingMetadata ? "Regenerating..." : "Regenerate via AI"}
             </Button>

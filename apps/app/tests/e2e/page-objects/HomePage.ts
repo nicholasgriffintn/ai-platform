@@ -738,6 +738,28 @@ export class HomePage extends BasePage {
     return this.page.locator('[data-role="user"]').last();
   }
 
+  getThreadViewport(): Locator {
+    return this.page.locator("[data-header-scroll-source]");
+  }
+
+  async getThreadDistanceFromBottom(): Promise<number> {
+    return await this.getThreadViewport().evaluate(
+      (element) => element.scrollHeight - (element.scrollTop + element.clientHeight),
+    );
+  }
+
+  async scrollThreadUp(pixels: number) {
+    const viewport = this.getThreadViewport();
+    const box = await viewport.boundingBox();
+
+    if (!box) {
+      throw new Error("Thread viewport is not visible");
+    }
+
+    await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await this.page.mouse.wheel(0, -pixels);
+  }
+
   private waitForCompletionRequest() {
     return this.page.waitForResponse(
       (response) =>

@@ -1,3 +1,4 @@
+import { filterToolsForConversationType } from "~/lib/chat/policy/meta-assistant";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { ToolRegistry } from "~/lib/tools/ToolRegistry";
@@ -227,6 +228,17 @@ export const handleFunctions = async ({
   conversationManager?: ConversationManager;
   emitToolResult?: (response: IFunctionResponse) => Promise<void> | void;
 }): Promise<IFunctionResponse> => {
+  if (
+    filterToolsForConversationType([{ name: functionName }], request.request?.conversation_type)
+      .length === 0
+  ) {
+    throw new AssistantError(
+      `Tool "${functionName}" is not allowed in this conversation`,
+      ErrorType.AUTHORISATION_ERROR,
+      403,
+    );
+  }
+
   const requestMode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
 
   if (functionName.startsWith("mcp_")) {

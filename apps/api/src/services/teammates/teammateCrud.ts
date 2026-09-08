@@ -1,4 +1,8 @@
-import type { CreateTeammateInput, UpdateTeammateInput } from "@ngriffin_uk/polychat-schemas";
+import {
+  filterToolIdsForTeammateKind,
+  type CreateTeammateInput,
+  type UpdateTeammateInput,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { requireWorkspaceAccess } from "~/services/workspaces/access";
@@ -69,7 +73,8 @@ export async function createTeammate(
     maxSteps: params.max_steps,
     systemPrompt: params.system_prompt,
     fewShotExamples: params.few_shot_examples,
-    enabledTools: params.enabled_tools,
+    enabledTools:
+      filterToolIdsForTeammateKind(params.kind ?? "colleague", params.enabled_tools) ?? undefined,
     skillIds: params.skill_ids,
     mode: params.mode,
   });
@@ -86,8 +91,22 @@ export async function updateTeammate(
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
 
-  await requireTeammateAccess(context, teammateId, "write", id);
-  await context.repositories.teammates.updateTeammate(teammateId, updates);
+  const existing = normaliseTeammateResponse(
+    await requireTeammateAccess(context, teammateId, "write", id),
+  );
+
+  await context.repositories.teammates.updateTeammate(teammateId, {
+    ...updates,
+    ...(updates.kind !== undefined || updates.enabled_tools !== undefined
+      ? {
+          enabled_tools:
+            filterToolIdsForTeammateKind(
+              updates.kind ?? existing.kind,
+              updates.enabled_tools ?? existing.enabled_tools ?? [],
+            ) ?? [],
+        }
+      : {}),
+  });
 
   return getTeammateById(context, teammateId, id);
 }

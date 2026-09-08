@@ -14,7 +14,6 @@ import {
   getProjectChatPath,
   getProjectConversationPath,
   isProjectConversationPath,
-  resolveProjectConversationId,
   buildConversationSections,
   getPlacePaths,
   useUIStore,
@@ -53,7 +52,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const { data: workspace } = workspaceQuery;
   const { data: project } = projectQuery;
   const [conversationForGroups, setConversationForGroups] = useState<string | null>(null);
-  const { pathname, search } = useLocation();
+  const { pathname } = useLocation();
   const { conversationId: pathConversationId } = useParams<"conversationId">();
   const navigate = useNavigate();
   const startNewChat = useStartNewChat();
@@ -63,9 +62,8 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     setCurrentConversationId,
     setShowSearch,
   } = useChatStore();
-  const routedConversationId = resolveProjectConversationId(pathConversationId, search);
   const activeConversationId =
-    routedConversationId ??
+    pathConversationId ??
     project?.conversations.find((conversation) => conversation.id === currentConversationId)?.id;
   const { items: attentionItems } = useTaskAttention();
   const projectConversations = project?.conversations ?? EMPTY_CONVERSATIONS;

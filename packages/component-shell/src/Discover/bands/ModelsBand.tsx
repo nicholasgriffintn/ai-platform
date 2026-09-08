@@ -5,7 +5,6 @@ import { useMemo } from "react";
 
 import { DiscoverBand } from "../DiscoverBand.js";
 
-const PROVIDER_LIMIT = 12;
 const FEATURED_LIMIT = 6;
 
 export function ModelsBand() {
@@ -41,7 +40,7 @@ export function ModelsBand() {
                   <Skeleton className="h-11 w-11 rounded-lg" />
                 </li>
               ))
-            : providers.slice(0, PROVIDER_LIMIT).map((provider) => (
+            : providers.map((provider) => (
                 <li
                   key={provider.id}
                   title={`${provider.id}: ${provider.modelCount} models`}

@@ -3,7 +3,6 @@ import {
   DEFAULT_THEME_PREFERENCE,
   isDefaultThemePair,
   isThemePreference,
-  LEGACY_THEME_STORAGE_KEY,
   parseThemePair,
   serialiseThemePair,
   THEME_PAIR_STORAGE_KEY,
@@ -61,21 +60,7 @@ function readStoredPreference(): ThemePreference {
       return stored;
     }
 
-    const legacy = window.localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
-
-    if (legacy === null) {
-      return DEFAULT_THEME_PREFERENCE;
-    }
-
-    window.localStorage.removeItem(LEGACY_THEME_STORAGE_KEY);
-
-    if (!isThemePreference(legacy)) {
-      return DEFAULT_THEME_PREFERENCE;
-    }
-
-    persistPreference(legacy);
-
-    return legacy;
+    return DEFAULT_THEME_PREFERENCE;
   } catch {
     return DEFAULT_THEME_PREFERENCE;
   }

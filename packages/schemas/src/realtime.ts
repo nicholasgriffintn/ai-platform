@@ -201,10 +201,6 @@ export const realtimeLiveProviderCatalogueResponseSchema = z.object({
   providers: z.array(realtimeLiveProviderCatalogueItemSchema),
 });
 
-export const realtimeLiveProviderManifestResponseSchema = z.object({
-  providers: z.array(realtimeLiveProviderManifestItemSchema),
-});
-
 export type RealtimeProviderId = z.infer<typeof realtimeProviderIdSchema>;
 export type RealtimeTransport = z.infer<typeof realtimeTransportSchema>;
 export type RealtimeSessionType = z.infer<typeof realtimeSessionTypeSchema>;
@@ -227,89 +223,3 @@ export type RealtimeLiveProviderCatalogueItem = z.infer<
 export type RealtimeLiveProviderCatalogueResponse = z.infer<
   typeof realtimeLiveProviderCatalogueResponseSchema
 >;
-/** @deprecated Runtime clients should read the authenticated realtime provider catalogue. */
-export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[] = [
-  {
-    id: "openai",
-    label: "OpenAI Realtime",
-    shortLabel: "OpenAI",
-    liveMode: "native",
-    transport: "webrtc",
-    sessionType: "realtime",
-    inputModalities: ["audio"],
-    outputModalities: ["audio"],
-    description: "WebRTC voice agent",
-    defaultModelId: "gpt-realtime-2.1",
-  },
-  {
-    id: "google-ai-studio",
-    label: "Gemini Live",
-    shortLabel: "Gemini",
-    liveMode: "native",
-    transport: "websocket",
-    sessionType: "realtime",
-    inputModalities: ["audio", "video"],
-    outputModalities: ["audio"],
-    description: "WebSocket voice and vision",
-    defaultModelId: "gemini-3.1-flash-live-preview",
-    supportsVideoInput: true,
-  },
-  {
-    id: "mistral",
-    label: "Mistral Realtime",
-    shortLabel: "Mistral",
-    liveMode: "composed",
-    transport: "websocket",
-    sessionType: "transcription",
-    defaultDelay: "low",
-    inputModalities: ["audio"],
-    outputModalities: ["text"],
-    description: "Streaming speech-to-text",
-    defaultModelId: "voxtral-mini-transcribe-realtime",
-    composeWith: { reasoning: true, speech: true },
-  },
-  {
-    id: "elevenlabs",
-    label: "ElevenLabs Scribe Realtime",
-    shortLabel: "ElevenLabs",
-    liveMode: "composed",
-    transport: "websocket",
-    sessionType: "transcription",
-    defaultDelay: "minimal",
-    inputModalities: ["audio"],
-    outputModalities: ["text"],
-    description: "Scribe realtime speech-to-text",
-    defaultModelId: "scribe_v2_realtime",
-    composeWith: { reasoning: true, speech: true },
-  },
-  {
-    id: "cartesia",
-    label: "Cartesia Ink 2 Realtime",
-    shortLabel: "Cartesia",
-    liveMode: "composed",
-    transport: "websocket",
-    sessionType: "transcription",
-    defaultDelay: "low",
-    inputModalities: ["audio"],
-    outputModalities: ["text"],
-    description: "Ink 2 semantic turn detection and streaming speech-to-text",
-    defaultModelId: "ink-2",
-    composeWith: { reasoning: true, speech: true },
-  },
-];
-
-/** @deprecated Runtime clients should select from the authenticated realtime provider catalogue. */
-export const DEFAULT_REALTIME_LIVE_PROVIDER_ID = REALTIME_LIVE_PROVIDER_MANIFEST[0].id;
-
-/** @deprecated Runtime clients should read the authenticated realtime provider catalogue. */
-export function getRealtimeLiveProviderManifestItem(
-  providerId: RealtimeProviderId,
-): RealtimeLiveProviderManifestItem {
-  const provider = REALTIME_LIVE_PROVIDER_MANIFEST.find(({ id }) => id === providerId);
-
-  if (!provider) {
-    throw new Error(`Unknown realtime live provider: ${providerId}`);
-  }
-
-  return provider;
-}

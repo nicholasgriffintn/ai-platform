@@ -12,7 +12,7 @@
 - [ ] Load `/`, `/pricing`, `/privacy`, `/terms`, `/discover` and `/downloads` on a web preview and confirm each renders with no failed chunk request.
 - [ ] On `/`, scroll to the Discover tour and confirm it appears after its chunk loads; on `/discover`, confirm the same content renders immediately without a visible loading gap.
 - [x] Open the keyboard shortcuts dialog from a conversation and confirm it loads and closes.
-- [ ] Open a chat conversation and a Work project conversation, confirm messages stream and attachments upload.
+- [x] Open a chat conversation and a Work project conversation, confirm messages stream and attachments upload.
 - [ ] Run the desktop build, launch the packaged app and confirm the sidebar, discover page and a conversation all render.
 
 **Stop and report if:** a Worker logs a module resolution failure, a route fails to fetch a chunk, or the Discover tour never appears on the home page.
@@ -20,3 +20,8 @@
 ## Automated evidence — 8 September 2026, container aaec9551
 
 - `features/app.spec.ts` passed the complete Chat, Work, settings, shortcuts, Terms and Privacy journey. The shortcuts dialog loads from Chat, shows its contents and closes before navigation continues. Preview and packaged-desktop checks remain open.
+
+## Reconciled web E2E evidence — 8 September 2026
+
+- The passing Chat upload journeys in container `1e9e88ba` send image, code, PDF and audio attachments. The focused passing Work-context journey recorded in local evidence uploads release-work-context.md, receives the assistant response and finds the uploaded document in project Files.
+- See [7 September release evidence](../2026-09-05-local-evidence.md) and [8 September focused evidence](../2026-09-08-local-evidence.md). These are reconciled existing results, not another run or a deployed/desktop certification.

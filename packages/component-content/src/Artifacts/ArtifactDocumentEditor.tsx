@@ -256,14 +256,27 @@ export const ArtifactDocumentEditor = ({
             variant="outline"
             isLoading={isRewriting}
             onClick={() => {
-              void onRewrite().then((rewritten) => {
-                setContent(rewritten);
-                setActiveView("edit");
-              });
+              void onRewrite()
+                .then((rewritten) => {
+                  setContent(rewritten);
+                  setActiveView("edit");
+                })
+                .catch(() => undefined);
             }}
             icon={<Wand2 size={13} />}
           >
             Rewrite
+          </Button>
+        ) : null}
+
+        {onSave && content !== artifact.content ? (
+          <Button
+            size="xs"
+            variant="outline"
+            disabled={isSaving || isRewriting}
+            onClick={() => setContent(artifact.content)}
+          >
+            Cancel
           </Button>
         ) : null}
 

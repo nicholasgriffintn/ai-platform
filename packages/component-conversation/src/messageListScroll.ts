@@ -1,6 +1,7 @@
-interface MessageListScrollMessage {
-  id: string;
-}
+import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
+
+type MessageListScrollMessage = Pick<Message, "id" | "content" | "parts" | "reasoning">;
 
 interface MessageListScrollKeyInput {
   conversationId?: string;
@@ -18,5 +19,8 @@ export function getMessageListScrollKey({
     return `${conversationKey}:empty`;
   }
 
-  return `${conversationKey}:${messages.length}:${lastMessage.id}`;
+  const streamedLength =
+    getMessageTextContent(lastMessage).length + (lastMessage.reasoning?.content.length ?? 0);
+
+  return `${conversationKey}:${messages.length}:${lastMessage.id}:${streamedLength}`;
 }

@@ -427,14 +427,6 @@ struct ModelTests {
         #expect(markdownBlock.markdownDocument.markdown == "# Doc")
     }
 
-    @Test func modelConfigDecodesAlternateFeaturedAndDeprecatedKeys() throws {
-        let data = Data(#"{"provider":"openai","name":"Model","featured":true,"deprecated":true}"#.utf8)
-        let model = try JSONDecoder().decode(ModelConfigItem.self, from: data)
-
-        #expect(model.isFeatured == true)
-        #expect(model.deprecated == true)
-    }
-
     @Test func modelConfigDecodesPublishedRuntimeAndAccessFields() throws {
         let data = Data("""
         {
@@ -563,8 +555,6 @@ struct ModelTests {
         #expect(json["completion_id"] as? String == "conversation-1")
         #expect(json["stream"] as? Bool == true)
         #expect(json["platform"] as? String == "mobile")
-        #expect(json["use_rag"] == nil)
-        #expect(json["rag_options"] == nil)
         #expect(json["enabled_tools"] == nil)
         #expect(json["tool_selection_mode"] as? String == "managed")
         #expect(json["model_tier"] == nil)

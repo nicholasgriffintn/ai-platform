@@ -2,9 +2,6 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types.js";
 
-const COUNCIL_TOOL_NAME = "select_council_members";
-const LEGACY_COUNCIL_PROMPT_PREFIX = "Convene the council with these members: ";
-
 interface ToolInteractionResolution {
   toolName: string;
   response: Record<string, unknown>;
@@ -34,63 +31,6 @@ function readStructuredResolution(message: Message): ToolInteractionResolution |
   return {
     toolName: interaction.toolName,
     response: interaction.response,
-  };
-}
-
-function getPendingData(message: Message, partIndex?: number): Record<string, unknown> | null {
-  if (partIndex === undefined) {
-    return isRecord(message.data) ? message.data : null;
-  }
-
-  const part = message.parts?.[partIndex];
-
-  return part?.type === "tool_result" && isRecord(part.data) ? part.data : null;
-}
-
-function readLegacyCouncilResolution(
-  message: Message,
-  pending: readonly PendingToolInteraction[] | undefined,
-  projected: readonly Message[],
-): ToolInteractionResolution | null {
-  if (
-    message.role !== "user" ||
-    typeof message.content !== "string" ||
-    !message.content.startsWith(LEGACY_COUNCIL_PROMPT_PREFIX) ||
-    !pending?.length
-  ) {
-    return null;
-  }
-
-  const target = pending.at(-1);
-  const pendingMessage = target ? projected[target.messageIndex] : undefined;
-  const data = pendingMessage ? getPendingData(pendingMessage, target?.partIndex) : null;
-  const members = Array.isArray(data?.members) ? data.members : [];
-  const memberIdByName = new Map(
-    members.flatMap((member) =>
-      isRecord(member) && typeof member.id === "string" && typeof member.name === "string"
-        ? [[member.name, member.id] as const]
-        : [],
-    ),
-  );
-  const selectedNames = message.content
-    .slice(LEGACY_COUNCIL_PROMPT_PREFIX.length)
-    .replace(/\.$/, "")
-    .split(",")
-    .map((name) => name.trim())
-    .filter(Boolean);
-  const memberIds = selectedNames.flatMap((name) => {
-    const memberId = memberIdByName.get(name);
-
-    return memberId ? [memberId] : [];
-  });
-
-  if (memberIds.length === 0 || memberIds.length !== selectedNames.length) {
-    return null;
-  }
-
-  return {
-    toolName: COUNCIL_TOOL_NAME,
-    response: { memberIds },
   };
 }
 
@@ -182,9 +122,7 @@ export function applyToolInteractionResolutions(messages: readonly Message[]): M
       });
     }
 
-    const interaction =
-      readStructuredResolution(message) ??
-      readLegacyCouncilResolution(message, pendingByToolName.get(COUNCIL_TOOL_NAME), projected);
+    const interaction = readStructuredResolution(message);
 
     if (!interaction) {
       return;

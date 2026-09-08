@@ -23,7 +23,6 @@ export {
   assistantActionVerbIdSchema,
   assistantActionVerbSchema,
   assistantActionVerbs,
-  assistantLegacyRecipeContextPayloadSchema,
   assistantRecipeActionContextSchema,
   buildAssistantActionCatalog,
   createConnectorAssistantActionItem,
@@ -57,7 +56,6 @@ export type {
   AssistantActionVerb,
   AssistantActionVerbId,
   AssistantActionModelToolDefinition,
-  AssistantLegacyRecipeContextPayload,
   AssistantRecipeActionContext,
 } from "./assistant-actions.js";
 export * from "./apps.js";

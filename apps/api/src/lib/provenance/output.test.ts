@@ -2,11 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
-import {
-  createExecutionOutputProvenance,
-  legacyOutputProvenance,
-  parseOutputProvenance,
-} from "./output";
+import { createExecutionOutputProvenance, parseOutputProvenance } from "./output";
 
 const capturedAt = "2026-09-05T12:00:00.000Z";
 
@@ -75,7 +71,13 @@ describe("output provenance", () => {
     ).rejects.toMatchObject({ statusCode: 404 });
   });
 
-  it("keeps missing historical data explicitly legacy", () => {
-    expect(parseOutputProvenance(null, capturedAt)).toEqual(legacyOutputProvenance(capturedAt));
+  it("falls back to an unknown, partial record when stored provenance will not parse", () => {
+    expect(parseOutputProvenance(null, capturedAt)).toMatchObject({
+      origin: "unknown",
+      completeness: "partial",
+      capturedAt,
+      run: null,
+      model: null,
+    });
   });
 });

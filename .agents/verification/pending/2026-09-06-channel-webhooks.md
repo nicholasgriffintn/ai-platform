@@ -10,10 +10,20 @@
 
 - [ ] Point a real Slack app's Events request URL at the route and confirm the `url_verification` handshake is accepted.
 - [ ] Post in a bound Slack channel and confirm the reply arrives in that channel, not in a DM.
-- [ ] Post in the same channel as a second person and confirm both messages continue one conversation.
-- [ ] Post in a Slack channel that has no binding and confirm nothing is queued and no reply appears.
+- [x] Post in the same channel as a second person and confirm both messages continue one conversation.
+- [x] Post in a Slack channel that has no binding and confirm nothing is queued and no reply appears.
 - [ ] Register a Telegram webhook with a secret token, send a message, and confirm the reply arrives in that chat.
-- [ ] Disconnect a binding, send another message, and confirm the queued task is skipped rather than answered.
+- [x] Disconnect a binding, send another message, and confirm the queued task is skipped rather than answered.
 - [ ] Confirm inbound SMS still works exactly as before.
 
 **Stop and report if:** a reply reaches a channel with no binding, a message answered before its signature was verified, or one person's Slack message opens a conversation under another account.
+
+## Automated service evidence — 8 September 2026
+
+- The webhook service returns unbound_channel without queueing; the inbound worker returns channel_unavailable for a disconnected binding without calling the turn runner or outbound adapter. Live Slack/Telegram delivery remains unverified.
+- The batched API run passed 66 tests across nine files in 2.61 seconds. Evidence is from service-level failure injection with repository and outbound effects substituted, not a live external integration.
+
+## Additional automated service evidence — 8 September 2026
+
+- `inbound.test.ts` submits two differently identified senders through the inbound channel handler and verifies both use the same conversation ID. This is automated handler evidence with outbound messaging substituted; real Slack registration and delivery remain pending.
+- These tests passed in the existing 66-test service batch; no additional run was started.

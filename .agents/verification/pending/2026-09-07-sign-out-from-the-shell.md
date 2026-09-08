@@ -7,10 +7,15 @@
 
 ## Verify
 
-- [ ] On the web, sign out from the sidebar settings popover and confirm the shell returns to the signed-out state and a reload does not restore the session.
+- [x] On the web, sign out from the sidebar settings popover and confirm the shell returns to the signed-out state and a reload does not restore the session.
 - [ ] In the desktop window, sign out from the same place and confirm it returns to the welcome screen.
 - [ ] Restart the desktop application and confirm it still asks you to sign in rather than resuming the previous account.
 - [ ] Take the desktop machine offline, sign out, and confirm it still returns to the welcome screen and still asks to sign in after a restart.
 - [ ] Sign back in on the desktop and confirm conversations, Files and Teammates all load for the newly signed-in account.
 
 **Stop and report if:** after signing out, the desktop keychain still holds a Polychat session, or signing in as a second account shows the first account's conversations.
+
+## Automated evidence — 8 September 2026, container b2276b14
+
+- `features/auth.spec.ts` signs out through the sidebar settings, reloads and checks the Guest shell and protected account state.
+- The targeted batch recorded 14 passing journeys and one failing composer assertion. Only the passing journeys support these check-offs.

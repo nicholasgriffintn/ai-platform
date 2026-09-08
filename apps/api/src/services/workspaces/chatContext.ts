@@ -85,7 +85,6 @@ export async function resolveProjectChatContext(
     promptStrategy: project.coding_prompt_strategy,
     deliveryPolicy: resolveSandboxDeliveryPolicy(
       project.coding_delivery_policy ? safeParseJson(project.coding_delivery_policy) : null,
-      Boolean(project.coding_should_commit),
     ),
     environmentSetup: project.coding_environment_setup
       ? safeParseJson(project.coding_environment_setup)

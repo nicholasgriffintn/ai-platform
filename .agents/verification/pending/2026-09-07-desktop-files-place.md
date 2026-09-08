@@ -9,8 +9,8 @@
 ## Verify
 
 - [ ] On the web, open Files from the chat sidebar and confirm Made, Given and Memory each list their contents and switch by tab.
-- [ ] Add a source, then delete it, and confirm both the list and the API agree.
-- [ ] Open an output, edit a document revision and restore an earlier one.
+- [x] Add a source, then delete it, and confirm both the list and the API agree.
+- [x] Open an output, edit a document revision and restore an earlier one.
 - [x] Create a share link for an output and then revoke it.
 - [x] Open a project's Files inside Work and confirm it still scopes to that project.
 - [ ] In the desktop window, open Files from the sidebar and repeat the list, add and delete checks.
@@ -22,3 +22,8 @@
 
 - `features/work.spec.ts` and `WorkPage.shareAndRevokeOutput` create an output share, observe Active share links, revoke it and confirm the section disappears. `features/places.spec.ts` follows project Files and its Given/Made/Memory tabs while retaining the project URL and sidebar selection.
 - These existing journeys are covered by the successful 239-journey release run recorded in [local evidence](../2026-09-05-local-evidence.md). This is recorded web evidence, not a new run or desktop verification.
+
+## Automated evidence — 8 September 2026, container b2276b14
+
+- `features/profile.spec.ts` verifies source creation/deletion in both the UI and API list. `features/documents.spec.ts` edits and saves a document, exports it, restores its first revision and checks the editor and persisted content. Desktop checks remain pending.
+- The targeted batch recorded 14 passing journeys and one failing composer assertion. Only the passing journeys support these check-offs.

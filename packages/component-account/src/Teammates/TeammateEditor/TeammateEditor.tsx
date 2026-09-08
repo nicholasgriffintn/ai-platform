@@ -1,4 +1,5 @@
 import { Alert, AlertDescription, AlertTitle, Button } from "@ngriffin_uk/polychat-component-ui";
+import { filterToolIdsForTeammateKind } from "@ngriffin_uk/polychat-schemas";
 import { Loader2 } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
@@ -35,8 +36,19 @@ export function TeammateEditor({
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const change: TeammateEditorChange = (patch) => {
-    setValue((current) => ({ ...current, ...patch }));
+    setValue((current) => {
+      const next = { ...current, ...patch };
+
+      return { ...next, toolIds: filterToolIdsForTeammateKind(next.kind, next.toolIds) ?? [] };
+    });
   };
+
+  const allowedToolIds = new Set(
+    filterToolIdsForTeammateKind(
+      value.kind,
+      tools.map(({ id }) => id),
+    ),
+  );
 
   const disabled = !canManage || isSaving;
 
@@ -76,7 +88,7 @@ export function TeammateEditor({
       <ModelSection value={value} models={models} disabled={disabled} onChange={change} />
       <CapabilitiesSection
         value={value}
-        tools={tools}
+        tools={tools.filter(({ id }) => allowedToolIds.has(id))}
         skills={skills}
         isLoading={isLoadingCapabilities}
         disabled={disabled}

@@ -11,7 +11,7 @@
 - [x] Start it. Confirm you land on a new project, that the Developer is attached, and that the teammate exists in the workspace's teammates.
 - [x] Confirm the project brief describes building small internal tools, and that the sandbox and document tools are enabled on it.
 - [ ] Ask the Developer for a small tool. Confirm it can run a sandbox task and leave the result in the project's files.
-- [ ] As a workspace member rather than an admin, confirm Governance does not offer starters and that starting one is refused.
+- [x] As a workspace member rather than an admin, confirm Governance does not offer starters and that starting one is refused.
 - [x] Confirm an unknown starter slug is refused and no project is created.
 
 **Stop and report if:** a workspace member can start a starter, or a project is created without the teammate the starter listed.
@@ -24,3 +24,8 @@
 - Instantiating an unknown starter slug is refused with 404.
 - The Start control now carries the starter name in its accessible name, so several starters can be told apart.
 - Left open: asking the Developer for a tool and watching it run, and a plain member being refused starters.
+
+## Automated evidence — 8 September 2026, container b2276b14
+
+- `features/work.spec.ts` confirms an ordinary member sees no starter action in Governance and receives 403 from the starter endpoint.
+- The targeted batch recorded 14 passing journeys and one failing composer assertion. Only the passing journeys support these check-offs.

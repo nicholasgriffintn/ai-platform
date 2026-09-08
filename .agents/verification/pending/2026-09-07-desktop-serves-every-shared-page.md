@@ -16,7 +16,16 @@
 - [ ] Load each host with the network panel open. Confirm the house fonts load from the application's own asset URLs with no request to a font host, and that headings render in the serif display face.
 - [ ] Confirm the desktop window title changes as you navigate — "Chat — Polychat", "Work — Polychat", "Tasks — Polychat" — in the title bar and in the operating system's window list.
 - [ ] With the desktop window open, follow `polychat://work/<workspace>/projects/<project>/tasks/<task>` and confirm it opens that task. Follow `polychat://profile?tab=billing` and confirm Billing opens.
-- [ ] Confirm `polychat://pricing` and `polychat://s/<share id>` are still ignored rather than navigating the window.
-- [ ] On the web, open the home route, `/chat`, a project conversation, Profile, Models, Pricing, Terms and Privacy and confirm each behaves as it did before the move, including the guest tour beneath the welcome screen.
+- [x] Confirm `polychat://pricing` and `polychat://s/<share id>` are still ignored rather than navigating the window.
+- [x] On the web, open the home route, `/chat`, a project conversation, Profile, Models, Pricing, Terms and Privacy and confirm each behaves as it did before the move, including the guest tour beneath the welcome screen.
 
 **Stop and report if:** any sidebar or settings link answers 404 in the desktop window, a Work page loads without its sidebar or project context, a pet sprite or house font fails to load in either host, or a `polychat://` link navigates outside Chat, Work and Profile.
+
+## Reconciled web E2E evidence — 8 September 2026
+
+- Existing passing app, profile, billing, discover and Work-context journeys cover the listed web routes, guest tour, authenticated account state and project conversation. Recorded evidence covers web smoke behaviour; the separate desktop items remain open.
+- See [7 September release evidence](../2026-09-05-local-evidence.md) and [8 September focused evidence](../2026-09-08-local-evidence.md). These are reconciled existing results, not another run or a deployed/desktop certification.
+
+## Automated boundary evidence — 8 September 2026
+
+- Desktop deep-link tests refuse pricing and public-share URLs before navigation. The focused desktop batch passed 38 tests. Packaged launch and operating-system dispatch checks remain separate.

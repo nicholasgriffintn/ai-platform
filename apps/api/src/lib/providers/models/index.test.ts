@@ -5,14 +5,27 @@ import {
   MODEL_TIER_ROLES,
   MODEL_TIERS,
   type ModelConfigItem,
-  REALTIME_LIVE_PROVIDER_MANIFEST,
   SYSTEM_MODEL_LINEUP,
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
+import { CARTESIA_REALTIME_DESCRIPTOR } from "~/lib/providers/capabilities/realtime/providers/CartesiaRealtimeProvider";
+import { ELEVENLABS_REALTIME_DESCRIPTOR } from "~/lib/providers/capabilities/realtime/providers/ElevenLabsRealtimeProvider";
+import { GOOGLE_REALTIME_DESCRIPTOR } from "~/lib/providers/capabilities/realtime/providers/GoogleRealtimeProvider";
+import { MISTRAL_REALTIME_DESCRIPTOR } from "~/lib/providers/capabilities/realtime/providers/MistralRealtimeProvider";
+import { OPENAI_REALTIME_DESCRIPTOR } from "~/lib/providers/capabilities/realtime/providers/OpenAIRealtimeProvider";
+
 import { getFeaturedModels, getModels } from ".";
 import { getExecutableModelsForAccount } from "./policy";
 import { applyModelResponseDefaults, type ModelResponseSettings } from "./responseDefaults";
+
+const REALTIME_DESCRIPTORS = [
+  OPENAI_REALTIME_DESCRIPTOR,
+  GOOGLE_REALTIME_DESCRIPTOR,
+  MISTRAL_REALTIME_DESCRIPTOR,
+  ELEVENLABS_REALTIME_DESCRIPTOR,
+  CARTESIA_REALTIME_DESCRIPTOR,
+];
 
 describe("featured model catalogue", () => {
   it("contains only active models with descriptions", () => {
@@ -188,7 +201,7 @@ describe("central model policy catalogue", () => {
   it("resolves every realtime default to an active model from the expected provider", () => {
     const models = getModels({ shouldUseCache: false });
 
-    for (const reference of REALTIME_LIVE_PROVIDER_MANIFEST) {
+    for (const reference of REALTIME_DESCRIPTORS) {
       const entry = models[reference.defaultModelId];
 
       if (!entry) {

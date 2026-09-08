@@ -1,6 +1,8 @@
-import { findTeammateRole } from "@ngriffin_uk/polychat-schemas";
+import { teammateResponseSchema, findTeammateRole } from "@ngriffin_uk/polychat-schemas";
 
 import { expect, test } from "../fixtures/polychat-test";
+import { requireSuccessfulResponse } from "../support/api-response";
+import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
 
 const ROLE = findTeammateRole("research-analyst");
 
@@ -63,6 +65,47 @@ test.describe("Hiring a teammate", () => {
     await capabilitiesPage.open();
     await capabilitiesPage.deleteTeammateFromLibrary("Release describer");
     await capabilitiesPage.deleteTeammateFromLibrary(ROLE.title);
+  });
+
+  test("removes task and memory tools when the editor changes a colleague into a bot", async ({
+    page,
+    capabilitiesPage,
+  }) => {
+    const created = await page.request.post(`${E2E_API_BASE_URL}/teammates`, {
+      headers: { origin: E2E_APP_BASE_URL },
+      data: { name: "Restricted release bot", enabled_tools: ["create_task", "store_memory"] },
+    });
+
+    await requireSuccessfulResponse(created, "Create colleague with write tools");
+    const teammate = teammateResponseSchema.parse(await created.json());
+
+    expect(teammate.enabled_tools).toEqual(expect.arrayContaining(["create_task", "store_memory"]));
+    await capabilitiesPage.navigate(`/chat/teammates/${teammate.id}`);
+    await page.getByLabel("Kind", { exact: true }).selectOption("bot");
+    for (const tool of ["create_task", "store_memory"]) {
+      await page.getByPlaceholder("Search tools and skills...").fill(tool);
+      await expect(page.getByText("Nothing matches that search.", { exact: true })).toBeVisible();
+    }
+
+    const saved = page.waitForResponse(
+      (response) =>
+        response.request().method() === "PUT" &&
+        new URL(response.url()).pathname.endsWith(`/teammates/${teammate.id}`),
+    );
+
+    await page.getByRole("button", { name: "Save teammate", exact: true }).click();
+    const response = await saved;
+
+    expect(response.status()).toBe(200);
+    expect(teammateResponseSchema.parse(await response.json())).toMatchObject({
+      kind: "bot",
+      enabled_tools: [],
+    });
+    await capabilitiesPage.navigate(`/chat/teammates/${teammate.id}`);
+    await expect(page.getByLabel("Kind", { exact: true })).toHaveValue("bot");
+    await expect(page.getByText(/Tools the teammate may call and skills it loads/)).toContainText(
+      "0 selected",
+    );
   });
 
   test("serves teammates where agents used to be and answers an at-mention", async ({

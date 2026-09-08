@@ -10,7 +10,7 @@
 - [x] In Chat, open Attention, Files and Teammates in turn. Confirm the chat sidebar stays and the URL is under `/chat`.
 - [x] In a project, open Attention, Files and Teammates in turn. Confirm the work sidebar stays, the project stays selected, and Attention is filtered to that project.
 - [x] Confirm the work sidebar lists Files and Teammates once each, under the project, and that both read the same as the places they open.
-- [ ] Open an app from the teammates library. Confirm the URL is under `apps` and that Back returns to the library, not to a separate list.
+- [x] Open an app from the teammates library. Confirm the URL is under `apps` and that Back returns to the library, not to a separate list.
 - [x] Open an app with a sub-page, such as a Replicate prediction. Confirm Back steps up one level rather than jumping to the library.
 - [x] Switch between the project's Chat, Tasks and Files tabs. Confirm the project name and description stay in the same place and nothing shifts.
 - [x] On the project Files tab, switch between Given, Made and Memory. Confirm the sidebar's Files entry stays highlighted throughout.
@@ -29,3 +29,7 @@
 - `/attention`, `/files` and `/teammates` now answer 404 rather than 200 with the not-found page.
 - Fix: `/chat/capabilities` and `/chat/experiences` answered 200 because `/chat/:completionId?` matches any single segment, so both resolved as conversation ids. Each retired path now has its own route that renders the not-found page, and the journey checks all five.
 - Left open: Back from an app root returning to the library, and Poly opening the place for the mode it was asked from.
+
+## Automated browser evidence — 8 September 2026
+
+- The document and app-lifecycle journeys passed in `test-results/container/9b0ba7be/results.json`. They load all seven personal app runtimes from the library, return through the shared back link, refuse unenabled project apps, preserve note autosaves across reopening, and verify cancellable document drafts, word counts, saved revisions and fresh descriptions. Outbound document generation is deterministic; local API persistence and UI are real.

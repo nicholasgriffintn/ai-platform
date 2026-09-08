@@ -326,6 +326,7 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var conversationMessagePage: ConversationMessagePageResponse?
     var fetchConversationCallCount = 0
     var chatRunEventSnapshot: ChatRunSnapshotResponse?
+    var chatRunEventSnapshots: [ChatRunSnapshotResponse] = []
     var chatRunReplayResponse: ChatRunReplayResponse?
     var chatRunCommandReceipt: ChatRunCommandReceipt?
     var cancelledRuns: [(id: String, expectedAttempt: Int, commandId: String)] = []
@@ -406,6 +407,9 @@ final class ConversationAPIClientStub: ConversationAPIClient {
 
     func fetchChatRunSnapshot(id: String) async throws -> ChatRunSnapshotResponse {
         fetchChatRunSnapshotCallCount += 1
+        if !chatRunEventSnapshots.isEmpty {
+            return chatRunEventSnapshots.removeFirst()
+        }
         guard let chatRunEventSnapshot else {
             throw TestFailure.unexpectedCall
         }

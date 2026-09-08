@@ -219,27 +219,6 @@ export interface IBody {
   [other: string]: any;
 }
 
-export type RagOptions = {
-  top_k?: number;
-  score_threshold?: number;
-  include_metadata?: boolean;
-  topK?: number;
-  scoreThreshold?: number;
-  includeMetadata?: boolean;
-  namespace?: string;
-  scopeTag?: string;
-  type?: string;
-  contentType?: string;
-  embeddingType?: string;
-  userId?: number | string;
-  chunkSize?: number;
-  summaryThreshold?: number;
-  returnValues?: boolean;
-  returnMetadata?: "none" | "indexed" | "all";
-  filter?: Record<string, any>;
-  rerankCandidates?: number;
-};
-
 export interface IRequest {
   app_url?: string;
   env: IEnv;
@@ -249,7 +228,6 @@ export interface IRequest {
   mode?: ChatMode;
   compute_site?: ComputeSite;
   provenance?: RunProvenance | null;
-  rag_options?: RagOptions;
   context?: ServiceContext;
   memoryScope?: MemoryScope;
 }

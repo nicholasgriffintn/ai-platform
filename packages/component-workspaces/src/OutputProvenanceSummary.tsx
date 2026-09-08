@@ -5,14 +5,6 @@ export interface OutputProvenanceSummaryProps {
 }
 
 export function OutputProvenanceSummary({ provenance }: OutputProvenanceSummaryProps) {
-  if (provenance.completeness === "legacy") {
-    return (
-      <p className="text-xs text-muted-foreground">
-        Origin details are unavailable for this legacy output.
-      </p>
-    );
-  }
-
   const hasReferences =
     provenance.sources.length > 0 ||
     provenance.skills.length > 0 ||

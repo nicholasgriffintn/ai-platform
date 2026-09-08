@@ -15,7 +15,7 @@
 - [ ] Pause a run for a question and for approval. Confirm both clients distinguish each waiting state from running, cancelling, failed, interrupted, cancelled and completed outcomes.
 - [ ] Resume a waiting run, then submit a delayed cancellation for its previous attempt. Confirm HTTP 409 and verify the successor attempt continues.
 - [x] Repeat a cancellation with the same command identity and payload. Confirm the same receipt is returned and no additional cancellation action occurs; reuse the command with changed input and confirm HTTP 409.
-- [ ] Revoke project membership before exact-run status and cancellation requests. Confirm both return not found and reveal no run or message data.
+- [x] Revoke project membership before exact-run status and cancellation requests. Confirm both return not found and reveal no run or message data.
 - [ ] Run an external tool that takes longer than the owner’s cancellation poll. Confirm the UI remains at `cancelling` until the call settles, then becomes `cancelled` without replaying the effect.
 - [ ] Confirm anonymous, explicitly non-stored and local-only conversations keep their existing device-local stop behaviour and create no recoverable server run.
 
@@ -26,3 +26,7 @@
 ## Automated evidence — 5 September 2026
 
 The local Chromium **cancels one run idempotently and stops detached recovery** journey passed with real run endpoints. Reusing the exact command returns the original receipt with `duplicate: true`; changing its expected attempt returns 409. Reload shows Task cancelled, removes Stop requested and stops active recovery. Cross-device iPhone steps remain unconfirmed.
+
+## Automated browser/API evidence — 8 September 2026
+
+- The corresponding project-access, skill-tools and teammate-feedback journeys passed in `test-results/container/d20cf00c/results.json`. The tests use separate authenticated sessions, real persistence and current server authority; project restoration additionally checks the audit actor, output and revision identifiers.

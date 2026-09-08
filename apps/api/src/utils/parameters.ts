@@ -395,17 +395,15 @@ export function getToolsForProvider(
     const toolPolicyMode = params.tool_policy_mode ?? params.mode;
     const enabledTools = resolveEnabledFunctionToolNames(params.enabled_tools, user);
     let tools: any[] = [];
-    const availableTools = filterToolsForConversationType(
-      listFunctionToolDefinitions({
-        connectedConnectorProviders: params.connectedConnectorProviders,
-        selectedConnectorProvider: params.options?.connector?.provider,
-      }),
-      params.conversation_type,
-    );
+    const catalogueTools = listFunctionToolDefinitions({
+      connectedConnectorProviders: params.connectedConnectorProviders,
+      selectedConnectorProvider: params.options?.connector?.provider,
+    });
+    const availableTools = filterToolsForConversationType(catalogueTools, params.conversation_type);
 
     if (params.tools) {
       const providedTools = params.tools;
-      const catalogueToolNames = new Set(availableTools.map((tool) => tool.name));
+      const catalogueToolNames = new Set(catalogueTools.map((tool) => tool.name));
       const providedCustomTools = providedTools.filter((tool) => {
         const name = getCatalogueToolName(tool);
 

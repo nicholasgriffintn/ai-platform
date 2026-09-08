@@ -7,6 +7,8 @@ const RESTORABLE_LOCAL_CONTENT = new Set([
   "articles:report",
   "articles:summary",
   "notes:note",
+  "documents:document",
+  "document-writer:document",
   "strudel:strudel_pattern",
 ]);
 

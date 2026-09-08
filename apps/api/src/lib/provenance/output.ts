@@ -52,19 +52,13 @@ export function createOutputProvenance(input: {
   };
 }
 
-export function legacyOutputProvenance(createdAt: string): OutputProvenance {
-  return createOutputProvenance({
-    origin: "legacy",
-    capturedAt: createdAt,
-    completeness: "legacy",
-  });
-}
-
 export function parseOutputProvenance(value: unknown, createdAt: string): OutputProvenance {
   const parsedValue = typeof value === "string" ? safeParseJson(value) : value;
   const parsed = outputProvenanceSchema.safeParse(parsedValue);
 
-  return parsed.success ? parsed.data : legacyOutputProvenance(createdAt);
+  return parsed.success
+    ? parsed.data
+    : createOutputProvenance({ origin: "unknown", capturedAt: createdAt });
 }
 
 export function addOutputProvenanceSources(

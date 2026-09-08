@@ -1,6 +1,5 @@
 import {
   applyTheme,
-  LEGACY_THEME_STORAGE_KEY,
   parseThemePair,
   resolveThemeId,
   THEME_BOOTSTRAP_SCRIPT,
@@ -90,6 +89,27 @@ describe("theme registry", () => {
     }
   });
 
+  it("keeps the text highlight distinct from every surface it can land on", () => {
+    const blocks = readThemeBlocks();
+
+    for (const theme of THEMES) {
+      const block = blocks.get(theme.id) ?? "";
+      const highlight = parseOklch(readToken(block, "highlight"));
+
+      expect(highlight, theme.id).not.toBeNull();
+
+      for (const surface of ["canvas", "surface", "surface-elevated", "selection"]) {
+        const background = parseOklch(readToken(block, surface));
+
+        expect(background, `${theme.id} ${surface}`).not.toBeNull();
+        expect(
+          Math.abs((highlight?.lightness ?? 0) - (background?.lightness ?? 0)),
+          `${theme.id} ${surface}`,
+        ).toBeGreaterThan(0.1);
+      }
+    }
+  });
+
   it("declares a theme colour that matches each canvas token", () => {
     const blocks = readThemeBlocks();
 
@@ -126,13 +146,6 @@ describe("theme bootstrap", () => {
     const preference = THEMES.some((theme) => theme.id === stored) ? (stored as ThemeId) : "system";
 
     expect(runBootstrap()).toEqual(expectedFor(resolveThemeId(preference, prefersDark)));
-  });
-
-  it("honours the pre-registry storage key until the store migrates it", () => {
-    stubMatchMedia(false);
-    localStorage.setItem(LEGACY_THEME_STORAGE_KEY, "dark");
-
-    expect(runBootstrap()).toEqual(expectedFor("dark"));
   });
 
   it.each([

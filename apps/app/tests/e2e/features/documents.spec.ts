@@ -2,6 +2,7 @@ import { documentExportFilename } from "@ngriffin_uk/polychat-schemas";
 
 import { OutputApi } from "../fixtures/output-api";
 import { expect, test } from "../fixtures/polychat-test";
+import { OutputRevisionPage } from "../page-objects/OutputRevisionPage";
 
 test.describe("Documents as finished work", () => {
   test.use({ persona: "pro" });
@@ -94,6 +95,69 @@ test.describe("Documents as finished work", () => {
     expect(exported.contentType).toContain("text/markdown");
     expect(exported.contentDisposition).toContain(documentExportFilename(title));
     expect(exported.body).toBe("# Launch week brief\n\nThe edited draft, as revised.");
+    const history = new OutputRevisionPage(page);
+
+    await history.compare(1);
+    await history.restore(1);
+    await expect(history.history).toContainText("Current revision 3 · restored from revision 1");
+    await expect(editor).toHaveValue("# Launch week brief\n\nThe first draft, as written.");
+    expect((await polychatApi.getOutput(written.id)).content).toEqual(written.content);
+  });
+
+  test("keeps rewrites as cancellable drafts and saves fresh descriptions as revisions", async ({
+    homePage,
+    page,
+    polychatApi,
+  }) => {
+    const written = await polychatApi.writeDocumentOutput(
+      "Rewrite release",
+      "Original release body",
+    );
+
+    await homePage.navigate(`/chat/files/made/${written.id}`);
+    const editor = page.getByRole("textbox", { name: "Document content" });
+
+    await expect(editor).toHaveValue("Original release body");
+    await page.getByRole("button", { name: "Rewrite", exact: true }).click();
+    await expect(editor).toHaveValue("# Rewritten release brief");
+    expect((await polychatApi.getOutput(written.id)).revision).toBe(1);
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(editor).toHaveValue("Original release body");
+    expect((await polychatApi.getOutput(written.id)).content).toEqual(written.content);
+    await page.getByRole("button", { name: "Rewrite", exact: true }).click();
+    await expect(editor).toHaveValue("# Rewritten release brief");
+    const saved = page.waitForResponse(
+      (response) =>
+        response.request().method() === "PUT" &&
+        new URL(response.url()).pathname.endsWith(`/outputs/${written.id}`),
+    );
+
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    expect((await saved).status()).toBe(200);
+    expect((await polychatApi.getOutput(written.id)).revision).toBe(2);
+    await expect(page.getByText("4 words", { exact: true })).toBeVisible();
+    const described = page.waitForResponse((response) =>
+      new URL(response.url()).pathname.endsWith(`/outputs/${written.id}/describe`),
+    );
+
+    await page.getByRole("button", { name: "Regenerate via AI", exact: true }).click();
+    expect((await described).status()).toBe(200);
+    await expect(page.getByText("Release document summary", { exact: true })).toBeVisible();
+    const output = await polychatApi.getOutput(written.id);
+
+    expect(output.revision).toBe(3);
+    expect(output.content).toMatchObject({
+      body: "# Rewritten release brief",
+      metadata: {
+        summary: "Release document summary",
+        tags: ["release"],
+        wordCount: 4,
+        readingTime: 1,
+      },
+    });
+    await expect(page.getByRole("region", { name: "Revision history" })).toContainText(
+      "Current revision 3",
+    );
   });
 
   test("refuses a stale revision, keeps one document, and exports only documents", async ({

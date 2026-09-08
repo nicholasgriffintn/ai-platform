@@ -37,8 +37,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import type { ChatMessageSelection } from "@ngriffin_uk/polychat-schemas";
 import { Ghost, Loader2 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { VList, type VListHandle } from "virtua";
+import { useMemo } from "react";
+import { VList } from "virtua";
 
 import { CompactionStatusRow } from "../CompactionStatusRow.js";
 import { GoalStatusRow } from "../GoalStatusRow.js";
@@ -49,9 +49,11 @@ import { StreamActivityIndicator } from "../Message/StreamActivityIndicator.js";
 import { getMessageListScrollKey } from "../messageListScroll.js";
 import { ScrollButton } from "../ScrollButton.js";
 import { ChatMessage } from "./ChatMessage/index.js";
+import { useStickToBottom } from "./useStickToBottom.js";
 import { useStreamAnnouncement } from "./useStreamAnnouncement.js";
 
 const EMPTY_MESSAGES: Message[] = [];
+const SKELETON_COUNT = 3;
 
 interface MessageListProps {
   onToolInteraction?: ToolInteractionHandler;
@@ -207,46 +209,42 @@ export const MessageList = ({
     isStreaming: !isSharedView && (isStreamLoading || streamStarted),
   });
 
-  const virtualRef = useRef<VListHandle>(null);
-  const prevCount = useRef(0);
-  const isNearBottomRef = useRef(true);
+  const showTemporaryNotice = isTemporary && !isSharedView;
+  const showLoadEarlier = !isSharedView && Boolean(conversation?.has_more_messages);
+  const showSkeletons = !isSharedView && isLoadingConversation;
+  const showStreamRow =
+    !isSharedView &&
+    (isStreamLoading || streamStarted) &&
+    (isCompactionLoadingMessage(streamLoadingMessage) ? showCompactionLoadingDivider : true);
+  const showModelInitRow = !isSharedView && isModelInitializing;
 
-  // scroll-to-bottom on mount and when new messages arrive, except in shared view
-  useEffect(() => {
-    if (isSharedView) {
-      prevCount.current = messages.length;
+  const rowCount =
+    (showTemporaryNotice ? 1 : 0) +
+    (showLoadEarlier ? 1 : 0) +
+    (showSkeletons ? SKELETON_COUNT : visibleRows.length) +
+    (showStreamRow ? 1 : 0) +
+    (showModelInitRow ? 1 : 0);
 
-      return;
+  const lastUserMessageId = useMemo(() => {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      if (messages[index].role === "user") {
+        return messages[index].id;
+      }
     }
 
-    const lastIndex = messages.length - 1;
-    const shouldFollowNewMessages = prevCount.current === 0 || isNearBottomRef.current;
+    return undefined;
+  }, [messages]);
 
-    if (virtualRef.current && shouldFollowNewMessages) {
-      virtualRef.current.scrollToIndex(lastIndex, { align: "end" });
-      isNearBottomRef.current = true;
-    }
-
-    prevCount.current = messages.length;
-  }, [lastMessageScrollKey, messages.length, isSharedView]);
-
-  // show/hide the "scroll to bottom" button when user scrolls up
-  const [showScroll, setShowScroll] = useState(false);
-  const handleScroll = () => {
-    const v = virtualRef.current;
-
-    if (!v) {
-      setShowScroll(false);
-
-      return;
-    }
-
-    const { scrollSize, scrollOffset, viewportSize } = v;
-    const distance = scrollSize - (scrollOffset + viewportSize);
-
-    isNearBottomRef.current = distance <= 100;
-    setShowScroll(distance > 100);
-  };
+  const { listRef, viewportRef, showScrollButton, handleScroll, scrollToBottom } = useStickToBottom(
+    {
+      enabled: !isSharedView,
+      rowCount,
+      followKey: `${lastMessageScrollKey}:${showStreamRow ? streamLoadingMessage : ""}:${
+        currentStream?.turnActivity?.label ?? ""
+      }`,
+      resetKey: `${currentConversationId ?? "new"}:${lastUserMessageId ?? ""}`,
+    },
+  );
 
   return (
     <ResolvedToolCallsProvider resolvedToolCallIds={resolvedToolCallIds}>
@@ -254,6 +252,7 @@ export const MessageList = ({
         className={`relative flex flex-1 flex-col border-l-2 pl-3 ${
           isTemporary ? "border-dotted border-muted-foreground/50" : "border-none"
         }`}
+        ref={viewportRef}
         data-conversation-id={currentConversationId || undefined}
         data-retention={retention}
         aria-label="Conversation messages"
@@ -262,12 +261,12 @@ export const MessageList = ({
           {streamAnnouncement}
         </output>
         <VList
-          ref={virtualRef}
+          ref={listRef}
           data-header-scroll-source
           className="h-full w-full flex-1 overflow-auto pt-4 pr-2"
           onScroll={handleScroll}
         >
-          {isTemporary && !isSharedView ? (
+          {showTemporaryNotice ? (
             <div
               data-temporary-notice="start"
               className="mb-4 flex items-center gap-2 px-1 text-xs text-muted-foreground"
@@ -276,7 +275,7 @@ export const MessageList = ({
               <span>Temporary. Nothing here is kept.</span>
             </div>
           ) : null}
-          {!isSharedView && conversation?.has_more_messages ? (
+          {showLoadEarlier ? (
             <div className="flex justify-center pb-4">
               <button
                 type="button"
@@ -288,8 +287,10 @@ export const MessageList = ({
               </button>
             </div>
           ) : null}
-          {!isSharedView && isLoadingConversation
-            ? [...Array(3)].map((_, i) => <MessageSkeleton key={`skeleton-item-${i}`} />)
+          {showSkeletons
+            ? [...Array(SKELETON_COUNT)].map((_, i) => (
+                <MessageSkeleton key={`skeleton-item-${i}`} />
+              ))
             : visibleRows.map(
                 ({
                   message,
@@ -354,11 +355,9 @@ export const MessageList = ({
                   );
                 },
               )}
-          {!isSharedView && (isStreamLoading || streamStarted) ? (
+          {showStreamRow ? (
             isCompactionLoadingMessage(streamLoadingMessage) ? (
-              showCompactionLoadingDivider ? (
-                <CompactionStatusRow label={streamLoadingMessage} pending />
-              ) : null
+              <CompactionStatusRow label={streamLoadingMessage} pending />
             ) : (
               <StreamActivityIndicator
                 label={streamLoadingMessage}
@@ -367,7 +366,7 @@ export const MessageList = ({
               />
             )
           ) : null}
-          {!isSharedView && isModelInitializing && (
+          {showModelInitRow && (
             <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin text-active-work" />
               <span>
@@ -377,7 +376,7 @@ export const MessageList = ({
             </div>
           )}
         </VList>
-        {isTemporary && !isSharedView ? (
+        {showTemporaryNotice ? (
           <div
             data-temporary-notice="end"
             className="sticky bottom-0 flex items-center gap-2 border-t border-border bg-surface px-1 py-2 text-xs text-muted-foreground"
@@ -386,16 +385,9 @@ export const MessageList = ({
             <span>This closes without a trace.</span>
           </div>
         ) : null}
-        {showScroll && !isSharedView && (
+        {showScrollButton && !isSharedView && (
           <div className="absolute right-2 bottom-2 z-10">
-            <ScrollButton
-              onClick={() => {
-                isNearBottomRef.current = true;
-                virtualRef.current?.scrollToIndex(messages.length - 1, {
-                  align: "end",
-                });
-              }}
-            />
+            <ScrollButton onClick={scrollToBottom} />
           </div>
         )}
       </section>

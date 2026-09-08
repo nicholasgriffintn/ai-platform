@@ -611,12 +611,6 @@ public struct ModelConfigItem: Codable, Identifiable {
         case supportsRealtimeSession
     }
 
-    private enum LegacyCodingKeys: String, CodingKey {
-        case featured
-        case supportsFunctions
-        case isDeprecated
-    }
-
     static let ignoredKeys: Set<String> = [
         "apiOperation",
         "artificialAnalysis",
@@ -719,7 +713,6 @@ public struct ModelConfigItem: Codable, Identifiable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let legacyContainer = try decoder.container(keyedBy: LegacyCodingKeys.self)
 
         id = try container.decodeIfPresent(String.self, forKey: .id) ?? ""
         name = try container.decodeIfPresent(String.self, forKey: .name)
@@ -730,12 +723,9 @@ public struct ModelConfigItem: Codable, Identifiable {
         pricing = try container.decodeIfPresent(ModelPricing.self, forKey: .pricing)
         modalities = try container.decodeIfPresent(ModelModalities.self, forKey: .modalities)
         supportsToolCalls = try container.decodeIfPresent(Bool.self, forKey: .supportsToolCalls)
-            ?? legacyContainer.decodeIfPresent(Bool.self, forKey: .supportsFunctions)
         multimodal = try container.decodeIfPresent(Bool.self, forKey: .multimodal)
         isFeatured = try container.decodeIfPresent(Bool.self, forKey: .isFeatured)
-            ?? legacyContainer.decodeIfPresent(Bool.self, forKey: .featured)
         deprecated = try container.decodeIfPresent(Bool.self, forKey: .deprecated)
-            ?? legacyContainer.decodeIfPresent(Bool.self, forKey: .isDeprecated)
         isDefault = try container.decodeIfPresent(Bool.self, forKey: .isDefault)
         isExecutable = try container.decodeIfPresent(Bool.self, forKey: .isExecutable)
         runsOn = try container.decodeIfPresent(String.self, forKey: .runsOn)

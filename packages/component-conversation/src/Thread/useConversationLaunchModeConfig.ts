@@ -10,7 +10,6 @@ import {
   readTeammateConversationLaunchIntent,
   readRecipeConversationLaunchIntent,
   removeConsumedAssistantActionLaunchParams,
-  resolvePersonalConversationId,
 } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router";
@@ -46,7 +45,7 @@ export function useConversationLaunchModeConfig(
     const locationKey = `${location.key}:${location.pathname}${location.search}`;
     const sequence = ++initialiseSequenceRef.current;
     const initialise = async () => {
-      const completionId = resolvePersonalConversationId(pathConversationId, location.search);
+      const completionId = pathConversationId;
       const urlLaunch = parseAssistantActionLaunchState(location.search);
       const recipeIntent = readRecipeConversationLaunchIntent(location.search);
       const launchTeammateId = readTeammateConversationLaunchIntent(location.search);

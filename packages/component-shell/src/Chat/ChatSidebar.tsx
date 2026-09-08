@@ -14,7 +14,6 @@ import {
   buildConversationSections,
   getPersonalConversationPath,
   MODE_BASE_PATHS,
-  resolvePersonalConversationId,
   useChats,
   useDeleteChat,
   useSetAllChatsArchived,
@@ -43,9 +42,8 @@ export interface ChatSidebarProps {
 export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps) {
   const { trackEvent } = useTrackEvent();
   const navigate = useNavigate();
-  const { pathname, search } = useLocation();
+  const { pathname } = useLocation();
   const { completionId } = useParams<"completionId">();
-  const routedConversationId = resolvePersonalConversationId(completionId, search);
   const isConversationRoute =
     pathname === "/" || pathname === MODE_BASE_PATHS.chat || Boolean(completionId);
   const {
@@ -109,7 +107,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
   const handleNewChatClick = () => {
     clearCurrentConversation();
 
-    if (routedConversationId || !isConversationRoute) {
+    if (completionId || !isConversationRoute) {
       void navigate(MODE_BASE_PATHS.chat);
     }
 

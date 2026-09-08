@@ -60,6 +60,7 @@ export function buildToolRequestContext(params: {
     request: {
       completion_id: chatOptions.completion_id,
       conversation_type: chatOptions.conversation_type,
+      meta_assistant: chatOptions.meta_assistant,
       input,
       model,
       provider,
@@ -75,6 +76,7 @@ export function buildToolRequestContext(params: {
       enabled_tools: chatOptions.enabled_tools ?? [],
       tool_permissions_map: buildToolPermissionsMap(chatOptions.tools),
       require_approval_for: chatOptions.require_approval_for,
+      denied_tools: chatOptions.denied_tools,
       options: chatOptions.options || {},
       enforce_mode_tool_policy: chatOptions.enforce_mode_tool_policy,
     },

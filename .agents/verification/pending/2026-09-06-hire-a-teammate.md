@@ -10,8 +10,8 @@
 
 - [x] In Teammates and tools, Add offers Hire a teammate first. Hiring a role creates a teammate with that role's brief and tools, opens its editor, and the teammate appears in the library.
 - [x] Hire with a role and extra instructions; confirm the brief keeps the role's text and ends with your own. Hire with a description and a name only; confirm it is created with an empty tool list.
-- [ ] Hire in a project. Confirm the teammate is owned by that workspace and is attached to the project without a further step.
-- [ ] Set an existing teammate to bot in the editor and save. Confirm task and memory tools disappear from its saved tools and cannot be re-enabled while it is a bot.
+- [x] Hire in a project. Confirm the teammate is owned by that workspace and is attached to the project without a further step.
+- [x] Set an existing teammate to bot in the editor and save. Confirm task and memory tools disappear from its saved tools and cannot be re-enabled while it is a bot.
 - [ ] Run a bot teammate and ask it to file a task. Confirm it reports that it cannot rather than creating one, and that no task appears in the project.
 - [ ] Reopen a teammate created before this change. Confirm it reads as a colleague and that saving it does not drop any tool it already had.
 
@@ -24,3 +24,9 @@
 - Hiring from a name and a job description alone creates a teammate carrying that description and no tools at all.
 - Left open: hiring inside a project, the bot kind and its denied tools, and reopening a teammate created before the change.
 - Related finding recorded under [teammates replace agents](2026-09-06-teammates-replace-agents.md): a teammate with no pinned model is refused with 400 when it is mentioned, and a mouse click on the mention row does not apply it.
+
+## Automated browser/API evidence — 8 September 2026
+
+- The corresponding project-access, skill-tools and teammate-feedback journeys passed in `test-results/container/d20cf00c/results.json`. The tests use separate authenticated sessions, real persistence and current server authority; project restoration additionally checks the audit actor, output and revision identifiers.
+
+- Container `35dc5b98` passed the bot editor and legacy note capture journeys. Forbidden tools disappear, stay absent after saving and reopening, and the older tab-source title and link remain visible. The separate run-lifecycle journey failed and supplies no completed check-off.

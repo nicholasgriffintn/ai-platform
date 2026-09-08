@@ -67,6 +67,8 @@ export const metaNavigationTargetSchema = z.discriminatedUnion("kind", [
     kind: z.literal("place"),
     place: metaAssistantPlaceSchema,
     mode: metaAssistantModeSchema.default("chat"),
+    workspaceId: z.string().optional(),
+    projectId: z.string().optional(),
   }),
 ]);
 

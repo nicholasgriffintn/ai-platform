@@ -20,7 +20,7 @@
 - [ ] In the running window's developer tools, attempt `fetch("http://127.0.0.1:11434/api/tags")` and any external origin; confirm the content security policy blocks both, so loopback is reachable only through the Rust command.
 - [ ] Restart the application and confirm the endpoint list, including anything added or forgotten, comes back as it was left.
 - [ ] Add a plain HTTP agent runtime on a network address and confirm it is refused for wanting HTTPS or a pairing secret; add the same address over HTTPS and confirm it is accepted.
-- [ ] Add an address that is not loopback while claiming loopback and confirm it is refused before anything is stored.
+- [x] Add an address that is not loopback while claiming loopback and confirm it is refused before anything is stored.
 - [ ] Send a prompt, close the window, reopen it and confirm the exchange is still there under that model.
 - [ ] Confirm a cancelled run still stores whatever text arrived before it stopped, rather than discarding it or storing nothing.
 - [ ] Confirm a stopped reply is shown as stopped when the conversation is reopened, and that it is never silently continued or replayed.
@@ -44,12 +44,20 @@
 - [ ] In the web application, export browser-held chats, confirm the file contains them, then import it into a browser with none and confirm they come back.
 - [ ] With `OLLAMA_URL` or `LMSTUDIO_URL` unset or pointed at loopback, confirm a deployed API refuses the provider with a message pointing at the desktop application rather than timing out.
 
-- [ ] Start sign-in, then before finishing it, open `http://127.0.0.1:<the port>/callback?code=anything` in another tab; confirm it is refused and sign-in does not complete.
+- [x] Start sign-in, then before finishing it, open `http://127.0.0.1:<the port>/callback?code=anything` in another tab; confirm it is refused and sign-in does not complete.
 - [ ] Add an agent gateway on a network address with a pairing secret; confirm the secret is in the keychain, not the database, and that requests to the gateway carry it.
-- [ ] Confirm a stopped run stops promptly even when the runtime has gone quiet mid-generation.
+- [x] Confirm a stopped run stops promptly even when the runtime has gone quiet mid-generation.
 
 **Stop and report if:** a session token or pairing secret appears anywhere but the keychain, a callback without the matching state is accepted, a redirect outside loopback is accepted, the webview reaches any origin directly, a probe reports ready for a runtime that is not running, a cancelled run keeps producing text, or the window renders before the endpoint list resolves without showing that it is still checking.
 
 **Local automated evidence:** `cargo test` in `apps/desktop/src-tauri` covers the egress refusals — an unconfigured endpoint, a remote host declared as loopback, a non-HTTP scheme, and an unprotected network agent runtime — plus model parsing, request building and stream-line parsing for both vendors from fixture payloads, including an unexpected response shape, the cancellation registry, endpoint persistence including seeding, renaming, replacing and forgetting, conversation storage covering account partitioning, message ordering and recency, the loopback callback parser, the hosted stream parser in both delta shapes it emits, and the agent-gateway parsers for session envelopes, unknown session and approval kinds, and approval extraction. On the API side, `apps/api/src/services/auth/__test__/native.test.ts` covers the redirect rules for both native platforms, including refusal of `localhost`, a lookalike host, a privileged port, and anything smuggled past the path. `packages/schemas/src/desktop-runtimes.test.ts` covers the same egress invariants on the contract side. Nothing exercises a real runtime or the packaged window: the discovery fixtures were written from the published response shapes rather than captured from a running Ollama or LM Studio, so confirming the real payloads still parse is the first thing to check. The agent-gateway paths and payloads were inferred rather than taken from a published contract, so a gateway answering with a different shape is expected and must degrade to an empty list rather than a broken window. The hosted parser was written from the API's own delta extraction rather than from a captured response, so it carries the same risk.
 
 Packaging and updates stay switched off until signing material exists: `bundle.active` and the updater's `active` are both `false`, and the updater carries no public key. Turning either on without a certificate and a signing keypair produces an installer nobody can trust, so treat them as one change made together.
+
+## Automated boundary evidence — 8 September 2026
+
+- Native egress tests reject a network address claimed as loopback; source review confirms save_endpoint resolves the target before writing it. Callback tests refuse missing, wrong and empty state/code combinations before returning a sign-in code. Native tests passed: 70 passed, two opt-in live-provider tests ignored. This is native boundary evidence, not packaged sign-in or Keychain evidence.
+
+## Reviewed automated evidence — 8 September 2026
+
+- The previously passing 70-test native run includes a real silent child process, cancellation on its started event, a cancelled finish within a five-second timeout, and immediate reuse of its directory. The fixture substitutes the vendor CLI.

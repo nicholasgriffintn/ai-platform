@@ -3,6 +3,7 @@ import {
   TEAMMATE_PERMISSIONS_SENTENCE,
   type MetaFoundConversation,
   type MetaNavigationTarget,
+  type MetaAssistantUiContext,
 } from "@ngriffin_uk/polychat-schemas";
 import type z from "zod/v4";
 
@@ -153,6 +154,7 @@ function truncate(text: string, limit: number): string {
 async function resolveNavigationTarget(
   scope: MetaToolScope,
   target: MetaNavigationTarget,
+  uiContext?: MetaAssistantUiContext,
 ): Promise<{ target: MetaNavigationTarget; label: string }> {
   switch (target.kind) {
     case "conversation": {
@@ -199,8 +201,28 @@ async function resolveNavigationTarget(
       return { target: { kind: "workspace", workspaceId: workspace.id }, label: workspace.name };
     }
 
-    case "place":
+    case "place": {
+      if (target.mode === "work" && (target.place === "files" || target.place === "teammates")) {
+        const projectId = target.projectId ?? uiContext?.projectId;
+
+        if (!projectId) {
+          throw new AssistantError(
+            "Choose a project before opening its Files or Teammates.",
+            ErrorType.PARAMS_ERROR,
+            400,
+          );
+        }
+
+        const { project } = await requireProjectAccess(scope.context, projectId);
+
+        return {
+          target: { ...target, workspaceId: project.workspace_id, projectId: project.id },
+          label: `${project.name} ${target.place}`,
+        };
+      }
+
       return { target, label: target.place };
+    }
   }
 }
 
@@ -263,7 +285,11 @@ export const open_place: ApiToolDefinition = {
   ...openPlaceDescriptor,
   execute: async (args: z.infer<typeof openPlaceInputSchema>, toolContext) => {
     const scope = requireMetaScope(toolContext, openPlaceDescriptor.name);
-    const resolved = await resolveNavigationTarget(scope, args.target);
+    const resolved = await resolveNavigationTarget(
+      scope,
+      args.target,
+      toolContext.request.request?.meta_assistant?.ui_context,
+    );
 
     return {
       status: "success",

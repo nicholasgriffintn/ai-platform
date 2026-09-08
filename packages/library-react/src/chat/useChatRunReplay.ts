@@ -81,7 +81,7 @@ export function useChatRunReplay(
     const synchronise = async () => {
       try {
         if (snapshotOnlyRef.current[runId]) {
-          const legacy = await apiService.getChatRun(runId, abortController.signal);
+          const fallback = await apiService.getChatRun(runId, abortController.signal);
 
           if (disposed) {
             return;
@@ -92,7 +92,7 @@ export function useChatRunReplay(
           const snapshot: AuthoritativeChatRunSnapshot = {
             protocolVersion: 1,
             cursor: currentCursor,
-            ...legacy,
+            ...fallback,
           };
 
           publish(snapshot);

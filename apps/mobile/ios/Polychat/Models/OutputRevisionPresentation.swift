@@ -13,10 +13,6 @@ enum OutputRevisionPresentation {
     }
 
     static func provenanceLabel(_ provenance: OutputProvenance) -> String {
-        guard provenance.completeness != "legacy" else {
-            return "Legacy origin unavailable"
-        }
-
         let model = provenance.model.map { "\($0.id) via \($0.provider)" }
             ?? "Model details incomplete"
         let run = provenance.run.map { "Run \($0.id), attempt \($0.attempt)" }

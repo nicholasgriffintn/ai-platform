@@ -26,15 +26,6 @@ describe("apiKeyService", () => {
     expect(window.localStorage.length).toBe(0);
   });
 
-  it("discards a token an earlier release left in storage", async () => {
-    window.localStorage.setItem("api_key", "left-behind");
-    window.localStorage.setItem("encrypted_api_key", '{"iv":[],"encrypted":[]}');
-
-    expect(await apiKeyService.getApiKey()).toBeNull();
-    expect(window.localStorage.getItem("api_key")).toBeNull();
-    expect(window.localStorage.getItem("encrypted_api_key")).toBeNull();
-  });
-
   it("refuses a token that is too short or has unexpected characters", () => {
     expect(apiKeyService.validateApiKey("c".repeat(40))).toBe(true);
     expect(apiKeyService.validateApiKey("short")).toBe(false);

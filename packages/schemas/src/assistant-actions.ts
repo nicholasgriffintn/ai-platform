@@ -143,10 +143,6 @@ export const assistantActionContextPayloadSchema = z.object({
   action: assistantRecipeActionContextSchema,
 });
 
-export const assistantLegacyRecipeContextPayloadSchema = z.object({
-  recipe: recipeChatRequestOptionsSchema,
-});
-
 export const assistantActionDeliverySchema = z.enum(["conversation", "submit"]);
 
 export const assistantActionNotificationSchema = z.object({
@@ -810,19 +806,11 @@ export function createAssistantRecipeActionContext(
 
 export function readAssistantActionRequestOptions(
   actionContext: unknown,
-  legacyRecipeContext?: unknown,
 ): AssistantActionSubmitResult["requestOptions"] {
   const actionPayload = assistantActionContextPayloadSchema.safeParse(actionContext);
 
-  if (actionPayload.success) {
-    return { options: { recipe: actionPayload.data.action.recipe } };
-  }
-
-  const legacyRecipePayload =
-    assistantLegacyRecipeContextPayloadSchema.safeParse(legacyRecipeContext);
-
-  return legacyRecipePayload.success
-    ? { options: { recipe: legacyRecipePayload.data.recipe } }
+  return actionPayload.success
+    ? { options: { recipe: actionPayload.data.action.recipe } }
     : undefined;
 }
 
@@ -837,9 +825,6 @@ export type AssistantActionSelectionItem = z.infer<typeof assistantActionSelecti
 export type AssistantActionSelection = z.infer<typeof assistantActionSelectionSchema>;
 export type AssistantRecipeActionContext = z.infer<typeof assistantRecipeActionContextSchema>;
 export type AssistantActionContextPayload = z.infer<typeof assistantActionContextPayloadSchema>;
-export type AssistantLegacyRecipeContextPayload = z.infer<
-  typeof assistantLegacyRecipeContextPayloadSchema
->;
 export type AssistantActionDelivery = z.infer<typeof assistantActionDeliverySchema>;
 export type AssistantActionNotification = z.infer<typeof assistantActionNotificationSchema>;
 export type AssistantActionToolId = z.infer<typeof assistantActionToolIdSchema>;

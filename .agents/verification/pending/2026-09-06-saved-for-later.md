@@ -9,8 +9,8 @@
 ## Verify
 
 - [x] Keep a message in a personal conversation. Confirm the bookmark fills in, and that it is still filled after a reload.
-- [ ] Keep a message in a shared project conversation. Confirm another member of that project does not see it as kept for them.
-- [ ] Ask a conversation to work through what you have saved. Confirm the tool lists your saved messages and nobody else's.
+- [x] Keep a message in a shared project conversation. Confirm another member of that project does not see it as kept for them.
+- [x] Ask a conversation to work through what you have saved. Confirm the tool lists your saved messages and nobody else's.
 - [x] Stop keeping a message and confirm it leaves the list.
 - [x] Keep the same message twice and confirm it appears once, with the later save winning.
 - [x] Confirm a shared read-only view of a conversation does not offer the action.
@@ -24,3 +24,8 @@
 - Saving the same message twice leaves one entry carrying the later note.
 - A shared read-only view of the same conversation offers neither the keep nor the release control.
 - Left open: a project member's separate list, and the `list_saved_messages` tool itself.
+
+## Automated evidence — 8 September 2026, container b2276b14
+
+- `features/work.spec.ts` saves a reply in a shared project conversation and confirms another authorised member has an empty personal saved list. `features/saved-messages.spec.ts` calls the real saved-messages tool through a conversation, reads the saved reply, then confirms another account receives the empty-list result without the private text.
+- The targeted batch recorded 14 passing journeys and one failing composer assertion. Only the passing journeys support these check-offs.
