@@ -8,6 +8,8 @@ import {
   userModelsResponseSchema,
   providersResponseSchema,
   providerSyncStatusSchema,
+  conversationHandleListResponseSchema,
+  conversationHandleParamsSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { type Context, Hono } from "hono";
 
@@ -106,6 +108,49 @@ addRoute(app, "get", "/models", {
 
       return ResponseFactory.success(c, models);
     })(raw),
+});
+
+addRoute(app, "get", "/conversation-handles", {
+  tags: ["user"],
+  summary: "List conversation handles",
+  description: "Lists active agent handles granted to delegations in the user's conversations.",
+  responses: {
+    200: { description: "Conversation handles", schema: conversationHandleListResponseSchema },
+  },
+  handler: async ({ raw }) => {
+    const user = raw.get("user");
+    const serviceContext = getServiceContext(raw);
+
+    return ResponseFactory.success(raw, {
+      handles: await serviceContext.repositories.conversationHandles.listForUser(user.id),
+    });
+  },
+});
+
+addRoute(app, "delete", "/conversation-handles/:handleId", {
+  tags: ["user"],
+  summary: "Revoke a conversation handle",
+  description: "Stops an agent from using a handle granted to one of the user's conversations.",
+  paramSchema: conversationHandleParamsSchema,
+  responses: {
+    200: { description: "Conversation handle revoked", schema: successResponseSchema },
+    404: { description: "Handle not found", schema: errorResponseSchema },
+  },
+  handler: async ({ raw }) => {
+    const user = raw.get("user");
+    const { handleId } = raw.req.valid("param" as never) as { handleId: string };
+    const revoked = await getServiceContext(raw).repositories.conversationHandles.revokeForUser(
+      handleId,
+      user.id,
+      new Date().toISOString(),
+    );
+
+    if (!revoked) {
+      throw new AssistantError("Conversation handle not found", ErrorType.NOT_FOUND, 404);
+    }
+
+    return ResponseFactory.success(raw, { success: true });
+  },
 });
 
 addRoute(app, "post", "/store-provider-api-key", {

@@ -17,6 +17,18 @@ function formatHandle(row: ConversationHandleRow): ConversationHandle {
 }
 
 export class ConversationHandleRepository extends BaseRepository {
+  async listForUser(userId: number): Promise<ConversationHandle[]> {
+    const rows = await this.runQuery<ConversationHandleRow>(
+      `SELECT h.* FROM conversation_handle h
+       JOIN conversation c ON c.id = h.conversation_id
+       WHERE c.user_id = ? AND h.revoked_at IS NULL
+       ORDER BY h.granted_at DESC, h.id DESC`,
+      [userId],
+    );
+
+    return rows.map(formatHandle);
+  }
+
   async createSpawnHandle(input: {
     id: string;
     conversationId: string;
@@ -66,6 +78,28 @@ export class ConversationHandleRepository extends BaseRepository {
        WHERE id = ? AND delegation_id = ? AND revoked_at IS NULL
        RETURNING *`,
       [revokedAt, id, delegationId],
+      true,
+    );
+
+    return row ? formatHandle(row) : null;
+  }
+
+  async revokeForUser(
+    id: string,
+    userId: number,
+    revokedAt: string,
+  ): Promise<ConversationHandle | null> {
+    const row = await this.runQuery<ConversationHandleRow>(
+      `UPDATE conversation_handle
+       SET revoked_at = ?
+       WHERE id = ? AND revoked_at IS NULL
+         AND EXISTS (
+           SELECT 1 FROM conversation
+           WHERE conversation.id = conversation_handle.conversation_id
+             AND conversation.user_id = ?
+         )
+       RETURNING *`,
+      [revokedAt, id, userId],
       true,
     );
 

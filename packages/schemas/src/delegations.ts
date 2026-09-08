@@ -76,6 +76,15 @@ export const conversationHandleSchema = z
   .strict();
 export type ConversationHandle = z.infer<typeof conversationHandleSchema>;
 
+export const conversationHandleParamsSchema = z.object({
+  handleId: z.string().min(1),
+});
+
+export const conversationHandleListResponseSchema = z.object({
+  handles: z.array(conversationHandleSchema),
+});
+export type ConversationHandleListResponse = z.infer<typeof conversationHandleListResponseSchema>;
+
 export const delegationListResponseSchema = z.object({
   delegations: z.array(delegationSchema),
 });
