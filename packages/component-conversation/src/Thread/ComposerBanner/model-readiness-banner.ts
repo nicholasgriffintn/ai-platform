@@ -1,6 +1,7 @@
 import {
   decodeReadiness,
   isReadinessFresh,
+  resolveReadinessActionPath,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -47,13 +48,15 @@ export function buildModelReadinessBanner(
     return null;
   }
 
+  const actionPath = readiness.action ? resolveReadinessActionPath(readiness.action) : undefined;
+
   return {
     id: `model-readiness:${model.id || requestedModelId}:${readiness.reasonCode}`,
     tone: readiness.state === "unknown" ? "warning" : "critical",
     title: readiness.state === "unknown" ? "Model readiness is unknown" : "This model cannot run",
     message: readiness.reason,
-    ...(readiness.action?.path
-      ? { action: { label: readiness.action.label, to: readiness.action.path } }
+    ...(readiness.action && actionPath
+      ? { action: { label: readiness.action.label, to: actionPath } }
       : {}),
   };
 }

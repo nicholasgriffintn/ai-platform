@@ -95,6 +95,20 @@ const readinessDecoderSchema = z
     path: ["expiresAt"],
   });
 
+const READINESS_ACTION_PATHS: Partial<Record<ReadinessActionKind, string>> = {
+  upgrade: "/pricing",
+  configure_provider: "/profile?tab=providers",
+  choose_model: "/models",
+  open_runtimes: "/profile?tab=providers",
+  install_desktop: "/downloads",
+  choose_directory: "/profile?tab=providers",
+  connect_repository: "/work",
+};
+
+export function resolveReadinessActionPath(action: ReadinessAction): string | undefined {
+  return action.path ?? READINESS_ACTION_PATHS[action.kind];
+}
+
 export function decodeReadiness(value: unknown): Readiness | undefined {
   const parsed = readinessDecoderSchema.safeParse(value);
 

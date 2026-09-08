@@ -52,6 +52,27 @@ describe("buildModelReadinessBanner", () => {
     expect(banner?.action).toBeUndefined();
   });
 
+  it("routes a workspace action that carries no path of its own", () => {
+    const banner = buildModelReadinessBanner(
+      "agent/claude-code",
+      model(
+        readinessPayload({
+          state: "setup_required",
+          reasonCode: "agent_workspace_required",
+          reason: "Choose a workspace before starting this agent.",
+          action: { kind: "choose_directory", label: "Choose a directory" },
+        }),
+      ),
+      false,
+      now,
+    );
+
+    expect(banner?.action).toEqual({
+      label: "Choose a directory",
+      to: "/profile?tab=providers",
+    });
+  });
+
   it("keeps runtime setup and reachability actions distinct", () => {
     const notConfigured = buildModelReadinessBanner(
       "ollama/gemma3:4b",
