@@ -259,7 +259,10 @@ export function ProjectWorkbenchConversation({
             }
           }}
         />
-        <DelegatePanel conversationId={delegationsQuery.data.delegations[0].childConversationId} />
+        <DelegatePanel
+          conversationId={delegationsQuery.data.delegations[0].childConversationId}
+          canControl={delegationsQuery.data.canControl}
+        />
       </div>
     ) : (
       <DelegationCard delegations={[]} />

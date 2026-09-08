@@ -89,6 +89,7 @@ export type ConversationHandleListResponse = z.infer<typeof conversationHandleLi
 
 export const delegationListResponseSchema = z.object({
   delegations: z.array(delegationSchema),
+  canControl: z.boolean().optional(),
 });
 export type DelegationListResponse = z.infer<typeof delegationListResponseSchema>;
 

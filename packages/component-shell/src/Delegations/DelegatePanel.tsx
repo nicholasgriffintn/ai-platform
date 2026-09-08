@@ -4,7 +4,13 @@ import {
   useLocalConversationScope,
 } from "@ngriffin_uk/polychat-library-react";
 
-export function DelegatePanel({ conversationId }: { conversationId: string }) {
+export function DelegatePanel({
+  conversationId,
+  canControl = true,
+}: {
+  conversationId: string;
+  canControl?: boolean;
+}) {
   const scope = useLocalConversationScope(conversationId);
 
   return (
@@ -18,9 +24,15 @@ export function DelegatePanel({ conversationId }: { conversationId: string }) {
             hideInlineResponseControls: true,
             hideVoiceControls: true,
             toolSelectionLocked: true,
+            hideTextInput: !canControl,
+            hideSubmitButton: !canControl,
             inputPlaceholder: {
-              newConversation: "Read this delegate",
-              followUp: "Message delegate",
+              newConversation: canControl
+                ? "Read this delegate"
+                : "Only the starter can steer this delegate",
+              followUp: canControl
+                ? "Message delegate"
+                : "Only the starter can steer this delegate",
             },
           }}
         />

@@ -674,10 +674,11 @@ addRoute(app, "get", "/completions/:completion_id/delegations", {
         completion_id: string;
       };
       const serviceContext = getServiceContext(context);
-      await requireConversationAccess(serviceContext, completion_id);
+      const conversation = await requireConversationAccess(serviceContext, completion_id);
       return ResponseFactory.success(context, {
         delegations:
           await serviceContext.repositories.delegations.listByParentConversationId(completion_id),
+        canControl: conversation.user_id === serviceContext.requireUser().id,
       });
     })(raw),
 });
