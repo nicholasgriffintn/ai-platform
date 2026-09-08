@@ -293,8 +293,14 @@ export function useModelSelection({
     setComputeSite,
   ]);
 
+  useEffect(() => {
+    if (computeSite !== "hosted" && model === null && defaultModelId) {
+      selectModelWithDefaults(defaultModelId);
+      onModelChange?.(defaultModelId, filteredModels[defaultModelId]);
+    }
+  }, [computeSite, defaultModelId, filteredModels, model, onModelChange, selectModelWithDefaults]);
+
   const openSelector = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: [DEVICE_MODELS_QUERY_KEY] });
     void runtimeOptionsState.refresh();
     setIsOpen(true);
   }, [queryClient, runtimeOptionsState]);
@@ -308,6 +314,10 @@ export function useModelSelection({
   }, [closeSelector, isOpen, openSelector]);
   const handleComputeSiteChange = useCallback(
     (nextComputeSite: ComputeSite, machineId?: string) => {
+      if (nextComputeSite === "device" || nextComputeSite === "machine") {
+        void queryClient.invalidateQueries({ queryKey: [DEVICE_MODELS_QUERY_KEY] });
+      }
+
       if (computeSite === nextComputeSite && selectedMachineId === machineId) {
         void runtimeOptionsState.refresh();
 
@@ -336,6 +346,7 @@ export function useModelSelection({
     },
     [
       apiModels,
+      queryClient,
       computeSite,
       runtimeOptionsState,
       selectedMachineId,
@@ -482,8 +493,7 @@ export function useModelSelection({
       if (shortcut === "cycle-compute-site" && runtimeOptionsState.options.length > 0) {
         const nextRuntime =
           runtimeOptionsState.options[
-            (currentRuntimeIndex + 1 + runtimeOptionsState.options.length) %
-              runtimeOptionsState.options.length
+            (currentRuntimeIndex + 1) % runtimeOptionsState.options.length
           ];
 
         handleComputeSiteChange(nextRuntime.site, nextRuntime.machineId);
@@ -528,7 +538,7 @@ export function useModelSelection({
     capabilities,
     selectedCapability,
     setSelectedCapability,
-    showTiers: !isModelListOnlyScope,
+    showTiers: !isModelListOnlyScope && computeSite === "hosted",
     runtimeOptions: runtimeOptionsState.options,
     selectedMachineId,
     computeSite,

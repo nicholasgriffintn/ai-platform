@@ -31,6 +31,7 @@ interface ModelTierPickerProps {
   runtime: ModelLineupRuntime;
   selectedTier: ModelTier | null;
   allowInherit?: boolean;
+  active?: boolean;
   disabled?: boolean;
   onSelectTier: (selection: ModelTierSelection) => void;
 }
@@ -221,6 +222,7 @@ export function ModelTierPicker({
   runtime,
   selectedTier,
   allowInherit = true,
+  active = true,
   disabled,
   onSelectTier,
 }: ModelTierPickerProps) {
@@ -237,7 +239,7 @@ export function ModelTierPicker({
       <div className="space-y-1.5">
         {choices.map((tier) => {
           const Icon = getModelTierIcon(tier);
-          const isSelected = tier === selectedTier;
+          const isSelected = active && tier === selectedTier;
           const tone = getTierTone(tier);
           const label = getModelTierLabel(tier);
           const tagline = tier
@@ -252,6 +254,7 @@ export function ModelTierPicker({
             <button
               key={tier ?? INHERITED_MODEL_TIER}
               type="button"
+              data-model-option
               role="option"
               aria-label={`${label} tier`}
               aria-selected={isSelected}

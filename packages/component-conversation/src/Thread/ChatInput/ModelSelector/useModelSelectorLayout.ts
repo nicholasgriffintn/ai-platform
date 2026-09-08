@@ -1,19 +1,13 @@
 import type { ModelSelectorPanelLayout } from "@ngriffin_uk/polychat-component-models";
-import { type RefObject, useEffect, useState } from "react";
+import { type RefObject, useLayoutEffect, useState } from "react";
 
-const MAX_PANEL_WIDTH = 660;
-
-/**
- * Web hosts anchor the model panel to the chat input shell so it can span the composer rather than
- * the trigger. Other surfaces can supply their own layout without changing the render package.
- */
 export function useModelSelectorLayout(
   isOpen: boolean,
   triggerWrapperRef: RefObject<HTMLDivElement | null>,
 ): ModelSelectorPanelLayout | null {
   const [layout, setLayout] = useState<ModelSelectorPanelLayout | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isOpen) {
       setLayout(null);
 
@@ -35,12 +29,13 @@ export function useModelSelectorLayout(
         return;
       }
 
-      const shellRect = chatInputShell.getBoundingClientRect();
       const wrapperRect = wrapper.getBoundingClientRect();
+      const shellRect = chatInputShell.getBoundingClientRect();
 
       setLayout({
         left: shellRect.left - wrapperRect.left,
-        width: Math.min(MAX_PANEL_WIDTH, shellRect.width),
+        width: shellRect.width,
+        maxHeight: Math.max(120, wrapperRect.top - 16),
       });
     };
 

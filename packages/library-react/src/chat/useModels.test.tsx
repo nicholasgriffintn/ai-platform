@@ -4,7 +4,7 @@ import { setDeviceModelSource } from "@ngriffin_uk/polychat-library-chat";
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { QueryClient, QueryClientProvider, focusManager } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useDeviceModels } from "./useDeviceModels.js";
@@ -12,11 +12,13 @@ import { useModels } from "./useModels.js";
 
 const mocks = vi.hoisted(() => ({
   fetchModels: vi.fn(),
+  fetchMachines: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   apiService: {
     fetchModels: mocks.fetchModels,
+    fetchMachines: mocks.fetchMachines,
   },
   useChatStore: (selector: (state: { isAuthenticated: boolean }) => unknown) =>
     selector({ isAuthenticated: true }),
@@ -74,6 +76,36 @@ describe("device model queries", () => {
       hosted: model("hosted-model", "hosted"),
     });
     expect(queryClient.getQueryData(["device-models"])).toEqual(deviceModels);
+  });
+
+  it("does not rebuild the selector catalogue on unrelated renders but updates when discovery changes", async () => {
+    setDeviceModelSource(async () => ({}));
+    const queryClient = createQueryClient();
+    const rebuild = vi.fn((models: ModelConfig | undefined) => Object.keys(models ?? {}));
+    const { result, rerender } = renderHook(
+      () => {
+        const { data } = useModels();
+
+        return useMemo(() => rebuild(data), [data]);
+      },
+      { wrapper: createWrapper(queryClient) },
+    );
+
+    await waitFor(() => expect(result.current).toContain("hosted"));
+    const initialBuilds = rebuild.mock.calls.length;
+
+    for (let index = 0; index < 10; index += 1) {
+      rerender();
+    }
+
+    expect(rebuild.mock.calls.length - initialBuilds).toBe(0);
+
+    act(() => {
+      queryClient.setQueryData(["device-models"], {
+        local: { matchingModel: "local", provider: "ollama" },
+      });
+    });
+    await waitFor(() => expect(result.current).toContain("local"));
   });
 
   it("does not rediscover device models when the window regains focus", async () => {

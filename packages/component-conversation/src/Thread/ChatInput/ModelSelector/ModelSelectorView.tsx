@@ -94,10 +94,6 @@ export function ModelSelectorView({
           modelTier={selection.modelTier}
           onModelTierChange={handleTierSelect}
           onTierShortcut={selection.selectTierById}
-          retention={selection.retention}
-          retentionReason={selection.retentionReason}
-          onRetentionChange={selection.onRetentionChange}
-          isRetentionLocked={selection.isRetentionLocked}
           models={selection.models}
           featuredModelIds={selection.featuredModelIds}
           isDisabled={isDisabled}

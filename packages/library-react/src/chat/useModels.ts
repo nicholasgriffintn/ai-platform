@@ -2,6 +2,7 @@ import { buildMachineModels, deviceModelSource } from "@ngriffin_uk/polychat-lib
 import { apiService } from "@ngriffin_uk/polychat-library-client";
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 import { useDeviceModels } from "./useDeviceModels.js";
 import { useMachines } from "./useMachines.js";
@@ -22,11 +23,13 @@ export function useModels() {
   const deviceModels = useDeviceModels();
   const hasLocalDeviceModelSource = Boolean(deviceModelSource());
   const machines = useMachines({ enabled: !hasLocalDeviceModelSource });
-  const machineModels = machines.data ? buildMachineModels(machines.data) : undefined;
-  const data: ModelConfig | undefined =
-    hostedModels.data || deviceModels.data || machineModels
+  const data = useMemo<ModelConfig | undefined>(() => {
+    const machineModels = machines.data ? buildMachineModels(machines.data) : undefined;
+
+    return hostedModels.data || deviceModels.data || machineModels
       ? { ...hostedModels.data, ...machineModels, ...deviceModels.data }
       : undefined;
+  }, [hostedModels.data, deviceModels.data, machines.data]);
   const isMachineQueryActive = !hasLocalDeviceModelSource;
 
   return {
