@@ -204,21 +204,21 @@ pub fn program_for(driver: AgentDriver) -> AgentProgram {
             driver,
             program: "cursor-agent",
             version_args: &["--version"],
-            readiness_args: None,
+            readiness_args: Some(&["status"]),
             min_version: "1.0.0",
         },
         AgentDriver::Grok => AgentProgram {
             driver,
             program: "grok",
             version_args: &["--version"],
-            readiness_args: None,
+            readiness_args: Some(&["models"]),
             min_version: "1.0.0",
         },
         AgentDriver::OpenCode => AgentProgram {
             driver,
             program: "opencode",
             version_args: &["--version"],
-            readiness_args: None,
+            readiness_args: Some(&["auth", "list"]),
             min_version: "1.0.0",
         },
         AgentDriver::Antigravity => AgentProgram {
@@ -290,7 +290,7 @@ pub fn probe(driver: AgentDriver, checked_at: String) -> AgentToolState {
     if let Some(readiness_args) = program.readiness_args {
         let readiness = Command::new(program.program).args(readiness_args).output();
         if readiness.is_err() || !readiness.is_ok_and(|output| output.status.success()) {
-            return AgentToolState::Present {
+            return AgentToolState::SignedOut {
                 checked_at,
                 version: Some(version),
             };
