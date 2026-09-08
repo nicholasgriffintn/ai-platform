@@ -14,12 +14,12 @@ One WebSocket per device connects to a `UserSyncCoordinator` keyed by user id. I
 
 Subscription is authorisation. The coordinator checks the connecting user's current access to each topic before attaching it — conversation ownership for personal scope, live workspace membership for project scope — and audiences are resolved server-side at publish time rather than claimed by the client. The socket is reached through a sixty-second signed grant so bearer-token clients that cannot set WebSocket headers authenticate the same way browsers do.
 
-Polling remains, wrapped in `liveOrPoll`. When the socket is open every interval returns `false`; when it is not, each surface falls back to the interval it had before.
+Polling remains, wrapped in `liveOrPoll`, which takes the event type a surface depends on and stands the timer down only when that type is one the server actually publishes. A surface with a binding but no publisher keeps its own interval, so adding the client half of a live surface without the server half cannot silently make it stale.
 
 ## Consequences
 
 A new live surface costs one publish call and one binding row, and inherits ordering, replay and reconnection without designing them again. The cost of liveness stops scaling with the number of polling surfaces.
 
-Fan-out cost now lands on Durable Object requests rather than Worker invocations, coalesced into a fifty-millisecond window per topic and metered into `infra_cost_daily`. A conversation's audience is recomputed on each publish, so a large workspace pays a membership query per event.
+Fan-out cost now lands on Durable Object requests rather than Worker invocations, coalesced into a fifty-millisecond window per topic and metered into `infra_cost_daily`. Publishing is deferred through the request's `waitUntil` so it never sits on the write path, every event for one recipient travels as a single batch, and audiences are cached for fifteen seconds — long enough to absorb a run's burst, short enough that a membership change takes effect quickly.
 
 Access is re-checked when a topic is subscribed and when an event is published, not continuously. Someone removed from a workspace mid-subscription keeps receiving that topic until they reconnect. Token-level streaming is not on this channel: the chat SSE response still belongs to the request that asked for it, and followers see a run at message granularity.

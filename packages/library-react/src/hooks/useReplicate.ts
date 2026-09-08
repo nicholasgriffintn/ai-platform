@@ -40,19 +40,23 @@ export function useReplicatePredictions(projectId?: string) {
     queryFn: () => fetchReplicatePredictions(projectId),
     staleTime: REPLICATE_STATUS_STALE_TIME,
     refetchInterval: (query) =>
-      liveOrPoll(query, (query) => {
-        const data = query.state.data;
+      liveOrPoll(
+        query,
+        (query) => {
+          const data = query.state.data;
 
-        if (!data) {
-          return false;
-        }
+          if (!data) {
+            return false;
+          }
 
-        const hasActivePredictions = data.some((pred) =>
-          ACTIVE_REPLICATE_PREDICTION_STATUSES.has(String(pred.status).toLowerCase()),
-        );
+          const hasActivePredictions = data.some((pred) =>
+            ACTIVE_REPLICATE_PREDICTION_STATUSES.has(String(pred.status).toLowerCase()),
+          );
 
-        return hasActivePredictions ? 10000 : false;
-      }),
+          return hasActivePredictions ? 10000 : false;
+        },
+        "replicate.changed",
+      ),
   });
 }
 
@@ -63,17 +67,21 @@ export function useReplicatePrediction(predictionId: string | null, projectId?: 
     enabled: !!predictionId,
     staleTime: REPLICATE_STATUS_STALE_TIME,
     refetchInterval: (query) =>
-      liveOrPoll(query, (query) => {
-        const data = query.state.data;
+      liveOrPoll(
+        query,
+        (query) => {
+          const data = query.state.data;
 
-        if (!data) {
-          return false;
-        }
+          if (!data) {
+            return false;
+          }
 
-        return ACTIVE_REPLICATE_PREDICTION_STATUSES.has(String(data.status).toLowerCase())
-          ? 10000
-          : false;
-      }),
+          return ACTIVE_REPLICATE_PREDICTION_STATUSES.has(String(data.status).toLowerCase())
+            ? 10000
+            : false;
+        },
+        "replicate.changed",
+      ),
   });
 }
 

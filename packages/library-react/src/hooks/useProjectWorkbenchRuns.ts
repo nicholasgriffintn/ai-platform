@@ -85,10 +85,14 @@ export function useProjectWorkbenchRuns({
     },
     enabled: Boolean(projectId && conversationId),
     refetchInterval: (query) =>
-      liveOrPoll(query, (currentQuery) =>
-        conversationIsStreaming || currentQuery.state.data?.runs.some(({ run }) => isActiveRun(run))
-          ? ACTIVE_REFRESH_MS
-          : IDLE_REFRESH_MS,
+      liveOrPoll(
+        query,
+        (currentQuery) =>
+          conversationIsStreaming ||
+          currentQuery.state.data?.runs.some(({ run }) => isActiveRun(run))
+            ? ACTIVE_REFRESH_MS
+            : IDLE_REFRESH_MS,
+        "workbench_run.changed",
       ),
     refetchIntervalInBackground: true,
   });

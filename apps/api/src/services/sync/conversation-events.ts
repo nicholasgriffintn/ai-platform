@@ -1,127 +1,217 @@
-import type { ChatRun, ChatRunEvent, DeviceSyncEventType } from "@ngriffin_uk/polychat-schemas";
-
-import type { IEnv } from "~/types";
+import type {
+  ChatRun,
+  ChatRunEvent,
+  Delegation,
+  DeviceSyncEventType,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { conversationAudience, projectAudience, workspaceAudience } from "./audience";
-import { publishSyncEvent, syncTopic } from "./publish";
+import { publishSync, syncTopic, type SyncPublication, type SyncPublisher } from "./publish";
+
+function fanOut(
+  audience: number[],
+  topic: string,
+  type: DeviceSyncEventType,
+  data: Record<string, unknown>,
+  originDeviceId?: string | null,
+): SyncPublication[] {
+  return [
+    { audience, topic, type, data, originDeviceId },
+    ...audience.map((userId) => ({
+      audience: [userId],
+      topic: syncTopic("user", userId),
+      type,
+      data,
+      originDeviceId,
+    })),
+  ];
+}
 
 export async function publishConversationChanged(
-  env: IEnv | undefined,
+  publisher: SyncPublisher,
   conversationId: string,
   data: Record<string, unknown> = {},
   originDeviceId?: string | null,
 ): Promise<void> {
-  const audience = await conversationAudience(env, conversationId);
+  const audience = await conversationAudience(publisher.env, conversationId);
 
-  await Promise.all([
-    publishSyncEvent(env, {
+  publishSync(
+    publisher,
+    fanOut(
       audience,
-      topic: syncTopic("conversation", conversationId),
-      type: "conversation.changed",
-      data: { conversationId, ...data },
+      syncTopic("conversation", conversationId),
+      "conversation.changed",
+      { conversationId, ...data },
       originDeviceId,
-    }),
-    ...audience.map((userId) =>
-      publishSyncEvent(env, {
-        audience: [userId],
-        topic: syncTopic("user", userId),
-        type: "conversation.changed",
-        data: { conversationId, ...data },
-        originDeviceId,
-      }),
-    ),
-  ]);
-}
-
-export async function publishConversationDeleted(
-  env: IEnv | undefined,
-  conversationId: string,
-  audience: number[],
-): Promise<void> {
-  await Promise.all(
-    audience.map((userId) =>
-      publishSyncEvent(env, {
-        audience: [userId],
-        topic: syncTopic("user", userId),
-        type: "conversation.deleted",
-        data: { conversationId },
-      }),
     ),
   );
 }
 
-export async function publishRunChanged(env: IEnv | undefined, run: ChatRun): Promise<void> {
-  const audience = await conversationAudience(env, run.conversationId);
+export function publishConversationDeleted(
+  publisher: SyncPublisher,
+  conversationId: string,
+  audience: number[],
+): void {
+  publishSync(
+    publisher,
+    audience.map((userId) => ({
+      audience: [userId],
+      topic: syncTopic("user", userId),
+      type: "conversation.deleted" as const,
+      data: { conversationId },
+    })),
+  );
+}
 
-  await Promise.all([
-    publishSyncEvent(env, {
-      audience,
-      topic: syncTopic("conversation", run.conversationId),
-      type: "run.changed",
-      data: { runId: run.id, conversationId: run.conversationId, status: run.status },
-    }),
-    ...audience.map((userId) =>
-      publishSyncEvent(env, {
-        audience: [userId],
-        topic: syncTopic("user", userId),
-        type: "run.changed",
-        data: { runId: run.id, conversationId: run.conversationId, status: run.status },
-      }),
-    ),
+export async function publishRunChanged(publisher: SyncPublisher, run: ChatRun): Promise<void> {
+  const audience = await conversationAudience(publisher.env, run.conversationId);
+  const data = { runId: run.id, conversationId: run.conversationId, status: run.status };
+
+  publishSync(publisher, [
+    ...fanOut(audience, syncTopic("conversation", run.conversationId), "run.changed", data),
+    { audience, topic: syncTopic("run", run.id), type: "run.changed", data },
   ]);
 }
 
-export async function publishRunEvent(
-  env: IEnv | undefined,
+export async function publishRunEvents(
+  publisher: SyncPublisher,
   conversationId: string,
-  event: ChatRunEvent,
+  runId: string,
+  events: ChatRunEvent[],
 ): Promise<void> {
-  await publishSyncEvent(env, {
-    audience: await conversationAudience(env, conversationId),
-    topic: syncTopic("conversation", conversationId),
-    type: "run.event",
-    data: { conversationId, event },
-  });
+  if (events.length === 0) {
+    return;
+  }
+
+  const audience = await conversationAudience(publisher.env, conversationId);
+
+  publishSync(
+    publisher,
+    events.flatMap((event) => {
+      const data = { conversationId, runId, event };
+
+      return [
+        {
+          audience,
+          topic: syncTopic("conversation", conversationId),
+          type: "run.event" as const,
+          data,
+        },
+        { audience, topic: syncTopic("run", runId), type: "run.event" as const, data },
+      ];
+    }),
+  );
+}
+
+export async function publishMessageChanged(
+  publisher: SyncPublisher,
+  conversationId: string,
+  data: Record<string, unknown>,
+): Promise<void> {
+  const audience = await conversationAudience(publisher.env, conversationId);
+
+  publishSync(
+    publisher,
+    fanOut(audience, syncTopic("conversation", conversationId), "message.changed", {
+      conversationId,
+      ...data,
+    }),
+  );
 }
 
 export async function publishProjectEvent(
-  env: IEnv | undefined,
+  publisher: SyncPublisher,
   projectId: string,
   type: DeviceSyncEventType,
   data: Record<string, unknown> = {},
 ): Promise<void> {
-  await publishSyncEvent(env, {
-    audience: await projectAudience(env, projectId),
-    topic: syncTopic("project", projectId),
-    type,
-    data: { projectId, ...data },
-  });
+  const audience = await projectAudience(publisher.env, projectId);
+
+  publishSync(publisher, [
+    { audience, topic: syncTopic("project", projectId), type, data: { projectId, ...data } },
+    ...audience.map((userId) => ({
+      audience: [userId],
+      topic: syncTopic("user", userId),
+      type,
+      data: { projectId, ...data },
+    })),
+  ]);
 }
 
 export async function publishWorkspaceEvent(
-  env: IEnv | undefined,
+  publisher: SyncPublisher,
   workspaceId: string,
   type: DeviceSyncEventType,
   data: Record<string, unknown> = {},
 ): Promise<void> {
-  await publishSyncEvent(env, {
-    audience: await workspaceAudience(env, workspaceId),
-    topic: syncTopic("workspace", workspaceId),
-    type,
-    data: { workspaceId, ...data },
-  });
+  const audience = await workspaceAudience(publisher.env, workspaceId);
+
+  publishSync(publisher, [
+    { audience, topic: syncTopic("workspace", workspaceId), type, data: { workspaceId, ...data } },
+    ...audience.map((userId) => ({
+      audience: [userId],
+      topic: syncTopic("user", userId),
+      type,
+      data: { workspaceId, ...data },
+    })),
+  ]);
 }
 
-export async function publishUserEvent(
-  env: IEnv | undefined,
+export function publishUserEvent(
+  publisher: SyncPublisher,
   userId: number,
   type: DeviceSyncEventType,
   data: Record<string, unknown> = {},
+): void {
+  publishSync(publisher, [{ audience: [userId], topic: syncTopic("user", userId), type, data }]);
+}
+
+export function publishMachineEvent(
+  publisher: SyncPublisher,
+  userId: number,
+  machineId: string,
+  data: Record<string, unknown> = {},
+): void {
+  publishSync(publisher, [
+    {
+      audience: [userId],
+      topic: syncTopic("machine", machineId),
+      type: "machine.changed",
+      data: { machineId, ...data },
+    },
+    {
+      audience: [userId],
+      topic: syncTopic("user", userId),
+      type: "machine.changed",
+      data: { machineId, ...data },
+    },
+  ]);
+}
+
+export async function publishDelegationChanged(
+  publisher: SyncPublisher,
+  delegation: Pick<Delegation, "id" | "state" | "parentConversationId" | "childConversationId">,
 ): Promise<void> {
-  await publishSyncEvent(env, {
-    audience: [userId],
-    topic: syncTopic("user", userId),
-    type,
-    data,
-  });
+  const audience = await conversationAudience(publisher.env, delegation.parentConversationId);
+  const data = {
+    delegationId: delegation.id,
+    state: delegation.state,
+    conversationId: delegation.parentConversationId,
+    childConversationId: delegation.childConversationId,
+  };
+
+  publishSync(publisher, [
+    {
+      audience,
+      topic: syncTopic("conversation", delegation.parentConversationId),
+      type: "delegation.changed",
+      data,
+    },
+    ...audience.map((userId) => ({
+      audience: [userId],
+      topic: syncTopic("user", userId),
+      type: "delegation.changed" as const,
+      data,
+    })),
+  ]);
 }

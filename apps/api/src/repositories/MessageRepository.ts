@@ -1,4 +1,5 @@
 import { buildAppendRunEventStatements } from "~/lib/chat-runs/event-statements";
+import { publishMessageChanged } from "~/services/sync/conversation-events";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -361,6 +362,8 @@ export class MessageRepository extends BaseRepository {
 
     const [result] = await this.env.DB.batch(statements);
 
+    await publishMessageChanged({ env: this.env }, conversationId, { messageId, role });
+
     return (result.results[0] as Record<string, unknown> | undefined) ?? null;
   }
 
@@ -677,6 +680,8 @@ export class MessageRepository extends BaseRepository {
         },
       }),
     ]);
+
+    await publishMessageChanged({ env: this.env }, conversationId, { messageId });
   }
 
   public async deleteMessage(messageId: string): Promise<void> {

@@ -42,6 +42,7 @@ export function useGoal(
         query,
         options?.refetchInterval ??
           ((currentQuery) => goalRefetchInterval(currentQuery.state.data)),
+        "goal.changed",
       ),
     refetchIntervalInBackground: true,
   });

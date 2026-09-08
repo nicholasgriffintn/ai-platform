@@ -15,6 +15,6 @@ export function useMachines(options: { enabled?: boolean } = {}) {
     staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 60,
     refetchOnWindowFocus: "always",
-    refetchInterval: (query) => liveOrPoll(query, 1000 * 60),
+    refetchInterval: (query) => liveOrPoll(query, 1000 * 60, "machine.changed"),
   });
 }

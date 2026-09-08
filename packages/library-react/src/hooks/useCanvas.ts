@@ -31,18 +31,22 @@ export function useCanvasGenerations(mode?: CanvasMode, enabled = true) {
     queryFn: () => fetchCanvasGenerations(mode),
     enabled,
     refetchInterval: (query) =>
-      liveOrPoll(query, (query) => {
-        const data = query.state.data;
+      liveOrPoll(
+        query,
+        (query) => {
+          const data = query.state.data;
 
-        if (!data?.length) {
-          return false;
-        }
+          if (!data?.length) {
+            return false;
+          }
 
-        const hasActiveGeneration = data.some((generation) =>
-          ["queued", "processing"].includes(generation.status),
-        );
+          const hasActiveGeneration = data.some((generation) =>
+            ["queued", "processing"].includes(generation.status),
+          );
 
-        return hasActiveGeneration ? 10000 : false;
-      }),
+          return hasActiveGeneration ? 10000 : false;
+        },
+        "canvas.changed",
+      ),
   });
 }

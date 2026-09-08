@@ -26,7 +26,10 @@ export function useDeviceSync(): void {
     const localScope = getLocalChatScope(userId);
     const store = useSyncStore.getState();
     const socket = new DeviceSyncSocket({
-      onEvent: (event) => applySyncEvent({ queryClient, localScope }, event),
+      onEvent: (event) => {
+        applySyncEvent({ queryClient, localScope }, event);
+        store.noteEvent();
+      },
       onReset: () => {
         void queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] });
       },

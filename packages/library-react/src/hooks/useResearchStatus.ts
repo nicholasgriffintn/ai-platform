@@ -43,40 +43,44 @@ export function useResearchStatus({
     enabled: Boolean(runId) && enabled,
     initialData,
     refetchInterval: (query) =>
-      liveOrPoll(query, (query) => {
-        if (!enabled) {
-          return false;
-        }
+      liveOrPoll(
+        query,
+        (query) => {
+          if (!enabled) {
+            return false;
+          }
 
-        const data = query.state.data;
-        const intervalFromData = data?.poll?.interval_ms;
-        const effectiveInterval = Math.max(
-          5000,
-          Number(intervalFromData ?? sanitizedInterval) || 0,
-        );
+          const data = query.state.data;
+          const intervalFromData = data?.poll?.interval_ms;
+          const effectiveInterval = Math.max(
+            5000,
+            Number(intervalFromData ?? sanitizedInterval) || 0,
+          );
 
-        if (!data) {
+          if (!data) {
+            return effectiveInterval;
+          }
+
+          const status = normalizeStatus(data.run?.status);
+
+          if (status === "completed") {
+            return data.output ? false : effectiveInterval;
+          }
+
+          if (FAILURE_STATUSES.has(status)) {
+            return false;
+          }
+
+          const pollCount = (query.state.dataUpdateCount || 0) + 1;
+
+          if (pollCount > 10) {
+            return Math.max(effectiveInterval, Math.min(60000, effectiveInterval * 1.5));
+          }
+
           return effectiveInterval;
-        }
-
-        const status = normalizeStatus(data.run?.status);
-
-        if (status === "completed") {
-          return data.output ? false : effectiveInterval;
-        }
-
-        if (FAILURE_STATUSES.has(status)) {
-          return false;
-        }
-
-        const pollCount = (query.state.dataUpdateCount || 0) + 1;
-
-        if (pollCount > 10) {
-          return Math.max(effectiveInterval, Math.min(60000, effectiveInterval * 1.5));
-        }
-
-        return effectiveInterval;
-      }),
+        },
+        "research.changed",
+      ),
     retry: 3,
     staleTime: 0,
   });

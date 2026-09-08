@@ -31,23 +31,27 @@ export function useTasks({ shouldRefetch = true }) {
     queryFn: () => taskService.listTasks(),
     staleTime: 1000 * 10, // 10 seconds
     refetchInterval: (query) =>
-      liveOrPoll(query, (query) => {
-        if (!shouldRefetch) {
-          return false;
-        }
+      liveOrPoll(
+        query,
+        (query) => {
+          if (!shouldRefetch) {
+            return false;
+          }
 
-        const data = query.state.data;
+          const data = query.state.data;
 
-        if (!data) {
-          return false;
-        }
+          if (!data) {
+            return false;
+          }
 
-        const hasActiveTasks = data.tasks.some((task) =>
-          ACTIVE_TASK_STATUSES.has(String(task.status)),
-        );
+          const hasActiveTasks = data.tasks.some((task) =>
+            ACTIVE_TASK_STATUSES.has(String(task.status)),
+          );
 
-        return hasActiveTasks ? 1000 * 30 : false;
-      }),
+          return hasActiveTasks ? 1000 * 30 : false;
+        },
+        "task.changed",
+      ),
   });
 
   const triggerSynthesisMutation = useMutation<
@@ -94,7 +98,7 @@ export function useMemorySynthesis(namespace = "global") {
       queryKey: TASK_QUERY_KEYS.synthesis(namespace),
       queryFn: () => taskService.getActiveSynthesis(namespace),
       staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchInterval: (query) => liveOrPoll(query, 1000 * 30),
+      refetchInterval: (query) => liveOrPoll(query, 1000 * 30, "task.changed"),
     });
 
   const { data: historyData, isLoading: isLoadingHistory } =
@@ -102,7 +106,7 @@ export function useMemorySynthesis(namespace = "global") {
       queryKey: TASK_QUERY_KEYS.synthesisHistory(namespace),
       queryFn: () => taskService.getSynthesisHistory(namespace, 10),
       staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchInterval: (query) => liveOrPoll(query, 1000 * 30),
+      refetchInterval: (query) => liveOrPoll(query, 1000 * 30, "task.changed"),
     });
 
   return {

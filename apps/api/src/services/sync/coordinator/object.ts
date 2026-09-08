@@ -4,7 +4,7 @@ import {
   DEVICE_SYNC_MAX_TOPICS_PER_CONNECTION,
   DEVICE_SYNC_PROTOCOL_VERSION,
   deviceSyncClientMessageSchema,
-  deviceSyncPublishSchema,
+  deviceSyncPublishBatchSchema,
   type DeviceSyncEvent,
   type DeviceSyncPresenceEntry,
   type DeviceSyncServerMessage,
@@ -279,28 +279,31 @@ export class UserSyncCoordinator extends Agent<IEnv> {
     }
 
     if (url.pathname === "/publish" && request.method === "POST") {
-      const parsed = deviceSyncPublishSchema.safeParse(await request.json().catch(() => null));
+      const parsed = deviceSyncPublishBatchSchema.safeParse(await request.json().catch(() => null));
 
       if (!parsed.success) {
-        return Response.json({ error: "Invalid sync event" }, { status: 400 });
+        return Response.json({ error: "Invalid sync event batch" }, { status: 400 });
       }
 
-      const { topic, type, data, originDeviceId } = parsed.data;
-      const appended = this.events.append(topic, {
-        v: DEVICE_SYNC_PROTOCOL_VERSION,
-        type,
-        data,
-        originDeviceId: originDeviceId ?? null,
+      const sequences = parsed.data.events.map(({ topic, type, data, originDeviceId }) => {
+        const appended = this.events.append(topic, {
+          v: DEVICE_SYNC_PROTOCOL_VERSION,
+          type,
+          data,
+          originDeviceId: originDeviceId ?? null,
+        });
+
+        this.enqueue({
+          ...appended.event.payload,
+          topic,
+          seq: appended.event.seq,
+          at: appended.event.at,
+        });
+
+        return appended.event.seq;
       });
 
-      this.enqueue({
-        ...appended.event.payload,
-        topic,
-        seq: appended.event.seq,
-        at: appended.event.at,
-      });
-
-      return Response.json({ seq: appended.event.seq });
+      return Response.json({ sequences });
     }
 
     if (url.pathname === "/presence" && request.method === "GET") {

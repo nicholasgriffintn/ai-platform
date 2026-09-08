@@ -153,7 +153,7 @@ export const handleUpdateChatCompletion = async (
     updatedConversation = await conversationManager.getConversationDetails(completion_id);
   }
 
-  await publishConversationChanged(context.env, completion_id, {
+  await publishConversationChanged(context, completion_id, {
     archived: conversationUpdates.archived ?? null,
     title: conversationUpdates.title ?? null,
   });

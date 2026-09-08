@@ -68,7 +68,6 @@ export const deviceSyncEventTypeSchema = z.enum([
   "replicate.changed",
   "connector_approval.changed",
   "attention.changed",
-  "presence.changed",
 ]);
 
 export type DeviceSyncEventType = z.infer<typeof deviceSyncEventTypeSchema>;
@@ -93,6 +92,12 @@ export const deviceSyncPublishSchema = z.object({
 });
 
 export type DeviceSyncPublish = z.infer<typeof deviceSyncPublishSchema>;
+
+export const deviceSyncPublishBatchSchema = z.object({
+  events: z.array(deviceSyncPublishSchema).min(1).max(100),
+});
+
+export type DeviceSyncPublishBatch = z.infer<typeof deviceSyncPublishBatchSchema>;
 
 export const deviceSyncSubscriptionSchema = z.object({
   topic: deviceSyncTopicSchema,

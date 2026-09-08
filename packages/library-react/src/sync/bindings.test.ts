@@ -63,12 +63,12 @@ describe("sync bindings", () => {
     expect(invalidatedKeys).not.toContainEqual(["chats", "abc"]);
   });
 
-  it("ignores an event with no matching binding", () => {
-    const { context, invalidatedKeys } = createContext();
+  it("binds only event types the server actually publishes", () => {
+    const bound = new Set(SYNC_BINDINGS.map((binding) => binding.type));
 
-    applySyncEvent(context, buildEvent("presence.changed"));
-
-    expect(invalidatedKeys).toHaveLength(0);
+    for (const type of ["conversation.changed", "run.changed", "message.changed"] as const) {
+      expect(bound.has(type)).toBe(true);
+    }
   });
 
   it("scopes project task refreshes to the project the event names", () => {

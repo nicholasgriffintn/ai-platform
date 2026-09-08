@@ -62,10 +62,13 @@ export function useProjectTask(projectId: string, taskId: string) {
     queryFn: () => getProjectTask(projectId, taskId),
     enabled: Boolean(projectId && taskId) && isAuthenticated && isPro,
     refetchInterval: (query) =>
-      liveOrPoll(query, (currentQuery) =>
-        projectTasksRefetchInterval(
-          currentQuery.state.data ? [currentQuery.state.data.task] : undefined,
-        ),
+      liveOrPoll(
+        query,
+        (currentQuery) =>
+          projectTasksRefetchInterval(
+            currentQuery.state.data ? [currentQuery.state.data.task] : undefined,
+          ),
+        "project_task.changed",
       ),
     refetchIntervalInBackground: true,
   });
@@ -81,8 +84,10 @@ export function useProjectTasks(projectId: string) {
     queryFn: () => listProjectTasks(projectId),
     enabled: Boolean(projectId) && isAuthenticated && isPro,
     refetchInterval: (query) =>
-      liveOrPoll(query, (currentQuery) =>
-        projectTasksRefetchInterval(currentQuery.state.data?.tasks),
+      liveOrPoll(
+        query,
+        (currentQuery) => projectTasksRefetchInterval(currentQuery.state.data?.tasks),
+        "project_task.changed",
       ),
     refetchIntervalInBackground: true,
   });
@@ -225,7 +230,7 @@ export function useTaskAttention() {
     queryFn: listTaskInbox,
     enabled: isAuthenticated && isPro,
     staleTime: 30_000,
-    refetchInterval: (query) => liveOrPoll(query, 15_000),
+    refetchInterval: (query) => liveOrPoll(query, 15_000, "project_task.changed"),
   });
 
   const queryClient = useQueryClient();

@@ -86,10 +86,13 @@ export function useProjectWorkbenchPreview({
     enabled: Boolean(runId && scopedAccess),
     initialData: scopedAccess,
     refetchInterval: (query) =>
-      liveOrPoll(query, (query) =>
-        query.state.data?.state === "healthy" || query.state.data?.state === "starting"
-          ? ACTIVE_REFRESH_MS
-          : false,
+      liveOrPoll(
+        query,
+        (query) =>
+          query.state.data?.state === "healthy" || query.state.data?.state === "starting"
+            ? ACTIVE_REFRESH_MS
+            : false,
+        "workbench_preview.changed",
       ),
     refetchIntervalInBackground: true,
   });

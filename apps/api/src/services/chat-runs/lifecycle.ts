@@ -11,6 +11,7 @@ import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
 import type { ConversationRunRepository } from "~/repositories/ConversationRunRepository";
 import { isThreadLeaseOwnershipLostError } from "~/services/conversations/coordinator/client";
 import { publishConversationChanged, publishRunChanged } from "~/services/sync/conversation-events";
+import type { SyncPublisher } from "~/services/sync/publish";
 import { TaskExecutionOwnershipLostError } from "~/services/tasks/task-execution-lease";
 import { resolveChatProjectAccess } from "~/services/workspaces/chatProjectAccess";
 import type { CoreChatOptions } from "~/types";
@@ -136,6 +137,7 @@ export class ChatRunLifecycle {
     private readonly repository: ConversationRunRepository,
     readonly receipt: ChatRunCommandReceipt,
     private readonly env?: CoreChatOptions["env"],
+    private readonly publisher?: SyncPublisher,
   ) {}
 
   get run(): ChatRun {
@@ -143,8 +145,10 @@ export class ChatRunLifecycle {
   }
 
   private async announce(run: ChatRun): Promise<void> {
-    await publishRunChanged(this.env, run);
-    await publishConversationChanged(this.env, run.conversationId, { runId: run.id });
+    const publisher = this.publisher ?? { env: this.env };
+
+    await publishRunChanged(publisher, run);
+    await publishConversationChanged(publisher, run.conversationId, { runId: run.id });
   }
 
   async isCancellationRequested(): Promise<boolean> {
@@ -320,7 +324,12 @@ export async function findAcceptedChatRunCommand(
   }
 
   return receipt
-    ? new ChatRunLifecycle(scope.context.repositories.conversationRuns, receipt, scope.context.env)
+    ? new ChatRunLifecycle(
+        scope.context.repositories.conversationRuns,
+        receipt,
+        scope.context.env,
+        scope.context,
+      )
     : null;
 }
 
@@ -361,8 +370,8 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
   }
 
   if (!receipt.duplicate) {
-    await publishRunChanged(scope.context.env, receipt.run);
-    await publishConversationChanged(scope.context.env, receipt.run.conversationId, {
+    await publishRunChanged(scope.context, receipt.run);
+    await publishConversationChanged(scope.context, receipt.run.conversationId, {
       runId: receipt.run.id,
     });
   }
@@ -389,5 +398,6 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
     scope.context.repositories.conversationRuns,
     receipt,
     scope.context.env,
+    scope.context,
   );
 }

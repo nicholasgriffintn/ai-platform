@@ -15,10 +15,12 @@ export interface ServiceContextOptions {
   user?: IUser | null;
   requestId?: string;
   connectorRunId?: string;
+  waitUntil?: (work: Promise<unknown>) => void;
 }
 
 export interface ServiceContext {
   env: IEnv;
+  waitUntil: (work: Promise<unknown>) => void;
   user?: IUser | null;
   requestId?: string;
   connectorRunId: string;
@@ -66,6 +68,7 @@ export const createServiceContext = ({
   user = null,
   requestId,
   connectorRunId = `connector_run_${generateId()}`,
+  waitUntil,
 }: ServiceContextOptions): ServiceContext => {
   let databaseInstance: Database | null = null;
   let repositoriesInstance: RepositoryManager | null = null;
@@ -154,6 +157,7 @@ export const createServiceContext = ({
     },
     requireUser,
     ensureDatabase,
+    waitUntil: waitUntil ?? ((work) => void work.catch(() => undefined)),
     getUserSettings: loadUserSettings,
     setUserSettings,
     getLogger: getContextLogger,
@@ -167,6 +171,7 @@ export interface ResolveServiceContextOptions {
   env?: IEnv;
   user?: IUser | null;
   requestId?: string;
+  waitUntil?: (work: Promise<unknown>) => void;
 }
 
 export const resolveServiceContext = ({
@@ -174,6 +179,7 @@ export const resolveServiceContext = ({
   env,
   user = null,
   requestId,
+  waitUntil,
 }: ResolveServiceContextOptions): ServiceContext => {
   if (context) {
     return context;
@@ -187,6 +193,7 @@ export const resolveServiceContext = ({
     env,
     user,
     requestId,
+    waitUntil,
   });
 };
 
@@ -200,6 +207,7 @@ export const serviceContextMiddleware: MiddlewareHandler = async (c, next) => {
       env: c.env as IEnv,
       user: user ?? null,
       requestId,
+      waitUntil: (work) => c.executionCtx?.waitUntil(work),
     });
 
     c.set(SERVICE_CONTEXT_KEY, context);
@@ -221,6 +229,7 @@ export const getServiceContext = (c: Context): ServiceContext => {
     env: c.env as IEnv,
     user: user ?? null,
     requestId,
+    waitUntil: (work) => c.executionCtx?.waitUntil(work),
   });
 
   c.set(SERVICE_CONTEXT_KEY, context);

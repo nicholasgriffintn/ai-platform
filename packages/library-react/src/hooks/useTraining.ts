@@ -59,15 +59,19 @@ export function useTrainingJobs() {
     queryFn: fetchTrainingJobs,
     staleTime: TRAINING_STATUS_STALE_TIME,
     refetchInterval: (query) =>
-      liveOrPoll(query, (query) => {
-        const jobs = query.state.data;
+      liveOrPoll(
+        query,
+        (query) => {
+          const jobs = query.state.data;
 
-        if (!jobs?.some((job) => ACTIVE_JOB_STATUSES.has(job.status.toLowerCase()))) {
-          return false;
-        }
+          if (!jobs?.some((job) => ACTIVE_JOB_STATUSES.has(job.status.toLowerCase()))) {
+            return false;
+          }
 
-        return 10000;
-      }),
+          return 10000;
+        },
+        "training.changed",
+      ),
   });
 }
 
@@ -93,6 +97,7 @@ export function useTrainingJobEvents(
       liveOrPoll(
         query,
         enabled && provider && jobName ? (options.refetchInterval ?? false) : false,
+        "training.changed",
       ),
   });
 }
@@ -119,6 +124,7 @@ export function useTrainingDeploymentEvents(
       liveOrPoll(
         query,
         enabled && provider && endpointName ? (options.refetchInterval ?? false) : false,
+        "training.changed",
       ),
   });
 }
@@ -129,19 +135,23 @@ export function useTrainingDeployments() {
     queryFn: fetchTrainingDeployments,
     staleTime: TRAINING_STATUS_STALE_TIME,
     refetchInterval: (query) =>
-      liveOrPoll(query, (query) => {
-        const deployments = query.state.data;
+      liveOrPoll(
+        query,
+        (query) => {
+          const deployments = query.state.data;
 
-        if (
-          !deployments?.some((deployment) =>
-            ACTIVE_DEPLOYMENT_STATUSES.has(deployment.status.toLowerCase()),
-          )
-        ) {
-          return false;
-        }
+          if (
+            !deployments?.some((deployment) =>
+              ACTIVE_DEPLOYMENT_STATUSES.has(deployment.status.toLowerCase()),
+            )
+          ) {
+            return false;
+          }
 
-        return 10000;
-      }),
+          return 10000;
+        },
+        "training.changed",
+      ),
   });
 }
 

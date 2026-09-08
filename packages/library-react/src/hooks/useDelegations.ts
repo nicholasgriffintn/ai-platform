@@ -17,7 +17,7 @@ export function useDelegations(conversationId: string) {
     queryKey: conversationDelegationsQueryKey(conversationId),
     queryFn: () => listConversationDelegations(conversationId),
     enabled: Boolean(conversationId),
-    refetchInterval: (query) => liveOrPoll(query, 2_000),
+    refetchInterval: (query) => liveOrPoll(query, 2_000, "delegation.changed"),
     refetchIntervalInBackground: true,
   });
 }

@@ -27,7 +27,7 @@ export const handleDeleteChatCompletion = async (
     archived: true,
   });
 
-  await publishConversationDeleted(context.env, completion_id, audience);
+  publishConversationDeleted(context, completion_id, audience);
 
   return {
     success: true,

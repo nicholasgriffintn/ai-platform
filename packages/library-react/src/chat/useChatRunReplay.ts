@@ -8,6 +8,7 @@ import {
   type AuthoritativeChatRunSnapshot,
   type ChatRunReplayState,
   useChatStore,
+  useSyncStore,
 } from "@ngriffin_uk/polychat-library-client";
 import { isTerminalChatRunStatus, type ChatRun } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
@@ -63,12 +64,18 @@ export function useChatRunReplay(
     };
 
     const schedule = (run: ChatRun, progressed: boolean) => {
-      if (!disposed && !isTerminalChatRunStatus(run.status)) {
-        replayIntervalMs = progressed
-          ? INITIAL_REPLAY_INTERVAL_MS
-          : Math.min(replayIntervalMs * 2, MAX_REPLAY_INTERVAL_MS);
-        timer = setTimeout(() => void synchronise(), replayIntervalMs);
+      if (disposed || isTerminalChatRunStatus(run.status)) {
+        return;
       }
+
+      if (useSyncStore.getState().status === "open") {
+        return;
+      }
+
+      replayIntervalMs = progressed
+        ? INITIAL_REPLAY_INTERVAL_MS
+        : Math.min(replayIntervalMs * 2, MAX_REPLAY_INTERVAL_MS);
+      timer = setTimeout(() => void synchronise(), replayIntervalMs);
     };
 
     const synchronise = async () => {
@@ -177,8 +184,19 @@ export function useChatRunReplay(
 
     void synchronise();
 
+    const unsubscribe = useSyncStore.subscribe((state, previous) => {
+      if (disposed) {
+        return;
+      }
+
+      if (state.lastEventAt !== previous.lastEventAt || state.status !== previous.status) {
+        void synchronise();
+      }
+    });
+
     return () => {
       disposed = true;
+      unsubscribe();
       abortController.abort();
       if (timer) {
         clearTimeout(timer);

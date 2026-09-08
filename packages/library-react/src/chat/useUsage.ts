@@ -40,7 +40,11 @@ export function useUsageBalance(enabled = true) {
     queryFn: () => getUsageBalance(),
     enabled,
     refetchInterval: (query) =>
-      liveOrPoll(query, (query) => getUsageBalanceRefreshInterval(query.state.data?.resets_at)),
+      liveOrPoll(
+        query,
+        (query) => getUsageBalanceRefreshInterval(query.state.data?.resets_at),
+        "usage.changed",
+      ),
   });
 }
 

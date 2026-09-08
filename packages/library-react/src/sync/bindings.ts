@@ -133,7 +133,6 @@ export const SYNC_BINDINGS: SyncBinding[] = [
     apply: refreshConversation,
   },
   { type: "attention.changed", apply: (context) => invalidate(context, TASK_ATTENTION_QUERY_KEY) },
-  { type: "presence.changed", apply: () => undefined },
 ];
 
 const BINDINGS_BY_TYPE = new Map(SYNC_BINDINGS.map((binding) => [binding.type, binding]));
