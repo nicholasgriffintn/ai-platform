@@ -8,6 +8,19 @@ export * from "./local-conversation-store.js";
 export * from "./chat-settings.js";
 export * from "./account-model-defaults.js";
 export { parseAgentProcessOutput } from "./agents/process-output.js";
+export {
+  JsonRpcClient,
+  JsonRpcError,
+  type JsonRpcNotification,
+  type JsonRpcServerRequest,
+  type JsonRpcTransport,
+} from "./agents/jsonrpc.js";
+export {
+  createCodexAdapter,
+  type AgentSessionAdapter,
+  type CodexAdapterOptions,
+  type StartThreadInput,
+} from "./agents/codex-adapter.js";
 export * from "./compute-site-selection.js";
 export type { AttachmentData } from "./attachments.js";
 export {

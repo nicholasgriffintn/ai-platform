@@ -11,6 +11,7 @@ export const REASONING_EFFORT_LEVELS = [
   "high",
   "xhigh",
   "max",
+  "ultra",
 ] as const;
 
 export const reasoningEffortSchema = z.enum(REASONING_EFFORT_LEVELS);

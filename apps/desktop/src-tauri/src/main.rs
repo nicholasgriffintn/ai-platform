@@ -20,6 +20,7 @@ mod store;
 use std::time::Duration;
 
 use agents::process::{self, AgentDriver, AgentToolState, DirectoryGrants, ProcessRunRequest};
+use agents::session::{AgentSessionRegistry, SessionDescriptor, SessionEvent, SessionStartRequest};
 use announcements::{Announcement, AnnouncementPlan};
 use chat::ModelRunRequest;
 use diagnostics::Diagnostics;
@@ -628,6 +629,38 @@ async fn start_agent_process_run(
 }
 
 #[tauri::command]
+async fn start_agent_session(
+    request: SessionStartRequest,
+    on_event: Channel<SessionEvent>,
+    directories: State<'_, DirectoryGrants>,
+    sessions: State<'_, AgentSessionRegistry>,
+) -> Result<SessionDescriptor, String> {
+    agents::session::start(request, on_event, &directories, &sessions).await
+}
+
+#[tauri::command]
+async fn send_agent_session(
+    session_key: String,
+    payload: String,
+    sessions: State<'_, AgentSessionRegistry>,
+) -> Result<(), String> {
+    agents::session::send(&session_key, &payload, &sessions).await
+}
+
+#[tauri::command]
+async fn stop_agent_session(
+    session_key: String,
+    sessions: State<'_, AgentSessionRegistry>,
+) -> Result<(), String> {
+    agents::session::stop(&session_key, &sessions).await
+}
+
+#[tauri::command]
+fn agent_supports_sessions(driver: AgentDriver) -> bool {
+    process::supports_sessions(driver)
+}
+
+#[tauri::command]
 fn collect_diagnostics(
     app: tauri::AppHandle,
     store: State<'_, Store>,
@@ -778,6 +811,7 @@ fn main() {
             let directories = store.list_agent_directories()?;
             app.manage(store);
             app.manage(RunRegistry::default());
+            app.manage(AgentSessionRegistry::default());
             app.manage(DirectoryGrants::from_grants(directories));
 
             Ok(())
@@ -807,6 +841,10 @@ fn main() {
             revoke_agent_directory,
             probe_agent_tool,
             start_agent_process_run,
+            start_agent_session,
+            send_agent_session,
+            stop_agent_session,
+            agent_supports_sessions,
             collect_diagnostics,
             cancel_model_run,
             cancel_agent_process_run,

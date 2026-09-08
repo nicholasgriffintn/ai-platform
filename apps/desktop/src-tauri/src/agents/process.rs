@@ -186,6 +186,18 @@ pub enum ProcessRefusal {
     MissingHead,
     AlreadyRunning,
     NotInstalled,
+    SessionsUnsupported,
+}
+
+pub fn session_argv(driver: AgentDriver) -> Option<Vec<String>> {
+    match driver {
+        AgentDriver::Codex => Some(vec!["app-server".to_string()]),
+        _ => None,
+    }
+}
+
+pub fn supports_sessions(driver: AgentDriver) -> bool {
+    session_argv(driver).is_some()
 }
 
 pub fn program_for(driver: AgentDriver) -> AgentProgram {
