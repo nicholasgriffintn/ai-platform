@@ -6,7 +6,7 @@ import type {
   SandboxRunManifest,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatDate, formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
-import { Activity, FileDiff, Files, MonitorPlay, ShieldCheck } from "lucide-react";
+import { Activity, Bot, FileDiff, Files, MonitorPlay, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { ProjectWorkbenchPane } from "./ProjectWorkbenchShell";
@@ -59,6 +59,7 @@ function PanelMessage({
     changes: FileDiff,
     files: Files,
     proof: ShieldCheck,
+    delegates: Bot,
   }[pane];
 
   return (
@@ -120,19 +121,42 @@ function ChangesPanel({ run }: { run: SandboxRunData }) {
   const changedFiles = new Set(
     (run.events ?? []).flatMap((event) => (event.path?.trim() ? [event.path] : [])),
   );
+  const validation = run.manifest?.validation;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="rounded-lg bg-surface-elevated p-4">
         <p className="text-sm font-medium">Changes are ready to review</p>
         <p className="mt-1 text-xs text-muted-foreground">
           {changedFiles.size > 0 ? `${changedFiles.size} changed files · ` : ""}
           {diff.split("\n").length.toLocaleString()} diff lines
         </p>
+        <pre className="mt-3 max-h-96 overflow-auto rounded-md bg-canvas p-3 font-mono text-xs whitespace-pre-wrap">
+          {diff}
+        </pre>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Detailed file navigation and bounded diff rendering will extend this panel.
-      </p>
+      <section aria-label="Run validation" className="rounded-lg border border-border p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-medium">Validation evidence</h3>
+          <span className="text-xs text-muted-foreground capitalize">
+            Quality gate {validation?.qualityGate ?? "unavailable"}
+          </span>
+        </div>
+        {validation?.checks.length ? (
+          <ul className="mt-3 space-y-2" aria-label="Validation checks">
+            {validation.checks.map((check) => (
+              <li key={check.command} className="flex flex-wrap justify-between gap-2 text-xs">
+                <span className="font-mono">{check.command}</span>
+                <span className={check.status === "failed" ? "text-failure" : "text-success"}>
+                  {check.status}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">No validation checks were recorded.</p>
+        )}
+      </section>
     </div>
   );
 }
