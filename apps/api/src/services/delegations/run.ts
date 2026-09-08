@@ -118,7 +118,9 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         const waitingState =
           firstPendingTool.name === "ask_user" ? "awaiting_input" : "awaiting_approval";
         await context.repositories.delegations.updateState(delegation.id, waitingState);
-        await notifyDelegationAttention(context, delegation, message.user_id, waitingState);
+        await notifyDelegationAttention(context, delegation, message.user_id, waitingState).catch(
+          () => undefined,
+        );
         await new TaskService(context.env, context.repositories.tasks).enqueueTask({
           id: `delegation_expiry_${delegation.id}`,
           task_type: DELEGATION_EXPIRY_TASK_TYPE,
