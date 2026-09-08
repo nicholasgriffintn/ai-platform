@@ -11,6 +11,7 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import {
   Activity,
+  Bot,
   FileDiff,
   Files,
   LayoutPanelTop,
@@ -57,6 +58,7 @@ const PANE_PRESENTATION = {
   changes: { label: "Changes", icon: FileDiff },
   files: { label: "Files", icon: Files },
   proof: { label: "Proof", icon: ShieldCheck },
+  delegates: { label: "Delegates", icon: Bot },
 } as const;
 
 const STATUS_PRESENTATION: Record<

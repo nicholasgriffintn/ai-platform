@@ -1,5 +1,6 @@
 import { RunChangesView, RunFilesView } from "@ngriffin_uk/polychat-component-content";
 import { RunActivityPanel } from "@ngriffin_uk/polychat-component-conversation";
+import { DelegationCard } from "@ngriffin_uk/polychat-component-conversation";
 import type { ConversationRunSteering } from "@ngriffin_uk/polychat-component-conversation";
 import {
   ProjectWorkbenchApprovals,
@@ -26,10 +27,13 @@ import {
   deriveProjectWorkbenchPresentation,
   deriveProjectWorkbenchServices,
   formatProjectWorkbenchPreviewFeedback,
+  useDelegations,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { Activity } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
+
+import { DelegatePanel } from "../Delegations/DelegatePanel.js";
 
 export interface ProjectWorkbenchConversationSlots {
   runSteering?: ConversationRunSteering;
@@ -88,6 +92,7 @@ export function ProjectWorkbenchConversation({
     services: previewServices,
     isRunLoading: runsQuery.isLoading,
   });
+  const delegationsQuery = useDelegations(conversationId ?? "");
   const isWorkbenchEligible = hasCodingEnvironment || runsQuery.runs.length > 0;
 
   if (!hasCodingEnvironment && (runsQuery.isLoading || !isWorkbenchEligible)) {
@@ -242,6 +247,11 @@ export function ProjectWorkbenchConversation({
       />
     ),
     proof: renderPanel("proof"),
+    delegates: delegationsQuery.data?.delegations[0] ? (
+      <DelegatePanel conversationId={delegationsQuery.data.delegations[0].childConversationId} />
+    ) : (
+      <DelegationCard delegations={[]} />
+    ),
   };
 
   return (
