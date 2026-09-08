@@ -290,6 +290,16 @@ export const externalAgentComparisonSchema = z.object({
   diff: z.string().max(2_000_000),
 });
 
+export const externalAgentCommitSchema = z.object({
+  driver: agentRuntimeVendorSchema,
+  directoryId: z.string().min(1),
+  baseHead: z.string().min(1),
+  commitHead: z.string().min(1),
+  message: z.string().min(1).max(256),
+});
+
+export type ExternalAgentCommit = z.infer<typeof externalAgentCommitSchema>;
+
 export type ExternalAgentComparison = z.infer<typeof externalAgentComparisonSchema>;
 
 export type AgentToolState = z.infer<typeof agentToolStateSchema>;

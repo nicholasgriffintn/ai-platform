@@ -18,6 +18,7 @@ import {
   agentToolStateSchema,
   externalAgentLaunchSchema,
   externalAgentComparisonSchema,
+  externalAgentCommitSchema,
   discoveredModelSchema,
   localConversationSchema,
   localMessageSchema,
@@ -68,6 +69,11 @@ export interface ConnectedDesktopBackend extends DesktopBackend {
     directoryId: string,
     baseHead: string,
   ) => Promise<import("@ngriffin_uk/polychat-schemas").ExternalAgentComparison>;
+  commitAntigravity: (
+    directoryId: string,
+    baseHead: string,
+    message: string,
+  ) => Promise<import("@ngriffin_uk/polychat-schemas").ExternalAgentCommit>;
 }
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
@@ -152,6 +158,10 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
   compareAntigravity: async (directoryId, baseHead) =>
     externalAgentComparisonSchema.parse(
       await invoke("compare_antigravity", { directoryId, baseHead }),
+    ),
+  commitAntigravity: async (directoryId, baseHead, message) =>
+    externalAgentCommitSchema.parse(
+      await invoke("commit_antigravity", { directoryId, baseHead, message }),
     ),
   listAgentDirectories: async () =>
     agentDirectorySchema.array().parse(await invoke("list_agent_directories")),

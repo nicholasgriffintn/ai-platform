@@ -859,6 +859,29 @@ fn compare_antigravity(
 }
 
 #[tauri::command]
+fn commit_antigravity(
+    directory_id: String,
+    base_head: String,
+    message: String,
+    directories: State<'_, DirectoryGrants>,
+) -> Result<process::ExternalAgentCommit, String> {
+    let grant = directories
+        .get(&directory_id)
+        .map_err(|cause| format!("{cause:?}"))?;
+    let directory = process::ensure_directory_grant(&grant.path, &grant)
+        .map_err(|cause| format!("{cause:?}"))?;
+
+    process::commit_external_agent(
+        AgentDriver::Antigravity,
+        directory_id,
+        &directory,
+        base_head,
+        message,
+    )
+    .map_err(|cause| format!("{cause:?}"))
+}
+
+#[tauri::command]
 async fn start_agent_process_run(
     run_id: String,
     request: ProcessRunRequest,
@@ -1292,6 +1315,7 @@ fn main() {
             probe_agent_tool,
             launch_antigravity,
             compare_antigravity,
+            commit_antigravity,
             start_agent_process_run,
             decide_approval,
             collect_diagnostics,

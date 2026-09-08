@@ -8,6 +8,7 @@ import type {
   AgentToolState,
   ExternalAgentLaunch,
   ExternalAgentComparison,
+  ExternalAgentCommit,
   DesktopEndpoint,
   DesktopModelRunRequest,
   DesktopRuntimeReadiness,
@@ -37,6 +38,11 @@ export interface DesktopBackend {
   startAgentRun: (request: DesktopAgentRunRequest) => Promise<DesktopRun>;
   startAgentProcessRun: (request: DesktopAgentProcessRunRequest) => Promise<DesktopRun>;
   launchAntigravity: (directoryId: string) => Promise<ExternalAgentLaunch>;
+  commitAntigravity: (
+    directoryId: string,
+    baseHead: string,
+    message: string,
+  ) => Promise<ExternalAgentCommit>;
   compareAntigravity: (directoryId: string, baseHead: string) => Promise<ExternalAgentComparison>;
   probeAgentTool: (driver: AgentRuntimeVendor) => Promise<AgentToolState>;
   listAgentDirectories: () => Promise<AgentDirectory[]>;
@@ -159,6 +165,13 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
       dirty: false,
       changedFiles: [],
       diff: "",
+    }),
+    commitAntigravity: async (directoryId, baseHead, message) => ({
+      driver: "antigravity",
+      directoryId,
+      baseHead,
+      commitHead: "0000000",
+      message,
     }),
     probeAgentTool: async () => ({
       state: "missing",

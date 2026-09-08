@@ -167,6 +167,16 @@ pub struct ExternalAgentComparison {
     pub diff: String,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExternalAgentCommit {
+    pub driver: AgentDriver,
+    pub directory_id: String,
+    pub base_head: String,
+    pub commit_head: String,
+    pub message: String,
+}
+
 #[derive(Clone, Debug, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum AgentToolState {
@@ -204,6 +214,10 @@ pub enum ProcessRefusal {
     AlreadyRunning,
     NotInstalled,
     UnsupportedDriver,
+    InvalidCommitMessage,
+    ReviewStateChanged,
+    NoChanges,
+    CommitFailed,
 }
 
 pub fn program_for(driver: AgentDriver) -> AgentProgram {
@@ -506,6 +520,36 @@ pub fn compare_external_agent(
     })
 }
 
+pub fn commit_external_agent(
+    driver: AgentDriver,
+    directory_id: String,
+    directory: &Path,
+    base_head: String,
+    message: String,
+) -> Result<ExternalAgentCommit, ProcessRefusal> {
+    let message = message.trim();
+    if message.is_empty() || message.len() > 256 {
+        return Err(ProcessRefusal::InvalidCommitMessage);
+    }
+    if git_head(directory)? != base_head {
+        return Err(ProcessRefusal::ReviewStateChanged);
+    }
+    if !is_dirty(directory)? {
+        return Err(ProcessRefusal::NoChanges);
+    }
+    run_git(directory, &["add", "--all"])?;
+    run_git(directory, &["commit", "-m", message, "--"])?;
+    let commit_head = git_head(directory)?;
+
+    Ok(ExternalAgentCommit {
+        driver,
+        directory_id,
+        base_head,
+        commit_head,
+        message: message.to_string(),
+    })
+}
+
 fn codex_sandbox_argument(mode: PermissionMode) -> &'static str {
     match mode {
         PermissionMode::Supervised | PermissionMode::AutoAcceptEdits => "workspace-write",
@@ -586,6 +630,19 @@ fn git_output(path: &Path, args: &[&str]) -> Result<String, ProcessRefusal> {
     }
 
     String::from_utf8(output.stdout).map_err(|_| ProcessRefusal::MissingHead)
+}
+
+fn run_git(path: &Path, args: &[&str]) -> Result<(), ProcessRefusal> {
+    let output = Command::new("git")
+        .args(args)
+        .current_dir(path)
+        .output()
+        .map_err(|_| ProcessRefusal::CommitFailed)?;
+    if output.status.success() {
+        Ok(())
+    } else {
+        Err(ProcessRefusal::CommitFailed)
+    }
 }
 
 pub fn is_dirty(path: &Path) -> Result<bool, ProcessRefusal> {
