@@ -1,11 +1,13 @@
+import { DELEGATION_MESSAGE_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
-import { withThreadLockIfFree } from "~/services/conversations/coordinator/client";
+import { TaskService } from "~/services/tasks/TaskService";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
+import { deliverDelegationMessage } from "../delegations/message";
 import { messageParent as messageParentDescriptor } from "./definitions/message-parent";
 
 export const messageParent: ApiToolDefinition = {
@@ -26,14 +28,8 @@ export const messageParent: ApiToolDefinition = {
     const delegation = await context.repositories.delegations.getById(
       delegationContext.delegationId,
     );
-    const handleId = `handle_${delegationContext.delegationId}`;
-    const handle = await context.repositories.conversationHandles.getUsableHandle(
-      handleId,
-      delegationContext.delegationId,
-      new Date().toISOString(),
-    );
 
-    if (!delegation || delegation.childConversationId !== toolContext.completionId || !handle) {
+    if (!delegation || delegation.childConversationId !== toolContext.completionId) {
       throw new AssistantError(
         "This delegate has no usable parent handle.",
         ErrorType.FORBIDDEN,
@@ -41,48 +37,26 @@ export const messageParent: ApiToolDefinition = {
       );
     }
 
-    if (
-      !(await context.repositories.workspaces.canAccessConversation(handle.conversationId, user.id))
-    ) {
-      throw new AssistantError(
-        "The parent conversation is no longer accessible.",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
-
-    const delivered = await withThreadLockIfFree(
-      { env: context.env, conversationId: handle.conversationId, kind: "user_message" },
-      async (lease) => {
-        await lease.assertOwned();
-        await context.repositories.messages.createMessage(
-          generateId(),
-          handle.conversationId,
-          "assistant",
-          args.message,
-          {
-            data: {
-              trigger: "handle",
-              delegationId: delegation.id,
-              teammateId: delegation.teammateId,
-            },
-            provenance: {
-              site: "hosted",
-              model: "delegation",
-              vendor: delegation.teammateId,
-            },
-          },
-        );
-        await context.repositories.conversations.markUnreadForUser(handle.conversationId, user.id);
-        return true;
-      },
+    const delivered = await deliverDelegationMessage(
+      context,
+      delegation.id,
+      args.message,
+      toolContext.completionId,
     );
 
     if (!delivered) {
+      await new TaskService(context.env, context.repositories.tasks).enqueueTask({
+        id: `delegation_message_${delegation.id}_${generateId()}`,
+        task_type: DELEGATION_MESSAGE_TASK_TYPE,
+        user_id: user.id,
+        project_id: undefined,
+        priority: 4,
+        task_data: { delegationId: delegation.id, message: args.message },
+      });
       return {
-        status: "error",
+        status: "success",
         name: "message_parent",
-        content: "The parent conversation is busy. Try again after its current turn finishes.",
+        content: "The parent conversation is busy. The message is queued for delivery.",
       };
     }
 

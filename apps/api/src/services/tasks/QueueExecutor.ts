@@ -2,6 +2,7 @@ import {
   INFRA_RECONCILIATION_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
   DELEGATION_RUN_TASK_TYPE,
+  DELEGATION_MESSAGE_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
   OCR_BATCH_POLLING_TASK_TYPE,
   REALTIME_RECONCILIATION_TASK_TYPE,
@@ -20,6 +21,7 @@ import { TaskNotificationDeliveryHandler } from "../task-notifications/delivery"
 import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
 import { ArtificialAnalysisScoringHandler } from "./handlers/ArtificialAnalysisScoringHandler";
 import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandler";
+import { DelegationMessageHandler } from "./handlers/DelegationMessageHandler";
 import { DelegationRunHandler } from "./handlers/DelegationRunHandler";
 import { DelegationWakeHandler } from "./handlers/DelegationWakeHandler";
 import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
@@ -59,6 +61,7 @@ export function createTaskHandlers(): Map<TaskType, TaskHandler> {
     [SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
     [PROJECT_TASK_RUN_TASK_TYPE, new ProjectTaskRunHandler()],
     [DELEGATION_RUN_TASK_TYPE, new DelegationRunHandler()],
+    [DELEGATION_MESSAGE_TASK_TYPE, new DelegationMessageHandler()],
     [DELEGATION_WAKE_TASK_TYPE, new DelegationWakeHandler()],
     [OCR_BATCH_POLLING_TASK_TYPE, new OcrBatchPollingHandler()],
     [USAGE_ROLLUP_TASK_TYPE, new UsageRollupHandler()],
