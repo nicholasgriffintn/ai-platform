@@ -271,6 +271,15 @@ export const agentToolStateSchema = z.discriminatedUnion("state", [
   }),
 ]);
 
+export const externalAgentLaunchSchema = z.object({
+  driver: z.literal("antigravity"),
+  directoryId: z.string().min(1),
+  head: z.string().min(1),
+  dirty: z.boolean(),
+});
+
+export type ExternalAgentLaunch = z.infer<typeof externalAgentLaunchSchema>;
+
 export type AgentToolState = z.infer<typeof agentToolStateSchema>;
 
 export const desktopAgentProcessRunRequestSchema = z.object({

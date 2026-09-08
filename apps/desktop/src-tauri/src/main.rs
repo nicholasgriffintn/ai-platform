@@ -822,6 +822,21 @@ fn probe_agent_tool(driver: AgentDriver) -> AgentToolState {
 }
 
 #[tauri::command]
+fn launch_antigravity(
+    directory_id: String,
+    directories: State<'_, DirectoryGrants>,
+) -> Result<process::ExternalAgentLaunch, String> {
+    let grant = directories
+        .get(&directory_id)
+        .map_err(|cause| format!("{cause:?}"))?;
+    let directory = process::ensure_directory_grant(&grant.path, &grant)
+        .map_err(|cause| format!("{cause:?}"))?;
+
+    process::launch_external_agent(AgentDriver::Antigravity, directory_id, &directory)
+        .map_err(|cause| format!("{cause:?}"))
+}
+
+#[tauri::command]
 async fn start_agent_process_run(
     run_id: String,
     request: ProcessRunRequest,
@@ -1237,6 +1252,7 @@ fn main() {
             pick_agent_directory,
             revoke_agent_directory,
             probe_agent_tool,
+            launch_antigravity,
             start_agent_process_run,
             decide_approval,
             collect_diagnostics,

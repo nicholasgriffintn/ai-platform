@@ -146,6 +146,15 @@ pub struct ProcessRunRequest {
     pub acknowledge_dirty: bool,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExternalAgentLaunch {
+    pub driver: AgentDriver,
+    pub directory_id: String,
+    pub head: String,
+    pub dirty: bool,
+}
+
 #[derive(Clone, Debug, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum AgentToolState {
@@ -182,6 +191,7 @@ pub enum ProcessRefusal {
     MissingHead,
     AlreadyRunning,
     NotInstalled,
+    UnsupportedDriver,
 }
 
 pub fn program_for(driver: AgentDriver) -> AgentProgram {
@@ -419,6 +429,34 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
     let _ = program_for(driver);
 
     Ok(argv)
+}
+
+pub fn launch_external_agent(
+    driver: AgentDriver,
+    directory_id: String,
+    directory: &Path,
+) -> Result<ExternalAgentLaunch, ProcessRefusal> {
+    let head = git_head(directory)?;
+    let dirty = is_dirty(directory)?;
+
+    #[cfg(target_os = "macos")]
+    if driver == AgentDriver::Antigravity {
+        Command::new("open")
+            .args(["-a", "Antigravity"])
+            .arg(directory)
+            .spawn()
+            .map_err(|_| ProcessRefusal::NotInstalled)?;
+
+        return Ok(ExternalAgentLaunch {
+            driver,
+            directory_id,
+            head,
+            dirty,
+        });
+    }
+
+    let _ = (driver, directory_id, head, dirty);
+    Err(ProcessRefusal::UnsupportedDriver)
 }
 
 fn codex_sandbox_argument(mode: PermissionMode) -> &'static str {

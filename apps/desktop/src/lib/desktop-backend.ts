@@ -16,6 +16,7 @@ import {
   desktopStreamEventSchema,
   agentDirectorySchema,
   agentToolStateSchema,
+  externalAgentLaunchSchema,
   discoveredModelSchema,
   localConversationSchema,
   localMessageSchema,
@@ -59,6 +60,9 @@ export interface ConnectedDesktopBackend extends DesktopBackend {
   setAttentionBadge: (count: number) => Promise<void>;
   isSignedIn: () => Promise<boolean>;
   accessToken: () => Promise<DesktopSessionToken>;
+  launchAntigravity: (
+    directoryId: string,
+  ) => Promise<import("@ngriffin_uk/polychat-schemas").ExternalAgentLaunch>;
 }
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
@@ -138,6 +142,8 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
     ),
   probeAgentTool: async (driver: AgentRuntimeVendor) =>
     agentToolStateSchema.parse(await invoke("probe_agent_tool", { driver })),
+  launchAntigravity: async (directoryId) =>
+    externalAgentLaunchSchema.parse(await invoke("launch_antigravity", { directoryId })),
   listAgentDirectories: async () =>
     agentDirectorySchema.array().parse(await invoke("list_agent_directories")),
   pickAgentDirectory: async () =>
