@@ -52,6 +52,8 @@ function formatDelegation(row: DelegationRow): Delegation {
     },
     state: row.state,
     result: parseResult(row.result_json),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   });
 }
 

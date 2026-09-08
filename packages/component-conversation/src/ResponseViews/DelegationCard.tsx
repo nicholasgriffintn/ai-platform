@@ -1,4 +1,5 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { formatStatsDuration } from "@ngriffin_uk/polychat-library-chat";
 import type { Delegation, DelegationState } from "@ngriffin_uk/polychat-schemas";
 
 const stateLabels: Record<DelegationState, string> = {
@@ -68,6 +69,12 @@ export function DelegationCard({ delegations, onStopAll, onOpenDelegation }: Del
                 </span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{delegation.goal}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {formatStatsDuration(
+                  Date.parse(delegation.updatedAt ?? new Date().toISOString()) -
+                    Date.parse(delegation.createdAt),
+                )}
+              </p>
             </button>
           </li>
         ))}

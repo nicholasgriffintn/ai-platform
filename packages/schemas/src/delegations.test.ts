@@ -23,6 +23,8 @@ const delegation = {
   },
   state: "queued" as const,
   result: null,
+  createdAt: "2026-09-08T10:00:00.000Z",
+  updatedAt: "2026-09-08T10:00:00.000Z",
 };
 
 describe("delegationSchema", () => {

@@ -60,6 +60,8 @@ export const delegationSchema = z.object({
   budget: delegationBudgetSchema,
   state: delegationStateSchema,
   result: delegationResultSchema.nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string().nullable(),
 });
 export type Delegation = z.infer<typeof delegationSchema>;
 
