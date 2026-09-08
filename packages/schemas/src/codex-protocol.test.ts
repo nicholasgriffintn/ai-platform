@@ -4,6 +4,7 @@ import {
   codexApprovalDecision,
   codexThreadConfig,
   readCodexApproval,
+  readCodexDecisions,
   readCodexModels,
   readCodexNotification,
   stripControlCharacters,
@@ -278,5 +279,31 @@ describe("codexApprovalDecision", () => {
   it("names a session-wide acceptance the way the protocol does", () => {
     expect(codexApprovalDecision("accept_for_session")).toBe("acceptForSession");
     expect(codexApprovalDecision("decline")).toBe("decline");
+  });
+});
+
+describe("readCodexDecisions", () => {
+  it("keeps only the decisions the agent actually offered", () => {
+    expect(
+      readCodexDecisions([
+        "accept",
+        { acceptWithExecpolicyAmendment: { execpolicy_amendment: ["echo", "ok"] } },
+        "cancel",
+      ]),
+    ).toEqual(["accept", "cancel"]);
+  });
+
+  it("reads a session-wide acceptance when the agent offers one", () => {
+    expect(readCodexDecisions(["accept", "acceptForSession", "decline"])).toEqual([
+      "accept",
+      "accept_for_session",
+      "decline",
+    ]);
+  });
+
+  it("falls back to accept and decline when the agent lists nothing usable", () => {
+    expect(readCodexDecisions([])).toEqual(["accept", "decline"]);
+    expect(readCodexDecisions(null)).toEqual(["accept", "decline"]);
+    expect(readCodexDecisions([{ onlyAnAmendment: {} }])).toEqual(["accept", "decline"]);
   });
 });

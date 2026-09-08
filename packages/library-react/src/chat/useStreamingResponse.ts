@@ -18,6 +18,7 @@ import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model
 import {
   CHATS_QUERY_KEY,
   apiService,
+  useAgentApprovalStore,
   useChatStore,
   useStreamActivityStore,
 } from "@ngriffin_uk/polychat-library-client";
@@ -97,6 +98,7 @@ export function useStreamingResponse(
     (state) => state.completeStreamActivityMessage,
   );
   const endStreamActivity = useStreamActivityStore((state) => state.endStreamActivity);
+  const clearAgentApprovals = useAgentApprovalStore((state) => state.clearApprovals);
   const recordStreamActivityState = useStreamActivityStore(
     (state) => state.recordStreamActivityState,
   );
@@ -486,6 +488,12 @@ export function useStreamingResponse(
                         useStreamActivityStore
                           .getState()
                           .updateStreamLoadingMessage(conversationId, message),
+                      onApproval: (approval, answer) =>
+                        useAgentApprovalStore
+                          .getState()
+                          .requestApproval(conversationId, approval, answer),
+                      onApprovalResolved: (requestId) =>
+                        useAgentApprovalStore.getState().resolveApproval(conversationId, requestId),
                     })
                   : await streamDeviceModelRun({ ...runOptions, backend: deviceBackend });
             }
@@ -893,11 +901,13 @@ export function useStreamingResponse(
         streamSettled = true;
         stopLoading("stream-response");
         endStreamActivity(conversationId);
+        clearAgentApprovals(conversationId);
       }
     },
     [
       beginStreamActivity,
       cancelObservedRun,
+      clearAgentApprovals,
       generateResponse,
       stopLoading,
       endStreamActivity,

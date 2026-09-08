@@ -1,6 +1,7 @@
 export * from "./http.js";
 export * from "./chat/run-replay.js";
 export * from "./activity.js";
+export * from "./agentApprovalStore.js";
 export * from "./apps.js";
 export * from "./attention.js";
 export * from "./auth-service.js";

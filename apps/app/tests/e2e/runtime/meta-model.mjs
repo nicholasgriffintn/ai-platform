@@ -17,7 +17,11 @@ export function resolveMetaModelTool(body, prompt) {
     const conversationId = system.match(
       /<open_conversation_id>([^<]+)<\/open_conversation_id>/,
     )?.[1];
-    if (!conversationId) return null;
+
+    if (!conversationId) {
+      return null;
+    }
+
     name = "organise_conversation";
     args = { conversationId, action: "archive" };
   } else if (prompt === "File a release task from this bot") {

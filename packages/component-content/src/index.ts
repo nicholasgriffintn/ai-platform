@@ -11,6 +11,7 @@ export {
   type ShareDialogLabels,
   type ShareDialogProps,
 } from "./share";
+export * from "./AgentApprovalCard";
 export * from "./Artifacts";
 export * from "./Response";
 export * from "./SandboxView";

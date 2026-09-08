@@ -32,6 +32,7 @@ export interface AgentSessionRunOptions extends DeviceModelRunOptions {
     approval: AgentApproval,
     answer: (decision: AgentApprovalDecision) => Promise<void>,
   ) => void;
+  onApprovalResolved?: (requestId: string) => void;
 }
 
 type SessionBackend = Pick<
@@ -140,6 +141,9 @@ export async function streamAgentSessionRun(options: AgentSessionRunOptions): Pr
         break;
       case "diagnostic":
         options.onDiagnostic?.(event.message);
+        break;
+      case "approval.resolved":
+        options.onApprovalResolved?.(event.requestId);
         break;
       case "approval.requested":
         options.onApproval?.(event.approval, (decision) =>

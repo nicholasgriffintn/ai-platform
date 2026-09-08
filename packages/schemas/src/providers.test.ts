@@ -50,7 +50,7 @@ describe("provider contracts", () => {
     expect(getProviderCapabilities("codex").picksOwnModel).toBe(true);
   });
 
-  it("offers approval-gated permission modes only to agents that can answer approvals", () => {
+  it("offers Supervised only to agents that can answer approvals", () => {
     expect(agentModelConfig["agent/codex"]?.agent?.permissionModes).toEqual([
       "supervised",
       "auto_accept_edits",
@@ -62,9 +62,23 @@ describe("provider contracts", () => {
       const modes = agentModelConfig[`agent/${driver}`]?.agent?.permissionModes ?? [];
 
       expect(modes).not.toContain("supervised");
-      expect(modes).not.toContain("auto_accept_edits");
       expect(modes.length).toBeGreaterThan(0);
     }
+  });
+
+  it("keeps Auto-accept edits available to a batch agent, which needs no approval channel", () => {
+    const batch = getProviderCapabilities("claude-code");
+
+    expect(
+      getPermissionModeUnavailableReason(batch, "auto_accept_edits", [
+        "auto_accept_edits",
+        "auto",
+        "full_access",
+      ]),
+    ).toBeUndefined();
+    expect(agentModelConfig["agent/claude-code"]?.agent?.permissionModes).toContain(
+      "auto_accept_edits",
+    );
   });
 
   it("explains an approval-gated mode a batch agent cannot honour", () => {

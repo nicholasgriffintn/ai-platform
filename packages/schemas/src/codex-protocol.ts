@@ -138,8 +138,40 @@ const approvalParamsSchema = z.object({
   command: z.string().optional(),
   cwd: z.string().optional(),
   reason: z.string().nullable().optional(),
-  availableDecisions: z.array(z.string()).optional().nullable(),
+  availableDecisions: z
+    .array(z.union([z.string(), z.record(z.string(), z.unknown())]))
+    .optional()
+    .nullable(),
 });
+
+const CODEX_DECISION_NAMES: Record<string, AgentApprovalDecision> = {
+  accept: "accept",
+  acceptforsession: "accept_for_session",
+  decline: "decline",
+  cancel: "cancel",
+};
+
+const FALLBACK_DECISIONS: AgentApprovalDecision[] = ["accept", "decline"];
+
+export function readCodexDecisions(
+  offered: ReadonlyArray<string | Record<string, unknown>> | null | undefined,
+): AgentApprovalDecision[] {
+  if (!offered?.length) {
+    return [...FALLBACK_DECISIONS];
+  }
+
+  const decisions = offered.flatMap((entry) => {
+    if (typeof entry !== "string") {
+      return [];
+    }
+
+    const decision = CODEX_DECISION_NAMES[entry.toLowerCase()];
+
+    return decision ? [decision] : [];
+  });
+
+  return decisions.length ? [...new Set(decisions)] : [...FALLBACK_DECISIONS];
+}
 
 const APPROVAL_TITLES: Record<AgentApproval["kind"], string> = {
   command_execution: "Run a command",
@@ -162,10 +194,7 @@ export function readCodexApproval(
   }
 
   const kind = approvalKindFor(method);
-  const offered = (parsed.data.availableDecisions ?? []).map((decision) => decision.toLowerCase());
-  const decisions: AgentApprovalDecision[] = offered.includes("acceptforsession")
-    ? ["accept", "accept_for_session", "decline"]
-    : ["accept", "decline"];
+  const decisions = readCodexDecisions(parsed.data.availableDecisions);
 
   return {
     requestId: String(requestId),
@@ -180,17 +209,60 @@ export function readCodexApproval(
   };
 }
 
-const ANSI_PATTERN = /\u001B\[[0-9;?]*[ -/]*[@-~]/g;
-const CONTROL_PATTERN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+const ESCAPE = 0x1b;
+const DELETE = 0x7f;
+const CSI_FINAL_START = 0x40;
+const CSI_FINAL_END = 0x7e;
+const SPACE = 0x20;
+
+function isControl(code: number): boolean {
+  return (code < SPACE && code !== 0x09 && code !== 0x0a) || code === DELETE;
+}
 
 export function stripControlCharacters(value: string | null): string | null {
   if (value === null) {
     return null;
   }
 
-  const cleaned = value.replace(ANSI_PATTERN, "").replace(CONTROL_PATTERN, "").trim();
+  let output = "";
+  let index = 0;
 
-  return cleaned.length ? cleaned : null;
+  while (index < value.length) {
+    const code = value.charCodeAt(index);
+
+    if (code === ESCAPE) {
+      index += 1;
+
+      if (value[index] === "[") {
+        index += 1;
+
+        while (index < value.length) {
+          const final = value.charCodeAt(index);
+
+          index += 1;
+
+          if (final >= CSI_FINAL_START && final <= CSI_FINAL_END) {
+            break;
+          }
+        }
+      }
+
+      continue;
+    }
+
+    if (isControl(code)) {
+      index += 1;
+
+      continue;
+    }
+
+    output += value[index];
+    index += 1;
+  }
+
+  const trimmed = output.trim();
+
+  return trimmed.length ? trimmed : null;
 }
 
 function readUsage(value: unknown): AgentTokenUsage | null {
@@ -341,11 +413,13 @@ export function readCodexNotification(method: string, params: unknown): AgentSes
           }
         : null;
     }
+
     case "turn/started": {
       const parsed = turnStartedSchema.safeParse(params);
 
       return parsed.success ? { type: "turn.started", turnId: parsed.data.turn.id } : null;
     }
+
     case "turn/completed": {
       const parsed = turnCompletedSchema.safeParse(params);
 
@@ -362,6 +436,7 @@ export function readCodexNotification(method: string, params: unknown): AgentSes
 
       return { type: "turn.completed", turnId: parsed.data.turn.id, usage: null };
     }
+
     case "error": {
       const parsed = errorSchema.safeParse(params);
 
@@ -372,17 +447,20 @@ export function readCodexNotification(method: string, params: unknown): AgentSes
           "The agent could not complete this turn.",
       };
     }
+
     case "item/agentMessage/delta": {
       const parsed = deltaSchema.safeParse(params);
 
       return parsed.success ? { type: "message.delta", delta: parsed.data.delta } : null;
     }
+
     case "item/reasoning/textDelta":
     case "item/reasoning/summaryTextDelta": {
       const parsed = deltaSchema.safeParse(params);
 
       return parsed.success ? { type: "reasoning.delta", delta: parsed.data.delta } : null;
     }
+
     case "turn/plan/updated": {
       const parsed = planSchema.safeParse(params);
 
@@ -390,17 +468,20 @@ export function readCodexNotification(method: string, params: unknown): AgentSes
         ? { type: "plan.updated", text: readPlanText(parsed.data.explanation, parsed.data.plan) }
         : null;
     }
+
     case "turn/diff/updated": {
       const parsed = diffSchema.safeParse(params);
 
       return parsed.success ? { type: "diff.updated", diff: parsed.data.diff } : null;
     }
+
     case "thread/tokenUsage/updated": {
       const parsed = tokenUsageSchema.safeParse(params);
       const usage = parsed.success ? readUsage(parsed.data.tokenUsage.last) : null;
 
       return usage ? { type: "usage.updated", usage } : null;
     }
+
     case "serverRequest/resolved": {
       const parsed = resolvedSchema.safeParse(params);
 
@@ -408,12 +489,14 @@ export function readCodexNotification(method: string, params: unknown): AgentSes
         ? { type: "approval.resolved", requestId: String(parsed.data.requestId) }
         : null;
     }
+
     case "item/started":
     case "item/completed": {
       const item = readItem(params);
 
       return item ? { type: "item.updated", item } : null;
     }
+
     default:
       return null;
   }
