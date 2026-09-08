@@ -343,9 +343,37 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var resolvedProjectTaskApprovals: [(projectId: String, taskId: String, interactionId: String, resolution: String)] = []
     var fetchChatRunSnapshotCallCount = 0
     var fetchChatRunEventsCallCount = 0
+    var handoffResponse: HandoffResponse?
+    var createdMachineHandoffs: [(conversationId: String, machineId: String, modelId: String, draft: HandoffDraft?)] = []
+    var cancelledMachineHandoffs: [(id: String, machineId: String)] = []
 
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse {
         throw TestFailure.unexpectedCall
+    }
+
+    func createMachineHandoff(
+        conversationId: String,
+        machineId: String,
+        modelId: String,
+        draft: HandoffDraft?
+    ) async throws -> HandoffResponse {
+        createdMachineHandoffs.append((conversationId, machineId, modelId, draft))
+
+        guard let handoffResponse else {
+            throw TestFailure.unexpectedCall
+        }
+
+        return handoffResponse
+    }
+
+    func cancelMachineHandoff(id: String, machineId: String) async throws -> HandoffResponse {
+        cancelledMachineHandoffs.append((id, machineId))
+
+        guard let handoffResponse else {
+            throw TestFailure.unexpectedCall
+        }
+
+        return handoffResponse
     }
 
     func fetchConversation(
