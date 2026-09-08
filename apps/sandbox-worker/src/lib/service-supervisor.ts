@@ -143,8 +143,6 @@ export class ProjectServiceSupervisor {
 
     for (const definition of definitions) {
       await this.options.checkpoint(`Sandbox run cancelled before starting ${definition.name}`);
-      this.queueLogEvent(service, "stdout", "", true);
-      this.queueLogEvent(service, "stderr", "", true);
       assertSafeCommand(definition.command, { trustLevel: "trusted" });
       const approval = await resolveCommandApproval({
         command: definition.command,

@@ -11,6 +11,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useQuery } from "@tanstack/react-query";
 
+import { liveOrPoll } from "../sync/live-or-poll.js";
+
 const ACTIVE_REFRESH_MS = 2_000;
 const IDLE_REFRESH_MS = 30_000;
 
@@ -82,10 +84,12 @@ export function useProjectWorkbenchRuns({
       };
     },
     enabled: Boolean(projectId && conversationId),
-    refetchInterval: (currentQuery) =>
-      conversationIsStreaming || currentQuery.state.data?.runs.some(({ run }) => isActiveRun(run))
-        ? ACTIVE_REFRESH_MS
-        : IDLE_REFRESH_MS,
+    refetchInterval: (query) =>
+      liveOrPoll(query, (currentQuery) =>
+        conversationIsStreaming || currentQuery.state.data?.runs.some(({ run }) => isActiveRun(run))
+          ? ACTIVE_REFRESH_MS
+          : IDLE_REFRESH_MS,
+      ),
     refetchIntervalInBackground: true,
   });
 

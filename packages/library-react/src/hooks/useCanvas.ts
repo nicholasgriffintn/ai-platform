@@ -6,6 +6,8 @@ import {
 import type { CanvasGenerateRequest, CanvasMode } from "@ngriffin_uk/polychat-schemas/experiences";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
+import { liveOrPoll } from "../sync/live-or-poll.js";
+
 export const CANVAS_QUERY_KEY = "canvas";
 
 export function useCanvasModels(mode: CanvasMode, enabled = true) {
@@ -28,18 +30,19 @@ export function useCanvasGenerations(mode?: CanvasMode, enabled = true) {
     queryKey: [CANVAS_QUERY_KEY, "generations", mode ?? "all"],
     queryFn: () => fetchCanvasGenerations(mode),
     enabled,
-    refetchInterval: (query) => {
-      const data = query.state.data;
+    refetchInterval: (query) =>
+      liveOrPoll(query, (query) => {
+        const data = query.state.data;
 
-      if (!data?.length) {
-        return false;
-      }
+        if (!data?.length) {
+          return false;
+        }
 
-      const hasActiveGeneration = data.some((generation) =>
-        ["queued", "processing"].includes(generation.status),
-      );
+        const hasActiveGeneration = data.some((generation) =>
+          ["queued", "processing"].includes(generation.status),
+        );
 
-      return hasActiveGeneration ? 10000 : false;
-    },
+        return hasActiveGeneration ? 10000 : false;
+      }),
   });
 }

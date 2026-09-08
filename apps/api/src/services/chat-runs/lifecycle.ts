@@ -10,6 +10,7 @@ import type {
 import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
 import type { ConversationRunRepository } from "~/repositories/ConversationRunRepository";
 import { isThreadLeaseOwnershipLostError } from "~/services/conversations/coordinator/client";
+import { publishConversationChanged, publishRunChanged } from "~/services/sync/conversation-events";
 import { TaskExecutionOwnershipLostError } from "~/services/tasks/task-execution-lease";
 import { resolveChatProjectAccess } from "~/services/workspaces/chatProjectAccess";
 import type { CoreChatOptions } from "~/types";
@@ -141,6 +142,11 @@ export class ChatRunLifecycle {
     return this.receipt.run;
   }
 
+  private async announce(run: ChatRun): Promise<void> {
+    await publishRunChanged(this.env, run);
+    await publishConversationChanged(this.env, run.conversationId, { runId: run.id });
+  }
+
   async isCancellationRequested(): Promise<boolean> {
     const current = await this.repository.getById(this.run.id);
 
@@ -240,6 +246,8 @@ export class ChatRunLifecycle {
 
     this.receipt.run = transitioned;
 
+    await this.announce(transitioned);
+
     if (status === "cancelled" && transitioned.cancellationRequestedAt && this.env) {
       recordChatRunOperationalMetric(this.env, {
         signal: "cancellation_latency",
@@ -268,6 +276,8 @@ export class ChatRunLifecycle {
 
     if (transitioned) {
       this.receipt.run = transitioned;
+
+      await this.announce(transitioned);
 
       if (interrupted && this.env) {
         recordChatRunOperationalMetric(this.env, {
@@ -348,6 +358,13 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
     }
 
     receipt.run = running;
+  }
+
+  if (!receipt.duplicate) {
+    await publishRunChanged(scope.context.env, receipt.run);
+    await publishConversationChanged(scope.context.env, receipt.run.conversationId, {
+      runId: receipt.run.id,
+    });
   }
 
   if (!receipt.duplicate && scope.projectTask && scope.projectTask.runId !== receipt.run.id) {

@@ -11,6 +11,8 @@ import type {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { liveOrPoll } from "../sync/live-or-poll.js";
+
 const ACTIVE_REFRESH_MS = 2_000;
 
 function accessIsExpired(access?: SandboxPreviewAccess): boolean {
@@ -84,9 +86,11 @@ export function useProjectWorkbenchPreview({
     enabled: Boolean(runId && scopedAccess),
     initialData: scopedAccess,
     refetchInterval: (query) =>
-      query.state.data?.state === "healthy" || query.state.data?.state === "starting"
-        ? ACTIVE_REFRESH_MS
-        : false,
+      liveOrPoll(query, (query) =>
+        query.state.data?.state === "healthy" || query.state.data?.state === "starting"
+          ? ACTIVE_REFRESH_MS
+          : false,
+      ),
     refetchIntervalInBackground: true,
   });
   const preview = accessQuery.data ?? scopedAccess;

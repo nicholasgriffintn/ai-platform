@@ -3,6 +3,8 @@ import type { Goal } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
+import { liveOrPoll } from "../sync/live-or-poll.js";
+
 export const GOAL_QUERY_KEY = "goal";
 const ACTIVE_GOAL_REFETCH_MS = 2_000;
 
@@ -35,8 +37,12 @@ export function useGoal(
     enabled,
     retry: false,
     staleTime: 15_000,
-    refetchInterval:
-      options?.refetchInterval ?? ((currentQuery) => goalRefetchInterval(currentQuery.state.data)),
+    refetchInterval: (query) =>
+      liveOrPoll(
+        query,
+        options?.refetchInterval ??
+          ((currentQuery) => goalRefetchInterval(currentQuery.state.data)),
+      ),
     refetchIntervalInBackground: true,
   });
 

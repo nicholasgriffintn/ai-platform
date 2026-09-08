@@ -6,6 +6,8 @@ import {
 } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { liveOrPoll } from "../sync/live-or-poll.js";
+
 export const conversationDelegationsQueryKey = (conversationId: string) =>
   ["conversation-delegations", conversationId] as const;
 export const conversationHandlesQueryKey = ["conversation-handles"] as const;
@@ -15,7 +17,7 @@ export function useDelegations(conversationId: string) {
     queryKey: conversationDelegationsQueryKey(conversationId),
     queryFn: () => listConversationDelegations(conversationId),
     enabled: Boolean(conversationId),
-    refetchInterval: 2_000,
+    refetchInterval: (query) => liveOrPoll(query, 2_000),
     refetchIntervalInBackground: true,
   });
 }

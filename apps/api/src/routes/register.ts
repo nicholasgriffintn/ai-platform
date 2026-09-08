@@ -25,6 +25,7 @@ import search from "./search";
 import skills from "./skills";
 import sources from "./sources";
 import stripe from "./stripe";
+import sync from "./sync";
 import tasks from "./tasks";
 import teammates from "./teammates";
 import templates from "./templates";
@@ -61,6 +62,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/skills", skills);
   app.route("/sources", sources);
   app.route("/realtime", realtime);
+  app.route("/sync", sync);
   app.route("/search", search);
   app.route("/memory/documents", memoryDocuments);
   app.route("/chat/saved-messages", savedMessages);

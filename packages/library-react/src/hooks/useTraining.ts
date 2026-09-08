@@ -15,6 +15,8 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { liveOrPoll } from "../sync/live-or-poll.js";
+
 export const TRAINING_QUERY_KEYS = {
   models: ["training", "models"],
   jobs: ["training", "jobs"],
@@ -56,15 +58,16 @@ export function useTrainingJobs() {
     queryKey: TRAINING_QUERY_KEYS.jobs,
     queryFn: fetchTrainingJobs,
     staleTime: TRAINING_STATUS_STALE_TIME,
-    refetchInterval: (query) => {
-      const jobs = query.state.data;
+    refetchInterval: (query) =>
+      liveOrPoll(query, (query) => {
+        const jobs = query.state.data;
 
-      if (!jobs?.some((job) => ACTIVE_JOB_STATUSES.has(job.status.toLowerCase()))) {
-        return false;
-      }
+        if (!jobs?.some((job) => ACTIVE_JOB_STATUSES.has(job.status.toLowerCase()))) {
+          return false;
+        }
 
-      return 10000;
-    },
+        return 10000;
+      }),
   });
 }
 
@@ -86,7 +89,11 @@ export function useTrainingJobEvents(
     },
     enabled: Boolean(enabled && provider && jobName),
     staleTime: TRAINING_STATUS_STALE_TIME,
-    refetchInterval: enabled && provider && jobName ? (options.refetchInterval ?? false) : false,
+    refetchInterval: (query) =>
+      liveOrPoll(
+        query,
+        enabled && provider && jobName ? (options.refetchInterval ?? false) : false,
+      ),
   });
 }
 
@@ -108,8 +115,11 @@ export function useTrainingDeploymentEvents(
     },
     enabled: Boolean(enabled && provider && endpointName),
     staleTime: TRAINING_STATUS_STALE_TIME,
-    refetchInterval:
-      enabled && provider && endpointName ? (options.refetchInterval ?? false) : false,
+    refetchInterval: (query) =>
+      liveOrPoll(
+        query,
+        enabled && provider && endpointName ? (options.refetchInterval ?? false) : false,
+      ),
   });
 }
 
@@ -118,19 +128,20 @@ export function useTrainingDeployments() {
     queryKey: TRAINING_QUERY_KEYS.deployments,
     queryFn: fetchTrainingDeployments,
     staleTime: TRAINING_STATUS_STALE_TIME,
-    refetchInterval: (query) => {
-      const deployments = query.state.data;
+    refetchInterval: (query) =>
+      liveOrPoll(query, (query) => {
+        const deployments = query.state.data;
 
-      if (
-        !deployments?.some((deployment) =>
-          ACTIVE_DEPLOYMENT_STATUSES.has(deployment.status.toLowerCase()),
-        )
-      ) {
-        return false;
-      }
+        if (
+          !deployments?.some((deployment) =>
+            ACTIVE_DEPLOYMENT_STATUSES.has(deployment.status.toLowerCase()),
+          )
+        ) {
+          return false;
+        }
 
-      return 10000;
-    },
+        return 10000;
+      }),
   });
 }
 

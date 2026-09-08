@@ -1,7 +1,7 @@
+/** @vitest-environment jsdom */
 import type { LastModelSelection } from "@ngriffin_uk/polychat-schemas";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
-import { JSDOM } from "jsdom";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -42,12 +42,8 @@ const client = new QueryClient({
 const wrapper = ({ children }: { children: ReactNode }) => (
   <QueryClientProvider client={client}>{children}</QueryClientProvider>
 );
-let dom: JSDOM;
 
 beforeEach(() => {
-  dom = new JSDOM("<!doctype html><html><body></body></html>");
-  vi.stubGlobal("window", dom.window);
-  vi.stubGlobal("document", dom.window.document);
   mocks.state.user.id = 42;
   mocks.state.userSettings.last_model_selection = null;
   mocks.update.mockReset();
@@ -57,7 +53,6 @@ afterEach(() => {
   client.clear();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
-  dom.window.close();
 });
 
 describe("last-used model synchronisation", () => {

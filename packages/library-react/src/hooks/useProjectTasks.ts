@@ -23,6 +23,8 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { liveOrPoll } from "../sync/live-or-poll.js";
+
 export const projectTasksQueryKey = (projectId: string) => ["project-tasks", projectId] as const;
 export const TASK_ATTENTION_QUERY_KEY = ["task-attention"] as const;
 export const projectTaskDetailQueryKey = (projectId: string, taskId: string) =>
@@ -59,9 +61,11 @@ export function useProjectTask(projectId: string, taskId: string) {
     queryKey: projectTaskDetailQueryKey(projectId, taskId),
     queryFn: () => getProjectTask(projectId, taskId),
     enabled: Boolean(projectId && taskId) && isAuthenticated && isPro,
-    refetchInterval: (currentQuery) =>
-      projectTasksRefetchInterval(
-        currentQuery.state.data ? [currentQuery.state.data.task] : undefined,
+    refetchInterval: (query) =>
+      liveOrPoll(query, (currentQuery) =>
+        projectTasksRefetchInterval(
+          currentQuery.state.data ? [currentQuery.state.data.task] : undefined,
+        ),
       ),
     refetchIntervalInBackground: true,
   });
@@ -76,7 +80,10 @@ export function useProjectTasks(projectId: string) {
     queryKey: projectTasksQueryKey(projectId),
     queryFn: () => listProjectTasks(projectId),
     enabled: Boolean(projectId) && isAuthenticated && isPro,
-    refetchInterval: (currentQuery) => projectTasksRefetchInterval(currentQuery.state.data?.tasks),
+    refetchInterval: (query) =>
+      liveOrPoll(query, (currentQuery) =>
+        projectTasksRefetchInterval(currentQuery.state.data?.tasks),
+      ),
     refetchIntervalInBackground: true,
   });
 
@@ -218,7 +225,7 @@ export function useTaskAttention() {
     queryFn: listTaskInbox,
     enabled: isAuthenticated && isPro,
     staleTime: 30_000,
-    refetchInterval: 15_000,
+    refetchInterval: (query) => liveOrPoll(query, 15_000),
   });
 
   const queryClient = useQueryClient();

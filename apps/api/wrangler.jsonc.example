@@ -97,6 +97,10 @@
       {
         "name": "CONVERSATION_COORDINATOR",
         "class_name": "ConversationCoordinator"
+      },
+      {
+        "name": "USER_SYNC_COORDINATOR",
+        "class_name": "UserSyncCoordinator"
       }
     ]
   },
@@ -113,7 +117,8 @@
         "ConversationCoordinator"
       ]
     },
-    { "tag": "v4-machine-runs", "new_sqlite_classes": ["MachineRunCoordinator"] }
+    { "tag": "v4-machine-runs", "new_sqlite_classes": ["MachineRunCoordinator"] },
+    { "tag": "v5-user-sync", "new_sqlite_classes": ["UserSyncCoordinator"] }
   ],
   "analytics_engine_datasets": [
     {

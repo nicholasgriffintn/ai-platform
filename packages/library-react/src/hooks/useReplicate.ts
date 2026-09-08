@@ -7,6 +7,8 @@ import {
 import type { ExecuteReplicateRequest } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { liveOrPoll } from "../sync/live-or-poll.js";
+
 const REPLICATE_QUERY_KEY = "replicate";
 const REPLICATE_MODELS_STALE_TIME = 30 * 60 * 1000;
 const REPLICATE_STATUS_STALE_TIME = 30 * 1000;
@@ -37,19 +39,20 @@ export function useReplicatePredictions(projectId?: string) {
     queryKey: [REPLICATE_QUERY_KEY, projectId, "predictions"],
     queryFn: () => fetchReplicatePredictions(projectId),
     staleTime: REPLICATE_STATUS_STALE_TIME,
-    refetchInterval: (query) => {
-      const data = query.state.data;
+    refetchInterval: (query) =>
+      liveOrPoll(query, (query) => {
+        const data = query.state.data;
 
-      if (!data) {
-        return false;
-      }
+        if (!data) {
+          return false;
+        }
 
-      const hasActivePredictions = data.some((pred) =>
-        ACTIVE_REPLICATE_PREDICTION_STATUSES.has(String(pred.status).toLowerCase()),
-      );
+        const hasActivePredictions = data.some((pred) =>
+          ACTIVE_REPLICATE_PREDICTION_STATUSES.has(String(pred.status).toLowerCase()),
+        );
 
-      return hasActivePredictions ? 10000 : false;
-    },
+        return hasActivePredictions ? 10000 : false;
+      }),
   });
 }
 
@@ -59,17 +62,18 @@ export function useReplicatePrediction(predictionId: string | null, projectId?: 
     queryFn: () => fetchReplicatePrediction(predictionId!, projectId),
     enabled: !!predictionId,
     staleTime: REPLICATE_STATUS_STALE_TIME,
-    refetchInterval: (query) => {
-      const data = query.state.data;
+    refetchInterval: (query) =>
+      liveOrPoll(query, (query) => {
+        const data = query.state.data;
 
-      if (!data) {
-        return false;
-      }
+        if (!data) {
+          return false;
+        }
 
-      return ACTIVE_REPLICATE_PREDICTION_STATUSES.has(String(data.status).toLowerCase())
-        ? 10000
-        : false;
-    },
+        return ACTIVE_REPLICATE_PREDICTION_STATUSES.has(String(data.status).toLowerCase())
+          ? 10000
+          : false;
+      }),
   });
 }
 

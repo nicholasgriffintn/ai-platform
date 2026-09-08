@@ -1,6 +1,8 @@
 import { apiService, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useQuery } from "@tanstack/react-query";
 
+import { liveOrPoll } from "../sync/live-or-poll.js";
+
 export const MACHINES_QUERY_KEY = "machines";
 
 export function useMachines(options: { enabled?: boolean } = {}) {
@@ -13,6 +15,6 @@ export function useMachines(options: { enabled?: boolean } = {}) {
     staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 60,
     refetchOnWindowFocus: "always",
-    refetchInterval: 1000 * 60,
+    refetchInterval: (query) => liveOrPoll(query, 1000 * 60),
   });
 }

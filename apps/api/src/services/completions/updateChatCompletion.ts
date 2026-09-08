@@ -13,6 +13,7 @@ import { ConversationManager } from "~/lib/conversationManager";
 import { userCreditActor } from "~/lib/usage/creditActor";
 import { recordOffPlatformRunUsage } from "~/lib/usage/modelUsage";
 import { withThreadLock } from "~/services/conversations/coordinator/client";
+import { publishConversationChanged } from "~/services/sync/conversation-events";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -151,6 +152,11 @@ export const handleUpdateChatCompletion = async (
   if (messages) {
     updatedConversation = await conversationManager.getConversationDetails(completion_id);
   }
+
+  await publishConversationChanged(context.env, completion_id, {
+    archived: conversationUpdates.archived ?? null,
+    title: conversationUpdates.title ?? null,
+  });
 
   return updatedConversation;
 };

@@ -2,6 +2,8 @@ import { apiService } from "@ngriffin_uk/polychat-library-client";
 import type { ResearchStatus } from "@ngriffin_uk/polychat-schemas";
 import { useQuery } from "@tanstack/react-query";
 
+import { liveOrPoll } from "../sync/live-or-poll.js";
+
 const FAILURE_STATUSES = new Set(["failed", "cancelled", "errored", "stopped"]);
 
 interface UseResearchStatusOptions {
@@ -40,37 +42,41 @@ export function useResearchStatus({
     },
     enabled: Boolean(runId) && enabled,
     initialData,
-    refetchInterval: (query) => {
-      if (!enabled) {
-        return false;
-      }
+    refetchInterval: (query) =>
+      liveOrPoll(query, (query) => {
+        if (!enabled) {
+          return false;
+        }
 
-      const data = query.state.data;
-      const intervalFromData = data?.poll?.interval_ms;
-      const effectiveInterval = Math.max(5000, Number(intervalFromData ?? sanitizedInterval) || 0);
+        const data = query.state.data;
+        const intervalFromData = data?.poll?.interval_ms;
+        const effectiveInterval = Math.max(
+          5000,
+          Number(intervalFromData ?? sanitizedInterval) || 0,
+        );
 
-      if (!data) {
+        if (!data) {
+          return effectiveInterval;
+        }
+
+        const status = normalizeStatus(data.run?.status);
+
+        if (status === "completed") {
+          return data.output ? false : effectiveInterval;
+        }
+
+        if (FAILURE_STATUSES.has(status)) {
+          return false;
+        }
+
+        const pollCount = (query.state.dataUpdateCount || 0) + 1;
+
+        if (pollCount > 10) {
+          return Math.max(effectiveInterval, Math.min(60000, effectiveInterval * 1.5));
+        }
+
         return effectiveInterval;
-      }
-
-      const status = normalizeStatus(data.run?.status);
-
-      if (status === "completed") {
-        return data.output ? false : effectiveInterval;
-      }
-
-      if (FAILURE_STATUSES.has(status)) {
-        return false;
-      }
-
-      const pollCount = (query.state.dataUpdateCount || 0) + 1;
-
-      if (pollCount > 10) {
-        return Math.max(effectiveInterval, Math.min(60000, effectiveInterval * 1.5));
-      }
-
-      return effectiveInterval;
-    },
+      }),
     retry: 3,
     staleTime: 0,
   });
