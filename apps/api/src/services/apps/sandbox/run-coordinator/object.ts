@@ -226,6 +226,29 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
     );
   }
 
+  private async settleClosedInspectionWindow(
+    control: CoordinatorState | null,
+  ): Promise<CoordinatorState | null> {
+    if (
+      !control ||
+      control.state !== "inspection" ||
+      (control.inspectionExpiresAt && Date.parse(control.inspectionExpiresAt) > Date.now())
+    ) {
+      return control;
+    }
+
+    await this.revokePreviewSessions();
+    const settled: CoordinatorState = {
+      ...control,
+      state: "cancelled",
+      updatedAt: new Date().toISOString(),
+    };
+
+    await this.putControl(settled);
+
+    return settled;
+  }
+
   private async revokePreviewSessions(serviceName?: string): Promise<void> {
     const stored = await this.storage.list<string>({ prefix: PREVIEW_SESSION_PREFIX });
     const revokedAt = new Date().toISOString();
@@ -439,7 +462,9 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
     }
 
     if (pathname === "/control" && request.method === "GET") {
-      const control = await this.getControl();
+      const control = await this.ctx.blockConcurrencyWhile(async () =>
+        this.settleClosedInspectionWindow(await this.getControl()),
+      );
 
       if (!control) {
         return Response.json({ error: "Control state not initialised" }, { status: 404 });
@@ -724,7 +749,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           );
         }
 
-        const control = await this.getControl();
+        const control = await this.settleClosedInspectionWindow(await this.getControl());
         const nowIso = new Date().toISOString();
 
         if (control?.state === "cancelled") {
