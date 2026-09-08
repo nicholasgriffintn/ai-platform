@@ -1,9 +1,13 @@
 import {
+  parseAgentProcessOutput,
   setDesktopExecutionBackend,
+  parseCodexOutput,
+  parseCursorOutput,
+  parseGrokOutput,
+  parseOpenCodeOutput,
   type DesktopBackend,
   type DesktopRun,
 } from "@ngriffin_uk/polychat-library-chat";
-import { parseAgentProcessOutput } from "@ngriffin_uk/polychat-library-chat";
 import {
   desktopEndpointSchema,
   desktopRuntimeReadinessSchema,
@@ -130,7 +134,7 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
       { request },
       "agent-error",
       "cancel_agent_process_run",
-      true,
+      (runId, line) => parseAgentOutput(request.driver, runId, line),
     ),
   probeAgentTool: async (driver: AgentRuntimeVendor) =>
     agentToolStateSchema.parse(await invoke("probe_agent_tool", { driver })),
@@ -157,7 +161,7 @@ function startRun(
   args: Record<string, unknown>,
   refusalFailure: RunFailure,
   cancelCommand = "cancel_model_run",
-  parseRawOutput = false,
+  parseOutput?: (runId: string, line: string) => DesktopStreamEvent,
 ): Promise<DesktopRun> {
   const runId = globalThis.crypto.randomUUID();
   const queue = createAsyncEventQueue<DesktopStreamEvent>();
@@ -182,10 +186,10 @@ function startRun(
       return;
     }
 
-    if (event.data.type === "raw-output" && parseRawOutput) {
+    if (event.data.type === "raw-output" && parseOutput) {
       for (const line of event.data.data.split("\n")) {
         if (line.trim()) {
-          queue.push(parseAgentProcessOutput(runId, line));
+          queue.push(parseOutput(runId, line));
         }
       }
     } else if (event.data.type !== "raw-output") {
@@ -208,6 +212,25 @@ function startRun(
     },
     events: queue.events,
   });
+}
+
+function parseAgentOutput(
+  driver: AgentRuntimeVendor,
+  runId: string,
+  line: string,
+): DesktopStreamEvent {
+  switch (driver) {
+    case "codex":
+      return parseCodexOutput(runId, line);
+    case "cursor":
+      return parseCursorOutput(runId, line);
+    case "grok":
+      return parseGrokOutput(runId, line);
+    case "opencode":
+      return parseOpenCodeOutput(runId, line);
+    default:
+      return parseAgentProcessOutput(runId, line);
+  }
 }
 
 setDesktopExecutionBackend(tauriDesktopBackend);

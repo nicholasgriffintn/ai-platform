@@ -174,6 +174,7 @@ pub enum AgentToolState {
 #[derive(Debug, Eq, PartialEq)]
 pub enum ProcessRefusal {
     InvalidPrompt,
+    UnsupportedPermissionMode,
     InvalidDirectory,
     DirectoryOutsideGrant,
     UnsafeDirectory,
@@ -336,6 +337,48 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
             "--sandbox".to_string(),
             codex_sandbox_argument(params.permission_mode).to_string(),
         ],
+        AgentDriver::Cursor => {
+            if !matches!(
+                params.permission_mode,
+                PermissionMode::Supervised | PermissionMode::FullAccess
+            ) {
+                return Err(ProcessRefusal::UnsupportedPermissionMode);
+            }
+
+            let mut argv = vec![
+                "-p".to_string(),
+                "--output-format".to_string(),
+                "stream-json".to_string(),
+            ];
+            if params.permission_mode == PermissionMode::FullAccess {
+                argv.push("--force".to_string());
+            }
+            argv
+        }
+        AgentDriver::Grok => vec![
+            "--no-auto-update".to_string(),
+            "-p".to_string(),
+            "--output-format".to_string(),
+            "streaming-json".to_string(),
+        ],
+        AgentDriver::OpenCode => {
+            if !matches!(
+                params.permission_mode,
+                PermissionMode::Supervised | PermissionMode::Auto
+            ) {
+                return Err(ProcessRefusal::UnsupportedPermissionMode);
+            }
+
+            let mut argv = vec![
+                "run".to_string(),
+                "--format".to_string(),
+                "json".to_string(),
+            ];
+            if params.permission_mode == PermissionMode::Auto {
+                argv.push("--auto".to_string());
+            }
+            argv
+        }
         _ => vec![
             "-p".to_string(),
             params.prompt.clone(),
@@ -351,10 +394,10 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
         .as_deref()
         .filter(|value| !value.trim().is_empty())
     {
-        if driver == AgentDriver::Codex {
-            argv.extend(["resume".to_string(), session.to_string()]);
-        } else {
-            argv.extend(["--resume".to_string(), session.to_string()]);
+        match driver {
+            AgentDriver::Codex => argv.extend(["resume".to_string(), session.to_string()]),
+            AgentDriver::OpenCode => argv.extend(["--session".to_string(), session.to_string()]),
+            _ => argv.extend(["--resume".to_string(), session.to_string()]),
         }
     }
 
@@ -366,7 +409,10 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
         argv.extend(["--model".to_string(), model.to_string()]);
     }
 
-    if driver == AgentDriver::Codex {
+    if matches!(
+        driver,
+        AgentDriver::Codex | AgentDriver::Cursor | AgentDriver::Grok | AgentDriver::OpenCode
+    ) {
         argv.push(params.prompt.clone());
     }
 
@@ -516,6 +562,86 @@ mod tests {
                 "thread-1",
                 "--model",
                 "gpt-5-codex",
+                "inspect the repo",
+            ]
+        );
+    }
+
+    #[test]
+    fn builds_cursor_headless_arguments() {
+        let params = RunParams {
+            prompt: "inspect the repo".to_string(),
+            session: Some("chat-1".to_string()),
+            permission_mode: PermissionMode::Supervised,
+            model: Some("gpt-5".to_string()),
+        };
+
+        let argv = build_argv(AgentDriver::Cursor, &params).expect("argv");
+
+        assert_eq!(
+            argv,
+            [
+                "-p",
+                "--output-format",
+                "stream-json",
+                "--resume",
+                "chat-1",
+                "--model",
+                "gpt-5",
+                "inspect the repo",
+            ]
+        );
+    }
+
+    #[test]
+    fn builds_grok_streaming_arguments() {
+        let params = RunParams {
+            prompt: "inspect the repo".to_string(),
+            session: Some("session-1".to_string()),
+            permission_mode: PermissionMode::Supervised,
+            model: Some("grok-build".to_string()),
+        };
+
+        let argv = build_argv(AgentDriver::Grok, &params).expect("argv");
+
+        assert_eq!(
+            argv,
+            [
+                "--no-auto-update",
+                "-p",
+                "--output-format",
+                "streaming-json",
+                "--resume",
+                "session-1",
+                "--model",
+                "grok-build",
+                "inspect the repo",
+            ]
+        );
+    }
+
+    #[test]
+    fn builds_opencode_json_arguments() {
+        let params = RunParams {
+            prompt: "inspect the repo".to_string(),
+            session: Some("session-1".to_string()),
+            permission_mode: PermissionMode::Auto,
+            model: Some("anthropic/claude-sonnet".to_string()),
+        };
+
+        let argv = build_argv(AgentDriver::OpenCode, &params).expect("argv");
+
+        assert_eq!(
+            argv,
+            [
+                "run",
+                "--format",
+                "json",
+                "--auto",
+                "--session",
+                "session-1",
+                "--model",
+                "anthropic/claude-sonnet",
                 "inspect the repo",
             ]
         );

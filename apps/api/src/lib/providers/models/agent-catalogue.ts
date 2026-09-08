@@ -37,7 +37,7 @@ const AGENT_CATALOGUE: AgentCatalogueEntry[] = [
     description: "Cursor's coding agent for your workspace.",
     workspace: { kind: "directory" },
     runsOn: "device",
-    permissionModes: ["supervised", "auto_accept_edits", "auto", "full_access"],
+    permissionModes: ["supervised", "full_access"],
   },
   {
     driver: "grok",
@@ -45,7 +45,7 @@ const AGENT_CATALOGUE: AgentCatalogueEntry[] = [
     description: "xAI's coding agent for your workspace.",
     workspace: { kind: "directory" },
     runsOn: "device",
-    permissionModes: ["supervised", "auto_accept_edits", "auto", "full_access"],
+    permissionModes: ["supervised", "auto"],
   },
   {
     driver: "opencode",
@@ -53,7 +53,7 @@ const AGENT_CATALOGUE: AgentCatalogueEntry[] = [
     description: "An open coding agent for your workspace.",
     workspace: { kind: "directory" },
     runsOn: "device",
-    permissionModes: ["supervised", "auto_accept_edits", "auto", "full_access"],
+    permissionModes: ["supervised", "auto"],
   },
   {
     driver: "antigravity",
