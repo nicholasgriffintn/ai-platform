@@ -4,6 +4,7 @@ import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { OutputRepository } from "~/repositories/OutputRepository";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { UserRepository } from "~/repositories/UserRepository";
+import { publishUserEvent } from "~/services/sync/conversation-events";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
@@ -131,6 +132,10 @@ export class ReplicatePollingHandler implements TaskHandler {
           expectedRevision: prediction.revision,
           updatedByUserId: data.userId,
         });
+        publishUserEvent({ env }, data.userId, "replicate.changed", {
+          predictionId: data.predictionId,
+          status: "succeeded",
+        });
 
         return {
           status: "success",
@@ -153,6 +158,10 @@ export class ReplicatePollingHandler implements TaskHandler {
           content: predictionData,
           expectedRevision: prediction.revision,
           updatedByUserId: data.userId,
+        });
+        publishUserEvent({ env }, data.userId, "replicate.changed", {
+          predictionId: data.predictionId,
+          status: "failed",
         });
 
         return {

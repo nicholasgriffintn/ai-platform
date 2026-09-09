@@ -15,6 +15,7 @@ import {
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
+import { publishUserEvent } from "~/services/sync/conversation-events";
 import { escapeSqlLikePattern } from "~/utils/sql";
 
 import { BaseRepository } from "./BaseRepository";
@@ -84,6 +85,7 @@ export class ConversationRepository extends BaseRepository {
          updated_at = CURRENT_TIMESTAMP`,
       [conversationId, userId],
     );
+    publishUserEvent({ env: this.env }, userId, "conversation.unread_changed", { conversationId });
   }
 
   public async createConversation(

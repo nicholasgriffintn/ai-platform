@@ -2,6 +2,7 @@ import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 
 import type { Task, TaskExecution } from "~/lib/database/schema";
 import { recordD1ResultMeta } from "~/lib/usage/requestMeter";
+import { publishUserEvent } from "~/services/sync/conversation-events";
 import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
@@ -31,6 +32,15 @@ export interface UpdateTaskParams {
 }
 
 export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
+  private announce(task: Task | null | undefined): void {
+    if (task?.user_id) {
+      publishUserEvent({ env: this.env }, task.user_id, "task.changed", {
+        taskId: task.id,
+        status: task.status,
+      });
+    }
+  }
+
   private parseTask(task: Task): Task {
     return {
       ...task,
@@ -66,7 +76,11 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
       return null;
     }
 
-    return this.runQuery<Task>(insert.query, insert.values, true);
+    const task = await this.runQuery<Task>(insert.query, insert.values, true);
+
+    this.announce(task);
+
+    return task;
   }
 
   public async createTaskIfAbsent(
@@ -93,7 +107,13 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     );
     const task = await this.getTaskById(params.id);
 
-    return { task, created: Boolean(result.meta?.changes) };
+    const created = Boolean(result.meta?.changes);
+
+    if (created) {
+      this.announce(task);
+    }
+
+    return { task, created };
   }
 
   public async getTaskById(taskId: string): Promise<Task | null> {
@@ -151,7 +171,11 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
       return null;
     }
 
-    return this.runQuery<Task>(update.query, update.values, true);
+    const task = await this.runQuery<Task>(update.query, update.values, true);
+
+    this.announce(task);
+
+    return task;
   }
 
   public async claimTaskForExecution(
@@ -271,6 +295,8 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
     const task = await this.runQuery<Task>(update.query, update.values, true);
 
+    this.announce(task);
+
     return task ? this.parseTask(task) : null;
   }
 
@@ -286,9 +312,11 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
   }
 
   public async deleteTask(taskId: string): Promise<boolean> {
+    const task = await this.getTaskById(taskId);
     const { query, values } = this.buildDeleteQuery("tasks", { id: taskId });
 
     await this.executeRun(query, values);
+    this.announce(task);
 
     return true;
   }

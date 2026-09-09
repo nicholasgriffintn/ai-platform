@@ -15,6 +15,8 @@ import { liveOrPoll } from "../sync/live-or-poll.js";
 
 const ACTIVE_REFRESH_MS = 2_000;
 
+export const PROJECT_WORKBENCH_PREVIEW_QUERY_KEY = ["project-workbench-preview"] as const;
+
 function accessIsExpired(access?: SandboxPreviewAccess): boolean {
   return Boolean(access && Date.parse(access.expiresAt) <= Date.now());
 }
@@ -73,7 +75,7 @@ export function useProjectWorkbenchPreview({
       ? localAccess
       : undefined;
   const accessQuery = useQuery({
-    queryKey: ["project-workbench-preview", runId, scopedAccess?.previewId],
+    queryKey: [...PROJECT_WORKBENCH_PREVIEW_QUERY_KEY, runId, scopedAccess?.previewId],
     queryFn: async () => {
       if (!runId || !scopedAccess) {
         throw new Error("No preview access is selected");

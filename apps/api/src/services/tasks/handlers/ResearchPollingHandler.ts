@@ -2,6 +2,7 @@ import { getResearchProvider } from "~/lib/providers/capabilities/research";
 import { RepositoryManager } from "~/repositories";
 import { OutputRepository } from "~/repositories/OutputRepository";
 import { TaskRepository } from "~/repositories/TaskRepository";
+import { publishUserEvent } from "~/services/sync/conversation-events";
 import type {
   IEnv,
   IUser,
@@ -171,6 +172,7 @@ export class ResearchPollingHandler implements TaskHandler {
       expectedRevision: response.revision,
       updatedByUserId: data.userId,
     });
+    publishUserEvent({ env }, data.userId, "research.changed", { runId: data.runId });
   }
 
   private async persistError(
@@ -238,5 +240,6 @@ export class ResearchPollingHandler implements TaskHandler {
       expectedRevision: response.revision,
       updatedByUserId: data.userId,
     });
+    publishUserEvent({ env }, data.userId, "research.changed", { runId: data.runId });
   }
 }

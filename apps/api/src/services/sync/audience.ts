@@ -1,4 +1,4 @@
-import type { IEnv } from "~/types";
+import type { SyncEnv } from "./publish";
 
 const AUDIENCE_CACHE_TTL_MS = 15_000;
 
@@ -53,7 +53,7 @@ export function clearAudienceCache(): void {
 }
 
 export async function workspaceAudience(
-  env: IEnv | undefined,
+  env: SyncEnv | undefined,
   workspaceId: string,
 ): Promise<number[]> {
   const database = env?.DB;
@@ -80,7 +80,10 @@ export async function workspaceAudience(
   );
 }
 
-export async function projectAudience(env: IEnv | undefined, projectId: string): Promise<number[]> {
+export async function projectAudience(
+  env: SyncEnv | undefined,
+  projectId: string,
+): Promise<number[]> {
   const database = env?.DB;
 
   if (!database) {
@@ -102,7 +105,7 @@ export async function projectAudience(env: IEnv | undefined, projectId: string):
 }
 
 export async function conversationAudience(
-  env: IEnv | undefined,
+  env: SyncEnv | undefined,
   conversationId: string,
 ): Promise<number[]> {
   const database = env?.DB;

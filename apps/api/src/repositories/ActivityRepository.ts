@@ -1,3 +1,6 @@
+import { SANDBOX_RUNS_CAPABILITY_ID } from "@ngriffin_uk/polychat-schemas";
+
+import { publishProjectEvent } from "~/services/sync/conversation-events";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -27,6 +30,31 @@ export interface ActivityRecord {
 }
 
 export class ActivityRepository extends BaseRepository {
+  private announce(record: ActivityRecord | null): void {
+    if (record?.capability_id === SANDBOX_RUNS_CAPABILITY_ID && record.project_id) {
+      void publishProjectEvent({ env: this.env }, record.project_id, "workbench_run.changed", {
+        conversationId: record.conversation_id,
+        activityId: record.id,
+        status: record.status,
+      });
+    }
+  }
+
+  private async announceGroup(capabilityId: string, groupId: string): Promise<void> {
+    if (capabilityId !== SANDBOX_RUNS_CAPABILITY_ID) {
+      return;
+    }
+
+    const records = await this.runQuery<ActivityRecord>(
+      `SELECT * FROM activity_record WHERE capability_id = ? AND group_id = ?`,
+      [capabilityId, groupId],
+    );
+
+    for (const record of records) {
+      this.announce(record);
+    }
+  }
+
   async createActivity(input: {
     createdByUserId: number;
     projectId?: string | null;
@@ -64,6 +92,8 @@ export class ActivityRepository extends BaseRepository {
     if (!activity) {
       throw new AssistantError("Failed to create activity", ErrorType.DATABASE_ERROR);
     }
+
+    this.announce(activity);
 
     return activity;
   }
@@ -160,7 +190,11 @@ export class ActivityRepository extends BaseRepository {
       await this.executeRun(update.query, update.values);
     }
 
-    return this.getActivityById(activityId);
+    const record = await this.getActivityById(activityId);
+
+    this.announce(record);
+
+    return record;
   }
 
   async cancelActiveActivitiesByGroup(capabilityId: string, groupId: string): Promise<void> {
@@ -172,6 +206,7 @@ export class ActivityRepository extends BaseRepository {
          AND status IN ('queued', 'running', 'waiting')`,
       [capabilityId, groupId],
     );
+    await this.announceGroup(capabilityId, groupId);
   }
 
   async failActiveActivitiesByGroup(
@@ -187,5 +222,6 @@ export class ActivityRepository extends BaseRepository {
          AND status IN ('queued', 'running')`,
       [summary.slice(0, 200), capabilityId, groupId],
     );
+    await this.announceGroup(capabilityId, groupId);
   }
 }

@@ -11,8 +11,10 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "services/sync/publish" });
 const COORDINATOR_ORIGIN = "https://user-sync-coordinator";
 
+export type SyncEnv = Pick<IEnv, "DB" | "USER_SYNC_COORDINATOR">;
+
 export interface SyncPublisher {
-  env: IEnv | undefined;
+  env: SyncEnv | undefined;
   originDeviceId?: string | null;
   waitUntil?: (work: Promise<unknown>) => void;
 }
@@ -69,7 +71,7 @@ function groupByRecipient(
 }
 
 export async function publishSyncEvents(
-  env: IEnv | undefined,
+  env: SyncEnv | undefined,
   publications: SyncPublication[],
   originDeviceId: string | null = null,
 ): Promise<void> {

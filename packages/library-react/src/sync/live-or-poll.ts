@@ -6,14 +6,19 @@ export type PollInterval = number | false | undefined;
 const PUBLISHED_EVENT_TYPES = new Set<DeviceSyncEventType>([
   "conversation.changed",
   "conversation.deleted",
+  "conversation.unread_changed",
   "run.changed",
   "run.event",
   "message.changed",
   "delegation.changed",
+  "task.changed",
   "project_task.changed",
+  "workbench_run.changed",
   "machine.changed",
   "usage.changed",
   "goal.changed",
+  "connector_approval.changed",
+  "attention.changed",
 ]);
 
 export function isLiveEventType(type: DeviceSyncEventType): boolean {

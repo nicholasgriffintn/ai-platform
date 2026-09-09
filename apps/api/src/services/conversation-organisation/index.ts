@@ -12,6 +12,7 @@ import type {
   ConversationUserStateRow,
 } from "~/repositories/ConversationOrganisationRepository";
 import { requireConversationAccess } from "~/services/conversations/access";
+import { publishUserEvent } from "~/services/sync/conversation-events";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { isConversationUnread } from "~/utils/conversation-organisation";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -111,6 +112,10 @@ export async function updateConversationOrganisation(
     snooze: input.snooze === undefined ? effectiveSnooze(current) : input.snooze,
     updatedAt: now,
   });
+
+  if (stored) {
+    publishUserEvent(context, user.id, "conversation.unread_changed", { conversationId });
+  }
 
   if (!stored) {
     throw new AssistantError(

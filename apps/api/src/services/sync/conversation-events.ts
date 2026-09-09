@@ -5,7 +5,7 @@ import type {
   DeviceSyncEventType,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { conversationAudience, projectAudience, workspaceAudience } from "./audience";
+import { conversationAudience, projectAudience } from "./audience";
 import {
   publishSync,
   syncTopic,
@@ -133,17 +133,19 @@ export async function publishProjectEvent(
   );
 }
 
-export async function publishWorkspaceEvent(
+export async function publishConnectorApprovalChanged(
   publisher: SyncPublisher,
-  workspaceId: string,
-  type: DeviceSyncEventType,
-  data: Record<string, unknown> = {},
+  conversationId: string,
+  approvalId: string,
 ): Promise<void> {
-  const audience = await workspaceAudience(publisher.env, workspaceId);
+  const audience = await conversationAudience(publisher.env, conversationId);
 
   publishSync(
     publisher,
-    fanOut(audience, syncTopic("workspace", workspaceId), type, { workspaceId, ...data }),
+    fanOut(audience, syncTopic("conversation", conversationId), "connector_approval.changed", {
+      conversationId,
+      approvalId,
+    }),
   );
 }
 

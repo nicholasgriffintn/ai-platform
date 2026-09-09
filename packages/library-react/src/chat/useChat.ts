@@ -28,6 +28,7 @@ import {
   updateConversationInChatCaches,
 } from "../conversation-cache.js";
 import { localChatService } from "../index.js";
+import { liveOrPoll } from "../sync/live-or-poll.js";
 import { useConversationStorage } from "./useConversationStorage.js";
 
 const DEFAULT_CHAT_LIST_LIMIT = 30;
@@ -210,7 +211,11 @@ export function useChat(
     gcTime: CHAT_QUERY_GC_TIME,
     refetchInterval: (currentQuery) =>
       options.monitorRemoteActivity && streamSource !== "local"
-        ? getConversationRefetchInterval(currentQuery.state.data)
+        ? liveOrPoll(
+            currentQuery,
+            getConversationRefetchInterval(currentQuery.state.data),
+            "conversation.changed",
+          )
         : false,
     refetchOnMount: "always",
     refetchIntervalInBackground: options.monitorRemoteActivity === true,

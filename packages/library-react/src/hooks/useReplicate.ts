@@ -9,7 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { liveOrPoll } from "../sync/live-or-poll.js";
 
-const REPLICATE_QUERY_KEY = "replicate";
+export const REPLICATE_QUERY_KEY = "replicate";
 const REPLICATE_MODELS_STALE_TIME = 30 * 60 * 1000;
 const REPLICATE_STATUS_STALE_TIME = 30 * 1000;
 const ACTIVE_REPLICATE_PREDICTION_STATUSES = new Set([

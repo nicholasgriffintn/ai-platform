@@ -66,11 +66,11 @@ export function useProjectTask(projectId: string, taskId: string) {
     refetchInterval: (query) => {
       const task = query.state.data?.task;
 
-      if (hasWorkInFlight(task ? [task] : undefined)) {
-        return ACTIVE_REFETCH_MS;
-      }
-
-      return liveOrPoll(query, IDLE_REFETCH_MS, "project_task.changed");
+      return liveOrPoll(
+        query,
+        hasWorkInFlight(task ? [task] : undefined) ? ACTIVE_REFETCH_MS : IDLE_REFETCH_MS,
+        "project_task.changed",
+      );
     },
     refetchIntervalInBackground: true,
   });

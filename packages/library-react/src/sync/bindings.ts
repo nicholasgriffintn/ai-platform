@@ -15,7 +15,9 @@ import {
   projectTasksQueryKey,
   TASK_ATTENTION_QUERY_KEY,
 } from "../hooks/useProjectTasks.js";
+import { PROJECT_WORKBENCH_PREVIEW_QUERY_KEY } from "../hooks/useProjectWorkbenchPreview.js";
 import { projectWorkbenchRunsQueryKey } from "../hooks/useProjectWorkbenchRuns.js";
+import { REPLICATE_QUERY_KEY } from "../hooks/useReplicate.js";
 import { TASK_QUERY_KEYS } from "../hooks/useTasks.js";
 import { TRAINING_QUERY_KEYS } from "../hooks/useTraining.js";
 
@@ -114,11 +116,13 @@ export const SYNC_BINDINGS: SyncBinding[] = [
           projectWorkbenchRunsQueryKey(projectId, readString(event, "conversationId")),
         );
       }
+
+      invalidate(context, PROJECT_WORKBENCH_PREVIEW_QUERY_KEY);
     },
   },
   {
     type: "workbench_preview.changed",
-    apply: (context) => invalidate(context, ["project-workbench-preview"]),
+    apply: (context) => invalidate(context, PROJECT_WORKBENCH_PREVIEW_QUERY_KEY),
   },
   { type: "machine.changed", apply: (context) => invalidate(context, [MACHINES_QUERY_KEY]) },
   { type: "usage.changed", apply: (context) => invalidate(context, USAGE_QUERY_KEYS.balance) },
@@ -135,7 +139,7 @@ export const SYNC_BINDINGS: SyncBinding[] = [
   { type: "research.changed", apply: (context) => invalidate(context, ["research-status"]) },
   { type: "training.changed", apply: (context) => invalidate(context, TRAINING_QUERY_KEYS.jobs) },
   { type: "canvas.changed", apply: (context) => invalidate(context, ["canvas"]) },
-  { type: "replicate.changed", apply: (context) => invalidate(context, ["replicate-prediction"]) },
+  { type: "replicate.changed", apply: (context) => invalidate(context, [REPLICATE_QUERY_KEY]) },
   { type: "connector_approval.changed", apply: refreshConversationDetail },
   { type: "attention.changed", apply: (context) => invalidate(context, TASK_ATTENTION_QUERY_KEY) },
 ];

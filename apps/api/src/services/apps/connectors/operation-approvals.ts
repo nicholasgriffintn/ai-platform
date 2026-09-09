@@ -3,6 +3,7 @@ import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { connectorOperationRequiresApproval } from "~/lib/providers/capabilities/connectors";
 import type { ConnectorOperationApprovalRecord } from "~/repositories/ConnectorOperationApprovalRepository";
+import { publishConnectorApprovalChanged } from "~/services/sync/conversation-events";
 import { canonicalJson } from "~/utils/canonical-json";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -155,6 +156,8 @@ export async function authoriseConnectorOperation(params: {
       );
     }
 
+    await publishConnectorApprovalChanged(params.context, approval.completionId, approval.id);
+
     return {
       required: true,
       approved: true,
@@ -175,6 +178,8 @@ export async function authoriseConnectorOperation(params: {
     createdAt: now,
     expiresAt: new Date(Date.now() + APPROVAL_TTL_MS).toISOString(),
   });
+
+  await publishConnectorApprovalChanged(params.context, approval.completionId, approval.id);
 
   return {
     required: true,
@@ -199,6 +204,8 @@ export async function resolveConnectorOperationApproval(params: {
   });
 
   if (approval) {
+    await publishConnectorApprovalChanged(params.context, approval.completionId, approval.id);
+
     return toConnectorOperationApprovalView(approval);
   }
 

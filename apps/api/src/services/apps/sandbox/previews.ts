@@ -11,6 +11,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { publishProjectEvent } from "~/services/sync/conversation-events";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
@@ -293,6 +294,8 @@ export async function createSandboxPreview(params: {
 
   url.searchParams.set("grant", bootstrap.token);
 
+  await announcePreviewChanged(params.context, params.runId, params.userId);
+
   return {
     previewId,
     runId: params.runId,
@@ -352,6 +355,19 @@ export async function revokeSandboxPreview(params: {
     previewId: params.previewId,
     runId: params.runId,
   });
+  await announcePreviewChanged(params.context, params.runId, params.userId);
+}
+
+async function announcePreviewChanged(
+  context: ServiceContext,
+  runId: string,
+  userId: number,
+): Promise<void> {
+  const run = await getSandboxRunRecordForUser({ context, userId, runId });
+
+  if (run.projectId) {
+    await publishProjectEvent(context, run.projectId, "workbench_preview.changed", { runId });
+  }
 }
 
 export async function authoriseSandboxPreview(params: {
