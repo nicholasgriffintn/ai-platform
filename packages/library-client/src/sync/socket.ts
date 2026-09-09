@@ -247,6 +247,10 @@ export class DeviceSyncSocket {
     }
   }
 
+  public hasTopic(topic: string): boolean {
+    return this.topics.has(topic);
+  }
+
   public unsubscribe(topics: string[]): void {
     const removed = topics.filter((topic) => this.topics.has(topic));
 

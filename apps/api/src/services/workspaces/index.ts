@@ -17,6 +17,7 @@ import { validateCapabilityReference } from "~/lib/capabilities";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getGitHubAppConnectionForUserInstallation } from "~/services/github/connections";
 import { deleteOutput } from "~/services/outputs";
+import { forgetWorkspaceAudience } from "~/services/sync/audience";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
@@ -178,6 +179,7 @@ export async function removeWorkspaceMember(
   }
 
   await context.repositories.workspaces.removeMember(workspaceId, memberUserId);
+  forgetWorkspaceAudience(workspaceId);
   await context.repositories.audit.createRecord({
     workspaceId,
     actorUserId: actor.id,
@@ -203,6 +205,7 @@ export async function leaveWorkspace(context: ServiceContext, workspaceId: strin
   }
 
   await context.repositories.workspaces.removeMember(workspaceId, user.id);
+  forgetWorkspaceAudience(workspaceId);
   await context.repositories.audit.createRecord({
     workspaceId,
     actorUserId: user.id,
@@ -392,6 +395,7 @@ export async function acceptWorkspaceInvitation(context: ServiceContext, token: 
   }
 
   await context.repositories.workspaces.acceptInvitation(invitation, user.id);
+  forgetWorkspaceAudience(invitation.workspace_id);
   await context.repositories.audit.createRecord({
     workspaceId: invitation.workspace_id,
     actorUserId: user.id,

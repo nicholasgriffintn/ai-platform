@@ -127,15 +127,10 @@ export async function publishProjectEvent(
 ): Promise<void> {
   const audience = await projectAudience(publisher.env, projectId);
 
-  publishSync(publisher, [
-    { audience, topic: syncTopic("project", projectId), type, data: { projectId, ...data } },
-    ...audience.map((userId) => ({
-      audience: [userId],
-      topic: syncTopic("user", userId),
-      type,
-      data: { projectId, ...data },
-    })),
-  ]);
+  publishSync(
+    publisher,
+    fanOut(audience, syncTopic("project", projectId), type, { projectId, ...data }),
+  );
 }
 
 export async function publishWorkspaceEvent(
@@ -146,15 +141,10 @@ export async function publishWorkspaceEvent(
 ): Promise<void> {
   const audience = await workspaceAudience(publisher.env, workspaceId);
 
-  publishSync(publisher, [
-    { audience, topic: syncTopic("workspace", workspaceId), type, data: { workspaceId, ...data } },
-    ...audience.map((userId) => ({
-      audience: [userId],
-      topic: syncTopic("user", userId),
-      type,
-      data: { workspaceId, ...data },
-    })),
-  ]);
+  publishSync(
+    publisher,
+    fanOut(audience, syncTopic("workspace", workspaceId), type, { workspaceId, ...data }),
+  );
 }
 
 export function publishUserEvent(
@@ -172,20 +162,10 @@ export function publishMachineEvent(
   machineId: string,
   data: Record<string, unknown> = {},
 ): void {
-  publishSync(publisher, [
-    {
-      audience: [userId],
-      topic: syncTopic("machine", machineId),
-      type: "machine.changed",
-      data: { machineId, ...data },
-    },
-    {
-      audience: [userId],
-      topic: syncTopic("user", userId),
-      type: "machine.changed",
-      data: { machineId, ...data },
-    },
-  ]);
+  publishSync(
+    publisher,
+    fanOut([userId], syncTopic("machine", machineId), "machine.changed", { machineId, ...data }),
+  );
 }
 
 export async function publishDelegationChanged(
@@ -200,18 +180,13 @@ export async function publishDelegationChanged(
     childConversationId: delegation.childConversationId,
   };
 
-  publishSync(publisher, [
-    {
+  publishSync(
+    publisher,
+    fanOut(
       audience,
-      topic: syncTopic("conversation", delegation.parentConversationId),
-      type: "delegation.changed",
+      syncTopic("conversation", delegation.parentConversationId),
+      "delegation.changed",
       data,
-    },
-    ...audience.map((userId) => ({
-      audience: [userId],
-      topic: syncTopic("user", userId),
-      type: "delegation.changed" as const,
-      data,
-    })),
-  ]);
+    ),
+  );
 }

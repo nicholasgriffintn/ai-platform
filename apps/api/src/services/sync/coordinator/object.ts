@@ -205,6 +205,14 @@ export class UserSyncCoordinator extends Agent<IEnv> {
   }
 
   public override async webSocketClose(socket: WebSocket): Promise<void> {
+    this.releaseSocket(socket);
+  }
+
+  public override async webSocketError(socket: WebSocket): Promise<void> {
+    this.releaseSocket(socket);
+  }
+
+  private releaseSocket(socket: WebSocket): void {
     const state = this.readState(socket);
 
     if (!state) {
@@ -274,16 +282,6 @@ export class UserSyncCoordinator extends Agent<IEnv> {
       });
 
       return Response.json({ sequences });
-    }
-
-    if (url.pathname === "/presence" && request.method === "GET") {
-      const topic = url.searchParams.get("topic");
-
-      if (!topic) {
-        return Response.json({ error: "Missing topic" }, { status: 400 });
-      }
-
-      return Response.json({ devices: this.presenceFor(topic) });
     }
 
     return Response.json({ error: "Not found" }, { status: 404 });

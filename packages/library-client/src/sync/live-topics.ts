@@ -24,6 +24,8 @@ export async function waitForSyncEvent(
     return;
   }
 
+  const ownsTopic = !socket.hasTopic(topic);
+
   socket.subscribe([topic]);
 
   await new Promise<void>((resolve) => {
@@ -37,6 +39,11 @@ export async function waitForSyncEvent(
       settled = true;
       clearTimeout(timer);
       unsubscribe();
+
+      if (ownsTopic) {
+        socket.unsubscribe([topic]);
+      }
+
       signal?.removeEventListener("abort", finish);
       resolve();
     };

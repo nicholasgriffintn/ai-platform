@@ -10,6 +10,7 @@ export interface SyncStore {
   lastEventTopic: string | null;
   setStatus: (status: SyncStatus) => void;
   setPresence: (topic: string, devices: DeviceSyncPresenceEntry[]) => void;
+  clearPresence: (topics: string[]) => void;
   noteEvent: (topic: string) => void;
 }
 
@@ -21,6 +22,16 @@ export const useSyncStore = create<SyncStore>()((set) => ({
   setStatus: (status) => set({ status }),
   setPresence: (topic, devices) =>
     set((state) => ({ presence: { ...state.presence, [topic]: devices } })),
+  clearPresence: (topics) =>
+    set((state) => {
+      const presence = { ...state.presence };
+
+      for (const topic of topics) {
+        delete presence[topic];
+      }
+
+      return { presence };
+    }),
   noteEvent: (topic) => set({ lastEventAt: Date.now(), lastEventTopic: topic }),
 }));
 

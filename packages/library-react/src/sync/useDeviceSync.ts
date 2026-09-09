@@ -73,6 +73,7 @@ export function useDeviceSync(): void {
 
     return () => {
       socket.unsubscribe([topic]);
+      useSyncStore.getState().clearPresence([topic]);
     };
   }, [conversationId]);
 }

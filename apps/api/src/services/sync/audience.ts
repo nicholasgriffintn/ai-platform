@@ -2,54 +2,54 @@ import type { IEnv } from "~/types";
 
 const AUDIENCE_CACHE_TTL_MS = 15_000;
 
-interface CachedAudience {
-  members: number[];
+interface CachedEntry<T> {
+  value: T;
   expiresAt: number;
 }
 
-const audienceCache = new Map<string, CachedAudience>();
+interface ConversationScope {
+  userId: number | null;
+  projectId: string | null;
+}
 
-function readCache(key: string): number[] | undefined {
-  const cached = audienceCache.get(key);
+const workspaceMembersCache = new Map<string, CachedEntry<number[]>>();
+const projectWorkspaceCache = new Map<string, CachedEntry<string | null>>();
+const conversationScopeCache = new Map<string, CachedEntry<ConversationScope | null>>();
+
+function readCache<T>(cache: Map<string, CachedEntry<T>>, key: string): T | undefined {
+  const cached = cache.get(key);
 
   if (!cached) {
     return undefined;
   }
 
   if (cached.expiresAt <= Date.now()) {
-    audienceCache.delete(key);
+    cache.delete(key);
 
     return undefined;
   }
 
-  return cached.members;
+  return cached.value;
 }
 
-function writeCache(key: string, members: number[]): number[] {
-  if (members.length === 0) {
-    return members;
+function writeCache<T>(cache: Map<string, CachedEntry<T>>, key: string, value: T): T {
+  if (value === null || (Array.isArray(value) && value.length === 0)) {
+    return value;
   }
 
-  audienceCache.set(key, { members, expiresAt: Date.now() + AUDIENCE_CACHE_TTL_MS });
+  cache.set(key, { value, expiresAt: Date.now() + AUDIENCE_CACHE_TTL_MS });
 
-  return members;
+  return value;
 }
 
-export function forgetAudience(key: string): void {
-  audienceCache.delete(key);
+export function forgetWorkspaceAudience(workspaceId: string): void {
+  workspaceMembersCache.delete(workspaceId);
 }
 
 export function clearAudienceCache(): void {
-  audienceCache.clear();
-}
-
-async function workspaceMemberIds(database: D1Database, workspaceId: string): Promise<number[]> {
-  const result = await database
-    .prepare(`SELECT user_id FROM workspace_member WHERE workspace_id = ?`)
-    .bind(workspaceId)
-    .all<{ user_id: number }>();
-
-  return (result.results ?? []).map((row) => row.user_id);
+  workspaceMembersCache.clear();
+  projectWorkspaceCache.clear();
+  conversationScopeCache.clear();
 }
 
 export async function workspaceAudience(
@@ -62,9 +62,22 @@ export async function workspaceAudience(
     return [];
   }
 
-  const key = `workspace:${workspaceId}`;
+  const cached = readCache(workspaceMembersCache, workspaceId);
 
-  return readCache(key) ?? writeCache(key, await workspaceMemberIds(database, workspaceId));
+  if (cached) {
+    return cached;
+  }
+
+  const result = await database
+    .prepare(`SELECT user_id FROM workspace_member WHERE workspace_id = ?`)
+    .bind(workspaceId)
+    .all<{ user_id: number }>();
+
+  return writeCache(
+    workspaceMembersCache,
+    workspaceId,
+    (result.results ?? []).map((row) => row.user_id),
+  );
 }
 
 export async function projectAudience(env: IEnv | undefined, projectId: string): Promise<number[]> {
@@ -74,22 +87,18 @@ export async function projectAudience(env: IEnv | undefined, projectId: string):
     return [];
   }
 
-  const key = `project:${projectId}`;
-  const cached = readCache(key);
+  let workspaceId = readCache(projectWorkspaceCache, projectId);
 
-  if (cached) {
-    return cached;
+  if (workspaceId === undefined) {
+    const project = await database
+      .prepare(`SELECT workspace_id FROM project WHERE id = ? LIMIT 1`)
+      .bind(projectId)
+      .first<{ workspace_id: string }>();
+
+    workspaceId = writeCache(projectWorkspaceCache, projectId, project?.workspace_id ?? null);
   }
 
-  const project = await database
-    .prepare(`SELECT workspace_id FROM project WHERE id = ? LIMIT 1`)
-    .bind(projectId)
-    .first<{ workspace_id: string }>();
-
-  return writeCache(
-    key,
-    project?.workspace_id ? await workspaceMemberIds(database, project.workspace_id) : [],
-  );
+  return workspaceId ? workspaceAudience(env, workspaceId) : [];
 }
 
 export async function conversationAudience(
@@ -102,25 +111,28 @@ export async function conversationAudience(
     return [];
   }
 
-  const key = `conversation:${conversationId}`;
-  const cached = readCache(key);
+  let scope = readCache(conversationScopeCache, conversationId);
 
-  if (cached) {
-    return cached;
+  if (scope === undefined) {
+    const conversation = await database
+      .prepare(`SELECT user_id, project_id FROM conversation WHERE id = ? LIMIT 1`)
+      .bind(conversationId)
+      .first<{ user_id: number | null; project_id: string | null }>();
+
+    scope = writeCache(
+      conversationScopeCache,
+      conversationId,
+      conversation ? { userId: conversation.user_id, projectId: conversation.project_id } : null,
+    );
   }
 
-  const conversation = await database
-    .prepare(`SELECT user_id, project_id FROM conversation WHERE id = ? LIMIT 1`)
-    .bind(conversationId)
-    .first<{ user_id: number | null; project_id: string | null }>();
-
-  if (!conversation) {
-    return writeCache(key, []);
+  if (!scope) {
+    return [];
   }
 
-  if (conversation.project_id) {
-    return writeCache(key, await projectAudience(env, conversation.project_id));
+  if (scope.projectId) {
+    return projectAudience(env, scope.projectId);
   }
 
-  return writeCache(key, conversation.user_id ? [conversation.user_id] : []);
+  return scope.userId ? [scope.userId] : [];
 }
