@@ -53,6 +53,23 @@ function createAdapter(
 export function createAgentSessionRegistry() {
   const hosts = new Map<string, Promise<AgentSessionHost>>();
 
+  function forgetIfCurrent(key: string, host: AgentSessionHost): void {
+    const current = hosts.get(key);
+
+    if (!current) {
+      return;
+    }
+
+    void current.then(
+      (resolved) => {
+        if (resolved === host && hosts.get(key) === current) {
+          hosts.delete(key);
+        }
+      },
+      () => undefined,
+    );
+  }
+
   async function build(
     backend: HostBackend,
     input: HostKeyInput,
@@ -73,13 +90,29 @@ export function createAgentSessionRegistry() {
 
     const adapter = createAdapter(input.driver, session, clientVersion, emit);
 
+    const host: AgentSessionHost = {
+      adapter,
+      directoryPath: session.directoryPath,
+      directoryId: input.directoryId,
+      listen: (listener) => {
+        listeners.add(listener);
+
+        return () => listeners.delete(listener);
+      },
+      stop: async () => {
+        forgetIfCurrent(key, host);
+        adapter.close("The session was stopped.");
+        await session.stop();
+      },
+    };
+
     void (async () => {
       try {
         for await (const line of session.transport) {
           adapter.receive(line);
         }
       } finally {
-        hosts.delete(key);
+        forgetIfCurrent(key, host);
         emit({ type: "session.exited", reason: "The agent process stopped." });
       }
     })();
@@ -90,21 +123,7 @@ export function createAgentSessionRegistry() {
       }
     })();
 
-    return {
-      adapter,
-      directoryPath: session.directoryPath,
-      directoryId: input.directoryId,
-      listen: (listener) => {
-        listeners.add(listener);
-
-        return () => listeners.delete(listener);
-      },
-      stop: async () => {
-        hosts.delete(key);
-        adapter.close("The session was stopped.");
-        await session.stop();
-      },
-    };
+    return host;
   }
 
   return {
@@ -114,27 +133,29 @@ export function createAgentSessionRegistry() {
       clientVersion: string | undefined,
     ): Promise<AgentSessionHost> {
       const key = agentSessionHostKey(input);
-      const existing = hosts.get(key);
+      const existing: Promise<AgentSessionHost | undefined> =
+        hosts.get(key) ?? Promise.resolve(undefined);
+      const next: Promise<AgentSessionHost> = existing.then(
+        async (host) => {
+          if (host?.directoryId === input.directoryId) {
+            return host;
+          }
 
-      if (existing) {
-        const host = await existing;
+          await host?.stop();
 
-        if (host.directoryId === input.directoryId) {
-          return host;
+          return build(backend, input, clientVersion);
+        },
+        () => build(backend, input, clientVersion),
+      );
+
+      hosts.set(key, next);
+      void next.catch(() => {
+        if (hosts.get(key) === next) {
+          hosts.delete(key);
         }
-
-        await host.stop();
-      }
-
-      const created = build(backend, input, clientVersion).catch((cause: unknown) => {
-        hosts.delete(key);
-
-        throw cause;
       });
 
-      hosts.set(key, created);
-
-      return created;
+      return next;
     },
 
     async release(input: HostKeyInput): Promise<void> {

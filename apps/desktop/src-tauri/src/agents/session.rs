@@ -59,9 +59,9 @@ struct SessionHandle {
     stdin: ChildStdin,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct AgentSessionRegistry {
-    sessions: Mutex<HashMap<String, Arc<AsyncMutex<SessionHandle>>>>,
+    sessions: Arc<Mutex<HashMap<String, Arc<AsyncMutex<SessionHandle>>>>>,
 }
 
 pub fn session_key(driver: AgentDriver, conversation_id: &str) -> String {
@@ -96,8 +96,32 @@ impl AgentSessionRegistry {
         self.sessions.lock().ok()?.remove(key)
     }
 
+    fn remove_if_current(&self, key: &str, handle: &Arc<AsyncMutex<SessionHandle>>) {
+        if let Ok(mut sessions) = self.sessions.lock() {
+            if sessions
+                .get(key)
+                .is_some_and(|current| Arc::ptr_eq(current, handle))
+            {
+                sessions.remove(key);
+            }
+        }
+    }
+
     pub fn is_running(&self, key: &str) -> bool {
         self.get(key).is_some()
+    }
+
+    pub async fn stop_all(&self) {
+        let handles: Vec<Arc<AsyncMutex<SessionHandle>>> = match self.sessions.lock() {
+            Ok(mut sessions) => sessions.drain().map(|(_, handle)| handle).collect(),
+            Err(_) => return,
+        };
+
+        for handle in handles {
+            let mut guard = handle.lock().await;
+            let _ = guard.stdin.shutdown().await;
+            let _ = guard.child.kill().await;
+        }
     }
 }
 
@@ -119,16 +143,22 @@ pub async fn start(
         .flatten();
     let at = timestamp();
 
-    if registry.is_running(&key) {
-        return Ok(SessionDescriptor {
-            session_key: key,
-            driver: request.driver,
-            directory_id: request.directory_id,
-            directory_path: directory.to_string_lossy().into_owned(),
-            started_at: at,
-            head,
-            adopted: true,
-        });
+    if let Some(handle) = registry.get(&key) {
+        let alive = matches!(handle.lock().await.child.try_wait(), Ok(None));
+
+        if alive {
+            return Ok(SessionDescriptor {
+                session_key: key,
+                driver: request.driver,
+                directory_id: request.directory_id,
+                directory_path: directory.to_string_lossy().into_owned(),
+                started_at: at,
+                head,
+                adopted: true,
+            });
+        }
+
+        registry.remove(&key);
     }
 
     let argv = process::session_argv(request.driver)
@@ -164,13 +194,17 @@ pub async fn start(
         .take()
         .ok_or_else(|| "The agent produced no diagnostic stream.".to_string())?;
 
-    spawn_stdout_pump(key.clone(), stdout, on_event.clone());
-    spawn_stderr_pump(key.clone(), stderr, on_event.clone());
+    let handle = Arc::new(AsyncMutex::new(SessionHandle { child, stdin }));
+    registry.insert(key.clone(), handle.clone())?;
 
-    registry.insert(
+    spawn_stdout_pump(
         key.clone(),
-        Arc::new(AsyncMutex::new(SessionHandle { child, stdin })),
-    )?;
+        stdout,
+        on_event.clone(),
+        registry.clone(),
+        handle,
+    );
+    spawn_stderr_pump(key.clone(), stderr, on_event.clone());
 
     directories
         .touch(&request.directory_id, at.clone())
@@ -195,6 +229,8 @@ fn spawn_stdout_pump(
     key: String,
     stdout: tokio::process::ChildStdout,
     on_event: Channel<SessionEvent>,
+    registry: AgentSessionRegistry,
+    handle: Arc<AsyncMutex<SessionHandle>>,
 ) {
     tauri::async_runtime::spawn(async move {
         let mut segments = BufReader::new(stdout).split(b'\n');
@@ -225,6 +261,8 @@ fn spawn_stdout_pump(
                 break;
             }
         }
+
+        registry.remove_if_current(&key, &handle);
 
         let _ = on_event.send(SessionEvent::Exited {
             session_key: key,
@@ -295,6 +333,46 @@ pub async fn stop(session_key: &str, registry: &AgentSessionRegistry) -> Result<
     let _ = guard.child.kill().await;
 
     Ok(())
+}
+
+#[cfg(all(test, unix))]
+mod exit_tests {
+    use super::*;
+    use tauri::ipc::InvokeResponseBody;
+
+    #[tokio::test]
+    async fn removes_the_registry_entry_once_the_process_exits_on_its_own() {
+        let registry = AgentSessionRegistry::default();
+        let key = "codex:conversation-exit".to_string();
+        let mut child = Command::new("/bin/sh")
+            .args(["-c", "exit 0"])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .kill_on_drop(true)
+            .spawn()
+            .unwrap();
+        let stdin = child.stdin.take().unwrap();
+        let stdout = child.stdout.take().unwrap();
+        let handle = Arc::new(AsyncMutex::new(SessionHandle { child, stdin }));
+        registry.insert(key.clone(), handle.clone()).unwrap();
+        let on_event = Channel::<SessionEvent>::new(|body| {
+            let _: InvokeResponseBody = body;
+            Ok(())
+        });
+
+        spawn_stdout_pump(key.clone(), stdout, on_event, registry.clone(), handle);
+
+        tokio::time::timeout(std::time::Duration::from_secs(5), async {
+            while registry.is_running(&key) {
+                tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .unwrap();
+
+        assert!(!registry.is_running(&key));
+    }
 }
 
 #[cfg(test)]

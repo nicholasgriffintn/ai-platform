@@ -2,8 +2,7 @@ use keyring::Entry;
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
 
-type SecretResult = Result<Option<String>, String>;
-static CACHE: LazyLock<Mutex<HashMap<String, SecretResult>>> =
+static CACHE: LazyLock<Mutex<HashMap<String, Option<String>>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
 pub const SESSION: &str = "authenticated-session";
@@ -23,29 +22,29 @@ pub fn store(name: &str, secret: &str) -> Result<(), String> {
     entry(name)?
         .set_password(secret)
         .map_err(|cause| cause.to_string())?;
-    cache.insert(name.to_string(), Ok(Some(secret.to_string())));
+    cache.insert(name.to_string(), Some(secret.to_string()));
     Ok(())
 }
 
 pub fn read(name: &str) -> Result<Option<String>, String> {
     let mut cache = CACHE.lock().map_err(|cause| cause.to_string())?;
-    if let Some(result) = cache.get(name) {
-        return result.clone();
+    if let Some(secret) = cache.get(name) {
+        return Ok(secret.clone());
     }
-    let result = match entry(name)?.get_password() {
-        Ok(secret) => Ok(Some(secret)),
-        Err(keyring::Error::NoEntry) => Ok(None),
-        Err(cause) => Err(cause.to_string()),
+    let secret = match entry(name)?.get_password() {
+        Ok(secret) => Some(secret),
+        Err(keyring::Error::NoEntry) => None,
+        Err(cause) => return Err(cause.to_string()),
     };
-    cache.insert(name.to_string(), result.clone());
-    result
+    cache.insert(name.to_string(), secret.clone());
+    Ok(secret)
 }
 
 pub fn forget(name: &str) -> Result<(), String> {
     let mut cache = CACHE.lock().map_err(|cause| cause.to_string())?;
     match entry(name)?.delete_credential() {
         Ok(()) | Err(keyring::Error::NoEntry) => {
-            cache.insert(name.to_string(), Ok(None));
+            cache.insert(name.to_string(), None);
             Ok(())
         }
         Err(cause) => Err(cause.to_string()),

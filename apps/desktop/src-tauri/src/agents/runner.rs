@@ -1,12 +1,13 @@
 use super::process::{self, DirectoryGrants, ProcessRunRequest};
 use crate::{
+    lines::LineReader,
     runs::{RunRegistry, StreamEvent},
     store::Store,
     timestamp,
 };
 use std::process::Stdio;
 use tauri::ipc::Channel;
-use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::io::AsyncReadExt;
 use tokio::process::Command;
 
 pub async fn run(
@@ -101,11 +102,12 @@ async fn run_command(
             });
         }
     };
-    let stdout = child
+    let mut stdout = child
         .stdout
         .take()
         .ok_or_else(|| "The agent produced no output stream.".to_string())?;
-    let mut lines = BufReader::new(stdout).lines();
+    let mut reader = LineReader::default();
+    let mut chunk = [0u8; 8192];
 
     let _ = on_event.send(StreamEvent::Started {
         run_id: run_id.clone(),
@@ -124,8 +126,8 @@ async fn run_command(
     });
 
     loop {
-        let line = tokio::select! {
-            line = lines.next_line() => line.map_err(|cause| cause.to_string())?,
+        let read = tokio::select! {
+            read = stdout.read(&mut chunk) => Some(read.map_err(|cause| cause.to_string())?),
             _ = tokio::time::sleep(crate::CANCEL_POLL) => {
                 if !registry.is_cancelled(&run_id) { continue; }
                 None
@@ -142,13 +144,31 @@ async fn run_command(
             return Ok(());
         }
 
-        let Some(line) = line else {
+        let Some(read) = read else {
             break;
         };
-        let _ = on_event.send(StreamEvent::RawOutput {
-            run_id: run_id.clone(),
-            data: format!("{line}\n"),
-        });
+        if read == 0 {
+            break;
+        }
+
+        reader.push(&chunk[..read]);
+        if reader.overflowed() {
+            let _ = child.kill().await;
+            let _ = on_event.send(StreamEvent::Finished {
+                run_id,
+                reason: "interrupted".to_string(),
+                at: timestamp(),
+            });
+
+            return Err("The agent produced a line too large to read.".to_string());
+        }
+
+        while let Some(line) = reader.next_line() {
+            let _ = on_event.send(StreamEvent::RawOutput {
+                run_id: run_id.clone(),
+                data: line,
+            });
+        }
     }
 
     let status = child.wait().await.map_err(|cause| cause.to_string())?;

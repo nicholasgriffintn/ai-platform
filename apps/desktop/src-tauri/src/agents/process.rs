@@ -6,6 +6,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 
+use crate::timestamp;
+
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum AgentDriver {
@@ -80,6 +82,7 @@ impl DirectoryGrants {
                 .map_err(|_| ProcessRefusal::InvalidDirectory)?
                 .as_nanos()
         );
+        let approved_at = timestamp();
         let label = path
             .file_name()
             .and_then(|value| value.to_str())
@@ -90,7 +93,7 @@ impl DirectoryGrants {
             id: id.clone(),
             path,
             label,
-            approved_at: id.trim_start_matches("directory-").to_string(),
+            approved_at,
             last_used_at: None,
             is_git_repo,
         };
@@ -451,15 +454,14 @@ pub fn build_argv(driver: AgentDriver, params: &RunParams) -> Result<Vec<String>
         argv.push(params.prompt.clone());
     }
 
-    let _ = program_for(driver);
-
     Ok(argv)
 }
 
 fn codex_sandbox_argument(mode: PermissionMode) -> &'static str {
     match mode {
-        PermissionMode::Supervised | PermissionMode::AutoAcceptEdits => "workspace-write",
-        PermissionMode::Auto => "workspace-write",
+        PermissionMode::Supervised | PermissionMode::AutoAcceptEdits | PermissionMode::Auto => {
+            "workspace-write"
+        }
         PermissionMode::FullAccess => "danger-full-access",
     }
 }

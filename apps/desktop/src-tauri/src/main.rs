@@ -872,8 +872,14 @@ fn main() {
             announce_attention,
             set_attention_badge
         ])
-        .run(context)
-        .expect("Polychat desktop failed to start");
+        .build(context)
+        .expect("Polychat desktop failed to start")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                let sessions = app.state::<AgentSessionRegistry>().inner().clone();
+                tauri::async_runtime::block_on(sessions.stop_all());
+            }
+        });
 }
 
 #[cfg(test)]
