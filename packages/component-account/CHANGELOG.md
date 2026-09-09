@@ -1,5 +1,23 @@
 # @ngriffin_uk/polychat-component-account
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [4789c96]
+- Updated dependencies [4789c96]
+- Updated dependencies [505ce6a]
+- Updated dependencies [4789c96]
+- Updated dependencies [505ce6a]
+- Updated dependencies [34380a3]
+- Updated dependencies [4789c96]
+- Updated dependencies [4789c96]
+  - @ngriffin_uk/polychat-library-react@0.3.0
+  - @ngriffin_uk/polychat-schemas@1.1.0
+  - @ngriffin_uk/polychat-component-ui@0.3.0
+  - @ngriffin_uk/polychat-component-capabilities@0.2.1
+  - @ngriffin_uk/polychat-component-models@1.0.1
+
 ## 0.2.0
 
 ### Minor Changes

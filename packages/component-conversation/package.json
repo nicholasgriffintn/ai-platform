@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-component-conversation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Controlled conversation timeline, message, and composer views for Polychat surfaces",
   "license": "Apache-2.0",
   "files": [
