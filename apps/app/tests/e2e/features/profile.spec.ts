@@ -396,7 +396,7 @@ test.describe("Account-owned resources", () => {
     await expect(page.getByText(/infra_reconciliation/i)).toHaveCount(0);
     await expect(page.getByText(/stripe_usage_sync/i)).toHaveCount(0);
     await expect(
-      page.getByText("No tasks found. Trigger a memory synthesis to get started!", {
+      page.getByText("Nothing is running in the background right now.", {
         exact: true,
       }),
     ).toBeVisible();
