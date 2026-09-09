@@ -20,6 +20,7 @@ export async function releaseExpiredChatRunReservations(
         refId: reservation.ref_id,
         reservationId: reservation.id,
         outcome: "released",
+        publisher: { env },
       }),
     ),
   );

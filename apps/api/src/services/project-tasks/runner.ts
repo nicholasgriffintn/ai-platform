@@ -16,7 +16,7 @@ import { scheduleComposioConnectorRunCleanup } from "~/services/apps/connectors/
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { acquireThread } from "~/services/conversations/coordinator/client";
-import { GoalService } from "~/services/goals/GoalService";
+import { createGoalService } from "~/services/goals/createGoalService";
 import { notifyMobileProjectTask } from "~/services/mobile-push";
 import {
   isTaskExecutionOwnershipLostError,
@@ -318,6 +318,7 @@ async function releaseDurableRunResources(
     kind: "chat_run",
     refId: run.id,
     outcome: "released",
+    publisher: context,
   });
 
   if (!options.keepInteractionResources) {
@@ -514,7 +515,7 @@ export async function runProjectTaskDispatch(params: {
     return { status: "blocked", detail };
   }
 
-  const goalService = new GoalService(context.repositories.goals);
+  const goalService = createGoalService(context);
   let goalId = claimed.goalId;
   let previousRun: ChatRun | null = null;
 

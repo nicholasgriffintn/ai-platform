@@ -63,6 +63,31 @@ function createRepository(goal: Goal | null = createGoal()) {
   } as any;
 }
 
+describe("GoalService change notifications", () => {
+  it("reports every persisted goal write to the change hook", async () => {
+    const repository = createRepository(null);
+    const onChanged = vi.fn();
+    const service = new GoalService(repository, { onChanged });
+
+    const created = await service.setGoal({
+      owner: { conversationId: "conversation-1" },
+      user: proUser,
+      objective: "Ship the release",
+      source: "user",
+    });
+    const cleared = await service.transition({
+      goalId: created.id,
+      actor: "user",
+      status: "cleared",
+      reason: "Done manually",
+    });
+
+    expect(onChanged).toHaveBeenNthCalledWith(1, created);
+    expect(onChanged).toHaveBeenNthCalledWith(2, cleared);
+    expect(onChanged).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe("GoalService", () => {
   let repository: ReturnType<typeof createRepository>;
   let service: GoalService;

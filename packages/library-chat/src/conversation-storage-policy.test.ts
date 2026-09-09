@@ -12,6 +12,17 @@ const signedInPro = {
 };
 
 describe("resolveConversationStorageMode", () => {
+  it("withholds a verdict while the session is still being checked", () => {
+    expect(
+      resolveConversationStorageMode({
+        isAuthenticationLoading: true,
+        isAuthenticated: false,
+        isPro: false,
+        temporaryChatsDefault: false,
+      }),
+    ).toEqual({ retention: "kept", reason: "pending", isProjectScoped: false });
+  });
+
   it("syncs an ordinary conversation", () => {
     expect(resolveConversationStorageMode(signedInPro)).toEqual({
       retention: "kept",

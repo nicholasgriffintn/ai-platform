@@ -1,6 +1,7 @@
 import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 
 import type { Task, TaskExecution } from "~/lib/database/schema";
+import { recordD1ResultMeta } from "~/lib/usage/requestMeter";
 import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
@@ -290,6 +291,26 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     await this.executeRun(query, values);
 
     return true;
+  }
+
+  public async deleteSettledTasksBefore(cutoff: Date, limit: number): Promise<number> {
+    const selection = `SELECT id FROM tasks
+       WHERE status IN ('completed', 'cancelled')
+         AND schedule_type = 'immediate'
+         AND datetime(COALESCE(completed_at, updated_at, created_at)) < datetime(?)
+       LIMIT ?`;
+    const bindings = [cutoff.toISOString(), limit];
+    const [executions, tasksDeleted] = await this.env.DB.batch([
+      this.env.DB.prepare(`DELETE FROM task_executions WHERE task_id IN (${selection})`).bind(
+        ...bindings,
+      ),
+      this.env.DB.prepare(`DELETE FROM tasks WHERE id IN (${selection})`).bind(...bindings),
+    ]);
+
+    recordD1ResultMeta(executions?.meta);
+    recordD1ResultMeta(tasksDeleted?.meta);
+
+    return Number(tasksDeleted?.meta?.changes ?? 0);
   }
 
   public async createTaskExecution(

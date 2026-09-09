@@ -18,6 +18,26 @@ describe("TaskRepository", () => {
     expect(bind).toHaveBeenCalledWith("2026-08-31T17:30:00.000Z", 25);
   });
 
+  it("purges settled immediate tasks and their executions in one bounded batch", async () => {
+    const batch = vi.fn().mockResolvedValue([{ meta: { changes: 3 } }, { meta: { changes: 2 } }]);
+    const bind = vi.fn().mockImplementation((...values: unknown[]) => ({ values }));
+    const prepare = vi.fn().mockReturnValue({ bind });
+    const repository = new TaskRepository({ DB: { prepare, batch } } as any);
+
+    const deleted = await repository.deleteSettledTasksBefore(
+      new Date("2026-09-02T00:00:00.000Z"),
+      500,
+    );
+
+    expect(deleted).toBe(2);
+    expect(prepare.mock.calls[0]?.[0]).toContain("DELETE FROM task_executions");
+    expect(prepare.mock.calls[1]?.[0]).toContain("DELETE FROM tasks");
+    expect(prepare.mock.calls[1]?.[0]).toContain("status IN ('completed', 'cancelled')");
+    expect(prepare.mock.calls[1]?.[0]).toContain("schedule_type = 'immediate'");
+    expect(bind).toHaveBeenCalledWith("2026-09-02T00:00:00.000Z", 500);
+    expect(batch).toHaveBeenCalledOnce();
+  });
+
   it("only reclaims a running task after its persisted owner lease expires", async () => {
     const first = vi.fn().mockResolvedValue(null);
     const bind = vi.fn().mockReturnValue({ first });

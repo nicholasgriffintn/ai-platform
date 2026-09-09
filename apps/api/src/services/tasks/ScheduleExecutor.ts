@@ -8,6 +8,7 @@ import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 import {
+  purgeSettledTasks,
   redispatchPendingTasks,
   scheduleDailySynthesis,
   scheduleInfraReconciliation,
@@ -100,10 +101,11 @@ export class ScheduleExecutor {
 }
 
 async function runRecipeScheduleAndConnectorMaintenance(env: IEnv): Promise<void> {
-  const [recipeScheduling, sessionCleanup, approvalCleanup] = await Promise.allSettled([
+  const [recipeScheduling, sessionCleanup, approvalCleanup, taskPurge] = await Promise.allSettled([
     scheduleRecipeExecutions(env),
     reapComposioConnectorSessions(env),
     deleteExpiredConnectorOperationApprovals(env),
+    purgeSettledTasks(env),
   ]);
 
   if (sessionCleanup.status === "rejected") {
@@ -116,6 +118,10 @@ async function runRecipeScheduleAndConnectorMaintenance(env: IEnv): Promise<void
     logger.warn("Connector approval cleanup failed", {
       error: getErrorMessage(approvalCleanup.reason),
     });
+  }
+
+  if (taskPurge.status === "rejected") {
+    logger.warn("Settled task purge failed", { error: getErrorMessage(taskPurge.reason) });
   }
 
   if (recipeScheduling.status === "rejected") {

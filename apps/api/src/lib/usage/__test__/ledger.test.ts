@@ -1,6 +1,10 @@
 import type { RateEntry } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
+const publishUserEvent = vi.hoisted(() => vi.fn());
+
+vi.mock("~/services/sync/conversation-events", () => ({ publishUserEvent }));
+
 import type { UsageEventInsert } from "~/repositories/UsageEventRepository";
 
 import { billableTokenQuantities } from "../billableUnits";
@@ -237,6 +241,38 @@ describe("emitUsageEvents", () => {
       emitUsageEvents({ env: { TASK_QUEUE: {} } as any, repositories, drafts: [draft()] }),
     ).resolves.toBe("written");
     expect(insertEventAndApplyBalance).toHaveBeenCalledTimes(1);
+  });
+
+  it("announces a balance change once per user, and not for zero-credit events", async () => {
+    publishUserEvent.mockClear();
+    const { repositories } = createRepositories();
+    const publisher = { env: {} as any };
+
+    await applyUsageRollup(
+      repositories,
+      [
+        buildUsageEventRow(draft()),
+        buildUsageEventRow(draft({ idempotencyKey: "model:message-1:output_tokens" })),
+        buildUsageEventRow(
+          draft({
+            idempotencyKey: "infra:request-1:d1_rows_read",
+            actor: userCreditActor(9),
+            source: "infrastructure",
+            vendor: "cloudflare",
+            resource: "d1",
+            unit: "d1_rows_read",
+            quantity: 3,
+            rates: [],
+          }),
+        ),
+      ],
+      publisher,
+    );
+
+    expect(publishUserEvent).toHaveBeenCalledTimes(1);
+    expect(publishUserEvent).toHaveBeenCalledWith(publisher, 7, "usage.changed", {
+      period: "2026-08",
+    });
   });
 
   it("writes inline deliveries straight to the ledger without creating a task", async () => {

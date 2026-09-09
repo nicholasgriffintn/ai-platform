@@ -12,6 +12,8 @@ const PUBLISHED_EVENT_TYPES = new Set<DeviceSyncEventType>([
   "delegation.changed",
   "project_task.changed",
   "machine.changed",
+  "usage.changed",
+  "goal.changed",
 ]);
 
 export function isLiveEventType(type: DeviceSyncEventType): boolean {

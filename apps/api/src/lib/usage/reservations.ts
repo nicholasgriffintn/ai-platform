@@ -2,6 +2,8 @@ import { usagePeriodFromDate, type UsageReservationKind } from "@ngriffin_uk/pol
 
 import type { RepositoryManager } from "~/repositories";
 import type { UsageReservationRow } from "~/repositories/UsageReservationRepository";
+import { publishUserEvent } from "~/services/sync/conversation-events";
+import type { SyncPublisher } from "~/services/sync/publish";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
@@ -20,6 +22,7 @@ export interface HoldUsageReservationParams {
   refId: string;
   creditMicros: number;
   expiresAt?: string | null;
+  publisher?: SyncPublisher;
 }
 
 export async function holdUsageReservation(params: HoldUsageReservationParams): Promise<boolean> {
@@ -42,6 +45,10 @@ export async function holdUsageReservation(params: HoldUsageReservationParams): 
       period,
       deltas: { reserved_credit_micros: creditMicros },
     });
+
+    if (params.publisher) {
+      publishUserEvent(params.publisher, params.userId, "usage.changed", { period });
+    }
   }
 
   return created;
@@ -53,6 +60,7 @@ export interface FinishUsageReservationParams {
   refId: string;
   outcome: "settled" | "released";
   reservationId?: string;
+  publisher?: SyncPublisher;
 }
 
 export async function finishUsageReservation(
@@ -68,12 +76,20 @@ export async function finishUsageReservation(
   }
 
   if (reservation.kind === "chat_run") {
-    return params.repositories.usageReservations.finishUserReservationWithBalance(
+    const finished = await params.repositories.usageReservations.finishUserReservationWithBalance(
       params.kind,
       params.refId,
       params.outcome,
       params.reservationId,
     );
+
+    if (finished && params.publisher) {
+      publishUserEvent(params.publisher, finished.user_id, "usage.changed", {
+        period: finished.period,
+      });
+    }
+
+    return finished;
   }
 
   const transitioned = await params.repositories.usageReservations.transitionHeldReservation(
@@ -98,6 +114,12 @@ export async function finishUsageReservation(
       period: reservation.period,
       deltas: { reserved_credit_micros: -reservation.credit_micros },
     });
+
+    if (params.publisher) {
+      publishUserEvent(params.publisher, reservation.user_id, "usage.changed", {
+        period: reservation.period,
+      });
+    }
   }
 
   return reservation;

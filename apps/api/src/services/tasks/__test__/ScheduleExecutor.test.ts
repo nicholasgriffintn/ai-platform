@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  purgeSettledTasks: vi.fn(),
   redispatchPendingTasks: vi.fn(),
   scheduleRecipeExecutions: vi.fn(),
   scheduleStripeUsageSync: vi.fn(),
@@ -9,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("../scheduledTasks", () => ({
+  purgeSettledTasks: mocks.purgeSettledTasks,
   redispatchPendingTasks: mocks.redispatchPendingTasks,
   scheduleDailySynthesis: vi.fn(),
   scheduleRecipeExecutions: mocks.scheduleRecipeExecutions,
@@ -35,6 +37,7 @@ describe("ScheduleExecutor connector maintenance", () => {
     mocks.redispatchPendingTasks.mockResolvedValue(0);
     mocks.reapComposioConnectorSessions.mockResolvedValue({ deleted: 0, failed: 0 });
     mocks.deleteExpiredConnectorOperationApprovals.mockResolvedValue(0);
+    mocks.purgeSettledTasks.mockResolvedValue(0);
   });
 
   it("runs both cleanups without allowing either failure to block recipe scheduling", async () => {
@@ -42,6 +45,7 @@ describe("ScheduleExecutor connector maintenance", () => {
     mocks.deleteExpiredConnectorOperationApprovals.mockRejectedValueOnce(
       new Error("approval cleanup unavailable"),
     );
+    mocks.purgeSettledTasks.mockRejectedValueOnce(new Error("purge unavailable"));
 
     await expect(
       ScheduleExecutor.respondToCronSchedules(
@@ -55,6 +59,7 @@ describe("ScheduleExecutor connector maintenance", () => {
     expect(mocks.scheduleRecipeExecutions).toHaveBeenCalledOnce();
     expect(mocks.reapComposioConnectorSessions).toHaveBeenCalledOnce();
     expect(mocks.deleteExpiredConnectorOperationApprovals).toHaveBeenCalledOnce();
+    expect(mocks.purgeSettledTasks).toHaveBeenCalledOnce();
     expect(mocks.redispatchPendingTasks).toHaveBeenCalledOnce();
   });
 });

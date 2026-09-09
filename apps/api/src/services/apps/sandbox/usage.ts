@@ -46,6 +46,7 @@ export async function reserveSandboxRun(params: {
       refId: params.runId,
       creditMicros,
       expiresAt,
+      publisher: { env: params.env },
     });
   } catch (error) {
     logger.error("Failed to reserve credits for a sandbox run", {
@@ -106,6 +107,7 @@ export async function recordSandboxRunUsage(params: {
     kind: "sandbox",
     refId: runId,
     outcome: "settled",
+    publisher: context,
   });
 
   const runWithUsage = {

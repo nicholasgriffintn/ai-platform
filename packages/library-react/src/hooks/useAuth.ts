@@ -2,6 +2,7 @@ import { authService, useChatStore } from "@ngriffin_uk/polychat-library-client"
 import type { UserSettings } from "@ngriffin_uk/polychat-schemas/user-profile";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { MODELS_QUERY_KEY } from "../chat/useModels.js";
 import { useUsageStore } from "../state/usageStore.js";
 
 export const AUTH_QUERY_KEYS = {
@@ -16,6 +17,7 @@ export function useAuthStatus() {
     userSettings,
     setIsAuthenticationLoading,
     setAuthenticatedUserConfiguration,
+    setHasApiKey,
     setUserSettings,
     clearAuthenticatedUserConfiguration,
   } = useChatStore();
@@ -30,20 +32,21 @@ export function useAuthStatus() {
       const user = authService.getUser();
 
       if (isAuth) {
-        const token = await authService.getToken();
         const userSettings = authService.getUserSettings();
 
         setAuthenticatedUserConfiguration({
-          hasApiKey: !!token,
+          hasApiKey: previousIdentity.hasApiKey,
           user,
           userSettings,
         });
+        void authService.getToken().then((token) => setHasApiKey(Boolean(token)));
       } else {
         clearAuthenticatedUserConfiguration();
       }
 
       if (previousIdentity.isAuthenticated !== isAuth || previousIdentity.user?.id !== user?.id) {
         useUsageStore.getState().setUsageLimits(null);
+        void queryClient.invalidateQueries({ queryKey: [MODELS_QUERY_KEY] });
       }
 
       setIsAuthenticationLoading(false);

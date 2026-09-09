@@ -507,6 +507,7 @@ export class ConversationManager {
       return await admitTurn({
         repositories,
         actor,
+        publisher: { env: this.env },
         planId: this.user?.plan_id ?? null,
         estimatedCreditMicros:
           this.durableTurnReservation?.creditMicros ??

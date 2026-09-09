@@ -28,7 +28,7 @@ import {
 
 const logger = getLogger({ prefix: "lib/models" });
 
-let cachedModels: typeof modelConfig | null = null;
+const cachedModelsByOptions = new Map<string, typeof modelConfig>();
 let cachedFreeModels: typeof modelConfig | null = null;
 let cachedFeaturedModels: typeof modelConfig | null = null;
 let cachedLineupModels: typeof modelConfig | null = null;
@@ -264,11 +264,17 @@ export function getModels(
     excludeModalities: [],
   },
 ) {
-  if (cachedModels && options.shouldUseCache) {
-    return cachedModels;
+  const cacheKey = JSON.stringify([
+    [...(options.excludeModalities ?? [])].sort(),
+    Boolean(options.chatSurfaceOnly),
+  ]);
+  const cached = cachedModelsByOptions.get(cacheKey);
+
+  if (cached) {
+    return cached;
   }
 
-  cachedModels = Object.entries(modelConfig).reduce((acc, [key, model]) => {
+  const models = Object.entries(modelConfig).reduce<typeof modelConfig>((acc, [key, model]) => {
     if (
       !model.beta &&
       !options.excludeModalities?.some((excluded) => modelSupportsModality(model, excluded)) &&
@@ -280,7 +286,9 @@ export function getModels(
     return acc;
   }, {});
 
-  return cachedModels;
+  cachedModelsByOptions.set(cacheKey, models);
+
+  return models;
 }
 
 export function getAvailableStrengths(): string[] {

@@ -34,8 +34,8 @@ import {
   type ThreadLease,
 } from "~/services/conversations/coordinator/client";
 import { disposeMCPClients } from "~/services/functions/mcp";
+import { createGoalService } from "~/services/goals/createGoalService";
 import { GOAL_STATUS_MARKER_EVENTS, recordGoalMarker } from "~/services/goals/goalMarker";
-import { GoalService } from "~/services/goals/GoalService";
 import type { ChatMode, CoreChatOptions, Message } from "~/types";
 import { isAbortError } from "~/utils/abort";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -91,7 +91,7 @@ export class ChatOrchestrator {
       return undefined;
     }
 
-    const goalService = new GoalService(chatOptions.context.repositories.goals);
+    const goalService = createGoalService(chatOptions.context);
 
     return createGoalFinishGate({
       goalService,

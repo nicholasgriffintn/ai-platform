@@ -22,6 +22,7 @@ export interface ConversationRetentionState {
 export function useConversationRetention(
   requestOptions?: ChatRequestOptions,
 ): ConversationRetentionState {
+  const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isPro = useChatStore((state) => state.isPro);
   const temporaryChat = useChatStore((state) => state.temporaryChat);
@@ -30,6 +31,7 @@ export function useConversationRetention(
   const computeSite = useChatStore((state) => state.computeSite);
   const mode = resolveConversationStorageMode(
     {
+      isAuthenticationLoading,
       isAuthenticated,
       isPro,
       temporaryChat,

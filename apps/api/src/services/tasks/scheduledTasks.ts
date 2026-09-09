@@ -12,6 +12,8 @@ import { TaskService } from "./TaskService";
 const logger = getLogger({ prefix: "services/tasks/scheduled" });
 
 const MIN_NEW_MEMORIES_FOR_SYNTHESIS = 5;
+const SETTLED_TASK_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+const SETTLED_TASK_PURGE_LIMIT = 500;
 
 export async function redispatchPendingTasks(env: IEnv): Promise<number> {
   const repositories = RepositoryManager.getInstance(env);
@@ -23,6 +25,21 @@ export async function redispatchPendingTasks(env: IEnv): Promise<number> {
   }
 
   return dispatched;
+}
+
+export async function purgeSettledTasks(env: IEnv, now = new Date()): Promise<number> {
+  const repositories = RepositoryManager.getInstance(env);
+  const cutoff = new Date(now.getTime() - SETTLED_TASK_RETENTION_MS);
+  const deleted = await repositories.tasks.deleteSettledTasksBefore(
+    cutoff,
+    SETTLED_TASK_PURGE_LIMIT,
+  );
+
+  if (deleted > 0) {
+    logger.info("Purged settled tasks", { deleted, cutoff: cutoff.toISOString() });
+  }
+
+  return deleted;
 }
 
 export async function scheduleInfraReconciliation(env: IEnv, now = new Date()): Promise<void> {

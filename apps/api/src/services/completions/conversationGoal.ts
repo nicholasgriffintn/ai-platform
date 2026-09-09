@@ -15,8 +15,9 @@ import {
   requireConversationAccess,
   requireOwnConversationForWrite,
 } from "~/services/conversations/access";
+import { createGoalService } from "~/services/goals/createGoalService";
 import { recordGoalMarker } from "~/services/goals/goalMarker";
-import { GoalService } from "~/services/goals/GoalService";
+import type { GoalService } from "~/services/goals/GoalService";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type ConversationGoalContext = ServiceContext;
@@ -24,7 +25,7 @@ export type ConversationGoalContext = ServiceContext;
 function createService(context: ConversationGoalContext): GoalService {
   context.ensureDatabase();
 
-  return new GoalService(context.repositories.goals);
+  return createGoalService(context);
 }
 
 export async function handleGetRunGoal(

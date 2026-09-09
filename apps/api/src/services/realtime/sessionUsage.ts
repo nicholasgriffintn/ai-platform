@@ -138,6 +138,7 @@ export async function registerRealtimeSessionUsage(params: {
       refId: params.sessionId,
       creditMicros: params.pricing.creditMicros,
       expiresAt: reconcileAt,
+      publisher: { env: params.env },
     });
   } catch (error) {
     logger.error("Failed to hold a realtime session reservation", {

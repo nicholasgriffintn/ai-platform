@@ -5,8 +5,9 @@ import {
   type GoalMarkerEvent,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { createGoalService } from "~/services/goals/createGoalService";
 import { recordGoalMarker } from "~/services/goals/goalMarker";
-import { GoalService } from "~/services/goals/GoalService";
+import type { GoalService } from "~/services/goals/GoalService";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import {
@@ -15,9 +16,9 @@ import {
 } from "./definitions/goal";
 
 function resolveGoalService(context: any): GoalService | null {
-  const repositories = context?.request?.context?.repositories;
+  const serviceContext = context?.request?.context;
 
-  return repositories?.goals ? new GoalService(repositories.goals) : null;
+  return serviceContext?.repositories?.goals ? createGoalService(serviceContext) : null;
 }
 
 function resolveCompletionId(context: any): string | undefined {

@@ -5,6 +5,7 @@ export const conversationRetentionSchema = z.enum(CONVERSATION_RETENTION);
 export type ConversationRetention = z.infer<typeof conversationRetentionSchema>;
 
 export const RETENTION_REASONS = [
+  "pending",
   "chosen",
   "default",
   "signed_out",

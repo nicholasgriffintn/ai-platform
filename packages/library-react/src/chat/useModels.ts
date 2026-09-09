@@ -15,10 +15,8 @@ export function useModels() {
   const hostedModels = useQuery({
     queryKey: [MODELS_QUERY_KEY],
     queryFn: apiService.fetchModels,
-    staleTime: 1000 * 60,
+    staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: "always",
   });
   const deviceModels = useDeviceModels();
   const hasLocalDeviceModelSource = Boolean(deviceModelSource());

@@ -9,6 +9,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
+import { publishUserEvent } from "~/services/sync/conversation-events";
+import type { SyncPublisher } from "~/services/sync/publish";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
@@ -160,6 +162,7 @@ export type TurnAdmission =
 
 export interface AdmitTurnParams extends ReadCreditPositionParams {
   estimatedCreditMicros: number;
+  publisher?: SyncPublisher;
   durableReservation?: {
     kind: "chat_run";
     refId: string;
@@ -205,6 +208,7 @@ function createDurableTurnReservation(
   refId: string,
   creditMicros: number,
   reservationId: string,
+  publisher?: SyncPublisher,
 ): TurnReservation {
   let finished = false;
 
@@ -216,7 +220,14 @@ function createDurableTurnReservation(
       }
 
       finished = true;
-      await finishUsageReservation({ repositories, kind, refId, outcome, reservationId });
+      await finishUsageReservation({
+        repositories,
+        kind,
+        refId,
+        outcome,
+        reservationId,
+        publisher,
+      });
     },
   };
 }
@@ -260,6 +271,12 @@ export async function admitTurn(params: AdmitTurnParams): Promise<TurnAdmission>
       return { admitted: false, position };
     }
 
+    if (params.publisher) {
+      publishUserEvent(params.publisher, durable.userId, "usage.changed", {
+        period: position.period,
+      });
+    }
+
     return {
       admitted: true,
       position,
@@ -269,6 +286,7 @@ export async function admitTurn(params: AdmitTurnParams): Promise<TurnAdmission>
         durable.refId,
         params.estimatedCreditMicros,
         reservationId,
+        params.publisher,
       ),
     };
   }

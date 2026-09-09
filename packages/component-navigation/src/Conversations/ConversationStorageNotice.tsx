@@ -4,7 +4,7 @@ export interface ConversationStorageNoticeProps {
   reason: RetentionReason | null;
 }
 
-const NOTICE_COPY: Record<RetentionReason, string> = {
+const NOTICE_COPY: Partial<Record<RetentionReason, string>> = {
   chosen: "Temporary. Nothing here is kept.",
   default: "Temporary by default. Change this in Settings.",
   signed_out: "Not signed in, so this stays on this device.",
@@ -13,14 +13,16 @@ const NOTICE_COPY: Record<RetentionReason, string> = {
 };
 
 export function ConversationStorageNotice({ reason }: ConversationStorageNoticeProps) {
-  if (!reason) {
+  const copy = reason ? NOTICE_COPY[reason] : undefined;
+
+  if (!copy) {
     return null;
   }
 
   return (
     <div className="mb-2">
       <div className="border-y border-sidebar-border bg-surface-elevated px-3 py-2 text-xs text-muted-foreground">
-        {NOTICE_COPY[reason]}
+        {copy}
       </div>
     </div>
   );

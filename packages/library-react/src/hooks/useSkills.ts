@@ -35,6 +35,7 @@ export function usePersonalSkills(enabled = true) {
   const query = useQuery({
     queryKey: PERSONAL_SKILLS_QUERY_KEY,
     queryFn: fetchPersonalSkills,
+    staleTime: 1000 * 60 * 5,
     enabled,
   });
   const setEnabled = useMutation({

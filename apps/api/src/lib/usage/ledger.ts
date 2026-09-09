@@ -13,6 +13,8 @@ import {
 
 import type { RepositoryManager } from "~/repositories";
 import type { UsageEventInsert } from "~/repositories/UsageEventRepository";
+import { publishUserEvent } from "~/services/sync/conversation-events";
+import type { SyncPublisher } from "~/services/sync/publish";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -227,10 +229,12 @@ async function removeDeletedConversationAttribution(
 export async function applyUsageRollup(
   repositories: RepositoryManager,
   events: readonly UsageEventInsert[],
+  publisher?: SyncPublisher,
 ): Promise<{ inserted: number }> {
   const seeds = new Map<number, UsagePlanSeed>();
   const knownUsers = new Map<number, boolean>();
   const knownConversations = new Map<string, boolean>();
+  const changedBalances = new Map<number, string>();
   let inserted = 0;
 
   for (const event of events) {
@@ -272,6 +276,16 @@ export async function applyUsageRollup(
     }
 
     inserted += 1;
+
+    if (event.billable && event.credit_micros !== 0) {
+      changedBalances.set(event.user_id, event.period);
+    }
+  }
+
+  if (publisher) {
+    for (const [userId, period] of changedBalances) {
+      publishUserEvent(publisher, userId, "usage.changed", { period });
+    }
   }
 
   return { inserted };
@@ -384,7 +398,7 @@ export async function emitUsageEvents(
   }
 
   try {
-    await applyUsageRollup(repositories, events);
+    await applyUsageRollup(repositories, events, { env });
 
     return "written";
   } catch (error) {

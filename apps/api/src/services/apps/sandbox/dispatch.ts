@@ -14,7 +14,7 @@ import {
 
 import { MAX_STORED_STREAM_EVENTS } from "~/constants/app";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { GoalService } from "~/services/goals/GoalService";
+import { createGoalService } from "~/services/goals/createGoalService";
 import { notifyMobileProjectRun } from "~/services/mobile-push";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
 import { TaskService } from "~/services/tasks/TaskService";
@@ -165,7 +165,7 @@ async function ensureRunGoal(params: {
   }
 
   try {
-    const service = new GoalService(params.context.repositories.goals);
+    const service = createGoalService(params.context);
 
     await service.setGoal({
       owner: { sandboxRunId: params.runId },

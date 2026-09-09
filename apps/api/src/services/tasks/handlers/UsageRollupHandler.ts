@@ -18,7 +18,7 @@ export class UsageRollupHandler implements TaskHandler {
     }
 
     try {
-      const { inserted } = await applyUsageRollup(new RepositoryManager(env), events);
+      const { inserted } = await applyUsageRollup(new RepositoryManager(env), events, { env });
 
       return {
         status: "success",

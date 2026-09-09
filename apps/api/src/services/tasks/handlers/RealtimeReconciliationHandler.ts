@@ -54,6 +54,7 @@ export class RealtimeReconciliationHandler implements TaskHandler {
         kind: "realtime",
         refId: payload.sessionId,
         outcome: "settled",
+        publisher: { env },
       });
 
       if (!reservation) {

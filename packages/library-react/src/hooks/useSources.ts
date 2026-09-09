@@ -39,6 +39,7 @@ export function useSources(
       filters.collectionId
         ? listCollectionSources(filters.collectionId)
         : listSources({ projectId: filters.projectId, kind: filters.kind }),
+    staleTime: 1000 * 60 * 5,
     enabled: options.enabled,
   });
 }

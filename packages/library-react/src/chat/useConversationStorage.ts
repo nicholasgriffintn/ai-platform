@@ -19,6 +19,7 @@ import { useSelectedModelRunsOnDevice } from "./useSelectedModelRunsOnDevice.js"
 export function useConversationStorage(requestOptions?: ChatRequestOptions) {
   const queryClient = useQueryClient();
   const {
+    isAuthenticationLoading,
     isAuthenticated,
     isPro,
     markConversationRemoteAvailable,
@@ -37,6 +38,7 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
 
       return resolveConversationStorageMode(
         {
+          isAuthenticationLoading,
           isAuthenticated,
           isPro,
           temporaryChat: conversation?.isLocalOnly ?? temporaryChat,
@@ -48,6 +50,7 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
     },
     [
       answersOnDevice,
+      isAuthenticationLoading,
       isAuthenticated,
       isPro,
       queryClient,

@@ -36,8 +36,35 @@ export interface RecordIterationParams {
   usageLimitsExhausted?: boolean;
 }
 
+export interface GoalServiceOptions {
+  onChanged?: (goal: Goal) => void;
+}
+
 export class GoalService {
-  constructor(private readonly goals: GoalRepository) {}
+  constructor(
+    private readonly goals: GoalRepository,
+    private readonly options: GoalServiceOptions = {},
+  ) {}
+
+  private async createGoal(...args: Parameters<GoalRepository["createGoal"]>): Promise<Goal> {
+    const goal = await this.goals.createGoal(...args);
+
+    this.options.onChanged?.(goal);
+
+    return goal;
+  }
+
+  private async updateGoal(
+    ...args: Parameters<GoalRepository["updateGoal"]>
+  ): Promise<Goal | null> {
+    const goal = await this.goals.updateGoal(...args);
+
+    if (goal) {
+      this.options.onChanged?.(goal);
+    }
+
+    return goal;
+  }
 
   assertPro(user: IUser | null | undefined): void {
     if (!user?.id) {
@@ -76,7 +103,7 @@ export class GoalService {
         return undefined;
       }
 
-      const updated = await this.goals.updateGoal(existing.id, {
+      const updated = await this.updateGoal(existing.id, {
         objective: params.objective,
         status: "active",
         stallStreak: 0,
@@ -97,7 +124,7 @@ export class GoalService {
     }
 
     try {
-      return await this.goals.createGoal({
+      return await this.createGoal({
         owner: params.owner,
         userId: params.user.id,
         objective: params.objective,
@@ -139,7 +166,7 @@ export class GoalService {
       throw new AssistantError(`This goal already ended as ${goal.status}`, ErrorType.PARAMS_ERROR);
     }
 
-    const updated = await this.goals.updateGoal(
+    const updated = await this.updateGoal(
       goal.id,
       {
         status: params.status,
@@ -183,7 +210,7 @@ export class GoalService {
       );
     }
 
-    const recorded = await this.goals.updateGoal(
+    const recorded = await this.updateGoal(
       current.id,
       {
         iterationCount: current.iteration_count + 1,
@@ -242,7 +269,7 @@ export class GoalService {
       at: new Date().toISOString(),
     });
 
-    const updated = await this.goals.updateGoal(goal.id, {
+    const updated = await this.updateGoal(goal.id, {
       progress,
       stallStreak: 0,
     });
@@ -305,7 +332,7 @@ export class GoalService {
             ? "blocked"
             : undefined;
 
-    const updated = await this.goals.updateGoal(
+    const updated = await this.updateGoal(
       goal.id,
       {
         iterationCount: goal.iteration_count + 1,

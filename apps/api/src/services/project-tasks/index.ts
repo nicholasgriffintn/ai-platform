@@ -16,7 +16,7 @@ import {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ListProjectTaskFilters } from "~/repositories/ProjectTaskRepository";
-import { GoalService } from "~/services/goals/GoalService";
+import { createGoalService } from "~/services/goals/createGoalService";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { parseProjectFlow } from "~/services/workspaces/format";
@@ -58,7 +58,7 @@ async function settleCancelledTaskResources(
   if (goalId) {
     settlements.push(
       (async () => {
-        const goals = new GoalService(context.repositories.goals);
+        const goals = createGoalService(context);
         const goal = await goals.getGoalById(goalId);
 
         if (goal && !isTerminalGoalStatus(goal.status)) {

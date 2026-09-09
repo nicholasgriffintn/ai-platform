@@ -9,6 +9,7 @@ export type { ConversationRetention, RetentionReason } from "@ngriffin_uk/polych
 export type ChatRequestOptions = Partial<ChatCompletionRequestBody>;
 
 export interface ConversationStorageState {
+  isAuthenticationLoading?: boolean;
   isAuthenticated: boolean;
   isPro: boolean;
   temporaryChat?: boolean;
@@ -27,6 +28,10 @@ export function resolveConversationStorageMode(
   requestOptions?: ChatRequestOptions,
 ): ConversationStorageMode {
   const isProjectScoped = Boolean(requestOptions?.metadata?.project_id);
+
+  if (state.isAuthenticationLoading) {
+    return { retention: "kept", reason: "pending", isProjectScoped };
+  }
 
   if (!state.isAuthenticated) {
     return { retention: "temporary", reason: "signed_out", isProjectScoped };

@@ -10,15 +10,17 @@ const mocks = vi.hoisted(() => {
   const state = {
     isAuthenticated: true,
     isAuthenticationLoading: false,
+    hasApiKey: false,
     user,
     userSettings: {},
     setIsAuthenticationLoading: vi.fn(),
     setAuthenticatedUserConfiguration: vi.fn(),
     clearAuthenticatedUserConfiguration: vi.fn(),
+    setHasApiKey: vi.fn(),
     setUserSettings: vi.fn(),
   };
 
-  return { state, check: vi.fn(), getUser: vi.fn() };
+  return { state, check: vi.fn(), getUser: vi.fn(), getToken: vi.fn() };
 });
 
 vi.mock("@ngriffin_uk/polychat-library-client", () => ({
@@ -26,7 +28,7 @@ vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   authService: {
     checkAuthStatus: mocks.check,
     getUser: mocks.getUser,
-    getToken: async () => "test-token",
+    getToken: mocks.getToken,
     getUserSettings: () => ({}),
   },
 }));
@@ -49,6 +51,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.check.mockResolvedValue(true);
   mocks.getUser.mockReturnValue({ id: 42 });
+  mocks.getToken.mockResolvedValue("test-token");
   useUsageStore.getState().setUsageLimits(balance);
 });
 
@@ -59,6 +62,26 @@ afterEach(() => {
 });
 
 describe("credit balance across authentication refresh", () => {
+  it("resolves the session before the bearer token arrives", async () => {
+    let releaseToken: (token: string) => void = () => {};
+
+    mocks.getToken.mockReturnValue(
+      new Promise<string>((resolve) => {
+        releaseToken = resolve;
+      }),
+    );
+
+    renderHook(() => useAuthStatus(), { wrapper: createWrapper(client) });
+
+    await waitFor(() => expect(mocks.state.setIsAuthenticationLoading).toHaveBeenCalledWith(false));
+    expect(mocks.state.setAuthenticatedUserConfiguration).toHaveBeenCalledOnce();
+    expect(mocks.state.setHasApiKey).not.toHaveBeenCalled();
+
+    releaseToken("test-token");
+
+    await waitFor(() => expect(mocks.state.setHasApiKey).toHaveBeenCalledWith(true));
+  });
+
   it("keeps the streamed balance when the same account refreshes its settings", async () => {
     renderHook(useAuthStatus, { wrapper: createWrapper(client) });
     await waitFor(() => expect(mocks.state.setIsAuthenticationLoading).toHaveBeenCalledWith(false));
