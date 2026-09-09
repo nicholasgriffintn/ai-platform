@@ -78,6 +78,32 @@ describe("buildSystemPrompt", () => {
     expect(mocks.getSystemPrompt).toHaveBeenCalledTimes(1);
   });
 
+  it.each([undefined, "Old Chat instructions"])(
+    "refreshes Poly's current place despite a retained system prompt: %s",
+    async (systemPrompt) => {
+      const metaAssistant = {
+        ui_context: { mode: "work", projectId: "project-1", route: "/work/w1/projects/project-1" },
+      };
+      const result = await buildSystemPrompt(
+        baseParams({
+          options: {
+            ...baseParams().options,
+            system_prompt: systemPrompt,
+            meta_assistant: metaAssistant,
+          },
+          sanitisedMessages: [{ role: "system", content: "<mode>Chat</mode>" }],
+        }),
+      );
+
+      expect(result).toBe("generated prompt");
+      expect(mocks.getSystemPrompt).toHaveBeenCalledWith(
+        expect.objectContaining({
+          request: expect.objectContaining({ meta_assistant: metaAssistant }),
+        }),
+      );
+    },
+  );
+
   it("returns only appended sections for no_system mode", async () => {
     const result = await buildSystemPrompt(
       baseParams({

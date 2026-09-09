@@ -10,9 +10,13 @@
 
 - [ ] Start a delegation, have it message the parent, and read the message in the parent thread.
 - [ ] Send while the parent is mid-turn and confirm the message arrives once the turn finishes rather than being lost.
-- [ ] Revoke the handle, have the delegate message again, and confirm the delivery is refused.
-- [ ] Let a handle expire and confirm the same refusal.
+- [x] Revoke the handle, have the delegate message again, and confirm the delivery is refused.
+- [x] Let a handle expire and confirm the same refusal.
 - [ ] Remove the delegating user's access to the parent's project and confirm delivery stops.
 - [ ] Confirm the parent conversation shows unread after a delivered message.
 
 **Stop and report if:** a message lands after revocation or expiry, or a delegate reaches a conversation other than its own parent.
+
+## Automated evidence — 9 September 2026
+
+- New real-D1 `ConversationHandleRepository.test.ts` passes two tests: the wrong parent owner cannot revoke, the granted delegate alone can resolve the handle, revocation immediately removes usability, and expiry rejects at the exact millisecond and afterwards. Reviewed `deliverDelegationMessage`: it obtains a usable handle before creating any message. This is database/delivery-boundary evidence, not a live provider delegation.

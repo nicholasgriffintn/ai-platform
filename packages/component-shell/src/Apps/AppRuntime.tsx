@@ -100,7 +100,7 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: AppRuntime
   }
 
   if (runtime === "image-studio") {
-    return <CanvasStudio />;
+    return <CanvasStudio projectId={projectId} />;
   }
 
   if (runtime === "strudel") {

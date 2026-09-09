@@ -31,11 +31,13 @@ export async function generateStrudelCode({
   env,
   request,
   user,
+  conversationId,
 }: {
   context?: ServiceContext;
   env?: IEnv;
   request: StrudelGenerateRequest;
   user: IUser;
+  conversationId?: string;
 }): Promise<StrudelGenerateResponse> {
   const serviceContext = resolveServiceContext({ context, env, user });
   const runtimeEnv = serviceContext.env;
@@ -164,7 +166,7 @@ export async function generateStrudelCode({
       assistantResponse: generatedCode,
       systemPrompt,
       modelUsed: model,
-      conversationId: generationId,
+      conversationId,
       metadata: {
         style: request.style,
         complexity: request.complexity,

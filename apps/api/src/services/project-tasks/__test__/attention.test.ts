@@ -177,5 +177,11 @@ describe("task attention inbox", () => {
       "workspace-1",
       7,
     );
+    vi.mocked(serviceContext.repositories.workspaces.getMembership).mockResolvedValue(null);
+    await expect(
+      resolveTaskNotificationDeepLink(serviceContext, "task-1:v3"),
+    ).rejects.toMatchObject({
+      statusCode: 404,
+    });
   });
 });

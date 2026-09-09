@@ -3,6 +3,7 @@ import type {
   CancelChatRunRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { recordTurnCancellationRequested } from "~/lib/chat/streaming/continuity-telemetry";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { canonicalJson } from "~/utils/canonical-json";
 import { sha256Hex } from "~/utils/crypto";
@@ -16,6 +17,7 @@ export async function handleCancelChatRun(
   context: ServiceContext,
   runId: string,
   request: CancelChatRunRequest,
+  platform?: string,
 ): Promise<ChatRunCommandReceiptResponse> {
   const user = context.requireUser();
   const run = await requireChatRunAccess(context, runId);
@@ -68,6 +70,7 @@ export async function handleCancelChatRun(
   }
 
   if (!receipt.duplicate) {
+    recordTurnCancellationRequested({ env: context.env, traceId: run.conversationId }, platform);
     await cancelDelegationTree(context, run.id);
   }
 

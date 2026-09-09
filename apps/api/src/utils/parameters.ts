@@ -314,7 +314,7 @@ export function createCommonParameters(
   }
 
   const effectiveMaxTokens =
-    providerName === "anthropic"
+    providerName === "anthropic" || providerName === "workers-ai"
       ? resolveRequiredMaxTokens(params, modelConfig)
       : resolveEffectiveMaxTokens(params, modelConfig);
 

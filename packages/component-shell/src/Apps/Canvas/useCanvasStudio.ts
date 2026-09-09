@@ -90,9 +90,10 @@ function sortRunsDescendingByCreatedAt(a: CanvasRun, b: CanvasRun): number {
 
 interface UseCanvasStudioOptions {
   enabled?: boolean;
+  projectId?: string;
 }
 
-export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {}) {
+export function useCanvasStudio({ enabled = true, projectId }: UseCanvasStudioOptions = {}) {
   const [mode, setMode] = useState<CanvasStudioMode>("image");
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
@@ -106,7 +107,7 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 
   const mediaMode: CanvasMode = mode === "drawing" ? "image" : mode;
   const mediaEnabled = enabled && mode !== "drawing";
-  const drawing = useDrawingStudio(enabled && mode === "drawing");
+  const drawing = useDrawingStudio(enabled && mode === "drawing", projectId);
 
   const {
     data: models,
@@ -117,6 +118,7 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
   const { data: generations, refetch: refetchGenerations } = useCanvasGenerations(
     mediaMode,
     mediaEnabled,
+    projectId,
   );
 
   const visibleModels = useMemo(() => {
@@ -317,6 +319,7 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
     setRuns(placeholderRuns);
 
     const payload: CanvasGenerateRequest = {
+      projectId,
       mode: mediaMode,
       prompt: prompt.trim(),
       modelIds: selectedModelIds,

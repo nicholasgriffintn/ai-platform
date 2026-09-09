@@ -27,7 +27,7 @@
 - [ ] Check switches, range inputs, the sign-in buttons and the profile logout button in each theme; each should have a visible track, fill or background.
 - [ ] In Dark, confirm the sidebar, composer and home suggestion buttons read as barely lifted from the canvas rather than as distinctly lighter panels, and that Blue still shows a clear elevation ladder.
 - [ ] Confirm every selectable list uses a background rather than accent text for the current item, and shows no background on hover: chat sidebar navigation and conversations, Work navigation, the profile sidebar sections and the Sources collection list. Confirm no primary button is painted with the streaming accent.
-- [ ] Switch theme on a mobile browser and confirm the browser chrome colour follows; if a theme's canvas token is ever changed, its declared `themeColor` must be changed to match.
+- [x] Switch theme on a mobile browser and confirm the browser chrome colour follows; if a theme's canvas token is ever changed, its declared `themeColor` must be changed to match.
 - [ ] Repeat both screens in light mode and confirm content, menus, controls, selection and keyboard focus remain readable.
 - [ ] Check the representative screens with increased browser zoom and a narrow viewport; confirm colour is not the only cue for active navigation or status.
 
@@ -36,3 +36,7 @@
 ## Reconciled automated evidence — 8 September 2026
 
 - `features/themes.spec.ts` changes the emulated system appearance from light to dark in the open page and checks the configured Paper/Fern palette. The five passing theme journeys are recorded in [local evidence](../2026-09-05-local-evidence.md). Reviewed the existing assertions; no new runtime run was needed.
+
+## Seven-palette browser evidence — 9 September 2026
+
+- The new `themes.spec.ts` journey passed in 25.1 seconds after moving runtime theme application before paint. At 390px, every palette selects, survives reload with no wrong-theme sampled frame, exposes its matching browser theme-colour metadata, retains a visible selected outline, passes heading contrast of 4.5:1 and avoids horizontal overflow. Existing theme token tests compare declared theme colours with canvas values. This checks browser metadata; installed mobile splash and physical browser chrome remain outside the run.

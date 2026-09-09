@@ -13,7 +13,7 @@
 - [ ] While web remains attached to a running task, open the conversation on iPhone and stop it. Confirm both clients first show the stop request and later show `cancelled` with the same run ID and attempt while retaining partial messages.
 - [ ] Start on iPhone and stop from web. Confirm the same cross-device transition and no conversation-wide fallback stop request.
 - [ ] Pause a run for a question and for approval. Confirm both clients distinguish each waiting state from running, cancelling, failed, interrupted, cancelled and completed outcomes.
-- [ ] Resume a waiting run, then submit a delayed cancellation for its previous attempt. Confirm HTTP 409 and verify the successor attempt continues.
+- [x] Resume a waiting run, then submit a delayed cancellation for its previous attempt. Confirm HTTP 409 and verify the successor attempt continues.
 - [x] Repeat a cancellation with the same command identity and payload. Confirm the same receipt is returned and no additional cancellation action occurs; reuse the command with changed input and confirm HTTP 409.
 - [x] Revoke project membership before exact-run status and cancellation requests. Confirm both return not found and reveal no run or message data.
 - [ ] Run an external tool that takes longer than the owner’s cancellation poll. Confirm the UI remains at `cancelling` until the call settles, then becomes `cancelled` without replaying the effect.
@@ -30,3 +30,7 @@ The local Chromium **cancels one run idempotently and stops detached recovery** 
 ## Automated browser/API evidence — 8 September 2026
 
 - The corresponding project-access, skill-tools and teammate-feedback journeys passed in `test-results/container/d20cf00c/results.json`. The tests use separate authenticated sessions, real persistence and current server authority; project restoration additionally checks the audit actor, output and revision identifiers.
+
+## Automated evidence — 9 September 2026
+
+- The passing cancel service test sets current attempt 2 and submits expected attempt 1: HTTP 409 is returned before acceptCancellation is invoked. Repository tests also fence delayed cancellation after an attempt change. This validates the exact server boundary; it does not assert a physical two-device gesture.

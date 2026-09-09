@@ -512,8 +512,8 @@ addRoute(app, "post", "/runs/:run_id/cancel", {
     404: { description: "Run not found", schema: errorResponseSchema },
     409: { description: "Run attempt changed", schema: errorResponseSchema },
   },
-  handler: ({ serviceContext, params, body }) =>
-    handleCancelChatRun(serviceContext, params.run_id, body),
+  handler: ({ serviceContext, params, body, raw }) =>
+    handleCancelChatRun(serviceContext, params.run_id, body, raw.req.header("X-Platform")),
 });
 
 addRoute(app, "get", "/completions/:completion_id/threads", {

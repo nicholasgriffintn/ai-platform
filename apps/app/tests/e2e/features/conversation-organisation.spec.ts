@@ -4,9 +4,57 @@ import { expect, test } from "../fixtures/polychat-test";
 import { ConversationOrganisationPage } from "../page-objects/ConversationOrganisationPage";
 import { HomePage } from "../page-objects/HomePage";
 import { WorkPage } from "../page-objects/WorkPage";
+import { requireSuccessfulResponse } from "../support/api-response";
+import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
 
 test.describe("Conversation organisation", () => {
   test.use({ persona: "pro" });
+
+  test("returns a snoozed project conversation unread after a later reply in the sidebar and search", async ({
+    page,
+    homePage,
+    workPage,
+  }) => {
+    await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+    const projectPath = new URL(page.url()).pathname;
+
+    await workPage.openNewProjectConversation();
+    await homePage.selectModel("GPT OSS 120B");
+    const request = await homePage.sendMessageAndRequireCompletion(
+      "Create a snoozable release conversation",
+    );
+
+    await homePage.waitForChatResponse(0);
+    const title = "Returning release evidence";
+
+    await homePage.renameConversation("Release validation chat", title);
+    await homePage.navigate(projectPath);
+    const organisation = new ConversationOrganisationPage(page);
+
+    await organisation.openActions(title);
+    await page.getByRole("menuitem", { name: "Snooze", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Until next response", exact: true }).click();
+    await expect(organisation.item(title)).toHaveCount(0);
+    const response = await page.request.post(`${E2E_API_BASE_URL}/chat/completions`, {
+      headers: { origin: E2E_APP_BASE_URL },
+      data: {
+        ...request,
+        command_id: crypto.randomUUID(),
+        stream: false,
+        messages: [{ role: "user", content: "Reply after the next-response snooze" }],
+      },
+    });
+
+    await requireSuccessfulResponse(response, "Complete the later reply");
+    await homePage.reload();
+    await expect(organisation.item(title).getByLabel("Unread", { exact: true })).toBeVisible();
+    await homePage.searchPolychat(title);
+    const result = homePage.globalSearchResults.getByRole("option").filter({ hasText: title });
+
+    await expect(result).toContainText("Unread");
+    await expect(result).not.toContainText("Snoozed");
+    await page.keyboard.press("Escape");
+  });
 
   test("persists pin, unread and group changes and their reverse operations", async ({
     homePage,

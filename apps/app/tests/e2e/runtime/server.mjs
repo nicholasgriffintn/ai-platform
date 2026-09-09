@@ -113,6 +113,9 @@ export class MockAi extends WorkerEntrypoint {
   }
 
 	async run(model, body) {
+    if (body?.messages?.some((message) => typeof message?.content === "string" && message.content.includes("Generate Strudel code for: Release drum loop"))) {
+      return { response: 'sound("bd sd bd sd")' };
+    }
 		if (body?.messages?.some((message) => typeof message?.content === "string" && message.content.startsWith("Read the document and describe it as JSON"))) {
 		  return { response: JSON.stringify({ summary: "Release document summary", tags: ["release"], keyTopics: ["Launch"], contentType: "text", sentiment: "neutral" }) };
 		}
@@ -281,6 +284,11 @@ function toolCallStreamingResponse(toolCall) {
  * provider mock free of model behaviour: a test asks for the tool by name in its prompt.
  */
 const TOOL_CALL_TRIGGERS = [
+  {
+    marker: "Generate a playable release drum loop",
+    name: "generate_pattern",
+    arguments: () => JSON.stringify({ prompt: "Release drum loop", style: "drums", tempo: 120 }),
+  },
   {
     marker: "Save the agreed release skill",
     name: "save_skill",
@@ -848,6 +856,10 @@ async function mockExternalRequest(request) {
 
   const prompt = extractPrompt(body);
 
+  if (prompt.includes("Generate Strudel code for: Release drum loop")) {
+    return Response.json(openAiResponse('sound("bd sd bd sd")'));
+  }
+
   if (prompt.includes("Trigger an error")) {
     return Response.json({ error: { message: "Deterministic provider failure" } }, { status: 503 });
   }
@@ -883,17 +895,6 @@ async function mockExternalRequest(request) {
             totalTokenCount: 12,
           },
         });
-  }
-
-  if (body.stream && prompt.includes("Stream a tall response")) {
-    const paragraph = (label) =>
-      Array.from({ length: 40 }, (_, line) => `${label} line ${line + 1}`).join("\n\n");
-
-    return streamingResponse(
-      `E2E response: ${paragraph("opening")}`,
-      `\n\n${paragraph("closing")}`,
-      1_500,
-    );
   }
 
   if (body.stream && prompt.includes("Recover this interrupted stream")) {

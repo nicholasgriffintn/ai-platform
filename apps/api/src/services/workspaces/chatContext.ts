@@ -14,6 +14,7 @@ import {
   RECIPE_LOOKUP_TOOL,
   RECIPE_SETUP_TOOL,
 } from "~/services/apps/recipes/catalog";
+import { run_sandbox_task } from "~/services/functions/definitions/sandbox";
 import { resolveProjectSkillGrants } from "~/services/skills/scope";
 import type { CoreChatOptions } from "~/types";
 import { safeParseJson } from "~/utils/json";
@@ -32,15 +33,7 @@ export interface ProjectChatContext {
   sandboxOptions?: SandboxRequestOptions;
 }
 
-const PROJECT_CODING_TOOL_IDS = [
-  "run_feature_implementation",
-  "run_code_review",
-  "run_test_suite",
-  "run_bug_fix",
-  "run_refactoring",
-  "run_documentation",
-  "run_migration",
-];
+const PROJECT_CODING_TOOL_IDS = [run_sandbox_task.name];
 
 export function applyProjectCodingEnvironment(
   options: Pick<CoreChatOptions, "options">,

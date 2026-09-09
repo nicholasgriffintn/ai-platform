@@ -2,32 +2,24 @@ import { describe, expect, it } from "vitest";
 
 import type { IEnv } from "~/types";
 
-import { assertDeviceSyncGrant, createDeviceSyncGrant } from "../grant";
+import { createDeviceSyncGrant, resolveDeviceSyncGrant } from "../grant";
 
 const env = { JWT_SECRET: "sync-test-secret-value-0123456789" } as IEnv;
 
 describe("device sync grants", () => {
-  it("accepts a grant that matches the user and device", async () => {
+  it("resolves the user the grant was minted for", async () => {
     const grant = await createDeviceSyncGrant(env, { userId: 7, deviceId: "device-a" });
 
     await expect(
-      assertDeviceSyncGrant({ env, grant: grant.token, deviceId: "device-a", userId: 7 }),
-    ).resolves.toBeUndefined();
+      resolveDeviceSyncGrant({ env, grant: grant.token, deviceId: "device-a" }),
+    ).resolves.toEqual({ userId: 7 });
   });
 
-  it("refuses a grant minted for another user", async () => {
+  it("refuses a grant presented by another device", async () => {
     const grant = await createDeviceSyncGrant(env, { userId: 7, deviceId: "device-a" });
 
     await expect(
-      assertDeviceSyncGrant({ env, grant: grant.token, deviceId: "device-a", userId: 8 }),
-    ).rejects.toThrow(/does not match/);
-  });
-
-  it("refuses a grant minted for another device", async () => {
-    const grant = await createDeviceSyncGrant(env, { userId: 7, deviceId: "device-a" });
-
-    await expect(
-      assertDeviceSyncGrant({ env, grant: grant.token, deviceId: "device-b", userId: 7 }),
+      resolveDeviceSyncGrant({ env, grant: grant.token, deviceId: "device-b" }),
     ).rejects.toThrow(/does not match/);
   });
 
@@ -36,8 +28,16 @@ describe("device sync grants", () => {
     const grant = await createDeviceSyncGrant(other, { userId: 7, deviceId: "device-a" });
 
     await expect(
-      assertDeviceSyncGrant({ env, grant: grant.token, deviceId: "device-a", userId: 7 }),
+      resolveDeviceSyncGrant({ env, grant: grant.token, deviceId: "device-a" }),
     ).rejects.toThrow(/Invalid or expired/);
+  });
+
+  it("refuses a grant when no signing secret is configured", async () => {
+    const grant = await createDeviceSyncGrant(env, { userId: 7, deviceId: "device-a" });
+
+    await expect(
+      resolveDeviceSyncGrant({ env: {} as IEnv, grant: grant.token, deviceId: "device-a" }),
+    ).rejects.toThrow(/not configured/);
   });
 
   it("refuses to mint a grant without a signing secret", async () => {

@@ -12,8 +12,8 @@
 - [ ] Hold one delivery beyond a queue redelivery and confirm the second delivery retries while the first owner lease is live; confirm only one project-task settlement is committed.
 - [ ] Terminate a Worker after the run reaches `running` but before a safe checkpoint. Confirm redelivery records `interrupted`, blocks the project task, and does not repeat the model/tool step automatically.
 - [ ] Terminate after the run persists `succeeded`, `awaiting_input` or `awaiting_approval` but before project-task settlement. Confirm redelivery reconciles the saved result or interaction without another model/tool invocation.
-- [ ] Recover a waiting interaction inside seven days and confirm it remains actionable. Repeat with an interaction older than seven days and confirm it becomes resolved as expired and the run fails visibly.
-- [ ] Force owner loss after credit reservation and connector-session creation. Confirm the `chat_run` reservation is released and connector sessions enter the existing cleanup queue.
+- [x] Recover a waiting interaction inside seven days and confirm it remains actionable. Repeat with an interaction older than seven days and confirm it becomes resolved as expired and the run fails visibly.
+- [x] Force owner loss after credit reservation and connector-session creation. Confirm the `chat_run` reservation is released and connector sessions enter the existing cleanup queue.
 - [ ] Revoke the runner's workspace membership before delivery and confirm policy blocks execution without model/tool work.
 - [ ] Confirm a personal stored Chat still reports best-effort connection recovery and a local-only Chat creates no server run, queue task or durable reservation.
 
@@ -22,3 +22,11 @@
 ## Automated local evidence — 6 September 2026
 
 Run `pnpm test:e2e apps/app/tests/e2e/features/project-tasks.spec.ts`. The queued question task continues after its initiating page closes, persists `awaiting_input` with two questions, and reopens with the same conversation and run identity. Leave lease loss, redelivery, expiry and operator checks pending.
+
+## Boundary and source validation — 8 September 2026
+
+- All 2,082 API tests passed across 288 files (`/tmp/polychat-api-verification-batch.log`). durable-recovery.test.ts verifies lost-owner recovery releases the chat_run reservation and queues connector cleanup before releasing the thread lease. This exercises recovery with substituted repositories, not a killed production Worker.
+
+## Recovery expiry boundary — 9 September 2026
+
+- Six recovery tests pass in 2.13 seconds (`/tmp/polychat-durable-expiry-validation.log`). A saved interaction remains actionable until the seven-day boundary; at the boundary it resolves as expired. The runner test confirms an expired stored interaction transitions the exact run/attempt to failed. Both saved waiting kinds preserve replay resources. These exercise recovery services; actual Worker termination and queue redelivery remain separate pending checks.

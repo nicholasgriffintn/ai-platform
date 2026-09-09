@@ -23,3 +23,7 @@
 - `features/themes.spec.ts` opens the sidebar settings popover signed out, confirms the Theme control is offered, picks Plum, and confirms the shell adopts it and keeps it across a reload.
 - A second journey stores the retired `theme` key as `dark` with no `polychat-theme`, reloads, and confirms the shell paints dark from first paint, `polychat-theme` then holds `dark`, and the retired key is gone.
 - Left open: the palette contrast walks, the toast appearance against the operating system, and mobile browser chrome and splash colours.
+
+## Additional palette evidence — 9 September 2026
+
+- All seven palettes pass selection, reload/no-flash, theme-colour metadata, selected outline, heading contrast and 390px overflow checks in one 25.1-second browser journey (`/tmp/polychat-all-palettes-fixed.log`). Runtime application now uses a layout effect to avoid a wrong-theme painted frame. The broader component contrast walk, toast and installed-splash requirements remain open.

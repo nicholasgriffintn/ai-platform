@@ -123,13 +123,17 @@ export async function buildSystemPrompt({
       activeGoal,
     );
 
-  if (system_prompt) {
+  if (system_prompt && !options.meta_assistant) {
     return withMemory(system_prompt);
   }
 
   const systemPromptFromMessages = sanitisedMessages.find((message) => message.role === "system");
 
-  if (typeof systemPromptFromMessages?.content === "string" && systemPromptFromMessages.content) {
+  if (
+    !options.meta_assistant &&
+    typeof systemPromptFromMessages?.content === "string" &&
+    systemPromptFromMessages.content
+  ) {
     return withMemory(systemPromptFromMessages.content);
   }
 

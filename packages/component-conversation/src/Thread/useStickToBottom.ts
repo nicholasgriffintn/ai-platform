@@ -2,9 +2,8 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 import type { VListHandle } from "virtua";
 
 const BOTTOM_THRESHOLD_PX = 100;
-const USER_INTENT_WINDOW_MS = 500;
 const MOVEMENT_TOLERANCE_PX = 4;
-const MAX_SETTLE_FRAMES = 60;
+const USER_INTENT_WINDOW_MS = 500;
 const USER_INTENT_EVENTS = ["wheel", "keydown", "touchmove", "mousedown"] as const;
 
 interface UseStickToBottomOptions {
@@ -35,9 +34,6 @@ export function useStickToBottom({
   const lastOffsetRef = useRef<number | null>(null);
   const lastUserIntentAtRef = useRef(0);
   const releasedAtRef = useRef(0);
-  const frameRef = useRef<number | null>(null);
-  const settleFramesRef = useRef(0);
-  const lastScrollSizeRef = useRef(-1);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
   useEffect(() => {
@@ -55,46 +51,6 @@ export function useStickToBottom({
     list.scrollToIndex(lastRowIndex, { align: "end" });
   }, []);
 
-  const runFollow = useCallback(() => {
-    frameRef.current = null;
-
-    const list = listRef.current;
-
-    if (!list || !isPinnedRef.current) {
-      return;
-    }
-
-    scrollToEnd();
-
-    const hasGrown = list.scrollSize !== lastScrollSizeRef.current;
-
-    lastScrollSizeRef.current = list.scrollSize;
-
-    if (hasGrown && settleFramesRef.current > 0) {
-      settleFramesRef.current -= 1;
-      frameRef.current = requestAnimationFrame(runFollow);
-    }
-  }, [scrollToEnd]);
-
-  const scheduleFollow = useCallback(() => {
-    settleFramesRef.current = MAX_SETTLE_FRAMES;
-
-    if (frameRef.current !== null) {
-      return;
-    }
-
-    frameRef.current = requestAnimationFrame(runFollow);
-  }, [runFollow]);
-
-  useEffect(
-    () => () => {
-      if (frameRef.current !== null) {
-        cancelAnimationFrame(frameRef.current);
-      }
-    },
-    [],
-  );
-
   useEffect(() => {
     isPinnedRef.current = true;
     releasedAtRef.current = 0;
@@ -106,8 +62,8 @@ export function useStickToBottom({
       return;
     }
 
-    scheduleFollow();
-  }, [enabled, followKey, resetKey, rowCount, scheduleFollow]);
+    scrollToEnd();
+  }, [enabled, followKey, resetKey, rowCount, scrollToEnd]);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -140,14 +96,14 @@ export function useStickToBottom({
 
     const observer = new ResizeObserver(() => {
       if (isPinnedRef.current) {
-        scheduleFollow();
+        scrollToEnd();
       }
     });
 
     observer.observe(viewport);
 
     return () => observer.disconnect();
-  }, [enabled, scheduleFollow]);
+  }, [enabled, scrollToEnd]);
 
   const handleScroll = useCallback((offset: number) => {
     const list = listRef.current;
@@ -164,7 +120,6 @@ export function useStickToBottom({
     const distanceFromBottom = list.scrollSize - (offset + list.viewportSize);
     const isAtBottom = distanceFromBottom <= BOTTOM_THRESHOLD_PX;
     const hasRecentIntent = now - lastUserIntentAtRef.current <= USER_INTENT_WINDOW_MS;
-
     const movedUp = previousOffset !== null && offset < previousOffset - MOVEMENT_TOLERANCE_PX;
     const movedDown = previousOffset !== null && offset > previousOffset + MOVEMENT_TOLERANCE_PX;
 

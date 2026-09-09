@@ -7,11 +7,13 @@ import type { Drawing } from "./list";
 
 export async function getDrawingDetails({
   context,
+  projectId,
   env,
   userId,
   drawingId,
 }: {
   context?: ServiceContext;
+  projectId?: string;
   env?: IEnv;
   userId: number;
   drawingId: string;
@@ -24,10 +26,12 @@ export async function getDrawingDetails({
 
   serviceContext.ensureDatabase();
   const repo = serviceContext.repositories.outputs;
-  const entry = await repo.getPersonalOutput(userId, drawingId);
+  const entry = projectId
+    ? await repo.getProjectOutput(projectId, drawingId)
+    : await repo.getPersonalOutput(userId, drawingId);
 
   if (!entry || entry.capability_id !== "drawings" || entry.kind !== "drawing") {
-    throw new AssistantError("Drawing not found", ErrorType.NOT_FOUND);
+    throw new AssistantError("Drawing not found", ErrorType.NOT_FOUND, 404);
   }
 
   const data = safeParseJson<Record<string, unknown>>(entry.content) ?? {};

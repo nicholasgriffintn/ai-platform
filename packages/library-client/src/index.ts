@@ -60,6 +60,7 @@ export * from "./constants.js";
 export * from "./captchaStore.js";
 export * from "./streamActivityStore.js";
 export * from "./sync/device-identity.js";
+export * from "./sync/live-topics.js";
 export * from "./sync/socket.js";
 export * from "./sync/syncStore.js";
 export * from "./chatStore.js";

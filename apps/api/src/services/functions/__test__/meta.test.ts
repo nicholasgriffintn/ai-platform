@@ -1,6 +1,10 @@
-import { META_NAVIGATION_DATA_KEY } from "@ngriffin_uk/polychat-schemas";
+import {
+  META_NAVIGATION_DATA_KEY,
+  type MetaAssistantUiContext,
+} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
+import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError } from "~/utils/errors";
 
 import {
@@ -80,7 +84,10 @@ const conversationRow = {
   type: "chat",
 };
 
-function createToolContext(conversationType: string | undefined) {
+function createToolContext(
+  conversationType: string | undefined,
+  uiContext?: MetaAssistantUiContext,
+) {
   const repositories = {
     conversations: {
       getConversation: vi.fn(async () => conversationRow),
@@ -109,6 +116,7 @@ function createToolContext(conversationType: string | undefined) {
       request: {
         completion_id: "meta-1",
         conversation_type: conversationType,
+        meta_assistant: { ui_context: uiContext },
       },
     },
   } as never;
@@ -159,6 +167,34 @@ describe("meta tools", () => {
       kind: "conversation",
       conversationId: "conversation-1",
     });
+  });
+
+  it("resolves Work Files from current project context and rejects a missing or revoked project", async () => {
+    const result = await open_place.execute(
+      { target: { kind: "place", mode: "work", place: "files", workspaceId: "forged" } },
+      createToolContext("meta", { mode: "work", projectId: "project-1" }),
+    );
+
+    expect(result.data[META_NAVIGATION_DATA_KEY]).toEqual({
+      kind: "place",
+      mode: "work",
+      place: "files",
+      projectId: "project-1",
+      workspaceId: "workspace-1",
+    });
+    await expect(
+      open_place.execute(
+        { target: { kind: "place", mode: "work", place: "files" } },
+        createToolContext("meta"),
+      ),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    vi.mocked(requireProjectAccess).mockRejectedValueOnce(new Error("Membership revoked"));
+    await expect(
+      open_place.execute(
+        { target: { kind: "place", mode: "work", place: "teammates", projectId: "project-1" } },
+        createToolContext("meta"),
+      ),
+    ).rejects.toThrow("Membership revoked");
   });
 
   it("reads a bounded transcript of user and assistant turns only", async () => {

@@ -81,92 +81,99 @@ function run(id: string, stageId: string, status: ChatRun["status"], attempt = 1
 }
 
 describe("project task plan evidence", () => {
-  it("derives stage state only from exact attempts and links their durable outputs", () => {
-    const output = {
-      id: "output-1",
-      created_by_user_id: 7,
-      project_id: "project-1",
-      conversation_id: "conversation-run-2",
-      parent_output_id: null,
-      capability_id: "articles",
-      group_id: null,
-      title: "Report",
-      kind: "report",
-      status: "ready",
-      sensitivity: "internal",
-      content: JSON.stringify({ body: "Report" }),
-      storage_key: null,
-      mime_type: null,
-      filename: null,
-      byte_size: null,
-      revision: 1,
-      provenance_json: JSON.stringify({
-        protocolVersion: 1,
-        capturedAt: "2026-09-05T10:01:00.000Z",
-        completeness: "partial",
-        origin: "generated",
-        run: { id: "run-2", attempt: 1 },
-        model: null,
-        skills: [],
-        sources: [],
-        approvals: [],
-      }),
-      created_at: "2026-09-05T10:01:00.000Z",
-      updated_at: null,
-    } satisfies OutputRecord;
-    const evidence = buildProjectTaskPlanEvidence({
-      task,
-      flow: {
-        stages: [
-          {
-            id: "plan",
-            name: "Plan",
-            instructions: null,
-            teammateId: null,
-            skillIds: [],
-            mode: null,
-            requiresApprovalFor: [],
-            advance: "on_goal_complete",
-          },
-          {
-            id: "build",
-            name: "Build",
-            instructions: null,
-            teammateId: null,
-            skillIds: [],
-            mode: null,
-            requiresApprovalFor: [],
-            advance: "on_human_accept",
-          },
-          {
-            id: "publish",
-            name: "Publish",
-            instructions: null,
-            teammateId: null,
-            skillIds: [],
-            mode: null,
-            requiresApprovalFor: [],
-            advance: "on_human_accept",
-          },
-        ],
-      },
-      runs: [run("run-1", "plan", "succeeded"), run("run-2", "build", "failed")],
-      outputs: [output],
-      unsafeRunIds: new Set(),
-    });
-
-    expect(evidence.stages).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ flowStageId: "plan", status: "completed" }),
-        expect.objectContaining({
-          flowStageId: "build",
-          status: "failed",
-          outputs: [expect.objectContaining({ id: "output-1" })],
+  it.each(["blocked", "cancelled"] as const)(
+    "retains completed evidence and durable outputs when the plan is %s",
+    (status) => {
+      const output = {
+        id: "output-1",
+        created_by_user_id: 7,
+        project_id: "project-1",
+        conversation_id: "conversation-run-2",
+        parent_output_id: null,
+        capability_id: "articles",
+        group_id: null,
+        title: "Report",
+        kind: "report",
+        status: "ready",
+        sensitivity: "internal",
+        content: JSON.stringify({ body: "Report" }),
+        storage_key: null,
+        mime_type: null,
+        filename: null,
+        byte_size: null,
+        revision: 1,
+        provenance_json: JSON.stringify({
+          protocolVersion: 1,
+          capturedAt: "2026-09-05T10:01:00.000Z",
+          completeness: "partial",
+          origin: "generated",
+          run: { id: "run-2", attempt: 1 },
+          model: null,
+          skills: [],
+          sources: [],
+          approvals: [],
         }),
-        expect.objectContaining({ flowStageId: "publish", status: "proposed", attempts: [] }),
-      ]),
-    );
-  });
+        created_at: "2026-09-05T10:01:00.000Z",
+        updated_at: null,
+      } satisfies OutputRecord;
+      const evidence = buildProjectTaskPlanEvidence({
+        task: { ...task, status },
+        flow: {
+          stages: [
+            {
+              id: "plan",
+              name: "Plan",
+              instructions: null,
+              teammateId: null,
+              skillIds: [],
+              mode: null,
+              requiresApprovalFor: [],
+              advance: "on_goal_complete",
+            },
+            {
+              id: "build",
+              name: "Build",
+              instructions: null,
+              teammateId: null,
+              skillIds: [],
+              mode: null,
+              requiresApprovalFor: [],
+              advance: "on_human_accept",
+            },
+            {
+              id: "publish",
+              name: "Publish",
+              instructions: null,
+              teammateId: null,
+              skillIds: [],
+              mode: null,
+              requiresApprovalFor: [],
+              advance: "on_human_accept",
+            },
+          ],
+        },
+        runs: [run("run-1", "plan", "succeeded"), run("run-2", "build", "failed")],
+        outputs: [output],
+        unsafeRunIds: new Set(),
+      });
+
+      expect(evidence.stages).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ flowStageId: "plan", status: "completed" }),
+          expect.objectContaining({
+            flowStageId: "build",
+            status: "failed",
+            outputs: [expect.objectContaining({ id: "output-1" })],
+          }),
+          expect.objectContaining({
+            flowStageId: "publish",
+            status: status === "cancelled" ? "abandoned" : "proposed",
+            attempts: [],
+          }),
+        ]),
+      );
+    },
+  );
 
   it("blocks blind stage retry after a consumed external operation", () => {
     expect(getProjectTaskResumeCapability(task, new Set(["run-2"]))).toEqual({

@@ -51,6 +51,19 @@ describe("createChatExecutionRequest", () => {
     ]);
   });
 
+  it("sends only the current Poly instructions after changing product mode", () => {
+    const input = createInput();
+
+    input.chatOptions.meta_assistant = { ui_context: { mode: "work" } };
+    input.prepared.systemPrompt = "<mode>Work</mode>";
+    input.messages.unshift({ role: "system", content: "<mode>Chat</mode>" });
+    const request = createChatExecutionRequest(input).providerRequest();
+
+    expect(request.system_prompt).toBe("<mode>Work</mode>");
+    expect(request.messages).not.toContainEqual(expect.objectContaining({ role: "system" }));
+    expect(request.messages).toContainEqual({ role: "user", content: "Hello" });
+  });
+
   it("uses tool options resolved from project capability configuration", () => {
     const input = createInput();
 

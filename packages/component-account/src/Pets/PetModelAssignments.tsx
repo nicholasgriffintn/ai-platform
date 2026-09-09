@@ -196,7 +196,7 @@ export function PetModelAssignments({
           </p>
         </>
       ) : (
-        <p className="rounded-lg border border-dashed border-border-strong p-4 text-sm text-muted-foreground">
+        <p className="mt-4 rounded-lg border border-dashed border-border-strong p-4 text-sm text-muted-foreground">
           No rules yet, so every model gets your default pet.
         </p>
       )}

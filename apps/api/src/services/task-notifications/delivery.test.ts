@@ -108,6 +108,88 @@ describe("task notification delivery", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it.each(["membership", "category", "all", "registration", "assignee"])(
+    "checks current %s before an already queued delivery can send",
+    async (changed) => {
+      const current = candidate();
+
+      if (changed === "membership") {
+        current.hasWorkspaceAccess = false;
+      }
+
+      if (changed === "category") {
+        current.preferences.decisions = false;
+      }
+
+      if (changed === "all") {
+        current.preferences.enabled = false;
+      }
+
+      if (changed === "registration") {
+        current.registration.state = "disabled";
+      }
+
+      if (changed === "assignee") {
+        current.task.status = "backlog";
+        current.delivery.category = "assignments";
+      }
+
+      mocks.getDeliveryContext.mockResolvedValue(current);
+      const fetchMock = vi.spyOn(globalThis, "fetch");
+
+      await expect(
+        new TaskNotificationDeliveryHandler().handle(
+          message(),
+          env({
+            TASK_NOTIFICATION_PROVIDER_URL: "https://push.example.test/deliver",
+            TASK_NOTIFICATION_PROVIDER_TOKEN: "provider-token",
+          }),
+          executionContext,
+        ),
+      ).resolves.toMatchObject({ status: "skipped" });
+      expect(mocks.updateDelivery).toHaveBeenCalledWith("delivery-1", { status: "obsolete" });
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
+
+  it("retries a temporary provider failure but never sends an already delivered item again", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response(null, { status: 503 }))
+      .mockResolvedValueOnce(new Response("{}", { status: 200 }));
+    const handler = new TaskNotificationDeliveryHandler();
+    const configuration = env({
+      TASK_NOTIFICATION_PROVIDER_URL: "https://push.example.test/deliver",
+      TASK_NOTIFICATION_PROVIDER_TOKEN: "provider-token",
+    });
+
+    await expect(handler.handle(message(), configuration, executionContext)).resolves.toMatchObject(
+      { status: "error" },
+    );
+    expect(mocks.updateDelivery).toHaveBeenCalledWith(
+      "delivery-1",
+      expect.objectContaining({
+        status: "pending",
+        failureCode: "provider_unavailable",
+        incrementAttempts: true,
+      }),
+    );
+    await expect(handler.handle(message(), configuration, executionContext)).resolves.toMatchObject(
+      { status: "success" },
+    );
+    const delivered = candidate();
+
+    delivered.delivery.status = "delivered";
+    mocks.getDeliveryContext.mockResolvedValue(delivered);
+    await expect(handler.handle(message(), configuration, executionContext)).resolves.toMatchObject(
+      { status: "skipped" },
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    for (const [, request] of fetchMock.mock.calls) {
+      expect(request?.headers).toMatchObject({ "Idempotency-Key": "delivery-1" });
+    }
+  });
+
   it("sends only generic copy and current identifiers to the configured provider", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ id: "provider-message-1" }), {

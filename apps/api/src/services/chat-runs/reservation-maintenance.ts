@@ -18,6 +18,7 @@ export async function releaseExpiredChatRunReservations(
         repositories,
         kind: "chat_run",
         refId: reservation.ref_id,
+        reservationId: reservation.id,
         outcome: "released",
       }),
     ),

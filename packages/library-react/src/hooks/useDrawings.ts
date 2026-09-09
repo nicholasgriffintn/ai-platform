@@ -11,18 +11,18 @@ import type {
 } from "@ngriffin_uk/polychat-schemas/experiences";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const useFetchDrawings = (enabled = true) => {
+export const useFetchDrawings = (enabled = true, projectId?: string) => {
   return useQuery<Drawing[]>({
-    queryKey: ["drawings"],
-    queryFn: fetchDrawings,
+    queryKey: ["drawings", projectId ?? "personal"],
+    queryFn: () => fetchDrawings(projectId),
     enabled,
   });
 };
 
-export const useFetchDrawing = (id: string | undefined) => {
+export const useFetchDrawing = (id: string | undefined, projectId?: string) => {
   return useQuery<Drawing>({
-    queryKey: ["drawing", id],
-    queryFn: () => fetchDrawing(id!),
+    queryKey: ["drawing", id, projectId ?? "personal"],
+    queryFn: () => fetchDrawing(id!, projectId),
     enabled: !!id,
   });
 };
@@ -30,7 +30,11 @@ export const useFetchDrawing = (id: string | undefined) => {
 export const useGenerateDrawing = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<GenerateImageResponse, Error, { drawing: File; drawingId?: string }>({
+  return useMutation<
+    GenerateImageResponse,
+    Error,
+    { drawing: File; drawingId?: string; projectId?: string }
+  >({
     mutationFn: (data) => generateImageFromDrawing(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["drawings"] });
@@ -39,7 +43,7 @@ export const useGenerateDrawing = () => {
 };
 
 export const useGuessDrawing = () => {
-  return useMutation<GuessResponse, Error, { drawing: File }>({
+  return useMutation<GuessResponse, Error, { drawing: File; projectId?: string }>({
     mutationFn: (data) => guessDrawingFromImage(data),
   });
 };

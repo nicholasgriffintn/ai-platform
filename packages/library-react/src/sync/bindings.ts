@@ -18,6 +18,7 @@ import { TRAINING_QUERY_KEYS } from "../hooks/useTraining.js";
 export interface SyncBindingContext {
   queryClient: QueryClient;
   localScope: string;
+  invalidate: (queryKey: readonly unknown[]) => void;
 }
 
 export interface SyncBinding {
@@ -32,25 +33,27 @@ function readString(event: DeviceSyncEvent, key: string): string | undefined {
 }
 
 function invalidate(context: SyncBindingContext, queryKey: readonly unknown[]): void {
-  void context.queryClient.invalidateQueries({ queryKey: [...queryKey] });
+  context.invalidate(queryKey);
 }
 
-const refreshConversation: SyncBinding["apply"] = (context, event) => {
+const refreshConversationDetail: SyncBinding["apply"] = (context, event) => {
   const conversationId = readString(event, "conversationId");
 
   if (conversationId) {
     invalidate(context, [CHATS_QUERY_KEY, conversationId]);
-    invalidate(context, [GOAL_QUERY_KEY, conversationId]);
   }
+};
 
+const refreshConversationAndList: SyncBinding["apply"] = (context, event) => {
+  refreshConversationDetail(context, event);
   invalidate(context, [CHATS_QUERY_KEY, "remote"]);
 };
 
 export const SYNC_BINDINGS: SyncBinding[] = [
-  { type: "conversation.changed", apply: refreshConversation },
-  { type: "run.changed", apply: refreshConversation },
-  { type: "run.event", apply: refreshConversation },
-  { type: "message.changed", apply: refreshConversation },
+  { type: "conversation.changed", apply: refreshConversationAndList },
+  { type: "run.changed", apply: refreshConversationAndList },
+  { type: "run.event", apply: refreshConversationDetail },
+  { type: "message.changed", apply: refreshConversationDetail },
   {
     type: "conversation.unread_changed",
     apply: (context) => invalidate(context, [CHATS_QUERY_KEY, "remote"]),
@@ -128,10 +131,7 @@ export const SYNC_BINDINGS: SyncBinding[] = [
   { type: "training.changed", apply: (context) => invalidate(context, TRAINING_QUERY_KEYS.jobs) },
   { type: "canvas.changed", apply: (context) => invalidate(context, ["canvas"]) },
   { type: "replicate.changed", apply: (context) => invalidate(context, ["replicate-prediction"]) },
-  {
-    type: "connector_approval.changed",
-    apply: refreshConversation,
-  },
+  { type: "connector_approval.changed", apply: refreshConversationDetail },
   { type: "attention.changed", apply: (context) => invalidate(context, TASK_ATTENTION_QUERY_KEY) },
 ];
 

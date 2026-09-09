@@ -10,7 +10,7 @@ import { Hono } from "hono";
 import { getDurableObjectStub } from "~/lib/durable-objects/client";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { addInfraUsage } from "~/lib/usage/requestMeter";
-import { assertDeviceSyncGrant, createDeviceSyncGrant } from "~/services/sync/grant";
+import { createDeviceSyncGrant, resolveDeviceSyncGrant } from "~/services/sync/grant";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -45,38 +45,40 @@ addRoute(app, "post", "/grant", {
   },
 });
 
-addRoute(app, "get", "/ws", {
-  tags: ["sync"],
-  summary: "Open the device sync socket",
-  auth: true,
-  querySchema: deviceSyncSocketQuerySchema,
-  handler: async ({ query, raw, serviceContext, user }) => {
-    if (raw.req.raw.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
-      throw new AssistantError("Expected a websocket upgrade", ErrorType.PARAMS_ERROR, 400);
-    }
+app.get("/ws", async (context) => {
+  if (context.req.raw.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
+    throw new AssistantError("Expected a websocket upgrade", ErrorType.PARAMS_ERROR, 400);
+  }
 
-    await assertDeviceSyncGrant({
-      deviceId: query.device_id,
-      env: serviceContext.env,
-      grant: query.grant,
-      userId: user.id,
-    });
+  const query = deviceSyncSocketQuerySchema.safeParse({
+    grant: context.req.query("grant"),
+    device_id: context.req.query("device_id"),
+  });
 
-    const stub = getDurableObjectStub(serviceContext.env.USER_SYNC_COORDINATOR, String(user.id));
+  if (!query.success) {
+    throw new AssistantError("Invalid device sync request", ErrorType.PARAMS_ERROR, 400);
+  }
 
-    if (!stub) {
-      throw new AssistantError("Device sync is not configured", ErrorType.CONFIGURATION_ERROR);
-    }
+  const env = context.env;
+  const { userId } = await resolveDeviceSyncGrant({
+    env,
+    grant: query.data.grant,
+    deviceId: query.data.device_id,
+  });
+  const stub = getDurableObjectStub(env.USER_SYNC_COORDINATOR, String(userId));
 
-    addInfraUsage("do_requests", 1);
+  if (!stub) {
+    throw new AssistantError("Device sync is not configured", ErrorType.CONFIGURATION_ERROR);
+  }
 
-    const url = new URL(`${COORDINATOR_ORIGIN}/connect`);
+  addInfraUsage("do_requests", 1);
 
-    url.searchParams.set("deviceId", query.device_id);
-    url.searchParams.set("userId", String(user.id));
+  const url = new URL(`${COORDINATOR_ORIGIN}/connect`);
 
-    return stub.fetch(url.toString(), { headers: { Upgrade: "websocket" } });
-  },
+  url.searchParams.set("deviceId", query.data.device_id);
+  url.searchParams.set("userId", String(userId));
+
+  return stub.fetch(url.toString(), { headers: { Upgrade: "websocket" } });
 });
 
 export default app;

@@ -1,4 +1,5 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import type { CanvasGenerateRequest } from "@ngriffin_uk/polychat-schemas/experiences";
 
 export type CanvasMode = "image" | "video";
 export type CanvasGenerationStatus = "queued" | "processing" | "completed" | "succeeded" | "failed";
@@ -17,9 +18,7 @@ export interface CanvasGenerationInput {
   modelOptions?: Record<string, string | number | boolean | string[]>;
 }
 
-export interface CanvasGenerateParams extends CanvasGenerationInput {
-  modelIds: string[];
-}
+export type CanvasGenerateParams = CanvasGenerateRequest;
 
 export interface CanvasGenerationListItem {
   id: string;

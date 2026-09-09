@@ -7,6 +7,85 @@ import { RetryCancelledError } from "~/utils/retries";
 import { createProviderRetryBudget, runProviderCallWithRetry } from "../provider-retry";
 
 describe("runProviderCallWithRetry", () => {
+  it("executes only two repeats across three failing model steps", async () => {
+    const budget = createProviderRetryBudget();
+    const calls: number[] = [];
+    const sleeps = vi.fn(async () => {});
+
+    for (const step of [1, 2, 3]) {
+      const error = new AssistantError("offline", ErrorType.NETWORK_ERROR, 502);
+      const operation = vi.fn(async () => {
+        throw error;
+      });
+
+      await expect(
+        runProviderCallWithRetry(operation, {
+          ...budget.forStep(step),
+          sleep: sleeps,
+          random: () => 0,
+        }),
+      ).rejects.toBe(error);
+      calls.push(operation.mock.calls.length);
+    }
+
+    expect(calls).toEqual([2, 2, 1]);
+    expect(budget.used()).toBe(2);
+  });
+
+  it.each([
+    [
+      new AssistantError("busy", ErrorType.RATE_LIMIT_ERROR, 429, { retryAfterMs: 90000 }),
+      "rate_limited",
+    ],
+    [{ status: 503 }, "provider_unavailable"],
+    [new TypeError("fetch failed"), "network"],
+    [new DOMException("headers timed out", "TimeoutError"), "timeout"],
+  ])(
+    "bounds transient failure %j to two calls and a 30 second wait",
+    async (error, classification) => {
+      const states: (ChatRetrySnapshot | null)[] = [];
+      let waited = 0;
+      const operation = vi.fn(async () => {
+        throw error;
+      });
+
+      await expect(
+        runProviderCallWithRetry(operation, {
+          ...createProviderRetryBudget().forStep(1, {
+            onStateChange: (state) => {
+              states.push(state);
+            },
+          }),
+          sleep: async (delay) => {
+            waited += delay;
+          },
+          random: () => 0,
+        }),
+      ).rejects.toBe(error);
+
+      expect(operation).toHaveBeenCalledTimes(2);
+      expect(waited).toBeGreaterThan(0);
+      expect(waited).toBeLessThanOrEqual(30000);
+      expect(states).toEqual([
+        expect.objectContaining({
+          phase: "waiting",
+          classification,
+          attempt: 2,
+          maxAttempts: 2,
+          runRetry: 1,
+        }),
+        expect.objectContaining({
+          phase: "attempting",
+          classification,
+          attempt: 2,
+          maxAttempts: 2,
+          runRetry: 1,
+        }),
+        null,
+      ]);
+    },
+  );
+
   it("spends one shared retry slot per model call across the run", async () => {
     const budget = createProviderRetryBudget(2);
     const states: unknown[] = [];

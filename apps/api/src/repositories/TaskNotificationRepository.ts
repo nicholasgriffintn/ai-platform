@@ -11,6 +11,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { TaskNotificationDeliveryRow } from "~/lib/database/schema";
+import type { IEnv } from "~/types";
 import {
   decryptJsonPayload,
   encryptJsonPayload,
@@ -118,7 +119,7 @@ function formatRegistration(row: RegistrationRow): TaskNotificationRegistration 
   };
 }
 
-export class TaskNotificationRepository extends BaseRepository {
+export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" | "PRIVATE_KEY">> {
   async getPreferences(userId: number): Promise<TaskNotificationPreferences> {
     const row = await this.runQuery<PreferenceRow>(
       `SELECT enabled, decisions, failures, completions, assignments

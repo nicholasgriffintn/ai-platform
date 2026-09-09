@@ -53,6 +53,30 @@ function createContext({
 }
 
 describe("project chat context", () => {
+  it("grants the registered sandbox tool for a configured coding project", async () => {
+    const { context, repositories } = createContext();
+
+    repositories.workspaces.getProject.mockResolvedValue({
+      id: "project-1",
+      workspace_id: "workspace-1",
+      instructions: "Inspect the demo repository.",
+      coding_enabled: 1,
+      coding_installation_id: 123,
+      coding_repository: "owner/repository",
+      coding_prompt_strategy: "auto",
+      coding_timeout_seconds: 900,
+      coding_inspection_window_seconds: 0,
+    });
+
+    const result = await resolveProjectChatContext(context, {
+      metadata: { project_id: "project-1" },
+    });
+
+    expect(result?.enabledTools).toContain("run_sandbox_task");
+    expect(result?.enabledTools).not.toContain("run_code_review");
+    expect(result?.sandboxOptions?.repo).toBe("owner/repository");
+  });
+
   it("applies the saved project tier to new and resumed project conversations", async () => {
     const fresh = createContext();
 

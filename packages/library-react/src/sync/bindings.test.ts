@@ -24,15 +24,16 @@ function createContext() {
   const invalidatedKeys: unknown[] = [];
   let removed = 0;
 
-  vi.spyOn(queryClient, "invalidateQueries").mockImplementation(async (filters) => {
-    invalidatedKeys.push(filters?.queryKey);
-  });
   vi.spyOn(queryClient, "removeQueries").mockImplementation(() => {
     removed += 1;
   });
 
   return {
-    context: { queryClient, localScope: "user-1" },
+    context: {
+      queryClient,
+      localScope: "user-1",
+      invalidate: (queryKey: readonly unknown[]) => invalidatedKeys.push([...queryKey]),
+    },
     invalidatedKeys,
     removeCount: () => removed,
   };
@@ -52,6 +53,14 @@ describe("sync bindings", () => {
 
     expect(invalidatedKeys).toContainEqual(["chats", "abc"]);
     expect(invalidatedKeys).toContainEqual(["chats", "remote"]);
+  });
+
+  it("keeps a message change off the chat list and the goal", () => {
+    const { context, invalidatedKeys } = createContext();
+
+    applySyncEvent(context, buildEvent("message.changed", { conversationId: "abc" }));
+
+    expect(invalidatedKeys).toEqual([["chats", "abc"]]);
   });
 
   it("drops a deleted conversation from the caches rather than refetching it", () => {

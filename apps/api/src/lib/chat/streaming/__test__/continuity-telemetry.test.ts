@@ -10,6 +10,7 @@ vi.mock("~/lib/monitoring", () => ({
 }));
 
 import { normaliseContinuityPlatform, recordTurnContinuityFinished } from "../continuity-telemetry";
+import { createChatSseStreamWriter } from "../emitter";
 
 describe("turn continuity telemetry", () => {
   beforeEach(() => {
@@ -73,4 +74,50 @@ describe("turn continuity telemetry", () => {
       ),
     ).not.toThrow();
   });
+
+  it.each(["reader_closed", "write_failed"] as const)(
+    "records %s without leaking streamed content",
+    async (reason) => {
+      const writer = createChatSseStreamWriter();
+      const reader = writer.readable.getReader();
+
+      if (reason === "reader_closed") {
+        await reader.cancel();
+      } else {
+        const enqueue = vi
+          .spyOn(ReadableStreamDefaultController.prototype, "enqueue")
+          .mockImplementationOnce(() => {
+            throw new Error("private provider failure");
+          });
+
+        try {
+          await writer.writeComment("private response content");
+        } finally {
+          enqueue.mockRestore();
+          await reader.cancel();
+        }
+      }
+
+      recordTurnContinuityFinished(
+        { env: {}, traceId: "run" },
+        {
+          platform: "web",
+          outcome: "completed",
+          startedAtMs: Date.now() - 100,
+          finishedAtMs: Date.now(),
+          stream: writer.getContinuitySnapshot(),
+          cancellationObserved: false,
+        },
+      );
+      expect(mocks.recordMetric).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            connection_state: "detached",
+            detachment_reason: reason,
+          }),
+        }),
+      );
+      expect(JSON.stringify(mocks.recordMetric.mock.calls)).not.toContain("private");
+    },
+  );
 });

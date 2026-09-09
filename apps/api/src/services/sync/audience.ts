@@ -26,6 +26,10 @@ function readCache(key: string): number[] | undefined {
 }
 
 function writeCache(key: string, members: number[]): number[] {
+  if (members.length === 0) {
+    return members;
+  }
+
   audienceCache.set(key, { members, expiresAt: Date.now() + AUDIENCE_CACHE_TTL_MS });
 
   return members;

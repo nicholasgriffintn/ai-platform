@@ -1,6 +1,7 @@
 import type { UsageReservationKind, UsageReservationStatus } from "@ngriffin_uk/polychat-schemas";
 
 import { recordD1ResultMeta } from "~/lib/usage/requestMeter";
+import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { BaseRepository } from "./BaseRepository";
@@ -29,7 +30,7 @@ export interface CreateUsageReservationParams {
   expiresAt?: string | null;
 }
 
-export class UsageReservationRepository extends BaseRepository {
+export class UsageReservationRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async createUserReservationWithBalance(
     params: CreateUsageReservationParams & {
       planId: string | null;

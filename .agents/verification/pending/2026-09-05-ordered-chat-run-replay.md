@@ -8,11 +8,11 @@
 
 ## Verify
 
-- [ ] Start a stored multi-step task and inspect its snapshot. Confirm the cursor is non-negative and replay from that cursor returns only later events in strictly increasing sequence order with stable IDs.
+- [x] Start a stored multi-step task and inspect its snapshot. Confirm the cursor is non-negative and replay from that cursor returns only later events in strictly increasing sequence order with stable IDs.
 - [ ] Disconnect between snapshot acquisition and the next event write. Reconnect and confirm the write appears either in the snapshot or replay, allowing a harmless duplicate but never disappearing from both.
 - [x] Deliver the same replay page twice and deliver one page in reverse order to both web and iPhone. Confirm no duplicate message/activity appears and the final cursor and run state match.
-- [ ] Deliver an older running event after a terminal event. Confirm neither client reopens the task.
-- [ ] Produce more than 500 events, then request a cursor before the retained window. Confirm the API returns `resetRequired: true`, no event page and a snapshot whose cursor becomes the new baseline.
+- [x] Deliver an older running event after a terminal event. Confirm neither client reopens the task.
+- [x] Produce more than 500 events, then request a cursor before the retained window. Confirm the API returns `resetRequired: true`, no event page and a snapshot whose cursor becomes the new baseline.
 - [x] Simulate an internal sequence hole and a cursor ahead of the server. Confirm each produces the same explicit snapshot reset rather than silently advancing.
 - [x] Add an unknown event type under protocol version 1. Confirm current clients refresh the snapshot, keep rendering, and do not invent visible activity.
 - [x] Return a protocol version newer than the client supports. Confirm iPhone and web enter snapshot-only recovery rather than crashing, discarding the conversation or interpreting the event.
@@ -39,3 +39,11 @@ The local Chromium `features/run-replay.spec.ts` journey passed: snapshot cursor
 ## Further automated evidence — 8 September 2026
 
 - The six shared-client replay tests pass and `pnpm test:mobile` passes 111 tests plus its UI journey. Reviewed cases cover duplicate/out-of-order events, terminal regression, unknown event kinds and newer protocols. The new native controller regression proves that a newer protocol causes exactly one replay request followed only by snapshots until completion. Event injection uses client-boundary fixtures; no physical-device claim is made.
+
+## Further automatic validation — 8 September 2026
+
+- The passing library-client replay and native replay suites preserve terminal state when older running events arrive; this covers both clients without another browser run.
+
+## Automated evidence — 9 September 2026
+
+- The new real-D1 run-event test seeds 500 persisted events and appends seven through the production transactional statements. It confirms exactly 500 retained events, oldest 8/latest 507, strictly increasing sequences, unique stable IDs, cursor-exclusive reads and rejection of a stale attempt after takeover. The existing passing replay service test consumes oldest 8/latest 507 and returns resetRequired with no events and snapshot cursor 507. Existing snapshot tests anchor the non-negative cursor before reading state. Combined database/API boundary evidence avoids a 507-turn browser run.

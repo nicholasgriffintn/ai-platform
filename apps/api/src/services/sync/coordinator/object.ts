@@ -1,5 +1,4 @@
 import {
-  DEVICE_SYNC_COALESCE_WINDOW_MS,
   DEVICE_SYNC_EVENT_RETENTION_LIMIT,
   DEVICE_SYNC_MAX_TOPICS_PER_CONNECTION,
   DEVICE_SYNC_PROTOCOL_VERSION,
@@ -12,7 +11,6 @@ import {
 import { Agent } from "agents";
 
 import { TopicEventBus } from "~/lib/durable-objects/event-bus";
-import { canSubscribeToTopic } from "~/services/sync/topic-access";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 
@@ -30,8 +28,6 @@ const PRESENCE_TOPIC_KINDS = new Set(["conversation", "project", "workspace"]);
 
 export class UserSyncCoordinator extends Agent<IEnv> {
   private bus: TopicEventBus<EventPayload> | undefined;
-  private pending = new Map<string, DeviceSyncEvent[]>();
-  private flushTimer: ReturnType<typeof setTimeout> | undefined;
 
   private get events(): TopicEventBus<EventPayload> {
     this.bus ??= new TopicEventBus<EventPayload>(this.ctx.storage, "device_sync", {
@@ -99,50 +95,24 @@ export class UserSyncCoordinator extends Agent<IEnv> {
     }
   }
 
-  private enqueue(event: DeviceSyncEvent): void {
-    const existing = this.pending.get(event.topic);
-
-    if (existing) {
-      existing.push(event);
-    } else {
-      this.pending.set(event.topic, [event]);
-    }
-
-    this.flushTimer ??= setTimeout(() => this.flush(), DEVICE_SYNC_COALESCE_WINDOW_MS);
-  }
-
-  private flush(): void {
-    this.flushTimer = undefined;
-    const batches = [...this.pending.entries()];
-
-    this.pending.clear();
-
-    for (const [topic, events] of batches) {
-      for (const { socket, state } of this.subscribers(topic)) {
-        for (const event of events) {
-          if (event.originDeviceId && event.originDeviceId === state.deviceId) {
-            continue;
-          }
-
-          this.send(socket, { type: "event", event });
-        }
-      }
-    }
-  }
-
-  private async attachTopics(
-    socket: WebSocket,
-    state: ConnectionState,
-    requested: { topic: string; lastSeq: number }[],
-  ): Promise<void> {
-    const topics = new Set(state.topics);
-
-    for (const { topic, lastSeq } of requested) {
-      if (!(await canSubscribeToTopic(this.env, topic, state.userId))) {
-        this.send(socket, { type: "reset", topic, seq: 0, reason: "unauthorised" });
+  private deliver(event: DeviceSyncEvent): void {
+    for (const { socket, state } of this.subscribers(event.topic)) {
+      if (event.originDeviceId && event.originDeviceId === state.deviceId) {
         continue;
       }
 
+      this.send(socket, { type: "event", event });
+    }
+  }
+
+  private attachTopics(
+    socket: WebSocket,
+    state: ConnectionState,
+    requested: { topic: string; lastSeq: number }[],
+  ): void {
+    const topics = new Set(state.topics);
+
+    for (const { topic, lastSeq } of requested) {
       if (topics.size >= DEVICE_SYNC_MAX_TOPICS_PER_CONNECTION && !topics.has(topic)) {
         this.send(socket, { type: "reset", topic, seq: 0, reason: "overflow" });
         continue;
@@ -207,7 +177,7 @@ export class UserSyncCoordinator extends Agent<IEnv> {
     }
 
     if (message.type === "subscribe") {
-      await this.attachTopics(socket, state, message.topics);
+      this.attachTopics(socket, state, message.topics);
 
       return;
     }
@@ -293,7 +263,7 @@ export class UserSyncCoordinator extends Agent<IEnv> {
           originDeviceId: originDeviceId ?? null,
         });
 
-        this.enqueue({
+        this.deliver({
           ...appended.event.payload,
           topic,
           seq: appended.event.seq,

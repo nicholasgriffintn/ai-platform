@@ -1,4 +1,8 @@
-import { teammateResponseSchema, findTeammateRole } from "@ngriffin_uk/polychat-schemas";
+import {
+  teammateResponseSchema,
+  findTeammateRole,
+  projectTaskListResponseSchema,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { expect, test } from "../fixtures/polychat-test";
 import { requireSuccessfulResponse } from "../support/api-response";
@@ -8,6 +12,92 @@ const ROLE = findTeammateRole("research-analyst");
 
 test.describe("Hiring a teammate", () => {
   test.use({ persona: "pro" });
+
+  test("preserves colleague tools while setting and clearing automatic temperature", async ({
+    page,
+    capabilitiesPage,
+  }) => {
+    const enabledTools = ["create_task", "store_memory"];
+    const response = await page.request.post(`${E2E_API_BASE_URL}/teammates`, {
+      headers: { origin: E2E_APP_BASE_URL },
+      data: { name: "Automatic release colleague", enabled_tools: enabledTools },
+    });
+
+    await requireSuccessfulResponse(response, "Create an automatic colleague");
+    const teammate = teammateResponseSchema.parse(await response.json());
+
+    expect(teammate).toMatchObject({ kind: "colleague", temperature: null });
+    const editorPath = `/chat/teammates/${teammate.id}`;
+
+    await capabilitiesPage.navigate(editorPath);
+    await expect(page.getByLabel("Temperature", { exact: true })).toHaveValue("");
+    for (const temperature of ["", "0.5", ""]) {
+      await expect(page.getByLabel("Kind", { exact: true })).toHaveValue("colleague");
+      await page.getByLabel("Temperature", { exact: true }).fill(temperature);
+      const saved = page.waitForResponse(
+        (result) =>
+          result.request().method() === "PUT" &&
+          new URL(result.url()).pathname.endsWith(`/teammates/${teammate.id}`),
+      );
+
+      await page.getByRole("button", { name: "Save teammate", exact: true }).click();
+      const result = await saved;
+
+      await requireSuccessfulResponse(result, "Save colleague temperature");
+      expect(teammateResponseSchema.parse(await result.json())).toMatchObject({
+        kind: "colleague",
+        temperature: temperature === "" ? null : Number(temperature),
+        enabled_tools: enabledTools,
+      });
+      await capabilitiesPage.navigate(editorPath);
+      await expect(page.getByLabel("Temperature", { exact: true })).toHaveValue(temperature);
+    }
+  });
+
+  test("refuses a provider-requested task from a project bot without creating work", async ({
+    page,
+    workPage,
+    homePage,
+    polychatApi,
+  }) => {
+    await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+    const workspaceId = workPage.currentWorkspaceId();
+    const projectId = workPage.currentProjectId();
+    const projectPath = new URL(page.url()).pathname;
+    const created = await page.request.post(`${E2E_API_BASE_URL}/teammates`, {
+      headers: { origin: E2E_APP_BASE_URL },
+      data: {
+        name: "Release boundary bot",
+        kind: "bot",
+        workspace_id: workspaceId,
+        model: "groq-openai-gpt-oss-120b",
+      },
+    });
+
+    await requireSuccessfulResponse(created, "Create project bot");
+    const bot = teammateResponseSchema.parse(await created.json());
+
+    expect((await polychatApi.addProjectCapability(projectId, "teammate", bot.id)).status).toBe(
+      200,
+    );
+    const beforeResponse = await page.request.get(
+      `${E2E_API_BASE_URL}/projects/${projectId}/tasks`,
+    );
+
+    await requireSuccessfulResponse(beforeResponse, "Read initial project tasks");
+    const before = projectTaskListResponseSchema.parse(await beforeResponse.json());
+
+    await homePage.navigate(`${projectPath}/chat?teammate=${bot.id}`);
+    await homePage.sendMessage("File a release task from this bot");
+    await expect(homePage.getLatestAssistantMessage()).toContainText(
+      'Tool "create_task" is not available to this teammate',
+      { timeout: 20_000 },
+    );
+    const afterResponse = await page.request.get(`${E2E_API_BASE_URL}/projects/${projectId}/tasks`);
+
+    await requireSuccessfulResponse(afterResponse, "Read project tasks after refusal");
+    expect(projectTaskListResponseSchema.parse(await afterResponse.json())).toEqual(before);
+  });
 
   test("hires a role with its brief and tools, and hires a description with none", async ({
     capabilitiesPage,

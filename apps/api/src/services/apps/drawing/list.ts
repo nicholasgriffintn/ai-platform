@@ -18,10 +18,12 @@ export interface Drawing {
 
 export async function listDrawings({
   context,
+  projectId,
   env,
   userId,
 }: {
   context?: ServiceContext;
+  projectId?: string;
   env?: IEnv;
   userId: number;
 }): Promise<Drawing[]> {
@@ -33,7 +35,9 @@ export async function listDrawings({
 
   serviceContext.ensureDatabase();
   const repo = serviceContext.repositories.outputs;
-  const list = await repo.listPersonalOutputs(userId, "drawings", { kind: DRAWING_OUTPUT_KIND });
+  const list = projectId
+    ? await repo.listProjectOutputs(projectId, "drawings", { kind: DRAWING_OUTPUT_KIND })
+    : await repo.listPersonalOutputs(userId, "drawings", { kind: DRAWING_OUTPUT_KIND });
 
   return list.map((entry) => {
     const data = safeParseJson<Record<string, unknown>>(entry.content) ?? {};

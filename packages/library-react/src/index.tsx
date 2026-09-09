@@ -116,6 +116,7 @@ export * from "./lib/model-providers.js";
 export * from "./lib/navigation/places.js";
 export * from "./lib/notifications/web-push.js";
 export * from "./sync/bindings.js";
+export * from "./sync/invalidation-queue.js";
 export * from "./sync/live-or-poll.js";
 export * from "./sync/useDeviceSync.js";
 export * from "./lib/pet/clip.js";

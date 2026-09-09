@@ -6,27 +6,25 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@ngriffin_uk/polychat-component-ui";
-import { CHATS_QUERY_KEY, useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   buildMetaAssistantUiContext,
   type ChatSuggestion,
   ComposerDraftProvider,
   type ConversationScope,
   ConversationScopeProvider,
-  getMetaNavigationHref,
-  readMetaNavigationTarget,
   useChat,
   useLocalComposerDraft,
   useLocalConversationScope,
   useTrackEvent,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { Feather, SquarePen } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { useMetaAssistantNavigation } from "./useMetaAssistantNavigation.js";
 
 const POLY_PET_PRESET_SLUG = "pip";
 
@@ -70,38 +68,16 @@ function MetaAssistantThread({
   scope: ConversationScope;
   onNavigate: (href: string) => void;
 }) {
-  const queryClient = useQueryClient();
   const { pathname } = useLocation();
   const openConversationId = useChatStore((state) => state.currentConversationId);
   const draft = useLocalComposerDraft();
   const { data: conversation } = useChat(scope.currentConversationId);
-  const handledMessageIdsRef = useRef(new Set<string>());
   const uiContext = useMemo(
     () => buildMetaAssistantUiContext(pathname, openConversationId),
     [openConversationId, pathname],
   );
 
-  useEffect(() => {
-    const messages = conversation?.messages ?? [];
-
-    for (const message of messages) {
-      if (message.role !== "tool" || !message.id || handledMessageIdsRef.current.has(message.id)) {
-        continue;
-      }
-
-      handledMessageIdsRef.current.add(message.id);
-
-      if (message.name === "organise_conversation") {
-        void queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY] });
-      }
-
-      const target = readMetaNavigationTarget(message.data);
-
-      if (target) {
-        onNavigate(getMetaNavigationHref(target));
-      }
-    }
-  }, [conversation?.messages, onNavigate, queryClient]);
+  useMetaAssistantNavigation(conversation, scope.currentConversationId, onNavigate);
 
   return (
     <ConversationScopeProvider scope={scope}>

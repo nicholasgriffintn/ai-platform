@@ -43,7 +43,11 @@ class ChatExecutionRequest {
       disable_functions: chatOptions.disable_functions,
       completion_id: chatOptions.completion_id,
       conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
-      messages: toProviderMessages(messages),
+      messages: toProviderMessages(
+        chatOptions.meta_assistant
+          ? messages.filter((message) => message.role !== "system" && message.role !== "developer")
+          : messages,
+      ),
       message: prepared.messageWithContext,
       mode: prepared.currentMode,
       tool_policy_mode: chatOptions.tool_policy_mode,

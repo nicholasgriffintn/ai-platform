@@ -19,6 +19,26 @@ export class ThemePage extends BasePage {
     return this.page.getByRole("radio", { name: new RegExp(`^${name}\\b`) });
   }
 
+  card(name: string) {
+    return this.option(name).locator("..");
+  }
+
+  browserColour() {
+    return this.page.locator('meta[name="theme-color"]');
+  }
+
+  async viewportHasOverflow() {
+    return this.page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+  }
+
+  async selectedCardOutline(name: string) {
+    return this.card(name).evaluate((element) => {
+      const style = getComputedStyle(element);
+
+      return { width: parseFloat(style.outlineWidth), style: style.outlineStyle };
+    });
+  }
+
   systemCard() {
     return this.option("System").locator("..");
   }

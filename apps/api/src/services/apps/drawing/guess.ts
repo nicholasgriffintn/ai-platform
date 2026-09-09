@@ -14,11 +14,13 @@ const userGuessesCache = new Map<string, Set<string>>();
 
 export async function guessDrawingFromImage({
   context,
+  projectId,
   env,
   request,
   user,
 }: {
   context?: ServiceContext;
+  projectId?: string;
   env?: IEnv;
   request: {
     drawing?: Blob;
@@ -31,7 +33,7 @@ export async function guessDrawingFromImage({
 
   const arrayBuffer = await request.drawing.arrayBuffer();
 
-  const userId = user.id.toString();
+  const userId = `${user.id}:${projectId ?? "personal"}`;
   const userGuesses = userGuessesCache.get(userId) || new Set<string>();
 
   const serviceContext = resolveServiceContext({ context, env, user });
@@ -72,6 +74,7 @@ export async function guessDrawingFromImage({
 
   await repo.createOutput({
     createdByUserId: user.id,
+    projectId,
     capabilityId: "drawings",
     groupId: guessId,
     kind: "guess",

@@ -26,7 +26,10 @@ describe("releaseExpiredChatRunReservations", () => {
   });
 
   it("releases only the expired held reservations returned by the repository", async () => {
-    mocks.listExpiredHeldReservations.mockResolvedValue([{ ref_id: "run-1" }, { ref_id: "run-2" }]);
+    mocks.listExpiredHeldReservations.mockResolvedValue([
+      { id: "expired-1", ref_id: "run-1" },
+      { id: "expired-2", ref_id: "run-2" },
+    ]);
     mocks.finishUsageReservation
       .mockResolvedValueOnce({ ref_id: "run-1" })
       .mockResolvedValueOnce(null);
@@ -40,5 +43,21 @@ describe("releaseExpiredChatRunReservations", () => {
       100,
     );
     expect(mocks.finishUsageReservation).toHaveBeenCalledTimes(2);
+    expect(mocks.finishUsageReservation).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        refId: "run-1",
+        reservationId: "expired-1",
+        outcome: "released",
+      }),
+    );
+    expect(mocks.finishUsageReservation).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        refId: "run-2",
+        reservationId: "expired-2",
+        outcome: "released",
+      }),
+    );
   });
 });

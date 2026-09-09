@@ -1,9 +1,13 @@
 import type { ChatRun } from "@ngriffin_uk/polychat-schemas";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
 import { handleCancelChatRun } from "../cancel";
+
+const metrics = vi.hoisted(() => ({ recordTurnCancellationRequested: vi.fn() }));
+
+vi.mock("~/lib/chat/streaming/continuity-telemetry", () => metrics);
 
 const run: ChatRun = {
   protocolVersion: 1,
@@ -47,14 +51,23 @@ function createContext(currentRun: ChatRun = run) {
 }
 
 describe("handleCancelChatRun", () => {
+  beforeEach(() => vi.clearAllMocks());
   it("acknowledges cancellation separately from owner-confirmed interruption", async () => {
     const context = createContext();
 
     await expect(
-      handleCancelChatRun(context, run.id, { command_id: "cancel-1", expected_attempt: 1 }),
+      handleCancelChatRun(context, run.id, { command_id: "cancel-1", expected_attempt: 1 }, "web"),
     ).resolves.toMatchObject({
       run: { kind: "cancel", run: { id: run.id, status: "cancelling" } },
     });
+    expect(metrics.recordTurnCancellationRequested).toHaveBeenCalledWith(
+      expect.objectContaining({ traceId: run.conversationId }),
+      "web",
+    );
+    expect(metrics.recordTurnCancellationRequested.mock.invocationCallOrder[0]).toBeGreaterThan(
+      vi.mocked(context.repositories.conversationRuns.acceptCancellation).mock
+        .invocationCallOrder[0],
+    );
   });
 
   it("rejects a stale attempt before recording a cancellation command", async () => {
@@ -64,5 +77,36 @@ describe("handleCancelChatRun", () => {
       handleCancelChatRun(context, run.id, { command_id: "cancel-late", expected_attempt: 1 }),
     ).rejects.toMatchObject({ statusCode: 409 });
     expect(context.repositories.conversationRuns.acceptCancellation).not.toHaveBeenCalled();
+  });
+  it("does not record cancellation when persistence fails", async () => {
+    const context = createContext();
+
+    vi.mocked(context.repositories.conversationRuns.acceptCancellation).mockRejectedValueOnce(
+      new Error("write failed"),
+    );
+    await expect(
+      handleCancelChatRun(context, run.id, { command_id: "cancel-1", expected_attempt: 1 }, "web"),
+    ).rejects.toThrow("write failed");
+    expect(metrics.recordTurnCancellationRequested).not.toHaveBeenCalled();
+  });
+
+  it("does not count a duplicate cancellation as a new request", async () => {
+    const context = createContext();
+
+    vi.mocked(context.repositories.conversationRuns.acceptCancellation).mockResolvedValueOnce({
+      protocolVersion: 1,
+      commandId: "cancel-1",
+      kind: "cancel",
+      acceptedAt: run.updatedAt,
+      duplicate: true,
+      run: { ...run, status: "cancelling" },
+    });
+    await handleCancelChatRun(
+      context,
+      run.id,
+      { command_id: "cancel-1", expected_attempt: 1 },
+      "web",
+    );
+    expect(metrics.recordTurnCancellationRequested).not.toHaveBeenCalled();
   });
 });

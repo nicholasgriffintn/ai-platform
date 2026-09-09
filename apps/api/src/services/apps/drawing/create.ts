@@ -18,6 +18,7 @@ interface ImageFromDrawingResponse extends IFunctionResponse {
 
 export async function generateImageFromDrawing({
   context,
+  projectId,
   env,
   request,
   user,
@@ -25,6 +26,7 @@ export async function generateImageFromDrawing({
   existingDrawingId,
 }: {
   context?: ServiceContext;
+  projectId?: string;
   env?: IEnv;
   request: {
     drawing?: Blob;
@@ -48,7 +50,8 @@ export async function generateImageFromDrawing({
   const length = arrayBuffer.byteLength;
 
   const drawingId = request.drawingId || existingDrawingId || generateId();
-  const drawingImageKey = `drawings/${drawingId}/image.png`;
+  const storageId = generateId();
+  const drawingImageKey = `drawings/${storageId}/image.png`;
 
   let storedDrawing: StoredSourceFileResult;
 
@@ -57,6 +60,7 @@ export async function generateImageFromDrawing({
       key: drawingImageKey,
       data: arrayBuffer,
       createdByUserId: user.id,
+      projectId,
       title: "Original drawing",
       mimeType: "image/png",
       filename: "image.png",
@@ -111,7 +115,7 @@ export async function generateImageFromDrawing({
   const paintingArrayBuffer = await new Response(painting).arrayBuffer();
   const paintingLength = paintingArrayBuffer.byteLength;
 
-  const paintingImageKey = `drawings/${drawingId}/painting.png`;
+  const paintingImageKey = `drawings/${storageId}/painting.png`;
   let storedPainting: StoredOutputFileResult;
 
   try {
@@ -119,6 +123,7 @@ export async function generateImageFromDrawing({
       key: paintingImageKey,
       data: paintingArrayBuffer,
       createdByUserId: user.id,
+      projectId,
       capabilityId: "drawings",
       groupId: drawingId,
       kind: "painting",
@@ -162,6 +167,7 @@ export async function generateImageFromDrawing({
 
   const output = await repo.createOutput({
     createdByUserId: user.id,
+    projectId,
     capabilityId: "drawings",
     groupId: drawingId,
     kind: "drawing",

@@ -10,6 +10,8 @@
 
 - [ ] On web, compact a long stored conversation whose older candidate segment ends with a distinctive constraint. Confirm the compaction row reports compacted and retained counts, then ask a follow-up that depends on the retained constraint.
 - [ ] Reopen the same conversation on iOS and confirm the compaction row shows the same coverage detail without exposing the hidden snapshot as an ordinary assistant message.
-- [ ] Repeat with an individually oversized oldest candidate and confirm compaction leaves the conversation unchanged rather than showing a successful compaction marker.
+- [x] Repeat with an individually oversized oldest candidate and confirm compaction leaves the conversation unchanged rather than showing a successful compaction marker.
 
 **Stop and report if:** A retained constraint disappears, web and iOS disagree on coverage, or an oversized unrepresented message is archived.
+
+- The full passing API suite includes compaction.test.ts: an oversized oldest candidate yields shouldCompact false, no archived messages and the original retained message set. The compaction-stream path emits a marker only for an actual stored result.

@@ -42,12 +42,13 @@ export async function createDeviceSyncGrant(
   return { token, expiresAt };
 }
 
-export async function assertDeviceSyncGrant(params: {
+export async function resolveDeviceSyncGrant(params: {
   env: IEnv;
   grant: string;
   deviceId: string;
-  userId: number;
-}): Promise<void> {
+}): Promise<{ userId: number }> {
+  const key = await importHmacSecret(requireSigningSecret(params.env));
+
   let claims;
 
   try {
@@ -55,7 +56,7 @@ export async function assertDeviceSyncGrant(params: {
       algorithms: ["HS256"],
       audience: DEVICE_SYNC_GRANT_AUDIENCE,
       issuer: "assistant",
-      key: await importHmacSecret(requireSigningSecret(params.env)),
+      key,
       maxTokenAgeSeconds: DEVICE_SYNC_GRANT_TTL_SECONDS,
     });
   } catch (cause) {
@@ -67,10 +68,13 @@ export async function assertDeviceSyncGrant(params: {
     );
   }
 
+  const userId = Number(claims.sub);
+
   if (
     claims["purpose"] !== DEVICE_SYNC_GRANT_PURPOSE ||
-    claims.sub !== String(params.userId) ||
-    claims["device_id"] !== params.deviceId
+    claims["device_id"] !== params.deviceId ||
+    !Number.isInteger(userId) ||
+    userId <= 0
   ) {
     throw new AssistantError(
       "Device sync grant does not match this device",
@@ -78,4 +82,6 @@ export async function assertDeviceSyncGrant(params: {
       403,
     );
   }
+
+  return { userId };
 }

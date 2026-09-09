@@ -7,23 +7,9 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-async function canvasToPngFile(canvas: HTMLCanvasElement): Promise<File> {
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((result) => {
-      if (result) {
-        resolve(result);
+import { canvasToPngFile } from "../../../utils/canvas.js";
 
-        return;
-      }
-
-      reject(new Error("Could not convert canvas to blob"));
-    }, "image/png");
-  });
-
-  return new File([blob], "drawing.png", { type: "image/png" });
-}
-
-export function useDrawingStudio(enabled: boolean) {
+export function useDrawingStudio(enabled: boolean, projectId?: string) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [currentColor, setCurrentColor] = useState("#030712");
   const [lineWidth, setLineWidth] = useState(LINE_WIDTHS[2]);
@@ -36,9 +22,10 @@ export function useDrawingStudio(enabled: boolean) {
   const [drawingHistory, setDrawingHistory] = useState<string[]>([]);
   const [currentHistoryIndex, setCurrentHistoryIndex] = useState(-1);
 
-  const drawingsQuery = useFetchDrawings(enabled);
+  const drawingsQuery = useFetchDrawings(enabled, projectId);
   const selectedDrawingQuery = useFetchDrawing(
     enabled ? selectedDrawingId || undefined : undefined,
+    projectId,
   );
   const generateMutation = useGenerateDrawing();
   const guessMutation = useGuessDrawing();
@@ -201,7 +188,7 @@ export function useDrawingStudio(enabled: boolean) {
 
     try {
       const file = await canvasToPngFile(canvas);
-      const result = await guessMutation.mutateAsync({ drawing: file });
+      const result = await guessMutation.mutateAsync({ drawing: file, projectId });
 
       setGuessResult(result.content);
 
@@ -211,7 +198,7 @@ export function useDrawingStudio(enabled: boolean) {
     } catch {
       setGuessResult("Error: Could not process your drawing");
     }
-  }, [guessMutation]);
+  }, [guessMutation, projectId]);
 
   const handleGenerate = useCallback(async () => {
     const canvas = canvasRef.current;
@@ -225,7 +212,7 @@ export function useDrawingStudio(enabled: boolean) {
       const payload = guessedDrawingId
         ? { drawing: file, drawingId: guessedDrawingId }
         : { drawing: file };
-      const result = await generateMutation.mutateAsync(payload);
+      const result = await generateMutation.mutateAsync({ ...payload, projectId });
 
       if (result?.output_id) {
         setSelectedDrawingId(result.output_id);
@@ -236,7 +223,7 @@ export function useDrawingStudio(enabled: boolean) {
     } catch {
       setGuessResult("Error: Could not generate image from your drawing");
     }
-  }, [generateMutation, guessedDrawingId]);
+  }, [generateMutation, guessedDrawingId, projectId]);
 
   return {
     canvasRef,

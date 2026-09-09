@@ -9,7 +9,7 @@
 
 - [ ] Load `/pricing`, `/privacy`, `/terms`, `/`, `/discover` and `/downloads` on a deployed preview and confirm each renders with no console error and no failed chunk request.
 - [x] Open a chat conversation and a Work project conversation, confirm messages stream and the project sidebar and header render.
-- [ ] Open the global search dialog and the meta-assistant overlay from a route that does not otherwise use them, and confirm both load on demand.
+- [x] Open the global search dialog and the meta-assistant overlay from a route that does not otherwise use them, and confirm both load on demand.
 - [ ] Navigate between a Chat route and a Work route without a full reload and confirm no module error appears in the console.
 - [ ] Run the desktop build, launch the packaged app and confirm the sidebar, pricing page and a conversation all render.
 
@@ -19,3 +19,5 @@
 
 - The passing personal Chat journeys and the recorded focused Work-context journey render the conversation and reply through the shared shell. The Work journey opens the workspace/project header, sends with its project context and returns through the project Files navigation.
 - See [7 September release evidence](../2026-09-05-local-evidence.md) and [8 September focused evidence](../2026-09-08-local-evidence.md). These are reconciled existing results, not another run or a deployed/desktop certification.
+
+- Container 39d294fd passed loading global search and Poly from Files, then finding and opening a conversation. Later unrelated cases were invalidated by the container web-runtime crash.

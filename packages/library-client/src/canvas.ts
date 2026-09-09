@@ -59,7 +59,10 @@ export async function generateCanvasOutputs(
   return await returnFetchedData<CanvasGenerateResponse>(response);
 }
 
-export async function fetchCanvasGenerations(mode?: CanvasMode): Promise<CanvasGeneration[]> {
+export async function fetchCanvasGenerations(
+  mode?: CanvasMode,
+  projectId?: string,
+): Promise<CanvasGeneration[]> {
   let headers = {};
 
   try {
@@ -68,8 +71,17 @@ export async function fetchCanvasGenerations(mode?: CanvasMode): Promise<CanvasG
     console.error("Error getting headers for canvas generations:", error);
   }
 
-  const query = mode ? `?mode=${mode}` : "";
-  const response = await fetchApi(`/apps/canvas/generations${query}`, {
+  const query = new URLSearchParams();
+
+  if (mode) {
+    query.set("mode", mode);
+  }
+
+  if (projectId) {
+    query.set("projectId", projectId);
+  }
+
+  const response = await fetchApi(`/apps/canvas/generations?${query}`, {
     method: "GET",
     headers,
   });

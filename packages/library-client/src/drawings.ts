@@ -10,7 +10,7 @@ import { apiService } from "./api-service.js";
 import { fetchApi } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
 
-export const fetchDrawings = async (): Promise<Drawing[]> => {
+export const fetchDrawings = async (projectId?: string): Promise<Drawing[]> => {
   let headers = {};
 
   try {
@@ -19,10 +19,13 @@ export const fetchDrawings = async (): Promise<Drawing[]> => {
     console.error("Error fetching drawings:", error);
   }
 
-  const response = await fetchApi("/apps/drawing", {
-    method: "GET",
-    headers,
-  });
+  const response = await fetchApi(
+    `/apps/drawing${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ""}`,
+    {
+      method: "GET",
+      headers,
+    },
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to fetch drawings: ${response.statusText}`);
@@ -33,7 +36,7 @@ export const fetchDrawings = async (): Promise<Drawing[]> => {
   return data.drawings || [];
 };
 
-export const fetchDrawing = async (id: string): Promise<Drawing> => {
+export const fetchDrawing = async (id: string, projectId?: string): Promise<Drawing> => {
   let headers = {};
 
   try {
@@ -42,10 +45,13 @@ export const fetchDrawing = async (id: string): Promise<Drawing> => {
     console.error("Error fetching drawing:", error);
   }
 
-  const response = await fetchApi(`/apps/drawing/${id}`, {
-    method: "GET",
-    headers,
-  });
+  const response = await fetchApi(
+    `/apps/drawing/${id}${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ""}`,
+    {
+      method: "GET",
+      headers,
+    },
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to fetch drawing: ${response.statusText}`);
@@ -58,9 +64,11 @@ export const fetchDrawing = async (id: string): Promise<Drawing> => {
 
 export const generateImageFromDrawing = async ({
   drawing,
+  projectId,
   drawingId,
 }: {
   drawing: File;
+  projectId?: string;
   drawingId?: string;
 }): Promise<GenerateImageResponse> => {
   const formData = new FormData();
@@ -81,11 +89,14 @@ export const generateImageFromDrawing = async ({
 
   const filteredHeaders = { ...headers };
 
-  const response = await fetchApi("/apps/drawing", {
-    method: "POST",
-    body: formData,
-    headers: filteredHeaders,
-  });
+  const response = await fetchApi(
+    `/apps/drawing${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ""}`,
+    {
+      method: "POST",
+      body: formData,
+      headers: filteredHeaders,
+    },
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to generate image: ${response.statusText}`);
@@ -96,8 +107,10 @@ export const generateImageFromDrawing = async ({
 
 export const guessDrawingFromImage = async ({
   drawing,
+  projectId,
 }: {
   drawing: File;
+  projectId?: string;
 }): Promise<GuessResponse> => {
   const formData = new FormData();
 
@@ -113,11 +126,14 @@ export const guessDrawingFromImage = async ({
 
   const filteredHeaders = { ...headers };
 
-  const response = await fetchApi("/apps/drawing/guess", {
-    method: "POST",
-    body: formData,
-    headers: filteredHeaders,
-  });
+  const response = await fetchApi(
+    `/apps/drawing/guess${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ""}`,
+    {
+      method: "POST",
+      body: formData,
+      headers: filteredHeaders,
+    },
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to guess drawing: ${response.statusText}`);

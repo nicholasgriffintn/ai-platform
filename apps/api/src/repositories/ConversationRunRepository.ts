@@ -22,6 +22,7 @@ import {
   buildTrimRunEventsStatement,
 } from "~/lib/chat-runs/event-statements";
 import type { ConversationRunEventRow, ConversationRunRow } from "~/lib/database/schema";
+import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -166,7 +167,7 @@ function assertCompatibleCommand(row: CommandReceiptRow, params: AcceptRunComman
   }
 }
 
-export class ConversationRunRepository extends BaseRepository {
+export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async getById(runId: string): Promise<ChatRun | null> {
     const row = await this.runQuery<ConversationRunRow>(
       "SELECT * FROM conversation_run WHERE id = ?",

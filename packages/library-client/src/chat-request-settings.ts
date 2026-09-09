@@ -29,15 +29,28 @@ export function projectChatRequestSettings(
   const {
     compaction,
     enabled_tools: enabledTools,
-    localOnly: _localOnly,
     tool_options: hostedToolOptions,
-    ...generationSettings
+    temperature,
+    top_p,
+    max_tokens,
+    presence_penalty,
+    frequency_penalty,
+    reasoning,
+    verbosity,
+    service_tier,
   } = chatSettings;
 
   return {
     enabledTools,
     generationSettings: {
-      ...generationSettings,
+      temperature,
+      top_p,
+      max_tokens,
+      presence_penalty,
+      frequency_penalty,
+      reasoning,
+      verbosity,
+      service_tier,
       ...(isChatCompactionMode(compaction) ? { compaction } : {}),
     },
     hostedToolOptions: hasDefinedValue(hostedToolOptions) ? hostedToolOptions : undefined,

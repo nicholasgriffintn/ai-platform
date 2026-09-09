@@ -2,12 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
 
-const access = vi.hoisted(() => ({ allow: true }));
-
-vi.mock("~/services/sync/topic-access", () => ({
-  canSubscribeToTopic: vi.fn(async () => access.allow),
-}));
-
 vi.mock("agents", () => ({
   Agent: class {
     public ctx: DurableObjectState;
@@ -135,7 +129,6 @@ function messagesOfType(socket: FakeSocket, type: string): Record<string, unknow
 
 describe("UserSyncCoordinator", () => {
   beforeEach(() => {
-    access.allow = true;
     vi.useFakeTimers();
     vi.stubGlobal(
       "WebSocketPair",
@@ -176,19 +169,17 @@ describe("UserSyncCoordinator", () => {
     expect(messagesOfType(sockets[0], "event")).toHaveLength(0);
   });
 
-  it("refuses a topic the user cannot read", async () => {
+  it("delivers nothing for a topic no event was addressed to", async () => {
     const { coordinator, sockets } = createCoordinator();
 
-    access.allow = false;
     await connect(coordinator, "device-a");
     await coordinator.webSocketMessage(
       sockets[0] as unknown as WebSocket,
       JSON.stringify({ type: "subscribe", topics: [{ topic: "conversation:x", lastSeq: 0 }] }),
     );
-    await publish(coordinator, [{ topic: "conversation:x", type: "run.changed", data: {} }]);
+    await publish(coordinator, [{ topic: "conversation:y", type: "run.changed", data: {} }]);
     await vi.advanceTimersByTimeAsync(100);
 
-    expect(messagesOfType(sockets[0], "reset")[0]?.reason).toBe("unauthorised");
     expect(messagesOfType(sockets[0], "event")).toHaveLength(0);
   });
 

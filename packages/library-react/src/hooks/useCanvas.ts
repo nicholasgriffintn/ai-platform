@@ -25,10 +25,10 @@ export function useGenerateCanvasOutputs() {
   });
 }
 
-export function useCanvasGenerations(mode?: CanvasMode, enabled = true) {
+export function useCanvasGenerations(mode?: CanvasMode, enabled = true, projectId?: string) {
   return useQuery({
-    queryKey: [CANVAS_QUERY_KEY, "generations", mode ?? "all"],
-    queryFn: () => fetchCanvasGenerations(mode),
+    queryKey: [CANVAS_QUERY_KEY, "generations", mode ?? "all", projectId ?? "personal"],
+    queryFn: () => fetchCanvasGenerations(mode, projectId),
     enabled,
     refetchInterval: (query) =>
       liveOrPoll(

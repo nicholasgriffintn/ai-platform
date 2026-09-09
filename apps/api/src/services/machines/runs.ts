@@ -2,6 +2,7 @@ import { isMachineOnline, machineRunRequestSchema } from "@ngriffin_uk/polychat-
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getDurableObjectStub, postDurableObjectJson } from "~/lib/durable-objects/client";
+import { publishMachineEvent } from "~/services/sync/conversation-events";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export async function callMachineRun(
@@ -49,5 +50,11 @@ export async function callMachineRun(
     );
   }
 
-  return postDurableObjectJson(stub, `https://machine-runs${path}`, body);
+  const response = await postDurableObjectJson(stub, `https://machine-runs${path}`, body);
+
+  if (path === "/create" && response.ok) {
+    publishMachineEvent(context, user.id, machineId, { queued: true });
+  }
+
+  return response;
 }

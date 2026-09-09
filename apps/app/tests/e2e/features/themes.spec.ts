@@ -1,8 +1,48 @@
+import { THEMES } from "@ngriffin_uk/polychat-library-chat";
+
 import { expect, test } from "../fixtures/polychat-test";
 import { ThemePage } from "../page-objects/ThemePage";
+import { relativeLuminance } from "../support/colour";
 
 test.describe("Device theme preferences", () => {
   test.use({ persona: "pro" });
+
+  test("keeps every palette independently readable and persists each selection without a flash", async ({
+    page,
+    profilePage,
+  }) => {
+    const themes = new ThemePage(page);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await profilePage.openTab("customisation", "Customise Chat");
+    await themes.recordThemeFramesAcrossNavigations();
+
+    for (const theme of THEMES) {
+      await themes.select(theme.label);
+      await expect(themes.option(theme.label)).toBeChecked();
+      await expect(themes.root).toHaveAttribute("data-polychat-theme", theme.id);
+      await expect(themes.browserColour()).toHaveAttribute("content", theme.themeColor);
+      await expect(themes.card(theme.label)).toContainText(theme.themeColor);
+      expect(await themes.selectedCardOutline(theme.label)).toMatchObject({ style: "solid" });
+      expect((await themes.selectedCardOutline(theme.label)).width).toBeGreaterThanOrEqual(2);
+
+      const colours = await themes.themeCardColours(theme.label);
+      const background = relativeLuminance(colours.background);
+      const heading = relativeLuminance(colours.heading);
+
+      expect(
+        (Math.max(background, heading) + 0.05) / (Math.min(background, heading) + 0.05),
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(await themes.viewportHasOverflow()).toBe(false);
+      await profilePage.reload();
+      await expect(themes.root).toHaveAttribute("data-polychat-theme", theme.id);
+      await expect(themes.option(theme.label)).toBeChecked();
+      const frames = await themes.recordedThemeFrames();
+
+      expect(frames.length).toBeGreaterThan(0);
+      expect(frames, `Visible reload frames for ${theme.id}`).toEqual(frames.map(() => theme.id));
+    }
+  });
 
   test("remembers the day and night pair across appearance changes, reloads and explicit themes", async ({
     page,

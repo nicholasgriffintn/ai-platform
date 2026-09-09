@@ -184,12 +184,19 @@ export function useChatRunReplay(
 
     void synchronise();
 
+    const watchedTopics = new Set([`conversation:${conversationId}`, `run:${runId}`]);
     const unsubscribe = useSyncStore.subscribe((state, previous) => {
       if (disposed) {
         return;
       }
 
-      if (state.lastEventAt !== previous.lastEventAt || state.status !== previous.status) {
+      const reconnected = state.status !== previous.status && state.status === "open";
+      const relevantEvent =
+        state.lastEventAt !== previous.lastEventAt &&
+        state.lastEventTopic !== null &&
+        watchedTopics.has(state.lastEventTopic);
+
+      if (reconnected || relevantEvent) {
         void synchronise();
       }
     });

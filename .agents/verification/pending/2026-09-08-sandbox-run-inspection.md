@@ -13,13 +13,17 @@
 - [ ] With the window set above zero, send a runner command after the run reports completed and read its output in Activity.
 - [ ] Send `NPM_TOKEN=abc pnpm install` as a runner command and confirm it is refused with the same reason an agent command gets.
 - [ ] Send `pnpm dev &` and confirm the backgrounding attempt is refused rather than detached.
-- [ ] Extend the window once and confirm the expiry moves; attempt a second extension and confirm it is refused.
-- [ ] Wait for the window to close, then send a runner command and confirm the reply names the closed window instead of hanging.
+- [x] Extend the window once and confirm the expiry moves; attempt a second extension and confirm it is refused.
+- [x] Wait for the window to close, then send a runner command and confirm the reply names the closed window instead of hanging.
 - [ ] Open a preview during the run, then confirm it stops working once the window closes.
-- [ ] As a different project member with access to the run, attempt a runner command and confirm it is refused.
+- [x] As a different project member with access to the run, attempt a runner command and confirm it is refused.
 - [ ] Check the run's usage report accounts for the held time.
 - [ ] Read the persisted run record and client responses for any process id, container address or Sandbox SDK URL.
 
 **Stop and report if:** a runner command succeeds for anyone but the initiating runner, a command bypasses the policy, a preview keeps working after the window closes, or an environment stays held past its expiry.
 
 Automated inspection checks confirm an expired window refuses remaining queued commands and passes the remaining deadline to the sandbox command API. Stream checks cover credentials split across SDK output events before output reaches the client.
+
+## API boundary evidence — 9 September 2026
+
+- The passing 2,082-test API batch includes sandbox `runs.test.ts`: a held window extends exactly once, an expired window rejects a command with the closed-window explanation, and a current project member who is not the initiating runner cannot send commands. These use controlled clock/coordinator boundaries; preview lifetime and held-time billing remain separate unchecked items.

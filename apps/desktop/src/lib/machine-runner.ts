@@ -1,7 +1,11 @@
 import type { DesktopBackend, DesktopRun } from "@ngriffin_uk/polychat-library-chat";
+import { waitForSyncEvent } from "@ngriffin_uk/polychat-library-client";
 import type { MachineRunClient } from "@ngriffin_uk/polychat-library-client/machine-runs";
 import { delay } from "@ngriffin_uk/polychat-library-client/machine-runs";
 import type { MachineRunClaim, MachineRunUpdate } from "@ngriffin_uk/polychat-schemas";
+import { buildDeviceSyncTopic } from "@ngriffin_uk/polychat-schemas";
+
+const MACHINE_CLAIM_FALLBACK_MS = 30_000;
 
 async function executeClaim(
   backend: Pick<DesktopBackend, "listEndpoints" | "discoverModels" | "startModelRun">,
@@ -150,11 +154,16 @@ export async function runMachineConsumer(options: {
 }) {
   const { backend, client, machineId, signal, onError } = options;
 
+  const topic = buildDeviceSyncTopic("machine", machineId);
+
   while (!signal.aborted) {
+    let claimed = false;
+
     try {
       const claim = await client.claim(machineId, signal);
 
       if (claim) {
+        claimed = true;
         await executeClaim(backend, client, machineId, claim, signal);
       }
     } catch (error) {
@@ -163,6 +172,10 @@ export async function runMachineConsumer(options: {
       }
     }
 
-    await delay(2000, signal).catch(() => undefined);
+    if (claimed || signal.aborted) {
+      continue;
+    }
+
+    await waitForSyncEvent(topic, MACHINE_CLAIM_FALLBACK_MS, signal).catch(() => undefined);
   }
 }

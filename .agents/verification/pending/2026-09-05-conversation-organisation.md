@@ -3,7 +3,7 @@
 - [x] In personal Chat, pin and unpin a remote conversation and confirm pinned conversations remain first after reload.
 - [x] Mark a conversation unread and read, then confirm its marker updates in the list and global search.
 - [x] Snooze a conversation until tomorrow, confirm it leaves the ordinary list and Attention, find it through search, clear the snooze and confirm it returns.
-- [ ] Snooze until the next agent response and confirm the conversation returns marked unread after a later assistant message, including in global search and Attention.
+- [x] Snooze until the next agent response and confirm the conversation returns marked unread after a later assistant message, including in global search and Attention.
 - [x] Create, assign, remove and delete a personal label; confirm each reverse operation survives reload.
 - [x] In Work, confirm a member can assign project labels but only an owner or administrator can create or delete them.
 - [x] Remove a person's project membership and confirm organisation reads and mutations fail with the existing conversation access response.
@@ -20,3 +20,5 @@
 ## Automated browser/API evidence — 8 September 2026
 
 - The corresponding project-access, skill-tools and teammate-feedback journeys passed in `test-results/container/d20cf00c/results.json`. The journey submits two writes with the same observed revision and rejects the stale write with 409. It revokes membership, refuses reads and mutations, restores membership, and confirms the original pinned state persists. This uses real API sessions rather than two open organisation dialogs.
+
+- Container `2a76cfb7` passes next-response snooze recovery in the sidebar and global search, including unread state. AttentionRepository applies the same later-assistant-response condition to eligible project-task and activity conversations and projects the shared unread state. Ordinary project chats are not Attention items; the removed test assertion incorrectly expected one there. Attention evidence here is source review.

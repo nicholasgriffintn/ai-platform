@@ -20,12 +20,14 @@ export async function savePattern({
   request,
   user,
   projectId,
+  conversationId,
 }: {
   context?: ServiceContext;
   env?: IEnv;
   request: SavePatternRequest;
   user: IUser;
   projectId?: string;
+  conversationId?: string;
 }) {
   const serviceContext = resolveServiceContext({ context, env, user });
 
@@ -43,6 +45,7 @@ export async function savePattern({
       ? await repositories.outputs.createOutput({
           createdByUserId: user.id,
           projectId,
+          conversationId,
           capabilityId: STRUDEL_APP_ID,
           kind: "strudel_pattern",
           title: payload.name,

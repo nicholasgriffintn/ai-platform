@@ -13,7 +13,8 @@
 - [ ] Archive a conversation on one device; confirm it leaves the other's sidebar.
 - [ ] Rename a conversation on one device; confirm the new title appears on the other.
 - [ ] Block WebSockets (or stop the API) and confirm the app still updates on its original polling intervals, then restore the connection and confirm live updates resume without a reload.
-- [ ] With a Work project conversation open, remove a member from the workspace, have them reconnect, and confirm they no longer receive that conversation's events.
+- [ ] With a Work project conversation open, remove a member from the workspace and confirm they receive no further events for it.
+- [ ] With the desktop connected, confirm `POST /machines/*/runs/claim` settles to roughly one call every thirty seconds while idle, and that starting a machine run still begins promptly.
 - [ ] Watch a delegation run from a second device and confirm its state changes appear without the old two-second poll.
 - [ ] Move a project task through a status change and confirm the board updates on another device.
 - [ ] Confirm surfaces that have no publisher yet — usage, goals, research, training, canvas, replicate, workbench previews — still refresh on their own intervals with the socket open.

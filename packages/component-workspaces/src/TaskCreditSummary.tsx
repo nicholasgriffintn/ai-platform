@@ -8,7 +8,7 @@ import {
 
 export function TaskCreditSummary({ plan }: { plan: ProjectTaskPlanEvidence }) {
   const attempts = plan.stages.flatMap((stage) => stage.attempts);
-  const reported = attempts.filter((attempt) => attempt.usage);
+  const reported = attempts.filter((attempt) => attempt.usage?.consumption.creditMicros != null);
 
   if (reported.length === 0) {
     return null;

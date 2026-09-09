@@ -14,7 +14,7 @@
 - [ ] Open the same stored conversation on iPhone and confirm its decoded latest run matches the web/API identity without affecting existing message rendering.
 - [x] For a project task, confirm a current workspace member can read `/chat/runs/:run_id`, then remove membership and confirm the same status request is denied.
 - [ ] Force a waiting question or approval, answer it, and confirm the same run resumes with an incremented attempt and its response message retains the run ID.
-- [ ] Force conversation lease takeover before a write and confirm the stale attempt ends as `interrupted` without replacing later or terminal state.
+- [x] Force conversation lease takeover before a write and confirm the stale attempt ends as `interrupted` without replacing later or terminal state.
 
 **Stop and report if:** the same command produces another run, terminal state regresses, a non-member can read project run status, or either client treats the contract as proof that execution survives Worker failure.
 
@@ -23,3 +23,7 @@
 - The corresponding project-access, skill-tools and teammate-feedback journeys passed in `test-results/container/d20cf00c/results.json`. A stored project conversation run is readable by a current member and returns 404 after membership is removed. The same run access service protects project-task runs; this journey creates a project conversation rather than dispatching a task.
 
 - Container `9e1ebf31` passed the run lifecycle and tour navigation journeys: one run identity survives a tool turn and reopening, identical commands return a duplicate receipt without new messages, changed input returns 409, and all six tour links plus the direct pricing fragment reach their headings. The unrelated Poly and provider-mark journeys failed and remain open.
+
+## Automated evidence — 9 September 2026
+
+- Passing lifecycle tests classify lease ownership loss as interrupted and reject stale completion with 409. Passing coordinator/ConversationManager tests establish takeover fencing before persistence. The new real-D1 event test additionally proves the stale attempt cannot increment the cursor or insert an event.

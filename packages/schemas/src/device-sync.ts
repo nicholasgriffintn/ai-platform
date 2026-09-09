@@ -3,7 +3,6 @@ import z from "zod/v4";
 export const DEVICE_SYNC_PROTOCOL_VERSION = 1 as const;
 export const DEVICE_SYNC_EVENT_RETENTION_LIMIT = 500 as const;
 export const DEVICE_SYNC_GRANT_TTL_SECONDS = 60 as const;
-export const DEVICE_SYNC_COALESCE_WINDOW_MS = 50 as const;
 export const DEVICE_SYNC_MAX_TOPICS_PER_CONNECTION = 32 as const;
 
 export const deviceSyncTopicKindSchema = z.enum([
@@ -152,7 +151,7 @@ export const deviceSyncServerMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("reset"),
     topic: deviceSyncTopicSchema,
     seq: z.number().int().nonnegative(),
-    reason: z.enum(["gap", "retention", "overflow", "unauthorised"]),
+    reason: z.enum(["gap", "retention", "overflow"]),
   }),
   z.object({
     type: z.literal("presence"),

@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createQueryClient, createWrapper } from "../lib/testing/query-client.js";
 import { useActivePet } from "./usePets.js";
 
 const mocks = vi.hoisted(() => ({
@@ -24,32 +23,22 @@ vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   generatePetImage: vi.fn(),
 }));
 
-function createWrapper() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-
-  return function Wrapper({ children }: { children: ReactNode }) {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
-  };
-}
-
 describe("useActivePet", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.fetchUserPets.mockResolvedValue({ pets: [], page: 1, has_more: false });
   });
 
-  it("uses Pip for signed-out temporary conversations", () => {
+  it("ignores retained account pets for signed-out temporary conversations", () => {
     mocks.useAuthStatus.mockReturnValue({
       isAuthenticated: false,
       isLoading: false,
-      userSettings: null,
+      userSettings: { pet_source: "custom", pet_id: "private-account-pet" },
       refreshAuthStatus: vi.fn(),
     });
 
     const { result } = renderHook(() => useActivePet(undefined, true, "temporary"), {
-      wrapper: createWrapper(),
+      wrapper: createWrapper(createQueryClient()),
     });
 
     expect(result.current).toMatchObject({
@@ -69,10 +58,31 @@ describe("useActivePet", () => {
     });
 
     const { result } = renderHook(() => useActivePet(undefined, true, "temporary"), {
-      wrapper: createWrapper(),
+      wrapper: createWrapper(createQueryClient()),
     });
 
     await waitFor(() => expect(result.current.isReady).toBe(true));
     expect(result.current).toMatchObject({ source: "preset", id: "wisp", name: "Wisp" });
+  });
+  it("drops an account preset immediately on sign-out and after remounting", async () => {
+    const auth = {
+      isAuthenticated: true,
+      isLoading: false,
+      userSettings: { pet_source: "preset", pet_id: "ash" },
+      refreshAuthStatus: vi.fn(),
+    };
+
+    mocks.useAuthStatus.mockReturnValue(auth);
+    const wrapper = createWrapper(createQueryClient());
+    const { result, rerender, unmount } = renderHook(() => useActivePet(), { wrapper });
+
+    await waitFor(() => expect(result.current.id).toBe("ash"));
+    mocks.useAuthStatus.mockReturnValue({ ...auth, isAuthenticated: false });
+    rerender();
+    expect(result.current).toMatchObject({ id: "pip", isReady: true });
+    unmount();
+    const reopened = renderHook(() => useActivePet(), { wrapper });
+
+    expect(reopened.result.current).toMatchObject({ id: "pip", isReady: true });
   });
 });

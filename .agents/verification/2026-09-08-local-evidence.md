@@ -73,3 +73,17 @@ Automated evidence:
 - The containers used isolated databases and network namespaces and were removed after testing. Development server ports were not taken over. No vendor credentials, deployment or remote migration was used for these browser checks.
 
 This does not verify the complete macOS Keychain sign-in/relaunch flow or real browser GPU inference. The disposable signed-credential rebuild check and SDK-boundary concurrency tests are narrower evidence. Keep those human checks pending.
+
+## Further batched validation
+
+- API: 2,082 tests passed across 288 files. React: 227 passed. Shared schemas: 274 passed. Shared chat: 141 passed. Workspace components: 18 passed, including missing-credit and aggregation regressions.
+- Containers ff652814 and 2a76cfb7 confirmed bot task refusal, Poly archive, colleague automatic-temperature persistence, retained tools and next-response snooze recovery. Container 39d294fd passed Poly search/open from Files before its web runtime crashed; remaining cases from that run are not passes.
+- Fixed dropped bot tool denials, current-project place navigation, replay of historic Poly navigation, stale Poly page context, and unknown task consumption being displayed as reported zero. Earlier fixes and evidence remain above.
+- Validation remains incomplete. Physical-device, external-provider, deployed-preview and release checks are not certified by these local results.
+
+## App scope and Poly follow-up — 9 September 2026
+
+- Container `a2d40fc4`: four of five journeys passed. The new scope journey checks seven app histories against real API storage, disabled grants, non-members and cross-scope Canvas/Drawing detail reads. Three Poly journeys passed; the remaining Work Files case failed and was repaired.
+- The next focused batch passed both journeys in 23.8 seconds with no retries: Work Files navigation and project Drawing generation with original Sources, separate personal history and unique upload keys on repeated group IDs.
+- Root typechecking passed after the Canvas/Drawing changes. Sixteen targeted API tests passed for fresh Poly instructions; the E2E TypeScript check passed. Final formatting/lint reconciliation remains in progress.
+- Remain on local main. No branches, worktrees, commits, pushes, PRs, deployments or external-provider work were performed for this batch. Validation is still incomplete.

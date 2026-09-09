@@ -9,7 +9,7 @@ import {
   type ThemePreference,
 } from "@ngriffin_uk/polychat-library-chat";
 import { useMediaQuery } from "@ngriffin_uk/polychat-utility-react";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
 import { useThemeStore } from "../state/stores/themeStore.js";
 
@@ -44,7 +44,7 @@ export function useThemeAppearance(): ThemeAppearance {
 export function useApplyTheme(): void {
   const id = useResolvedThemeId();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     applyTheme(document.documentElement, id);
   }, [id]);
 }

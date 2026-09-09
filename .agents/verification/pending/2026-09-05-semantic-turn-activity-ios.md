@@ -10,7 +10,7 @@
 
 - [ ] Run turns that reason, generate text, assemble tool input and execute two tools; confirm the visible phase follows the work and tool messages remain incremental and correctly ordered.
 - [ ] Trigger a question, an approval and a tool failure; confirm the waiting reason and failure state are accurate and persisted tool-result presentation remains authoritative.
-- [ ] Stop a response and confirm the app does not present cancellation as success or replace useful partial output with “No response”.
+- [x] Stop a response and confirm the app does not present cancellation as success or replace useful partial output with “No response”.
 - [ ] Interrupt the network during a stored turn, then background and foreground the app; confirm it shows reconnecting state and restores the persisted assistant/tool messages through existing recovery.
 - [x] Connect to a newer server that emits an unknown activity kind and confirm the turn continues without an error.
 
@@ -19,3 +19,7 @@
 ## Further automated evidence — 8 September 2026
 
 - The six shared-client replay tests pass and `pnpm test:mobile` passes 111 tests plus its UI journey. Reviewed cases cover duplicate/out-of-order events, terminal regression, unknown event kinds and newer protocols. The new native controller regression proves that a newer protocol causes exactly one replay request followed only by snapshots until completion. Event injection uses client-boundary fixtures; no physical-device claim is made.
+
+## Additional automated evidence — 9 September 2026
+
+- The passing native projection and controller tests distinguish cancellation from success and restore the persisted “Partial result” after cross-device cancellation. `conversationManagerAcceptsStopBeforeReportingCancellationComplete` checks the exact run attempt and cancelling acknowledgement.

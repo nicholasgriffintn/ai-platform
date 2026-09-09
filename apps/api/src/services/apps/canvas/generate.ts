@@ -63,6 +63,7 @@ async function executeCanvasGeneration({
   mode,
   modelId,
   provider,
+  projectId,
   user,
 }: {
   context?: ServiceContext;
@@ -71,6 +72,7 @@ async function executeCanvasGeneration({
   mode: CanvasGenerateParams["mode"];
   modelId: string;
   provider?: string;
+  projectId?: string;
   user: IUser;
 }) {
   if (provider === "replicate") {
@@ -84,6 +86,7 @@ async function executeCanvasGeneration({
         replicateWaitSeconds: 0,
       },
       storage: {
+        projectId,
         appId: "canvas",
         itemType: "generation",
         extraData: {
@@ -102,6 +105,7 @@ async function executeCanvasGeneration({
       input,
     },
     storage: {
+      projectId,
       appId: "canvas",
       itemType: "generation",
       extraData: {
@@ -168,6 +172,7 @@ export async function generateCanvasBatch(
           user,
           modelId,
           mode: params.mode,
+          projectId: params.projectId,
           provider: modelConfig.provider,
           input,
         });

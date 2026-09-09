@@ -7,19 +7,21 @@ export interface SyncStore {
   status: SyncStatus;
   presence: Record<string, DeviceSyncPresenceEntry[]>;
   lastEventAt: number;
+  lastEventTopic: string | null;
   setStatus: (status: SyncStatus) => void;
   setPresence: (topic: string, devices: DeviceSyncPresenceEntry[]) => void;
-  noteEvent: () => void;
+  noteEvent: (topic: string) => void;
 }
 
 export const useSyncStore = create<SyncStore>()((set) => ({
   status: "idle",
   presence: {},
   lastEventAt: 0,
+  lastEventTopic: null,
   setStatus: (status) => set({ status }),
   setPresence: (topic, devices) =>
     set((state) => ({ presence: { ...state.presence, [topic]: devices } })),
-  noteEvent: () => set({ lastEventAt: Date.now() }),
+  noteEvent: (topic) => set({ lastEventAt: Date.now(), lastEventTopic: topic }),
 }));
 
 export function isSyncLive(): boolean {

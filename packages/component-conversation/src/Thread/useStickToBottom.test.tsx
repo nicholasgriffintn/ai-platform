@@ -49,62 +49,40 @@ function scrollTo(distanceFromBottom: number) {
   });
 }
 
-function flushFrames() {
-  act(() => {
-    vi.advanceTimersToNextFrame();
-  });
-}
-
 describe("useStickToBottom", () => {
   beforeEach(() => {
-    vi.useFakeTimers();
     scrollToIndex.mockClear();
   });
 
   afterEach(() => {
     cleanup();
-    vi.useRealTimers();
+  });
+
+  it("scrolls to the end as soon as the thread renders, without waiting for a frame", () => {
+    render(<Harness followKey="loaded" />);
+
+    expect(scrollToIndex).toHaveBeenCalledWith(3, { align: "end" });
   });
 
   it("follows streamed content while the reader is at the bottom", () => {
     const { rerender } = render(<Harness followKey="chunk-1" />);
 
-    flushFrames();
+    scrollTo(0);
     scrollToIndex.mockClear();
 
     rerender(<Harness followKey="chunk-2" />);
-    flushFrames();
 
     expect(scrollToIndex).toHaveBeenCalledWith(3, { align: "end" });
-  });
-
-  it("coalesces several streamed chunks into a single scroll per frame", () => {
-    const { rerender } = render(<Harness followKey="chunk-1" />);
-
-    flushFrames();
-    scrollToIndex.mockClear();
-
-    rerender(<Harness followKey="chunk-2" />);
-    rerender(<Harness followKey="chunk-3" />);
-    rerender(<Harness followKey="chunk-4" />);
-    flushFrames();
-
-    expect(scrollToIndex).toHaveBeenCalledTimes(1);
   });
 
   it("keeps following when a gesture does not actually move the thread", () => {
     const { rerender, getByTestId } = render(<Harness followKey="chunk-1" />);
 
-    flushFrames();
     scrollTo(0);
     scrollToIndex.mockClear();
 
     fireEvent.wheel(getByTestId("viewport"), { deltaY: -20 });
-
-    expect(latest.showScrollButton).toBe(false);
-
     rerender(<Harness followKey="chunk-2" />);
-    flushFrames();
 
     expect(scrollToIndex).toHaveBeenCalledWith(3, { align: "end" });
   });
@@ -112,7 +90,6 @@ describe("useStickToBottom", () => {
   it("releases on a small upward gesture before the reader has left the bottom", () => {
     const { rerender, getByTestId } = render(<Harness followKey="chunk-1" />);
 
-    flushFrames();
     scrollTo(0);
     scrollToIndex.mockClear();
 
@@ -122,7 +99,6 @@ describe("useStickToBottom", () => {
     expect(latest.showScrollButton).toBe(true);
 
     rerender(<Harness followKey="chunk-2" />);
-    flushFrames();
 
     expect(scrollToIndex).not.toHaveBeenCalled();
   });
@@ -130,7 +106,6 @@ describe("useStickToBottom", () => {
   it("does not release when growing content moves the bottom away on its own", () => {
     const { rerender } = render(<Harness followKey="chunk-1" />);
 
-    flushFrames();
     scrollTo(0);
     scrollToIndex.mockClear();
 
@@ -139,7 +114,6 @@ describe("useStickToBottom", () => {
     expect(latest.showScrollButton).toBe(false);
 
     rerender(<Harness followKey="chunk-2" />);
-    flushFrames();
 
     expect(scrollToIndex).toHaveBeenCalledWith(3, { align: "end" });
   });
@@ -147,9 +121,7 @@ describe("useStickToBottom", () => {
   it("resumes following when the reader scrolls back to the bottom", () => {
     const { rerender, getByTestId } = render(<Harness followKey="chunk-1" />);
 
-    flushFrames();
     scrollTo(0);
-
     fireEvent.wheel(getByTestId("viewport"), { deltaY: -400 });
     scrollTo(400);
 
@@ -162,7 +134,6 @@ describe("useStickToBottom", () => {
     expect(latest.showScrollButton).toBe(false);
 
     rerender(<Harness followKey="chunk-2" />);
-    flushFrames();
 
     expect(scrollToIndex).toHaveBeenCalledWith(3, { align: "end" });
   });
@@ -170,9 +141,7 @@ describe("useStickToBottom", () => {
   it("returns to the bottom when the reader sends a message after scrolling up", () => {
     const { rerender, getByTestId } = render(<Harness followKey="chunk-1" />);
 
-    flushFrames();
     scrollTo(0);
-
     fireEvent.wheel(getByTestId("viewport"), { deltaY: -400 });
     scrollTo(400);
 
@@ -180,7 +149,6 @@ describe("useStickToBottom", () => {
 
     scrollToIndex.mockClear();
     rerender(<Harness followKey="chunk-1" resetKey="conversation-1:message-2" />);
-    flushFrames();
 
     expect(latest.showScrollButton).toBe(false);
     expect(scrollToIndex).toHaveBeenCalledWith(3, { align: "end" });

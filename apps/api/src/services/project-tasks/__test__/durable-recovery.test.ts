@@ -114,20 +114,61 @@ describe("durable project-task run recovery", () => {
     expect(threadLease.release).toHaveBeenCalledOnce();
   });
 
-  it("rehydrates a persisted waiting interaction and preserves its replay resources", async () => {
-    const current = run("awaiting_input");
-    const { context, executionLease } = setup(current);
+  it.each(["awaiting_input", "awaiting_approval"] as const)(
+    "rehydrates %s and preserves its replay resources",
+    async (status) => {
+      const current = run(status);
+      const { context, executionLease } = setup(current);
 
-    const recovered = await recoverRedeliveredProjectTaskRun({
-      context,
-      conversationId: current.conversationId,
-      executionLease,
-      run: current,
+      const recovered = await recoverRedeliveredProjectTaskRun({
+        context,
+        conversationId: current.conversationId,
+        executionLease,
+        run: current,
+      });
+
+      expect(recovered).toEqual(current);
+      expect(context.repositories.conversationRuns.transition).not.toHaveBeenCalled();
+      expect(mocks.finishUsageReservation).toHaveBeenCalledOnce();
+      expect(mocks.scheduleComposioConnectorRunCleanup).not.toHaveBeenCalled();
+    },
+  );
+
+  it("marks an expired waiting interaction failed without resuming provider work", async () => {
+    const current = run("awaiting_input");
+    const failed: ChatRun = { ...current, status: "failed" };
+    const { context, executionLease } = setup(current, failed);
+
+    vi.mocked(context.repositories.messages.getLatestPendingToolMessage).mockResolvedValueOnce({
+      id: "interaction-1",
+      name: "ask_user",
+      created_at: "2000-01-01T00:00:00.000Z",
+      data: { humanInTheLoop: { status: "pending" } },
     });
 
-    expect(recovered).toEqual(current);
-    expect(context.repositories.conversationRuns.transition).not.toHaveBeenCalled();
-    expect(mocks.finishUsageReservation).toHaveBeenCalledOnce();
-    expect(mocks.scheduleComposioConnectorRunCleanup).not.toHaveBeenCalled();
+    await expect(
+      recoverRedeliveredProjectTaskRun({
+        context,
+        conversationId: current.conversationId,
+        executionLease,
+        run: current,
+      }),
+    ).resolves.toEqual(failed);
+    expect(context.repositories.messages.updateMessage).toHaveBeenCalledWith(
+      current.conversationId,
+      "interaction-1",
+      expect.objectContaining({
+        status: "resolved",
+        data: expect.objectContaining({
+          humanInTheLoop: expect.objectContaining({
+            status: "expired",
+            requires_user_action: false,
+          }),
+        }),
+      }),
+    );
+    expect(context.repositories.conversationRuns.transition).toHaveBeenCalledWith(
+      expect.objectContaining({ runId: current.id, attempt: current.attempt, status: "failed" }),
+    );
   });
 });

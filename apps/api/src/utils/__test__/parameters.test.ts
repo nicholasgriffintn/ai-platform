@@ -240,6 +240,23 @@ describe("calculateReasoningBudget", () => {
 });
 
 describe("createCommonParameters", () => {
+  it("uses Workers AI model capacity instead of the provider's short output default", () => {
+    const params: ChatCompletionParameters = {
+      model: "@cf/openai/gpt-oss-20b",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: "Inspect the repository" }],
+    };
+    const model = { matchingModel: params.model, provider: "workers-ai", maxTokens: 16_384 };
+
+    expect(createCommonParameters(params, model, "workers-ai").max_tokens).toBe(16_384);
+    expect(
+      createCommonParameters({ ...params, max_tokens: 2_048 }, model, "workers-ai").max_tokens,
+    ).toBe(2_048);
+    expect(
+      createCommonParameters({ ...params, max_tokens: 32_768 }, model, "workers-ai").max_tokens,
+    ).toBe(16_384);
+  });
+
   const hybridModel = {
     matchingModel: "mistral-small-latest",
     provider: "mistral",
@@ -345,7 +362,7 @@ describe("resolveEffectiveMaxTokens", () => {
     expect(() => resolveRequiredMaxTokens({}, undefined)).toThrow("no declared output capacity");
   });
 
-  it.each(["openai", "workers-ai", "mistral", "bedrock"])(
+  it.each(["openai", "mistral", "bedrock"])(
     "omits unsolicited generation settings for %s",
     (provider) => {
       const body = createCommonParameters(

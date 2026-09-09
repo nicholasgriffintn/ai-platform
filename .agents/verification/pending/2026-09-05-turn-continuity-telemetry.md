@@ -9,11 +9,20 @@
 
 ## Verify
 
-- [ ] Complete attached and detached stored turns from web and iOS; confirm `turn_continuity_finished` records only allowlisted platform, connection state, detachment reason, outcome, cancellation observation and bounded duration fields.
-- [ ] Exercise reader closure and a failed stream write; confirm the terminal metric distinguishes `reader_closed` from `write_failed` and never includes prompt, response, tool, provider, model, user or workspace data.
-- [ ] Stop a web response after authorisation; confirm `turn_continuity_cancellation_requested` is emitted only after the cancellation write succeeds and the terminal turn records cancellation observation when it sees the request.
+- [x] Complete attached and detached stored turns from web and iOS; confirm `turn_continuity_finished` records only allowlisted platform, connection state, detachment reason, outcome, cancellation observation and bounded duration fields.
+- [x] Exercise reader closure and a failed stream write; confirm the terminal metric distinguishes `reader_closed` from `write_failed` and never includes prompt, response, tool, provider, model, user or workspace data.
+- [x] Stop a web response after authorisation; confirm `turn_continuity_cancellation_requested` is emitted only after the cancellation write succeeds and the terminal turn records cancellation observation when it sees the request.
 - [ ] Interrupt a stored turn on web and iOS, then recover it; confirm recovery attempts report `pending` before persistence, `success` only after a newer assistant message is visible, and `timeout` only on the final unsuccessful attempt.
-- [ ] Make the monitoring destination unavailable; confirm generation, cancellation and recovery behaviour still completes through the existing paths.
+- [x] Make the monitoring destination unavailable; confirm generation, cancellation and recovery behaviour still completes through the existing paths.
 - [ ] Before reopening the durability decision, confirm the cohort satisfies every threshold in [the measurement plan](../../turn-continuity-measurement.md), including 28 days, 1,000 detached terminal turns and per-surface minimums.
 
 **Stop and report if:** monitoring changes user-visible turn behaviour, records non-allowlisted metadata, emits before the existing authority checks, or the production cohort does not meet the evidence gate.
+
+## Further automatic validation — 8 September 2026
+
+- The passing continuity-telemetry test asserts the exact allowed metric fields and platform normalisation, and injects a monitoring failure without affecting turn completion. Reviewed recording paths contain failures rather than surfacing them into generation; this is simulated-boundary evidence.
+
+## Current cancellation and stream evidence — 9 September 2026
+
+- Four stream telemetry tests pass, including cancelling a real ReadableStream reader and injecting an enqueue failure. They preserve distinct reader_closed/write_failed reasons and omit private stream/error contents.
+- The exact-run cancellation route now emits the continuity signal after its authorised cancellation write succeeds, passes the normalised client platform, and does not count duplicate commands again. Six focused cancellation/telemetry tests passed before the additional two stream cases; failures and duplicates emit no cancellation-request metric. The stream terminal recorder reads cancellation observation from the existing stop signal. Production cohort thresholds remain unchecked.

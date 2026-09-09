@@ -1,11 +1,12 @@
 import type { ConversationHandle } from "@ngriffin_uk/polychat-schemas";
 
 import type { ConversationHandleRow } from "~/lib/database/schema";
+import type { IEnv } from "~/types";
 import { formatConversationHandle } from "~/utils/conversation-handles";
 
 import { BaseRepository } from "./BaseRepository";
 
-export class ConversationHandleRepository extends BaseRepository {
+export class ConversationHandleRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async listForUser(userId: number): Promise<ConversationHandle[]> {
     const rows = await this.runQuery<ConversationHandleRow>(
       `SELECT h.* FROM conversation_handle h

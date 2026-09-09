@@ -12,8 +12,8 @@
 - [x] Hire with a role and extra instructions; confirm the brief keeps the role's text and ends with your own. Hire with a description and a name only; confirm it is created with an empty tool list.
 - [x] Hire in a project. Confirm the teammate is owned by that workspace and is attached to the project without a further step.
 - [x] Set an existing teammate to bot in the editor and save. Confirm task and memory tools disappear from its saved tools and cannot be re-enabled while it is a bot.
-- [ ] Run a bot teammate and ask it to file a task. Confirm it reports that it cannot rather than creating one, and that no task appears in the project.
-- [ ] Reopen a teammate created before this change. Confirm it reads as a colleague and that saving it does not drop any tool it already had.
+- [x] Run a bot teammate and ask it to file a task. Confirm it reports that it cannot rather than creating one, and that no task appears in the project.
+- [x] Reopen a teammate created before this change. Confirm it reads as a colleague and that saving it does not drop any tool it already had.
 
 **Stop and report if:** a bot creates a project task or stores a memory, or saving an unchanged colleague removes tools from it.
 
@@ -30,3 +30,7 @@
 - The corresponding project-access, skill-tools and teammate-feedback journeys passed in `test-results/container/d20cf00c/results.json`. The tests use separate authenticated sessions, real persistence and current server authority; project restoration additionally checks the audit actor, output and revision identifiers.
 
 - Container `35dc5b98` passed the bot editor and legacy note capture journeys. Forbidden tools disappear, stay absent after saving and reopening, and the older tab-source title and link remain visible. The separate run-lifecycle journey failed and supplies no completed check-off.
+
+- Container `ff652814` confirms the provider-requested bot task is refused without changing project tasks, and Poly archives the underlying conversation without replacing it. The request context now preserves the bot deny list; 11 API boundary tests also pass. The two separate navigation/snooze failures do not supply check-offs.
+
+- Container `2a76cfb7` creates an automatic colleague, saves it unchanged, sets temperature to 0.5, clears it, and reopens after every save; both original write tools persist. Migration 0032 supplies the colleague default for pre-existing rows; that migration compatibility is source evidence, while persistence is a real browser/API journey.

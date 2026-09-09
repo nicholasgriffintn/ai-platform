@@ -14,6 +14,10 @@ import { generateImageFromDrawing } from "~/services/apps/drawing/create";
 import { getDrawingDetails } from "~/services/apps/drawing/get-details";
 import { guessDrawingFromImage } from "~/services/apps/drawing/guess";
 import { listDrawings } from "~/services/apps/drawing/list";
+import {
+  projectScopeQuerySchema,
+  requireOptionalProjectCapabilityAccess,
+} from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
@@ -38,11 +42,19 @@ addRoute(app, "get", "/", {
     401: { description: "Unauthorized", schema: errorResponseSchema },
   },
   auth: true,
+  querySchema: projectScopeQuerySchema,
   middleware: [requirePlan("pro")],
-  handler: async ({ serviceContext, user }) => {
+  handler: async ({ query, serviceContext, user }) => {
     try {
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-image-studio",
+      );
       const drawings = await listDrawings({
         context: serviceContext,
+        projectId: query.projectId,
         userId: user.id,
       });
 
@@ -69,11 +81,19 @@ addRoute(app, "get", "/:id", {
     404: { description: "Drawing not found", schema: errorResponseSchema },
   },
   auth: true,
+  querySchema: projectScopeQuerySchema,
   middleware: [requirePlan("pro")],
-  handler: async ({ params, serviceContext, user }) => {
+  handler: async ({ params, query, serviceContext, user }) => {
     try {
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-image-studio",
+      );
       const drawing = await getDrawingDetails({
         context: serviceContext,
+        projectId: query.projectId,
         userId: user.id,
         drawingId: params.id,
       });
@@ -100,16 +120,21 @@ addRoute(app, "post", "/", {
     200: { description: "Response", schema: apiResponseSchema },
   },
   auth: true,
+  querySchema: projectScopeQuerySchema,
   middleware: [requirePlan("pro")],
-  handler: async ({ raw, serviceContext, user }) => {
-    const body = raw.req.valid("form" as never) as {
-      drawing: File;
-      drawingId?: string;
-    };
+  handler: async ({ raw, query, serviceContext, user }) => {
+    const body = drawingSchema.parse(await raw.req.parseBody());
 
     try {
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-image-studio",
+      );
       const response = await generateImageFromDrawing({
         context: serviceContext,
+        projectId: query.projectId,
         env: serviceContext.env,
         request: body,
         user,
@@ -145,13 +170,21 @@ addRoute(app, "post", "/guess", {
     200: { description: "Response", schema: apiResponseSchema },
   },
   auth: true,
+  querySchema: projectScopeQuerySchema,
   middleware: [requirePlan("pro")],
-  handler: async ({ raw, serviceContext, user }) => {
-    const body = raw.req.valid("form" as never);
+  handler: async ({ raw, query, serviceContext, user }) => {
+    const body = guessDrawingSchema.parse(await raw.req.parseBody());
 
     try {
+      await requireOptionalProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-image-studio",
+      );
       const response = await guessDrawingFromImage({
         context: serviceContext,
+        projectId: query.projectId,
         env: serviceContext.env,
         request: body,
         user,

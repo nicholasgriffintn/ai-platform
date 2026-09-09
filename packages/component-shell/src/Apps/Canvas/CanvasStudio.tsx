@@ -5,8 +5,8 @@ import {
 
 import { useCanvasStudio } from "./useCanvasStudio.js";
 
-export function CanvasStudio() {
-  const canvas = useCanvasStudio();
+export function CanvasStudio({ projectId }: { projectId?: string }) {
+  const canvas = useCanvasStudio({ projectId });
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">

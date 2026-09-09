@@ -18,8 +18,8 @@
 - [ ] Open `/work/<ws>/projects/<p>/sources` and `/outputs/<id>`; confirm they land on Files › Given and Files › Made respectively, and that `/files` lists personal Given and Made.
 - [ ] Open `/work/attention` and confirm it redirects to `/attention`, which shows project attention items and a "Your background tasks" section for a signed-in user.
 - [ ] Open `/profile?tab=sources` and `/profile?tab=tasks`; confirm they redirect to Files and Attention, and that the remaining tabs render under the four group headings.
-- [ ] Open Poly (Ask Poly or ⌘J) while signed in with cloud storage, ask "Archive the conversation I have open", and confirm the open conversation is archived and disappears from the sidebar; the underlying page keeps its own conversation.
-- [ ] Ask Poly "Open Attention" and confirm the page navigates while the overlay stays open; ask it to find a conversation by title and open it.
+- [x] Open Poly (Ask Poly or ⌘J) while signed in with cloud storage, ask "Archive the conversation I have open", and confirm the open conversation is archived and disappears from the sidebar; the underlying page keeps its own conversation.
+- [x] Ask Poly "Open Attention" and confirm the page navigates while the overlay stays open; ask it to find a conversation by title and open it.
 - [ ] Confirm Poly's conversation does not appear in the Chat sidebar list or in ⌘K search, and that a signed-out or local-only session sees the explanatory state instead of the composer.
 - [x] In an ordinary chat, confirm `find_places` and the other meta tools are not offered or callable.
 
@@ -33,3 +33,7 @@
 ## Further verified evidence — 8 September 2026
 
 - Container `379708a8` passed both Poly and Discover regressions. Poly preserves the underlying draft and refuses a provider-requested save_skill at the execution boundary; the shared scope filter and supplied-tool regression cover article/recording exclusions and the reverse non-meta restriction. Discover now includes every provider rather than hiding those after the first twelve.
+
+- Container `ff652814` confirms the provider-requested bot task is refused without changing project tasks, and Poly archives the underlying conversation without replacing it. The request context now preserves the bot deny list; 11 API boundary tests also pass. The two separate navigation/snooze failures do not supply check-offs.
+
+- Container 39d294fd passed finding and opening a conversation by title while keeping Poly open. Its mode-navigation journey also passed Chat Files and Attention before the container web runtime crashed during the later Work request; that Work result remains unverified.

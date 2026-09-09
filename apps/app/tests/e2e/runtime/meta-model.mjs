@@ -1,13 +1,37 @@
 export function resolveMetaModelTool(body, prompt) {
-  const system = (body.messages ?? [])
-    .filter((message) => message.role === "system" && typeof message.content === "string")
-    .map((message) => message.content)
-    .join("\n");
+  const system = [
+    body.instructions ?? "",
+    ...(body.messages ?? [])
+      .filter((message) => message.role === "system" || message.role === "developer")
+      .map((message) =>
+        typeof message.content === "string"
+          ? message.content
+          : (message.content ?? []).map((part) => part.text ?? "").join("\n"),
+      ),
+  ].join("\n");
   const mode = system.includes("<mode>Work</mode>") ? "work" : "chat";
   let name;
   let args;
 
-  if (prompt === "Open Files for this release") {
+  if (prompt === "Find the release navigation conversation") {
+    name = "find_places";
+    args = { query: "Release navigation evidence" };
+  } else if (prompt === "Open the release conversation you found") {
+    const found = (body.messages ?? []).findLast(
+      (message) =>
+        message.role === "tool" &&
+        typeof message.content === "string" &&
+        message.content.includes("Release navigation evidence"),
+    );
+    const conversationId = found?.content.match(/Release navigation evidence \(([^)]+)\)/)?.[1];
+
+    if (!conversationId) {
+      return null;
+    }
+
+    name = "open_place";
+    args = { target: { kind: "conversation", conversationId } };
+  } else if (prompt === "Open Files for this release") {
     name = "open_place";
     args = { target: { kind: "place", place: "files", mode } };
   } else if (prompt === "Open Attention for this release") {
@@ -32,7 +56,7 @@ export function resolveMetaModelTool(body, prompt) {
   }
 
   return {
-    id: `e2e-${name}`,
+    id: `e2e-${name}-${body.messages?.length ?? 0}`,
     type: "function",
     function: { name, arguments: JSON.stringify(args) },
   };

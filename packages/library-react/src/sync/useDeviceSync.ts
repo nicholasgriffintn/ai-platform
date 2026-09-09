@@ -2,6 +2,7 @@ import { getLocalChatScope } from "@ngriffin_uk/polychat-library-chat";
 import {
   CHATS_QUERY_KEY,
   DeviceSyncSocket,
+  setActiveSyncSocket,
   useChatStore,
   useSyncStore,
 } from "@ngriffin_uk/polychat-library-client";
@@ -10,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
 import { applySyncEvent } from "./bindings.js";
+import { createInvalidationQueue } from "./invalidation-queue.js";
 
 export function useDeviceSync(): void {
   const queryClient = useQueryClient();
@@ -25,24 +27,28 @@ export function useDeviceSync(): void {
 
     const localScope = getLocalChatScope(userId);
     const store = useSyncStore.getState();
+    const queue = createInvalidationQueue(queryClient);
     const socket = new DeviceSyncSocket({
       onEvent: (event) => {
-        applySyncEvent({ queryClient, localScope }, event);
-        store.noteEvent();
+        applySyncEvent({ queryClient, localScope, invalidate: queue.push }, event);
+        store.noteEvent(event.topic);
       },
       onReset: () => {
-        void queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] });
+        queue.push([CHATS_QUERY_KEY, "remote"]);
       },
       onPresence: (topic, devices) => store.setPresence(topic, devices),
       onStatus: (status) => store.setStatus(status),
     });
 
     socketRef.current = socket;
+    setActiveSyncSocket(socket);
     socket.start();
     socket.subscribe([buildDeviceSyncTopic("user", userId)]);
 
     return () => {
       socket.stop();
+      queue.dispose();
+      setActiveSyncSocket(undefined);
       socketRef.current = undefined;
     };
   }, [isAuthenticated, queryClient, userId]);
