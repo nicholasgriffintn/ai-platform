@@ -1,4 +1,8 @@
-import { metricsParamsSchema, statusResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  DEVICE_SYNC_DEVICE_ID_HEADER,
+  metricsParamsSchema,
+  statusResponseSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { Scalar } from "@scalar/hono-api-reference";
 import { withSentry } from "@sentry/cloudflare";
 import { type Context, Hono } from "hono";
@@ -60,6 +64,7 @@ app.use(
       "X-CSRF-Token",
       "x-captcha-token",
       "X-Notification-Installation",
+      DEVICE_SYNC_DEVICE_ID_HEADER,
     ],
     credentials: true,
     maxAge: 86400,
