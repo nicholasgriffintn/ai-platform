@@ -42,9 +42,12 @@ bundles on macOS, Windows and Linux runners and uploads one archive per platform
 - `polychat-desktop-<version>-windows-x86_64.zip` — the NSIS installer and the MSI.
 - `polychat-desktop-<version>-linux-x86_64.zip` — the AppImage and the Debian package.
 
-When `TAURI_SIGNING_PRIVATE_KEY` is set the build also produces signed update artefacts alongside
-the archives, using `src-tauri/tauri.updater.conf.json`. Without the key the archives still build
-and the release still publishes; only automatic updates are unavailable.
+The build always signs. It needs `TAURI_SIGNING_PRIVATE_KEY` and its password for the update
+artefacts, which it writes alongside the archives using `src-tauri/tauri.updater.conf.json`, and
+the Apple secrets (`APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`,
+`APPLE_API_KEY`, `APPLE_API_ISSUER`, `APPLE_API_KEY_P8`) to sign and notarise the macOS bundle.
+Both callers pass `secrets: inherit`; a missing secret fails the build rather than producing an
+unsigned artefact.
 
 Pull requests touching `apps/desktop` run **Desktop**: renderer typecheck and tests, then
 `cargo fmt --check`, `cargo clippy -- -D warnings` and `cargo test`, then the same three-platform
