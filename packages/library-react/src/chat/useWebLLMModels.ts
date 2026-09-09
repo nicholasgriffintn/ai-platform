@@ -8,10 +8,6 @@ interface UseWebLLMModelsOptions {
   enabled?: boolean;
 }
 
-/**
- * A host with its own model runtimes runs them instead: the browser engine is the fallback for
- * surfaces that have no other way to keep a conversation on the machine.
- */
 export function useWebLLMModels({ enabled = true }: UseWebLLMModelsOptions = {}) {
   const [models, setModels] = useState<ModelConfig>(() =>
     deviceModelSource() ? {} : getCachedWebLLMModels(),

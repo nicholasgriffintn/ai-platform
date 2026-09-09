@@ -12,6 +12,10 @@ export interface ModelGroupingItem {
 export const FEATURED_MODEL_GROUP_KEY = "featured";
 export const AGENT_MODEL_GROUP_KEY = "agents";
 
+export function modelGroupKey(model: Pick<ModelGroupingItem, "provider" | "kind">): string {
+  return model.kind === "agent" ? AGENT_MODEL_GROUP_KEY : model.provider || "unknown";
+}
+
 const BEDROCK_PROVIDER = "bedrock";
 const BEDROCK_REGION_LABELS = {
   default: "Default",
@@ -234,7 +238,7 @@ export function groupModelsByProvider<T extends ModelGroupingItem>(
       getModelGroupingDisplayName(left).localeCompare(getModelGroupingDisplayName(right)),
     );
   const groupedByProvider = models.reduce<Record<string, T[]>>((groups, model) => {
-    const provider = model.kind === "agent" ? AGENT_MODEL_GROUP_KEY : model.provider || "unknown";
+    const provider = modelGroupKey(model);
 
     groups[provider] ??= [];
     groups[provider].push(model);

@@ -4,6 +4,7 @@ import {
   FEATURED_MODEL_GROUP_KEY,
   AGENT_MODEL_GROUP_KEY,
   groupModelsByProvider,
+  modelGroupKey,
   partitionDeprecatedModelEntries,
   type ModelGroupingItem,
 } from "./modelGrouping.js";
@@ -67,5 +68,10 @@ describe("model grouping", () => {
     expect(groupModelsByProvider([agent], {})).toMatchObject([
       { key: AGENT_MODEL_GROUP_KEY, label: "Agents" },
     ]);
+  });
+
+  it("returns the agent group key for agent models regardless of provider", () => {
+    expect(modelGroupKey({ kind: "agent", provider: "codex" })).toBe(AGENT_MODEL_GROUP_KEY);
+    expect(modelGroupKey({ kind: "model", provider: "openai" })).toBe("openai");
   });
 });

@@ -12,6 +12,7 @@ import {
   AGENT_MODEL_GROUP_KEY,
   getSelectedModelProvider,
   groupModelsByProvider,
+  modelGroupKey,
   partitionDeprecatedModelEntries,
   type ModelProviderListEntry,
   type RegionalModelListEntry,
@@ -162,6 +163,9 @@ export function ModelsList({
   const selectedDeprecatedModel = selectedId
     ? models.find((model) => model.id === selectedId && model.deprecated)
     : undefined;
+  const selectedDeprecatedGroupKey = selectedDeprecatedModel
+    ? modelGroupKey(selectedDeprecatedModel)
+    : undefined;
   const showDeprecatedForSelectedProvider =
     showDeprecatedByProvider[selectedProviderEntry?.key || ""] ?? false;
   const searchResultEntries = providerEntries.filter(
@@ -174,21 +178,21 @@ export function ModelsList({
     : visibleModels.length;
 
   useEffect(() => {
-    if (!selectedDeprecatedModel?.provider) {
+    if (!selectedDeprecatedGroupKey) {
       return;
     }
 
     setShowDeprecatedByProvider((prev) => {
-      if (prev[selectedDeprecatedModel.provider]) {
+      if (prev[selectedDeprecatedGroupKey]) {
         return prev;
       }
 
       return {
         ...prev,
-        [selectedDeprecatedModel.provider]: true,
+        [selectedDeprecatedGroupKey]: true,
       };
     });
-  }, [selectedDeprecatedModel?.provider, selectedId]);
+  }, [selectedDeprecatedGroupKey, selectedId]);
 
   useEffect(() => {
     if (isSearchActive || !selectedId) {

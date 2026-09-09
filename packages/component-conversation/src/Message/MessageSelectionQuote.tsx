@@ -3,7 +3,7 @@ import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-ty
 import type { ChatMessageSelection } from "@ngriffin_uk/polychat-schemas";
 import { Quote } from "lucide-react";
 import type { ReactNode } from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface MessageSelectionQuoteProps {
   children: ReactNode;
@@ -82,6 +82,33 @@ export function MessageSelectionQuote({ children, message, onQuote }: MessageSel
     window.getSelection()?.removeAllRanges();
     setActiveSelection(null);
   }, [activeSelection, message.id, message.role, message.run_id, onQuote]);
+
+  useEffect(() => {
+    if (!activeSelection) {
+      return;
+    }
+
+    const handleSelectionChange = () => {
+      const browserSelection = window.getSelection();
+      const root = rootRef.current;
+
+      if (
+        !browserSelection ||
+        browserSelection.isCollapsed ||
+        !root ||
+        !root.contains(browserSelection.anchorNode) ||
+        !root.contains(browserSelection.focusNode)
+      ) {
+        setActiveSelection(null);
+      }
+    };
+
+    document.addEventListener("selectionchange", handleSelectionChange);
+
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange);
+    };
+  }, [activeSelection]);
 
   return (
     <div ref={rootRef} className="relative" onMouseUp={handleMouseUp}>
