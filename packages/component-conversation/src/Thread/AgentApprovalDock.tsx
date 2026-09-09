@@ -1,30 +1,30 @@
 import { AgentApprovalCard } from "@ngriffin_uk/polychat-component-content";
-import {
-  selectPendingAgentApprovals,
-  useAgentApprovalStore,
-} from "@ngriffin_uk/polychat-library-client";
+import type { AgentApproval, AgentApprovalDecision } from "@ngriffin_uk/polychat-schemas";
 
-interface AgentApprovalDockProps {
-  conversationId: string | undefined;
+export interface ConversationAgentApproval {
+  approval: AgentApproval;
+  answer: (decision: AgentApprovalDecision) => Promise<void>;
 }
 
-export function AgentApprovalDock({ conversationId }: AgentApprovalDockProps) {
-  const pendingApprovals = useAgentApprovalStore(selectPendingAgentApprovals(conversationId));
-  const resolveApproval = useAgentApprovalStore((state) => state.resolveApproval);
+export interface ConversationAgentApprovals {
+  pending: ConversationAgentApproval[];
+  resolve: (requestId: string) => void;
+}
 
-  if (!conversationId || pendingApprovals.length === 0) {
+export function AgentApprovalDock({ pending, resolve }: ConversationAgentApprovals) {
+  if (pending.length === 0) {
     return null;
   }
 
   return (
     <div className="space-y-2">
-      {pendingApprovals.map((pending) => (
+      {pending.map((entry) => (
         <AgentApprovalCard
-          key={pending.approval.requestId}
-          approval={pending.approval}
+          key={entry.approval.requestId}
+          approval={entry.approval}
           onDecision={async (decision) => {
-            await pending.answer(decision);
-            resolveApproval(conversationId, pending.approval.requestId);
+            await entry.answer(decision);
+            resolve(entry.approval.requestId);
           }}
         />
       ))}

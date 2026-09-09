@@ -14,8 +14,10 @@ import {
   createChatWelcome,
   useChats,
   useCancelDelegations,
+  useConversationAgentApprovals,
   useConversationRetention,
   useConversationRoute,
+  useConversationScope,
 } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
@@ -40,6 +42,8 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const { data: conversations, isLoading: areConversationsLoading } = useChats();
+  const { currentConversationId } = useConversationScope();
+  const agentApprovals = useConversationAgentApprovals(currentConversationId);
   const { mode: retentionMode } = useConversationRetention(modeConfig?.requestOptions);
   const isTemporary = !completionId && retentionMode.retention === "temporary";
   const [welcomeSeed, setWelcomeSeed] = useState<number | null>(null);
@@ -76,6 +80,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
   const effectiveModeConfig = useMemo<ThreadModeConfig>(
     () => ({
       ...modeConfig,
+      agentApprovals,
       onToolInteraction: async (toolName, action, data) => {
         if (toolName === "delegate" && data.action === "open") {
           if (typeof data.childConversationId === "string") {
@@ -98,7 +103,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
         return (await modeConfig?.onToolInteraction?.(toolName, action, data)) ?? false;
       },
     }),
-    [cancelDelegations, modeConfig],
+    [agentApprovals, cancelDelegations, modeConfig],
   );
 
   return (

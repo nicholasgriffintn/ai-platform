@@ -5,6 +5,7 @@ export * from "./hooks/use-openfeature.js";
 export * from "./hooks/use-posthog-client.js";
 export * from "./hooks/use-track-event.js";
 export * from "./hooks/useActivity.js";
+export * from "./hooks/useAgentApprovals.js";
 export * from "./hooks/useApiKeys.js";
 export * from "./hooks/useArticles.js";
 export * from "./hooks/useArtifactPanel.js";

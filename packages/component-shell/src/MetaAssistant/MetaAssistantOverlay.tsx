@@ -14,6 +14,7 @@ import {
   type ConversationScope,
   ConversationScopeProvider,
   useChat,
+  useConversationAgentApprovals,
   useLocalComposerDraft,
   useLocalConversationScope,
   useTrackEvent,
@@ -72,6 +73,7 @@ function MetaAssistantThread({
   const openConversationId = useChatStore((state) => state.currentConversationId);
   const draft = useLocalComposerDraft();
   const { data: conversation } = useChat(scope.currentConversationId);
+  const agentApprovals = useConversationAgentApprovals(scope.currentConversationId);
   const uiContext = useMemo(
     () => buildMetaAssistantUiContext(pathname, openConversationId),
     [openConversationId, pathname],
@@ -85,6 +87,7 @@ function MetaAssistantThread({
         <div className="relative min-h-0 flex-1 overflow-hidden">
           <ConversationThread
             modeConfig={{
+              agentApprovals,
               requestOptions: { meta_assistant: { ui_context: uiContext } },
               welcomeTitle: "This is Poly.",
               welcomeDescription:

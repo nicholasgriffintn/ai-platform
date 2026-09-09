@@ -66,7 +66,7 @@ import { ConversationComposerDock, ConversationMessageColumn } from "../Conversa
 import { GoalStatusCard } from "../GoalStatusCard.js";
 import { PetPerch } from "../PetPerch.js";
 import { WELCOME_PET_SIZE, WelcomeScreen } from "../WelcomeScreen.js";
-import { AgentApprovalDock } from "./AgentApprovalDock.js";
+import { AgentApprovalDock, type ConversationAgentApprovals } from "./AgentApprovalDock.js";
 import {
   ChatInput,
   type ChatInputHandle,
@@ -133,6 +133,7 @@ export interface ThreadModeConfig {
   pendingUserQuestions?: UserQuestionSet | null;
   onFileAsTask?: (objective: string) => Promise<boolean>;
   composerBanner?: ReactNode;
+  agentApprovals?: ConversationAgentApprovals;
   runSteering?: ConversationRunSteering;
   onToolInteraction?: (
     toolName: string,
@@ -946,7 +947,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           currentConversation.latest_run.status === "interrupted") ? (
           <ChatRunStatusBanner run={currentConversation.latest_run} />
         ) : null}
-        <AgentApprovalDock conversationId={currentConversationId} />
+        {modeConfig?.agentApprovals ? <AgentApprovalDock {...modeConfig.agentApprovals} /> : null}
         {modeConfig?.composerBanner}
         <ChatInput
           goalState={goalState}
