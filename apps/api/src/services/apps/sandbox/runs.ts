@@ -327,7 +327,7 @@ export async function requestSandboxRunControlAction(params: {
 
   if (
     (runRecord.run.status === "completed" || runRecord.run.status === "failed") &&
-    !(input.action === "extend_inspection" && inspectionActive)
+    !((input.action === "extend_inspection" || input.action === "cancel") && inspectionActive)
   ) {
     throw new AssistantError(
       input.action === "extend_inspection"
@@ -363,7 +363,10 @@ export async function requestSandboxRunControlAction(params: {
     (input.action === "pause" && current.state === "running") ||
     (input.action === "resume" && current.state === "paused") ||
     (input.action === "cancel" &&
-      (current.state === "queued" || current.state === "running" || current.state === "paused")) ||
+      (current.state === "queued" ||
+        current.state === "running" ||
+        current.state === "paused" ||
+        current.state === "inspection")) ||
     (input.action === "extend_inspection" &&
       inspectionActive &&
       current.inspectionExtended !== true &&

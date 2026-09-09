@@ -5,6 +5,21 @@ const INLINE_SECRET_ASSIGNMENT =
 const INLINE_AUTHORIZATION_VALUE = /\b(?:Bearer|Token|Key)\s+[A-Za-z0-9._~+/=-]{8,}/i;
 const RECOGNISABLE_TOKEN = /\b(?:sk|gh[pousr])_[A-Za-z0-9_-]{12,}\b/;
 
+const SHELL_CHAINING_OPERATOR_PATTERN = /&&|\|\||;|\||(^|\s)&(\s|$)/;
+const SHELL_EVALUATION_OPERATOR_PATTERN = /\$\(|`/;
+
+export function hasBlockedShellChainingOperators(command: string): boolean {
+  return SHELL_CHAINING_OPERATOR_PATTERN.test(command);
+}
+
+export function hasBlockedShellEvaluationOperators(command: string): boolean {
+  return SHELL_EVALUATION_OPERATOR_PATTERN.test(command);
+}
+
+export function hasUnsafeShellOperators(command: string): boolean {
+  return hasBlockedShellChainingOperators(command) || hasBlockedShellEvaluationOperators(command);
+}
+
 export const sandboxCommandSchema = z
   .string()
   .trim()

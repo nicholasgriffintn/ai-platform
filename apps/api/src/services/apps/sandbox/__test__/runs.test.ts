@@ -199,6 +199,32 @@ describe("sandbox runs service", () => {
       expect(control.inspectionExpiresAt).toBe("2026-02-17T12:11:00.000Z");
     });
 
+    it("allows cancelling a run during its inspection window", async () => {
+      heldRun();
+      mockGetRunCoordinatorControl.mockResolvedValue(heldControl());
+      mockUpdateRunCoordinatorControl.mockResolvedValue({
+        ...heldControl(),
+        state: "cancelled",
+        updatedAt: "2026-02-17T12:06:00.000Z",
+      });
+      mockAppendRunCoordinatorEvent.mockResolvedValue(undefined);
+
+      const control = await requestSandboxRunControlAction({
+        context,
+        userId: 42,
+        runId: "run-123",
+        input: {
+          action: "cancel",
+          expectedUpdatedAt: "2026-02-17T12:05:00.000Z",
+        },
+      });
+
+      expect(mockUpdateRunCoordinatorControl).toHaveBeenCalledWith(
+        expect.objectContaining({ state: "cancelled" }),
+      );
+      expect(control.state).toBe("cancelled");
+    });
+
     it("refuses a second extension", async () => {
       heldRun();
       mockGetRunCoordinatorControl.mockResolvedValue(heldControl({ inspectionExtended: true }));

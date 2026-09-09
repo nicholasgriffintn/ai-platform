@@ -1,5 +1,10 @@
 import { type getSandbox, parseSSEStream, type ExecEvent } from "@cloudflare/sandbox";
-import type { SandboxTaskType, SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
+import {
+  hasBlockedShellChainingOperators,
+  hasBlockedShellEvaluationOperators,
+  type SandboxTaskType,
+  type SandboxTrustLevel,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { createSandboxOutputRedactor, redactSandboxResult } from "./output-redaction";
 
@@ -276,11 +281,11 @@ export function assertSafeCommand(
     throw new Error(`Command contains unexpected newlines: ${command}`);
   }
 
-  if (/&&|\|\||;|\|/.test(command) || /(^|\s)&(\s|$)/.test(command)) {
+  if (hasBlockedShellChainingOperators(command)) {
     throw new Error(`Command contains blocked shell operators: ${command}`);
   }
 
-  if (/\$\(|`/.test(command)) {
+  if (hasBlockedShellEvaluationOperators(command)) {
     throw new Error(`Command contains blocked shell evaluation: ${command}`);
   }
 

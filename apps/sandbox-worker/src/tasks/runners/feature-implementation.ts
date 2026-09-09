@@ -158,6 +158,28 @@ export async function executeFeatureImplementation(
     : undefined;
   const checkpoint = (abortMessage: string) => executionControl.checkpoint(abortMessage);
   let repoTargetDir: string | undefined;
+  const holdForInspection = async (result: TaskResult) => {
+    if (
+      (params.inspectionWindowSeconds ?? 0) > 0 &&
+      approvalClient &&
+      emitTerminalEvent &&
+      repoTargetDir
+    ) {
+      await emitTerminalEvent(result);
+      await waitForInspectionWindow({
+        sandbox,
+        repoTargetDir,
+        controlClient: approvalClient,
+        inspectionWindowSeconds: params.inspectionWindowSeconds ?? 0,
+        trustLevel: params.trustLevel ?? "balanced",
+        environmentVariables: params.environmentVariables,
+        environmentVariableNames,
+        redactionSecrets,
+        emit,
+        abortSignal,
+      });
+    }
+  };
 
   try {
     await checkpoint("Sandbox run cancelled before task start");
@@ -602,26 +624,7 @@ export async function executeFeatureImplementation(
       }),
     };
 
-    if (
-      (params.inspectionWindowSeconds ?? 0) > 0 &&
-      approvalClient &&
-      emitTerminalEvent &&
-      repoTargetDir
-    ) {
-      await emitTerminalEvent(result);
-      await waitForInspectionWindow({
-        sandbox,
-        repoTargetDir,
-        controlClient: approvalClient,
-        inspectionWindowSeconds: params.inspectionWindowSeconds ?? 0,
-        trustLevel: params.trustLevel ?? "balanced",
-        environmentVariables: params.environmentVariables,
-        environmentVariableNames,
-        redactionSecrets,
-        emit,
-        abortSignal,
-      });
-    }
+    await holdForInspection(result);
 
     return result;
   } catch (error) {
@@ -664,26 +667,7 @@ export async function executeFeatureImplementation(
       }),
     };
 
-    if (
-      (params.inspectionWindowSeconds ?? 0) > 0 &&
-      approvalClient &&
-      emitTerminalEvent &&
-      repoTargetDir
-    ) {
-      await emitTerminalEvent(result);
-      await waitForInspectionWindow({
-        sandbox,
-        repoTargetDir,
-        controlClient: approvalClient,
-        inspectionWindowSeconds: params.inspectionWindowSeconds ?? 0,
-        trustLevel: params.trustLevel ?? "balanced",
-        environmentVariables: params.environmentVariables,
-        environmentVariableNames,
-        redactionSecrets,
-        emit,
-        abortSignal,
-      });
-    }
+    await holdForInspection(result);
 
     return result;
   } finally {

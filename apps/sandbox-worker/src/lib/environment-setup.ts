@@ -263,6 +263,7 @@ async function restoreEnvironmentCache(params: {
   cache?: SandboxEnvironmentCacheRecord;
   cacheKey: string;
   generation: number;
+  redactionSecrets: string[];
   emit: (event: TaskEvent) => Promise<void>;
 }): Promise<{ reused: boolean; invalidationReason?: string }> {
   const cache = params.cache;
@@ -328,7 +329,7 @@ async function restoreEnvironmentCache(params: {
       type: "environment_cache_restore_failed",
       cacheKey: params.cacheKey,
       cacheStatus: "failed",
-      cacheInvalidationReason: redactSandboxOutput(message),
+      cacheInvalidationReason: redactSandboxOutput(message, params.redactionSecrets),
     });
 
     return { reused: false, invalidationReason: "restore_failed" };
@@ -342,6 +343,7 @@ async function createEnvironmentCache(params: {
   generation: number;
   repositoryRevision: string;
   configurationRevision: string;
+  redactionSecrets: string[];
   emit: (event: TaskEvent) => Promise<void>;
 }): Promise<SandboxEnvironmentCacheRecord | undefined> {
   if (!params.sandbox.createBackup) {
@@ -399,7 +401,9 @@ async function createEnvironmentCache(params: {
       cacheKey: params.cacheKey,
       cacheStatus: "failed",
       cacheInvalidationReason:
-        error instanceof Error ? redactSandboxOutput(error.message) : "Cache creation failed",
+        error instanceof Error
+          ? redactSandboxOutput(error.message, params.redactionSecrets)
+          : "Cache creation failed",
     });
 
     return undefined;
@@ -496,7 +500,9 @@ export async function prepareSandboxEnvironment(params: {
         type: "environment_cache_key_failed",
         cacheStatus: "failed",
         cacheInvalidationReason:
-          error instanceof Error ? redactSandboxOutput(error.message) : "Cache key failed",
+          error instanceof Error
+            ? redactSandboxOutput(error.message, redactionSecrets)
+            : "Cache key failed",
       });
     }
   }
@@ -508,6 +514,7 @@ export async function prepareSandboxEnvironment(params: {
         cache: params.environmentCache,
         cacheKey: cacheIdentity.cacheKey,
         generation,
+        redactionSecrets,
         emit: params.emit,
       })
     : { reused: false };
@@ -653,6 +660,7 @@ export async function prepareSandboxEnvironment(params: {
             generation,
             repositoryRevision: cacheIdentity.repositoryRevision,
             configurationRevision: resolved.configurationRevision,
+            redactionSecrets,
             emit: params.emit,
           });
     const cacheEvidence: SandboxRunEnvironmentEvidence["cache"] = !cacheIdentity

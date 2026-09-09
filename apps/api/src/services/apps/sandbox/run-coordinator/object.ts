@@ -8,6 +8,7 @@ import {
   sandboxServiceActionSchema,
   sandboxServiceNameSchema,
   sandboxCommandSchema,
+  hasUnsafeShellOperators,
   type SandboxRunDispatchMessage,
   type SandboxRunEvent,
   type SandboxRunInstruction,
@@ -541,6 +542,10 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           return Response.json({ error: "Invalid control update payload" }, { status: 400 });
         }
 
+        if (existing.state === "inspection" && validated.data.state === "cancelled") {
+          await this.revokePreviewSessions();
+        }
+
         await this.putControl(validated.data);
 
         return Response.json(validated.data);
@@ -883,7 +888,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
         if (kind === "run_command") {
           const parsedCommand = sandboxCommandSchema.safeParse(body.command);
 
-          if (!parsedCommand.success || parsedCommand.data.includes("&")) {
+          if (!parsedCommand.success || hasUnsafeShellOperators(parsedCommand.data)) {
             return Response.json(
               {
                 error: parsedCommand.success

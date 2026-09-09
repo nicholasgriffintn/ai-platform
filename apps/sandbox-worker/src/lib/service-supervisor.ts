@@ -105,6 +105,7 @@ function serviceIsActive(service: ManagedService): boolean {
 
 export class ProjectServiceSupervisor {
   private readonly options: ProjectServiceSupervisorOptions;
+  private readonly redactionSecrets: string[];
   private readonly abortController = new AbortController();
   private readonly managed = new Map<string, ManagedService>();
   private readonly failureWaiters = new Set<(error: Error) => void>();
@@ -118,6 +119,7 @@ export class ProjectServiceSupervisor {
 
   public constructor(options: ProjectServiceSupervisorOptions) {
     this.options = options;
+    this.redactionSecrets = Object.values(options.environmentVariables ?? {});
   }
 
   public get signal(): AbortSignal {
@@ -164,12 +166,8 @@ export class ProjectServiceSupervisor {
       const absoluteWorkingDirectory = await this.resolveWorkingDirectory(definition);
       const managed: ManagedService = {
         redactors: {
-          stdout: createSandboxOutputRedactor(
-            Object.values(this.options.environmentVariables ?? {}),
-          ),
-          stderr: createSandboxOutputRedactor(
-            Object.values(this.options.environmentVariables ?? {}),
-          ),
+          stdout: createSandboxOutputRedactor(this.redactionSecrets),
+          stderr: createSandboxOutputRedactor(this.redactionSecrets),
         },
         definition,
         absoluteWorkingDirectory,
@@ -426,10 +424,7 @@ export class ProjectServiceSupervisor {
       try {
         await this.waitForPortRelease(definition.expectedPort);
       } catch (error) {
-        const message = redactSandboxError(
-          error,
-          Object.values(this.options.environmentVariables ?? {}),
-        );
+        const message = redactSandboxError(error, this.redactionSecrets);
 
         service.status = "failed";
         service.error = message;
@@ -546,10 +541,7 @@ export class ProjectServiceSupervisor {
       const timedOut =
         error instanceof ProcessReadyTimeoutError ||
         hasSandboxErrorCode(error, "PROCESS_READY_TIMEOUT");
-      const message = redactSandboxError(
-        error,
-        Object.values(this.options.environmentVariables ?? {}),
-      );
+      const message = redactSandboxError(error, this.redactionSecrets);
 
       service.status = timedOut ? "timed_out" : "failed";
       service.error = message;
@@ -682,10 +674,7 @@ export class ProjectServiceSupervisor {
     } catch (error) {
       service.observationFailures += 1;
       service.status = "unhealthy";
-      service.error = redactSandboxError(
-        error,
-        Object.values(this.options.environmentVariables ?? {}),
-      );
+      service.error = redactSandboxError(error, this.redactionSecrets);
 
       await this.emit({
         type: "service_observation_failed",
@@ -743,10 +732,7 @@ export class ProjectServiceSupervisor {
 
           service.observationFailures += 1;
           service.status = "unhealthy";
-          service.error = redactSandboxError(
-            error,
-            Object.values(this.options.environmentVariables ?? {}),
-          );
+          service.error = redactSandboxError(error, this.redactionSecrets);
 
           await this.emit({
             type: "service_unhealthy",
@@ -1037,7 +1023,7 @@ export class ProjectServiceSupervisor {
           serviceAction: instruction.serviceAction,
           serviceStatus: service?.status,
           servicePort: service?.definition.expectedPort,
-          error: redactSandboxError(error, Object.values(this.options.environmentVariables ?? {})),
+          error: redactSandboxError(error, this.redactionSecrets),
         });
       }
     }

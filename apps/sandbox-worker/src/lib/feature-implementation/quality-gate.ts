@@ -138,6 +138,7 @@ export async function runQualityGate(params: {
   });
 
   const checks: QualityGateCheckResult[] = [];
+  const redactionSecrets = Object.values(params.environmentVariables ?? {});
 
   for (const [index, command] of commands.entries()) {
     await guardExecution("Sandbox run cancelled during quality gate checks");
@@ -154,7 +155,7 @@ export async function runQualityGate(params: {
       `cd ${quoteForShell(repoTargetDir)} && ${withSandboxEnvironment(command, params.environmentVariables, params.environmentVariableNames ?? [])}`,
       {
         abortSignal,
-        redactionSecrets: Object.values(params.environmentVariables ?? {}),
+        redactionSecrets: redactionSecrets,
         onOutput: async (output) => {
           await emit({
             type: "quality_gate_output",
@@ -163,7 +164,7 @@ export async function runQualityGate(params: {
             commandTotal: commands.length,
             stream: output.stream,
             output: truncateForModel(
-              redactSandboxOutput(output.data, Object.values(params.environmentVariables ?? {})),
+              redactSandboxOutput(output.data, redactionSecrets),
               MAX_OBSERVATION_CHARS,
             ),
           });
@@ -174,8 +175,8 @@ export async function runQualityGate(params: {
     await guardExecution("Sandbox run cancelled during quality gate checks");
     const safeResult = {
       ...result,
-      stdout: redactSandboxOutput(result.stdout, Object.values(params.environmentVariables ?? {})),
-      stderr: redactSandboxOutput(result.stderr, Object.values(params.environmentVariables ?? {})),
+      stdout: redactSandboxOutput(result.stdout, redactionSecrets),
+      stderr: redactSandboxOutput(result.stderr, redactionSecrets),
     };
 
     executionLogs.push(formatCommandResult(`[quality-gate] ${command}`, safeResult));
