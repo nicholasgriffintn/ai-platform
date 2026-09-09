@@ -65,7 +65,12 @@ export function FormDialog({
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <form
+          onSubmit={(event) => {
+            void handleSubmit(event);
+          }}
+          className="space-y-4 py-2"
+        >
           {children}
 
           <DialogFooter className="pt-4">

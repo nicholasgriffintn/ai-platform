@@ -26,7 +26,7 @@ export const CaptchaProvider = ({ children }: { children: React.ReactNode }) => 
   }, [captchaToken, setIsVerified]);
 
   if (!CAPTCHA_SITE_KEY) {
-    return <>{children}</>;
+    return children;
   }
 
   return (

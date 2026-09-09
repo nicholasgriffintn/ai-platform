@@ -19,7 +19,7 @@ export function useLoadMoreOnIntersect({
     const sentinel = sentinelRef.current;
 
     if (!sentinel || !enabled) {
-      return;
+      return undefined;
     }
 
     const observer = new IntersectionObserver(

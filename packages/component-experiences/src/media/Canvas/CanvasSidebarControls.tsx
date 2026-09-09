@@ -63,10 +63,14 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
         <>
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pt-4 pb-4">
             <div className="space-y-2">
-              <label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              <label
+                htmlFor="canvas-prompt"
+                className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+              >
                 Prompt
               </label>
               <textarea
+                id="canvas-prompt"
                 value={canvas.prompt}
                 onChange={(event) => canvas.setPrompt(event.target.value)}
                 rows={4}
@@ -77,10 +81,14 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 
             {canvas.mediaMode === "image" && (
               <div className="space-y-2">
-                <label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                <label
+                  htmlFor="canvas-negative-prompt"
+                  className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                >
                   Negative Prompt
                 </label>
                 <input
+                  id="canvas-negative-prompt"
                   value={canvas.negativePrompt}
                   onChange={(event) => canvas.setNegativePrompt(event.target.value)}
                   className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-active-work"
@@ -91,10 +99,14 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 
             {canvas.mediaMode === "image" && (
               <div className="space-y-2">
-                <label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                <label
+                  htmlFor="canvas-reference-images"
+                  className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                >
                   Reference Images
                 </label>
                 <textarea
+                  id="canvas-reference-images"
                   value={canvas.referenceInput}
                   onChange={(event) => canvas.setReferenceInput(event.target.value)}
                   rows={3}
@@ -106,7 +118,10 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                <label
+                  htmlFor="canvas-model-search"
+                  className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                >
                   Models
                 </label>
                 <span className="text-xs text-muted-foreground">
@@ -114,6 +129,7 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
                 </span>
               </div>
               <input
+                id="canvas-model-search"
                 value={canvas.modelSearch}
                 onChange={(event) => canvas.setModelSearch(event.target.value)}
                 className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-active-work"

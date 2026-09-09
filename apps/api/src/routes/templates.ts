@@ -24,7 +24,7 @@ import {
 import { instantiateProjectStarter, listProjectStarters } from "~/services/templates/starters";
 
 const app = new Hono();
-const params = z.object({ templateId: z.string().min(1) });
+const templateParams = z.object({ templateId: z.string().min(1) });
 const starterParams = z.object({ starterSlug: z.string().min(1) });
 
 addRoute(app, "get", "/starters", {
@@ -66,7 +66,7 @@ addRoute(app, "post", "/", {
 addRoute(app, "get", "/:templateId", {
   tags: ["templates"],
   auth: true,
-  paramSchema: params,
+  paramSchema: templateParams,
   responses: { 200: { description: "Template", schema: templateSchema } },
   handler: ({ params, serviceContext, user }) =>
     getTemplate(serviceContext, user.id, params.templateId),
@@ -74,7 +74,7 @@ addRoute(app, "get", "/:templateId", {
 addRoute(app, "put", "/:templateId", {
   tags: ["templates"],
   auth: true,
-  paramSchema: params,
+  paramSchema: templateParams,
   bodySchema: updateTemplateSchema,
   responses: { 200: { description: "Updated template", schema: templateSchema } },
   handler: ({ body, params, serviceContext, user }) =>
@@ -83,7 +83,7 @@ addRoute(app, "put", "/:templateId", {
 addRoute(app, "post", "/:templateId/instantiate", {
   tags: ["templates"],
   auth: true,
-  paramSchema: params,
+  paramSchema: templateParams,
   bodySchema: instantiateProjectTemplateSchema,
   responses: { 200: { description: "Created project", schema: projectDetailSchema } },
   handler: ({ body, params, serviceContext, user }) =>
@@ -98,7 +98,7 @@ addRoute(app, "post", "/:templateId/instantiate", {
 addRoute(app, "delete", "/:templateId", {
   tags: ["templates"],
   auth: true,
-  paramSchema: params,
+  paramSchema: templateParams,
   handler: async ({ params, serviceContext, user }) => {
     await deleteTemplate(serviceContext, user.id, params.templateId);
 

@@ -116,6 +116,8 @@ export function getMetaNavigationHref(target: MetaNavigationTarget): string {
       }
 
       return target.place === "you" ? PROFILE_PATH : getPlacePaths(target.mode)[target.place];
+    default:
+      throw new Error("Unsupported meta navigation target");
   }
 }
 

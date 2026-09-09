@@ -91,13 +91,13 @@ export function ConnectorApprovalCard({ data, onResolve }: ConnectorApprovalCard
       ) : null}
 
       {isResolved ? (
-        <p role="status" className="text-xs font-medium text-muted-foreground">
+        <output className="text-xs font-medium text-muted-foreground">
           {displayState === "consumed"
             ? "Action completed."
             : displayState === "expired"
               ? "This approval has expired."
               : `Action ${displayState}.`}
-        </p>
+        </output>
       ) : onResolve && !isExpired ? (
         <div className="flex flex-wrap gap-2">
           <Button

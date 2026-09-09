@@ -43,7 +43,7 @@ export class KVCache {
     return entry.value as T;
   }
 
-  private static remember<T>(key: string, value: T, ttlSeconds: number) {
+  private static remember(key: string, value: unknown, ttlSeconds: number) {
     KVCache.memoryCache.set(key, {
       value,
       expiresAt: Date.now() + ttlSeconds * 1000,
@@ -77,7 +77,7 @@ export class KVCache {
     }
   }
 
-  async set<T>(key: string, value: T, options?: CacheOptions): Promise<boolean> {
+  async set(key: string, value: unknown, options?: CacheOptions): Promise<boolean> {
     try {
       logger.debug("Setting value in cache", { key, options });
       const ttl = options?.ttl || this.defaultTTL;

@@ -17,7 +17,7 @@ export function WorkAccessGate({
   const isPro = useChatStore((state) => state.isPro);
 
   if (!requiresAuthentication) {
-    return <>{children}</>;
+    return children;
   }
 
   if (isAuthenticationLoading) {
@@ -42,5 +42,5 @@ export function WorkAccessGate({
     );
   }
 
-  return <>{children}</>;
+  return children;
 }

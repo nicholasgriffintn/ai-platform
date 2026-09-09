@@ -190,7 +190,6 @@ export async function cleanupOcrBatchProviderResources(
 
   // Keep the job until every referenced file is gone so a retry can rediscover their IDs.
   for (const fileId of fileIds) {
-    // eslint-disable-next-line no-await-in-loop
     await batchClient.deleteFile({ ...context, fileId });
   }
 

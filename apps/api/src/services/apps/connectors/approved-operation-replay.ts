@@ -260,7 +260,7 @@ async function waitForConcurrentResult(params: {
     elapsedMs += delayMs;
   }
 
-  failIndeterminate();
+  return failIndeterminate();
 }
 
 export async function replayApprovedConnectorOperation(params: {

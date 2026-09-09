@@ -61,7 +61,7 @@ test.describe("Apps retain their runtime and scope", () => {
     const workspaceId = workPage.currentWorkspaceId();
     const projectId = workPage.currentProjectId();
 
-    for (const app of catalog.experiences.filter((app) => app.scope !== "personal")) {
+    for (const app of catalog.experiences.filter((experience) => experience.scope !== "personal")) {
       await workPage.navigate(`/work/${workspaceId}/projects/${projectId}/apps/${app.id}`);
       await expect(
         page.getByRole("heading", { name: "App not enabled", exact: true }),

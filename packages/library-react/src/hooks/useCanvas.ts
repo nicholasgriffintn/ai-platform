@@ -33,8 +33,8 @@ export function useCanvasGenerations(mode?: CanvasMode, enabled = true, projectI
     refetchInterval: (query) =>
       liveOrPoll(
         query,
-        (query) => {
-          const data = query.state.data;
+        (currentQuery) => {
+          const data = currentQuery.state.data;
 
           if (!data?.length) {
             return false;

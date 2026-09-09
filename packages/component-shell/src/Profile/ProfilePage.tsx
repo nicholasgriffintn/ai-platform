@@ -15,7 +15,9 @@ export interface ProfilePageProps {
   additionalItems?: readonly ProfileSidebarItem[];
 }
 
-export function ProfilePage({ additionalItems = [] }: ProfilePageProps) {
+const NO_ADDITIONAL_ITEMS: readonly ProfileSidebarItem[] = [];
+
+export function ProfilePage({ additionalItems = NO_ADDITIONAL_ITEMS }: ProfilePageProps) {
   const { isAuthenticated, isLoading } = useAuthStatus();
   const [searchParams, setSearchParams] = useSearchParams();
   const sidebarItems = extendProfileSidebarItems(additionalItems);

@@ -31,7 +31,7 @@ export function PageShellHeader({ title, actions, actionContent }: PageShellHead
 
   useClientLayoutEffect(() => {
     if (!context) {
-      return;
+      return undefined;
     }
 
     const owner = ownerRef.current;

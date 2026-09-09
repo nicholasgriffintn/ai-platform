@@ -217,7 +217,6 @@ export async function deleteOutputResources(
 
   for (const descendant of descendants) {
     // Descendants may have different project creators, so a parent cannot bypass mutation rules.
-    // eslint-disable-next-line no-await-in-loop
     await requireOutputRecordAccess(context, actorUserId, descendant, true);
   }
 
@@ -225,13 +224,11 @@ export async function deleteOutputResources(
 
   for (const descendant of descendants) {
     // Persist every retry handle before removing any external object.
-    // eslint-disable-next-line no-await-in-loop
     tombstonedDescendants.push(await tombstoneOutput(context, actorUserId, descendant));
   }
 
   root = await tombstoneOutput(context, actorUserId, root);
   // The API target does not include ES2023 Array#toReversed yet.
-  // eslint-disable-next-line unicorn/no-array-reverse
   const records = [...tombstonedDescendants].reverse().concat(root);
   const storageKeys = records.flatMap((record) => (record.storage_key ? [record.storage_key] : []));
 
@@ -240,7 +237,6 @@ export async function deleteOutputResources(
 
     for (const storageKey of storageKeys) {
       // Tombstones retain each key until its idempotent deletion succeeds.
-      // eslint-disable-next-line no-await-in-loop
       await storage.deleteObject(storageKey);
     }
   }

@@ -61,14 +61,13 @@ export function ComposerShell({
         {(isGeneratingAudio || footerStart || footerEnd) && (
           <div className="mt-2 border-t border-border px-3 pt-3 pb-3">
             {isGeneratingAudio && (
-              <div
+              <output
                 className="mb-3 flex items-center gap-2 text-xs text-muted-foreground"
                 aria-live="polite"
-                role="status"
               >
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-active-work" aria-hidden="true" />
                 <span>Generating response audio...</span>
-              </div>
+              </output>
             )}
             {(footerStart || footerEnd) && (
               <div className="@container/composer-footer flex items-center justify-between gap-1 sm:gap-2">

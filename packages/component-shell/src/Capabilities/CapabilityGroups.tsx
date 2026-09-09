@@ -207,7 +207,7 @@ export function CapabilityGroups({
                       item={item}
                       kind={itemKind}
                       app={appById.get(item.capability.id)}
-                      onOpen={openPath ? () => navigate(openPath) : undefined}
+                      onOpen={openPath ? () => void navigate(openPath) : undefined}
                       onConfigure={
                         tool?.requiresConfiguration
                           ? () => onConfigureTool(tool, toolConfiguration)

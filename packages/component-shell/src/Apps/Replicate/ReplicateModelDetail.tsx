@@ -52,8 +52,8 @@ export function ReplicateModelDetail({ basePath, modelId, projectId }: Replicate
       });
 
       void navigate(`${basePath}/predictions/${result.id}`);
-    } catch (error) {
-      console.error("Failed to execute model:", error);
+    } catch (executionError) {
+      console.error("Failed to execute model:", executionError);
     }
   };
 
@@ -70,7 +70,7 @@ export function ReplicateModelDetail({ basePath, modelId, projectId }: Replicate
       form={
         <ReplicateModelForm
           model={model}
-          onSubmit={handleSubmit}
+          onSubmit={(data) => void handleSubmit(data)}
           isSubmitting={executeMutation.isPending}
         />
       }

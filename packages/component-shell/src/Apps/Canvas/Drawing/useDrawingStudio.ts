@@ -134,7 +134,7 @@ export function useDrawingStudio(enabled: boolean, projectId?: string) {
     setCurrentHistoryIndex(nextIndex);
     const image = new Image();
 
-    image.onload = () => {
+    image.addEventListener("load", () => {
       const ctx = canvasRef.current?.getContext("2d");
 
       if (!ctx) {
@@ -144,7 +144,7 @@ export function useDrawingStudio(enabled: boolean, projectId?: string) {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.drawImage(image, 0, 0);
       setPreview(previousDrawing);
-    };
+    });
 
     image.src = previousDrawing;
   }, [currentHistoryIndex, drawingHistory]);
@@ -164,7 +164,7 @@ export function useDrawingStudio(enabled: boolean, projectId?: string) {
     setCurrentHistoryIndex(nextIndex);
     const image = new Image();
 
-    image.onload = () => {
+    image.addEventListener("load", () => {
       const ctx = canvasRef.current?.getContext("2d");
 
       if (!ctx) {
@@ -174,7 +174,7 @@ export function useDrawingStudio(enabled: boolean, projectId?: string) {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.drawImage(image, 0, 0);
       setPreview(nextDrawing);
-    };
+    });
 
     image.src = nextDrawing;
   }, [currentHistoryIndex, drawingHistory]);

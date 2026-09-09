@@ -79,7 +79,7 @@ export function WebShellHost({ children }: { children: ReactNode }) {
       HostDialogs: WebShellDialogs,
       modelSourceSurface: "web",
       modelSourceRows,
-      openProviderSettings: () => navigate("/profile?tab=providers"),
+      openProviderSettings: () => void navigate("/profile?tab=providers"),
     }),
     [logout, modelSourceRows, navigate, setShowLoginModal, setShowMetaAssistant],
   );

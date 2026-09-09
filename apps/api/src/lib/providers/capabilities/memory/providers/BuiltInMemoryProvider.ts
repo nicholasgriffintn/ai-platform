@@ -212,7 +212,6 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
     }
 
     // ES2022 Workers do not expose Array#toSorted, and this copied array is safe to mutate.
-    // oxlint-disable-next-line unicorn/no-array-sort
     const rankedMemories = [...bestByMemory.values()].sort(
       (left, right) => right.score - left.score,
     );
@@ -396,7 +395,6 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
 
           // ES2022 Workers do not expose Array#toSorted, and this copied array is safe to mutate.
           const candidates = [...matches.matches]
-            // oxlint-disable-next-line unicorn/no-array-sort
             .sort((left, right) => right.score - left.score)
             .filter(
               (match) => match.score >= input.scoreThreshold && memoriesByVectorId.has(match.id),

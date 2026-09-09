@@ -176,7 +176,7 @@ export function useRecordingWorkflow(basePath: string, projectId?: string) {
           action: process,
           ...(process === "transcribe"
             ? {
-                numberOfSpeakers: Number(formData.numberOfSpeakers),
+                numberOfSpeakers: formData.numberOfSpeakers,
                 prompt: formData.transcribePrompt,
               }
             : {}),

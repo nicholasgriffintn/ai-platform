@@ -31,13 +31,13 @@ export function useOverlayDismiss<T extends HTMLElement>({
 
   useEffect(() => {
     if (!open) {
-      return;
+      return undefined;
     }
 
     const ownerDocument = containerRef.current?.ownerDocument ?? globalThis.document;
 
     if (!ownerDocument) {
-      return;
+      return undefined;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -93,7 +93,7 @@ export function useOverlayDismiss<T extends HTMLElement>({
 
   useEffect(() => {
     if (!open) {
-      return;
+      return undefined;
     }
 
     const container = containerRef.current;

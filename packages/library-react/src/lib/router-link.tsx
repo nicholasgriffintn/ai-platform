@@ -1,5 +1,6 @@
 import type {
   LinkComponent,
+  LinkRenderProps,
   NavLinkComponent,
   NavLinkRenderProps,
 } from "@ngriffin_uk/polychat-utility-react";
@@ -10,9 +11,13 @@ import { Link, NavLink } from "react-router";
  * Render packages emit resolved hrefs; these adapters turn them into client-side router links so
  * shared components never import a router themselves.
  */
-export const RouterLink: LinkComponent = forwardRef<HTMLAnchorElement, { href: string }>(
-  function RouterLink({ href, ...props }, ref) {
-    return <Link ref={ref} to={href} {...props} />;
+export const RouterLink: LinkComponent = forwardRef<HTMLAnchorElement, LinkRenderProps>(
+  function RouterLink({ href, children, ...props }, ref) {
+    return (
+      <Link ref={ref} to={href} {...props}>
+        {children}
+      </Link>
+    );
   },
 );
 

@@ -121,7 +121,6 @@ export function listPetModelAssignments(
     ),
   );
 
-  // oxlint-disable-next-line unicorn/no-array-sort
   return configured.sort(
     (left, right) =>
       TARGET_KIND_ORDER.indexOf(left.kind) - TARGET_KIND_ORDER.indexOf(right.kind) ||

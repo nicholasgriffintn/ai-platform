@@ -210,7 +210,7 @@ export const SandboxConnectionDialog = ({
               <Button
                 variant="primary"
                 icon={<ShieldCheck className="h-4 w-4" />}
-                onClick={handleSaveConnection}
+                onClick={() => void handleSaveConnection()}
                 isLoading={isSaving}
               >
                 Save connection

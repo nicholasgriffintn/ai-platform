@@ -235,7 +235,7 @@ describe("ContextLimitValidator", () => {
 
       expect(result.validation.isValid).toBe(true);
       expect(result.context.messageWithContext).toBe(
-        "Hello world\n\nContext from attached documents:\n" + "Document content without name",
+        "Hello world\n\nContext from attached documents:\nDocument content without name",
       );
     });
 

@@ -19,13 +19,13 @@ export function useMachineHeartbeat(): void {
 
   useEffect(() => {
     if (!isAuthenticated || !hasHydratedUserConfiguration) {
-      return;
+      return undefined;
     }
 
     if (!advertiseMachines) {
       void removeMachineAdvertisement().catch(() => undefined);
 
-      return;
+      return undefined;
     }
 
     const controller = new AbortController();

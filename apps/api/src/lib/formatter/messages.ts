@@ -572,18 +572,18 @@ export class MessageFormatter {
     maxTokens: number,
     strategy: "head" | "tail" | "middle",
   ): Message[] {
-    switch (strategy) {
-      case "tail":
-        return MessageFormatter.takeMessagesUntilTokenBudget(
-          [...messages].reverse(),
-          maxTokens,
-        ).reverse();
-      case "head":
-        return MessageFormatter.takeMessagesUntilTokenBudget(messages, maxTokens);
-      case "middle": {
-        return MessageFormatter.takeMessagesAroundMiddle(messages, maxTokens);
-      }
+    if (strategy === "tail") {
+      return MessageFormatter.takeMessagesUntilTokenBudget(
+        [...messages].reverse(),
+        maxTokens,
+      ).reverse();
     }
+
+    if (strategy === "head") {
+      return MessageFormatter.takeMessagesUntilTokenBudget(messages, maxTokens);
+    }
+
+    return MessageFormatter.takeMessagesAroundMiddle(messages, maxTokens);
   }
 
   private static takeMessagesUntilTokenBudget(messages: Message[], maxTokens: number): Message[] {

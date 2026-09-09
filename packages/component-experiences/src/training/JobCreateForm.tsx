@@ -110,7 +110,7 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
       <FormSelect
         id="training-model"
         label="Model"

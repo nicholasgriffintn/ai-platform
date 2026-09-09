@@ -480,29 +480,30 @@ export function useComposerCommandActions({
     ],
     [setChatInput],
   );
+  const canUseGoals = goalState?.canUseGoals;
+  const goal = goalState?.goal;
+  const runGoalCommand = goalState?.onCommand;
   const goalCommands = useMemo<ComposerCommandAction[]>(() => {
-    if (!goalState?.canUseGoals) {
+    if (!canUseGoals) {
       return [];
     }
 
     const commands: ComposerCommandAction[] = [
       {
         id: "goal-set",
-        label: isComposingGoal ? "Cancel goal" : goalState.goal ? "Replace goal" : "Set a goal",
+        label: isComposingGoal ? "Cancel goal" : goal ? "Replace goal" : "Set a goal",
         description: isComposingGoal
           ? "Stop writing an objective and send an ordinary message."
           : "Keep working until an objective is met, checked against evidence.",
         command: "goal",
         icon: <Target className="h-4 w-4" aria-hidden="true" />,
-        isActive: isComposingGoal || Boolean(goalState.goal),
+        isActive: isComposingGoal || Boolean(goal),
         onSelect: () => setComposingGoal(!isComposingGoal),
       },
     ];
 
-    const runGoalCommand = goalState.onCommand;
-
     if (runGoalCommand) {
-      if (goalState.goal?.status === "active") {
+      if (goal?.status === "active") {
         commands.push({
           id: "goal-pause",
           label: "Pause goal",
@@ -514,7 +515,7 @@ export function useComposerCommandActions({
         });
       }
 
-      if (goalState.goal?.status !== "active") {
+      if (goal?.status !== "active") {
         commands.push({
           id: "goal-resume",
           label: "Resume goal",
@@ -553,13 +554,7 @@ export function useComposerCommandActions({
         onSelect: () => undefined,
       },
     ];
-  }, [
-    goalState?.canUseGoals,
-    goalState?.goal,
-    goalState?.onCommand,
-    isComposingGoal,
-    setComposingGoal,
-  ]);
+  }, [canUseGoals, goal, isComposingGoal, runGoalCommand, setComposingGoal]);
 
   const skillCommands = useMemo<ComposerCommandAction[]>(
     () =>

@@ -19,7 +19,7 @@ import {
 } from "~/services/tasks";
 
 const app = new Hono();
-const params = z.object({ id: z.string().min(1) });
+const taskParams = z.object({ id: z.string().min(1) });
 const synthesisQuerySchema = z.object({ namespace: z.string().optional() });
 const synthesesQuerySchema = z.object({
   namespace: z.string().optional(),
@@ -74,7 +74,7 @@ addRoute(app, "get", "/:id", {
   tags: ["tasks"],
   summary: "Get a specific task by ID",
   auth: true,
-  paramSchema: params,
+  paramSchema: taskParams,
   handler: ({ params, serviceContext, user }) => getUserTask(serviceContext, user.id, params.id),
 });
 
@@ -82,7 +82,7 @@ addRoute(app, "delete", "/:id", {
   tags: ["tasks"],
   summary: "Delete a task by ID",
   auth: true,
-  paramSchema: params,
+  paramSchema: taskParams,
   handler: ({ params, serviceContext, user }) => cancelUserTask(serviceContext, user.id, params.id),
 });
 

@@ -43,7 +43,12 @@ export function CreateWorkspaceDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form
+          onSubmit={(event) => {
+            void handleSubmit(event);
+          }}
+          className="space-y-5"
+        >
           <DialogHeader>
             <DialogTitle>Create a workspace</DialogTitle>
             <DialogDescription>Workspaces contain projects, members, and access.</DialogDescription>
@@ -113,7 +118,12 @@ export function CreateProjectDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form
+          onSubmit={(event) => {
+            void handleSubmit(event);
+          }}
+          className="space-y-5"
+        >
           <DialogHeader>
             <DialogTitle>Create a project</DialogTitle>
             <DialogDescription>

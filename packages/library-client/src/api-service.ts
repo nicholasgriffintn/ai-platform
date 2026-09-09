@@ -391,7 +391,7 @@ class ApiService {
 
   // ===== Subscription Methods =====
 
-  getSubscription = (): Promise<any | null> => {
+  getSubscription = (): Promise<any> => {
     return this.subscriptionService.getSubscription();
   };
 

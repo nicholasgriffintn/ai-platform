@@ -23,7 +23,7 @@ export function ProjectActivity({ projectId }: { projectId: string }) {
         activities={activities ?? []}
         isLoading={isLoading}
         errorMessage={error?.message}
-        hasMore={Boolean(hasNextPage)}
+        hasMore={hasNextPage}
         isLoadingMore={isFetchingNextPage}
         onLoadMore={() => void fetchNextPage()}
       />

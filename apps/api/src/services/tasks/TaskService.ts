@@ -152,9 +152,7 @@ export class TaskService {
       };
 
       // A duplicate delivery is safe because the consumer atomically claims the durable task.
-      // eslint-disable-next-line no-await-in-loop
       await this.sendMessage(message);
-      // eslint-disable-next-line no-await-in-loop
       await this.taskRepository.updateTask(task.id, { status: "queued" });
       dispatched++;
     }

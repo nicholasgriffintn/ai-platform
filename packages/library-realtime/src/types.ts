@@ -24,7 +24,7 @@ export interface RealtimeClientSecret {
 export interface RealtimeSession {
   id?: string;
   object?: string;
-  type?: RealtimeSessionType | string;
+  type?: string;
   provider?: RealtimeProviderName;
   transport?: RealtimeTransport;
   protocol?: string;

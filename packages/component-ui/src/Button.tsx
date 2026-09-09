@@ -161,7 +161,7 @@ function ButtonLabel({
   const collapse = resolveCollapse(collapseLabel);
 
   if (!collapse || !children) {
-    return <>{children}</>;
+    return children;
   }
 
   return <span className={collapsedLabelStyles[collapse]}>{children}</span>;

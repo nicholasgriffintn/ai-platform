@@ -84,9 +84,9 @@ export function useProjectWorkbenchRuns({
       };
     },
     enabled: Boolean(projectId && conversationId),
-    refetchInterval: (query) =>
+    refetchInterval: (activeQuery) =>
       liveOrPoll(
-        query,
+        activeQuery,
         (currentQuery) =>
           conversationIsStreaming ||
           currentQuery.state.data?.runs.some(({ run }) => isActiveRun(run))

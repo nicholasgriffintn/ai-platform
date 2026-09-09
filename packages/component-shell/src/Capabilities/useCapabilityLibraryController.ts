@@ -153,9 +153,14 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
           (capability) =>
             capability.kind === "tool" && capability.capabilityId === item.capability.id,
         )?.configuration;
-        const configuration = projectConfiguration ?? toolConfigurationById.get(item.capability.id);
+        const resolvedConfiguration =
+          projectConfiguration ?? toolConfigurationById.get(item.capability.id);
 
-        if (tool && configuration && parseModelToolConfiguration(tool, configuration)) {
+        if (
+          tool &&
+          resolvedConfiguration &&
+          parseModelToolConfiguration(tool, resolvedConfiguration)
+        ) {
           configured.add(item.id);
         }
       }
@@ -225,12 +230,12 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
     scope.remove(capability);
   };
 
-  const submitToolConfiguration = async (configuration: ModelToolConfiguration) => {
+  const submitToolConfiguration = async (nextConfiguration: ModelToolConfiguration) => {
     if (!configurationTool) {
       return;
     }
 
-    await scope.saveToolConfiguration(configurationTool, configuration);
+    await scope.saveToolConfiguration(configurationTool, nextConfiguration);
     setConfigurationTool(null);
     setConfiguration(undefined);
   };

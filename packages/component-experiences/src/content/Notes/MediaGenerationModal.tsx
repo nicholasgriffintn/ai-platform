@@ -285,7 +285,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
           <DialogFooter>
             <Button
               variant="primary"
-              onClick={handleGenerate}
+              onClick={() => void handleGenerate()}
               isLoading={isGenerating}
               disabled={isGenerating}
               className="mr-2"

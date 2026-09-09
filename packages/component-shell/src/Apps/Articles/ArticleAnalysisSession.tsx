@@ -15,7 +15,7 @@ export function ArticleAnalysisSession({ basePath, projectId }: ArticleAnalysisS
   return (
     <ArticleAnalysisForm
       session={session}
-      onReportGenerated={(reportId) => navigate(`${basePath}/${reportId}`)}
+      onReportGenerated={(reportId) => void navigate(`${basePath}/${reportId}`)}
     />
   );
 }

@@ -88,8 +88,8 @@ export function ShareDialog({
       className={className}
       labels={labels}
       onOpenChange={setIsOpen}
-      onShare={share}
-      onUnshare={unshare}
+      onShare={() => void share()}
+      onUnshare={() => void unshare()}
       onCopy={copy}
     />
   );

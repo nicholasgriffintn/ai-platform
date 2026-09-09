@@ -103,8 +103,6 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
     script.defer = true;
 
     document.head.appendChild(script);
-
-    return () => {};
   }, []);
 
   useEffect(() => {
@@ -121,6 +119,8 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
 
       return () => clearTimeout(timer);
     }
+
+    return undefined;
   }, [initializeCaptcha, isScriptLoaded, isVerified]);
 
   useEffect(() => {

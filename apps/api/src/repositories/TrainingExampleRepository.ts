@@ -1,4 +1,3 @@
-import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 
 import { BaseRepository } from "./BaseRepository";
@@ -73,10 +72,6 @@ export interface UpdateTrainingExampleData {
 }
 
 export class TrainingExampleRepository extends BaseRepository {
-  constructor(env: IEnv) {
-    super(env);
-  }
-
   async create(data: CreateTrainingExampleData): Promise<Record<string, any>> {
     const id = generateId();
 

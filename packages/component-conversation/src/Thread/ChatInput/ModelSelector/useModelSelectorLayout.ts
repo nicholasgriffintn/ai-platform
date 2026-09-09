@@ -11,13 +11,13 @@ export function useModelSelectorLayout(
     if (!isOpen) {
       setLayout(null);
 
-      return;
+      return undefined;
     }
 
     const shell = wrapper?.closest<HTMLElement>("[data-chat-input-shell]");
 
     if (!wrapper || !shell) {
-      return;
+      return undefined;
     }
 
     const updateLayout = () => {

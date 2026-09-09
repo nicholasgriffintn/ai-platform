@@ -246,12 +246,12 @@ export async function resolveModelProvider({
   env,
 }: ResolveModelProviderOptions): Promise<string> {
   if (model) {
-    const modelConfig =
+    const matchedModel =
       (await getModelConfigByModel(model, env)) ||
       (await getModelConfigByMatchingModel(model, env, provider));
 
-    if (modelConfig?.provider) {
-      return modelConfig.provider;
+    if (matchedModel?.provider) {
+      return matchedModel.provider;
     }
   }
 
@@ -266,7 +266,7 @@ export function getModels(
 ) {
   const cacheKey = JSON.stringify([
     [...(options.excludeModalities ?? [])].sort(),
-    Boolean(options.chatSurfaceOnly),
+    options.chatSurfaceOnly ?? false,
   ]);
   const cached = cachedModelsByOptions.get(cacheKey);
 
@@ -718,11 +718,11 @@ export const getAuxiliarySpeechModel = async (
   const transcriptionProvider = userSettings?.transcription_provider || "workers";
   const transcriptionModel = userSettings?.transcription_model || "whisper";
 
-  const modelConfig = await getModelConfig(transcriptionModel, env);
+  const transcriptionConfig = await getModelConfig(transcriptionModel, env);
 
   return {
-    model: modelConfig.matchingModel,
-    provider: modelConfig.provider,
+    model: transcriptionConfig.matchingModel,
+    provider: transcriptionConfig.provider,
     transcriptionProvider,
   };
 };

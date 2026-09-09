@@ -25,6 +25,8 @@ import {
 } from "../utils/composer-input-dom";
 export type { ComposerInputToken, ComposerInputTokenPosition } from "../utils/composer-input-dom";
 
+const EMPTY_TOKENS: ComposerInputToken[] = [];
+
 interface TokenizedComposerInputProps {
   id: string;
   value: string;
@@ -54,7 +56,7 @@ export const TokenizedComposerInput = forwardRef<
     {
       id,
       value,
-      tokens = [],
+      tokens = EMPTY_TOKENS,
       placeholder,
       ariaLabel,
       ariaDescribedBy,

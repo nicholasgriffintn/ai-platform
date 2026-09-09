@@ -23,7 +23,7 @@ Input: "I love Italian food"
 Output: { "storeMemory": true, "category": "preference", "summary": "User loves Italian food" }
 
 Input: "My green sofa is arriving tomorrow"
-Output: { "storeMemory": true, "category": "schedule", "summary": "User's green sofa is arriving on ${nextFriday}" }
+Output: { "storeMemory": true, "category": "schedule", "summary": "User's green sofa is arriving on ${nextFriday.toString()}" }
 
 Input: "I work at Google as a software engineer"
 Output: { "storeMemory": true, "category": "fact", "summary": "User works at Google as a software engineer" }

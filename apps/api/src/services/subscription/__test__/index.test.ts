@@ -57,13 +57,15 @@ const mockRepositories = {
   },
 };
 
-vi.mock("stripe", () => ({
-  default: class {
+vi.mock("stripe", () => {
+  class MockStripe {
     constructor() {
       return mockStripe;
     }
-  },
-}));
+  }
+
+  return { default: MockStripe, Stripe: MockStripe };
+});
 
 vi.mock("~/repositories", () => ({
   RepositoryManager: class {
@@ -716,10 +718,10 @@ describe("Subscription Service", () => {
         },
       };
 
-      const mockUser = { id: 1, email: "test@example.com", plan_id: "free" };
+      const customerUser = { id: 1, email: "test@example.com", plan_id: "free" };
 
       mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
+      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(customerUser);
 
       const result = await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
 
@@ -767,7 +769,7 @@ describe("Subscription Service", () => {
         },
       };
 
-      const mockUser = {
+      const customerUser = {
         id: 1,
         email: "test@example.com",
         plan_id: "pro",
@@ -775,7 +777,7 @@ describe("Subscription Service", () => {
       };
 
       mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
+      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(customerUser);
 
       const result = await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
 
@@ -797,10 +799,10 @@ describe("Subscription Service", () => {
         },
       };
 
-      const mockUser = { id: 1, email: "test@example.com", plan_id: "pro" };
+      const customerUser = { id: 1, email: "test@example.com", plan_id: "pro" };
 
       mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
+      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(customerUser);
 
       const result = await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
 

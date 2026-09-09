@@ -147,8 +147,10 @@ export function RerunReportButton({
       } else {
         throw new Error("Failed to generate report");
       }
-    } catch (error: unknown) {
-      setError(`Error: ${error instanceof Error ? error.message : "Failed to rerun analysis"}`);
+    } catch (rerunError: unknown) {
+      setError(
+        `Error: ${rerunError instanceof Error ? rerunError.message : "Failed to rerun analysis"}`,
+      );
     } finally {
       setIsRerunning(false);
     }
@@ -172,7 +174,7 @@ export function RerunReportButton({
               : null
       }
       errorMessage={error}
-      onRerun={handleRerunAnalysis}
+      onRerun={() => void handleRerunAnalysis()}
       className={className}
     />
   );

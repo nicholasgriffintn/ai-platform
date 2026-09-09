@@ -657,15 +657,20 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
     autoSubmittedKeyRef.current = initialAutoSubmit.key;
     setComposerInput("");
-    void sendMessage(
-      initialAutoSubmit.input,
-      contextAttachments.length > 0 ? contextAttachments : undefined,
-      modeConfig?.requestOptions,
-    ).then((result) => {
+
+    const submitInitialInput = async () => {
+      const result = await sendMessage(
+        initialAutoSubmit.input,
+        contextAttachments.length > 0 ? contextAttachments : undefined,
+        modeConfig?.requestOptions,
+      );
+
       if (result?.status === "error") {
         setComposerInput(initialAutoSubmit.input);
       }
-    });
+    };
+
+    void submitInitialInput();
   }, [
     contextAttachments,
     isModelInitializing,
@@ -885,7 +890,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
             onArtifactOpen={handleArtifactOpen}
             onStartThread={handleStartThread}
             isStartingThread={isStartingThread}
-            onRequestSecondOpinion={requestSecondOpinion}
+            onRequestSecondOpinion={(messageId) => void requestSecondOpinion(messageId)}
             isRequestingSecondOpinion={isRequestingSecondOpinion}
             onQuoteSelection={handleQuoteSelection}
           />
@@ -955,7 +960,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           streamStarted={streamStarted}
           controller={controller}
           onStopResponse={abortStream}
-          onTranscribe={handleTranscribe}
+          onTranscribe={(data) => void handleTranscribe(data)}
           placeholder={modeConfig?.inputPlaceholder}
           controls={modeConfig?.inputControls}
           modeControls={modeConfig?.modeControls}

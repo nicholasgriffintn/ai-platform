@@ -29,6 +29,8 @@ export const TranscriptionOverlay = memo(function TranscriptionOverlay({
     }
 
     setSilenceDuration(0);
+
+    return undefined;
   }, [isSpeechDetected, lastSilenceTime]);
 
   if (!isVisible) {

@@ -45,17 +45,14 @@ export function useResearchStatus({
     refetchInterval: (query) =>
       liveOrPoll(
         query,
-        (query) => {
+        (currentQuery) => {
           if (!enabled) {
             return false;
           }
 
-          const data = query.state.data;
+          const data = currentQuery.state.data;
           const intervalFromData = data?.poll?.interval_ms;
-          const effectiveInterval = Math.max(
-            5000,
-            Number(intervalFromData ?? sanitizedInterval) || 0,
-          );
+          const effectiveInterval = Math.max(5000, (intervalFromData ?? sanitizedInterval) || 0);
 
           if (!data) {
             return effectiveInterval;

@@ -6,6 +6,15 @@ export function MemorySynthesisPanel() {
   const { synthesis, history, isLoadingSynthesis, isLoadingHistory } = useMemorySynthesis("global");
   const { triggerSynthesisAsync, isTriggeringSynthesis } = useTasks({ shouldRefetch: false });
 
+  const generateSynthesis = async () => {
+    try {
+      await triggerSynthesisAsync({ namespace: "global" });
+      toast.success("Memory synthesis queued");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not queue memory synthesis");
+    }
+  };
+
   return (
     <ControlledMemorySynthesisPanel
       synthesis={synthesis}
@@ -13,14 +22,7 @@ export function MemorySynthesisPanel() {
       isLoadingSynthesis={isLoadingSynthesis}
       isLoadingHistory={isLoadingHistory}
       isGenerating={isTriggeringSynthesis}
-      onGenerate={async () => {
-        try {
-          await triggerSynthesisAsync({ namespace: "global" });
-          toast.success("Memory synthesis queued");
-        } catch (error) {
-          toast.error(error instanceof Error ? error.message : "Could not queue memory synthesis");
-        }
-      }}
+      onGenerate={() => void generateSynthesis()}
     />
   );
 }

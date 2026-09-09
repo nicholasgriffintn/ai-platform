@@ -228,7 +228,7 @@ export function useConversationActions(
 
         const newConversationId = generateId();
         const shouldStore = determineStorageMode(currentConversationId).retention === "kept";
-        let startConversationThread = createConversationThread({
+        let threadConversation = createConversationThread({
           conversation,
           conversationId: newConversationId,
           isLocalOnly: !shouldStore,
@@ -239,14 +239,14 @@ export function useConversationActions(
 
         if (shouldStore) {
           const storedBranchConversation = await apiService.updateConversation(newConversationId, {
-            title: startConversationThread.title,
+            title: threadConversation.title,
             messages: threadPoint.messages,
             parent_conversation_id: currentConversationId,
             parent_message_id: messageId,
           });
 
-          startConversationThread = {
-            ...startConversationThread,
+          threadConversation = {
+            ...threadConversation,
             ...storedBranchConversation,
             id: storedBranchConversation.id || newConversationId,
             messages: storedBranchConversation.messages.length
@@ -259,7 +259,7 @@ export function useConversationActions(
           };
         }
 
-        await updateConversation(newConversationId, () => startConversationThread);
+        await updateConversation(newConversationId, () => threadConversation);
         queryClient.setQueryData<Conversation>(
           [CHATS_QUERY_KEY, currentConversationId],
           (parent) => (parent && shouldStore ? { ...parent, has_branches: true } : parent),
@@ -272,7 +272,7 @@ export function useConversationActions(
 
         if (threadPoint.shouldGenerateResponse) {
           const result = await generateResponseWithLoading(
-            startConversationThread.messages,
+            threadConversation.messages,
             newConversationId,
             "Answering in the new thread...",
             undefined,
@@ -283,12 +283,8 @@ export function useConversationActions(
           );
 
           if (result.status === "success" && result.message) {
-            generateTitle(
-              newConversationId,
-              startConversationThread.messages,
-              result.message,
-            ).catch((err) =>
-              console.error("Background title generation failed for a new thread:", err),
+            generateTitle(newConversationId, threadConversation.messages, result.message).catch(
+              (err) => console.error("Background title generation failed for a new thread:", err),
             );
           }
         }

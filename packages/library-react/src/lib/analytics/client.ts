@@ -84,7 +84,7 @@ export function captureClientException(
       name: "exception",
       category: "error",
       properties: {
-        error_message: error instanceof Error ? error.message : String(error),
+        error_message: error instanceof Error ? error.message : error,
         ...exceptionProperties,
       },
     },

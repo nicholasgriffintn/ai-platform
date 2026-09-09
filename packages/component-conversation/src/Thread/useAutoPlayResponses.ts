@@ -37,11 +37,11 @@ export function useAutoPlayResponses({
 
     audio.crossOrigin = "use-credentials";
     audioRef.current = audio;
-    audio.onended = () => setIsPlaying(false);
-    audio.onerror = () => {
+    audio.addEventListener("ended", () => setIsPlaying(false));
+    audio.addEventListener("error", () => {
       setIsPlaying(false);
       toast.error("Failed to play generated speech");
-    };
+    });
 
     setIsGeneratingSpeech(false);
     setIsPlaying(true);
@@ -124,7 +124,7 @@ export function useAutoPlayResponses({
         hasSeenStreamingRef.current = true;
       }
 
-      return;
+      return undefined;
     }
 
     const latestAssistantMessage = messages
@@ -135,7 +135,7 @@ export function useAutoPlayResponses({
     if (!hasSeenStreamingRef.current) {
       lastHandledMessageIdRef.current = latestAssistantMessage?.id;
 
-      return;
+      return undefined;
     }
 
     hasSeenStreamingRef.current = false;
@@ -144,7 +144,7 @@ export function useAutoPlayResponses({
       !latestAssistantMessage?.id ||
       latestAssistantMessage.id === lastHandledMessageIdRef.current
     ) {
-      return;
+      return undefined;
     }
 
     const existingSpeechSource = resolveMessageSpeechAudioSource(latestAssistantMessage);
@@ -156,7 +156,7 @@ export function useAutoPlayResponses({
         toast.error("Failed to play generated speech");
       });
 
-      return;
+      return undefined;
     }
 
     const text = getMessageTextContent(latestAssistantMessage);
@@ -164,7 +164,7 @@ export function useAutoPlayResponses({
     if (!text || !conversationId) {
       lastHandledMessageIdRef.current = latestAssistantMessage.id;
 
-      return;
+      return undefined;
     }
 
     let isCancelled = false;
@@ -184,7 +184,7 @@ export function useAutoPlayResponses({
           generationRequestIdRef.current !== requestId ||
           response.status !== "success"
         ) {
-          return;
+          return undefined;
         }
 
         const speech = buildMessageSpeech(response);
@@ -193,7 +193,7 @@ export function useAutoPlayResponses({
         if (!audioSource) {
           setIsGeneratingSpeech(false);
 
-          return;
+          return undefined;
         }
 
         const persistSpeech = speech

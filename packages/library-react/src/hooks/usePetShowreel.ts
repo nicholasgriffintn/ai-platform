@@ -61,7 +61,7 @@ export function usePetShowreel(
       currentRef.current = RESTING;
       setState(RESTING);
 
-      return;
+      return undefined;
     }
 
     let timeout = 0;

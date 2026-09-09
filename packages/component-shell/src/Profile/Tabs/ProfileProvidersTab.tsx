@@ -57,6 +57,7 @@ function readProviderTypeFilter(value: string | null): ProviderTypeFilter {
     case "messaging":
     case "connector":
       return value;
+    case null:
     default:
       return "all";
   }

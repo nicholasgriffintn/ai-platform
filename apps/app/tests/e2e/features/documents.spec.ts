@@ -21,8 +21,8 @@ test.describe("Documents as finished work", () => {
     expect(
       await polychatApi.reviseOutputStatus(written.id, "Another writer's body", written.revision),
     ).toBe(200);
-    const response = page.waitForResponse((response) =>
-      new URL(response.url()).pathname.endsWith(`/outputs/${written.id}/describe`),
+    const response = page.waitForResponse((candidate) =>
+      new URL(candidate.url()).pathname.endsWith(`/outputs/${written.id}/describe`),
     );
 
     await page.getByRole("button", { name: "Regenerate via AI", exact: true }).click();

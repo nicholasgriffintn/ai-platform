@@ -45,7 +45,7 @@ export async function heartbeatMachine(
   await context.repositories.machines.upsert(id, heartbeat);
   publishMachineEvent(context, id, heartbeat.machineId);
 
-  const [machine] = (await context.repositories.machines.listForUser(id)).filter(
+  const machine = (await context.repositories.machines.listForUser(id)).find(
     (candidate) => candidate.machineId === heartbeat.machineId,
   );
 

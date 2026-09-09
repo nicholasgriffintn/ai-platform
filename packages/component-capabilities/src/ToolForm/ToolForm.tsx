@@ -156,7 +156,11 @@ export const ToolForm = ({
           )}
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={(event) => {
+            void handleSubmit(event);
+          }}
+        >
           <div className="rounded-lg bg-surface-elevated p-5">
             <FormStep
               step={currentStep}

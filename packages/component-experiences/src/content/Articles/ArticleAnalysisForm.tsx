@@ -32,6 +32,14 @@ export interface ArticleAnalysisFormProps {
 }
 
 export function ArticleAnalysisForm({ session, onReportGenerated }: ArticleAnalysisFormProps) {
+  const handleGenerate = async () => {
+    const reportId = await session.actions.processAndGenerate();
+
+    if (reportId) {
+      onReportGenerated(reportId);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
@@ -49,13 +57,7 @@ export function ArticleAnalysisForm({ session, onReportGenerated }: ArticleAnaly
             )
           }
           disabled={!session.isGenerateEnabled}
-          onClick={async () => {
-            const reportId = await session.actions.processAndGenerate();
-
-            if (reportId) {
-              onReportGenerated(reportId);
-            }
-          }}
+          onClick={() => void handleGenerate()}
         >
           {session.processingArticles
             ? "Processing Articles..."

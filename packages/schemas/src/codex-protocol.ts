@@ -100,6 +100,8 @@ export function codexThreadConfig(mode: PermissionMode): CodexThreadConfig {
         sandbox: "danger-full-access",
         approvalsReviewer: "user",
       };
+    default:
+      throw new Error(`Unsupported permission mode: ${String(mode)}`);
   }
 }
 
@@ -113,6 +115,8 @@ export function codexApprovalDecision(decision: AgentApprovalDecision): string {
       return "decline";
     case "cancel":
       return "cancel";
+    default:
+      throw new Error(`Unsupported approval decision: ${String(decision)}`);
   }
 }
 

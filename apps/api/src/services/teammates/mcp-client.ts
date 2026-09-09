@@ -1,5 +1,5 @@
 import type { MCPClientManager } from "agents/mcp/client";
-import z from "zod";
+import { z } from "zod";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";

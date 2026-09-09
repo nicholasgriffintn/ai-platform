@@ -55,7 +55,12 @@ export function InviteMemberDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form
+          onSubmit={(event) => {
+            void handleSubmit(event);
+          }}
+          className="space-y-5"
+        >
           <DialogHeader>
             <DialogTitle>Invite a teammate</DialogTitle>
             <DialogDescription>

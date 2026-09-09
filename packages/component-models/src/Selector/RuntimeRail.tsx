@@ -79,10 +79,13 @@ export function RuntimeRail({
                       options.length;
               const next = options[nextIndex];
 
+              const radios =
+                event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
+                  'button[role="radio"]',
+                );
+
               onSelect(next.site, next.machineId);
-              event.currentTarget.parentElement
-                ?.querySelectorAll<HTMLButtonElement>('button[role="radio"]')
-                [nextIndex]?.focus();
+              radios?.[nextIndex]?.focus();
             }}
             onClick={() => onSelect(option.site, option.machineId)}
             className={cn(

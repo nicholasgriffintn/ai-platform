@@ -54,7 +54,7 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
   }
 
   const canManage = workspace.role === "owner" || workspace.role === "admin";
-  const currentUserId = user?.id ? Number(user.id) : undefined;
+  const currentUserId = user?.id ? user.id : undefined;
   const headerActions = [
     ...(canManage
       ? [

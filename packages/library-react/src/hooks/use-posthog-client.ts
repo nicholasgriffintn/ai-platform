@@ -39,11 +39,15 @@ export function usePostHogClient(): ClientPostHog | null {
   useEffect(() => {
     let isMounted = true;
 
-    void loadPostHogClient().then((posthog) => {
+    const load = async () => {
+      const posthog = await loadPostHogClient();
+
       if (isMounted) {
         setClient(posthog);
       }
-    });
+    };
+
+    void load();
 
     return () => {
       isMounted = false;

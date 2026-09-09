@@ -11,7 +11,7 @@ export function useMachines(options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [MACHINES_QUERY_KEY],
     queryFn: apiService.fetchMachines,
-    enabled: Boolean(options.enabled ?? true) && isAuthenticated,
+    enabled: (options.enabled ?? true) && isAuthenticated,
     staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 60,
     refetchOnWindowFocus: "always",

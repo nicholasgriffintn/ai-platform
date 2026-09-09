@@ -74,7 +74,7 @@ export function captureApiError(error: AssistantError, originalError: Error = er
     const requestId = error.context?.requestId;
 
     if (requestId) {
-      scope.setTag("request_id", String(requestId));
+      scope.setTag("request_id", requestId);
     }
 
     Sentry.captureException(originalError);

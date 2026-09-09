@@ -74,7 +74,7 @@ function formatCollection(record: SourceCollectionRecord): SourceCollection {
     title: record.title,
     description: record.description,
     kind: record.kind,
-    sourceCount: Number(record.source_count ?? 0),
+    sourceCount: record.source_count ?? 0,
     createdAt: record.created_at,
     updatedAt: record.updated_at,
   };

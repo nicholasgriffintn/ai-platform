@@ -43,7 +43,11 @@ function createScriptedSession(threadId: string, directoryPath: string): Scripte
     },
     transport: {
       async *[Symbol.asyncIterator]() {
-        while (!closed) {
+        for (;;) {
+          if (closed) {
+            return;
+          }
+
           const line =
             buffered.shift() ??
             (await new Promise<string | null>((resolve) => waiting.push(resolve)));

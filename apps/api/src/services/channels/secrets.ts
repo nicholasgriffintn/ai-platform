@@ -13,6 +13,7 @@ export function getChannelSecrets(channel: InboundChannelId, env: IEnv): Channel
       return { verification: env.SLACK_SIGNING_SECRET, reply: env.SLACK_BOT_TOKEN };
     case "telegram":
       return { verification: env.TELEGRAM_WEBHOOK_SECRET, reply: env.TELEGRAM_BOT_TOKEN };
+    case "sms":
     default:
       return {};
   }

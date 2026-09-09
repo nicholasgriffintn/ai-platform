@@ -14,7 +14,7 @@ export function useHeaderScrollEdge(
     const root = headerRef.current?.parentElement;
 
     if (!root) {
-      return;
+      return undefined;
     }
 
     const scrollSources = root.querySelectorAll<HTMLElement>(SCROLL_SOURCE_SELECTOR);

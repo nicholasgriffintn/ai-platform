@@ -13,7 +13,7 @@ export const requireAdmin = async (ctx: Context, next: () => Promise<void>) => {
     );
   }
 
-  await next();
+  return next();
 };
 
 export const requireStrictAdmin = async (ctx: Context, next: () => Promise<void>) => {
@@ -29,7 +29,7 @@ export const requireStrictAdmin = async (ctx: Context, next: () => Promise<void>
     );
   }
 
-  await next();
+  return next();
 };
 
 export const requireModerator = async (ctx: Context, next: () => Promise<void>) => {
@@ -45,5 +45,5 @@ export const requireModerator = async (ctx: Context, next: () => Promise<void>) 
     );
   }
 
-  await next();
+  return next();
 };

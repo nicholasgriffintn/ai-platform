@@ -91,6 +91,28 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
       );
     }
 
+    const copyShareLink = async () => {
+      setShareError(null);
+      try {
+        let token = mintedShareTokens.current.get(output.id);
+
+        if (!token) {
+          ({ token } = await createShare.mutateAsync({ outputId: output.id }));
+          mintedShareTokens.current.set(output.id, token);
+        }
+
+        await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
+        setCopiedOutputId(output.id);
+      } catch (shareFailure) {
+        setCopiedOutputId(null);
+        setShareError({
+          outputId: output.id,
+          message:
+            shareFailure instanceof Error ? shareFailure.message : "Could not copy the share link",
+        });
+      }
+    };
+
     return (
       <Card className="gap-5 p-6 shadow-none">
         <OutputDetailHeader
@@ -100,29 +122,7 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
           isSharing={createShare.isPending}
           hasCopiedLink={copiedOutputId === output.id}
           errorMessage={shareError?.outputId === output.id ? shareError.message : undefined}
-          onShare={async () => {
-            setShareError(null);
-            try {
-              let token = mintedShareTokens.current.get(output.id);
-
-              if (!token) {
-                ({ token } = await createShare.mutateAsync({ outputId: output.id }));
-                mintedShareTokens.current.set(output.id, token);
-              }
-
-              await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
-              setCopiedOutputId(output.id);
-            } catch (shareFailure) {
-              setCopiedOutputId(null);
-              setShareError({
-                outputId: output.id,
-                message:
-                  shareFailure instanceof Error
-                    ? shareFailure.message
-                    : "Could not copy the share link",
-              });
-            }
-          }}
+          onShare={() => void copyShareLink()}
         />
         {documentBody === null ? (
           <ResponseRenderer app={producingTool ?? undefined} result={output.content} />

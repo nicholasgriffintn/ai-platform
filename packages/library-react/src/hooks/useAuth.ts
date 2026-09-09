@@ -29,22 +29,25 @@ export function useAuthStatus() {
       const previousIdentity = useChatStore.getState();
       const isAuth = await authService.checkAuthStatus();
 
-      const user = authService.getUser();
+      const authenticatedUser = authService.getUser();
 
       if (isAuth) {
-        const userSettings = authService.getUserSettings();
+        const authenticatedUserSettings = authService.getUserSettings();
 
         setAuthenticatedUserConfiguration({
           hasApiKey: previousIdentity.hasApiKey,
-          user,
-          userSettings,
+          user: authenticatedUser,
+          userSettings: authenticatedUserSettings,
         });
         void authService.getToken().then((token) => setHasApiKey(Boolean(token)));
       } else {
         clearAuthenticatedUserConfiguration();
       }
 
-      if (previousIdentity.isAuthenticated !== isAuth || previousIdentity.user?.id !== user?.id) {
+      if (
+        previousIdentity.isAuthenticated !== isAuth ||
+        previousIdentity.user?.id !== authenticatedUser?.id
+      ) {
         useUsageStore.getState().setUsageLimits(null);
         void queryClient.invalidateQueries({ queryKey: [MODELS_QUERY_KEY] });
       }

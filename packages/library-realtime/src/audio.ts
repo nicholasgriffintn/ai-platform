@@ -379,7 +379,7 @@ export function createPcm16AudioPlayer({ sampleRate = 24000 } = {}): Pcm16AudioP
 
       source.buffer = audioBuffer;
       source.connect(audioContext.destination);
-      source.onended = () => sources.delete(source);
+      source.addEventListener("ended", () => sources.delete(source));
       sources.add(source);
 
       const startAt = Math.max(audioContext.currentTime, nextStartTime);

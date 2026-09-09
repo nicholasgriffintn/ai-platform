@@ -69,15 +69,15 @@ function updateRemoteConversationLists<T extends ConversationSummary>(
   }
 }
 
-export function upsertConversationInChatCaches<T extends ConversationSummary>(
+export function upsertConversationInChatCaches(
   queryClient: QueryClient,
-  conversation: T,
+  conversation: ConversationSummary,
   options: { includeLocalList: boolean; includeRemoteLists: boolean; localScope?: string },
   queryKeyRoot = DEFAULT_CHATS_QUERY_KEY,
 ) {
   queryClient.setQueryData([queryKeyRoot, conversation.id], conversation);
   if (options.includeLocalList) {
-    updateLocalConversationLists<T>(
+    updateLocalConversationLists<ConversationSummary>(
       queryClient,
       queryKeyRoot,
       (oldData = []) => [conversation, ...oldData.filter((chat) => chat.id !== conversation.id)],
@@ -91,24 +91,28 @@ export function upsertConversationInChatCaches<T extends ConversationSummary>(
 
   let hasUnloadedRemoteList = false;
 
-  updateRemoteConversationLists<T>(queryClient, queryKeyRoot, (data, queryKey) => {
-    if (!data?.pages.length) {
-      hasUnloadedRemoteList = true;
+  updateRemoteConversationLists<ConversationSummary>(
+    queryClient,
+    queryKeyRoot,
+    (data, queryKey) => {
+      if (!data?.pages.length) {
+        hasUnloadedRemoteList = true;
 
-      return data;
-    }
+        return data;
+      }
 
-    const pages = data.pages.map((page) => ({
-      ...page,
-      conversations: page.conversations.filter((chat) => chat.id !== conversation.id),
-    }));
+      const pages = data.pages.map((page) => ({
+        ...page,
+        conversations: page.conversations.filter((chat) => chat.id !== conversation.id),
+      }));
 
-    if (filterConversationsByListOptions([conversation], getRemoteListOptions(queryKey)).length) {
-      pages[0] = { ...pages[0], conversations: [conversation, ...pages[0].conversations] };
-    }
+      if (filterConversationsByListOptions([conversation], getRemoteListOptions(queryKey)).length) {
+        pages[0] = { ...pages[0], conversations: [conversation, ...pages[0].conversations] };
+      }
 
-    return { ...data, pages };
-  });
+      return { ...data, pages };
+    },
+  );
 
   if (hasUnloadedRemoteList) {
     void queryClient.invalidateQueries({ queryKey: [queryKeyRoot, "remote"] });
@@ -146,20 +150,20 @@ export function updateConversationInChatCaches<T extends ConversationSummary>(
   );
 }
 
-export function removeConversationFromChatCaches<T extends ConversationSummary>(
+export function removeConversationFromChatCaches(
   queryClient: QueryClient,
   conversationId: string,
   queryKeyRoot = DEFAULT_CHATS_QUERY_KEY,
   localScope?: string,
 ) {
   queryClient.removeQueries({ queryKey: [queryKeyRoot, conversationId], exact: true });
-  updateLocalConversationLists<T>(
+  updateLocalConversationLists<ConversationSummary>(
     queryClient,
     queryKeyRoot,
     (oldData) => oldData?.filter((chat) => chat.id !== conversationId),
     localScope,
   );
-  updateRemoteConversationLists<T>(queryClient, queryKeyRoot, (data) =>
+  updateRemoteConversationLists<ConversationSummary>(queryClient, queryKeyRoot, (data) =>
     data?.pages.length
       ? {
           ...data,

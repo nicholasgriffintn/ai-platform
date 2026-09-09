@@ -6,9 +6,10 @@ export function ServiceWorkerRegistration() {
     const isLocalhost = host?.startsWith("localhost");
 
     if (!isLocalhost && "serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((registration) => {
+      const register = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register("/sw.js");
+
           console.log("SW registered: ", registration);
 
           registration.addEventListener("updatefound", () => {
@@ -22,10 +23,12 @@ export function ServiceWorkerRegistration() {
               });
             }
           });
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error("Service worker registration failed:", error);
-        });
+        }
+      };
+
+      void register();
 
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         console.log("New service worker activated");

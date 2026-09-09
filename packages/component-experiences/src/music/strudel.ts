@@ -1,5 +1,3 @@
-import type { Pattern } from "@strudel/core";
-
 type StrudelCoreModule = typeof import("@strudel/core");
 type StrudelWebAudioModule = typeof import("@strudel/webaudio");
 type StrudelCodeMirrorModule = typeof import("@strudel/codemirror");
@@ -89,7 +87,7 @@ async function prebake(core: StrudelCoreModule, webaudio: StrudelWebAudioModule)
 
   type StrudelValue = Record<string, unknown>;
 
-  type PianoPattern = Pattern & {
+  type PianoPattern = {
     fmap(mapper: (value: unknown) => StrudelValue): PianoPattern;
     s(sound: string): PianoPattern;
     release(value: number): PianoPattern;

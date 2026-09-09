@@ -8,12 +8,12 @@ export const PET_SHEET_COLUMNS = 8;
 
 export function getPetSpriteHeight(
   size: number,
-  layout: { frameWidth: number; frameHeight: number } = {
+  frameLayout: { frameWidth: number; frameHeight: number } = {
     frameWidth: PET_FRAME_WIDTH,
     frameHeight: PET_FRAME_HEIGHT,
   },
 ): number {
-  return (layout.frameHeight * size) / layout.frameWidth;
+  return (frameLayout.frameHeight * size) / frameLayout.frameWidth;
 }
 
 export const PET_CLIP_NAMES = [
@@ -130,14 +130,11 @@ export const PET_IDLE_FLOURISH_CLIPS: readonly PetClipName[] = ["blink", "preen"
 
 export const petClipNameSchema = z.enum(PET_CLIP_NAMES);
 
-export function resolvePetClip(name: PetClipName | string | null | undefined): PetClip {
+export function resolvePetClip(name: string | null | undefined): PetClip {
   return PET_CLIPS[name as PetClipName] ?? PET_CLIPS[PET_IDLE_CLIP];
 }
 
-export function resolvePetClipIn(
-  sheet: PetSheetLayout,
-  name: PetClipName | string | null | undefined,
-): PetClip {
+export function resolvePetClipIn(sheet: PetSheetLayout, name: string | null | undefined): PetClip {
   return sheet.clips[name as PetClipName] ?? sheet.clips[PET_IDLE_CLIP] ?? PET_CLIPS[PET_IDLE_CLIP];
 }
 

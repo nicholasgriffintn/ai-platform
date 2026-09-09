@@ -38,13 +38,14 @@ export interface ProviderApiKeyModalProps {
 }
 
 const EMPTY_CONFIGURATION_VALUES: Record<string, string> = {};
+const EMPTY_CONFIGURATION_FIELDS: NonNullable<ProviderApiKeyModalProps["configurationFields"]> = [];
 
 export function ProviderApiKeyModal({
   open,
   onOpenChange,
   providerId,
   providerName,
-  configurationFields = [],
+  configurationFields = EMPTY_CONFIGURATION_FIELDS,
   configurationValues: initialConfigurationValues = EMPTY_CONFIGURATION_VALUES,
   hasStoredCredentials = false,
   webhookUrl,
@@ -130,7 +131,12 @@ export function ProviderApiKeyModal({
           <DialogTitle>Configure {providerName}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={(event) => {
+            void handleSubmit(event);
+          }}
+          className="space-y-4"
+        >
           <p className="text-sm text-muted-foreground">
             {usesConfigurationFields
               ? `Enter the required connection details for ${providerName}.`

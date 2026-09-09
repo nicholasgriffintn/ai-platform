@@ -12,7 +12,7 @@ import {
   SignInEmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import { Loader2, Plus, Trash2 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type FormEvent, type ReactNode, useState } from "react";
 
 import { SettingsSection } from "../SettingsSection";
 
@@ -110,6 +110,12 @@ export function ApiKeysPanel({
   const [newApiKeyName, setNewApiKeyName] = useState("");
   const [keyToDelete, setKeyToDelete] = useState<ApiKeySummary | null>(null);
 
+  const handleCreate = async (event: FormEvent) => {
+    event.preventDefault();
+    await onCreate(newApiKeyName || undefined);
+    setNewApiKeyName("");
+  };
+
   return (
     <div className="space-y-8">
       <SettingsSection
@@ -117,10 +123,8 @@ export function ApiKeysPanel({
         description="Create a new key to use with external applications or scripts."
       >
         <form
-          onSubmit={async (event) => {
-            event.preventDefault();
-            await onCreate(newApiKeyName || undefined);
-            setNewApiKeyName("");
+          onSubmit={(event) => {
+            void handleCreate(event);
           }}
           className="space-y-4"
         >

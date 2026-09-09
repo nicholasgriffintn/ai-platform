@@ -66,17 +66,21 @@ vi.mock("~/utils/logger", () => ({
   })),
 }));
 
+function createMockRequest() {
+  return {
+    header: vi.fn(),
+    query: vi.fn(),
+    json: vi.fn(),
+    url: "http://example.com/test",
+    path: "/test",
+    method: "GET",
+  };
+}
+
 function createMockContext(overrides: any = {}): Context {
   const variables = new Map<string, unknown>();
   const mockContext = {
-    req: {
-      header: vi.fn(),
-      query: vi.fn(),
-      json: vi.fn(),
-      url: "http://example.com/test",
-      path: "/test",
-      method: "GET",
-    },
+    req: createMockRequest(),
     env: {
       DB: {} as any,
       CACHE: null,
@@ -563,7 +567,7 @@ describe("Auth Middleware", () => {
     it("should allow non-pro users access to generate title endpoint", async () => {
       const context = createMockContext({
         req: {
-          ...createMockContext().req,
+          ...createMockRequest(),
           path: "/chat/completions/123/generate-title",
           method: "POST",
         },
@@ -590,7 +594,7 @@ describe("Auth Middleware", () => {
 
         const context = createMockContext({
           req: {
-            ...createMockContext().req,
+            ...createMockRequest(),
             path: "/chat/completions/conversation-1/goal",
             method,
           },
@@ -614,7 +618,7 @@ describe("Auth Middleware", () => {
     it("should block tool usage for unauthenticated users", async () => {
       const context = createMockContext({
         req: {
-          ...createMockContext().req,
+          ...createMockRequest(),
           path: "/chat/completions",
           method: "POST",
           json: vi.fn().mockResolvedValue({ tools: [{ type: "function" }] }),
@@ -656,7 +660,7 @@ describe("Auth Middleware", () => {
     it("should block unauthorized paths for non-pro users", async () => {
       const context = createMockContext({
         req: {
-          ...createMockContext().req,
+          ...createMockRequest(),
           path: "/restricted-endpoint",
           method: "GET",
         },

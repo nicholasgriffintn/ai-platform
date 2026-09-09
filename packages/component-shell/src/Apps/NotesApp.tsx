@@ -25,9 +25,9 @@ import { NoteEditor } from "./Notes/NoteEditor.js";
 
 export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const navigate = useNavigate();
-  const segments = subpath.split("/").filter(Boolean);
-  const noteId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;
-  const isNew = segments[0] === "new";
+  const firstSegment = subpath.split("/").find(Boolean);
+  const noteId = firstSegment && firstSegment !== "new" ? firstSegment : undefined;
+  const isNew = firstSegment === "new";
   const {
     data: notes,
     isLoading,

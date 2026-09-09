@@ -41,7 +41,7 @@ export function DropdownMenu({
     if (!isOpen) {
       setFocusIndex(-1);
 
-      return;
+      return undefined;
     }
 
     menuItemsRef.current = Array.from(
@@ -55,7 +55,7 @@ export function DropdownMenu({
     const ownerDocument = menuRoot?.ownerDocument;
 
     if (!menuRoot || !ownerDocument) {
-      return;
+      return undefined;
     }
 
     const closeOutside = (event: PointerEvent) => {

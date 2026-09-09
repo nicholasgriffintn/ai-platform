@@ -217,7 +217,7 @@ export function StrudelPlayer({
             <Button
               size="icon"
               variant="ghost"
-              onClick={handlePlay}
+              onClick={() => void handlePlay()}
               disabled={isPlaying || isRuntimeLoading}
               aria-label={isPlaying ? "update" : "play"}
               className="h-7 w-7 rounded-full hover:bg-success/20"

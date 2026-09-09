@@ -55,7 +55,11 @@ async function executeClaim(
   try {
     signal.throwIfAborted();
     flushing = (async () => {
-      while (!finished && !controller.signal.aborted) {
+      for (;;) {
+        if (finished || controller.signal.aborted) {
+          break;
+        }
+
         await flush();
         await delay(2000, controller.signal);
       }
@@ -134,9 +138,13 @@ async function executeClaim(
     await flushing?.catch(() => undefined);
     try {
       if (!signal.aborted && !controller.signal.aborted) {
-        do {
+        for (;;) {
           await flush();
-        } while (pendingText && !controller.signal.aborted);
+
+          if (!pendingText || controller.signal.aborted) {
+            break;
+          }
+        }
       }
     } finally {
       cancel();

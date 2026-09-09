@@ -282,7 +282,6 @@ export async function deleteWorkspace(context: ServiceContext, workspaceId: stri
 
   for (const output of outputRoots) {
     // Delete through the capability-aware path before workspace cascades discard provider and R2 IDs.
-    // eslint-disable-next-line no-await-in-loop
     await deleteOutput(context, user.id, output.id);
   }
 

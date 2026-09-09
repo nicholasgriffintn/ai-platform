@@ -499,8 +499,8 @@ async function mockComposioRequest(request, url) {
       ["auth_config_ids", "auth_config.id"],
       ["connected_account_ids", "id"],
     ];
-    const readField = (account, path) =>
-      path.split(".").reduce((value, key) => value?.[key], account);
+    const readField = (account, fieldPath) =>
+      fieldPath.split(".").reduce((value, key) => value?.[key], account);
     const items = [...composioAccounts.values()].filter((account) =>
       filters.every(([parameter, field]) => {
         const expected = url.searchParams.get(parameter)?.split(",").filter(Boolean);

@@ -75,9 +75,9 @@ export function convertCatalogue(providers, remoteProviders, previous) {
   const families = {};
 
   for (const [key, group] of [...groups].sort(([a], [b]) => a.localeCompare(b))) {
-    const descriptions = group.entries.map((entry) => entry.values.description).filter(Boolean);
+    const description = group.entries.map((entry) => entry.values.description).find(Boolean);
     const fallback =
-      descriptions[0] ??
+      description ??
       describeModel(group.entries[0].values.name || key.split("/").at(-1), group.entries[0].values);
 
     for (const entry of group.entries) {
@@ -158,7 +158,7 @@ export function convertCatalogue(providers, remoteProviders, previous) {
     const offerings = {};
 
     for (const id of Object.keys(providers[provider])) {
-      const entry = entries.find((entry) => entry.id === id);
+      const entry = entries.find((candidate) => candidate.id === id);
       const inherited = {
         ...families[models[entry.key].family].defaults,
         ...models[entry.key].defaults,

@@ -93,7 +93,7 @@ export function ArticleSourceArticleList({
             <div className="space-y-4">
               {sourceArticles.map((article, index) => {
                 const articleData: SourceArticleData = article.content;
-                const isExpanded = !!expandedArticleIds[article.id];
+                const isExpanded = expandedArticleIds[article.id];
                 const articleTitle =
                   articleData?.title?.replace("Analysis: ", "") || `Source Article ${index + 1}`;
 

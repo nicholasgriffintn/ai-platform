@@ -56,7 +56,7 @@ export function Analytics({
     script.src = `${beaconEndpoint}/beacon.min.js`;
     script.async = true;
 
-    script.onload = () => {
+    script.addEventListener("load", () => {
       if (window.Beacon) {
         window.Beacon.init({
           endpoint: beaconEndpoint,
@@ -73,11 +73,9 @@ export function Analytics({
           userId: beaconUserId || window.__BEACON_USER_ID__,
         });
       }
-    };
+    });
 
     document.head.appendChild(script);
-
-    return () => {};
   }, [isEnabled]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
@@ -100,7 +98,7 @@ export function Analytics({
     script.src = `${beaconEndpoint}/exp-beacon.min.js`;
     script.async = true;
 
-    script.onload = () => {
+    script.addEventListener("load", () => {
       if (window.BeaconOpenFeature) {
         void window.BeaconOpenFeature.init({
           debug: beaconDebug,
@@ -110,11 +108,9 @@ export function Analytics({
           bootstrap: openFeatureBootstrap || window.__BEACON_OPENFEATURE_BOOTSTRAP__,
         });
       }
-    };
+    });
 
     document.head.appendChild(script);
-
-    return () => {};
   }, [isEnabled, isExperimentsEnabled]);
 
   return null;

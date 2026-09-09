@@ -46,6 +46,7 @@ export function getModelTierIcon(tier: ModelTier | null) {
       return Rocket;
     case "ultra":
       return Crown;
+    case null:
     default:
       return Wand2;
   }
@@ -85,6 +86,7 @@ function getTierTone(tier: ModelTier | null) {
         check: "text-failure",
         panelIcon: "border-failure/45 bg-failure/12 text-failure",
       };
+    case null:
     default:
       return {
         icon: "bg-creative/12 text-creative",
@@ -111,6 +113,7 @@ function getEmptyRoleMessage(runtime: ModelLineupRuntime) {
       return "No matching model was discovered on this device.";
     case "machine":
       return "No matching model is available on the selected machine.";
+    case "hosted":
     default:
       return "Not available on your plan yet";
   }
@@ -124,6 +127,7 @@ function getTierHint(runtime: ModelLineupRuntime) {
       return "Only models discovered on this device are shown. Install a matching model to use this tier.";
     case "machine":
       return "Only models advertised by the selected machine are shown.";
+    case "hosted":
     default:
       return "The first model your plan can run wins. Add a provider key to move up the lineup.";
   }

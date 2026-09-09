@@ -11,11 +11,13 @@ function PopoverTrigger({ ...props }: React.ComponentProps<typeof PopoverPrimiti
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
 }
 
+const DEFAULT_COLLISION_PADDING = { top: 64, right: 8, bottom: 8, left: 8 };
+
 function PopoverContent({
   className,
   align = "center",
   sideOffset = 4,
-  collisionPadding = { top: 64, right: 8, bottom: 8, left: 8 },
+  collisionPadding = DEFAULT_COLLISION_PADDING,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
   return (

@@ -23,7 +23,7 @@ export function getCachedModelConfig(
   const cacheKey = [userId ?? "anonymous", provider ?? "any", model].join(":");
   const cached = modelConfigCache.get(cacheKey);
 
-  if (cached) {
+  if (cached !== undefined) {
     return cached;
   }
 

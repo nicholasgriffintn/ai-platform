@@ -50,7 +50,7 @@ export function requireComposioFilename(filename: string): string {
 }
 
 function hasControlCharacter(value: string): boolean {
-  return [...value].some((character) => {
+  return Array.from(value).some((character) => {
     const code = character.charCodeAt(0);
 
     return code <= 31 || code === 127;

@@ -88,8 +88,9 @@ export function useProjectWorkbenchPreview({
     refetchInterval: (query) =>
       liveOrPoll(
         query,
-        (query) =>
-          query.state.data?.state === "healthy" || query.state.data?.state === "starting"
+        (currentQuery) =>
+          currentQuery.state.data?.state === "healthy" ||
+          currentQuery.state.data?.state === "starting"
             ? ACTIVE_REFRESH_MS
             : false,
         "workbench_preview.changed",

@@ -73,7 +73,7 @@ export function ConfirmationDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
             {cancelText}
           </Button>
-          <Button variant={variant} onClick={handleConfirm} isLoading={isLoading}>
+          <Button variant={variant} onClick={() => void handleConfirm()} isLoading={isLoading}>
             {isLoading ? "Loading..." : confirmText}
           </Button>
         </DialogFooter>

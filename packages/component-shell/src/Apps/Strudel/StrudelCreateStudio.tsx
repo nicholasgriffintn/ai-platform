@@ -145,8 +145,8 @@ export function StrudelCreateStudio({ basePath, projectId }: StrudelCreateStudio
       onSelectExample={handleLoadExample}
       isGenerating={generateMutation.isPending}
       isSaving={saveMutation.isPending}
-      onGenerate={handleGenerate}
-      onSave={handleSave}
+      onGenerate={() => void handleGenerate()}
+      onSave={() => void handleSave()}
     />
   );
 }

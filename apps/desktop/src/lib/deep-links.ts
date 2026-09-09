@@ -44,21 +44,23 @@ export function subscribeToDeepLinks(
   let stopped = false;
   let stopListening: (() => void) | undefined;
 
-  const listening = listen(DEEP_LINK_EVENT, (event) => {
-    const path = readDeepLinkPath(event.payload);
+  const startListening = async () => {
+    const stop = await listen(DEEP_LINK_EVENT, (event) => {
+      const path = readDeepLinkPath(event.payload);
 
-    if (path && !stopped) {
-      open(path);
-    }
-  })
-    .then((stop) => {
-      stopListening = stop;
-
-      if (stopped) {
-        stop();
+      if (path && !stopped) {
+        open(path);
       }
-    })
-    .catch(() => undefined);
+    });
+
+    stopListening = stop;
+
+    if (stopped) {
+      stop();
+    }
+  };
+
+  const listening = startListening().catch(() => undefined);
 
   return () => {
     stopped = true;

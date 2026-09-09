@@ -387,7 +387,7 @@ export class RequestPreparer {
     });
 
     const shouldStoreMessages =
-      Boolean(scope.options.store) && scope.options.conversation_history_write_mode !== "append";
+      (scope.options.store ?? false) && scope.options.conversation_history_write_mode !== "append";
 
     const storeMessagesTask = shouldStoreMessages
       ? storeUserTurn({
@@ -416,7 +416,7 @@ export class RequestPreparer {
       : await listSkillAvailability(
           buildSkillAvailabilityInput({
             skillScope,
-            supportsToolCalls: Boolean(primaryModelConfig.supportsToolCalls),
+            supportsToolCalls: primaryModelConfig.supportsToolCalls ?? false,
             enabledToolIds: new Set(enabledTools ?? []),
           }),
           scopedSkillCatalog?.listDefinitions(),
@@ -438,7 +438,7 @@ export class RequestPreparer {
       activeGoal,
     });
 
-    if (storeMessagesTask) {
+    if (storeMessagesTask !== null) {
       await storeMessagesTask;
     }
 
@@ -481,8 +481,8 @@ export class RequestPreparer {
             skills,
             deferSuggestedTools:
               enabledTools !== undefined ||
-              (Boolean(primaryModelConfig.supportsToolSearch) &&
-                Boolean(enabledTools?.includes("tool_search"))),
+              ((primaryModelConfig.supportsToolSearch ?? false) &&
+                (enabledTools?.includes("tool_search") ?? false)),
           }),
       activeGoal,
       toolOptions: this.resolveToolOptions(scope, savedToolConfigurations, enabledTools),

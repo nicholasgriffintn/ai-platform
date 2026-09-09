@@ -187,8 +187,8 @@ export function collapseRegionalModelVariants<T extends ModelGroupingItem>(
   );
 }
 
-export function getSelectedModelProvider<T extends ModelGroupingItem>(
-  models: readonly T[],
+export function getSelectedModelProvider(
+  models: readonly ModelGroupingItem[],
   selectedId?: string | null,
 ) {
   if (!selectedId) {

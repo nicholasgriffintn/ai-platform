@@ -264,17 +264,19 @@ function getConfiguredResponseModalities(
   const outputs = modelConfig.modalities?.output ?? modelConfig.modalities?.input ?? ["text"];
   const responseModalities = outputs
     .map((modality) => {
-      switch (modality) {
-        case "text":
-          return "TEXT";
-        case "image":
-          return "IMAGE";
-        case "audio":
-        case "speech":
-          return "AUDIO";
-        default:
-          return undefined;
+      if (modality === "text") {
+        return "TEXT";
       }
+
+      if (modality === "image") {
+        return "IMAGE";
+      }
+
+      if (modality === "audio" || modality === "speech") {
+        return "AUDIO";
+      }
+
+      return undefined;
     })
     .filter((modality): modality is GoogleResponseModality => !!modality);
 

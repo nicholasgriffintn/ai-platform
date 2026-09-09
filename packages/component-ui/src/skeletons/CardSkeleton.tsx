@@ -31,7 +31,7 @@ export function CardSkeleton({
             </div>
           )}
           <div className="space-y-3">
-            {Array.from({ length: contentLines }).map((_, lineIndex) => (
+            {Array.from({ length: contentLines }).map((_line, lineIndex) => (
               <Skeleton
                 key={lineIndex}
                 className="h-4"

@@ -85,9 +85,9 @@ export function useProjectTasks(projectId: string) {
     queryKey: projectTasksQueryKey(projectId),
     queryFn: () => listProjectTasks(projectId),
     enabled: Boolean(projectId) && isAuthenticated && isPro,
-    refetchInterval: (query) =>
+    refetchInterval: (activeQuery) =>
       liveOrPoll(
-        query,
+        activeQuery,
         (currentQuery) => projectTasksRefetchInterval(currentQuery.state.data?.tasks),
         "project_task.changed",
       ),
@@ -232,7 +232,7 @@ export function useTaskAttention() {
     queryFn: listTaskInbox,
     enabled: isAuthenticated && isPro,
     staleTime: 30_000,
-    refetchInterval: (query) => liveOrPoll(query, 15_000, "project_task.changed"),
+    refetchInterval: (activeQuery) => liveOrPoll(activeQuery, 15_000, "project_task.changed"),
   });
 
   const queryClient = useQueryClient();

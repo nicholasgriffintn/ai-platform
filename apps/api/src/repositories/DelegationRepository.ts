@@ -125,7 +125,7 @@ export class DelegationRepository extends BaseRepository<Pick<IEnv, "DB">> {
       true,
     );
 
-    return Number(row?.count ?? 0);
+    return row?.count ?? 0;
   }
 
   async claimDelegation(id: string): Promise<Delegation | null> {

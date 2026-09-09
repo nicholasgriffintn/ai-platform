@@ -68,7 +68,7 @@ export function resolveSkillAvailability(
 
   const enabled =
     input.scope === "project"
-      ? Boolean(input.enabledSkillIds?.has(skill.id))
+      ? (input.enabledSkillIds?.has(skill.id) ?? false)
       : !input.disabledSkillIds?.has(skill.id);
 
   return enabled

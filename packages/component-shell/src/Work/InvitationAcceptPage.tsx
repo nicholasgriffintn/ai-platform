@@ -47,7 +47,7 @@ export function InvitationAcceptPage() {
       isAccepting={acceptInvitation.isPending}
       errorMessage={acceptInvitation.error?.message}
       acceptedWorkspace={acceptInvitation.data ?? null}
-      onOpenWorkspace={(workspaceId) => navigate(`/work/${workspaceId}`)}
+      onOpenWorkspace={(workspaceId) => void navigate(`/work/${workspaceId}`)}
     />
   );
 }

@@ -95,7 +95,6 @@ export async function maybeVectorizeExtractedContent({
     try {
       for (const request of requests) {
         // Keep writes ordered so a later failure can compensate the exact durable prefix.
-        // oxlint-disable-next-line eslint/no-await-in-loop
         const response = await insertEmbedding({
           context: req.context,
           env: req.env,

@@ -21,9 +21,9 @@ import { RecordingWorkflow } from "./Recordings/RecordingWorkflow.js";
 import { RecordingView } from "./Recordings/View.js";
 
 export function RecordingsApp({ basePath, projectId, subpath }: ExperienceProps) {
-  const segments = subpath.split("/").filter(Boolean);
-  const recordingId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;
-  const isNew = segments[0] === "new";
+  const firstSegment = subpath.split("/").find(Boolean);
+  const recordingId = firstSegment && firstSegment !== "new" ? firstSegment : undefined;
+  const isNew = firstSegment === "new";
   const {
     data: recordings,
     isLoading,

@@ -37,7 +37,6 @@ export async function readResponseTextWithinLimit(
   try {
     while (true) {
       // Stream chunks must be consumed in order to enforce a cumulative byte limit.
-      // eslint-disable-next-line no-await-in-loop
       const { done, value } = await reader.read();
 
       if (done) {
@@ -47,7 +46,6 @@ export async function readResponseTextWithinLimit(
       byteLength += value.byteLength;
 
       if (byteLength > maxBytes) {
-        // eslint-disable-next-line no-await-in-loop
         await reader.cancel();
         throw new ResponseBodyTooLargeError(maxBytes);
       }

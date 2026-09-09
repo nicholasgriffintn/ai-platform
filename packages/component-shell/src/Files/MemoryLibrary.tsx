@@ -44,6 +44,22 @@ export function MemoryLibrary({ projectId }: { projectId?: string }) {
     }
   };
 
+  const createMemory = async () => {
+    const name = newName.trim();
+
+    try {
+      await create.mutateAsync({
+        name,
+        content: "",
+        ...(projectId ? { projectId } : {}),
+      });
+      setOpenName(name);
+      setNewName("");
+    } catch (createError) {
+      toast.error(getErrorMessage(createError, "Unable to start this memory"));
+    }
+  };
+
   if (isLoading) {
     return <CardGridLoadingSkeleton label="Loading memory" />;
   }
@@ -66,19 +82,7 @@ export function MemoryLibrary({ projectId }: { projectId?: string }) {
             return;
           }
 
-          create
-            .mutateAsync({
-              name: newName.trim(),
-              content: "",
-              ...(projectId ? { projectId } : {}),
-            })
-            .then(() => {
-              setOpenName(newName.trim());
-              setNewName("");
-            })
-            .catch((createError: unknown) => {
-              toast.error(getErrorMessage(createError, "Unable to start this memory"));
-            });
+          void createMemory();
         }}
       >
         <div className="min-w-56 flex-1">

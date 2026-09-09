@@ -166,7 +166,7 @@ export class TeammateRepository extends BaseRepository {
     const result = this.buildUpdateQuery("teammates", data, allowedFields, "id = ?", [teammateId], {
       jsonFields: ["servers", "few_shot_examples", "enabled_tools", "skill_ids"],
       transformer: (field, value) => {
-        if (field === "temperature" && value !== undefined && value !== null) {
+        if (field === "temperature" && typeof value === "number") {
           return value.toString();
         }
 

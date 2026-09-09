@@ -61,8 +61,8 @@ export function useTrainingJobs() {
     refetchInterval: (query) =>
       liveOrPoll(
         query,
-        (query) => {
-          const jobs = query.state.data;
+        (currentQuery) => {
+          const jobs = currentQuery.state.data;
 
           if (!jobs?.some((job) => ACTIVE_JOB_STATUSES.has(job.status.toLowerCase()))) {
             return false;
@@ -137,8 +137,8 @@ export function useTrainingDeployments() {
     refetchInterval: (query) =>
       liveOrPoll(
         query,
-        (query) => {
-          const deployments = query.state.data;
+        (currentQuery) => {
+          const deployments = currentQuery.state.data;
 
           if (
             !deployments?.some((deployment) =>

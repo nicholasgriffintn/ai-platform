@@ -37,9 +37,9 @@ export function useGoal(
     enabled,
     retry: false,
     staleTime: 15_000,
-    refetchInterval: (query) =>
+    refetchInterval: (activeQuery) =>
       liveOrPoll(
-        query,
+        activeQuery,
         options?.refetchInterval ??
           ((currentQuery) => goalRefetchInterval(currentQuery.state.data)),
         "goal.changed",

@@ -65,25 +65,27 @@ export function DocumentMetadataPanel({
   };
 
   const getSentimentColor = (sentiment?: string) => {
-    switch (sentiment) {
-      case "positive":
-        return "bg-success/12 text-success";
-      case "negative":
-        return "bg-failure/12 text-failure";
-      default:
-        return "bg-selection text-muted-foreground";
+    if (sentiment === "positive") {
+      return "bg-success/12 text-success";
     }
+
+    if (sentiment === "negative") {
+      return "bg-failure/12 text-failure";
+    }
+
+    return "bg-selection text-muted-foreground";
   };
 
   const getSourceTypeIcon = (sourceType?: string) => {
-    switch (sourceType) {
-      case "tab_recording":
-        return <Monitor size={14} className="text-muted-foreground" />;
-      case "manual":
-        return <User size={14} className="text-muted-foreground" />;
-      default:
-        return <FileText size={14} className="text-muted-foreground" />;
+    if (sourceType === "tab_recording") {
+      return <Monitor size={14} className="text-muted-foreground" />;
     }
+
+    if (sourceType === "manual") {
+      return <User size={14} className="text-muted-foreground" />;
+    }
+
+    return <FileText size={14} className="text-muted-foreground" />;
   };
 
   if (isEditing) {

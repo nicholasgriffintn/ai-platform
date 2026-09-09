@@ -310,7 +310,7 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     recordD1ResultMeta(executions?.meta);
     recordD1ResultMeta(tasksDeleted?.meta);
 
-    return Number(tasksDeleted?.meta?.changes ?? 0);
+    return tasksDeleted?.meta?.changes ?? 0;
   }
 
   public async createTaskExecution(

@@ -52,7 +52,7 @@ export function ProfileHistoryTab() {
         isExporting={isExporting}
         isDeletingLocal={deleteAllChats.isPending}
         isDeletingRemote={deleteAllRemoteChats.isPending}
-        onExport={handleExportJson}
+        onExport={() => void handleExportJson()}
         onDeleteLocal={async () => {
           try {
             trackEvent({

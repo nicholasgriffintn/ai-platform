@@ -149,9 +149,9 @@ export function RecipeEventTriggersDialog({
         )}
 
         {isLoading ? (
-          <p role="status" className="py-8 text-center text-sm text-muted-foreground">
+          <output className="block py-8 text-center text-sm text-muted-foreground">
             Loading event options…
-          </p>
+          </output>
         ) : (
           <div className="grid gap-6 py-2 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
             <RecipeEventTriggerForm

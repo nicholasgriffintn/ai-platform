@@ -23,7 +23,7 @@ describe("parseSseBuffer", () => {
   it("returns incomplete trailing buffers for the next parse cycle", () => {
     const onEvent = vi.fn();
     const remaining = parseSseBuffer<{ type: string }>(
-      `data: {"type":"run_started"}\n\n` + `data: {"type":"run`,
+      `data: {"type":"run_started"}\n\ndata: {"type":"run`,
       {
         onEvent,
       },
@@ -36,7 +36,7 @@ describe("parseSseBuffer", () => {
   it("supports multiline data payloads", () => {
     const onEvent = vi.fn();
 
-    parseSseBuffer<{ message: string }>(`data: {"message":"line 1\\n` + `line 2"}\n\n`, {
+    parseSseBuffer<{ message: string }>(`data: {"message":"line 1\\nline 2"}\n\n`, {
       onEvent,
     });
 

@@ -20,7 +20,7 @@ export function useOwnAppChrome(ownsChrome: boolean): AppChrome | null {
 
   useEffect(() => {
     if (!setOwnsChrome) {
-      return;
+      return undefined;
     }
 
     setOwnsChrome(ownsChrome);

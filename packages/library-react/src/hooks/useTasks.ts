@@ -33,12 +33,12 @@ export function useTasks({ shouldRefetch = true }) {
     refetchInterval: (query) =>
       liveOrPoll(
         query,
-        (query) => {
+        (currentQuery) => {
           if (!shouldRefetch) {
             return false;
           }
 
-          const data = query.state.data;
+          const data = currentQuery.state.data;
 
           if (!data) {
             return false;

@@ -1,4 +1,4 @@
-import Stripe from "stripe";
+import { Stripe } from "stripe";
 
 import { runStripeOverageSync } from "~/lib/billing/stripeOverageSync";
 import { RepositoryManager } from "~/repositories";

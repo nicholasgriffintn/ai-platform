@@ -19,20 +19,24 @@ export function useWebLLMModels({ enabled = true }: UseWebLLMModelsOptions = {})
 
   useEffect(() => {
     if (!enabled || deviceModelSource()) {
-      return;
+      return undefined;
     }
 
     let mounted = true;
 
-    loadWebLLMModels()
-      .then((loadedModels) => {
+    const load = async () => {
+      try {
+        const loadedModels = await loadWebLLMModels();
+
         if (mounted) {
           setModels(loadedModels);
         }
-      })
-      .catch((error: unknown) => {
+      } catch (error: unknown) {
         console.error("[useWebLLMModels] Failed to load WebLLM models:", error);
-      });
+      }
+    };
+
+    void load();
 
     return () => {
       mounted = false;

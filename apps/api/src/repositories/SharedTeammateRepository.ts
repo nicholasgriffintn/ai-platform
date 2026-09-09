@@ -171,6 +171,7 @@ export class SharedTeammateRepository extends BaseRepository {
         query +=
           " ORDER BY CAST(sa.rating_average AS REAL) DESC, sa.rating_count DESC, sa.created_at DESC";
         break;
+      case "recent":
       default:
         query += " ORDER BY sa.created_at DESC";
     }
@@ -271,6 +272,7 @@ export class SharedTeammateRepository extends BaseRepository {
         query +=
           " ORDER BY CAST(sa.rating_average AS REAL) DESC, sa.rating_count DESC, sa.created_at DESC";
         break;
+      case "recent":
       default:
         query += " ORDER BY sa.created_at DESC";
     }

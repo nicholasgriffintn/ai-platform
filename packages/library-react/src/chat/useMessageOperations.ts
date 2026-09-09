@@ -38,7 +38,7 @@ export function useMessageOperations(requestOptions?: ChatRequestOptions) {
         }
 
         const existingMessageIndex = oldData.messages.findIndex(
-          (message) => message.id === normalizedMessage.id,
+          (existingMessage) => existingMessage.id === normalizedMessage.id,
         );
 
         if (existingMessageIndex !== -1) {

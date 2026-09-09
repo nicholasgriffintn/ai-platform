@@ -527,10 +527,8 @@ export class EmbeddingRepository extends BaseRepository {
 
       try {
         // Keep pages ordered so compensation knows exactly which IDs reached durable storage.
-        // oxlint-disable-next-line eslint/no-await-in-loop
         await database.batch(page.map((insert) => insert.statement));
       } catch (error) {
-        // oxlint-disable-next-line eslint/no-await-in-loop
         await this.rollbackInsertedEmbeddings(insertedIds, scope);
         throw error;
       }
@@ -545,7 +543,6 @@ export class EmbeddingRepository extends BaseRepository {
 
       try {
         // Bound each cleanup statement so it stays below D1's parameter limit.
-        // oxlint-disable-next-line eslint/no-await-in-loop
         await this.executeRun(
           `DELETE FROM embedding
             WHERE user_id = ? AND namespace = ?

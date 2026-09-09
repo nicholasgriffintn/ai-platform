@@ -64,7 +64,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
             aria-valuemin={min}
             aria-valuemax={max}
             aria-valuenow={Number(value)}
-            aria-valuetext={label ? `${label}: ${value}` : String(value)}
+            aria-valuetext={label ? `${label}: ${String(value)}` : String(value)}
             aria-describedby={describedBy}
             {...props}
           />

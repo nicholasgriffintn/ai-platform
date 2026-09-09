@@ -27,6 +27,7 @@ export function LineWidthPicker({ lineWidth, setLineWidth }: LineWidthPickerProp
                   : "border border-muted hover:border-primary/50 hover:bg-muted"
               } `}
               title={`${width}px`}
+              aria-label={`${width}px line width`}
             >
               <div className="flex w-full items-center justify-center">
                 <div

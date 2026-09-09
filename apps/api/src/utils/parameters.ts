@@ -205,6 +205,7 @@ export function calculateReasoningBudget(
     case "xhigh":
     case "max":
       return clampReasoningBudget(effectiveMaxTokens, effectiveMaxTokens);
+    case "ultra":
     default:
       return clampReasoningBudget(effectiveMaxTokens * 0.75, effectiveMaxTokens);
   }

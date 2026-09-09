@@ -493,144 +493,133 @@ export const MessageContent = memo((props: MessageContentProps) => {
       );
     }
 
-    return (
-      <>
-        {typeof message.content === "string" ? (
-          renderTextContent(
-            message.role,
-            message.content,
-            message.reasoning || {
-              content: thinkingContent,
-              collapsed: true,
-            },
-            message.citations,
-            message.data,
-            handleArtifactOpen,
-            undefined,
-            previewIsGenerating,
-          )
-        ) : Array.isArray(message.content) ? (
-          <div className="space-y-4">
-            {message.content.map((item: MessageContentType, i: number) => {
-              if (item.type === "text" && item.text) {
-                return renderTextContent(
-                  message.role,
-                  item.text,
-                  message.reasoning || {
-                    content: thinkingContent,
-                    collapsed: true,
-                  },
-                  message.citations,
-                  message.data,
-                  handleArtifactOpen,
-                  `text-${i}`,
-                  previewIsGenerating,
-                );
-              }
+    return typeof message.content === "string" ? (
+      renderTextContent(
+        message.role,
+        message.content,
+        message.reasoning || {
+          content: thinkingContent,
+          collapsed: true,
+        },
+        message.citations,
+        message.data,
+        handleArtifactOpen,
+        undefined,
+        previewIsGenerating,
+      )
+    ) : Array.isArray(message.content) ? (
+      <div className="space-y-4">
+        {message.content.map((item: MessageContentType, i: number) => {
+          if (item.type === "text" && item.text) {
+            return renderTextContent(
+              message.role,
+              item.text,
+              message.reasoning || {
+                content: thinkingContent,
+                collapsed: true,
+              },
+              message.citations,
+              message.data,
+              handleArtifactOpen,
+              `text-${i}`,
+              previewIsGenerating,
+            );
+          }
 
-              if (item.type === "image_url" && item.image_url) {
-                return renderImageContent(item.image_url.url, i);
-              }
+          if (item.type === "image_url" && item.image_url) {
+            return renderImageContent(item.image_url.url, i);
+          }
 
-              if (item.type === "audio_url" && item.audio_url) {
-                return renderAudioContent(item.audio_url.url, undefined, i);
-              }
+          if (item.type === "audio_url" && item.audio_url) {
+            return renderAudioContent(item.audio_url.url, undefined, i);
+          }
 
-              if (item.type === "input_audio" && item.input_audio) {
-                return renderAudioContent(item.input_audio.data || "", undefined, i);
-              }
+          if (item.type === "input_audio" && item.input_audio) {
+            return renderAudioContent(item.input_audio.data || "", undefined, i);
+          }
 
-              if (item.type === "artifact" && item.artifact) {
-                const artifacts: ArtifactProps[] = Array.isArray(message.content)
-                  ? message.content
-                      .filter(
-                        (contentItem) => contentItem.type === "artifact" && contentItem.artifact,
-                      )
-                      .map((contentItem) => {
-                        const artifact = contentItem.artifact;
+          if (item.type === "artifact" && item.artifact) {
+            const artifacts: ArtifactProps[] = Array.isArray(message.content)
+              ? message.content
+                  .filter((contentItem) => contentItem.type === "artifact" && contentItem.artifact)
+                  .map((contentItem) => {
+                    const artifact = contentItem.artifact;
 
-                        return {
-                          identifier: artifact?.identifier || "",
-                          type: artifact?.type || "",
-                          language: artifact?.language || "",
-                          title: artifact?.title || "",
-                          display: artifact?.display,
-                          content: artifact?.content || "",
-                        };
-                      })
-                  : [];
+                    return {
+                      identifier: artifact?.identifier || "",
+                      type: artifact?.type || "",
+                      language: artifact?.language || "",
+                      title: artifact?.title || "",
+                      display: artifact?.display,
+                      content: artifact?.content || "",
+                    };
+                  })
+              : [];
 
-                const isArtifactCombinable = canCombineArtifacts(artifacts);
+            const isArtifactCombinable = canCombineArtifacts(artifacts);
 
-                const artifact: ArtifactProps = {
-                  identifier: item.artifact.identifier,
-                  type: item.artifact.type,
-                  language: item.artifact.language,
-                  title: item.artifact.title,
-                  display: item.artifact.display,
-                  content: item.artifact.content,
-                };
+            const artifact: ArtifactProps = {
+              identifier: item.artifact.identifier,
+              type: item.artifact.type,
+              language: item.artifact.language,
+              title: item.artifact.title,
+              display: item.artifact.display,
+              content: item.artifact.content,
+            };
 
-                if (isInlinePreviewArtifact(artifact)) {
-                  return (
-                    <ArtifactInlinePreview
-                      key={`artifact-item-${item.artifact.identifier}`}
-                      artifact={artifact}
-                      artifacts={artifacts}
-                      isGenerating={previewIsGenerating}
-                    />
-                  );
-                }
+            if (isInlinePreviewArtifact(artifact)) {
+              return (
+                <ArtifactInlinePreview
+                  key={`artifact-item-${item.artifact.identifier}`}
+                  artifact={artifact}
+                  artifacts={artifacts}
+                  isGenerating={previewIsGenerating}
+                />
+              );
+            }
 
-                return (
-                  <ArtifactCallout
-                    key={`artifact-item-${item.artifact.identifier}`}
-                    identifier={item.artifact.identifier}
-                    type={item.artifact.type}
-                    language={item.artifact.language}
-                    title={item.artifact.title}
-                    content={item.artifact.content}
-                    onOpen={handleArtifactOpen}
-                    isCombinable={isArtifactCombinable}
-                    combinableCount={artifacts.length}
-                    artifacts={artifacts}
-                  />
-                );
-              }
+            return (
+              <ArtifactCallout
+                key={`artifact-item-${item.artifact.identifier}`}
+                identifier={item.artifact.identifier}
+                type={item.artifact.type}
+                language={item.artifact.language}
+                title={item.artifact.title}
+                content={item.artifact.content}
+                onOpen={handleArtifactOpen}
+                isCombinable={isArtifactCombinable}
+                combinableCount={artifacts.length}
+                artifacts={artifacts}
+              />
+            );
+          }
 
-              if (item.type === "selection" && item.selection) {
-                return renderSelectionContent(item.selection, i);
-              }
+          if (item.type === "selection" && item.selection) {
+            return renderSelectionContent(item.selection, i);
+          }
 
-              return null;
-            })}
-          </div>
-        ) : message.data && "attachments" in message.data && message.data.attachments ? (
-          <div className="space-y-4">
-            {message.data.attachments.map((attachment: Attachment, i: number) => {
-              if (attachment.type === "image") {
-                return renderImageContent(attachment.url, i);
-              }
+          return null;
+        })}
+      </div>
+    ) : message.data && "attachments" in message.data && message.data.attachments ? (
+      <div className="space-y-4">
+        {message.data.attachments.map((attachment: Attachment, i: number) => {
+          if (attachment.type === "image") {
+            return renderImageContent(attachment.url, i);
+          }
 
-              if (attachment.type === "document") {
-                return renderDocumentContent(
-                  attachment.url,
-                  attachment.name,
-                  i,
-                  attachment.isMarkdown,
-                );
-              }
+          if (attachment.type === "document") {
+            return renderDocumentContent(attachment.url, attachment.name, i, attachment.isMarkdown);
+          }
 
-              if (attachment.type === "audio") {
-                return renderAudioContent(attachment.url, attachment.name, i);
-              }
+          if (attachment.type === "audio") {
+            return renderAudioContent(attachment.url, attachment.name, i);
+          }
 
-              return null;
-            })}
-          </div>
-        ) : null}
-      </>
-    );
+          return null;
+        })}
+      </div>
+    ) : null;
   }, [
     conversationResolvedToolCallIds,
     message.role,

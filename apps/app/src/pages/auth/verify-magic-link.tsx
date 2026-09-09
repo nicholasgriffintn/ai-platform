@@ -22,7 +22,7 @@ const VerifyMagicLink = () => {
   const token = searchParams.get("token");
 
   const { mutate: verify, isPending } = useMutation({
-    mutationFn: (token: string) => authService.verifyMagicLink(token),
+    mutationFn: (magicLinkToken: string) => authService.verifyMagicLink(magicLinkToken),
     onSuccess: async (data) => {
       if (data.success) {
         await refreshAuthStatus();

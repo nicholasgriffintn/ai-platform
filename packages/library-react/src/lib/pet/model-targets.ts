@@ -78,7 +78,6 @@ export function getPetModelTargetOptions(models: ModelConfig): PetModelTargetOpt
 
   const options = [...makers.values(), ...providers.values(), ...families.values()];
 
-  // oxlint-disable-next-line unicorn/no-array-sort
   return options.sort(
     (left, right) =>
       KIND_ORDER[left.kind] - KIND_ORDER[right.kind] || left.label.localeCompare(right.label),

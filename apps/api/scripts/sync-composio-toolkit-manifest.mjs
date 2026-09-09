@@ -200,7 +200,7 @@ const entries = await mapConcurrent(
 
     if (versions.length !== 1 || typeof versions[0] !== "string") {
       throw new Error(
-        `Expected one current toolkit version for ${toolkitSlug}, received ${versions}`,
+        `Expected one current toolkit version for ${toolkitSlug}, received ${versions.join(",")}`,
       );
     }
 

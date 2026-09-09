@@ -34,6 +34,8 @@ export function useOpenFeature() {
 
       return () => clearInterval(interval);
     }
+
+    return undefined;
   }, []);
 
   const waitForOpenFeature = useCallback(async () => {

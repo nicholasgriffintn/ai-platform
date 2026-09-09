@@ -32,7 +32,7 @@ export function DrawingCanvas({
 
     const image = new Image();
 
-    image.onload = () => {
+    image.addEventListener("load", () => {
       const ctx = canvasRef.current?.getContext("2d");
 
       if (!ctx) {
@@ -41,7 +41,7 @@ export function DrawingCanvas({
 
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.drawImage(image, 0, 0);
-    };
+    });
 
     image.src = drawingData;
   }, [drawingData]);
@@ -140,25 +140,23 @@ export function DrawingCanvas({
   useEffect(() => {
     const canvas = canvasRef?.current;
 
-    if (!canvas) {
-      return;
+    if (!canvas || isReadOnly) {
+      return undefined;
     }
 
-    if (!isReadOnly) {
-      const handleMouseMove = (e: MouseEvent) => draw(e);
-      const handleTouchMove = (e: TouchEvent) => {
-        e.preventDefault();
-        draw(e);
-      };
+    const handleMouseMove = (e: MouseEvent) => draw(e);
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      draw(e);
+    };
 
-      canvas.addEventListener("mousemove", handleMouseMove);
-      canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("touchmove", handleTouchMove);
 
-      return () => {
-        canvas.removeEventListener("mousemove", handleMouseMove);
-        canvas.removeEventListener("touchmove", handleTouchMove);
-      };
-    }
+    return () => {
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("touchmove", handleTouchMove);
+    };
   }, [isReadOnly, currentColor, lineWidth, isFillMode]);
 
   return (

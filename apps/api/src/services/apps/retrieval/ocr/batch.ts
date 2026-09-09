@@ -174,7 +174,6 @@ export async function startOcrBatch(
 
   for (const item of input.requests) {
     // Resolve sequentially so one batch cannot materialise every private file in memory at once.
-    // eslint-disable-next-line no-await-in-loop
     const resolved = await buildBatchRequest(
       context,
       user.id,

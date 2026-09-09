@@ -166,16 +166,16 @@ export const MessageActions = ({
 
     audio.crossOrigin = "use-credentials";
     speechAudioRef.current = audio;
-    audio.onended = () => {
+    audio.addEventListener("ended", () => {
       speechAudioRef.current = null;
       setIsPlayingSpeech(false);
-    };
+    });
 
-    audio.onerror = () => {
+    audio.addEventListener("error", () => {
       speechAudioRef.current = null;
       setIsPlayingSpeech(false);
       toast.error("Failed to play generated speech");
-    };
+    });
 
     setIsPlayingSpeech(true);
     void audio.play().catch(() => {
@@ -352,7 +352,7 @@ export const MessageActions = ({
           <Button
             type="button"
             variant="icon"
-            onClick={() => submitFeedback(1)}
+            onClick={() => void submitFeedback(1)}
             disabled={isSubmittingFeedback || feedbackState === "liked"}
             className={cn(
               messageActionButtonClassName,
@@ -368,7 +368,7 @@ export const MessageActions = ({
           <Button
             type="button"
             variant="icon"
-            onClick={() => submitFeedback(-1)}
+            onClick={() => void submitFeedback(-1)}
             disabled={isSubmittingFeedback || feedbackState === "disliked"}
             className={cn(
               messageActionButtonClassName,

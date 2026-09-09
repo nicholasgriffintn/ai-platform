@@ -156,7 +156,7 @@ describe("TaskService", () => {
   });
 
   it("reports a missing queue binding while retaining the durable task", async () => {
-    const service = new TaskService({} as any, taskRepository as any);
+    const service = new TaskService({}, taskRepository as any);
 
     await expect(
       service.enqueueTask({

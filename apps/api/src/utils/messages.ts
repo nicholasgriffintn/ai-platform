@@ -73,7 +73,7 @@ function isInboundMediaUrl(value: string): boolean {
 function isImageMedia(value: MessageMediaInput): boolean {
   const mimeType = value.mimeType?.split(";")[0]?.trim().toLowerCase();
 
-  return Boolean(mimeType?.startsWith("image/") || IMAGE_URL_EXTENSION_PATTERN.test(value.url));
+  return mimeType?.startsWith("image/") || IMAGE_URL_EXTENSION_PATTERN.test(value.url);
 }
 
 function normaliseInboundMedia(media: MessageMediaInput[] | undefined): MessageMediaInput[] {

@@ -86,5 +86,7 @@ export function ArtifactSandbox({
           iframeKey={iframeKey}
         />
       );
+    default:
+      return null;
   }
 }

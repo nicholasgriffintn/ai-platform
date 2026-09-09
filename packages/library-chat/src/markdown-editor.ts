@@ -34,6 +34,8 @@ export function applyMarkdownEdit(
       return prefixSelectedLines(content, start, end, "- ");
     case "quote":
       return prefixSelectedLines(content, start, end, "> ");
+    default:
+      throw new Error(`Unsupported markdown edit action: ${String(action)}`);
   }
 }
 

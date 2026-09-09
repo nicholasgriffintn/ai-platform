@@ -67,7 +67,7 @@ function getSageMakerChannelFilePath(channelName: string, s3Uri: string): string
     return undefined;
   }
 
-  const filename = key.split("/").filter(Boolean).pop();
+  const filename = key.split("/").reverse().find(Boolean);
 
   return filename ? `/opt/ml/input/data/${channelName}/${filename}` : undefined;
 }

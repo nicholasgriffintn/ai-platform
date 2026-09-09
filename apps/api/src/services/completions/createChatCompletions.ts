@@ -47,7 +47,7 @@ export const handleCreateChatCompletions = async (req: {
   const { env, request, user, anonymousUser, app_url, context, executionCtx, signal } = req;
   const serviceContext = context ?? createServiceContext({ env, user });
   const chatRequest = normaliseChatCompletionRequest(request);
-  const isStreaming = !!request.stream;
+  const isStreaming = request.stream ?? false;
   let providerMessages = toProviderMessages(chatRequest.messages);
   let connectorReplay: Awaited<ReturnType<typeof replayApprovedConnectorOperation>> | undefined;
 

@@ -73,9 +73,7 @@ export const NoteEditorToolbar = memo(function NoteEditorToolbar({
   const handleCopy = () => {
     navigator.clipboard
       .writeText(text)
-      .then(() => {
-        toast.success("Copied to clipboard");
-      })
+      .then(() => toast.success("Copied to clipboard"))
       .catch(() => {
         toast.error("Failed to copy to clipboard");
       });

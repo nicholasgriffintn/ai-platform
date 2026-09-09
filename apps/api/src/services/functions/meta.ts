@@ -156,74 +156,70 @@ async function resolveNavigationTarget(
   target: MetaNavigationTarget,
   uiContext?: MetaAssistantUiContext,
 ): Promise<{ target: MetaNavigationTarget; label: string }> {
-  switch (target.kind) {
-    case "conversation": {
-      const conversation = await requireConversationAccess(scope.context, target.conversationId);
-      const projectId =
-        typeof conversation.project_id === "string" ? conversation.project_id : undefined;
-      const title =
-        typeof conversation.title === "string" && conversation.title.trim()
-          ? conversation.title
-          : "the conversation";
+  if (target.kind === "conversation") {
+    const conversation = await requireConversationAccess(scope.context, target.conversationId);
+    const projectId =
+      typeof conversation.project_id === "string" ? conversation.project_id : undefined;
+    const title =
+      typeof conversation.title === "string" && conversation.title.trim()
+        ? conversation.title
+        : "the conversation";
 
-      if (!projectId) {
-        return {
-          target: { kind: "conversation", conversationId: target.conversationId },
-          label: title,
-        };
-      }
-
-      const { project } = await requireProjectAccess(scope.context, projectId);
-
+    if (!projectId) {
       return {
-        target: {
-          kind: "conversation",
-          conversationId: target.conversationId,
-          projectId,
-          workspaceId: project.workspace_id,
-        },
+        target: { kind: "conversation", conversationId: target.conversationId },
         label: title,
       };
     }
 
-    case "project": {
-      const { project } = await requireProjectAccess(scope.context, target.projectId);
+    const { project } = await requireProjectAccess(scope.context, projectId);
 
-      return {
-        target: { kind: "project", projectId: project.id, workspaceId: project.workspace_id },
-        label: project.name,
-      };
-    }
-
-    case "workspace": {
-      const { workspace } = await requireWorkspaceAccess(scope.context, target.workspaceId);
-
-      return { target: { kind: "workspace", workspaceId: workspace.id }, label: workspace.name };
-    }
-
-    case "place": {
-      if (target.mode === "work" && (target.place === "files" || target.place === "teammates")) {
-        const projectId = target.projectId ?? uiContext?.projectId;
-
-        if (!projectId) {
-          throw new AssistantError(
-            "Choose a project before opening its Files or Teammates.",
-            ErrorType.PARAMS_ERROR,
-            400,
-          );
-        }
-
-        const { project } = await requireProjectAccess(scope.context, projectId);
-
-        return {
-          target: { ...target, workspaceId: project.workspace_id, projectId: project.id },
-          label: `${project.name} ${target.place}`,
-        };
-      }
-
-      return { target, label: target.place };
-    }
+    return {
+      target: {
+        kind: "conversation",
+        conversationId: target.conversationId,
+        projectId,
+        workspaceId: project.workspace_id,
+      },
+      label: title,
+    };
   }
+
+  if (target.kind === "project") {
+    const { project } = await requireProjectAccess(scope.context, target.projectId);
+
+    return {
+      target: { kind: "project", projectId: project.id, workspaceId: project.workspace_id },
+      label: project.name,
+    };
+  }
+
+  if (target.kind === "workspace") {
+    const { workspace } = await requireWorkspaceAccess(scope.context, target.workspaceId);
+
+    return { target: { kind: "workspace", workspaceId: workspace.id }, label: workspace.name };
+  }
+
+  if (target.mode === "work" && (target.place === "files" || target.place === "teammates")) {
+    const projectId = target.projectId ?? uiContext?.projectId;
+
+    if (!projectId) {
+      throw new AssistantError(
+        "Choose a project before opening its Files or Teammates.",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
+    const { project } = await requireProjectAccess(scope.context, projectId);
+
+    return {
+      target: { ...target, workspaceId: project.workspace_id, projectId: project.id },
+      label: `${project.name} ${target.place}`,
+    };
+  }
+
+  return { target, label: target.place };
 }
 
 export const find_places: ApiToolDefinition = {

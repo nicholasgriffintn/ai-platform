@@ -162,7 +162,7 @@ function isRealtimeTranscriptFinal(type: string): boolean {
   );
 }
 
-export function parseRealtimeJsonMessage(data: unknown): unknown | undefined {
+export function parseRealtimeJsonMessage(data: unknown): unknown {
   if (typeof data !== "string") {
     return undefined;
   }
@@ -170,7 +170,7 @@ export function parseRealtimeJsonMessage(data: unknown): unknown | undefined {
   return parseJson(data);
 }
 
-export async function parseRealtimeMessageData(data: unknown): Promise<unknown | undefined> {
+export async function parseRealtimeMessageData(data: unknown): Promise<unknown> {
   if (typeof data === "string") {
     return parseRealtimeJsonMessage(data);
   }
@@ -190,7 +190,7 @@ export async function parseRealtimeMessageData(data: unknown): Promise<unknown |
   return undefined;
 }
 
-function parseJson(data: string): unknown | undefined {
+function parseJson(data: string): unknown {
   try {
     return JSON.parse(data);
   } catch {

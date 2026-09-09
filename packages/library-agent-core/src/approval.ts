@@ -7,7 +7,7 @@ export interface ApprovalWindow {
 
 export interface ApprovalRecord {
   id: string;
-  status: "pending" | "escalated" | "approved" | "rejected" | "timed_out" | string;
+  status: string;
   expiresAt?: string;
   escalatedAt?: string;
   timedOutAt?: string;
@@ -15,7 +15,7 @@ export interface ApprovalRecord {
 }
 
 export interface ApprovalControlState {
-  state?: "running" | "cancelled" | string;
+  state?: string;
   cancellationReason?: string;
 }
 

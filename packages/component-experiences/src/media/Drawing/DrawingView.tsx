@@ -55,7 +55,7 @@ export function DrawingView({ drawing }: DrawingViewProps) {
           variant="outline"
           size="sm"
           onClick={() =>
-            handleDownload(
+            void handleDownload(
               activeTab === "transformed" ? drawing.paintingUrl : drawing.drawingUrl,
               `${drawing.description || "drawing"}-${activeTab}-${drawing.id.substring(0, 6)}.png`,
             )

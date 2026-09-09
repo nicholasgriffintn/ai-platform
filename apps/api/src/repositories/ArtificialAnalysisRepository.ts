@@ -139,7 +139,7 @@ export class ArtificialAnalysisRepository extends BaseRepository {
       [],
       true,
     );
-    const total = Number(count?.total ?? 0);
+    const total = count?.total ?? 0;
     const rows = await this.runQuery<ArtificialAnalysisModelRow>(
       `SELECT * FROM artificial_analysis_models ORDER BY name ASC LIMIT ? OFFSET ?`,
       [safeLimit, offset],

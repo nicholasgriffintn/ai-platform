@@ -42,7 +42,7 @@ export function useUsageBalance(enabled = true) {
     refetchInterval: (query) =>
       liveOrPoll(
         query,
-        (query) => getUsageBalanceRefreshInterval(query.state.data?.resets_at),
+        (currentQuery) => getUsageBalanceRefreshInterval(currentQuery.state.data?.resets_at),
         "usage.changed",
       ),
   });

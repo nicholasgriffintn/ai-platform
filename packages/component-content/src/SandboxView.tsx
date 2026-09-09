@@ -81,7 +81,7 @@ function SandboxResultView({ data }: { data: Record<string, unknown> }) {
       )}
       {error && (
         <div className="rounded border border-failure/30 bg-failure/10 p-2 text-sm text-failure">
-          {String(error)}
+          {error}
         </div>
       )}
       {diff.trim() && <CodeBlock label="Diff" language="diff" value={diff} />}

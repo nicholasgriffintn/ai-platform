@@ -34,13 +34,19 @@ function timingSafeEqual(left: string, right: string): boolean {
   return diff === 0;
 }
 
+function readFormString(form: FormData, key: string): string {
+  const value = form.get(key);
+
+  return typeof value === "string" ? value : "";
+}
+
 async function buildTwilioSignature(
   url: string,
   form: FormData,
   authToken: string,
 ): Promise<string> {
   const params = Array.from(form.entries())
-    .map(([key, value]) => [key, String(value)] as const)
+    .map(([key, value]) => [key, typeof value === "string" ? value : ""] as const)
     .sort(([left], [right]) => left.localeCompare(right));
   const signedPayload = `${url}${params.map(([key, value]) => `${key}${value}`).join("")}`;
   const key = await crypto.subtle.importKey(
@@ -113,22 +119,24 @@ export class TwilioSmsProvider implements MessagingProvider {
       throw new AssistantError("Invalid Twilio signature", ErrorType.AUTHENTICATION_ERROR);
     }
 
-    const messageId = String(
-      form.get("MessageSid") || form.get("SmsMessageSid") || form.get("SmsSid") || "",
+    const messageId = (
+      readFormString(form, "MessageSid") ||
+      readFormString(form, "SmsMessageSid") ||
+      readFormString(form, "SmsSid")
     ).trim();
-    const from = String(form.get("From") || "").trim();
-    const to = String(form.get("To") || "").trim();
-    const body = String(form.get("Body") || "").trim();
-    const mediaCount = Number.parseInt(String(form.get("NumMedia") || "0"), 10);
+    const from = readFormString(form, "From").trim();
+    const to = readFormString(form, "To").trim();
+    const body = readFormString(form, "Body").trim();
+    const mediaCount = Number.parseInt(readFormString(form, "NumMedia") || "0", 10);
     const media: IncomingMessageMedia[] = Array.from({
       length: Number.isFinite(mediaCount) ? mediaCount : 0,
     })
       .map((_, index) => {
         const url = normaliseTwilioMediaUrl(
-          String(form.get(`MediaUrl${index}`) || ""),
+          readFormString(form, `MediaUrl${index}`),
           this.credentials.accountSid,
         );
-        const mimeType = String(form.get(`MediaContentType${index}`) || "").trim();
+        const mimeType = readFormString(form, `MediaContentType${index}`).trim();
 
         return url
           ? {

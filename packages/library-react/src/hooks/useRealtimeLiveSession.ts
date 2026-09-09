@@ -1200,11 +1200,13 @@ export function useRealtimeLiveSession({
   }, [providerOptions]);
 
   useEffect(() => {
-    void refreshCameraDevices();
-    navigator.mediaDevices?.addEventListener?.("devicechange", refreshCameraDevices);
+    const handleDeviceChange = () => void refreshCameraDevices();
+
+    handleDeviceChange();
+    navigator.mediaDevices?.addEventListener?.("devicechange", handleDeviceChange);
 
     return () => {
-      navigator.mediaDevices?.removeEventListener?.("devicechange", refreshCameraDevices);
+      navigator.mediaDevices?.removeEventListener?.("devicechange", handleDeviceChange);
     };
   }, [refreshCameraDevices]);
 

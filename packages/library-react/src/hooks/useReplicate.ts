@@ -42,15 +42,15 @@ export function useReplicatePredictions(projectId?: string) {
     refetchInterval: (query) =>
       liveOrPoll(
         query,
-        (query) => {
-          const data = query.state.data;
+        (currentQuery) => {
+          const data = currentQuery.state.data;
 
           if (!data) {
             return false;
           }
 
           const hasActivePredictions = data.some((pred) =>
-            ACTIVE_REPLICATE_PREDICTION_STATUSES.has(String(pred.status).toLowerCase()),
+            ACTIVE_REPLICATE_PREDICTION_STATUSES.has(pred.status.toLowerCase()),
           );
 
           return hasActivePredictions ? 10000 : false;
@@ -69,14 +69,14 @@ export function useReplicatePrediction(predictionId: string | null, projectId?: 
     refetchInterval: (query) =>
       liveOrPoll(
         query,
-        (query) => {
-          const data = query.state.data;
+        (currentQuery) => {
+          const data = currentQuery.state.data;
 
           if (!data) {
             return false;
           }
 
-          return ACTIVE_REPLICATE_PREDICTION_STATUSES.has(String(data.status).toLowerCase())
+          return ACTIVE_REPLICATE_PREDICTION_STATUSES.has(data.status.toLowerCase())
             ? 10000
             : false;
         },

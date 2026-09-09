@@ -739,7 +739,7 @@ export class MessageRepository extends BaseRepository {
 
     return {
       last_message_id: typeof result?.last_message_id === "string" ? result.last_message_id : null,
-      message_count: Number(result?.message_count ?? 0),
+      message_count: result?.message_count ?? 0,
     };
   }
 
@@ -763,7 +763,7 @@ export class MessageRepository extends BaseRepository {
       true,
     );
 
-    return Number(result?.foreign_count ?? 0);
+    return result?.foreign_count ?? 0;
   }
 
   public async getChildMessages(

@@ -13,5 +13,5 @@ export function AppInitializer({ children }: { children: ReactNode }) {
   useResponsiveSidebar();
   useDeviceSync();
 
-  return <>{children}</>;
+  return children;
 }

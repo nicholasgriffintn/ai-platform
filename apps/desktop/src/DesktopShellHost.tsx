@@ -107,7 +107,7 @@ export function DesktopShellHost({
       HostDialogs: ShellDialogs,
       modelSourceSurface: "desktop",
       modelSourceRows,
-      openProviderSettings: () => navigate("/profile?tab=providers"),
+      openProviderSettings: () => void navigate("/profile?tab=providers"),
     }),
     [modelSourceRows, navigate, onSignIn, onSignOut, setShowMetaAssistant],
   );

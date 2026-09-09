@@ -29,9 +29,9 @@ import { StrudelCreateStudio } from "./Strudel/StrudelCreateStudio.js";
 const STARTER_PATTERN = 's("bd sd, hh*8").bank("RolandTR909").gain(0.8)';
 
 export function StrudelApp({ basePath, projectId, subpath }: ExperienceProps) {
-  const segments = subpath.split("/").filter(Boolean);
-  const patternId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;
-  const isNew = segments[0] === "new";
+  const firstSegment = subpath.split("/").find(Boolean);
+  const patternId = firstSegment && firstSegment !== "new" ? firstSegment : undefined;
+  const isNew = firstSegment === "new";
   const {
     data: patterns,
     isLoading,
@@ -130,6 +130,41 @@ function PatternEditor({
     setCode(pattern.code);
   }, [pattern]);
 
+  const handleGenerate = async () => {
+    const result = await generate.mutateAsync({ prompt: prompt.trim() });
+
+    setCode(result.code);
+  };
+
+  const handleSave = async () => {
+    if (patternId) {
+      await update.mutateAsync({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        code,
+        tags,
+      });
+    } else {
+      const created = await save.mutateAsync({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        code,
+        tags,
+      });
+
+      void navigate(`${basePath}/${created.id}`, { replace: true });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!patternId) {
+      return;
+    }
+
+    await remove.mutateAsync(patternId);
+    void navigate(basePath);
+  };
+
   if (patternId && isLoading) {
     return <CardGridLoadingSkeleton count={1} label="Loading music pattern" />;
   }
@@ -165,42 +200,13 @@ function PatternEditor({
         prompt={prompt}
         onPromptChange={setPrompt}
         isGenerating={generate.isPending}
-        onGenerate={async () => {
-          const result = await generate.mutateAsync({ prompt: prompt.trim() });
-
-          setCode(result.code);
-        }}
+        onGenerate={() => void handleGenerate()}
         canSave={!!name.trim() && !!code.trim()}
         isSaving={save.isPending || update.isPending}
-        onSave={async () => {
-          if (patternId) {
-            await update.mutateAsync({
-              name: name.trim(),
-              description: description.trim() || undefined,
-              code,
-              tags,
-            });
-          } else {
-            const created = await save.mutateAsync({
-              name: name.trim(),
-              description: description.trim() || undefined,
-              code,
-              tags,
-            });
-
-            void navigate(`${basePath}/${created.id}`, { replace: true });
-          }
-        }}
+        onSave={() => void handleSave()}
         canDelete={!!patternId}
         isDeleting={remove.isPending}
-        onDelete={async () => {
-          if (!patternId) {
-            return;
-          }
-
-          await remove.mutateAsync(patternId);
-          void navigate(basePath);
-        }}
+        onDelete={() => void handleDelete()}
         requiresSignIn={isAuthenticationError(mutationError)}
         onSignIn={() => setShowLoginModal(true)}
         errorMessage={mutationError?.message}

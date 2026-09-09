@@ -857,9 +857,7 @@ export class BedrockProvider extends BaseProvider {
       invocationArn,
     };
 
-    const normalizedStatus = (status || "IN_PROGRESS")
-      .toString()
-      .toUpperCase() as AsyncOperationStatus;
+    const normalizedStatus = (status || "IN_PROGRESS").toUpperCase() as AsyncOperationStatus;
 
     if (
       normalizedStatus === "SUCCEEDED" ||

@@ -103,7 +103,9 @@ function toBedrockContentBlock(
       }
 
       return null;
+    case "file":
     case "markdown_document":
+    case "selection":
     case "thinking":
       return null;
     default:

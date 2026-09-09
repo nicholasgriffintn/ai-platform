@@ -180,6 +180,21 @@ export const ArtifactDocumentEditor = ({
     downloadTextFile(download.filename, download.content, download.mimeType);
   }, [artifact, content, onDownload]);
 
+  const handleRewrite = async () => {
+    if (!onRewrite) {
+      return;
+    }
+
+    try {
+      const rewritten = await onRewrite();
+
+      setContent(rewritten);
+      setActiveView("edit");
+    } catch {
+      return;
+    }
+  };
+
   return (
     <div className="flex h-full flex-col bg-surface-elevated text-foreground">
       <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface px-3 py-2 text-xs">
@@ -256,12 +271,7 @@ export const ArtifactDocumentEditor = ({
             variant="outline"
             isLoading={isRewriting}
             onClick={() => {
-              void onRewrite()
-                .then((rewritten) => {
-                  setContent(rewritten);
-                  setActiveView("edit");
-                })
-                .catch(() => undefined);
+              void handleRewrite();
             }}
             icon={<Wand2 size={13} />}
           >

@@ -43,7 +43,7 @@ const corsOrigin = (origin: string, c: Context) =>
   origin && isAllowedOrigin(origin, c.env.ENV, c.env.APP_BASE_URL) ? origin : "";
 
 const csrfOrigin = (origin: string, c: Context) =>
-  Boolean(origin && isAllowedOrigin(origin, c.env.ENV, c.env.APP_BASE_URL));
+  origin !== "" && isAllowedOrigin(origin, c.env.ENV, c.env.APP_BASE_URL);
 
 const csrfMiddleware = csrf({
   origin: csrfOrigin,

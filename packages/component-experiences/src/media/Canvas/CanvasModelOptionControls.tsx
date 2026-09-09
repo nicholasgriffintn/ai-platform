@@ -118,9 +118,7 @@ export function CanvasModelOptionControls({
 
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-        Options
-      </label>
+      <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Options</p>
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
         {fields.map((field) => {
           const fieldTypes = getFieldTypes(field);

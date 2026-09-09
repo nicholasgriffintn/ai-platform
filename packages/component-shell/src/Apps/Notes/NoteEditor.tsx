@@ -105,7 +105,7 @@ export function NoteEditor({
   } = useNoteFormatter(noteId ?? "", projectId);
 
   const handleMetadataUpdate = useCallback(
-    async (newMetadata: NoteMetadataType) => {
+    (newMetadata: NoteMetadataType) => {
       setCurrentMetadata(newMetadata);
       if (noteId) {
         void forceSave({ bypassDirtyCheck: true });
@@ -161,7 +161,7 @@ export function NoteEditor({
   });
 
   useKeyboardShortcuts({
-    onSave: forceSave,
+    onSave: () => void forceSave(),
     onToggleFullBleed,
     isFullBleed,
   });
@@ -324,7 +324,7 @@ export function NoteEditor({
         isSpeechDetected={isSpeechDetected}
         onTranscriptionToggle={handleTranscriptionToggle}
         tabCapture={tabCapture}
-        onTabCaptureToggle={handleTabCaptureToggle}
+        onTabCaptureToggle={() => void handleTabCaptureToggle()}
       />
 
       <MediaGenerationModal
@@ -355,7 +355,7 @@ export function NoteEditor({
         setAIPrompt={setAIPrompt}
         aiResult={aiResult}
         formatNoteMutation={formatNoteMutation}
-        runFormat={runFormat}
+        runFormat={() => void runFormat()}
         onAccept={handleAIAccept}
         noteId={noteId}
       />

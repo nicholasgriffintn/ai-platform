@@ -36,13 +36,17 @@ export function RecipeCapabilityCard({
         recipe={recipe}
         installation={installation}
         onStart={workflows.actions.start}
-        onConfigure={workflows.actions.configureProvider}
+        onConfigure={(providerId, setupUrl) =>
+          void workflows.actions.configureProvider(providerId, setupUrl)
+        }
         onEditConfiguration={workflows.actions.openConfigurationDialog}
         onSchedule={workflows.actions.openScheduleDialog}
         onManageEventTriggers={
           cardState.canManageEventTriggers ? workflows.actions.openEventTriggersDialog : undefined
         }
-        onToggleInstallationStatus={workflows.actions.toggleInstallationStatus}
+        onToggleInstallationStatus={(target) =>
+          void workflows.actions.toggleInstallationStatus(target)
+        }
         onDeleteInstallation={workflows.deleteDialog.setInstallation}
         isStarting={cardState.isStarting}
         isConfiguring={cardState.isConfiguring}

@@ -187,7 +187,7 @@ class AgentProviderIO {
       return false;
     }
 
-    if (!CHAT_ROLES.has(String(value.role))) {
+    if (typeof value.role !== "string" || !CHAT_ROLES.has(value.role)) {
       return false;
     }
 

@@ -124,13 +124,7 @@ function applyStringRules(schema: z.ZodString, property: JsonSchemaProperty): z.
         return false;
       }
 
-      try {
-        new URL(value);
-
-        return true;
-      } catch {
-        return false;
-      }
+      return URL.canParse(value);
     }, "Invalid URI");
   }
 

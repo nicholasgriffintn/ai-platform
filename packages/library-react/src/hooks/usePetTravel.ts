@@ -24,13 +24,13 @@ export function usePetTravel(enabled: boolean): boolean {
 
   useEffect(() => {
     if (previousPath.current === location.pathname) {
-      return;
+      return undefined;
     }
 
     previousPath.current = location.pathname;
 
     if (!enabled) {
-      return;
+      return undefined;
     }
 
     setIsTravelling(true);

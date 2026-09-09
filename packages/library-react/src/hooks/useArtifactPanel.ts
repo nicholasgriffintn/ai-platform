@@ -81,7 +81,7 @@ export function useArtifactPanel(options: UseArtifactPanelOptions = {}): Artifac
 
   useEffect(() => {
     if (!closeOnEscape || !isPanelVisible) {
-      return;
+      return undefined;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {

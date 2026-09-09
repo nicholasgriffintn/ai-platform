@@ -143,6 +143,11 @@ function authErrorResponse(code: AuthErrorCode): readonly [ErrorType, number] {
     case "email_in_use":
     case "identity_conflict":
       return [ErrorType.CONFLICT_ERROR, 409];
+    case "challenge_expired":
+    case "challenge_mismatch":
+    case "invalid_callback":
+    case "invalid_credentials":
+    case "session_expired":
     default:
       return [ErrorType.AUTHENTICATION_ERROR, 401];
   }
@@ -295,6 +300,8 @@ export function handleAIServiceError(error: AssistantError): Response {
         },
         { status: 500 },
       );
+    case ErrorType.UNKNOWN_ERROR:
+    case ErrorType.INTERNAL_ERROR:
     default:
       logger.error("Unknown error occurred", logContext);
 

@@ -2,7 +2,7 @@ import { fetchApi } from "../fetch-wrapper.js";
 import { returnFetchedData } from "../http.js";
 
 export class SubscriptionService {
-  async getSubscription(): Promise<any | null> {
+  async getSubscription(): Promise<any> {
     const response = await fetchApi("/stripe/subscription");
 
     if (response.status === 404) {

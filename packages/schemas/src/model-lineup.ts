@@ -755,6 +755,8 @@ export function getLineupModelsByRuntime(
           return Boolean(machineId) && model.machineId === machineId;
         case "hosted":
           return model.provider !== BROWSER_PROVIDER && model.runsOn !== "device";
+        default:
+          return false;
       }
     }),
   );

@@ -29,7 +29,7 @@ export function RecordingWorkflow({ basePath, projectId }: RecordingWorkflowProp
           formData={workflow.formData}
           handleChange={workflow.actions.handleChange}
           handleFileChange={workflow.actions.handleFileChange}
-          handleUpload={workflow.actions.upload}
+          handleUpload={() => void workflow.actions.upload()}
           isUploading={workflow.isUploading}
           setFormData={workflow.setFormData}
           uploaderAnalytics={uploaderAnalytics}
@@ -40,7 +40,7 @@ export function RecordingWorkflow({ basePath, projectId }: RecordingWorkflowProp
         <ProcessStep
           formData={workflow.formData}
           handleChange={workflow.actions.handleChange}
-          handleProcess={workflow.actions.process}
+          handleProcess={() => void workflow.actions.process()}
           isProcessing={workflow.isProcessing}
         />
       )}
@@ -51,11 +51,11 @@ export function RecordingWorkflow({ basePath, projectId }: RecordingWorkflowProp
           processingStatus={workflow.processingStatus}
           processingErrors={workflow.processingErrors}
           processingComplete={workflow.processingComplete}
-          handleRetry={workflow.actions.retry}
+          handleRetry={(process) => void workflow.actions.retry(process)}
           setCurrentStep={workflow.setCurrentStep}
           uploadedRecordingId={workflow.uploadedRecordingId}
           basePath={basePath}
-          navigate={navigate}
+          navigate={(path) => void navigate(path)}
         />
       )}
     </div>

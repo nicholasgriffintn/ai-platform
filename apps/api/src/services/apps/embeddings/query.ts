@@ -135,7 +135,6 @@ const queryStoredTargets = async (
 
   for (const { matches, target } of successfulProviderResults) {
     // ES2022 Workers do not expose Array#toSorted, and this copied array is safe to mutate.
-    // oxlint-disable-next-line unicorn/no-array-sort
     const rankedTargetMatches = [...matches].sort((left, right) => right.score - left.score);
 
     for (const [rank, match] of rankedTargetMatches.entries()) {
@@ -150,7 +149,6 @@ const queryStoredTargets = async (
   }
 
   // ES2022 Workers do not expose Array#toSorted, and this copied array is safe to mutate.
-  // oxlint-disable-next-line unicorn/no-array-sort
   const matches = [...matchesByTargetAndVectorId.values()].sort(
     (left, right) => right.score - left.score,
   );

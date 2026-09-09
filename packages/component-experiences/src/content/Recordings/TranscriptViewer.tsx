@@ -1,6 +1,8 @@
 import type { RecordingTranscriptData } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useState } from "react";
 
+const EMPTY_SPEAKER_NAMES: Record<string, string> = {};
+
 interface TranscriptViewerProps {
   transcript: RecordingTranscriptData;
   speakerNames?: Record<string, string>;
@@ -23,7 +25,10 @@ export function formatTime(seconds: number): string {
   return parts.join(":");
 }
 
-export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptViewerProps) {
+export function TranscriptViewer({
+  transcript,
+  speakerNames = EMPTY_SPEAKER_NAMES,
+}: TranscriptViewerProps) {
   const [speakerColors, setSpeakerColors] = useState<Record<string, string>>({});
 
   useEffect(() => {

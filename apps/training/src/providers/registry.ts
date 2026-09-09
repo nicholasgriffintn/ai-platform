@@ -14,6 +14,6 @@ export function createTrainingProvider(
     case "aws-sagemaker":
       return new SageMakerTrainingProvider(context.env);
     default:
-      throw new Error(`Unsupported training provider: ${provider}`);
+      throw new Error(`Unsupported training provider: ${String(provider)}`);
   }
 }

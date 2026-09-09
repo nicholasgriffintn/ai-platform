@@ -12,7 +12,7 @@ const PORTAL_AVAILABILITY_KEY = ["stripe", "portal-available"] as const;
 const OVERAGE_AVAILABILITY_KEY = ["stripe", "overage-available"] as const;
 
 export function useSubscription() {
-  return useQuery<any | null>({
+  return useQuery<any>({
     queryKey: ["subscription"],
     queryFn: () => apiService.getSubscription(),
   });

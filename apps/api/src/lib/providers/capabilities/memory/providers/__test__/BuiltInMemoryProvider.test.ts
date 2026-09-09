@@ -20,7 +20,6 @@ const s3Target = {
 };
 const mocks = vi.hoisted(() => {
   // Vitest must construct these providers inside its hoisted mock initialiser.
-  // oxlint-disable-next-line unicorn/consistent-function-scoping
   const createProvider = () => ({
     delete: vi.fn().mockResolvedValue({ status: "success", error: null }),
     generate: vi

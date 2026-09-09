@@ -107,7 +107,7 @@ export function createMachineHeartbeatScheduler(options: {
 
   const schedule = () => {
     if (running) {
-      timer = setTimeout(run, intervalMs);
+      timer = setTimeout(() => void run(), intervalMs);
     }
   };
 

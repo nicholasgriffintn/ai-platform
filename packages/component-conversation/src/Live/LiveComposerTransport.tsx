@@ -25,6 +25,7 @@ export function getStatusCopy(status: RealtimeLiveStatus): string {
       return "Connecting";
     case "error":
       return "Error";
+    case "idle":
     default:
       return "Ready";
   }

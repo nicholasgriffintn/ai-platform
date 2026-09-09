@@ -18,6 +18,8 @@ export function getAgentTraceTypeLabel(type: AgentTraceEntry["type"]): string {
       return "Retry";
     case "provider_error":
       return "Provider error";
+    default:
+      throw new Error(`Unsupported agent trace type: ${String(type)}`);
   }
 }
 

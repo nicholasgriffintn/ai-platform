@@ -29,6 +29,20 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
   const mutations = useTemplateMutations(workspaceId);
   const projectTemplates = templates.data?.filter((template) => template.kind === "project") ?? [];
 
+  const startFromStarter = async (starterSlug: string) => {
+    const project = await mutations.startFromStarter.mutateAsync(starterSlug);
+
+    toast.success("Project created, teammates hired");
+    void navigate(`/work/${workspaceId}/projects/${project.id}`);
+  };
+
+  const instantiateTemplate = async (templateId: string) => {
+    const project = await mutations.instantiate.mutateAsync(templateId);
+
+    toast.success("Project created from template");
+    void navigate(`/work/${workspaceId}/projects/${project.id}`);
+  };
+
   return (
     <PageShell.Content className="max-w-6xl">
       <PageShell.Header title="Governance" />
@@ -60,12 +74,7 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
               startingSlug={
                 mutations.startFromStarter.isPending ? mutations.startFromStarter.variables : null
               }
-              onStart={async (starterSlug) => {
-                const project = await mutations.startFromStarter.mutateAsync(starterSlug);
-
-                toast.success("Project created, teammates hired");
-                void navigate(`/work/${workspaceId}/projects/${project.id}`);
-              }}
+              onStart={(starterSlug) => void startFromStarter(starterSlug)}
             />
 
             <WorkspaceTemplateList
@@ -75,12 +84,7 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
               instantiatingTemplateId={
                 mutations.instantiate.isPending ? mutations.instantiate.variables : null
               }
-              onUse={async (templateId) => {
-                const project = await mutations.instantiate.mutateAsync(templateId);
-
-                toast.success("Project created from template");
-                void navigate(`/work/${workspaceId}/projects/${project.id}`);
-              }}
+              onUse={(templateId) => void instantiateTemplate(templateId)}
               onDelete={setTemplateIdToDelete}
             />
 

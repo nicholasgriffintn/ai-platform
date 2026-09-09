@@ -73,49 +73,67 @@ export class ResponseFormatter {
   private static getFormatter(
     provider: string,
   ): (data: any, options: ResponseFormatOptions) => any {
+    const openAI = (data: any, options: ResponseFormatOptions) =>
+      ResponseFormatter.formatOpenAIResponse(data, options);
+    const anthropic = (data: any) => ResponseFormatter.formatAnthropicResponse(data);
+    const cohere = (data: any, options: ResponseFormatOptions) =>
+      ResponseFormatter.formatCohereResponse(data, options);
+    const googleStudio = (data: any, options: ResponseFormatOptions) =>
+      ResponseFormatter.formatGoogleStudioResponse(data, options);
+    const ollama = (data: any) => ResponseFormatter.formatOllamaResponse(data);
+    const bedrock = (data: any, options: ResponseFormatOptions) =>
+      ResponseFormatter.formatBedrockResponse(data, options);
+    const workers = (data: any, options: ResponseFormatOptions) =>
+      ResponseFormatter.formatWorkersResponse(data, options);
+    const openRouter = (data: any) => ResponseFormatter.formatOpenRouterResponse(data);
+    const replicate = (data: any, options: ResponseFormatOptions) =>
+      ResponseFormatter.formatReplicateResponse(data, options);
+    const generic = (data: any, options: ResponseFormatOptions) =>
+      ResponseFormatter.formatGenericResponse(data, options);
+
     const formatters: Record<string, (data: any, options: ResponseFormatOptions) => any> = {
-      openai: ResponseFormatter.formatOpenAIResponse,
-      compat: ResponseFormatter.formatOpenAIResponse,
-      anthropic: ResponseFormatter.formatAnthropicResponse,
-      cohere: ResponseFormatter.formatCohereResponse,
-      "google-ai-studio": ResponseFormatter.formatGoogleStudioResponse,
-      ollama: ResponseFormatter.formatOllamaResponse,
-      bedrock: ResponseFormatter.formatBedrockResponse,
-      workers: ResponseFormatter.formatWorkersResponse,
-      "workers-ai": ResponseFormatter.formatWorkersResponse,
-      openrouter: ResponseFormatter.formatOpenRouterResponse,
-      groq: ResponseFormatter.formatOpenAIResponse,
-      mistral: ResponseFormatter.formatOpenAIResponse,
-      "perplexity-ai": ResponseFormatter.formatOpenAIResponse,
-      deepseek: ResponseFormatter.formatOpenAIResponse,
-      huggingface: ResponseFormatter.formatOpenAIResponse,
-      "github-models": ResponseFormatter.formatOpenAIResponse,
-      "together-ai": ResponseFormatter.formatOpenAIResponse,
-      hetzner: ResponseFormatter.formatOpenAIResponse,
-      poolside: ResponseFormatter.formatOpenAIResponse,
-      alibaba: ResponseFormatter.formatOpenAIResponse,
-      zai: ResponseFormatter.formatOpenAIResponse,
-      moonshot: ResponseFormatter.formatOpenAIResponse,
-      minimax: ResponseFormatter.formatOpenAIResponse,
-      "ollama-cloud": ResponseFormatter.formatOpenAIResponse,
-      lmstudio: ResponseFormatter.formatOpenAIResponse,
-      meta: ResponseFormatter.formatOpenAIResponse,
-      "google-vertex": ResponseFormatter.formatGoogleStudioResponse,
-      greenpt: ResponseFormatter.formatOpenAIResponse,
-      lucidquery: ResponseFormatter.formatOpenAIResponse,
-      ovhcloud: ResponseFormatter.formatOpenAIResponse,
-      "regolo-ai": ResponseFormatter.formatOpenAIResponse,
-      sakana: ResponseFormatter.formatOpenAIResponse,
-      standardcompute: ResponseFormatter.formatOpenAIResponse,
-      "the-grid-ai": ResponseFormatter.formatOpenAIResponse,
-      "kimi-for-coding": ResponseFormatter.formatAnthropicResponse,
-      thinkingmachines: ResponseFormatter.formatAnthropicResponse,
-      replicate: ResponseFormatter.formatReplicateResponse,
-      fal: ResponseFormatter.formatReplicateResponse,
-      ideogram: ResponseFormatter.formatReplicateResponse,
+      openai: openAI,
+      compat: openAI,
+      anthropic: anthropic,
+      cohere: cohere,
+      "google-ai-studio": googleStudio,
+      ollama: ollama,
+      bedrock: bedrock,
+      workers: workers,
+      "workers-ai": workers,
+      openrouter: openRouter,
+      groq: openAI,
+      mistral: openAI,
+      "perplexity-ai": openAI,
+      deepseek: openAI,
+      huggingface: openAI,
+      "github-models": openAI,
+      "together-ai": openAI,
+      hetzner: openAI,
+      poolside: openAI,
+      alibaba: openAI,
+      zai: openAI,
+      moonshot: openAI,
+      minimax: openAI,
+      "ollama-cloud": openAI,
+      lmstudio: openAI,
+      meta: openAI,
+      "google-vertex": googleStudio,
+      greenpt: openAI,
+      lucidquery: openAI,
+      ovhcloud: openAI,
+      "regolo-ai": openAI,
+      sakana: openAI,
+      standardcompute: openAI,
+      "the-grid-ai": openAI,
+      "kimi-for-coding": anthropic,
+      thinkingmachines: anthropic,
+      replicate: replicate,
+      fal: replicate,
+      ideogram: replicate,
     };
 
-    return formatters[provider] || ResponseFormatter.formatGenericResponse;
+    return formatters[provider] || generic;
   }
 
   private static collectStringsFromOutput(output: unknown): string[] {
@@ -309,7 +327,7 @@ export class ResponseFormatter {
     message: any,
     textContent: string,
     options: ResponseFormatOptions,
-  ): Promise<any | undefined> {
+  ): Promise<any> {
     if (!message?.audio || typeof message.audio !== "object") {
       return undefined;
     }

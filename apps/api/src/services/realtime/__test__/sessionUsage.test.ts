@@ -4,9 +4,9 @@ import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
 
 import { admitRealtimeSession } from "../sessionUsage";
 
-function repositoriesWithBalance(balance: Record<string, unknown> | null) {
+function repositoriesWithBalance(balanceRow: Record<string, unknown> | null) {
   return {
-    usageBalances: { getBalance: vi.fn(async () => balance) },
+    usageBalances: { getBalance: vi.fn(async () => balanceRow) },
   } as any;
 }
 

@@ -119,7 +119,7 @@ export function createExecutionControl(options: CreateExecutionControlOptions): 
     }
   };
 
-  const fetchControlState = async (options?: {
+  const fetchControlState = async (fetchOptions?: {
     minRefreshMs?: number;
   }): Promise<Awaited<ReturnType<RunControlClient["fetchControlState"]>> | null> => {
     if (!runControlClient) {
@@ -127,7 +127,7 @@ export function createExecutionControl(options: CreateExecutionControlOptions): 
     }
 
     const now = Date.now();
-    const minRefreshMs = options?.minRefreshMs ?? CONTROL_STATE_MIN_REFRESH_MS;
+    const minRefreshMs = fetchOptions?.minRefreshMs ?? CONTROL_STATE_MIN_REFRESH_MS;
 
     if (lastControlStateFetchedAt > 0 && now - lastControlStateFetchedAt < minRefreshMs) {
       return lastControlState;

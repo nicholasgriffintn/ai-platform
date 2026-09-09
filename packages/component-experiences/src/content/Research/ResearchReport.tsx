@@ -134,17 +134,14 @@ export function ResearchReport({
         </div>
       )}
 
-      {output && (
-        <>
-          {isTextContent ? (
-            <div className="prose max-w-none text-foreground dark:prose-invert">
-              <MemoizedMarkdown>{content}</MemoizedMarkdown>
-            </div>
-          ) : (
-            <JsonView data={content ?? {}} />
-          )}
-        </>
-      )}
+      {output &&
+        (isTextContent ? (
+          <div className="prose max-w-none text-foreground dark:prose-invert">
+            <MemoizedMarkdown>{content}</MemoizedMarkdown>
+          </div>
+        ) : (
+          <JsonView data={content ?? {}} />
+        ))}
 
       {output && evidenceCount > 0 && (
         <div>

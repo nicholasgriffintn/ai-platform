@@ -1,5 +1,5 @@
 import { usagePeriodFromDate } from "@ngriffin_uk/polychat-schemas";
-import Stripe from "stripe";
+import { Stripe } from "stripe";
 
 import { FREE_TRIAL_DAYS } from "~/constants/app";
 import type { PlanId } from "~/constants/plans";

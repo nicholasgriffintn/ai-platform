@@ -16,9 +16,9 @@ import { ArticleAnalysisSession } from "./Articles/ArticleAnalysisSession.js";
 import { ArticleView } from "./Articles/View.js";
 
 export function ArticlesApp({ basePath, projectId, subpath }: ExperienceProps) {
-  const segments = subpath.split("/").filter(Boolean);
-  const articleId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;
-  const isNew = segments[0] === "new";
+  const firstSegment = subpath.split("/").find(Boolean);
+  const articleId = firstSegment && firstSegment !== "new" ? firstSegment : undefined;
+  const isNew = firstSegment === "new";
   const {
     data: reports,
     isLoading,

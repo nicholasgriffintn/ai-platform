@@ -70,7 +70,7 @@ export class ExaSearchProvider implements SearchProvider {
       ? {
           query,
           userLocation: options?.country,
-          text: options?.include_raw_content ? true : false,
+          text: options?.include_raw_content ?? false,
           systemPrompt: options?.system_prompt || "",
         }
       : {
@@ -79,7 +79,7 @@ export class ExaSearchProvider implements SearchProvider {
           userLocation: options?.country,
           numResults: options?.max_results || 5,
           contents: {
-            text: options?.include_raw_content ? true : false,
+            text: options?.include_raw_content ?? false,
           },
         };
 

@@ -83,7 +83,7 @@ export function ProjectBriefCard({
             <Button variant="secondary" onClick={cancel} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={save} isLoading={isSaving}>
+            <Button onClick={() => void save()} isLoading={isSaving}>
               {isSaving ? "Saving…" : "Save brief"}
             </Button>
           </div>

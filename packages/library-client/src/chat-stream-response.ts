@@ -50,9 +50,7 @@ function responseString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
-function responseTimestamp(
-  value: CompletionResponseMessage["timestamp"] | unknown,
-): number | undefined {
+function responseTimestamp(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
   }

@@ -27,6 +27,8 @@ import {
 
 import { ModelIcon } from "../ModelIcon/ModelIcon";
 
+const EMPTY_REGION_OPTIONS: ModelRegionOption[] = [];
+
 interface ModelOptionProps {
   model: ModelConfigItem;
   locationLabel?: string;
@@ -50,7 +52,7 @@ export const ModelOption = ({
   onClick,
   disabled,
   mono = false,
-  regionOptions = [],
+  regionOptions = EMPTY_REGION_OPTIONS,
   selectedRegionModelId,
   onRegionSelect,
   onInfoHoverStart,

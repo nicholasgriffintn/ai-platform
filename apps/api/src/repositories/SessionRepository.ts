@@ -187,6 +187,6 @@ export class SessionRepository extends BaseRepository implements SessionStore {
       [jti, sessionId, userId, expiresAt.toISOString()],
     );
 
-    return Number(result.meta.changes ?? 0) > 0;
+    return (result.meta.changes ?? 0) > 0;
   }
 }

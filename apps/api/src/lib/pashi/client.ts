@@ -73,7 +73,7 @@ export class PashiClient {
       return this.cachedInfo.value;
     }
 
-    if (this.pendingInfo) {
+    if (this.pendingInfo !== undefined) {
       return this.pendingInfo;
     }
 
@@ -183,7 +183,10 @@ export class PashiClient {
     return parsed.data;
   }
 
-  private async requestJson(path: string, init: RequestInit): Promise<unknown> {
+  private async requestJson(
+    path: string,
+    init: Omit<RequestInit, "headers"> & { headers?: Record<string, string> },
+  ): Promise<unknown> {
     const url = resolvePashiUrl(path);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);

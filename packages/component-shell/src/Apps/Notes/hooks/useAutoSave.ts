@@ -82,13 +82,15 @@ export function useAutoSave({
       if ((hasChanges || options?.bypassDirtyCheck) && !isSavingRef.current) {
         return saveNote(textRef.current);
       }
+
+      return undefined;
     },
     [saveNote],
   );
 
   useEffect(() => {
     if (text === lastSavedText) {
-      return;
+      return undefined;
     }
 
     const timeout = setTimeout(() => {

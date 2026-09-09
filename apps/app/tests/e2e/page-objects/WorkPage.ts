@@ -1,4 +1,4 @@
-import type { Locator, Page, Response } from "@playwright/test";
+import type { Locator, Response } from "@playwright/test";
 
 import { BasePage } from "./BasePage";
 
@@ -13,10 +13,6 @@ const PROJECT_SURFACES = {
 type ProjectSurface = keyof typeof PROJECT_SURFACES;
 
 export class WorkPage extends BasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
   async open() {
     await this.navigate("/work");
     await this.page.getByRole("heading", { name: "Workspaces", exact: true }).waitFor();
