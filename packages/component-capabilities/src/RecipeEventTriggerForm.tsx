@@ -70,14 +70,14 @@ export function RecipeEventTriggerForm({
         <FormSelect
           label="Integration"
           value={providerId}
-          onChange={(event) => onProviderIdChange(event.target.value)}
+          onValueChange={onProviderIdChange}
           options={providers.map((item) => ({ value: item.id, label: item.name }))}
         />
       )}
       <FormSelect
         label="Connected account"
         value={accountId}
-        onChange={(event) => onAccountIdChange(event.target.value)}
+        onValueChange={onAccountIdChange}
         options={accountOptions}
         description={
           hasActiveAccounts
@@ -88,7 +88,7 @@ export function RecipeEventTriggerForm({
       <FormSelect
         label="Event"
         value={triggerSlug}
-        onChange={(event) => onTriggerSlugChange(event.target.value)}
+        onValueChange={onTriggerSlugChange}
         options={triggerOptions}
         description={triggerDescription ?? "No live events are available."}
       />

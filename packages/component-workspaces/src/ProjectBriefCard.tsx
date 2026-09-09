@@ -1,4 +1,4 @@
-import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Card, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import { Pencil } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 
@@ -64,7 +64,7 @@ export function ProjectBriefCard({
           <label htmlFor={briefId} className="sr-only">
             Project brief
           </label>
-          <textarea
+          <Textarea
             id={briefId}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
@@ -72,7 +72,7 @@ export function ProjectBriefCard({
             rows={8}
             autoFocus
             placeholder="Add project context, terminology, constraints, and working preferences."
-            className="w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm leading-6 text-foreground focus:border-transparent focus:ring-2 focus:ring-active-work/40 focus:outline-none"
+            className="resize-y border-border-strong bg-surface py-2 leading-6"
           />
           {errorMessage && (
             <p role="alert" className="text-sm text-failure">

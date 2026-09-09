@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   FormInput,
+  Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import { type FormEvent, useState } from "react";
 
@@ -150,13 +151,13 @@ export function CreateProjectDialog({
             <label htmlFor="project-instructions" className="text-sm font-medium">
               Project instructions
             </label>
-            <textarea
+            <Textarea
               id="project-instructions"
               value={instructions}
               onChange={(event) => setInstructions(event.target.value)}
               maxLength={8000}
               rows={5}
-              className="w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm"
+              className="bg-surface-elevated py-2"
               placeholder="Add context, terminology, constraints, or working preferences."
             />
           </div>

@@ -59,7 +59,7 @@ test.describe("Device theme preferences", () => {
     await expect(themes.night).toBeFocused();
     await expect(themes.day.locator("option")).toHaveText(["Light", "Paper", "Dawn"]);
     await expect(themes.night.locator("option")).toHaveText(["Dark", "Blue", "Fern", "Plum"]);
-    await themes.selectPair("paper", "fern");
+    await themes.selectPair("Paper", "Fern");
     await expect(themes.option("System")).toBeChecked();
     await expect(themes.systemCard()).toContainText("Paper · Fern");
     expect(await themes.systemPreviewThemes()).toEqual(["paper", "fern"]);

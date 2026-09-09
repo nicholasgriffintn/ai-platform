@@ -1,3 +1,4 @@
+import { chooseDropdownOption } from "../support/dropdown";
 import { BasePage } from "./BasePage";
 
 export class WorkbenchPage extends BasePage {
@@ -220,9 +221,10 @@ export class WorkbenchPage extends BasePage {
   }
 
   async selectPreviewService(serviceName: string) {
-    await this.previewShell
-      .getByLabel("Declared service", { exact: true })
-      .selectOption(serviceName);
+    await chooseDropdownOption(
+      this.previewShell.getByLabel("Declared service", { exact: true }),
+      new RegExp(`^${serviceName} `),
+    );
   }
 
   async startPreview() {

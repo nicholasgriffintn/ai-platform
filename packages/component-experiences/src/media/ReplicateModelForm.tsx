@@ -1,4 +1,4 @@
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Checkbox, FormSelect, Input, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import type { ReplicateModel, ReplicateInputField } from "@ngriffin_uk/polychat-schemas";
 import { getNumberInputValue, parseNumberInputValue } from "@ngriffin_uk/polychat-utility-core";
 import { useEffect, useId, useState } from "react";
@@ -130,35 +130,27 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
       )}
 
       {hasEnum ? (
-        <select
+        <FormSelect
           id={fieldId}
           value={fieldValue}
-          onChange={(e) => onChange(e.target.value)}
-          required={field.required}
+          placeholder="Select..."
           aria-describedby={describedBy}
-          aria-invalid={Boolean(error)}
-          className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
-        >
-          <option value="">Select...</option>
-          {field.enum!.map((option) => (
-            <option key={String(option)} value={String(option)}>
-              {String(option)}
-            </option>
-          ))}
-        </select>
+          options={(field.enum ?? []).map((option) => ({
+            value: String(option),
+            label: String(option),
+          }))}
+          onValueChange={onChange}
+        />
       ) : fieldTypes.includes("boolean") ? (
-        <input
+        <Checkbox
           id={fieldId}
-          type="checkbox"
           checked={Boolean(value)}
-          onChange={(e) => onChange(e.target.checked)}
-          required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="h-4 w-4 rounded border-border-strong text-active-work focus:ring-active-work"
+          onCheckedChange={(checked) => onChange(checked === true)}
         />
       ) : fieldTypes.includes("integer") ? (
-        <input
+        <Input
           id={fieldId}
           type="number"
           step="1"
@@ -167,10 +159,10 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
+          className="h-auto bg-surface px-4 py-2"
         />
       ) : fieldTypes.includes("number") ? (
-        <input
+        <Input
           id={fieldId}
           type="number"
           step="any"
@@ -179,11 +171,11 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
+          className="h-auto bg-surface px-4 py-2"
         />
       ) : isFileField ? (
         <div className="space-y-2">
-          <input
+          <Input
             id={fieldId}
             type="url"
             placeholder="Enter file URL..."
@@ -192,7 +184,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
             required={field.required}
             aria-describedby={describedBy}
             aria-invalid={Boolean(error)}
-            className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
+            className="h-auto bg-surface px-4 py-2"
           />
           <p className="text-xs text-muted-foreground">
             Provide a publicly accessible URL to the file
@@ -200,7 +192,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
         </div>
       ) : field.name.toLowerCase().includes("prompt") ||
         field.description?.toLowerCase().includes("description") ? (
-        <textarea
+        <Textarea
           id={fieldId}
           value={fieldValue}
           onChange={(e) => onChange(e.target.value)}
@@ -208,10 +200,10 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
+          className="bg-surface px-4 py-2"
         />
       ) : (
-        <input
+        <Input
           id={fieldId}
           type="text"
           value={fieldValue}
@@ -219,7 +211,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           required={field.required}
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
-          className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
+          className="h-auto bg-surface px-4 py-2"
         />
       )}
 

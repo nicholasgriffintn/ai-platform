@@ -126,7 +126,7 @@ export function StrudelStudio({
               <FormSelect
                 label="Model"
                 value={selectedModel}
-                onChange={(event) => onSelectedModelChange(event.target.value)}
+                onValueChange={onSelectedModelChange}
                 options={[
                   { value: "", label: "Auto (Default)" },
                   ...textModels.map((m) => ({
@@ -138,7 +138,7 @@ export function StrudelStudio({
               <FormSelect
                 label="Style"
                 value={style}
-                onChange={(event) => onStyleChange(event.target.value as StrudelStyle | "")}
+                onValueChange={onStyleChange}
                 options={STYLE_OPTIONS.map((option) => ({
                   value: option.value,
                   label: option.label,
@@ -147,7 +147,7 @@ export function StrudelStudio({
               <FormSelect
                 label="Complexity"
                 value={complexity}
-                onChange={(event) => onComplexityChange(event.target.value as StrudelComplexity)}
+                onValueChange={onComplexityChange}
                 options={COMPLEXITY_OPTIONS}
               />
               <div className="space-y-2">

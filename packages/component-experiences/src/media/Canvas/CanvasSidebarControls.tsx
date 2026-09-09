@@ -1,4 +1,4 @@
-import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Input, Textarea, cn } from "@ngriffin_uk/polychat-component-ui";
 import { Brush, Film, Image } from "lucide-react";
 
 import { DrawingSidebarControls } from "../Drawing/DrawingSidebarControls";
@@ -69,12 +69,12 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
               >
                 Prompt
               </label>
-              <textarea
+              <Textarea
                 id="canvas-prompt"
                 value={canvas.prompt}
                 onChange={(event) => canvas.setPrompt(event.target.value)}
                 rows={4}
-                className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-active-work"
+                className="rounded-xl bg-surface py-2"
                 placeholder="Describe what to generate..."
               />
             </div>
@@ -87,11 +87,11 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
                 >
                   Negative Prompt
                 </label>
-                <input
+                <Input
                   id="canvas-negative-prompt"
                   value={canvas.negativePrompt}
                   onChange={(event) => canvas.setNegativePrompt(event.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-active-work"
+                  className="h-auto rounded-xl bg-surface py-2 text-sm"
                   placeholder="Optional"
                 />
               </div>
@@ -105,12 +105,12 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
                 >
                   Reference Images
                 </label>
-                <textarea
+                <Textarea
                   id="canvas-reference-images"
                   value={canvas.referenceInput}
                   onChange={(event) => canvas.setReferenceInput(event.target.value)}
                   rows={3}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-active-work"
+                  className="rounded-xl bg-surface py-2"
                   placeholder="One URL per line"
                 />
               </div>
@@ -128,11 +128,11 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
                   {canvas.selectedModelIds.length} selected
                 </span>
               </div>
-              <input
+              <Input
                 id="canvas-model-search"
                 value={canvas.modelSearch}
                 onChange={(event) => canvas.setModelSearch(event.target.value)}
-                className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-active-work"
+                className="h-auto rounded-xl bg-surface py-2 text-sm"
                 placeholder="Search models"
               />
 

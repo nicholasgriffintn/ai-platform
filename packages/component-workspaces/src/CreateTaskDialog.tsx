@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -210,41 +211,33 @@ export function CreateTaskDialog({
               <FormSelect
                 label="Start at stage"
                 value={stageId}
-                onChange={(event) => setStageId(event.target.value)}
-              >
-                {flow.stages.map((stage) => (
-                  <option key={stage.id} value={stage.id}>
-                    {stage.name}
-                  </option>
-                ))}
-              </FormSelect>
+                options={flow.stages.map((stage) => ({ value: stage.id, label: stage.name }))}
+                onValueChange={setStageId}
+              />
             ) : (
               <FormSelect
                 label="Teammate"
                 value={teammateId}
-                onChange={(event) => setTeammateId(event.target.value)}
-                required
-              >
-                <option value="">Choose an teammate</option>
-                {teammates.map((teammate) => (
-                  <option key={teammate.id} value={teammate.id}>
-                    {teammate.name}
-                  </option>
-                ))}
-              </FormSelect>
+                placeholder="Choose a teammate"
+                options={teammates.map((teammate) => ({
+                  value: teammate.id,
+                  label: teammate.name,
+                }))}
+                onValueChange={setTeammateId}
+              />
             )}
             <FormSelect
               label="Owner"
               value={assignee}
-              onChange={(event) => setAssignee(event.target.value)}
-            >
-              <option value="">Unassigned</option>
-              {members.map((member) => (
-                <option key={member.userId} value={member.userId}>
-                  {member.name || `Member ${member.userId}`}
-                </option>
-              ))}
-            </FormSelect>
+              options={[
+                { value: "", label: "Unassigned" },
+                ...members.map((member) => ({
+                  value: String(member.userId),
+                  label: member.name || `Member ${member.userId}`,
+                })),
+              ]}
+              onValueChange={setAssignee}
+            />
           </div>
 
           <Field label="Expected output">
@@ -287,14 +280,15 @@ export function CreateTaskDialog({
                   {APPROVAL_OPTIONS.map(({ permission, label }) => (
                     <label
                       key={permission}
+                      htmlFor={`task-approval-${permission}`}
                       className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs"
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox
+                        id={`task-approval-${permission}`}
                         checked={requireApprovalFor.includes(permission)}
-                        onChange={(event) =>
+                        onCheckedChange={(checked) =>
                           setRequireApprovalFor((current) =>
-                            event.target.checked
+                            checked === true
                               ? [...current, permission]
                               : current.filter((value) => value !== permission),
                           )
@@ -310,14 +304,18 @@ export function CreateTaskDialog({
                 <Field label="Wait for tasks">
                   <div className="max-h-36 space-y-1 overflow-y-auto">
                     {activeTasks.map((task) => (
-                      <label key={task.id} className="flex items-start gap-2 py-1 text-sm">
-                        <input
-                          type="checkbox"
+                      <label
+                        key={task.id}
+                        htmlFor={`task-depends-${task.id}`}
+                        className="flex items-start gap-2 py-1 text-sm"
+                      >
+                        <Checkbox
+                          id={`task-depends-${task.id}`}
                           className="mt-1"
                           checked={dependsOn.includes(task.id)}
-                          onChange={(event) =>
+                          onCheckedChange={(checked) =>
                             setDependsOn((current) =>
-                              event.target.checked
+                              checked === true
                                 ? [...current, task.id]
                                 : current.filter((id) => id !== task.id),
                             )

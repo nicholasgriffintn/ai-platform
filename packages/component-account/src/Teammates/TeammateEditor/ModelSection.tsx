@@ -28,7 +28,7 @@ export function ModelSection({ value, models, disabled, onChange }: ModelSection
         disabled={disabled}
         options={[{ value: "", label: "Use the chat default" }, ...modelOptions]}
         description="Only models that support tool calls can run a teammate."
-        onChange={(event) => onChange({ model: event.target.value })}
+        onValueChange={(model) => onChange({ model })}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

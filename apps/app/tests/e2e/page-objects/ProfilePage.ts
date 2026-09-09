@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
+import { chooseDropdownOption } from "../support/dropdown";
 import { addVirtualAuthenticator } from "../support/virtual-authenticator";
 import { BasePage } from "./BasePage";
 
@@ -369,9 +370,10 @@ export class ProfilePage extends BasePage {
     await this.page.getByLabel("Nickname", { exact: true }).fill(settings.nickname);
     await this.page.getByLabel("Job Role", { exact: true }).fill(settings.jobRole);
     await this.page.getByLabel("Preferences", { exact: true }).fill(settings.preferences);
-    await this.page
-      .getByLabel("Search Provider", { exact: true })
-      .selectOption(settings.searchProvider);
+    await chooseDropdownOption(
+      this.page.getByLabel("Search Provider", { exact: true }),
+      settings.searchProvider,
+    );
     await this.page.getByRole("button", { name: "Save", exact: true }).click();
     await this.page.getByText("Settings saved successfully!", { exact: true }).waitFor();
   }
@@ -411,9 +413,10 @@ export class ProfilePage extends BasePage {
     await sourceDialog.getByLabel("Content", { exact: true }).fill(content);
     await sourceDialog.getByRole("button", { name: "Add source" }).click();
     await sourceDialog.waitFor({ state: "hidden" });
-    await this.page
-      .getByLabel(`Add ${sourceTitle} to a collection`)
-      .selectOption({ label: collectionName });
+    await chooseDropdownOption(
+      this.page.getByLabel(`Add ${sourceTitle} to a collection`),
+      collectionName,
+    );
     await this.page.getByRole("button", { name: new RegExp(`^${collectionName}`) }).click();
     await this.page.getByText(sourceTitle, { exact: true }).waitFor();
   }

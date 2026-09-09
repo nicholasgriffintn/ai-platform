@@ -52,7 +52,7 @@ export function ProjectRoutingCard({
             label: `${tier.label} — ${tier.tagline}`,
           })),
         ]}
-        onChange={(event) => setDraft(fromSelectValue(event.target.value))}
+        onValueChange={(value) => setDraft(fromSelectValue(value))}
       />
       {errorMessage && (
         <p role="alert" className="text-sm text-failure">

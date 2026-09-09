@@ -6,6 +6,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Checkbox,
+  FormSelect,
+  type FormSelectOption,
+  Input,
   Textarea as UITextarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import { memo, useState } from "react";
@@ -34,6 +38,26 @@ type NoteType =
   | "educational_video"
   | "documentary"
   | "other";
+
+const NOTE_TYPES: NoteType[] = [
+  "general",
+  "meeting",
+  "training",
+  "lecture",
+  "interview",
+  "recording",
+  "webinar",
+  "tutorial",
+  "video_content",
+  "educational_video",
+  "documentary",
+  "other",
+];
+
+const NOTE_TYPE_OPTIONS: FormSelectOption<NoteType>[] = NOTE_TYPES.map((type) => ({
+  value: type,
+  label: type.replace("_", " "),
+}));
 
 export interface MediaGenerationRequest {
   url: string;
@@ -108,51 +132,32 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
           <label htmlFor="media-url" className="sr-only">
             Media URL
           </label>
-          <input
+          <Input
             id="media-url"
             type="url"
             value={mediaUrl}
             onChange={(e) => setMediaUrl(e.target.value)}
             placeholder="https:// or s3://"
-            className="w-full rounded border bg-transparent p-2"
+            className="h-auto p-2"
           />
 
           <div>
             <label htmlFor="note-type" className="text-sm font-medium">
               Note type
             </label>
-            <select
+            <FormSelect<NoteType>
               id="note-type"
+              className="mt-2"
               value={noteType}
-              onChange={(e) => setNoteType(e.target.value as NoteType)}
-              className="mt-2 w-full rounded border bg-transparent p-2"
-            >
-              {[
-                "general",
-                "meeting",
-                "training",
-                "lecture",
-                "interview",
-                "recording",
-                "webinar",
-                "tutorial",
-                "video_content",
-                "educational_video",
-                "documentary",
-                "other",
-              ].map((t) => (
-                <option key={t} value={t}>
-                  {t.replace("_", " ")}
-                </option>
-              ))}
-            </select>
+              options={NOTE_TYPE_OPTIONS}
+              onValueChange={setNoteType}
+            />
 
             <label htmlFor="timestamps" className="mt-3 flex items-center gap-2 text-sm">
-              <input
+              <Checkbox
                 id="timestamps"
-                type="checkbox"
                 checked={withTimestamps}
-                onChange={(e) => setWithTimestamps(e.target.checked)}
+                onCheckedChange={(checked) => setWithTimestamps(checked === true)}
               />
               Include timestamps
             </label>
@@ -197,15 +202,12 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                       opt.videoOnly && !useVideoAnalysis ? "cursor-not-allowed opacity-50" : ""
                     }`}
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={selectedOutputs.includes(opt.id)}
                       disabled={opt.videoOnly && !useVideoAnalysis}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-
+                      onCheckedChange={(checked) => {
                         setSelectedOutputs((prev) =>
-                          checked
+                          checked === true
                             ? Array.from(new Set([...prev, opt.id]))
                             : prev.filter((v) => v !== opt.id),
                         );
@@ -224,12 +226,11 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                 <h3 className="mb-3 text-sm font-medium text-active-work">🎥 Video Intelligence</h3>
                 <div className="space-y-3">
                   <label htmlFor="video-analysis" className="flex items-center gap-2 text-sm">
-                    <input
+                    <Checkbox
                       id="video-analysis"
-                      type="checkbox"
                       checked={useVideoAnalysis}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
+                      onCheckedChange={(state) => {
+                        const checked = state === true;
 
                         setUseVideoAnalysis(checked);
                         if (!checked) {
@@ -258,7 +259,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                       !useVideoAnalysis ? "cursor-not-allowed opacity-50" : ""
                     }`}
                   >
-                    <input id="video-search" type="checkbox" checked={false} disabled readOnly />
+                    <Checkbox id="video-search" checked={false} disabled />
                     <div>
                       <span className="font-medium">Video search unavailable</span>
                       <p className="text-xs text-muted-foreground">

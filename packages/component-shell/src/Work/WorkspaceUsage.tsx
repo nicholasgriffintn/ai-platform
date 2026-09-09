@@ -1,5 +1,5 @@
 import { UsageSummaryCard } from "@ngriffin_uk/polychat-component-account";
-import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Card, Input } from "@ngriffin_uk/polychat-component-ui";
 import { useWorkspaceUsage, workspaceProjectUsageRows } from "@ngriffin_uk/polychat-library-react";
 import {
   usagePeriodFromDate,
@@ -34,11 +34,11 @@ export function WorkspaceUsage({
             <label htmlFor={inputId} className="block text-xs text-muted-foreground">
               Month (UTC)
             </label>
-            <input
+            <Input
               id={inputId}
               type="month"
               value={period}
-              className="rounded border border-border-strong bg-transparent p-2 text-sm"
+              className="h-auto border-border-strong p-2 text-sm"
               onChange={(event) => {
                 const result = usagePeriodSchema.safeParse(event.target.value);
 

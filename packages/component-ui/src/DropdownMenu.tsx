@@ -1,10 +1,12 @@
 import {
+  createContext,
   cloneElement,
   isValidElement,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
   useEffect,
+  useContext,
   useId,
   useRef,
   useState,
@@ -12,6 +14,8 @@ import {
 
 import type { ButtonProps } from "./Button";
 import { Button } from "./Button";
+
+const DropdownMenuCloseContext = createContext<() => void>(() => {});
 
 interface DropdownMenuProps {
   trigger: ReactNode;
@@ -35,7 +39,8 @@ export function DropdownMenu({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuItemsRef = useRef<HTMLElement[]>([]);
   const [focusIndex, setFocusIndex] = useState(-1);
-  const triggerId = useId();
+  const generatedTriggerId = useId();
+  const triggerId = buttonProps?.id ?? generatedTriggerId;
 
   useEffect(() => {
     if (!isOpen) {
@@ -176,7 +181,9 @@ export function DropdownMenu({
           aria-orientation="vertical"
           aria-labelledby={triggerId}
         >
-          <div className="py-1">{children}</div>
+          <DropdownMenuCloseContext value={() => setIsOpen(false)}>
+            <div className="py-1">{children}</div>
+          </DropdownMenuCloseContext>
         </div>
       )}
     </div>
@@ -200,6 +207,12 @@ export function DropdownMenuItem({
   disabled = false,
   asChild = false,
 }: DropdownMenuItemProps) {
+  const closeMenu = useContext(DropdownMenuCloseContext);
+  const handleSelect = () => {
+    onClick?.();
+    closeMenu();
+  };
+
   const itemClassName = `text-popover-foreground hover:bg-accent hover:text-accent-foreground z-10 flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50 ${className}`;
 
   if (asChild && isValidElement<MenuItemChildProps>(children)) {
@@ -212,7 +225,7 @@ export function DropdownMenuItem({
       }
 
       child.props.onClick?.(event);
-      onClick?.();
+      handleSelect();
     };
 
     return cloneElement(child, {
@@ -233,7 +246,7 @@ export function DropdownMenuItem({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleSelect}
       className={itemClassName}
       disabled={disabled}
       role="menuitem"

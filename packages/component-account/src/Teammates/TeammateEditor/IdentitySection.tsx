@@ -40,8 +40,8 @@ export function IdentitySection({ value, disabled, onChange }: IdentitySectionPr
         disabled={disabled}
         options={TEAMMATE_KINDS.map((kind) => ({ value: kind, label: KIND_LABELS[kind] }))}
         description={describeTeammateKind(value.kind)}
-        onChange={(event) =>
-          onChange({ kind: teammateKindSchema.safeParse(event.target.value).data ?? value.kind })
+        onValueChange={(kind) =>
+          onChange({ kind: teammateKindSchema.safeParse(kind).data ?? value.kind })
         }
       />
       <FormInput

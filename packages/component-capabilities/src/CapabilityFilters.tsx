@@ -91,8 +91,7 @@ export function CapabilityFilters({
         <div className="sm:hidden">
           <FormSelect
             aria-label="Filter capabilities by category"
-            className="h-10 bg-surface"
-            onChange={(event) => onCategoryChange(event.target.value)}
+            onValueChange={onCategoryChange}
             options={categoryFilters}
             value={category}
           />

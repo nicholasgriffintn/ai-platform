@@ -1,4 +1,11 @@
-import { Button, EmptyState, FormSelect, Textarea, cn } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Button,
+  EmptyState,
+  FormSelect,
+  Input,
+  Textarea,
+  cn,
+} from "@ngriffin_uk/polychat-component-ui";
 import type { SandboxPreviewAccess } from "@ngriffin_uk/polychat-schemas";
 import type {
   ProjectWorkbenchPreviewDisplayState,
@@ -389,9 +396,9 @@ export function ProjectWorkbenchPreview({
           <FormSelect
             label="Declared service"
             value={selectedServiceName ?? ""}
-            onChange={(event) => {
+            onValueChange={(name) => {
               regionSelection.clear();
-              onSelectedServiceChange(event.target.value);
+              onSelectedServiceChange(name);
             }}
             options={services.map((candidate) => ({
               value: candidate.name,
@@ -422,7 +429,7 @@ export function ProjectWorkbenchPreview({
                   Recorded route
                 </label>
                 <div className="mt-1 flex gap-1">
-                  <input
+                  <Input
                     id="preview-route"
                     value={activeRouteState.draftRoute}
                     onChange={(event) =>
@@ -430,7 +437,7 @@ export function ProjectWorkbenchPreview({
                     }
                     maxLength={500}
                     spellCheck={false}
-                    className="min-h-9 min-w-0 flex-1 border border-input bg-surface px-3 font-mono text-xs text-foreground outline-none focus:border-ring focus:ring-[3px] focus:ring-ring/30"
+                    className="min-w-0 flex-1 bg-surface font-mono text-xs"
                   />
                   <Button type="submit" variant="secondary" size="sm">
                     Go
@@ -558,14 +565,14 @@ export function ProjectWorkbenchPreview({
               <label className="mt-3 block text-xs text-muted-foreground" htmlFor="preview-target">
                 Element reference <span className="font-normal">(optional)</span>
               </label>
-              <input
+              <Input
                 id="preview-target"
                 value={elementReference}
                 onChange={(event) => setElementReference(event.target.value)}
                 maxLength={160}
                 placeholder="For example: Save button in the account form"
                 disabled={!canSubmitFeedback}
-                className="mt-1 min-h-9 w-full border border-input bg-surface px-3 text-sm text-foreground outline-none focus:border-ring focus:ring-[3px] focus:ring-ring/30 disabled:opacity-60"
+                className="mt-1 bg-surface text-sm"
               />
               <label
                 className="mt-3 block text-xs text-muted-foreground"

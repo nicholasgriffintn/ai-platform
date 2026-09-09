@@ -1,3 +1,4 @@
+import { chooseDropdownOption } from "../support/dropdown";
 import { BasePage } from "./BasePage";
 
 export class ProjectTasksPage extends BasePage {
@@ -74,8 +75,11 @@ export class ProjectTasksPage extends BasePage {
     await this.pipelineDialog().waitFor({ state: "hidden" });
   }
 
-  async filterQueueTo(status: string) {
-    await this.page.getByLabel("Filter work by status", { exact: true }).selectOption(status);
+  async filterQueueTo(statusLabel: string) {
+    await chooseDropdownOption(
+      this.page.getByLabel("Filter work by status", { exact: true }),
+      statusLabel,
+    );
   }
 
   async borderWidthOf(locator: import("@playwright/test").Locator) {

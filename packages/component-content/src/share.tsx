@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  Input,
   type ButtonCollapse,
   type ButtonVariant,
 } from "@ngriffin_uk/polychat-component-ui";
@@ -106,12 +107,12 @@ export function ShareDialog({
                 <p className="text-sm text-muted-foreground">{finalLabels.sharedDescription}</p>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
-                    <input
+                    <Input
                       type="text"
                       readOnly
                       value={shareUrl}
                       aria-label="Share link"
-                      className="w-full rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm text-foreground"
+                      className="h-auto bg-surface-elevated py-1.5 text-sm"
                     />
                   </div>
                   <Button

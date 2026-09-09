@@ -1,4 +1,10 @@
-import { cn, ActionButtons, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
+import {
+  cn,
+  ActionButtons,
+  ConfirmationDialog,
+  FormSelect,
+  RangeInput,
+} from "@ngriffin_uk/polychat-component-ui";
 import {
   Copy,
   Download,
@@ -13,6 +19,16 @@ import {
 } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
+
+const FONT_FAMILY_OPTIONS = [
+  { value: "sans", label: "Sans" },
+  { value: "serif", label: "Serif" },
+];
+
+const THEME_MODE_OPTIONS = [
+  { value: "sepia", label: "Sepia" },
+  { value: "normal", label: "Normal" },
+];
 
 interface NoteEditorToolbarProps {
   fontFamily: string;
@@ -120,45 +136,34 @@ export const NoteEditorToolbar = memo(function NoteEditorToolbar({
       className="flex flex-col gap-2 border-t px-2 py-2 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4"
     >
       <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-        <label htmlFor="fontFamily" className="sr-only">
-          Font
-        </label>
-        <select
+        <FormSelect
           id="fontFamily"
+          aria-label="Font"
+          fullWidth={false}
+          className="w-28"
           value={fontFamily}
-          onChange={(e) => onFontFamilyChange(e.target.value)}
-          className="bg-transparent"
-        >
-          <option value="sans">Sans</option>
-          <option value="serif">Serif</option>
-        </select>
-        <label htmlFor="themeMode" className="sr-only">
-          Theme
-        </label>
-        <select
+          options={FONT_FAMILY_OPTIONS}
+          onValueChange={onFontFamilyChange}
+        />
+        <FormSelect
           id="themeMode"
+          aria-label="Theme"
+          fullWidth={false}
+          className="w-28"
           value={themeMode}
-          onChange={(e) => onThemeChange(e.target.value)}
-          className="bg-transparent"
-        >
-          <option value="sepia">Sepia</option>
-          <option value="normal">Normal</option>
-        </select>
-        <label htmlFor="fontSize" className="sr-only">
-          Font Size
-        </label>
-        <div className="flex items-center">
-          <span>{fontSize}</span>
-          <input
-            id="fontSize"
-            type="range"
-            min="10"
-            max="72"
-            value={fontSize}
-            onChange={(e) => onFontSizeChange(+e.target.value)}
-            className="mx-2"
-          />
-        </div>
+          options={THEME_MODE_OPTIONS}
+          onValueChange={onThemeChange}
+        />
+        <RangeInput
+          id="fontSize"
+          label="Font size"
+          className="mx-2 w-32"
+          min={10}
+          max={72}
+          step={1}
+          value={fontSize}
+          onChange={(e) => onFontSizeChange(+e.target.value)}
+        />
       </div>
       <div className="flex flex-wrap items-center gap-2 sm:gap-4">
         <ActionButtons

@@ -1,4 +1,4 @@
-import { Badge, Button } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, Button, FormSelect } from "@ngriffin_uk/polychat-component-ui";
 import type { OutputHistoryResponse } from "@ngriffin_uk/polychat-schemas";
 import { History, RotateCcw } from "lucide-react";
 import { useState } from "react";
@@ -54,20 +54,17 @@ export function OutputRevisionReview({
               : ""}
           </p>
         </div>
-        <label className="text-xs font-medium text-muted-foreground">
-          Compare with
-          <select
-            className="ml-2 rounded-md border bg-transparent px-2 py-1"
-            value={selected.revision}
-            onChange={(event) => setSelectedRevision(Number(event.target.value))}
-          >
-            {history.revisions.map((revision) => (
-              <option key={revision.revision} value={revision.revision}>
-                Revision {revision.revision} · {revision.operation}
-              </option>
-            ))}
-          </select>
-        </label>
+        <FormSelect
+          label="Compare with"
+          fullWidth={false}
+          className="min-w-48"
+          value={String(selected.revision)}
+          options={history.revisions.map((revision) => ({
+            value: String(revision.revision),
+            label: `Revision ${revision.revision} · ${revision.operation}`,
+          }))}
+          onValueChange={(value) => setSelectedRevision(Number(value))}
+        />
       </div>
 
       <div className="flex flex-wrap gap-2" aria-label="Changed fields">

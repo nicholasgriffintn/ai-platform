@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
+import { chooseDropdownOption } from "../support/dropdown";
 import { E2E_API_BASE_URL } from "../support/environment";
 import { BasePage } from "./BasePage";
 
@@ -65,7 +66,7 @@ export class CapabilitiesPage extends BasePage {
   }
 
   async selectTeammateModel(label: string) {
-    await this.page.getByLabel("Model", { exact: true }).selectOption({ label });
+    await chooseDropdownOption(this.page.getByLabel("Model", { exact: true }), label);
   }
 
   async fillTeammateEditor(settings: {

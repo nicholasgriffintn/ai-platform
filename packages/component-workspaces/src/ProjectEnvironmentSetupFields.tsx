@@ -111,9 +111,7 @@ export function ProjectEnvironmentSetupFields({
       <FormSelect
         label="Environment setup"
         value={value?.source ?? "none"}
-        onChange={(event) => {
-          const source = event.target.value;
-
+        onValueChange={(source) => {
           onChange(
             source === "repository"
               ? { source: "repository" }
@@ -152,7 +150,7 @@ export function ProjectEnvironmentSetupFields({
             <FormSelect
               label="Runtime"
               value={runtime?.name ?? ""}
-              onChange={(event) => updateRuntime(event.target.value)}
+              onValueChange={updateRuntime}
               options={[
                 { value: "", label: "No runtime requirement" },
                 ...["node", "python", "go", "rust", "java", "ruby"].map((name) => ({
@@ -178,7 +176,7 @@ export function ProjectEnvironmentSetupFields({
             <FormSelect
               label="Package manager"
               value={definition.packageManager?.name ?? ""}
-              onChange={(event) => updatePackageManager(event.target.value)}
+              onValueChange={updatePackageManager}
               options={[
                 { value: "", label: "No package-manager requirement" },
                 ...[

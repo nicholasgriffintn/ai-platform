@@ -200,18 +200,15 @@ describe("TaskBoard", () => {
     fireEvent.change(screen.getByRole("searchbox", { name: "Search work queue" }), {
       target: { value: "" },
     });
-    fireEvent.change(screen.getByRole("combobox", { name: "Filter work by status" }), {
-      target: { value: "attention" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Filter work by status" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Needs attention" }));
     expect(screen.getByText("Publish the launch note")).toBeTruthy();
     expect(screen.queryByText("Summarise the launch")).toBeNull();
 
-    fireEvent.change(screen.getByRole("combobox", { name: "Filter work by status" }), {
-      target: { value: "all" },
-    });
-    fireEvent.change(screen.getByRole("combobox", { name: "Filter work by stage" }), {
-      target: { value: "research" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Filter work by status" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "All statuses" }));
+    fireEvent.click(screen.getByRole("button", { name: "Filter work by stage" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Research" }));
     expect(screen.getByText("Write the launch spec")).toBeTruthy();
     expect(screen.queryByText("Publish the launch note")).toBeNull();
     expect(screen.getByText("1 of 3")).toBeTruthy();

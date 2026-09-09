@@ -17,7 +17,7 @@ export function SourceKindFilter({ kindOptions, kind, onKindChange }: SourceKind
       aria-label="Filter sources by type"
       fullWidth={false}
       value={kind}
-      onChange={(event) => onKindChange(event.target.value)}
+      onValueChange={onKindChange}
       options={kindOptions}
     />
   );

@@ -151,31 +151,14 @@ function PairSelect({
     <FormSelect
       label={label}
       value={value}
-      className="py-1 text-xs"
+      triggerClassName="py-1 text-xs"
       options={themes.map((theme) => ({
         value: theme.id,
         label: theme.label,
       }))}
-      onChange={(event) => {
-        const next = event.target.value;
-
+      onValueChange={(next) => {
         if (isThemeId(next)) {
           onChange(next);
-        }
-      }}
-      onKeyDown={(event) => {
-        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
-          return;
-        }
-
-        event.preventDefault();
-        const currentIndex = themes.findIndex((theme) => theme.id === value);
-        const direction = event.key === "ArrowDown" ? 1 : -1;
-        const nextIndex = Math.min(Math.max(currentIndex + direction, 0), themes.length - 1);
-        const next = themes[nextIndex];
-
-        if (next) {
-          onChange(next.id);
         }
       }}
     />

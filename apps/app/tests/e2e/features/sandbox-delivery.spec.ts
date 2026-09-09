@@ -5,6 +5,7 @@ import { HomePage } from "../page-objects/HomePage";
 import { ProjectEnvironmentPage } from "../page-objects/ProjectEnvironmentPage";
 import { WorkbenchPage } from "../page-objects/WorkbenchPage";
 import { WorkPage } from "../page-objects/WorkPage";
+import { chooseDropdownOption, expectDropdownValue } from "../support/dropdown";
 
 test.describe("Sandbox delivery policy", () => {
   test.use({ persona: "pro" });
@@ -22,14 +23,14 @@ test.describe("Sandbox delivery policy", () => {
     await projectState.setLegacyDelivery(false);
     await workPage.reload();
     await environment.edit();
-    await expect(environment.deliveryPolicy).toHaveValue("leave_uncommitted");
+    await expectDropdownValue(environment.deliveryPolicy, "Leave changes uncommitted");
     await environment.cancelEdit();
 
     await projectState.setLegacyDelivery(true);
     await workPage.reload();
     await environment.edit();
-    await expect(environment.deliveryPolicy).toHaveValue("review_branch");
-    await expect(environment.reviewDestination).toHaveValue("branch");
+    await expectDropdownValue(environment.deliveryPolicy, "Prepare a branch or pull request");
+    await expectDropdownValue(environment.reviewDestination, "Push a review branch");
   });
 
   test("defaults new repositories to pull requests and retains every saved policy", async ({
@@ -43,8 +44,8 @@ test.describe("Sandbox delivery policy", () => {
     await sandbox.connectInstallation();
     await workPage.reload();
     await environment.connect(SANDBOX_E2E_REPOSITORIES.delivery);
-    await expect(environment.deliveryPolicy).toHaveValue("review_branch");
-    await expect(environment.reviewDestination).toHaveValue("pull_request");
+    await expectDropdownValue(environment.deliveryPolicy, "Prepare a branch or pull request");
+    await expectDropdownValue(environment.reviewDestination, "Open a pull request");
     await environment.save();
     expect((await sandbox.project()).codingEnvironment?.deliveryPolicy).toEqual({
       mode: "review_branch",
@@ -52,33 +53,33 @@ test.describe("Sandbox delivery policy", () => {
     });
 
     await environment.edit();
-    await environment.reviewDestination.selectOption("branch");
+    await chooseDropdownOption(environment.reviewDestination, "Push a review branch");
     await environment.save();
     await workPage.reload();
     await environment.edit();
-    await expect(environment.deliveryPolicy).toHaveValue("review_branch");
-    await expect(environment.reviewDestination).toHaveValue("branch");
+    await expectDropdownValue(environment.deliveryPolicy, "Prepare a branch or pull request");
+    await expectDropdownValue(environment.reviewDestination, "Push a review branch");
 
-    await environment.deliveryPolicy.selectOption("leave_uncommitted");
+    await chooseDropdownOption(environment.deliveryPolicy, "Leave changes uncommitted");
     await environment.save();
     await workPage.reload();
     await environment.edit();
-    await expect(environment.deliveryPolicy).toHaveValue("leave_uncommitted");
+    await expectDropdownValue(environment.deliveryPolicy, "Leave changes uncommitted");
 
-    await environment.deliveryPolicy.selectOption("commit_to_branch");
+    await chooseDropdownOption(environment.deliveryPolicy, "Commit to a configured branch");
     await environment.targetBranch.fill("release/e2e");
     await environment.save();
     await workPage.reload();
     await environment.edit();
-    await expect(environment.deliveryPolicy).toHaveValue("commit_to_branch");
+    await expectDropdownValue(environment.deliveryPolicy, "Commit to a configured branch");
     await expect(environment.targetBranch).toHaveValue("release/e2e");
 
-    await environment.deliveryPolicy.selectOption("custom");
+    await chooseDropdownOption(environment.deliveryPolicy, "Custom delivery instructions");
     await environment.deliveryInstructions.fill("Keep a local CUSTOM_LOCAL_PREPARATION marker.");
     await environment.save();
     await workPage.reload();
     await environment.edit();
-    await expect(environment.deliveryPolicy).toHaveValue("custom");
+    await expectDropdownValue(environment.deliveryPolicy, "Custom delivery instructions");
     await expect(environment.deliveryInstructions).toHaveValue(
       "Keep a local CUSTOM_LOCAL_PREPARATION marker.",
     );

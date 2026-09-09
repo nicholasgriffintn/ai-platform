@@ -69,9 +69,10 @@ export function SharedTeammatesBrowser({
         <div className="flex gap-2">
           <FormSelect
             aria-label="Filter shared teammates by category"
-            className="h-10 min-w-36 bg-surface"
+            className="min-w-36"
+            fullWidth={false}
             value={selectedCategory}
-            onChange={(event) => onSelectedCategoryChange(event.target.value)}
+            onValueChange={onSelectedCategoryChange}
             options={[
               { value: "", label: "All categories" },
               ...categories.map((category) => ({ value: category, label: category })),
@@ -79,9 +80,10 @@ export function SharedTeammatesBrowser({
           />
           <FormSelect
             aria-label="Filter shared teammates by tag"
-            className="h-10 min-w-32 bg-surface"
+            className="min-w-32"
+            fullWidth={false}
             value={selectedTag}
-            onChange={(event) => onSelectedTagChange(event.target.value)}
+            onValueChange={onSelectedTagChange}
             options={[
               { value: "", label: "All tags" },
               ...tags.map((tag) => ({ value: tag, label: tag })),

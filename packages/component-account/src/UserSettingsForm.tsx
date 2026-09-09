@@ -2,6 +2,7 @@ import {
   Button,
   FormInput,
   FormSelect,
+  type FormSelectOption,
   SignInEmptyState,
   Switch,
   Textarea,
@@ -25,6 +26,58 @@ import {
   type UserSettings,
 } from "./user-settings";
 import { useUserSettingsForm } from "./useUserSettingsForm";
+
+const MODEL_TIER_OPTIONS: FormSelectOption[] = [
+  { value: "", label: "Use the standard tier" },
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+  { value: "ultra", label: "Ultra" },
+];
+
+const COMPUTE_SITE_OPTIONS: FormSelectOption[] = [
+  { value: "", label: "Hosted compute" },
+  { value: "browser", label: "This browser" },
+  { value: "device", label: "This device" },
+  { value: "machine", label: "Connected machine" },
+];
+
+const GUARDRAILS_PROVIDER_OPTIONS: FormSelectOption[] = [
+  { value: "llamaguard", label: "LlamaGuard" },
+  { value: "bedrock", label: "Bedrock" },
+  { value: "mistral", label: "Mistral" },
+  { value: "shieldstral", label: "Shieldstral (self-hosted)" },
+];
+
+const EMBEDDING_PROVIDER_OPTIONS: FormSelectOption[] = [
+  { value: "vectorize", label: "Vectorize" },
+  { value: "s3vectors", label: "S3 Vectors" },
+];
+
+const S3_VECTORS_REGION_OPTIONS: FormSelectOption[] = [
+  { value: "us-east-1", label: "US East (N. Virginia)" },
+  { value: "us-west-2", label: "US West (Oregon)" },
+  { value: "eu-west-1", label: "Europe (Ireland)" },
+  { value: "ap-southeast-1", label: "Asia Pacific (Singapore)" },
+  { value: "ap-northeast-1", label: "Asia Pacific (Tokyo)" },
+];
+
+const MEMORY_PROVIDER_OPTIONS: FormSelectOption[] = [
+  { value: "built-in", label: "Built-in" },
+  { value: "documents", label: "Documents" },
+  { value: "hindsight", label: "Hindsight" },
+  { value: "honcho", label: "Honcho" },
+];
+
+const SEARCH_PROVIDER_OPTIONS: FormSelectOption[] = [
+  { value: "", label: "Default" },
+  { value: "duckduckgo", label: "DuckDuckGo" },
+  { value: "tavily", label: "Tavily" },
+  { value: "serper", label: "Serper" },
+  { value: "perplexity", label: "Perplexity" },
+  { value: "parallel", label: "Parallel" },
+  { value: "exa", label: "Exa" },
+];
 
 export const USER_SETTINGS_FORM_ID = "user-settings-form";
 
@@ -78,8 +131,8 @@ export function UserSettingsForm({
     });
   };
 
-  const handleTranscriptionProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newProvider = getTranscriptionProviderOption(e.target.value).id;
+  const handleTranscriptionProviderChange = (value: string) => {
+    const newProvider = getTranscriptionProviderOption(value).id;
     const [firstModelForProvider] = getTranscriptionModelOptions(newProvider);
 
     updateFormData({
@@ -97,8 +150,8 @@ export function UserSettingsForm({
     });
   };
 
-  const handleSpeechProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newProvider = getSpeechProviderOption(e.target.value).id;
+  const handleSpeechProviderChange = (value: string) => {
+    const newProvider = getSpeechProviderOption(value).id;
     const [firstModelForProvider] = getSpeechModelOptions(newProvider);
 
     updateFormData({
@@ -271,21 +324,15 @@ export function UserSettingsForm({
               id="default_model_tier"
               name="default_model_tier"
               value={formData.default_model_tier}
-              onChange={(event) => {
-                const value = modelTierSchema.safeParse(event.target.value);
+              options={MODEL_TIER_OPTIONS}
+              onValueChange={(value) => {
+                const parsed = modelTierSchema.safeParse(value);
 
                 updateFormData({
-                  default_model_tier: value.success ? value.data : "",
+                  default_model_tier: parsed.success ? parsed.data : "",
                 });
               }}
-              className="w-full"
-            >
-              <option value="">Use the standard tier</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="ultra">Ultra</option>
-            </FormSelect>
+            />
           </div>
 
           <div>
@@ -303,20 +350,15 @@ export function UserSettingsForm({
               id="default_compute_site"
               name="default_compute_site"
               value={formData.default_compute_site}
-              onChange={(event) => {
-                const value = computeSiteSchema.safeParse(event.target.value);
+              options={COMPUTE_SITE_OPTIONS}
+              onValueChange={(value) => {
+                const parsed = computeSiteSchema.safeParse(value);
 
                 updateFormData({
-                  default_compute_site: value.success ? value.data : "",
+                  default_compute_site: parsed.success ? parsed.data : "",
                 });
               }}
-              className="w-full"
-            >
-              <option value="">Hosted compute</option>
-              <option value="browser">This browser</option>
-              <option value="device">This device</option>
-              <option value="machine">Connected machine</option>
-            </FormSelect>
+            />
           </div>
         </div>
       </SettingsSection>
@@ -387,17 +429,13 @@ export function UserSettingsForm({
               id="guardrails_provider"
               name="guardrails_provider"
               value={formData.guardrails_provider}
-              onChange={(e) =>
+              options={GUARDRAILS_PROVIDER_OPTIONS}
+              onValueChange={(value) =>
                 updateFormData({
-                  guardrails_provider: resolveGuardrailsProviderId(e.target.value),
+                  guardrails_provider: resolveGuardrailsProviderId(value),
                 })
               }
-            >
-              <option value="llamaguard">LlamaGuard</option>
-              <option value="bedrock">Bedrock</option>
-              <option value="mistral">Mistral</option>
-              <option value="shieldstral">Shieldstral (self-hosted)</option>
-            </FormSelect>
+            />
           </div>
           {formData.guardrails_provider === "shieldstral" && (
             <p className="text-sm text-muted-foreground">
@@ -461,15 +499,13 @@ export function UserSettingsForm({
               id="embedding_provider"
               name="embedding_provider"
               value={formData.embedding_provider}
-              onChange={(e) =>
+              options={EMBEDDING_PROVIDER_OPTIONS}
+              onValueChange={(value) =>
                 updateFormData({
-                  embedding_provider: e.target.value,
+                  embedding_provider: value,
                 })
               }
-            >
-              <option value="vectorize">Vectorize</option>
-              <option value="s3vectors">S3 Vectors</option>
-            </FormSelect>
+            />
           </div>
           {formData.embedding_provider === "s3vectors" && (
             <>
@@ -518,18 +554,13 @@ export function UserSettingsForm({
                   id="s3vectors_region"
                   name="s3vectors_region"
                   value={formData.s3vectors_region}
-                  onChange={(e) =>
+                  options={S3_VECTORS_REGION_OPTIONS}
+                  onValueChange={(value) =>
                     updateFormData({
-                      s3vectors_region: e.target.value,
+                      s3vectors_region: value,
                     })
                   }
-                >
-                  <option value="us-east-1">US East (N. Virginia)</option>
-                  <option value="us-west-2">US West (Oregon)</option>
-                  <option value="eu-west-1">Europe (Ireland)</option>
-                  <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
-                  <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
-                </FormSelect>
+                />
               </div>
               <p className="text-sm text-muted-foreground">
                 Please note that you will also need to configure the AWS credentials for S3 Vectors
@@ -553,17 +584,13 @@ export function UserSettingsForm({
               id="memory_provider"
               name="memory_provider"
               value={formData.memory_provider}
-              onChange={(e) =>
+              options={MEMORY_PROVIDER_OPTIONS}
+              onValueChange={(value) =>
                 updateFormData({
-                  memory_provider: e.target.value,
+                  memory_provider: value,
                 })
               }
-            >
-              <option value="built-in">Built-in</option>
-              <option value="documents">Documents</option>
-              <option value="hindsight">Hindsight</option>
-              <option value="honcho">Honcho</option>
-            </FormSelect>
+            />
             <p className="text-sm text-muted-foreground">
               Documents keeps memories as files you can read and edit under Files &rsaquo; Memory.
               Hindsight and Honcho require a connected API key in Providers.
@@ -699,14 +726,12 @@ export function UserSettingsForm({
               id="transcription_provider"
               name="transcription_provider"
               value={formData.transcription_provider}
-              onChange={handleTranscriptionProviderChange}
-            >
-              {transcriptionProviderOptions.map((provider) => (
-                <option key={provider.id} value={provider.id}>
-                  {provider.label}
-                </option>
-              ))}
-            </FormSelect>
+              options={transcriptionProviderOptions.map((provider) => ({
+                value: provider.id,
+                label: provider.label,
+              }))}
+              onValueChange={handleTranscriptionProviderChange}
+            />
           </div>
 
           <div>
@@ -723,18 +748,18 @@ export function UserSettingsForm({
               id="transcription_model"
               name="transcription_model"
               value={formData.transcription_model}
-              onChange={(e) =>
+              options={getTranscriptionModelOptions(formData.transcription_provider).map(
+                (model) => ({
+                  value: model.id,
+                  label: model.label,
+                }),
+              )}
+              onValueChange={(value) =>
                 updateFormData({
-                  transcription_model: e.target.value,
+                  transcription_model: value,
                 })
               }
-            >
-              {getTranscriptionModelOptions(formData.transcription_provider).map((model) => (
-                <option key={model.id} value={model.id}>
-                  {model.label}
-                </option>
-              ))}
-            </FormSelect>
+            />
           </div>
 
           <div>
@@ -751,14 +776,12 @@ export function UserSettingsForm({
               id="speech_provider"
               name="speech_provider"
               value={formData.speech_provider}
-              onChange={handleSpeechProviderChange}
-            >
-              {speechProviderOptions.map((provider) => (
-                <option key={provider.id} value={provider.id}>
-                  {provider.label}
-                </option>
-              ))}
-            </FormSelect>
+              options={speechProviderOptions.map((provider) => ({
+                value: provider.id,
+                label: provider.label,
+              }))}
+              onValueChange={handleSpeechProviderChange}
+            />
           </div>
 
           <div>
@@ -776,18 +799,16 @@ export function UserSettingsForm({
               id="speech_model"
               name="speech_model"
               value={formData.speech_model}
-              onChange={(e) =>
+              options={getSpeechModelOptions(formData.speech_provider).map((model) => ({
+                value: model.id,
+                label: model.label,
+              }))}
+              onValueChange={(value) =>
                 updateFormData({
-                  speech_model: e.target.value,
+                  speech_model: value,
                 })
               }
-            >
-              {getSpeechModelOptions(formData.speech_provider).map((model) => (
-                <option key={model.id} value={model.id}>
-                  {model.label}
-                </option>
-              ))}
-            </FormSelect>
+            />
           </div>
         </div>
       </SettingsSection>
@@ -808,28 +829,21 @@ export function UserSettingsForm({
               id="search_provider"
               name="search_provider"
               value={formData.search_provider}
-              onChange={(e) => {
+              options={SEARCH_PROVIDER_OPTIONS}
+              onValueChange={(value) => {
                 updateFormData({
-                  search_provider: e.target.value,
+                  search_provider: value,
                 });
 
                 analytics.track({
                   name: "search_provider_changed",
                   category: "ui_interaction",
                   properties: {
-                    provider: e.target.value,
+                    provider: value,
                   },
                 });
               }}
-            >
-              <option value="">Default</option>
-              <option value="duckduckgo">DuckDuckGo</option>
-              <option value="tavily">Tavily</option>
-              <option value="serper">Serper</option>
-              <option value="perplexity">Perplexity</option>
-              <option value="parallel">Parallel</option>
-              <option value="exa">Exa</option>
-            </FormSelect>
+            />
             <p className="mt-2 text-sm text-muted-foreground">
               Configure provider keys in the providers section before selecting BYOK providers.
             </p>

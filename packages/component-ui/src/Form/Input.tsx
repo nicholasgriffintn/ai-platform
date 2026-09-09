@@ -1,6 +1,7 @@
 import type { InputHTMLAttributes } from "react";
 import { forwardRef, useId } from "react";
 
+import { Input } from "../input";
 import { Label } from "../label";
 import { cn } from "../utils";
 import { mergeDescribedBy } from "./describedBy";
@@ -35,15 +36,10 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     return (
       <div className={cn("space-y-1", fullWidth && "w-full")}>
         {label && <Label htmlFor={controlId}>{label}</Label>}
-        <input
+        <Input
           ref={ref}
           id={controlId}
-          className={cn(
-            "rounded-md border border-input bg-surface px-3 py-1.5 text-sm text-foreground focus:border-ring focus:ring-[3px] focus:ring-ring/30 focus:outline-none",
-            fullWidth && "w-full",
-            className,
-            disabled && "cursor-not-allowed opacity-50",
-          )}
+          className={cn("bg-surface text-sm", fullWidth ? "w-full" : "w-auto", className)}
           aria-describedby={describedBy}
           disabled={disabled}
           {...props}

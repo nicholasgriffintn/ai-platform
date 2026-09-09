@@ -1,6 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 
 import { renderedColourChannels } from "../support/colour";
+import { chooseDropdownOption } from "../support/dropdown";
 import { BasePage } from "./BasePage";
 
 export class ThemePage extends BasePage {
@@ -48,8 +49,8 @@ export class ThemePage extends BasePage {
   }
 
   async selectPair(day: string, night: string) {
-    await this.day.selectOption(day);
-    await this.night.selectOption(night);
+    await chooseDropdownOption(this.day, day);
+    await chooseDropdownOption(this.night, night);
   }
 
   async setSystemAppearance(colorScheme: "light" | "dark") {

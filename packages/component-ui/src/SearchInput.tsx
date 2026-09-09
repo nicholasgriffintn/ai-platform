@@ -2,6 +2,7 @@ import { Search, X } from "lucide-react";
 import type { InputHTMLAttributes } from "react";
 import { useRef } from "react";
 
+import { Input } from "./input";
 import { cn } from "./utils";
 
 interface SearchInputProps extends Omit<
@@ -49,20 +50,13 @@ export function SearchInput({
       >
         <Search className="h-4 w-4" aria-hidden="true" />
       </div>
-      <input
+      <Input
         ref={inputRef}
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={cn(
-          "w-full py-2 pr-12 pl-10 text-sm",
-          "rounded-md border border-border",
-          "bg-surface text-foreground",
-          "placeholder:text-muted-foreground",
-          "focus:border-transparent focus:ring-2 focus:ring-ring focus:outline-none",
-          "transition-colors",
-        )}
+        className="h-auto bg-surface py-2 pr-12 pl-10 text-sm"
         {...props}
       />
       <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">

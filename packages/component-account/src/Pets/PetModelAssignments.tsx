@@ -96,9 +96,7 @@ export function PetModelAssignments({
           disabled={disabled}
           fullWidth={false}
           className="w-40"
-          onChange={(event) => {
-            const value = event.target.value;
-
+          onValueChange={(value) => {
             if (!value) {
               onChange(
                 withPetConversationStateOverride(overrides, temporaryState.value, undefined),
@@ -163,8 +161,8 @@ export function PetModelAssignments({
                     disabled={disabled}
                     fullWidth={false}
                     className="w-40"
-                    onChange={(event) => {
-                      const pet = pets.find((option) => petKey(option) === event.target.value);
+                    onValueChange={(value) => {
+                      const pet = pets.find((option) => petKey(option) === value);
 
                       if (pet) {
                         onChange(

@@ -177,7 +177,7 @@ export function ProjectCodingEnvironmentCard({
           <FormSelect
             label="GitHub repository"
             value={repositoryKey}
-            onChange={(event) => setRepositoryKey(event.target.value)}
+            onValueChange={setRepositoryKey}
             disabled={isLoadingRepositories}
             options={[
               {
@@ -193,7 +193,7 @@ export function ProjectCodingEnvironmentCard({
           <FormSelect
             label="Delivery policy"
             value={deliveryMode}
-            onChange={(event) => setDeliveryMode(event.target.value)}
+            onValueChange={setDeliveryMode}
             options={[
               { value: "leave_uncommitted", label: "Leave changes uncommitted" },
               { value: "review_branch", label: "Prepare a branch or pull request" },
@@ -205,7 +205,7 @@ export function ProjectCodingEnvironmentCard({
             <FormSelect
               label="Review destination"
               value={reviewDestination}
-              onChange={(event) => setReviewDestination(event.target.value)}
+              onValueChange={setReviewDestination}
               options={[
                 { value: "pull_request", label: "Open a pull request (recommended)" },
                 { value: "branch", label: "Push a review branch" },

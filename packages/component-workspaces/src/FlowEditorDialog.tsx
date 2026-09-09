@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonLink,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -9,6 +10,7 @@ import {
   DialogTitle,
   FormInput,
   FormSelect,
+  type FormSelectOption,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
@@ -33,6 +35,19 @@ export interface FlowEditorDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave: (flow: ProjectFlow) => Promise<void>;
 }
+
+const STAGE_MODE_OPTIONS: FormSelectOption[] = [
+  { value: "", label: "Teammate default" },
+  { value: "explore", label: "Explore" },
+  { value: "plan", label: "Plan" },
+  { value: "build", label: "Build" },
+  { value: "chat", label: "Chat" },
+];
+
+const STAGE_ADVANCE_OPTIONS: FormSelectOption[] = [
+  { value: "on_goal_complete", label: "Hand off automatically" },
+  { value: "on_human_accept", label: "Stop for human review" },
+];
 
 const APPROVAL_OPTIONS: { permission: ToolPermission; label: string }[] = [
   { permission: "network", label: "Network" },
@@ -240,17 +255,17 @@ export function FlowEditorDialog({
                       <FormSelect
                         label="Teammate"
                         value={stage.teammateId ?? ""}
-                        onChange={(event) =>
-                          updateStage(index, { teammateId: event.target.value || null })
+                        options={[
+                          { value: "", label: "Project default" },
+                          ...teammates.map((teammate) => ({
+                            value: teammate.id,
+                            label: teammate.name,
+                          })),
+                        ]}
+                        onValueChange={(teammateId) =>
+                          updateStage(index, { teammateId: teammateId || null })
                         }
-                      >
-                        <option value="">Project default</option>
-                        {teammates.map((teammate) => (
-                          <option key={teammate.id} value={teammate.id}>
-                            {teammate.name}
-                          </option>
-                        ))}
-                      </FormSelect>
+                      />
                     </div>
 
                     <div className="space-y-1.5">
@@ -281,16 +296,18 @@ export function FlowEditorDialog({
                             return (
                               <label
                                 key={skill.id}
+                                htmlFor={`stage-${index}-skill-${skill.id}`}
                                 className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:bg-surface-elevated"
                               >
-                                <input
-                                  type="checkbox"
+                                <Checkbox
+                                  id={`stage-${index}-skill-${skill.id}`}
                                   checked={checked}
-                                  onChange={(event) =>
+                                  onCheckedChange={(isChecked) =>
                                     updateStage(index, {
-                                      skillIds: event.target.checked
-                                        ? [...stage.skillIds, skill.id]
-                                        : stage.skillIds.filter((value) => value !== skill.id),
+                                      skillIds:
+                                        isChecked === true
+                                          ? [...stage.skillIds, skill.id]
+                                          : stage.skillIds.filter((value) => value !== skill.id),
                                     })
                                   }
                                 />
@@ -311,33 +328,24 @@ export function FlowEditorDialog({
                     <FormSelect
                       label="Operating mode"
                       value={stage.mode ?? ""}
-                      onChange={(event) => {
-                        const mode = agentModeSchema.safeParse(event.target.value);
+                      options={STAGE_MODE_OPTIONS}
+                      onValueChange={(value) => {
+                        const mode = agentModeSchema.safeParse(value);
 
                         updateStage(index, { mode: mode.success ? mode.data : null });
                       }}
-                    >
-                      <option value="">Teammate default</option>
-                      <option value="explore">Explore</option>
-                      <option value="plan">Plan</option>
-                      <option value="build">Build</option>
-                      <option value="chat">Chat</option>
-                    </FormSelect>
+                    />
                     <FormSelect
                       label="When the goal completes"
                       value={stage.advance}
-                      onChange={(event) =>
+                      options={STAGE_ADVANCE_OPTIONS}
+                      onValueChange={(advance) =>
                         updateStage(index, {
                           advance:
-                            event.target.value === "on_human_accept"
-                              ? "on_human_accept"
-                              : "on_goal_complete",
+                            advance === "on_human_accept" ? "on_human_accept" : "on_goal_complete",
                         })
                       }
-                    >
-                      <option value="on_goal_complete">Hand off automatically</option>
-                      <option value="on_human_accept">Stop for human review</option>
-                    </FormSelect>
+                    />
 
                     <fieldset>
                       <legend className="text-xs font-medium text-muted-foreground">
@@ -347,18 +355,20 @@ export function FlowEditorDialog({
                         {APPROVAL_OPTIONS.map(({ permission, label }) => (
                           <label
                             key={permission}
+                            htmlFor={`stage-${index}-approval-${permission}`}
                             className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-surface"
                           >
-                            <input
-                              type="checkbox"
+                            <Checkbox
+                              id={`stage-${index}-approval-${permission}`}
                               checked={stage.requiresApprovalFor.includes(permission)}
-                              onChange={(event) =>
+                              onCheckedChange={(isChecked) =>
                                 updateStage(index, {
-                                  requiresApprovalFor: event.target.checked
-                                    ? [...stage.requiresApprovalFor, permission]
-                                    : stage.requiresApprovalFor.filter(
-                                        (value) => value !== permission,
-                                      ),
+                                  requiresApprovalFor:
+                                    isChecked === true
+                                      ? [...stage.requiresApprovalFor, permission]
+                                      : stage.requiresApprovalFor.filter(
+                                          (value) => value !== permission,
+                                        ),
                                 })
                               }
                             />

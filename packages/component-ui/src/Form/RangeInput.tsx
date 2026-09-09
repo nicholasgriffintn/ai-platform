@@ -1,5 +1,5 @@
 import { clampPercentage } from "@ngriffin_uk/polychat-utility-core";
-import type { InputHTMLAttributes } from "react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 import { forwardRef, useId } from "react";
 
 import { Label } from "../label";
@@ -15,6 +15,9 @@ export interface RangeInputProps extends InputHTMLAttributes<HTMLInputElement> {
   displayValue?: boolean;
   markers?: string[];
   className?: string;
+  valueLabel?: ReactNode;
+  action?: ReactNode;
+  fillClassName?: string;
 }
 
 export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
@@ -28,6 +31,9 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
       displayValue = true,
       markers,
       className,
+      valueLabel,
+      action,
+      fillClassName,
       id,
       value,
       "aria-describedby": ariaDescribedBy,
@@ -46,7 +52,12 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           {label && <Label htmlFor={controlId}>{label}</Label>}
-          {displayValue && <span className="text-sm font-medium text-foreground">{value}</span>}
+          <div className="flex items-center gap-2">
+            {displayValue && (
+              <span className="text-sm font-medium text-foreground">{valueLabel ?? value}</span>
+            )}
+            {action}
+          </div>
         </div>
         <div className="relative mt-2">
           <input
@@ -69,7 +80,10 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
             {...props}
           />
           <div
-            className="pointer-events-none absolute top-1/2 left-0 h-[2px] -translate-y-1/2 bg-active-work"
+            className={cn(
+              "pointer-events-none absolute top-1/2 left-0 h-[2px] -translate-y-1/2 bg-active-work",
+              fillClassName,
+            )}
             style={{
               width: `${percentage}%`,
             }}

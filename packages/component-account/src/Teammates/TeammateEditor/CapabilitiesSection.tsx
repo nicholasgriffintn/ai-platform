@@ -2,6 +2,7 @@ import {
   CapabilityFilters,
   type CapabilityFilter,
 } from "@ngriffin_uk/polychat-component-capabilities";
+import { Checkbox } from "@ngriffin_uk/polychat-component-ui";
 import type { SkillSummary, Tool } from "@ngriffin_uk/polychat-schemas";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -87,14 +88,15 @@ export function CapabilitiesSection({
           {visibleOptions.map((option) => (
             <label
               key={`${option.kind}:${option.id}`}
+              htmlFor={`capability-${option.kind}-${option.id}`}
               className="flex cursor-pointer items-start gap-2 text-sm"
             >
-              <input
-                type="checkbox"
+              <Checkbox
+                id={`capability-${option.kind}-${option.id}`}
                 className="mt-1"
                 checked={isSelected(option)}
                 disabled={disabled}
-                onChange={(event) => select(option, event.target.checked)}
+                onCheckedChange={(checked) => select(option, checked === true)}
               />
               <span>
                 <span className="font-medium">{option.name}</span>

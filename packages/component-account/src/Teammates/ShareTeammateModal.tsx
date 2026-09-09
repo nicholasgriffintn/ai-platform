@@ -169,7 +169,7 @@ export function ShareTeammateModal({
             <FormSelect
               label="Category"
               value={shareCategory}
-              onChange={(event) => setShareCategory(event.target.value)}
+              onValueChange={setShareCategory}
               options={[
                 { value: "", label: "Select category" },
                 ...categories.map((category) => ({ value: category, label: category })),

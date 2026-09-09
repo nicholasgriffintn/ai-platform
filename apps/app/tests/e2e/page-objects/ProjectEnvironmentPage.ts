@@ -1,4 +1,5 @@
 import { requireSuccessfulResponse } from "../support/api-response";
+import { chooseDropdownOption } from "../support/dropdown";
 import { BasePage } from "./BasePage";
 
 export class ProjectEnvironmentPage extends BasePage {
@@ -37,9 +38,10 @@ export class ProjectEnvironmentPage extends BasePage {
   async connect(repository: string) {
     await this.openSettings();
     await this.page.getByRole("button", { name: "Connect repository", exact: true }).click();
-    await this.page
-      .getByLabel("GitHub repository", { exact: true })
-      .selectOption({ label: repository });
+    await chooseDropdownOption(
+      this.page.getByLabel("GitHub repository", { exact: true }),
+      repository,
+    );
   }
 
   get deliveryPolicy() {
@@ -72,10 +74,13 @@ export class ProjectEnvironmentPage extends BasePage {
   }
 
   async configureSetup() {
-    await this.page.getByLabel("Environment setup", { exact: true }).selectOption("polychat");
-    await this.page.getByLabel("Runtime", { exact: true }).selectOption("node");
+    await chooseDropdownOption(
+      this.page.getByLabel("Environment setup", { exact: true }),
+      "Configure in Polychat",
+    );
+    await chooseDropdownOption(this.page.getByLabel("Runtime", { exact: true }), "Node");
     await this.page.getByLabel("Runtime version", { exact: true }).fill("22");
-    await this.page.getByLabel("Package manager", { exact: true }).selectOption("npm");
+    await chooseDropdownOption(this.page.getByLabel("Package manager", { exact: true }), "npm");
     await this.page
       .getByRole("group", { name: "Full setup", exact: true })
       .getByLabel("Command 1", { exact: true })
@@ -107,7 +112,10 @@ export class ProjectEnvironmentPage extends BasePage {
   }
 
   async removeSetup() {
-    await this.page.getByLabel("Environment setup", { exact: true }).selectOption("none");
+    await chooseDropdownOption(
+      this.page.getByLabel("Environment setup", { exact: true }),
+      "No setup commands",
+    );
     await this.save();
   }
 }

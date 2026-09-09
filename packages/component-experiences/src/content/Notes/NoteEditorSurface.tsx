@@ -1,4 +1,4 @@
-import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { Textarea, cn } from "@ngriffin_uk/polychat-component-ui";
 import { Hash } from "lucide-react";
 import { type ReactNode, type RefObject, useState } from "react";
 
@@ -63,13 +63,14 @@ export function NoteEditorSurface({
         </div>
       )}
 
-      <textarea
+      <Textarea
         ref={textareaRef}
         value={text}
         onChange={(event) => onTextChange(event.target.value)}
         placeholder="Start typing..."
+        aria-label="Note text"
         className={cn(
-          "w-full flex-1 resize-none p-4 focus:outline-none",
+          "flex-1 resize-none rounded-none border-0 bg-transparent p-4 focus:ring-0 focus-visible:ring-0",
           fontFamily === "serif" ? "font-serif" : "font-sans",
         )}
         style={{ fontSize: `${fontSize}px` }}

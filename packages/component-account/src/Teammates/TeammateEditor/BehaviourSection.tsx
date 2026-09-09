@@ -1,5 +1,4 @@
-import { Button, Label, Textarea, cn } from "@ngriffin_uk/polychat-component-ui";
-import type { AgentMode } from "@ngriffin_uk/polychat-schemas";
+import { Button, FormRadioGroup, Label, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -16,21 +15,18 @@ export interface BehaviourSectionProps {
 const INHERIT_MODE_VALUE = "inherit";
 
 export function BehaviourSection({ value, disabled, onChange }: BehaviourSectionProps) {
-  const modeOptions: Array<{ value: string; mode: AgentMode | null; label: string; hint: string }> =
-    [
-      {
-        value: INHERIT_MODE_VALUE,
-        mode: null,
-        label: "Follow the conversation",
-        hint: "Whatever mode the person is already in wins.",
-      },
-      ...AGENT_MODES.map((mode) => ({
-        value: mode,
-        mode,
-        label: getAgentModeLabel(mode),
-        hint: describeAgentMode(mode),
-      })),
-    ];
+  const modeOptions = [
+    {
+      value: INHERIT_MODE_VALUE,
+      label: "Follow the conversation",
+      description: "Whatever mode the person is already in wins.",
+    },
+    ...AGENT_MODES.map((mode) => ({
+      value: mode,
+      label: getAgentModeLabel(mode),
+      description: describeAgentMode(mode),
+    })),
+  ];
 
   return (
     <TeammateEditorSection
@@ -49,37 +45,17 @@ export function BehaviourSection({ value, disabled, onChange }: BehaviourSection
         />
       </div>
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Mode</legend>
-        <p className="text-xs text-muted-foreground">
-          A mode sets the step budget and which tool permissions need approval.
-        </p>
-        <div className="space-y-2">
-          {modeOptions.map((option) => (
-            <label
-              key={option.value}
-              className={cn(
-                "flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm",
-                disabled && "cursor-not-allowed opacity-60",
-              )}
-            >
-              <input
-                type="radio"
-                name="teammate-mode"
-                className="mt-1"
-                value={option.value}
-                disabled={disabled}
-                checked={(value.mode ?? INHERIT_MODE_VALUE) === option.value}
-                onChange={() => onChange({ mode: option.mode })}
-              />
-              <span>
-                <span className="font-medium">{option.label}</span>
-                <span className="block text-xs text-muted-foreground">{option.hint}</span>
-              </span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <FormRadioGroup
+        legend="Mode"
+        description="A mode sets the step budget and which tool permissions need approval."
+        name="teammate-mode"
+        disabled={disabled}
+        value={value.mode ?? INHERIT_MODE_VALUE}
+        options={modeOptions}
+        onValueChange={(selected) =>
+          onChange({ mode: AGENT_MODES.find((mode) => mode === selected) ?? null })
+        }
+      />
 
       <div className="space-y-3">
         <div>

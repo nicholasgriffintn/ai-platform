@@ -46,11 +46,11 @@ export function ConnectionsSection({ value, disabled, onChange }: ConnectionsSec
                 { value: "sse", label: "SSE" },
                 { value: "stdio", label: "Stdio" },
               ]}
-              onChange={(event) =>
+              onValueChange={(type) =>
                 onChange({
                   servers: value.servers.map((entry) =>
                     entry.id === server.id
-                      ? { ...entry, type: event.target.value === "stdio" ? "stdio" : "sse" }
+                      ? { ...entry, type: type === "stdio" ? "stdio" : "sse" }
                       : entry,
                   ),
                 })

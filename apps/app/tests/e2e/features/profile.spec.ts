@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import { expect, test } from "../fixtures/polychat-test";
 import { createGitHubPrivateKeyFixture } from "../fixtures/test-data";
+import { expectDropdownValue } from "../support/dropdown";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
 const PROFILE_TABS = [
@@ -80,7 +81,7 @@ test.describe("Profile experience", () => {
           nickname: `${persona} release nickname`,
           jobRole: "Release validator",
           preferences: `Keep ${persona} release answers concise.`,
-          searchProvider: "duckduckgo",
+          searchProvider: "DuckDuckGo",
         };
 
         await profilePage.updateCustomisation(settings);
@@ -90,7 +91,8 @@ test.describe("Profile experience", () => {
         await expect(page.getByLabel("Preferences", { exact: true })).toHaveValue(
           settings.preferences,
         );
-        await expect(page.getByLabel("Search Provider", { exact: true })).toHaveValue(
+        await expectDropdownValue(
+          page.getByLabel("Search Provider", { exact: true }),
           settings.searchProvider,
         );
 
@@ -101,7 +103,8 @@ test.describe("Profile experience", () => {
         await expect(page.getByLabel("Preferences", { exact: true })).toHaveValue(
           settings.preferences,
         );
-        await expect(page.getByLabel("Search Provider", { exact: true })).toHaveValue(
+        await expectDropdownValue(
+          page.getByLabel("Search Provider", { exact: true }),
           settings.searchProvider,
         );
 

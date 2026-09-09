@@ -115,7 +115,7 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
         id="training-model"
         label="Model"
         value={selectedModel?.id ?? ""}
-        onChange={(event) => setModelId(event.target.value)}
+        onValueChange={setModelId}
         options={models.map((model) => ({
           value: model.id,
           label: getTrainingModelLabel(model),
@@ -134,7 +134,7 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
           id="training-dataset-mode"
           label="Dataset"
           value={datasetMode}
-          onChange={(event) => setDatasetMode(parseTrainingDatasetMode(event.target.value))}
+          onValueChange={(mode) => setDatasetMode(parseTrainingDatasetMode(mode))}
           options={[
             { value: "s3", label: "S3 dataset" },
             { value: "examples", label: "Training examples" },

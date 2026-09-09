@@ -1,4 +1,4 @@
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Button, FormSelect, Input } from "@ngriffin_uk/polychat-component-ui";
 import type {
   ComputeSite,
   ConversationRetention,
@@ -10,7 +10,7 @@ import type {
   RetentionReason,
 } from "@ngriffin_uk/polychat-schemas";
 import { MODEL_TIER_DEFINITIONS } from "@ngriffin_uk/polychat-schemas";
-import { CircleHelp, Filter, Search } from "lucide-react";
+import { CircleHelp, Search } from "lucide-react";
 import { useState, type KeyboardEvent, type RefObject } from "react";
 import { createPortal } from "react-dom";
 
@@ -165,12 +165,12 @@ export function ModelSelectorPanel({
       <div className="border-b border-border p-2">
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <input
+            <Input
               ref={searchInputRef}
               placeholder="Search all locations..."
               value={searchQuery}
               onChange={(event) => onSearchQueryChange(event.target.value)}
-              className="w-full rounded-md border border-border bg-surface py-2 pr-3 pl-8 text-sm text-foreground placeholder:text-muted-foreground focus:border-active-work focus:outline-none"
+              className="h-auto bg-surface py-2 pr-3 pl-8 text-sm"
               aria-label="Search models"
             />
             <Search
@@ -178,28 +178,21 @@ export function ModelSelectorPanel({
               aria-hidden="true"
             />
           </div>
-          <div className="relative w-36">
-            <select
+          <div className="w-36">
+            <FormSelect
+              aria-label="Filter by model type"
+              placeholder="All types"
               value={selectedCapability || ""}
-              onChange={(event) => {
+              options={capabilities.map((capability) => ({
+                value: capability,
+                label: capability,
+              }))}
+              onValueChange={(value) => {
                 const nextCapability =
-                  capabilities.find((capability) => capability === event.target.value) ?? null;
+                  capabilities.find((capability) => capability === value) ?? null;
 
                 onCapabilityChange(nextCapability);
               }}
-              className="w-full appearance-none rounded-md border border-border bg-surface py-2 pr-3 pl-8 text-sm text-foreground focus:border-active-work focus:outline-none"
-              aria-label="Filter by model type"
-            >
-              <option value="">All types</option>
-              {capabilities.map((capability) => (
-                <option key={capability} value={capability}>
-                  {capability}
-                </option>
-              ))}
-            </select>
-            <Filter
-              className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
             />
           </div>
         </div>

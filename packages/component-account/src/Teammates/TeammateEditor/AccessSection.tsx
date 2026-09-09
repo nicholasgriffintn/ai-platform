@@ -50,7 +50,7 @@ export function AccessSection({
                 })),
               ]}
               description="Copies this teammate so the workspace owns it. Your original stays yours."
-              onChange={(event) => setWorkspaceId(event.target.value)}
+              onValueChange={setWorkspaceId}
             />
             {publish.error && <p className="text-sm text-destructive">{publish.error}</p>}
             <Button

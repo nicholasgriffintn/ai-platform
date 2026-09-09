@@ -1,5 +1,7 @@
+import { MODEL_TIER_DEFINITIONS } from "@ngriffin_uk/polychat-schemas";
 import type { Locator, Response } from "@playwright/test";
 
+import { chooseDropdownOption } from "../support/dropdown";
 import { BasePage } from "./BasePage";
 
 const PROJECT_SURFACES = {
@@ -162,7 +164,7 @@ export class WorkPage extends BasePage {
     const dialog = this.page.getByRole("dialog", { name: "Invite a teammate" });
 
     await dialog.getByLabel("Email address", { exact: true }).fill(email);
-    await dialog.getByLabel("Role", { exact: true }).selectOption("member");
+    await chooseDropdownOption(dialog.getByLabel("Role", { exact: true }), /^Member/);
     await dialog.getByRole("button", { name: "Send invite" }).click();
     await dialog.getByText("Invitation ready", { exact: true }).waitFor();
     await dialog.getByRole("button", { name: "Done" }).click();
@@ -182,7 +184,7 @@ export class WorkPage extends BasePage {
     const dialog = this.page.getByRole("dialog", { name: "Invite a teammate" });
 
     await dialog.getByLabel("Email address", { exact: true }).fill(email);
-    await dialog.getByLabel("Role", { exact: true }).selectOption("member");
+    await chooseDropdownOption(dialog.getByLabel("Role", { exact: true }), /^Member/);
     await dialog.getByRole("button", { name: "Send invite" }).click();
     await dialog.getByText("Invitation ready", { exact: true }).waitFor();
     const inviteUrl = await dialog.locator("input[readonly]").inputValue();
@@ -212,16 +214,16 @@ export class WorkPage extends BasePage {
         /\/workspaces\/[^/]+\/members\/[^/]+$/.test(new URL(response.url()).pathname),
     );
 
-    await memberRow.getByRole("combobox").selectOption("admin");
+    await chooseDropdownOption(memberRow.getByRole("button", { name: /^Role for / }), "Admin");
     await this.requireSuccessfulResponse(roleResponse, "Workspace member promotion");
-    await memberRow.getByRole("combobox").waitFor();
+    await memberRow.getByRole("button", { name: /^Role for / }).waitFor();
     const demotionResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "PUT" &&
         /\/workspaces\/[^/]+\/members\/[^/]+$/.test(new URL(response.url()).pathname),
     );
 
-    await memberRow.getByRole("combobox").selectOption("member");
+    await chooseDropdownOption(memberRow.getByRole("button", { name: /^Role for / }), "Member");
     await this.requireSuccessfulResponse(demotionResponse, "Workspace member demotion");
 
     await memberRow.getByRole("button", { name: "Remove", exact: true }).click();
@@ -280,8 +282,13 @@ export class WorkPage extends BasePage {
   }
 
   async setProjectRoutingPreference(tier: "" | "low" | "medium" | "high" | "ultra") {
+    const definition = MODEL_TIER_DEFINITIONS.find((candidate) => candidate.id === tier);
+
     await this.openProjectSettings();
-    await this.page.getByLabel("Project default", { exact: true }).selectOption(tier);
+    await chooseDropdownOption(
+      this.page.getByLabel("Project default", { exact: true }),
+      definition ? `${definition.label} — ${definition.tagline}` : "Medium — the account default",
+    );
     await this.page.getByRole("button", { name: "Save preference" }).click();
     await this.page.getByRole("button", { name: "Save preference" }).waitFor({ state: "hidden" });
   }

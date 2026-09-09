@@ -91,24 +91,15 @@ export function SourceList({
             <FormSelect
               aria-label={`Add ${source.title} to a collection`}
               fullWidth={false}
-              defaultValue=""
-              onChange={(event) => {
-                if (!event.target.value) {
-                  return;
-                }
-
-                onAddToCollection(event.target.value, source.id);
-                event.target.value = "";
-              }}
+              value=""
+              placeholder="Add to collection…"
+              options={collections.map((collection) => ({
+                value: collection.id,
+                label: collection.title,
+              }))}
+              onValueChange={(collectionId) => onAddToCollection(collectionId, source.id)}
               className="max-w-40"
-            >
-              <option value="">Add to collection…</option>
-              {collections.map((collection) => (
-                <option key={collection.id} value={collection.id}>
-                  {collection.title}
-                </option>
-              ))}
-            </FormSelect>
+            />
           ) : null}
           <Button
             variant="icon"

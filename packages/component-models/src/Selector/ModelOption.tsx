@@ -1,4 +1,4 @@
-import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
+import { Button, FormSelect, cn } from "@ngriffin_uk/polychat-component-ui";
 import {
   getModelDisplayName,
   requiresPaidPlan,
@@ -12,7 +12,6 @@ import {
   AudioWaveform,
   BadgeCheck,
   BrainCircuit,
-  ChevronDown,
   Code2,
   Crown,
   Eye,
@@ -103,7 +102,7 @@ export const ModelOption = ({
       onClick={selectModel}
       onKeyDown={handleKeyDown}
       className={cn(
-        "w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors focus:ring-2 focus:ring-active-work/40 focus:outline-none",
+        "w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors [contain-intrinsic-size:auto_60px] [content-visibility:auto] focus:ring-2 focus:ring-active-work/40 focus:outline-none",
         !disabled ? "cursor-pointer" : "cursor-not-allowed border-border/60 opacity-50",
         isSelected
           ? "border-creative/45 bg-creative/12"
@@ -179,7 +178,7 @@ export const ModelOption = ({
         </div>
         <div className="flex w-full flex-wrap items-center gap-2 pl-[2.6rem] sm:w-[132px] sm:flex-shrink-0 sm:justify-end sm:pl-0">
           {hasRegionOptions && (
-            <label
+            <div
               className="relative flex max-w-[112px] items-center"
               title="Region"
               onClick={(event) => event.stopPropagation()}
@@ -188,31 +187,21 @@ export const ModelOption = ({
             >
               <Globe2
                 size={12}
-                className="pointer-events-none absolute left-1.5 text-muted-foreground"
+                className="pointer-events-none absolute left-1.5 z-10 text-muted-foreground"
               />
-              <select
+              <FormSelect
                 aria-label={`Select region for ${getModelDisplayName(model)}`}
                 value={selectedRegionModelId || model.id}
                 disabled={disabled}
-                onClick={(event) => event.stopPropagation()}
-                onMouseDown={(event) => event.stopPropagation()}
-                onChange={(event) => {
-                  event.stopPropagation();
-                  onRegionSelect?.(event.target.value);
-                }}
-                className="h-6 w-full cursor-pointer appearance-none rounded-full border border-border bg-surface py-0 pr-5 pl-5 text-[11px] font-medium text-foreground focus:border-active-work focus:outline-none"
-              >
-                {regionOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={10}
-                className="pointer-events-none absolute right-1.5 text-muted-foreground"
+                menuClassName="w-40"
+                triggerClassName="h-6 min-h-6 rounded-full bg-surface py-0 pr-2 pl-5 text-[11px] font-medium"
+                options={regionOptions.map((option) => ({
+                  value: option.id,
+                  label: option.label,
+                }))}
+                onValueChange={(regionId) => onRegionSelect?.(regionId)}
               />
-            </label>
+            </div>
           )}
           {hasProviderReasoningOptions(model) && (
             <div className="rounded-full bg-active-work/12 p-1" title="Reasoning">

@@ -40,6 +40,7 @@ export function RecordingWorkflow({ basePath, projectId }: RecordingWorkflowProp
         <ProcessStep
           formData={workflow.formData}
           handleChange={workflow.actions.handleChange}
+          handleToggle={workflow.actions.handleToggle}
           handleProcess={() => void workflow.actions.process()}
           isProcessing={workflow.isProcessing}
         />

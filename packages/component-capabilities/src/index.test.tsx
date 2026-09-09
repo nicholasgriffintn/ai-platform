@@ -62,7 +62,8 @@ describe("capability controls", () => {
 
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "weather" } });
     fireEvent.click(screen.getByRole("button", { name: "Automations" }));
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "Research" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filter capabilities by category" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Research" }));
 
     expect(onQueryChange).toHaveBeenCalledWith("weather");
     expect(onFiltersChange).toHaveBeenCalledWith(["configured", "recipe"]);
@@ -116,6 +117,7 @@ describe("teammate capability card", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "More actions" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Edit teammate" }));
+    fireEvent.click(screen.getByRole("button", { name: "More actions" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Delete teammate" }));
 
     expect(onEdit).toHaveBeenCalledTimes(1);

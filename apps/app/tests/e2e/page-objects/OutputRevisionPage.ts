@@ -1,3 +1,4 @@
+import { chooseDropdownOption } from "../support/dropdown";
 import { BasePage } from "./BasePage";
 
 export class OutputRevisionPage extends BasePage {
@@ -6,7 +7,10 @@ export class OutputRevisionPage extends BasePage {
   }
 
   async compare(revision: number) {
-    await this.history.getByLabel("Compare with").selectOption(String(revision));
+    await chooseDropdownOption(
+      this.history.getByLabel("Compare with"),
+      new RegExp(`^Revision ${revision} `),
+    );
   }
 
   restoreAction(revision: number) {

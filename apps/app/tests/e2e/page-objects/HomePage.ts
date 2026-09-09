@@ -1,6 +1,7 @@
 import type { Dialog, Locator, Page, Response } from "@playwright/test";
 import { expect } from "@playwright/test";
 
+import { chooseDropdownOption } from "../support/dropdown";
 import { BasePage } from "./BasePage";
 
 export class HomePage extends BasePage {
@@ -840,8 +841,9 @@ export class HomePage extends BasePage {
 
   async configureProcessingTier(tier: "auto" | "default" | "fast") {
     const settings = await this.openChatSettings();
+    const optionLabel = tier === "auto" ? "Automatic" : tier === "default" ? "Standard" : /^Fast/;
 
-    await settings.getByLabel("Processing", { exact: true }).selectOption(tier);
+    await chooseDropdownOption(settings.getByLabel("Processing", { exact: true }), optionLabel);
     await settings.getByRole("button", { name: "Done", exact: true }).click();
     await settings.waitFor({ state: "hidden" });
   }
@@ -851,7 +853,7 @@ export class HomePage extends BasePage {
 
     await settings.getByLabel("Temperature", { exact: true }).fill("0.4");
     await settings.getByRole("tab", { name: "Advanced", exact: true }).click();
-    await settings.getByLabel("Context compaction", { exact: true }).selectOption("off");
+    await chooseDropdownOption(settings.getByLabel("Context compaction", { exact: true }), "Off");
     await settings.getByLabel("Top P", { exact: true }).fill("0.75");
     await settings.getByLabel("Max output tokens", { exact: true }).fill("1024");
     await settings.getByLabel("Presence penalty", { exact: true }).fill("0.4");

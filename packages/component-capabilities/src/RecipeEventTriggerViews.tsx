@@ -43,9 +43,8 @@ export function ConfigurationFields({
           key={field.key}
           label={field.label}
           description={field.description}
-          required={field.required}
           value={String(values[field.key] ?? "")}
-          onChange={(event) => onChange(field.key, event.target.value)}
+          onValueChange={(value) => onChange(field.key, value)}
           options={(field.options ?? []).map((option) => ({ value: option, label: option }))}
         />
       );

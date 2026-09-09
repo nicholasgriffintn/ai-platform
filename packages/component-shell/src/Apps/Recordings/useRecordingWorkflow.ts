@@ -79,15 +79,7 @@ export function useRecordingWorkflow(basePath: string, projectId?: string) {
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const { name, value, type } = event.target;
-
-      if (type === "checkbox") {
-        const { checked } = event.target as HTMLInputElement;
-
-        setFormData((current) => ({ ...current, [name]: checked }));
-
-        return;
-      }
+      const { name, value } = event.target;
 
       if (name.startsWith("speaker_")) {
         const speakerId = name.replace("speaker_", "");
@@ -110,6 +102,10 @@ export function useRecordingWorkflow(basePath: string, projectId?: string) {
     },
     [],
   );
+
+  const handleToggle = useCallback((name: keyof RecordingFormData, checked: boolean) => {
+    setFormData((current) => ({ ...current, [name]: checked }));
+  }, []);
 
   useEffect(() => {
     setFormData((current) => {
@@ -255,6 +251,7 @@ export function useRecordingWorkflow(basePath: string, projectId?: string) {
     workflowError,
     actions: {
       handleChange,
+      handleToggle,
       handleFileChange: (file: File) => setFormData((current) => ({ ...current, audioFile: file })),
       process,
       retry,

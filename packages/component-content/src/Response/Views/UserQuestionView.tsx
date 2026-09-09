@@ -1,4 +1,4 @@
-import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Input, cn } from "@ngriffin_uk/polychat-component-ui";
 import { ChevronLeft, ChevronRight, CircleQuestionMark, PencilLine } from "lucide-react";
 
 import type { ToolInteractionHandler } from "../registry";
@@ -117,14 +117,14 @@ export function UserQuestionView({
                   className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
                   aria-hidden="true"
                 />
-                <input
+                <Input
                   type="text"
                   value={otherAnswer}
                   disabled={isSubmitting}
                   onChange={(event) => setOtherAnswer(event.target.value)}
                   placeholder="Write an answer…"
                   aria-label={`Answer: ${currentQuestion.prompt}`}
-                  className="h-10 w-full rounded-lg border border-border-strong bg-surface pr-3 pl-9 text-sm text-foreground transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-active-work"
+                  className="h-10 rounded-lg border-border-strong bg-surface pr-3 pl-9 text-sm"
                 />
               </div>
               <Button

@@ -142,10 +142,10 @@ export function WorkAttentionView({
             label="State"
             value={filters.kind ?? ""}
             options={[{ value: "", label: "All" }, ...KIND_OPTIONS]}
-            onChange={(event) =>
+            onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                kind: parseKind(event.target.value),
+                kind: parseKind(value),
               })
             }
           />
@@ -156,10 +156,10 @@ export function WorkAttentionView({
               { value: "", label: "All" },
               ...(facets?.workspaces ?? []).map(({ id, name }) => ({ value: id, label: name })),
             ]}
-            onChange={(event) =>
+            onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                workspaceId: event.target.value || undefined,
+                workspaceId: value || undefined,
                 projectId: undefined,
               })
             }
@@ -171,8 +171,8 @@ export function WorkAttentionView({
               { value: "", label: "All" },
               ...projects.map(({ id, name }) => ({ value: id, label: name })),
             ]}
-            onChange={(event) =>
-              onFiltersChange({ ...filters, projectId: event.target.value || undefined })
+            onValueChange={(value) =>
+              onFiltersChange({ ...filters, projectId: value || undefined })
             }
           />
           <FormSelect
@@ -185,10 +185,10 @@ export function WorkAttentionView({
                 label: name,
               })),
             ]}
-            onChange={(event) =>
+            onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                ownerUserId: event.target.value ? Number(event.target.value) : undefined,
+                ownerUserId: value ? Number(value) : undefined,
               })
             }
           />
@@ -200,10 +200,10 @@ export function WorkAttentionView({
               { value: "task", label: "Project task" },
               { value: "run", label: "Coding run" },
             ]}
-            onChange={(event) =>
+            onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                type: parseType(event.target.value),
+                type: parseType(value),
               })
             }
           />

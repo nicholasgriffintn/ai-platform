@@ -1,3 +1,5 @@
+import { Input } from "@ngriffin_uk/polychat-component-ui";
+
 import { COLORS } from "./constants";
 
 interface ColorPickerProps {
@@ -9,11 +11,12 @@ export function ColorPicker({ currentColor, setCurrentColor }: ColorPickerProps)
   return (
     <>
       <div className="flex items-center gap-2">
-        <input
+        <Input
           type="color"
           value={currentColor}
           onChange={(e) => setCurrentColor(e.target.value)}
-          className="h-10 w-10 cursor-pointer rounded-md border-0"
+          className="h-10 w-10 cursor-pointer border-0 p-1"
+          aria-label="Custom colour"
           title="Custom Color"
         />
         <span className="text-sm text-muted-foreground">Custom Color</span>

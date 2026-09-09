@@ -1,6 +1,7 @@
 import {
   Button,
   FormInput,
+  FormRadioGroup,
   Label,
   SingleFileUploader,
   Textarea,
@@ -57,30 +58,17 @@ export function UploadStep({
         />
 
         <div>
-          <div className="mb-4 flex space-x-4">
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="audioSource"
-                value="file"
-                checked={formData.audioSource === "file"}
-                onChange={() => setFormData((prev) => ({ ...prev, audioSource: "file" }))}
-                className="h-4 w-4 border-border-strong text-active-work focus:ring-active-work"
-              />
-              <span className="ml-2 text-foreground">Upload File</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="audioSource"
-                value="url"
-                checked={formData.audioSource === "url"}
-                onChange={() => setFormData((prev) => ({ ...prev, audioSource: "url" }))}
-                className="h-4 w-4 border-border-strong text-active-work focus:ring-active-work"
-              />
-              <span className="ml-2 text-foreground">Enter URL</span>
-            </label>
-          </div>
+          <FormRadioGroup<"file" | "url">
+            legend="Audio source"
+            name="audioSource"
+            className="mb-4"
+            value={formData.audioSource === "url" ? "url" : "file"}
+            options={[
+              { value: "file", label: "Upload File" },
+              { value: "url", label: "Enter URL" },
+            ]}
+            onValueChange={(audioSource) => setFormData((prev) => ({ ...prev, audioSource }))}
+          />
 
           {formData.audioSource === "file" ? (
             <>

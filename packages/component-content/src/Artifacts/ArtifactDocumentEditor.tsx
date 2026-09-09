@@ -1,4 +1,4 @@
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import {
   applyMarkdownEdit,
@@ -338,13 +338,13 @@ export const ArtifactDocumentEditor = ({
 
       {activeView === "edit" ? (
         <div ref={editorContainerRef} className="relative min-h-0 flex-1">
-          <textarea
+          <Textarea
             ref={editorRef}
             aria-label="Document content"
             value={content}
             onChange={(event) => setContent(event.currentTarget.value)}
             onSelect={handleSelectionChange}
-            className="h-full w-full resize-none bg-surface px-6 py-5 font-serif text-[15px] leading-7 text-foreground outline-none"
+            className="h-full resize-none rounded-none border-0 bg-surface px-6 py-5 font-serif text-[15px] leading-7 focus:ring-0 focus-visible:ring-0"
             spellCheck
           />
           {selection && onAddSelectionToChat && (

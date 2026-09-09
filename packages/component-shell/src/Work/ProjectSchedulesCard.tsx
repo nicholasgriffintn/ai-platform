@@ -161,7 +161,7 @@ export function ProjectSchedulesCard({
         <FormSelect
           label="Recipe"
           value={selectedRecipeId}
-          onChange={(event) => setSelectedRecipeId(event.target.value)}
+          onValueChange={setSelectedRecipeId}
           options={schedulableRecipes.map((recipe) => ({
             value: recipe.id,
             label: recipe.title,

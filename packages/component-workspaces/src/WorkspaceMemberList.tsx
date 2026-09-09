@@ -54,6 +54,7 @@ export function WorkspaceMemberList({
     <Card className="gap-0 overflow-hidden py-0 shadow-none">
       {members.map((member) => {
         const isManageable = canManageMember(member, viewerRole, viewerUserId);
+        const assignableRole = member.role === "admin" ? "admin" : "member";
 
         return (
           <div
@@ -70,18 +71,21 @@ export function WorkspaceMemberList({
               )}
             </div>
             {isManageable ? (
-              <FormSelect
+              <FormSelect<"admin" | "member">
                 aria-label={`Role for ${member.name || member.email}`}
                 fullWidth={false}
-                value={member.role}
-                onChange={(event) =>
-                  onChangeRole(member.userId, event.target.value as "admin" | "member")
+                value={assignableRole}
+                options={
+                  viewerRole === "owner"
+                    ? [
+                        { value: "member", label: "Member" },
+                        { value: "admin", label: "Admin" },
+                      ]
+                    : [{ value: "member", label: "Member" }]
                 }
-                className="w-28 capitalize"
-              >
-                <option value="member">Member</option>
-                {viewerRole === "owner" ? <option value="admin">Admin</option> : null}
-              </FormSelect>
+                onValueChange={(role) => onChangeRole(member.userId, role)}
+                className="w-28"
+              />
             ) : (
               <span className="flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground capitalize">
                 {member.role === "owner" && <ShieldCheck size={13} />}

@@ -1,4 +1,12 @@
-import { Popover, PopoverContent, PopoverTrigger } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Checkbox,
+  FormSelect,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Textarea,
+} from "@ngriffin_uk/polychat-component-ui";
 import type { CanvasInputField } from "@ngriffin_uk/polychat-schemas/experiences";
 import { Info } from "lucide-react";
 
@@ -132,23 +140,17 @@ export function CanvasModelOptionControls({
                 className="space-y-1.5 border-b border-border px-3 py-2.5 last:border-b-0"
               >
                 <FieldLabel field={field} label={label} />
-                <select
+                <FormSelect
                   id={`canvas-option-${field.name}`}
                   value={typeof value === "string" ? value : ""}
-                  onChange={(event) => onChange(field.name, event.target.value)}
-                  className="h-9 w-full rounded-lg border border-border bg-surface-elevated px-2.5 text-sm text-foreground transition outline-none focus:border-active-work"
-                >
-                  <option value="">Default</option>
-                  {field.enum
+                  placeholder="Default"
+                  options={field.enum
                     .filter((option): option is string | number =>
                       ["string", "number"].includes(typeof option),
                     )
-                    .map((option) => (
-                      <option key={String(option)} value={String(option)}>
-                        {String(option)}
-                      </option>
-                    ))}
-                </select>
+                    .map((option) => ({ value: String(option), label: String(option) }))}
+                  onValueChange={(next) => onChange(field.name, next)}
+                />
               </div>
             );
           }
@@ -168,12 +170,11 @@ export function CanvasModelOptionControls({
                   </label>
                   <FieldHelp field={field} />
                 </div>
-                <input
+                <Checkbox
                   id={`canvas-option-${field.name}`}
-                  type="checkbox"
                   checked={value === true}
-                  onChange={(event) => onChange(field.name, event.target.checked)}
-                  className="h-5 w-5 shrink-0 rounded border-border bg-surface-elevated text-active-work focus:ring-ring"
+                  className="size-5 shrink-0 bg-surface-elevated"
+                  onCheckedChange={(checked) => onChange(field.name, checked === true)}
                 />
               </div>
             );
@@ -186,12 +187,12 @@ export function CanvasModelOptionControls({
                 className="space-y-1.5 border-b border-border px-3 py-2.5 last:border-b-0"
               >
                 <FieldLabel field={field} label={label} />
-                <textarea
+                <Textarea
                   id={`canvas-option-${field.name}`}
                   value={typeof value === "string" ? value : ""}
                   onChange={(event) => onChange(field.name, event.target.value)}
                   rows={3}
-                  className="w-full rounded-lg border border-border bg-surface-elevated px-2.5 py-2 text-sm text-foreground transition outline-none focus:border-active-work"
+                  className="rounded-lg bg-surface-elevated px-2.5 py-2"
                   placeholder={getFieldPlaceholder(field)}
                 />
               </div>
@@ -204,7 +205,7 @@ export function CanvasModelOptionControls({
               className="space-y-1.5 border-b border-border px-3 py-2.5 last:border-b-0"
             >
               <FieldLabel field={field} label={label} />
-              <input
+              <Input
                 id={`canvas-option-${field.name}`}
                 type={
                   fieldTypes.includes("integer") || fieldTypes.includes("number")
@@ -213,7 +214,7 @@ export function CanvasModelOptionControls({
                 }
                 value={typeof value === "string" ? value : ""}
                 onChange={(event) => onChange(field.name, event.target.value)}
-                className="h-9 w-full rounded-lg border border-border bg-surface-elevated px-2.5 text-sm text-foreground transition outline-none focus:border-active-work"
+                className="rounded-lg bg-surface-elevated px-2.5 text-sm"
                 placeholder={getFieldPlaceholder(field)}
               />
             </div>

@@ -1,13 +1,10 @@
 import { Wand2 } from "lucide-react";
 import type { ComponentProps, FC } from "react";
-import { Suspense, forwardRef, lazy, useMemo } from "react";
+import { Suspense, forwardRef, useMemo } from "react";
 
-import type { IconType } from "./icon-type";
-import { ICON_LOADERS } from "./iconLoaders";
+import { getLazyIcon } from "./lazyIcons";
 import { getProviderColor } from "./providerColor";
 import { resolveModelIconName, resolveProviderIconName } from "./resolveIconName";
-
-const MissingIcon: IconType = forwardRef(() => null);
 
 export interface ModelIconProps extends ComponentProps<"div"> {
   modelName: string;
@@ -69,15 +66,7 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
       return { iconName: "", iconType: "fallback" };
     }, [modelName, provider]);
 
-    const IconComponent = useMemo(() => {
-      const loadIcon = iconName ? ICON_LOADERS[iconName] : undefined;
-
-      if (!loadIcon) {
-        return null;
-      }
-
-      return lazy(() => loadIcon().catch(() => ({ default: MissingIcon })));
-    }, [iconName]);
+    const IconComponent = iconName ? getLazyIcon(iconName) : null;
 
     if (!IconComponent && iconType === "fallback" && !showFallback) {
       return null;

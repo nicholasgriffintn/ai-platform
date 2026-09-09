@@ -159,10 +159,10 @@ export function ProjectServiceManifestFields({
                           label={candidate.name || `Service ${candidateIndex + 1}`}
                           labelPosition="right"
                           checked={service.dependencies.includes(candidate.name)}
-                          onChange={(event) =>
+                          onCheckedChange={(checked) =>
                             updateService(index, {
                               ...service,
-                              dependencies: event.target.checked
+                              dependencies: checked
                                 ? [...service.dependencies, candidate.name]
                                 : service.dependencies.filter(
                                     (dependency) => dependency !== candidate.name,
@@ -180,8 +180,8 @@ export function ProjectServiceManifestFields({
             <FormSelect
               label="Health check"
               value={service.healthCheck?.type ?? "none"}
-              onChange={(event) => {
-                const healthCheck = healthCheckFor(event.target.value, service.healthCheck);
+              onValueChange={(type) => {
+                const healthCheck = healthCheckFor(type, service.healthCheck);
 
                 updateService(index, {
                   ...service,
@@ -248,9 +248,7 @@ export function ProjectServiceManifestFields({
             <FormSelect
               label="Restart policy"
               value={service.restartPolicy.mode}
-              onChange={(event) => {
-                const mode = event.target.value;
-
+              onValueChange={(mode) => {
                 updateService(index, {
                   ...service,
                   restartPolicy:

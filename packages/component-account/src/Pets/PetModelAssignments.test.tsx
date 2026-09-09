@@ -31,9 +31,8 @@ describe("model companion rules", () => {
   it("lets temporary chats use a chosen pet instead of Wisp", () => {
     const onChange = renderAssignments(EMPTY_PET_MODEL_OVERRIDES);
 
-    fireEvent.change(screen.getByLabelText("Pet for temporary chats"), {
-      target: { value: "preset:pip" },
-    });
+    fireEvent.click(screen.getByLabelText("Pet for temporary chats"));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Pip" }));
 
     expect(onChange).toHaveBeenCalledWith({
       states: { temporary: { pet_source: "preset", pet_id: "pip" } },

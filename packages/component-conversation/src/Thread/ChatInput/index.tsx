@@ -1,5 +1,5 @@
 import { Image } from "@ngriffin_uk/polychat-component-content";
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Input } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
@@ -773,7 +773,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           }
           fileInput={
             canUploadFiles ? (
-              <input
+              <Input
                 type="file"
                 ref={fileInputRef}
                 accept={getFileTypeAccept()}

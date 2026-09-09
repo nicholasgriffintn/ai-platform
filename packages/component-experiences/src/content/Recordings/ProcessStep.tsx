@@ -10,6 +10,7 @@ import type { RecordingFormData } from "@ngriffin_uk/polychat-schemas/experience
 interface ProcessStepProps {
   formData: RecordingFormData;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleToggle: (name: keyof RecordingFormData, checked: boolean) => void;
   handleProcess: () => void;
   isProcessing: boolean;
 }
@@ -17,6 +18,7 @@ interface ProcessStepProps {
 export function ProcessStep({
   formData,
   handleChange,
+  handleToggle,
   handleProcess,
   isProcessing,
 }: ProcessStepProps) {
@@ -31,8 +33,8 @@ export function ProcessStep({
               id="transcribe"
               name="transcribe"
               checked={formData.transcribe}
-              onChange={handleChange}
               labelPosition="right"
+              onCheckedChange={(checked) => handleToggle("transcribe", checked)}
             />
           </div>
           <div className="ml-3">
@@ -77,8 +79,8 @@ export function ProcessStep({
               id="summarise"
               name="summarise"
               checked={formData.summarise}
-              onChange={handleChange}
               labelPosition="right"
+              onCheckedChange={(checked) => handleToggle("summarise", checked)}
             />
           </div>
           <div className="ml-3">
@@ -124,8 +126,8 @@ export function ProcessStep({
               id="generateImage"
               name="generateImage"
               checked={formData.generateImage}
-              onChange={handleChange}
               labelPosition="right"
+              onCheckedChange={(checked) => handleToggle("generateImage", checked)}
             />
           </div>
           <div className="ml-3">

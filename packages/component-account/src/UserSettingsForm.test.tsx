@@ -39,24 +39,25 @@ describe("user settings form", () => {
     expect(screen.getByLabelText<HTMLTextAreaElement>("Preferences").value).toBe(
       "Use British English",
     );
-    expect(screen.getByLabelText<HTMLSelectElement>("Guardrails Provider").value).toBe("bedrock");
+    expect(screen.getByLabelText("Guardrails Provider").textContent).toContain("Bedrock");
     expect(screen.getByLabelText<HTMLInputElement>("Guardrail ID").value).toBe("guardrail-1");
     expect(screen.getByLabelText<HTMLInputElement>("Memories Save Enabled").checked).toBe(true);
     expect(
       screen.getByLabelText<HTMLInputElement>("Allow Prompt and Response Training Data").checked,
     ).toBe(false);
-    expect(screen.getByLabelText<HTMLSelectElement>("Search Provider").value).toBe("exa");
+    expect(screen.getByLabelText("Search Provider").textContent).toContain("Exa");
   });
 
   it("loads saved fields while preserving an edit made before settings arrive", () => {
     const { rerender } = render(<UserSettingsForm {...formProps} />);
 
-    fireEvent.change(screen.getByLabelText("Search Provider"), { target: { value: "tavily" } });
+    fireEvent.click(screen.getByLabelText("Search Provider"));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Tavily" }));
     rerender(<UserSettingsForm {...formProps} userSettings={savedSettings} />);
 
     expect(screen.getByLabelText<HTMLInputElement>("Nickname").value).toBe("Alex");
-    expect(screen.getByLabelText<HTMLSelectElement>("Guardrails Provider").value).toBe("bedrock");
-    expect(screen.getByLabelText<HTMLSelectElement>("Search Provider").value).toBe("tavily");
+    expect(screen.getByLabelText("Guardrails Provider").textContent).toContain("Bedrock");
+    expect(screen.getByLabelText("Search Provider").textContent).toContain("Tavily");
   });
 
   it("refreshes untouched fields while keeping text cleared and switches turned off locally", () => {
@@ -74,7 +75,7 @@ describe("user settings form", () => {
     expect(screen.getByLabelText<HTMLInputElement>("Nickname").value).toBe("");
     expect(screen.getByLabelText<HTMLInputElement>("Memories Save Enabled").checked).toBe(false);
     expect(screen.getByLabelText<HTMLInputElement>("Job Role").value).toBe("Designer");
-    expect(screen.getByLabelText<HTMLSelectElement>("Search Provider").value).toBe("parallel");
+    expect(screen.getByLabelText("Search Provider").textContent).toContain("Parallel");
   });
 
   it("discards another account's unsaved edits when the settings identity changes", () => {

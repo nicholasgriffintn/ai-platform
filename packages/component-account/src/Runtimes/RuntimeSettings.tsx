@@ -5,7 +5,7 @@ import {
   Button,
   EmptyState,
   FormInput,
-  FormChoice,
+  FormSelect,
 } from "@ngriffin_uk/polychat-component-ui";
 import type {
   DesktopEndpoint,
@@ -132,11 +132,11 @@ export function RuntimeSettings({
       >
         <form className="space-y-4" onSubmit={(event) => void handleCustomSubmit(event)}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormChoice
+            <FormSelect
               label="Runtime"
               value={vendor}
               options={RUNTIME_VENDOR_OPTIONS}
-              onChange={setVendor}
+              onValueChange={setVendor}
             />
             <FormInput
               label="Label"
@@ -153,14 +153,14 @@ export function RuntimeSettings({
             description="Use the runtime's base HTTP or HTTPS address without credentials in the URL."
             onChange={(event) => setUrl(event.target.value)}
           />
-          <FormChoice<"loopback" | "network">
+          <FormSelect<"loopback" | "network">
             label="Location"
             value={transport}
             options={[
               { value: "loopback", label: "This machine (loopback)" },
               { value: "network", label: "Another machine (network)" },
             ]}
-            onChange={setTransport}
+            onValueChange={setTransport}
           />
           {customError ? (
             <Alert variant="destructive">

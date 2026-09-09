@@ -2,12 +2,28 @@ import {
   Badge,
   Button,
   cn,
+  FormSelect,
+  type FormSelectOption,
   Input,
   Textarea,
   textLinkClassName,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { DocumentMetadata } from "@ngriffin_uk/polychat-schemas";
 import { Calendar, Clock, Edit3, FileText, Hash, Monitor, Tag, User } from "lucide-react";
+
+const CONTENT_TYPE_OPTIONS: FormSelectOption<NonNullable<DocumentMetadata["contentType"]>>[] = [
+  { value: "text", label: "Text" },
+  { value: "list", label: "List" },
+  { value: "outline", label: "Outline" },
+  { value: "mixed", label: "Mixed" },
+];
+
+const SENTIMENT_OPTIONS: FormSelectOption<NonNullable<DocumentMetadata["sentiment"]>>[] = [
+  { value: "positive", label: "Positive" },
+  { value: "neutral", label: "Neutral" },
+  { value: "negative", label: "Negative" },
+];
+
 import { useState } from "react";
 
 export interface DocumentMetadataPanelProps {
@@ -169,22 +185,15 @@ export function DocumentMetadataPanel({
               >
                 Content Type
               </label>
-              <select
+              <FormSelect<NonNullable<DocumentMetadata["contentType"]>>
                 id="content-type-select"
+                className="mt-1"
                 value={editingMetadata.contentType || "text"}
-                onChange={(e) =>
-                  setEditingMetadata((prev) => ({
-                    ...prev,
-                    contentType: e.target.value as DocumentMetadata["contentType"],
-                  }))
+                options={CONTENT_TYPE_OPTIONS}
+                onValueChange={(contentType) =>
+                  setEditingMetadata((prev) => ({ ...prev, contentType }))
                 }
-                className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground"
-              >
-                <option value="text">Text</option>
-                <option value="list">List</option>
-                <option value="outline">Outline</option>
-                <option value="mixed">Mixed</option>
-              </select>
+              />
             </div>
 
             <div>
@@ -194,21 +203,15 @@ export function DocumentMetadataPanel({
               >
                 Sentiment
               </label>
-              <select
+              <FormSelect<NonNullable<DocumentMetadata["sentiment"]>>
                 id="sentiment-select"
+                className="mt-1"
                 value={editingMetadata.sentiment || "neutral"}
-                onChange={(e) =>
-                  setEditingMetadata((prev) => ({
-                    ...prev,
-                    sentiment: e.target.value as DocumentMetadata["sentiment"],
-                  }))
+                options={SENTIMENT_OPTIONS}
+                onValueChange={(sentiment) =>
+                  setEditingMetadata((prev) => ({ ...prev, sentiment }))
                 }
-                className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground"
-              >
-                <option value="positive">Positive</option>
-                <option value="neutral">Neutral</option>
-                <option value="negative">Negative</option>
-              </select>
+              />
             </div>
           </div>
 

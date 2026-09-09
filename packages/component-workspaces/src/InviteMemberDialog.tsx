@@ -8,6 +8,7 @@ import {
   DialogTitle,
   FormInput,
   FormSelect,
+  Input,
 } from "@ngriffin_uk/polychat-component-ui";
 import { type FormEvent, type ReactNode, useState } from "react";
 
@@ -76,26 +77,29 @@ export function InviteMemberDialog({
             required
             disabled={Boolean(inviteUrl)}
           />
-          <FormSelect
+          <FormSelect<"admin" | "member">
             label="Role"
             value={role}
-            onChange={(event) => setRole(event.target.value as "admin" | "member")}
+            onValueChange={setRole}
             disabled={Boolean(inviteUrl)}
-            options={[
-              { value: "member", label: "Member — work in projects" },
-              ...(canInviteAdmin
-                ? [{ value: "admin", label: "Admin — manage projects and people" }]
-                : []),
-            ]}
+            options={
+              canInviteAdmin
+                ? [
+                    { value: "member", label: "Member — work in projects" },
+                    { value: "admin", label: "Admin — manage projects and people" },
+                  ]
+                : [{ value: "member", label: "Member — work in projects" }]
+            }
           />
           {inviteUrl && (
             <div className="rounded-xl border border-success/45 bg-success/12 p-4">
               <p className="mb-3 text-sm font-medium text-success">Invitation ready</p>
               <div className="flex items-center gap-2">
-                <input
+                <Input
                   readOnly
                   value={inviteUrl}
-                  className="min-w-0 flex-1 rounded-md border border-success/45 bg-surface px-2 py-1.5 text-xs"
+                  aria-label="Invitation link"
+                  className="min-w-0 flex-1 border-success/45 bg-surface text-xs"
                 />
                 {renderCopyControl(inviteUrl)}
               </div>

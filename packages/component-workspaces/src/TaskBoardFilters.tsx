@@ -48,13 +48,11 @@ export function TaskBoardFilters({
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <FormSelect
             aria-label="Filter work by status"
-            className="h-10 min-w-40 bg-surface"
+            className="min-w-40"
             fullWidth={false}
             value={filters.status}
-            onChange={(event) => {
-              const status = STATUS_OPTIONS.find(
-                (option) => option.value === event.target.value,
-              )?.value;
+            onValueChange={(value) => {
+              const status = STATUS_OPTIONS.find((option) => option.value === value)?.value;
 
               if (status) {
                 onChange({ ...filters, status });
@@ -65,10 +63,10 @@ export function TaskBoardFilters({
           {flow ? (
             <FormSelect
               aria-label="Filter work by stage"
-              className="h-10 min-w-36 bg-surface"
+              className="min-w-36"
               fullWidth={false}
               value={filters.stageId ?? ""}
-              onChange={(event) => onChange({ ...filters, stageId: event.target.value || null })}
+              onValueChange={(value) => onChange({ ...filters, stageId: value || null })}
               options={[
                 { label: "All stages", value: "" },
                 ...flow.stages.map((stage) => ({ label: stage.name, value: stage.id })),

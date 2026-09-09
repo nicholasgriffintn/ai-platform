@@ -169,7 +169,7 @@ export function DeploymentCreateForm({
         id="deployment-model"
         label="Model"
         value={selectedModel?.id ?? ""}
-        onChange={(event) => setModelId(event.target.value)}
+        onValueChange={setModelId}
         options={deployableModels.map((model) => ({
           value: model.id,
           label: getTrainingModelLabel(model),
@@ -198,8 +198,8 @@ export function DeploymentCreateForm({
           id="deployment-target"
           label="Deployment target"
           value={deploymentTarget}
-          onChange={(event) =>
-            setDeploymentTarget(trainingDeploymentTargetSchema.parse(event.target.value))
+          onValueChange={(target) =>
+            setDeploymentTarget(trainingDeploymentTargetSchema.parse(target))
           }
           options={DEPLOYMENT_TARGET_OPTIONS}
         />
@@ -207,7 +207,7 @@ export function DeploymentCreateForm({
           id="deployment-training-job"
           label="Completed job"
           value={trainingJobName}
-          onChange={(event) => setTrainingJobName(event.target.value)}
+          onValueChange={setTrainingJobName}
           options={[
             { value: "", label: "Deploy base model from Hub" },
             ...deploymentJobs.map((job) => ({

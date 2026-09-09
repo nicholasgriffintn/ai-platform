@@ -1,4 +1,12 @@
-import { FormCheckbox, FormInput, FormSelect, Textarea } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Checkbox,
+  FormCheckbox,
+  FormInput,
+  FormSelect,
+  Input,
+  Label,
+  Textarea,
+} from "@ngriffin_uk/polychat-component-ui";
 import type { RenderableTool } from "@ngriffin_uk/polychat-schemas";
 import { getNumberInputValue, parseNumberInputValue } from "@ngriffin_uk/polychat-utility-core";
 import type { ChangeEvent } from "react";
@@ -17,31 +25,20 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
   const errorId = error ? `${field.id}-error` : undefined;
   const describedBy = [descriptionId, errorId].filter(Boolean).join(" ") || undefined;
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-  ) => {
-    let newValue: any = e.target.value;
-
-    if (field.type === "number") {
-      newValue = parseNumberInputValue(e.target.value);
-    } else if (field.type === "checkbox") {
-      newValue = (e.target as HTMLInputElement).checked;
-    }
-
-    onChange(field.id, newValue);
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    onChange(
+      field.id,
+      field.type === "number" ? parseNumberInputValue(e.target.value) : e.target.value,
+    );
   };
 
-  const handleMultiSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const options = e.target.options;
-    const selectedValues: string[] = [];
+  const toggleMultiSelectValue = (optionValue: string, selected: boolean) => {
+    const current: string[] = Array.isArray(value) ? value : [];
 
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selectedValues.push(options[i].value);
-      }
-    }
-
-    onChange(field.id, selectedValues);
+    onChange(
+      field.id,
+      selected ? [...current, optionValue] : current.filter((entry) => entry !== optionValue),
+    );
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -102,51 +99,53 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
           <FormSelect
             id={field.id}
             value={value || ""}
-            onChange={handleChange}
-            required={field.required}
             aria-describedby={describedBy}
-            aria-invalid={!!error}
-            options={[
-              { value: "", label: "Select an option" },
-              ...(field.validation?.options?.map((option) => ({
+            options={
+              field.validation?.options?.map((option) => ({
                 value: option.value,
                 label: option.label,
-              })) || []),
-            ]}
+              })) ?? []
+            }
+            onValueChange={(selected) => onChange(field.id, selected)}
           />
         );
 
       case "multiselect":
         return (
-          <select
+          <div
             id={field.id}
-            multiple
-            value={value || []}
-            onChange={handleMultiSelectChange}
-            className="min-h-[100px] w-full rounded-md border border-border-strong bg-surface-elevated px-3 py-2 text-foreground focus:ring-2 focus:ring-active-work focus:outline-none"
-            required={field.required}
+            role="group"
             aria-describedby={describedBy}
-            aria-invalid={!!error}
+            className="max-h-52 space-y-2 overflow-y-auto rounded-md border border-border-strong bg-surface-elevated p-3"
           >
             {field.validation?.options?.map((option) => (
-              <option key={option.value} value={option.value}>
+              <Label
+                key={option.value}
+                htmlFor={`${field.id}-${option.value}`}
+                className="cursor-pointer font-normal"
+              >
+                <Checkbox
+                  id={`${field.id}-${option.value}`}
+                  checked={Array.isArray(value) && value.includes(option.value)}
+                  onCheckedChange={(checked) =>
+                    toggleMultiSelectValue(option.value, checked === true)
+                  }
+                />
                 {option.label}
-              </option>
+              </Label>
             ))}
-          </select>
+          </div>
         );
 
       case "checkbox":
         return (
           <FormCheckbox
             id={field.id}
-            checked={value || false}
-            onChange={handleChange}
-            required={field.required}
+            checked={value === true}
             label={field.label}
             labelPosition="right"
             aria-describedby={describedBy}
-            aria-invalid={!!error}
+            onCheckedChange={(checked) => onChange(field.id, checked)}
           />
         );
 
@@ -165,11 +164,11 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 
       case "file":
         return (
-          <input
+          <Input
             type="file"
             id={field.id}
             onChange={handleFileChange}
-            className="w-full rounded-md border border-border-strong bg-surface-elevated px-3 py-2 text-foreground focus:ring-2 focus:ring-active-work focus:outline-none"
+            className="h-auto bg-surface-elevated py-2"
             required={field.required}
             aria-describedby={describedBy}
             aria-invalid={!!error}

@@ -6,6 +6,7 @@ import {
 
 import { expect, test } from "../fixtures/polychat-test";
 import { requireSuccessfulResponse } from "../support/api-response";
+import { chooseDropdownOption, expectDropdownValue } from "../support/dropdown";
 import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
 
 const ROLE = findTeammateRole("research-analyst");
@@ -32,7 +33,7 @@ test.describe("Hiring a teammate", () => {
     await capabilitiesPage.navigate(editorPath);
     await expect(page.getByLabel("Temperature", { exact: true })).toHaveValue("");
     for (const temperature of ["", "0.5", ""]) {
-      await expect(page.getByLabel("Kind", { exact: true })).toHaveValue("colleague");
+      await expectDropdownValue(page.getByLabel("Kind", { exact: true }), "Colleague");
       await page.getByLabel("Temperature", { exact: true }).fill(temperature);
       const saved = page.waitForResponse(
         (result) =>
@@ -171,7 +172,7 @@ test.describe("Hiring a teammate", () => {
 
     expect(teammate.enabled_tools).toEqual(expect.arrayContaining(["create_task", "store_memory"]));
     await capabilitiesPage.navigate(`/chat/teammates/${teammate.id}`);
-    await page.getByLabel("Kind", { exact: true }).selectOption("bot");
+    await chooseDropdownOption(page.getByLabel("Kind", { exact: true }), "Bot");
     for (const tool of ["create_task", "store_memory"]) {
       await page.getByPlaceholder("Search tools and skills...").fill(tool);
       await expect(page.getByText("Nothing matches that search.", { exact: true })).toBeVisible();
@@ -192,7 +193,7 @@ test.describe("Hiring a teammate", () => {
       enabled_tools: [],
     });
     await capabilitiesPage.navigate(`/chat/teammates/${teammate.id}`);
-    await expect(page.getByLabel("Kind", { exact: true })).toHaveValue("bot");
+    await expectDropdownValue(page.getByLabel("Kind", { exact: true }), "Bot");
     await expect(page.getByText(/Tools the teammate may call and skills it loads/)).toContainText(
       "0 selected",
     );

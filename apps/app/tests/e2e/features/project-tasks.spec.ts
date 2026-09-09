@@ -85,7 +85,7 @@ test.describe("Project task evidence", () => {
     await tasks.closePipeline();
 
     await tasks.createBacklogTask("Filter this queued outcome out");
-    await tasks.filterQueueTo("done");
+    await tasks.filterQueueTo("Completed");
     await expect(tasks.noMatches).toBeVisible();
     expect(await tasks.borderWidthOf(tasks.noMatches)).toBe("0px");
   });
