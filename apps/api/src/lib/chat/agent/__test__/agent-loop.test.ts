@@ -129,6 +129,20 @@ describe("runAgentLoop", () => {
     expect(mocks.handleToolCalls).not.toHaveBeenCalled();
   });
 
+  it("returns the visible answer when the model also supplies reasoning", async () => {
+    const { params } = createParams([
+      {
+        content: "Review the repository tests.",
+        thinking: "Consider the repository structure.",
+        toolCalls: [],
+      },
+    ]);
+
+    const result = await runAgentLoop(params);
+
+    expect(result.response.response).toBe("Review the repository tests.");
+  });
+
   it("returns caller-owned tool calls without executing them or requesting another turn", async () => {
     const { params, runTurn } = createParams([toolTurn("run_script")]);
 

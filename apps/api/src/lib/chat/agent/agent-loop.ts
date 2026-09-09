@@ -58,6 +58,7 @@ import {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { extractTextFromMessageContent } from "~/utils/messages";
 import { readRecordObjectField, readStringField } from "~/utils/recordFields";
 import { isRetryCancelledError } from "~/utils/retries";
 
@@ -742,7 +743,10 @@ export async function runAgentLoop(
 
   return {
     response: {
-      response: typeof finalMessage.content === "string" ? finalMessage.content : "",
+      response:
+        typeof finalMessage.content === "string"
+          ? finalMessage.content
+          : extractTextFromMessageContent(finalMessage.content),
       citations: finalMessage.citations ?? null,
       data: finalMessage.data,
       log_id: finalMessage.log_id,
