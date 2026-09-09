@@ -29,6 +29,17 @@ export const delegationStateSchema = z.enum([
 ]);
 export type DelegationState = z.infer<typeof delegationStateSchema>;
 
+export const LIVE_DELEGATION_STATES: readonly DelegationState[] = [
+  "queued",
+  "running",
+  "awaiting_input",
+  "awaiting_approval",
+];
+
+export function isLiveDelegationState(state: DelegationState): boolean {
+  return LIVE_DELEGATION_STATES.includes(state);
+}
+
 export const delegationBudgetSchema = z.object({
   maxCreditMicros: z.number().int().positive(),
   maxSteps: z.number().int().positive(),

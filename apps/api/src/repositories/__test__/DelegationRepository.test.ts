@@ -83,7 +83,12 @@ it("enforces concurrent fan-out at insertion and frees capacity only when a run 
   expect(await repository.claimDelegation(first.id)).toMatchObject({ state: "running" });
   expect(await repository.claimDelegation(first.id)).toBeNull();
   await repository.updateState(first.id, "done", { summary: "Complete", outputIds: [] });
-  expect(await repository.expireIfLive(first.id, "Deadline passed")).toBeNull();
+  expect(
+    await repository.updateState(first.id, "expired", {
+      summary: "Deadline passed",
+      outputIds: [],
+    }),
+  ).toBeNull();
   expect(await repository.getById(first.id)).toMatchObject({ state: "done" });
   expect(await repository.createDelegation({ ...params, id: "replacement" })).toMatchObject({
     state: "queued",
@@ -91,7 +96,9 @@ it("enforces concurrent fan-out at insertion and frees capacity only when a run 
   await expect(repository.createDelegation({ ...params, id: "over-limit" })).rejects.toThrow(
     "limit",
   );
-  expect(await repository.cancelIfLive("replacement")).toMatchObject({ state: "cancelled" });
+  expect(
+    await repository.updateState("replacement", "cancelled", { summary: "Stopped", outputIds: [] }),
+  ).toMatchObject({ state: "cancelled" });
   expect(
     await repository.updateState("replacement", "done", { summary: "Late result", outputIds: [] }),
   ).toBeNull();

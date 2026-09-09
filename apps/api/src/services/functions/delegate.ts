@@ -10,12 +10,13 @@ import { userCreditActor } from "~/lib/usage/creditActor";
 import { readCreditPosition } from "~/lib/usage/credits";
 import { checkDelegationSpawn } from "~/services/delegations/guards";
 import { resolveDelegationExecutionRoute } from "~/services/delegations/routing";
-import { publishDelegationChanged } from "~/services/sync/conversation-events";
+import { transitionDelegation } from "~/services/delegations/settle";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireTeammateAccess } from "~/services/teammates/access";
 import { hireTeammate } from "~/services/teammates/hire";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
+import { conversationHandleIdForDelegation } from "~/utils/conversation-handles";
 import { intersectEnabledTools } from "~/utils/enabledTools";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -214,7 +215,7 @@ export const delegate: ApiToolDefinition = {
 
     try {
       await context.repositories.conversationHandles.createSpawnHandle({
-        id: `handle_${delegationId}`,
+        id: conversationHandleIdForDelegation(delegationId),
         conversationId: parentConversationId,
         delegationId,
         grantedAt: new Date().toISOString(),
@@ -232,15 +233,10 @@ export const delegate: ApiToolDefinition = {
     } catch (error) {
       const summary = getErrorMessage(error, "The delegate could not be started.");
 
-      const failedDelegation = await context.repositories.delegations.updateState(
-        delegationId,
-        "failed",
-        { summary: summary.slice(0, 2000), outputIds: [] },
-      );
-
-      if (failedDelegation) {
-        await publishDelegationChanged(context, failedDelegation);
-      }
+      await transitionDelegation(context, delegationId, "failed", {
+        summary: summary.slice(0, 2000),
+        outputIds: [],
+      });
 
       throw error;
     }

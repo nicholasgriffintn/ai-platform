@@ -2,6 +2,7 @@ import { delegationExpiryTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { scheduleDelegationWake } from "~/services/delegations/schedule-wake";
+import { transitionDelegation } from "~/services/delegations/settle";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
 
@@ -23,10 +24,10 @@ export class DelegationExpiryHandler implements TaskHandler {
       return { status: "skipped", message: "Delegation is no longer due to expire" };
     }
 
-    const updated = await context.repositories.delegations.expireIfLive(
-      delegation.id,
-      "The delegate deadline passed while it was waiting for a response.",
-    );
+    const updated = await transitionDelegation(context, delegation.id, "expired", {
+      summary: "The delegate deadline passed while it was waiting for a response.",
+      outputIds: [],
+    });
 
     if (updated) {
       await scheduleDelegationWake(

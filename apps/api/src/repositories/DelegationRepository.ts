@@ -1,6 +1,7 @@
 import {
   DELEGATION_MAX_DEPTH,
   DELEGATION_MAX_FAN_OUT,
+  LIVE_DELEGATION_STATES,
   type Delegation,
   type DelegationResult,
   type DelegationState,
@@ -12,6 +13,8 @@ import { formatDelegation } from "~/utils/delegations";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { BaseRepository } from "./BaseRepository";
+
+const LIVE_STATE_SQL = LIVE_DELEGATION_STATES.map((state) => `'${state}'`).join(", ");
 
 export interface CreateDelegationParams {
   id: string;
@@ -37,7 +40,7 @@ export class DelegationRepository extends BaseRepository<Pick<IEnv, "DB">> {
          AND NOT EXISTS (SELECT 1 FROM delegation WHERE child_conversation_id = ?)
          AND (SELECT COUNT(*) FROM delegation
               WHERE parent_conversation_id = ? AND parent_run_id = ?
-                AND state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')) < ?
+                AND state IN (${LIVE_STATE_SQL})) < ?
        RETURNING *`,
       [
         params.id,
@@ -120,7 +123,7 @@ export class DelegationRepository extends BaseRepository<Pick<IEnv, "DB">> {
       `SELECT COUNT(*) AS count FROM delegation
        WHERE parent_conversation_id = ?
          AND parent_run_id = ?
-         AND state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')`,
+         AND state IN (${LIVE_STATE_SQL})`,
       [parentConversationId, parentRunId],
       true,
     );
@@ -150,41 +153,9 @@ export class DelegationRepository extends BaseRepository<Pick<IEnv, "DB">> {
       `UPDATE delegation
        SET state = ?, result_json = ?, updated_at = CURRENT_TIMESTAMP
        WHERE id = ?
-         AND state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')
+         AND state IN (${LIVE_STATE_SQL})
        RETURNING *`,
       [state, result ? JSON.stringify(result) : null, id],
-      true,
-    );
-
-    return row ? formatDelegation(row) : null;
-  }
-
-  async expireIfLive(id: string, summary: string): Promise<Delegation | null> {
-    const row = await this.runQuery<DelegationRow>(
-      `UPDATE delegation
-       SET state = 'expired',
-           result_json = ?,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?
-         AND state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')
-       RETURNING *`,
-      [JSON.stringify({ summary, outputIds: [] }), id],
-      true,
-    );
-
-    return row ? formatDelegation(row) : null;
-  }
-
-  async cancelIfLive(id: string): Promise<Delegation | null> {
-    const row = await this.runQuery<DelegationRow>(
-      `UPDATE delegation
-       SET state = 'cancelled',
-           result_json = ?,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?
-         AND state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')
-       RETURNING *`,
-      [JSON.stringify({ summary: "The parent run was cancelled.", outputIds: [] }), id],
       true,
     );
 

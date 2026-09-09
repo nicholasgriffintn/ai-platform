@@ -6,17 +6,14 @@ import {
   resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicyCreatesCommit,
   SANDBOX_TIMEOUT_MIN_SECONDS,
-  type Delegation,
-  type DelegationResult,
-  type DelegationState,
   type SandboxRequestOptions,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
+import { transitionDelegation } from "~/services/delegations/settle";
 import { notifyMobileWork } from "~/services/mobile-push";
 import { isTaskNotificationPreferenceEnabled } from "~/services/notifications/preferences";
-import { publishDelegationChanged } from "~/services/sync/conversation-events";
 import { TaskService } from "~/services/tasks/TaskService";
 import { createTeammateCompletion } from "~/services/teammates/createTeammateCompletion";
 import { requireProjectAccess } from "~/services/workspaces/access";
@@ -29,21 +26,6 @@ import { extractTextFromMessageContent } from "~/utils/messages";
 import type { TaskMessage } from "../tasks/TaskService";
 import { resolveDelegationExecutionRoute } from "./routing";
 import { scheduleDelegationWake } from "./schedule-wake";
-
-async function transitionDelegation(
-  context: ServiceContext,
-  id: string,
-  state: DelegationState,
-  result: DelegationResult | null = null,
-): Promise<Delegation | null> {
-  const updated = await context.repositories.delegations.updateState(id, state, result);
-
-  if (updated) {
-    await publishDelegationChanged(context, updated);
-  }
-
-  return updated;
-}
 
 export async function runDelegationTask(message: TaskMessage, env: IEnv) {
   const payload = delegationRunTaskDataSchema.parse(message.task_data);

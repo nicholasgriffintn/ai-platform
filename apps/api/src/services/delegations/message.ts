@@ -1,5 +1,8 @@
+import { isLiveDelegationState } from "@ngriffin_uk/polychat-schemas";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { withThreadLockIfFree } from "~/services/conversations/coordinator/client";
+import { conversationHandleIdForDelegation } from "~/utils/conversation-handles";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -12,13 +15,14 @@ export async function deliverDelegationMessage(
   const user = context.requireUser();
   const delegation = await context.repositories.delegations.getById(delegationId);
   const handle = await context.repositories.conversationHandles.getUsableHandle(
-    `handle_${delegationId}`,
+    conversationHandleIdForDelegation(delegationId),
     delegationId,
     new Date().toISOString(),
   );
 
   if (
     !delegation ||
+    !isLiveDelegationState(delegation.state) ||
     !handle ||
     (childConversationId !== undefined && delegation.childConversationId !== childConversationId)
   ) {

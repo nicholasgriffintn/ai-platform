@@ -1,11 +1,8 @@
+import { isLiveDelegationState, type Delegation } from "@ngriffin_uk/polychat-schemas";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
-const LIVE_DELEGATION_STATES = new Set([
-  "queued",
-  "running",
-  "awaiting_input",
-  "awaiting_approval",
-]);
+import { transitionDelegation } from "./settle";
 
 export async function cancelDelegationTree(
   context: ServiceContext,
@@ -13,9 +10,7 @@ export async function cancelDelegationTree(
 ): Promise<void> {
   const visited = new Set<string>();
 
-  const cancelChildren = async (
-    delegations: Awaited<ReturnType<typeof context.repositories.delegations.listByParentRunId>>,
-  ) => {
+  const cancelChildren = async (delegations: Delegation[]) => {
     for (const delegation of delegations) {
       if (visited.has(delegation.id)) {
         continue;
@@ -23,8 +18,11 @@ export async function cancelDelegationTree(
 
       visited.add(delegation.id);
 
-      if (LIVE_DELEGATION_STATES.has(delegation.state)) {
-        await context.repositories.delegations.cancelIfLive(delegation.id);
+      if (isLiveDelegationState(delegation.state)) {
+        await transitionDelegation(context, delegation.id, "cancelled", {
+          summary: "The parent run was cancelled.",
+          outputIds: [],
+        });
       }
 
       const childRun = await context.repositories.conversationRuns.getLatestForConversation(

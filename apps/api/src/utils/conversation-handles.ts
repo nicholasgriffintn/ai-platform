@@ -13,3 +13,7 @@ export function formatConversationHandle(row: ConversationHandleRow): Conversati
     revokedAt: row.revoked_at,
   });
 }
+
+export function conversationHandleIdForDelegation(delegationId: string): string {
+  return `handle_${delegationId}`;
+}
