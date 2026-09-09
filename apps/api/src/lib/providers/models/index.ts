@@ -265,7 +265,7 @@ export function getModels(
   },
 ) {
   const cacheKey = JSON.stringify([
-    [...(options.excludeModalities ?? [])].sort(),
+    [...(options.excludeModalities ?? [])].sort((left, right) => left.localeCompare(right)),
     options.chatSurfaceOnly ?? false,
   ]);
   const cached = cachedModelsByOptions.get(cacheKey);
