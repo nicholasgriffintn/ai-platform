@@ -439,6 +439,37 @@
         }
       }
     },
+    "claude-opus-4-7-au": {
+      "defaults": {
+        "name": "Claude Opus 4.7 (AU)",
+        "description": "Stronger Opus tier for advanced software work and high-stakes reasoning",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "releaseDate": "April 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 53.5,
+          "codingIndex": 73.6,
+          "agenticIndex": 44.4,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
     "claude-opus-4-7-eu": {
       "defaults": {
         "name": "Claude Opus 4.7 (EU)",

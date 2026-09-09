@@ -869,7 +869,6 @@
       "model": "qwen/qwen3-8-2-4t-a95b",
       "matchingModel": "accounts/fireworks/models/qwen3p8-2p4t-a95b",
       "overrides": {
-        "maxTokens": 131072,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006

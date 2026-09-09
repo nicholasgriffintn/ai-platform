@@ -6,12 +6,13 @@
   },
   "models": {
     "nova-2-lite": {
-      "model": "nova/amazon-nova-2-lite",
+      "model": "nova/nova-2-lite-global",
       "matchingModel": "global.amazon.nova-2-lite-v1:0",
       "overrides": {
         "speed": 4,
-        "costPer1kInputTokens": 0.0008,
-        "costPer1kOutputTokens": 0.0016,
+        "lastUpdated": "December 1, 2025",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0025,
         "supportsDocuments": true,
         "supportsPromptCaching": true
       }
@@ -1776,18 +1777,10 @@
       "model": "palmyra/palmyra-x5",
       "matchingModel": "writer.palmyra-x5-v1:0",
       "overrides": {
-        "releaseDate": "April 28, 2025",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.006,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       }
     },
     "zai.glm-5": {
@@ -2364,6 +2357,284 @@
         "lastUpdated": "August 18, 2026",
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.0066
+      }
+    },
+    "apac.amazon.nova-lite-v1:0": {
+      "model": "nova-lite/nova-lite-apac",
+      "matchingModel": "apac.amazon.nova-lite-v1:0",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.000063,
+        "costPer1kOutputTokens": 0.000252
+      }
+    },
+    "apac.amazon.nova-micro-v1:0": {
+      "model": "nova-micro/nova-micro-apac",
+      "matchingModel": "apac.amazon.nova-micro-v1:0",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.000037,
+        "costPer1kOutputTokens": 0.000148,
+        "supportsAttachments": false
+      }
+    },
+    "apac.amazon.nova-pro-v1:0": {
+      "model": "nova-pro/nova-pro-apac",
+      "matchingModel": "apac.amazon.nova-pro-v1:0",
+      "overrides": {
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.00084,
+        "costPer1kOutputTokens": 0.00336
+      }
+    },
+    "au.anthropic.claude-opus-4-7": {
+      "model": "claude-opus/claude-opus-4-7-au",
+      "matchingModel": "au.anthropic.claude-opus-4-7",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "supportsTemperature": false
+      }
+    },
+    "ca.amazon.nova-lite-v1:0": {
+      "model": "nova-lite/nova-lite-ca",
+      "matchingModel": "ca.amazon.nova-lite-v1:0",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.000064,
+        "costPer1kOutputTokens": 0.000256
+      }
+    },
+    "eu.amazon.nova-2-lite-v1:0": {
+      "model": "nova/nova-2-lite-eu",
+      "matchingModel": "eu.amazon.nova-2-lite-v1:0",
+      "overrides": {
+        "lastUpdated": "December 1, 2025",
+        "costPer1kInputTokens": 0.000374,
+        "costPer1kOutputTokens": 0.003157
+      }
+    },
+    "eu.amazon.nova-lite-v1:0": {
+      "model": "nova-lite/nova-lite-eu",
+      "matchingModel": "eu.amazon.nova-lite-v1:0",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.000069,
+        "costPer1kOutputTokens": 0.000276
+      }
+    },
+    "eu.amazon.nova-micro-v1:0": {
+      "model": "nova-micro/nova-micro-eu",
+      "matchingModel": "eu.amazon.nova-micro-v1:0",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.00016,
+        "supportsAttachments": false
+      }
+    },
+    "eu.amazon.nova-pro-v1:0": {
+      "model": "nova-pro/nova-pro-eu",
+      "matchingModel": "eu.amazon.nova-pro-v1:0",
+      "overrides": {
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.00092,
+        "costPer1kOutputTokens": 0.00368
+      }
+    },
+    "eu.mistral.pixtral-large-2502-v1:0": {
+      "model": "pixtral/pixtral-large-25-02-eu",
+      "matchingModel": "eu.mistral.pixtral-large-2502-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 8, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
+      }
+    },
+    "global.openai.gpt-6-astra": {
+      "model": "gpt-astra/gpt-6-astra-global",
+      "matchingModel": "global.openai.gpt-6-astra",
+      "overrides": {
+        "lastUpdated": "September 4, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false
+      }
+    },
+    "jp.amazon.nova-2-lite-v1:0": {
+      "model": "nova/nova-2-lite-jp",
+      "matchingModel": "jp.amazon.nova-2-lite-v1:0",
+      "overrides": {
+        "lastUpdated": "December 1, 2025",
+        "costPer1kInputTokens": 0.000396,
+        "costPer1kOutputTokens": 0.003311
+      }
+    },
+    "openai.gpt-6-astra": {
+      "model": "gpt-astra/gpt-6-astra",
+      "matchingModel": "openai.gpt-6-astra",
+      "overrides": {
+        "lastUpdated": "September 4, 2026",
+        "costPer1kInputTokens": 0.011,
+        "costPer1kOutputTokens": 0.055,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "us.amazon.nova-2-lite-v1:0": {
+      "model": "nova/nova-2-lite-us",
+      "matchingModel": "us.amazon.nova-2-lite-v1:0",
+      "overrides": {
+        "lastUpdated": "December 1, 2025",
+        "costPer1kInputTokens": 0.00033,
+        "costPer1kOutputTokens": 0.00275
+      }
+    },
+    "us.amazon.nova-lite-v1:0": {
+      "model": "nova-lite/nova-lite-us",
+      "matchingModel": "us.amazon.nova-lite-v1:0",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024
+      }
+    },
+    "us.amazon.nova-micro-v1:0": {
+      "model": "nova-micro/nova-micro-us",
+      "matchingModel": "us.amazon.nova-micro-v1:0",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.000035,
+        "costPer1kOutputTokens": 0.00014,
+        "supportsAttachments": false
+      }
+    },
+    "us.amazon.nova-pro-v1:0": {
+      "model": "nova-pro/nova-pro-us",
+      "matchingModel": "us.amazon.nova-pro-v1:0",
+      "overrides": {
+        "lastUpdated": "December 3, 2024",
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.0032
+      }
+    },
+    "us.meta.llama3-1-70b-instruct-v1:0": {
+      "model": "llama/llama-3-1-70b-instruct-us",
+      "matchingModel": "us.meta.llama3-1-70b-instruct-v1:0",
+      "overrides": {
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0.00072,
+        "costPer1kOutputTokens": 0.00072,
+        "supportsAttachments": false
+      }
+    },
+    "us.meta.llama3-1-8b-instruct-v1:0": {
+      "model": "llama/llama-3-1-8b-instruct-us",
+      "matchingModel": "us.meta.llama3-1-8b-instruct-v1:0",
+      "overrides": {
+        "lastUpdated": "July 23, 2024",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00022,
+        "supportsAttachments": false
+      }
+    },
+    "us.meta.llama3-3-70b-instruct-v1:0": {
+      "model": "llama/llama-3-3-70b-instruct-us",
+      "matchingModel": "us.meta.llama3-3-70b-instruct-v1:0",
+      "overrides": {
+        "lastUpdated": "December 6, 2024",
+        "costPer1kInputTokens": 0.00072,
+        "costPer1kOutputTokens": 0.00072,
+        "supportsAttachments": false
+      }
+    },
+    "us.mistral.pixtral-large-2502-v1:0": {
+      "model": "pixtral/pixtral-large-25-02-us",
+      "matchingModel": "us.mistral.pixtral-large-2502-v1:0",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 8, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
+      }
+    },
+    "us.openai.gpt-5.6-luna": {
+      "model": "gpt-luna/gpt-5-6-luna-us",
+      "matchingModel": "us.openai.gpt-5.6-luna",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00132,
+        "supportsTemperature": false
+      }
+    },
+    "us.openai.gpt-5.6-sol": {
+      "model": "gpt-sol/gpt-5-6-sol-us",
+      "matchingModel": "us.openai.gpt-5.6-sol",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0044,
+        "costPer1kOutputTokens": 0.022,
+        "supportsTemperature": false
+      }
+    },
+    "us.openai.gpt-5.6-terra": {
+      "model": "gpt-terra/gpt-5-6-terra-us",
+      "matchingModel": "us.openai.gpt-5.6-terra",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.0132,
+        "supportsTemperature": false
+      }
+    },
+    "us.openai.gpt-6-astra": {
+      "model": "gpt-astra/gpt-6-astra-us",
+      "matchingModel": "us.openai.gpt-6-astra",
+      "overrides": {
+        "lastUpdated": "September 4, 2026",
+        "costPer1kInputTokens": 0.011,
+        "costPer1kOutputTokens": 0.055,
+        "supportsTemperature": false
+      }
+    },
+    "us.writer.palmyra-x4-v1:0": {
+      "model": "palmyra/palmyra-x4-us",
+      "matchingModel": "us.writer.palmyra-x4-v1:0",
+      "overrides": {
+        "lastUpdated": "April 28, 2025",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": false
+      }
+    },
+    "us.writer.palmyra-x5-v1:0": {
+      "model": "palmyra/palmyra-x5-us",
+      "matchingModel": "us.writer.palmyra-x5-v1:0",
+      "overrides": {
+        "lastUpdated": "April 28, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": false
       }
     }
   }

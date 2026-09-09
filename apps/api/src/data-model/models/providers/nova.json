@@ -15,7 +15,11 @@
         "costPer1kOutputTokens": 0,
         "costPer1kReasoningTokens": 0,
         "supportsDocuments": true
-      }
+      },
+      "unset": [
+        "knowledgeCutoffDate",
+        "artificialAnalysis"
+      ]
     },
     "nova-2-pro-v1": {
       "model": "nova-pro/nova-2-pro",
@@ -27,7 +31,11 @@
         "costPer1kOutputTokens": 0,
         "costPer1kReasoningTokens": 0,
         "supportsDocuments": true
-      }
+      },
+      "unset": [
+        "knowledgeCutoffDate",
+        "artificialAnalysis"
+      ]
     },
     "nova-2-sonic-v1": {
       "model": "nova/nova-2-sonic",

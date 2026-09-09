@@ -3,9 +3,7 @@
     "openWeights": false,
     "contextWindow": 0,
     "maxTokens": 0,
-    "supportsToolCalls": false,
-    "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsToolCalls": false
   },
   "description": "Image model for prompt-driven generation, editing, and visual design workflows",
   "models": {
@@ -23,7 +21,9 @@
             "image"
           ]
         },
-        "releaseDate": "December 16, 2025"
+        "releaseDate": "December 16, 2025",
+        "supportsAttachments": true,
+        "supportsTemperature": false
       }
     },
     "gpt-image-1": {
@@ -65,6 +65,8 @@
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "November 25, 2025",
+        "supportsAttachments": true,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -120,6 +122,8 @@
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "April 21, 2026",
+        "supportsAttachments": true,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -136,6 +140,40 @@
             }
           ]
         }
+      }
+    },
+    "gpt-image-2-5-flare": {
+      "defaults": {
+        "name": "GPT Image 2.5 Flare",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "releaseDate": "September 8, 2026",
+        "supportsAttachments": false,
+        "supportsTemperature": true
+      }
+    },
+    "gpt-image-2-5-sunburst": {
+      "defaults": {
+        "name": "GPT Image 2.5 Sunburst",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "releaseDate": "September 8, 2026",
+        "supportsAttachments": false,
+        "supportsTemperature": true
       }
     }
   }

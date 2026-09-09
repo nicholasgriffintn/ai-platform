@@ -1145,7 +1145,6 @@
       "model": "qwen/qwen3-8-2-4t-a95b",
       "matchingModel": "Qwen/Qwen3.8-2.4T-A95B",
       "overrides": {
-        "maxTokens": 131072,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006

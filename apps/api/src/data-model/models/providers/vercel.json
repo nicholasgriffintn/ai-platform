@@ -277,9 +277,6 @@
       "model": "nova-micro/nova-micro",
       "matchingModel": "amazon/nova-micro",
       "overrides": {
-        "strengths": [
-          "tool_use"
-        ],
         "speed": 4,
         "lastUpdated": "December 3, 2024",
         "costPer1kInputTokens": 0.000035,
@@ -306,12 +303,6 @@
       "model": "nova-lite/nova-lite",
       "matchingModel": "amazon/nova-lite",
       "overrides": {
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
         "speed": 4,
         "lastUpdated": "December 3, 2024",
         "costPer1kInputTokens": 0.00006,
@@ -370,9 +361,9 @@
         "supportsAttachments": true
       },
       "unset": [
-        "contextComplexity",
         "reliability",
-        "artificialAnalysis"
+        "artificialAnalysis",
+        "strengths"
       ]
     },
     "mistral/ministral-3b": {
@@ -5863,8 +5854,8 @@
         "contextWindow": 1000000,
         "maxTokens": 1000000,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.0007,
-        "costPer1kOutputTokens": 0.0022
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044
       }
     },
     "fish-audio/s1-free": {
@@ -6770,6 +6761,48 @@
         "costPer1kOutputTokens": 0.1,
         "supportsAttachments": true,
         "supportsTemperature": false
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    },
+    "deepseek/deepseek-v4.1-flash-beta": {
+      "model": "deepseek/deepseek-v4-1-flash-beta",
+      "matchingModel": "deepseek/deepseek-v4.1-flash-beta",
+      "overrides": {
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00066,
+        "supportsAttachments": true
+      }
+    },
+    "inception/mercury-2.5": {
+      "model": "mercury/mercury-2-5",
+      "matchingModel": "inception/mercury-2.5",
+      "overrides": {
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.00015
+      }
+    },
+    "openai/gpt-image-2.5-flare": {
+      "model": "gpt-image/gpt-image-2-5-flare",
+      "matchingModel": "openai/gpt-image-2.5-flare",
+      "overrides": {
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false
+      }
+    },
+    "openai/gpt-image-2.5-sunburst": {
+      "model": "gpt-image/gpt-image-2-5-sunburst",
+      "matchingModel": "openai/gpt-image-2.5-sunburst",
+      "overrides": {
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false
       }
     }
   }

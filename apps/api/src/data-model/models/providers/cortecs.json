@@ -655,7 +655,6 @@
       "model": "nemotron/nemotron-3-super-120b-a12b",
       "matchingModel": "nemotron-3-super-120b-a12b",
       "overrides": {
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "knowledgeCutoffDate": "December 2025",
         "lastUpdated": "March 11, 2026",
@@ -673,7 +672,6 @@
       "overrides": {
         "maxTokens": 10000,
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "December 3, 2024",
         "lastUpdated": "December 3, 2024",
         "costPer1kInputTokens": 0.000918,
         "costPer1kOutputTokens": 0.003671,
@@ -684,7 +682,12 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "qwen-2.5-72b-instruct": {
       "model": "qwen/qwen2-5-72b-instruct",
@@ -2347,6 +2350,28 @@
           ],
           "defaultEffort": "low"
         }
+      }
+    },
+    "gemini-3.8-flash": {
+      "model": "gemini-flash/gemini-3-8-flash",
+      "matchingModel": "gemini-3.8-flash",
+      "overrides": {
+        "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 2, 2026",
+        "costPer1kInputTokens": 0.000825,
+        "costPer1kOutputTokens": 0.004125
       }
     }
   }

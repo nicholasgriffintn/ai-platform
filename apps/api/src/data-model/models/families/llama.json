@@ -177,6 +177,16 @@
         "releaseDate": "July 23, 2024"
       }
     },
+    "llama-3-1-70b-instruct-us": {
+      "defaults": {
+        "name": "Llama 3.1 70B Instruct (US)",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024"
+      }
+    },
     "llama-3-1-70b-turbo": {
       "defaults": {
         "name": "Llama 3.1 70B Turbo",
@@ -211,6 +221,16 @@
         "releaseDate": "July 23, 2024",
         "supportsToolCalls": false,
         "supportsResponseFormat": false
+      }
+    },
+    "llama-3-1-8b-instruct-us": {
+      "defaults": {
+        "name": "Llama 3.1 8B Instruct (US)",
+        "description": "Compact open Llama model for lightweight chat, drafting, and self-hosting",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024"
       }
     },
     "llama-3-1-8b-turbo": {
@@ -443,6 +463,16 @@
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "December 6, 2024",
         "supportsResponseFormat": false
+      }
+    },
+    "llama-3-3-70b-instruct-us": {
+      "defaults": {
+        "name": "Llama 3.3 70B Instruct (US)",
+        "description": "Popular open Llama workhorse for multilingual chat, coding, and self-hosting",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "December 6, 2024"
       }
     },
     "llama-3-3-70b-turbo": {
