@@ -277,10 +277,13 @@ export async function applyUsageRollup(
   return { inserted };
 }
 
+export type UsageEmissionDelivery = "queue" | "inline";
+
 export interface EmitUsageEventsParams {
   env: IEnv;
   repositories: RepositoryManager;
   drafts: readonly UsageEventDraft[];
+  delivery?: UsageEmissionDelivery;
 }
 
 export type UsageEmissionOutcome = "queued" | "written" | "skipped" | "failed";
@@ -336,7 +339,7 @@ async function commitAnonymousSpend(
 export async function emitUsageEvents(
   params: EmitUsageEventsParams,
 ): Promise<UsageEmissionOutcome> {
-  const { env, repositories, drafts } = params;
+  const { env, repositories, drafts, delivery = "queue" } = params;
 
   if (drafts.length === 0) {
     return "skipped";
@@ -363,7 +366,7 @@ export async function emitUsageEvents(
     return "failed";
   }
 
-  if (env.TASK_QUEUE) {
+  if (delivery === "queue" && env.TASK_QUEUE) {
     try {
       const taskService = new TaskService(env, repositories.tasks);
 

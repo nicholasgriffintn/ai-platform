@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm run build:deps && pnpm run typecheck && react-router build",
+    "build:analyse": "ANALYSE_BUNDLE=true react-router build",
     "build:deps": "vp run --filter=\"@assistant/app^...\" build",
     "build:e2e": "react-router build --mode e2e",
     "check": "pnpm lint && pnpm format:check",

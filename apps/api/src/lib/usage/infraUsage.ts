@@ -9,7 +9,7 @@ import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
 import { userCreditActor } from "./creditActor";
-import { emitUsageEvents, type UsageEventDraft } from "./ledger";
+import { emitUsageEvents, type UsageEmissionDelivery, type UsageEventDraft } from "./ledger";
 
 const logger = getLogger({ prefix: "lib/usage/infra-usage" });
 
@@ -77,6 +77,7 @@ export async function emitInfraUsage(params: {
   conversationId?: string | null;
   activityId?: string | null;
   raw?: unknown;
+  delivery?: UsageEmissionDelivery;
 }): Promise<void> {
   const drafts = buildInfraUsageDrafts(params);
 
@@ -87,7 +88,12 @@ export async function emitInfraUsage(params: {
   try {
     const repositories = params.repositories ?? new RepositoryManager(params.env);
 
-    await emitUsageEvents({ env: params.env, repositories, drafts });
+    await emitUsageEvents({
+      env: params.env,
+      repositories,
+      drafts,
+      delivery: params.delivery,
+    });
   } catch (error) {
     logger.error("Failed to emit infrastructure usage", { error, scopeKey: params.scopeKey });
   }

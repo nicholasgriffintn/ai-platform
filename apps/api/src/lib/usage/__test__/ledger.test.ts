@@ -239,6 +239,24 @@ describe("emitUsageEvents", () => {
     expect(insertEventAndApplyBalance).toHaveBeenCalledTimes(1);
   });
 
+  it("writes inline deliveries straight to the ledger without creating a task", async () => {
+    const { insertEventAndApplyBalance, repositories } = createRepositories();
+    const createTask = vi.fn();
+
+    repositories.tasks = { createTask };
+
+    await expect(
+      emitUsageEvents({
+        env: { TASK_QUEUE: {} } as any,
+        repositories,
+        drafts: [draft()],
+        delivery: "inline",
+      }),
+    ).resolves.toBe("written");
+    expect(createTask).not.toHaveBeenCalled();
+    expect(insertEventAndApplyBalance).toHaveBeenCalledTimes(1);
+  });
+
   it("never throws out of a billing path when the ledger is unwritable", async () => {
     const { repositories } = createRepositories();
 

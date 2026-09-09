@@ -102,311 +102,246 @@ export {
 };
 
 export class RepositoryManager {
-  private activityRepo: ActivityRepository;
-  private attentionRepo: AttentionRepository;
-  private teammateRepo: TeammateRepository;
-  private planRepo: PlanRepository;
-  private projectTaskRepo: ProjectTaskRepository;
-  private projectEnvironmentVariableRepo: ProjectEnvironmentVariableRepository;
-  private userRepo: UserRepository;
-  private anonymousUserRepo: AnonymousUserRepository;
-  private sessionRepo: SessionRepository;
-  private userSettingsRepo: UserSettingsRepository;
-  private usageEventRepo: UsageEventRepository;
-  private usageBalanceRepo: UsageBalanceRepository;
-  private usageReservationRepo: UsageReservationRepository;
-  private infraCostDailyRepo: InfraCostDailyRepository;
-  private userPetRepo: UserPetRepository;
-  private capabilityConfigurationRepo: CapabilityConfigurationRepository;
-  private conversationRepo: ConversationRepository;
-  private conversationHandleRepo: ConversationHandleRepository;
-  private conversationRunRepo: ConversationRunRepository;
-  private delegationRepo: DelegationRepository;
-  private conversationOrganisationRepo: ConversationOrganisationRepository;
-  private composioConnectorSessionRepo: ComposioConnectorSessionRepository;
-  private connectorOperationApprovalRepo: ConnectorOperationApprovalRepository;
-  private messageRepo: MessageRepository;
-  private machineRepo: MachineRepository;
-  private mobilePushRepo: MobilePushRepository;
-  private embeddingRepo: EmbeddingRepository;
-  private goalRepo: GoalRepository;
-  private webAuthnRepo: WebAuthnRepository;
-  private apiKeyRepo: ApiKeyRepository;
-  private artificialAnalysisRepo: ArtificialAnalysisRepository;
-  private authChallengeRepo: AuthChallengeRepository;
-  private authoredSkillRepo: AuthoredSkillRepository;
-  private channelBindingRepo: ChannelBindingRepository;
-  private teammateFeedbackRepo: TeammateFeedbackRepository;
-  private memoryDocumentRepo: MemoryDocumentRepository;
-  private savedMessageRepo: SavedMessageRepository;
-  private auditRepo: AuditRepository;
-  private oauthStateRepo: OAuthStateRepository;
-  private outputRepo: OutputRepository;
-  private providerConnectionRepo: ProviderConnectionRepository;
-  private recipeComposioTriggerRepo: RecipeComposioTriggerRepository;
-  private sharedTeammateRepo: SharedTeammateRepository;
-  private sourceRepo: SourceRepository;
-  private taskRepo: TaskRepository;
-  private taskNotificationRepo: TaskNotificationRepository;
-  private templateRepo: TemplateRepository;
-  private memorySynthesisRepo: MemorySynthesisRepository;
-  private trainingExampleRepo: TrainingExampleRepository;
-  private workspaceRepo: WorkspaceRepository;
+  private readonly env: IEnv;
+  private readonly instances = new Map<string, unknown>();
 
   constructor(env: IEnv) {
-    this.activityRepo = new ActivityRepository(env);
-    this.attentionRepo = new AttentionRepository(env);
-    this.teammateRepo = new TeammateRepository(env);
-    this.planRepo = new PlanRepository(env);
-    this.projectTaskRepo = new ProjectTaskRepository(env);
-    this.projectEnvironmentVariableRepo = new ProjectEnvironmentVariableRepository(env);
-    this.userRepo = new UserRepository(env);
-    this.anonymousUserRepo = new AnonymousUserRepository(env);
-    this.sessionRepo = new SessionRepository(env);
-    this.userSettingsRepo = new UserSettingsRepository(env);
-    this.usageEventRepo = new UsageEventRepository(env);
-    this.usageBalanceRepo = new UsageBalanceRepository(env);
-    this.usageReservationRepo = new UsageReservationRepository(env);
-    this.infraCostDailyRepo = new InfraCostDailyRepository(env);
-    this.userPetRepo = new UserPetRepository(env);
-    this.capabilityConfigurationRepo = new CapabilityConfigurationRepository(env);
-    this.conversationRepo = new ConversationRepository(env);
-    this.conversationHandleRepo = new ConversationHandleRepository(env);
-    this.conversationRunRepo = new ConversationRunRepository(env);
-    this.delegationRepo = new DelegationRepository(env);
-    this.conversationOrganisationRepo = new ConversationOrganisationRepository(env);
-    this.composioConnectorSessionRepo = new ComposioConnectorSessionRepository(env);
-    this.connectorOperationApprovalRepo = new ConnectorOperationApprovalRepository(env);
-    this.messageRepo = new MessageRepository(env);
-    this.machineRepo = new MachineRepository(env);
-    this.mobilePushRepo = new MobilePushRepository(env);
-    this.embeddingRepo = new EmbeddingRepository(env);
-    this.goalRepo = new GoalRepository(env);
-    this.webAuthnRepo = new WebAuthnRepository(env);
-    this.apiKeyRepo = new ApiKeyRepository(env);
-    this.artificialAnalysisRepo = new ArtificialAnalysisRepository(env);
-    this.authChallengeRepo = new AuthChallengeRepository(env);
-    this.authoredSkillRepo = new AuthoredSkillRepository(env);
-    this.channelBindingRepo = new ChannelBindingRepository(env);
-    this.teammateFeedbackRepo = new TeammateFeedbackRepository(env);
-    this.memoryDocumentRepo = new MemoryDocumentRepository(env);
-    this.savedMessageRepo = new SavedMessageRepository(env);
-    this.auditRepo = new AuditRepository(env);
-    this.oauthStateRepo = new OAuthStateRepository(env);
-    this.outputRepo = new OutputRepository(env);
-    this.providerConnectionRepo = new ProviderConnectionRepository(env);
-    this.recipeComposioTriggerRepo = new RecipeComposioTriggerRepository(env);
-    this.sharedTeammateRepo = new SharedTeammateRepository(env);
-    this.sourceRepo = new SourceRepository(env);
-    this.taskRepo = new TaskRepository(env);
-    this.taskNotificationRepo = new TaskNotificationRepository(env);
-    this.templateRepo = new TemplateRepository(env);
-    this.memorySynthesisRepo = new MemorySynthesisRepository(env);
-    this.trainingExampleRepo = new TrainingExampleRepository(env);
-    this.workspaceRepo = new WorkspaceRepository(env);
+    this.env = env;
   }
 
   public static getInstance(env: IEnv): RepositoryManager {
     return new RepositoryManager(env);
   }
 
+  private resolve<T>(key: string, factory: (env: IEnv) => T): T {
+    const existing = this.instances.get(key);
+
+    if (existing) {
+      return existing as T;
+    }
+
+    const repository = factory(this.env);
+
+    this.instances.set(key, repository);
+
+    return repository;
+  }
+
   public get plans(): PlanRepository {
-    return this.planRepo;
+    return this.resolve("plans", (env) => new PlanRepository(env));
   }
 
   public get activities(): ActivityRepository {
-    return this.activityRepo;
+    return this.resolve("activities", (env) => new ActivityRepository(env));
   }
 
   public get attention(): AttentionRepository {
-    return this.attentionRepo;
+    return this.resolve("attention", (env) => new AttentionRepository(env));
   }
 
   public get projectTasks(): ProjectTaskRepository {
-    return this.projectTaskRepo;
+    return this.resolve("projectTasks", (env) => new ProjectTaskRepository(env));
   }
 
   public get projectEnvironmentVariables(): ProjectEnvironmentVariableRepository {
-    return this.projectEnvironmentVariableRepo;
+    return this.resolve(
+      "projectEnvironmentVariables",
+      (env) => new ProjectEnvironmentVariableRepository(env),
+    );
   }
 
   public get taskNotifications(): TaskNotificationRepository {
-    return this.taskNotificationRepo;
+    return this.resolve("taskNotifications", (env) => new TaskNotificationRepository(env));
   }
 
   public get users(): UserRepository {
-    return this.userRepo;
+    return this.resolve("users", (env) => new UserRepository(env));
   }
 
   public get anonymousUsers(): AnonymousUserRepository {
-    return this.anonymousUserRepo;
+    return this.resolve("anonymousUsers", (env) => new AnonymousUserRepository(env));
   }
 
   public get sessions(): SessionRepository {
-    return this.sessionRepo;
+    return this.resolve("sessions", (env) => new SessionRepository(env));
   }
 
   public get authChallenges(): AuthChallengeRepository {
-    return this.authChallengeRepo;
+    return this.resolve("authChallenges", (env) => new AuthChallengeRepository(env));
   }
 
   public get authoredSkills(): AuthoredSkillRepository {
-    return this.authoredSkillRepo;
+    return this.resolve("authoredSkills", (env) => new AuthoredSkillRepository(env));
   }
 
   public get teammateFeedback(): TeammateFeedbackRepository {
-    return this.teammateFeedbackRepo;
+    return this.resolve("teammateFeedback", (env) => new TeammateFeedbackRepository(env));
   }
 
   public get channelBindings(): ChannelBindingRepository {
-    return this.channelBindingRepo;
+    return this.resolve("channelBindings", (env) => new ChannelBindingRepository(env));
   }
 
   public get memoryDocuments(): MemoryDocumentRepository {
-    return this.memoryDocumentRepo;
+    return this.resolve("memoryDocuments", (env) => new MemoryDocumentRepository(env));
   }
 
   public get savedMessages(): SavedMessageRepository {
-    return this.savedMessageRepo;
+    return this.resolve("savedMessages", (env) => new SavedMessageRepository(env));
   }
 
   public get audit(): AuditRepository {
-    return this.auditRepo;
+    return this.resolve("audit", (env) => new AuditRepository(env));
   }
 
   public get oauthStates(): OAuthStateRepository {
-    return this.oauthStateRepo;
+    return this.resolve("oauthStates", (env) => new OAuthStateRepository(env));
   }
 
   public get userSettings(): UserSettingsRepository {
-    return this.userSettingsRepo;
+    return this.resolve("userSettings", (env) => new UserSettingsRepository(env));
   }
 
   public get usageEvents(): UsageEventRepository {
-    return this.usageEventRepo;
+    return this.resolve("usageEvents", (env) => new UsageEventRepository(env));
   }
 
   public get usageBalances(): UsageBalanceRepository {
-    return this.usageBalanceRepo;
+    return this.resolve("usageBalances", (env) => new UsageBalanceRepository(env));
   }
 
   public get usageReservations(): UsageReservationRepository {
-    return this.usageReservationRepo;
+    return this.resolve("usageReservations", (env) => new UsageReservationRepository(env));
   }
 
   public get infraCostDaily(): InfraCostDailyRepository {
-    return this.infraCostDailyRepo;
+    return this.resolve("infraCostDaily", (env) => new InfraCostDailyRepository(env));
   }
 
   public get userPets(): UserPetRepository {
-    return this.userPetRepo;
+    return this.resolve("userPets", (env) => new UserPetRepository(env));
   }
 
   public get capabilityConfigurations(): CapabilityConfigurationRepository {
-    return this.capabilityConfigurationRepo;
+    return this.resolve(
+      "capabilityConfigurations",
+      (env) => new CapabilityConfigurationRepository(env),
+    );
   }
 
   public get conversations(): ConversationRepository {
-    return this.conversationRepo;
+    return this.resolve("conversations", (env) => new ConversationRepository(env));
   }
 
   public get conversationHandles(): ConversationHandleRepository {
-    return this.conversationHandleRepo;
+    return this.resolve("conversationHandles", (env) => new ConversationHandleRepository(env));
   }
 
   public get conversationRuns(): ConversationRunRepository {
-    return this.conversationRunRepo;
+    return this.resolve("conversationRuns", (env) => new ConversationRunRepository(env));
   }
 
   public get delegations(): DelegationRepository {
-    return this.delegationRepo;
+    return this.resolve("delegations", (env) => new DelegationRepository(env));
   }
 
   public get conversationOrganisation(): ConversationOrganisationRepository {
-    return this.conversationOrganisationRepo;
+    return this.resolve(
+      "conversationOrganisation",
+      (env) => new ConversationOrganisationRepository(env),
+    );
   }
 
   public get goals(): GoalRepository {
-    return this.goalRepo;
+    return this.resolve("goals", (env) => new GoalRepository(env));
   }
 
   public get composioConnectorSessions(): ComposioConnectorSessionRepository {
-    return this.composioConnectorSessionRepo;
+    return this.resolve(
+      "composioConnectorSessions",
+      (env) => new ComposioConnectorSessionRepository(env),
+    );
   }
 
   public get connectorOperationApprovals(): ConnectorOperationApprovalRepository {
-    return this.connectorOperationApprovalRepo;
+    return this.resolve(
+      "connectorOperationApprovals",
+      (env) => new ConnectorOperationApprovalRepository(env),
+    );
   }
 
   public get messages(): MessageRepository {
-    return this.messageRepo;
+    return this.resolve("messages", (env) => new MessageRepository(env));
   }
 
   public get machines(): MachineRepository {
-    return this.machineRepo;
+    return this.resolve("machines", (env) => new MachineRepository(env));
   }
 
   public get mobilePush(): MobilePushRepository {
-    return this.mobilePushRepo;
+    return this.resolve("mobilePush", (env) => new MobilePushRepository(env));
   }
 
   public get embeddings(): EmbeddingRepository {
-    return this.embeddingRepo;
+    return this.resolve("embeddings", (env) => new EmbeddingRepository(env));
   }
 
   public get webAuthn(): WebAuthnRepository {
-    return this.webAuthnRepo;
+    return this.resolve("webAuthn", (env) => new WebAuthnRepository(env));
   }
 
   public get apiKeys(): ApiKeyRepository {
-    return this.apiKeyRepo;
+    return this.resolve("apiKeys", (env) => new ApiKeyRepository(env));
   }
 
   public get artificialAnalysis(): ArtificialAnalysisRepository {
-    return this.artificialAnalysisRepo;
+    return this.resolve("artificialAnalysis", (env) => new ArtificialAnalysisRepository(env));
   }
 
   public get outputs(): OutputRepository {
-    return this.outputRepo;
+    return this.resolve("outputs", (env) => new OutputRepository(env));
   }
 
   public get providerConnections(): ProviderConnectionRepository {
-    return this.providerConnectionRepo;
+    return this.resolve("providerConnections", (env) => new ProviderConnectionRepository(env));
   }
 
   public get recipeComposioTriggers(): RecipeComposioTriggerRepository {
-    return this.recipeComposioTriggerRepo;
+    return this.resolve(
+      "recipeComposioTriggers",
+      (env) => new RecipeComposioTriggerRepository(env),
+    );
   }
 
   public get templates(): TemplateRepository {
-    return this.templateRepo;
+    return this.resolve("templates", (env) => new TemplateRepository(env));
   }
 
   public get teammates(): TeammateRepository {
-    return this.teammateRepo;
+    return this.resolve("teammates", (env) => new TeammateRepository(env));
   }
 
   public get sharedTeammates(): SharedTeammateRepository {
-    return this.sharedTeammateRepo;
+    return this.resolve("sharedTeammates", (env) => new SharedTeammateRepository(env));
   }
 
   public get sources(): SourceRepository {
-    return this.sourceRepo;
+    return this.resolve("sources", (env) => new SourceRepository(env));
   }
 
   public get tasks(): TaskRepository {
-    return this.taskRepo;
+    return this.resolve("tasks", (env) => new TaskRepository(env));
   }
 
   public get memorySyntheses(): MemorySynthesisRepository {
-    return this.memorySynthesisRepo;
+    return this.resolve("memorySyntheses", (env) => new MemorySynthesisRepository(env));
   }
 
   public get trainingExamples(): TrainingExampleRepository {
-    return this.trainingExampleRepo;
+    return this.resolve("trainingExamples", (env) => new TrainingExampleRepository(env));
   }
 
   public get workspaces(): WorkspaceRepository {
-    return this.workspaceRepo;
+    return this.resolve("workspaces", (env) => new WorkspaceRepository(env));
   }
 }

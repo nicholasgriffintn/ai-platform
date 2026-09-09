@@ -28,6 +28,7 @@ export const infraMeteringMiddleware = async (c: Context, next: Next) => {
         userId: user.id,
         scopeKey: requestId,
         quantities,
+        delivery: "inline",
       }).catch((error) => {
         logger.warn("Failed to emit per-request infrastructure usage", { error, requestId });
       });

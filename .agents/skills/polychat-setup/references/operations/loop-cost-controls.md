@@ -31,7 +31,7 @@ Council members and their conclusion use the same automatic generation settings.
 
 ## Reconcile spend
 
-Every model-producing path, including panel and ensemble calls, uses `recordModelTurnUsage`. Capability metering wraps registered providers; infrastructure metering aggregates per request. Missing rates record estimated zero cost and must be investigated rather than mistaken for free work.
+Every model-producing path, including panel and ensemble calls, uses `recordModelTurnUsage`. Capability metering wraps registered providers; infrastructure metering aggregates per request and writes the ledger inline after the response, bypassing the task queue. Missing rates record estimated zero cost and must be investigated rather than mistaken for free work.
 
 For stored chat runs, use these definitions:
 

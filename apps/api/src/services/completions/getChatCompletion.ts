@@ -61,6 +61,19 @@ async function refreshPendingMessages(
   return refreshed ?? messages;
 }
 
+async function loadLatestRun(context: ServiceContext, completionId: string) {
+  const latestRunRecord =
+    await context.repositories.conversationRuns.getLatestForConversation(completionId);
+
+  if (!latestRunRecord) {
+    return null;
+  }
+
+  const [latestRun] = await hydrateChatRunUsage(context.repositories, [latestRunRecord]);
+
+  return latestRun ?? null;
+}
+
 export const handleGetChatCompletion = async (
   context: ServiceContext,
   completion_id: string,
@@ -76,29 +89,25 @@ export const handleGetChatCompletion = async (
     env: context.env,
   });
 
-  await conversationManager.getConversationMetadata(completion_id);
-  const activeOperation = await getActiveThreadOperation({
-    env: context.env,
-    conversationId: completion_id,
-  });
-  const latestRunRecord =
-    await context.repositories.conversationRuns.getLatestForConversation(completion_id);
-  const [latestRun] = latestRunRecord
-    ? await hydrateChatRunUsage(context.repositories, [latestRunRecord])
-    : [null];
-
   const conversation = await conversationManager.getConversationDetails(completion_id, {
     includeArchived: true,
     includeSnapshots: false,
     messageLimit: options.messageLimit,
   });
 
-  const family = await context.repositories.conversations.listConversationThreads(
-    completion_id,
-    user.id,
-    typeof conversation.project_id === "string" ? conversation.project_id : null,
-    2,
-  );
+  const [activeOperation, latestRun, family] = await Promise.all([
+    getActiveThreadOperation({
+      env: context.env,
+      conversationId: completion_id,
+    }),
+    loadLatestRun(context, completion_id),
+    context.repositories.conversations.listConversationThreads(
+      completion_id,
+      user.id,
+      typeof conversation.project_id === "string" ? conversation.project_id : null,
+      2,
+    ),
+  ]);
   const hasBranches = family.length > 1;
 
   if (!Array.isArray(conversation.messages)) {

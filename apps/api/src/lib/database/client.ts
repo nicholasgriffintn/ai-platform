@@ -5,6 +5,18 @@ import * as schema from "./schema";
 
 export type DatabaseClient = DrizzleD1Database<typeof schema>;
 
+const clients = new WeakMap<D1Database, DatabaseClient>();
+
 export function createDatabaseClient(database: D1Database): DatabaseClient {
-  return drizzle(database, { schema });
+  const existing = clients.get(database);
+
+  if (existing) {
+    return existing;
+  }
+
+  const client = drizzle(database, { schema });
+
+  clients.set(database, client);
+
+  return client;
 }

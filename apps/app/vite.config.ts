@@ -1,15 +1,18 @@
+import { fileURLToPath } from "node:url";
+
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { reactRouter } from "@react-router/dev/vite";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { reactCompilerPreset } from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
+import type { Plugin } from "vite";
 import { defaultClientConditions, defaultServerConditions, defineConfig } from "vite";
 
 export default defineConfig(({ command }) => ({
   build: {
     chunkSizeWarningLimit: 6500,
-    sourcemap: command === "build" ? false : true,
+    sourcemap: command !== "build",
     minify: "terser",
     terserOptions: {
       compress: {
@@ -37,6 +40,7 @@ export default defineConfig(({ command }) => ({
     },
   },
   plugins: [
+    stubBrowserOnlyModules(),
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tailwindcss(),
     reactRouter(),
@@ -44,6 +48,7 @@ export default defineConfig(({ command }) => ({
       presets: [reactCompilerPreset({ panicThreshold: "none" })],
     }),
     command === "build" &&
+      process.env.ANALYSE_BUNDLE === "true" &&
       visualizer({
         filename: "dist/stats.html",
         open: false,
@@ -76,6 +81,28 @@ export default defineConfig(({ command }) => ({
     port: 5173,
   },
 }));
+
+const browserOnlyStub = fileURLToPath(new URL("./workers/browser-only-stub.ts", import.meta.url));
+
+const browserOnlyModules = [
+  /^@mlc-ai\/web-llm$/,
+  /^@babel\/standalone$/,
+  /^@strudel\/[a-z-]+$/,
+  /^posthog-js$/,
+];
+
+function stubBrowserOnlyModules(): Plugin {
+  return {
+    name: "polychat:stub-browser-only-modules",
+    enforce: "pre",
+    applyToEnvironment: (environment) => environment.name === "ssr",
+    resolveId(source) {
+      return browserOnlyModules.some((pattern) => pattern.test(source))
+        ? browserOnlyStub
+        : undefined;
+    },
+  };
+}
 
 const chunkGroups = [
   {
