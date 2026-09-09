@@ -6,23 +6,27 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { conversationAudience, projectAudience, workspaceAudience } from "./audience";
-import { publishSync, syncTopic, type SyncPublication, type SyncPublisher } from "./publish";
+import {
+  publishSync,
+  syncTopic,
+  withoutOrigin,
+  type SyncPublication,
+  type SyncPublisher,
+} from "./publish";
 
 function fanOut(
   audience: number[],
   topic: string,
   type: DeviceSyncEventType,
   data: Record<string, unknown>,
-  originDeviceId?: string | null,
 ): SyncPublication[] {
   return [
-    { audience, topic, type, data, originDeviceId },
+    { audience, topic, type, data },
     ...audience.map((userId) => ({
       audience: [userId],
       topic: syncTopic("user", userId),
       type,
       data,
-      originDeviceId,
     })),
   ];
 }
@@ -31,19 +35,15 @@ export async function publishConversationChanged(
   publisher: SyncPublisher,
   conversationId: string,
   data: Record<string, unknown> = {},
-  originDeviceId?: string | null,
 ): Promise<void> {
   const audience = await conversationAudience(publisher.env, conversationId);
 
   publishSync(
     publisher,
-    fanOut(
-      audience,
-      syncTopic("conversation", conversationId),
-      "conversation.changed",
-      { conversationId, ...data },
-      originDeviceId,
-    ),
+    fanOut(audience, syncTopic("conversation", conversationId), "conversation.changed", {
+      conversationId,
+      ...data,
+    }),
   );
 }
 
@@ -67,7 +67,7 @@ export async function publishRunChanged(publisher: SyncPublisher, run: ChatRun):
   const audience = await conversationAudience(publisher.env, run.conversationId);
   const data = { runId: run.id, conversationId: run.conversationId, status: run.status };
 
-  publishSync(publisher, [
+  publishSync(withoutOrigin(publisher), [
     ...fanOut(audience, syncTopic("conversation", run.conversationId), "run.changed", data),
     { audience, topic: syncTopic("run", run.id), type: "run.changed", data },
   ]);
@@ -86,7 +86,7 @@ export async function publishRunEvents(
   const audience = await conversationAudience(publisher.env, conversationId);
 
   publishSync(
-    publisher,
+    withoutOrigin(publisher),
     events.flatMap((event) => {
       const data = { conversationId, runId, event };
 

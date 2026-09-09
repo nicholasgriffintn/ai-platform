@@ -1,4 +1,8 @@
 import type { D1Database } from "@cloudflare/workers-types";
+import {
+  DEVICE_SYNC_DEVICE_ID_HEADER,
+  deviceSyncDeviceIdSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import type { Context, MiddlewareHandler } from "hono";
 
 import { Database } from "~/lib/database";
@@ -15,6 +19,7 @@ export interface ServiceContextOptions {
   user?: IUser | null;
   requestId?: string;
   connectorRunId?: string;
+  originDeviceId?: string | null;
   waitUntil?: (work: Promise<unknown>) => void;
 }
 
@@ -24,6 +29,7 @@ export interface ServiceContext {
   user?: IUser | null;
   requestId?: string;
   connectorRunId: string;
+  originDeviceId?: string | null;
   executionRunId?: string;
   executionRunAttempt?: number;
   database: Database;
@@ -68,6 +74,7 @@ export const createServiceContext = ({
   user = null,
   requestId,
   connectorRunId = `connector_run_${generateId()}`,
+  originDeviceId = null,
   waitUntil,
 }: ServiceContextOptions): ServiceContext => {
   let databaseInstance: Database | null = null;
@@ -137,6 +144,7 @@ export const createServiceContext = ({
     user,
     requestId,
     connectorRunId,
+    originDeviceId,
     requestCache,
     get userSettings() {
       return cachedUserSettings ?? null;
@@ -197,6 +205,12 @@ export const resolveServiceContext = ({
   });
 };
 
+function readOriginDeviceId(c: Context): string | null {
+  const parsed = deviceSyncDeviceIdSchema.safeParse(c.req.header(DEVICE_SYNC_DEVICE_ID_HEADER));
+
+  return parsed.success ? parsed.data : null;
+}
+
 export const serviceContextMiddleware: MiddlewareHandler = async (c, next) => {
   const existing = c.get(SERVICE_CONTEXT_KEY);
 
@@ -207,6 +221,7 @@ export const serviceContextMiddleware: MiddlewareHandler = async (c, next) => {
       env: c.env as IEnv,
       user: user ?? null,
       requestId,
+      originDeviceId: readOriginDeviceId(c),
       waitUntil: (work) => c.executionCtx?.waitUntil(work),
     });
 
@@ -229,6 +244,7 @@ export const getServiceContext = (c: Context): ServiceContext => {
     env: c.env as IEnv,
     user: user ?? null,
     requestId,
+    originDeviceId: readOriginDeviceId(c),
     waitUntil: (work) => c.executionCtx?.waitUntil(work),
   });
 

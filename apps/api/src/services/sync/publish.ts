@@ -13,7 +13,12 @@ const COORDINATOR_ORIGIN = "https://user-sync-coordinator";
 
 export interface SyncPublisher {
   env: IEnv | undefined;
+  originDeviceId?: string | null;
   waitUntil?: (work: Promise<unknown>) => void;
+}
+
+export function withoutOrigin(publisher: SyncPublisher): SyncPublisher {
+  return { env: publisher.env, waitUntil: publisher.waitUntil };
 }
 
 export interface SyncPublication {
@@ -35,7 +40,10 @@ export function syncTopic(kind: DeviceSyncTopicKind, id: string | number): strin
   return buildDeviceSyncTopic(kind, id);
 }
 
-function groupByRecipient(publications: SyncPublication[]): Map<number, SyncEnvelope[]> {
+function groupByRecipient(
+  publications: SyncPublication[],
+  originDeviceId: string | null,
+): Map<number, SyncEnvelope[]> {
   const byRecipient = new Map<number, SyncEnvelope[]>();
 
   for (const publication of publications) {
@@ -43,7 +51,7 @@ function groupByRecipient(publications: SyncPublication[]): Map<number, SyncEnve
       topic: publication.topic,
       type: publication.type,
       data: publication.data ?? {},
-      originDeviceId: publication.originDeviceId ?? null,
+      originDeviceId: publication.originDeviceId ?? originDeviceId,
     };
 
     for (const userId of new Set(publication.audience)) {
@@ -63,6 +71,7 @@ function groupByRecipient(publications: SyncPublication[]): Map<number, SyncEnve
 export async function publishSyncEvents(
   env: IEnv | undefined,
   publications: SyncPublication[],
+  originDeviceId: string | null = null,
 ): Promise<void> {
   const namespace = env?.USER_SYNC_COORDINATOR;
 
@@ -71,7 +80,7 @@ export async function publishSyncEvents(
   }
 
   await Promise.all(
-    [...groupByRecipient(publications)].map(async ([userId, events]) => {
+    [...groupByRecipient(publications, originDeviceId)].map(async ([userId, events]) => {
       const stub = getDurableObjectStub(namespace, String(userId));
 
       if (!stub) {
@@ -94,7 +103,7 @@ export async function publishSyncEvents(
 }
 
 export function publishSync(publisher: SyncPublisher, publications: SyncPublication[]): void {
-  const work = publishSyncEvents(publisher.env, publications);
+  const work = publishSyncEvents(publisher.env, publications, publisher.originDeviceId ?? null);
 
   if (publisher.waitUntil) {
     publisher.waitUntil(work);

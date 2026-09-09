@@ -11,7 +11,7 @@ import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
 import type { ConversationRunRepository } from "~/repositories/ConversationRunRepository";
 import { isThreadLeaseOwnershipLostError } from "~/services/conversations/coordinator/client";
 import { publishConversationChanged, publishRunChanged } from "~/services/sync/conversation-events";
-import type { SyncPublisher } from "~/services/sync/publish";
+import { withoutOrigin, type SyncPublisher } from "~/services/sync/publish";
 import { TaskExecutionOwnershipLostError } from "~/services/tasks/task-execution-lease";
 import { resolveChatProjectAccess } from "~/services/workspaces/chatProjectAccess";
 import type { CoreChatOptions } from "~/types";
@@ -148,7 +148,7 @@ export class ChatRunLifecycle {
   }
 
   private async announce(run: ChatRun): Promise<void> {
-    const publisher = this.publisher ?? { env: this.env };
+    const publisher = withoutOrigin(this.publisher ?? { env: this.env });
 
     await publishRunChanged(publisher, run);
     await publishConversationChanged(publisher, run.conversationId, { runId: run.id });
@@ -390,8 +390,10 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
   }
 
   if (!receipt.duplicate) {
-    await publishRunChanged(scope.context, receipt.run);
-    await publishConversationChanged(scope.context, receipt.run.conversationId, {
+    const publisher = withoutOrigin(scope.context);
+
+    await publishRunChanged(publisher, receipt.run);
+    await publishConversationChanged(publisher, receipt.run.conversationId, {
       runId: receipt.run.id,
     });
   }

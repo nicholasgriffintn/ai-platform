@@ -163,8 +163,12 @@ export const deviceSyncServerMessageSchema = z.discriminatedUnion("type", [
 
 export type DeviceSyncServerMessage = z.infer<typeof deviceSyncServerMessageSchema>;
 
+export const DEVICE_SYNC_DEVICE_ID_HEADER = "X-Device-Id" as const;
+
+export const deviceSyncDeviceIdSchema = z.string().trim().min(1).max(200);
+
 export const deviceSyncGrantRequestSchema = z.object({
-  deviceId: z.string().trim().min(1).max(200),
+  deviceId: deviceSyncDeviceIdSchema,
 });
 
 export type DeviceSyncGrantRequest = z.infer<typeof deviceSyncGrantRequestSchema>;
