@@ -23,6 +23,14 @@ Run commands from the repository root. Use the Node/pnpm toolchain declared by t
    pnpm --filter @assistant/api db:migrate:local
    ```
 
+   For a database full of debugging data instead of an empty one, rebuild it from the seed. The seed drops every table, re-applies the migrations, then inserts the account, workspace and conversations described in the pinned "Start here" conversation:
+
+   ```sh
+   pnpm --filter @assistant/api db:seed:local
+   ```
+
+   `db:seed:preview -- --yes` does the same to the preview database and is an external action. Set `PRIVATE_KEY` in the environment when seeding preview so the account's encryption keys and project environment variables decrypt; locally it is read from `.dev.vars`. The seed lives in `apps/api/scripts/seed/` and prints the session cookie and API key to sign in without GitHub.
+
 4. Run the relevant checks in root `AGENTS.md`. Start the app only when requested or runtime validation is necessary:
 
    ```sh
