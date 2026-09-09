@@ -2,13 +2,8 @@ import { Badge, Button, EmptyState, SearchInput } from "@ngriffin_uk/polychat-co
 import { ChevronLeft, ChevronRight, FileDiff, FileWarning } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { Markdown } from "../markdown";
-import {
-  groupDiffHunkLines,
-  parseUnifiedDiff,
-  type DiffFile,
-  type DiffFileStatus,
-} from "./parseUnifiedDiff";
+import { DiffHunkView } from "./DiffHunkView";
+import { parseUnifiedDiff, type DiffFile, type DiffFileStatus } from "./parseUnifiedDiff";
 
 export interface RunEvidenceContent {
   text: string;
@@ -104,33 +99,10 @@ function SelectedDiff({ file }: { file: DiffFile }) {
   return (
     <div className="space-y-3">
       {file.hunks.map((hunk) => (
-        <section
+        <DiffHunkView
           key={`${hunk.header}-${hunk.lines[0] ?? "empty"}-${hunk.lines.length}`}
-          className="overflow-hidden rounded-lg border border-border bg-canvas"
-        >
-          <h4 className="bg-surface-elevated px-3 py-2 font-mono text-xs text-muted-foreground">
-            {hunk.header}
-          </h4>
-          {groupDiffHunkLines(hunk.lines).map((group) =>
-            group.kind === "context" ? (
-              <details key={`context-${group.startIndex}`} open className="border-t border-border">
-                <summary className="cursor-pointer px-3 py-2 text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  {group.lines.length} unchanged {group.lines.length === 1 ? "line" : "lines"}
-                </summary>
-                <Markdown className="max-w-none text-xs">
-                  {`\`\`\`diff\n${group.lines.join("\n")}\n\`\`\``}
-                </Markdown>
-              </details>
-            ) : (
-              <Markdown
-                key={`change-${group.startIndex}`}
-                className="max-w-none border-t border-border text-xs"
-              >
-                {`\`\`\`diff\n${group.lines.join("\n")}\n\`\`\``}
-              </Markdown>
-            ),
-          )}
-        </section>
+          hunk={hunk}
+        />
       ))}
     </div>
   );
@@ -222,7 +194,7 @@ export function RunChangesView({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="@container/run-changes space-y-3">
       {content.truncated ? (
         <output className="block rounded-lg bg-attention/10 px-3 py-2 text-sm text-attention">
           This diff is too large to render in full. Showing a bounded preview.
@@ -266,10 +238,10 @@ export function RunChangesView({
           className="min-h-40 border-0 bg-transparent"
         />
       ) : (
-        <div className="grid min-h-0 gap-3 xl:grid-cols-[minmax(12rem,0.34fr)_minmax(0,1fr)]">
+        <div className="grid min-h-0 gap-3 @3xl/run-changes:grid-cols-[minmax(14rem,0.32fr)_minmax(0,1fr)]">
           <nav
             aria-label="Changed files"
-            className="max-h-80 overflow-auto border-r border-border pr-2"
+            className="max-h-64 min-w-0 overflow-auto border-b border-border pb-2 @3xl/run-changes:max-h-[34rem] @3xl/run-changes:border-r @3xl/run-changes:border-b-0 @3xl/run-changes:pr-2 @3xl/run-changes:pb-0"
           >
             <p className="px-2 pb-1 text-xs text-muted-foreground">
               Contracts and configuration first, tests last

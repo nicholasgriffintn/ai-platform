@@ -170,83 +170,89 @@ export function RunFilesView({
   }
 
   return (
-    <div className="grid min-h-0 gap-4 xl:grid-cols-[minmax(12rem,0.34fr)_minmax(0,1fr)]">
-      <div className="space-y-5">
-        <section aria-labelledby="changed-files-heading">
-          <h3
-            id="changed-files-heading"
-            className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase"
-          >
-            Changed files
-          </h3>
-          {visibleFiles.length > 0 ? (
-            <ul className="mt-1 space-y-1">
-              {visibleFiles.map((file) => (
-                <li key={file.path}>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full justify-start"
-                    aria-label={`Open ${file.path}`}
-                    aria-pressed={selectedFilePath === file.path}
-                    onClick={() => setSelectedFilePath(file.path)}
-                    icon={<File className="size-4" />}
-                  >
-                    <span className="min-w-0 flex-1 truncate text-left font-mono text-xs">
-                      {file.path}
-                    </span>
-                    <Badge variant="outline">{file.status}</Badge>
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="px-2 py-2 text-sm text-muted-foreground">No text diff available</p>
-          )}
-        </section>
+    <div className="@container/run-files">
+      <div className="grid min-h-0 gap-4 @3xl/run-files:grid-cols-[minmax(14rem,0.32fr)_minmax(0,1fr)]">
+        <div className="min-w-0 space-y-5">
+          <section aria-labelledby="changed-files-heading">
+            <h3
+              id="changed-files-heading"
+              className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase"
+            >
+              Changed files
+            </h3>
+            {visibleFiles.length > 0 ? (
+              <ul className="mt-1 space-y-1">
+                {visibleFiles.map((file) => (
+                  <li key={file.path}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full justify-start"
+                      aria-label={`Open ${file.path}`}
+                      aria-pressed={selectedFilePath === file.path}
+                      onClick={() => setSelectedFilePath(file.path)}
+                      icon={<File className="size-4" />}
+                    >
+                      <span className="min-w-0 flex-1 truncate text-left font-mono text-xs">
+                        {file.path}
+                      </span>
+                      <Badge variant="outline">{file.status}</Badge>
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="px-2 py-2 text-sm text-muted-foreground">No text diff available</p>
+            )}
+          </section>
 
-        <section aria-labelledby="run-artifacts-heading">
-          <h3
-            id="run-artifacts-heading"
-            className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase"
-          >
-            Run artifacts
-          </h3>
-          {artifacts.length > 0 ? (
-            <ul className="mt-1 space-y-1">
-              {artifacts.map((artifact) => (
-                <li key={artifact.outputId}>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full justify-start"
-                    aria-pressed={
-                      !selectedFilePath && preview.artifact?.outputId === artifact.outputId
-                    }
-                    onClick={() => {
-                      setSelectedFilePath(undefined);
-                      void preview.selectArtifact(artifact);
-                    }}
-                    icon={<FileArchive className="size-4" />}
-                  >
-                    <span className="min-w-0 flex-1 truncate text-left">{artifact.name}</span>
-                  </Button>
-                </li>
-              ))}
-            </ul>
+          <section aria-labelledby="run-artifacts-heading">
+            <h3
+              id="run-artifacts-heading"
+              className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase"
+            >
+              Run artifacts
+            </h3>
+            {artifacts.length > 0 ? (
+              <ul className="mt-1 space-y-1">
+                {artifacts.map((artifact) => (
+                  <li key={artifact.outputId}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full justify-start"
+                      aria-pressed={
+                        !selectedFilePath && preview.artifact?.outputId === artifact.outputId
+                      }
+                      onClick={() => {
+                        setSelectedFilePath(undefined);
+                        void preview.selectArtifact(artifact);
+                      }}
+                      icon={<FileArchive className="size-4" />}
+                    >
+                      <span className="min-w-0 flex-1 truncate text-left">{artifact.name}</span>
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="px-2 py-2 text-sm text-muted-foreground">
+                No private artifacts recorded
+              </p>
+            )}
+          </section>
+        </div>
+
+        <div className="min-w-0">
+          {selectedFilePath && !selectedFile ? (
+            <UnavailableFilePreview path={selectedFilePath} />
+          ) : selectedFile ? (
+            <ChangedFilePreview file={selectedFile} truncated={Boolean(diffContent?.truncated)} />
           ) : (
-            <p className="px-2 py-2 text-sm text-muted-foreground">No private artifacts recorded</p>
+            <ArtifactPreview {...preview} />
           )}
-        </section>
+        </div>
       </div>
-
-      {selectedFilePath && !selectedFile ? (
-        <UnavailableFilePreview path={selectedFilePath} />
-      ) : selectedFile ? (
-        <ChangedFilePreview file={selectedFile} truncated={Boolean(diffContent?.truncated)} />
-      ) : (
-        <ArtifactPreview {...preview} />
-      )}
     </div>
   );
 }
