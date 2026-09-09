@@ -1,5 +1,27 @@
 # @ngriffin_uk/polychat-component-conversation
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [4789c96]
+- Updated dependencies [4789c96]
+- Updated dependencies [505ce6a]
+- Updated dependencies [4789c96]
+- Updated dependencies [505ce6a]
+- Updated dependencies [34380a3]
+- Updated dependencies [4789c96]
+- Updated dependencies [4789c96]
+- Updated dependencies [4789c96]
+- Updated dependencies [4789c96]
+  - @ngriffin_uk/polychat-library-react@0.3.0
+  - @ngriffin_uk/polychat-schemas@1.1.0
+  - @ngriffin_uk/polychat-component-ui@0.3.0
+  - @ngriffin_uk/polychat-component-experiences@0.3.0
+  - @ngriffin_uk/polychat-component-navigation@0.3.0
+  - @ngriffin_uk/polychat-component-content@1.0.1
+  - @ngriffin_uk/polychat-component-models@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
