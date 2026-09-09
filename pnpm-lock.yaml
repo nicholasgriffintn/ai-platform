@@ -765,8 +765,8 @@ importers:
   apps/training:
     dependencies:
       '@aws-sdk/client-bedrock':
-        specifier: 3.1123.0
-        version: 3.1123.0
+        specifier: 3.1124.0
+        version: 3.1124.0
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../../packages/schemas
@@ -1984,8 +1984,8 @@ packages:
     resolution: {integrity: sha512-93Z1N+BQNXysodoicpOIyNh2drHfz/CTf9nnT0FEx72GJcIiwgydD7tGAr78j41LsYn3hlRn+LdGPuBLn1Bl8Q==}
     engines: {node: ^22.13.0 || >=24.0.0}
 
-  '@aws-sdk/client-bedrock@3.1123.0':
-    resolution: {integrity: sha512-GsZCRUkFR6DdNA6JinRKUk44WrCyDfwey3S79lOIjZwHbXCqo1kPRRLbPHgJ2KyQDphf/4DJfpwFarhSQ4p60Q==}
+  '@aws-sdk/client-bedrock@3.1124.0':
+    resolution: {integrity: sha512-XxfgjRaiQn4OX4ZZK3p9hhr0nlGSpd6OCGrSgwKe8skFmc72RBzuwlSIO5wPK0zdL6HpbmweRHo8bLRRuhxoKQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.977.9':
@@ -2036,8 +2036,8 @@ packages:
     resolution: {integrity: sha512-ygIivKqh8aHzNkucOCXHyIBgBpLPfrSI0mCqXF+vLBsPTUKqj0VSqAY0GFPe7lQl4HntjOcQ+KSyS7oUV2C54Q==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/token-providers@3.1123.0':
-    resolution: {integrity: sha512-Boa6K6YuxMcoIIW9HyPvPeMH/5A7VMNSEGk7d/iLYoyb8k0TtcTZ4jKdAJ3k5T9e5hjopmwtS6tbYQEOtc+VvA==}
+  '@aws-sdk/token-providers@3.1124.0':
+    resolution: {integrity: sha512-6Erzl8+J5cvLYXRp14TGeIydeoEqhzxJ3FvYR9gJN56SY2n3NJxEA8rCII+1o/O6koLuER9gYcaEJu724CGtEw==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/types@3.974.5':
@@ -9446,11 +9446,11 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.5.2
 
-  '@aws-sdk/client-bedrock@3.1123.0':
+  '@aws-sdk/client-bedrock@3.1124.0':
     dependencies:
       '@aws-sdk/core': 3.977.9
       '@aws-sdk/credential-provider-node': 3.972.82
-      '@aws-sdk/token-providers': 3.1123.0
+      '@aws-sdk/token-providers': 3.1124.0
       '@aws-sdk/types': 3.974.5
       '@smithy/core': 3.33.3
       '@smithy/fetch-http-handler': 5.7.2
@@ -9580,7 +9580,7 @@ snapshots:
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
-  '@aws-sdk/token-providers@3.1123.0':
+  '@aws-sdk/token-providers@3.1124.0':
     dependencies:
       '@aws-sdk/core': 3.977.9
       '@aws-sdk/nested-clients': 3.997.44
