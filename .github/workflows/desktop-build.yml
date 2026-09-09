@@ -9,11 +9,29 @@ on:
         default: 7
     secrets:
       TAURI_SIGNING_PRIVATE_KEY:
-        description: Update-signing key. Without it the build produces installers but no update artefacts.
-        required: false
+        description: Update-signing key.
+        required: true
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD:
         description: Passphrase for the update-signing key.
-        required: false
+        required: true
+      APPLE_CERTIFICATE:
+        description: Base64 Developer ID Application certificate.
+        required: true
+      APPLE_CERTIFICATE_PASSWORD:
+        description: Passphrase for the exported certificate.
+        required: true
+      APPLE_SIGNING_IDENTITY:
+        description: Full identity name, beginning Developer ID Application.
+        required: true
+      APPLE_API_KEY:
+        description: App Store Connect key identifier used for notarisation.
+        required: true
+      APPLE_API_ISSUER:
+        description: App Store Connect issuer identifier.
+        required: true
+      APPLE_API_KEY_P8:
+        description: Base64 contents of the App Store Connect .p8 private key.
+        required: true
 
 permissions:
   contents: read
@@ -76,34 +94,44 @@ jobs:
       - name: Build workspace packages
         run: pnpm build:packages
 
-      - name: Decide whether updates can be signed
-        id: signing
+      - name: Write the notarisation key
+        if: runner.os == 'macOS'
         shell: bash
         env:
-          SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
         run: |
-          if [ -n "$SIGNING_KEY" ]; then
-            echo "config=--config src-tauri/tauri.updater.conf.json" >> "$GITHUB_OUTPUT"
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "config=" >> "$GITHUB_OUTPUT"
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-          fi
+          printf '%s' "$APPLE_API_KEY_P8" | base64 --decode > "$RUNNER_TEMP/AuthKey.p8"
+          chmod 600 "$RUNNER_TEMP/AuthKey.p8"
 
       - name: Build the desktop bundle
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
         run: >
           pnpm --filter @assistant/desktop tauri build
           ${{ matrix.tauri-args }}
-          ${{ steps.signing.outputs.config }}
+          --config src-tauri/tauri.updater.conf.json
+
+      - name: Verify the macOS signature
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          app="apps/desktop/src-tauri/target/universal-apple-darwin/release/bundle/macos/Polychat.app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          spctl --assess --type execute --verbose=4 "$app"
 
       - name: Package the bundle
         shell: bash
         env:
           LABEL: ${{ matrix.label }}
-          SIGNED: ${{ steps.signing.outputs.enabled }}
         run: |
           set -euo pipefail
 
@@ -115,35 +143,29 @@ jobs:
 
           mkdir -p "$staging" "$output"
 
-          copy_update_artefact() {
-            if [ "$SIGNED" != "true" ]; then
-              return
-            fi
-
-            cp "$1" "$output/$2"
-            cp "$1.sig" "$output/$2.sig"
-          }
-
           case "$RUNNER_OS" in
             macOS)
               bundle="$target/universal-apple-darwin/release/bundle"
               ditto -c -k --sequesterRsrc --keepParent \
                 "$bundle/macos/Polychat.app" "$output/$name.zip"
-              copy_update_artefact "$bundle/macos/Polychat.app.tar.gz" "$name.app.tar.gz"
+              cp "$bundle/macos/Polychat.app.tar.gz" "$output/$name.app.tar.gz"
+              cp "$bundle/macos/Polychat.app.tar.gz.sig" "$output/$name.app.tar.gz.sig"
               ;;
             Linux)
               bundle="$target/release/bundle"
               cp "$bundle"/appimage/*.AppImage "$staging"/
               cp "$bundle"/deb/*.deb "$staging"/
               (cd "$staging" && zip -r -j "../$output/$name.zip" .)
-              copy_update_artefact "$(ls "$bundle"/appimage/*.AppImage)" "$name.AppImage"
+              cp "$bundle"/appimage/*.AppImage "$output/$name.AppImage"
+              cp "$bundle"/appimage/*.AppImage.sig "$output/$name.AppImage.sig"
               ;;
             Windows)
               bundle="$target/release/bundle"
               cp "$bundle"/nsis/*-setup.exe "$staging"/
               cp "$bundle"/msi/*.msi "$staging"/
               (cd "$staging" && 7z a "../$output/$name.zip" ./*)
-              copy_update_artefact "$(ls "$bundle"/nsis/*-setup.exe)" "$name-setup.exe"
+              cp "$bundle"/nsis/*-setup.exe "$output/$name-setup.exe"
+              cp "$bundle"/nsis/*-setup.exe.sig "$output/$name-setup.exe.sig"
               ;;
           esac
 
