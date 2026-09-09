@@ -1,37 +1,11 @@
 {
   "defaults": {
     "supportsToolCalls": true,
-    "supportsAttachments": true
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "description": "The nova family includes models that produce image, speech, text, video.",
   "models": {
-    "amazon-nova-2-lite": {
-      "defaults": {
-        "name": "Amazon Nova 2 Lite",
-        "description": "Amazon Nova 2 Lite accepts text, image, video and produces text.",
-        "contextWindow": 1000000,
-        "maxTokens": 1000000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "analysis",
-          "multilingual",
-          "vision"
-        ],
-        "contextComplexity": 3,
-        "reliability": 3,
-        "multimodal": true,
-        "supportsTemperature": true
-      }
-    },
     "amazon-nova-2-sonic": {
       "defaults": {
         "name": "Amazon Nova 2 Sonic",
@@ -106,8 +80,7 @@
         "reliability": 5,
         "releaseDate": "November 14, 2025",
         "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "supportsAttachments": false
       }
     },
     "lucidnova-rf1-100b": {
@@ -142,8 +115,130 @@
         "name": "Nova 2 Lite",
         "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1000000
+      }
+    },
+    "nova-2-lite-eu": {
+      "defaults": {
+        "name": "Nova 2 Lite (EU)",
+        "openWeights": false,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 1000000,
-        "supportsTemperature": true
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 1, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "nova-2-lite-global": {
+      "defaults": {
+        "name": "Amazon Nova 2 Lite",
+        "openWeights": false,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "analysis",
+          "multilingual",
+          "vision"
+        ],
+        "contextComplexity": 3,
+        "reliability": 3,
+        "multimodal": true,
+        "releaseDate": "December 1, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "nova-2-lite-jp": {
+      "defaults": {
+        "name": "Nova 2 Lite (JP)",
+        "openWeights": false,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 1, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "nova-2-lite-us": {
+      "defaults": {
+        "name": "Nova 2 Lite (US)",
+        "openWeights": false,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 1, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "nova-2-sonic": {
@@ -191,7 +286,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 3, 2024",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": 6.9,
           "codingIndex": null,
@@ -252,7 +346,6 @@
         "reliability": 1,
         "releaseDate": "December 3, 2024",
         "supportsAttachments": false,
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": 4.7,
           "codingIndex": null,
@@ -307,7 +400,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 3, 2024",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": 12.7,
           "codingIndex": null,
@@ -333,8 +425,7 @@
           ]
         },
         "releaseDate": "October 31, 2025",
-        "supportsResponseFormat": false,
-        "supportsTemperature": true
+        "supportsResponseFormat": false
       }
     },
     "nova-pro": {
@@ -365,7 +456,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 3, 2024",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": 7.7,
           "codingIndex": null,

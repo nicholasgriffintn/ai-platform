@@ -565,6 +565,33 @@
         "supportsToolCalls": false
       }
     },
+    "deepseek-v4-1-flash-beta": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash Beta",
+        "openWeights": false,
+        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 8, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
     "deepseek-v4-flash-free": {
       "defaults": {
         "name": "DeepSeek V4 Flash (free)",

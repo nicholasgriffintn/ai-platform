@@ -13,9 +13,9 @@
         "text"
       ]
     },
+    "knowledgeCutoffDate": "April 30, 2026",
     "releaseDate": "September 4, 2026",
     "supportsToolCalls": true,
-    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": false
   },
@@ -25,13 +25,14 @@
       "defaults": {
         "name": "GPT-6 Astra",
         "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
-        "knowledgeCutoffDate": "April 30, 2026"
+        "supportsResponseFormat": true
       }
     },
     "gpt-6-astra-fast": {
       "defaults": {
         "name": "GPT-6 Astra (Fast)",
         "description": "Fast variant of GPT-6 Astra for low-latency assistance and high-volume workloads.",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -42,6 +43,40 @@
             "max"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-6-astra-global": {
+      "defaults": {
+        "name": "GPT-6 Astra (Global)",
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-6-astra-us": {
+      "defaults": {
+        "name": "GPT-6 Astra (US)",
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     }

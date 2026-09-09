@@ -1121,7 +1121,6 @@
       "matchingModel": "Qwen/Qwen3.8-2.4T-A95B",
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "maxTokens": 131072,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.00625

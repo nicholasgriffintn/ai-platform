@@ -1,5 +1,8 @@
 {
   "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "maxTokens": 235929,
     "modalities": {
       "input": [
         "text",
@@ -52,13 +55,51 @@
         "releaseDate": "June 16, 2026"
       }
     },
+    "nex-n2-5-mini-free": {
+      "defaults": {
+        "name": "Nex-N2.5-Mini (free)",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 8, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nex-n2-5-pro-free": {
+      "defaults": {
+        "name": "Nex-N2.5-Pro (free)",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "releaseDate": "September 8, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "nex-n2-mini": {
       "defaults": {
         "name": "Nex-N2-Mini",
-        "openWeights": true,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 262144,
-        "maxTokens": 235929,
         "releaseDate": "June 24, 2026",
         "supportsResponseFormat": true
       }
@@ -66,10 +107,7 @@
     "nex-n2-pro": {
       "defaults": {
         "name": "Nex-N2-Pro",
-        "openWeights": true,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 262144,
-        "maxTokens": 235929,
         "releaseDate": "June 8, 2026",
         "supportsResponseFormat": false
       }

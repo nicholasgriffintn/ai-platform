@@ -12,10 +12,13 @@
         "text"
       ]
     },
-    "contextComplexity": 4,
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
     "reliability": 1,
     "knowledgeCutoffDate": "November 2024",
-    "releaseDate": "November 1, 2024",
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
@@ -40,11 +43,28 @@
       "defaults": {
         "name": "Pixtral Large",
         "description": "Pixtral Large accepts text, image and produces text.",
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ]
+        "contextComplexity": 4,
+        "releaseDate": "November 1, 2024"
+      }
+    },
+    "pixtral-large-25-02-eu": {
+      "defaults": {
+        "name": "Pixtral Large (25.02) (EU)",
+        "openWeights": false,
+        "description": "Mistral vision-language model for image understanding and multimodal chat",
+        "maxTokens": 8192,
+        "contextComplexity": 3,
+        "releaseDate": "April 8, 2025"
+      }
+    },
+    "pixtral-large-25-02-us": {
+      "defaults": {
+        "name": "Pixtral Large (25.02) (US)",
+        "openWeights": false,
+        "description": "Mistral vision-language model for image understanding and multimodal chat",
+        "maxTokens": 8192,
+        "contextComplexity": 3,
+        "releaseDate": "April 8, 2025"
       }
     },
     "pixtral-large-latest": {
@@ -59,7 +79,9 @@
           "document",
           "tool_use"
         ],
-        "multimodal": true
+        "contextComplexity": 4,
+        "multimodal": true,
+        "releaseDate": "November 1, 2024"
       }
     }
   }

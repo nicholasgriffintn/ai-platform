@@ -452,9 +452,9 @@
         "supportsAttachments": true
       },
       "unset": [
-        "contextComplexity",
         "reliability",
         "artificialAnalysis",
+        "strengths",
         "supportsResponseFormat"
       ]
     },

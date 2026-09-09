@@ -10,8 +10,17 @@
         "text"
       ]
     },
+    "releaseDate": "April 28, 2025",
+    "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
   },
   "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
   "models": {
@@ -19,21 +28,26 @@
       "defaults": {
         "name": "Palmyra X4",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 122880,
-        "releaseDate": "April 28, 2025",
-        "supportsToolCalls": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "contextWindow": 122880
+      }
+    },
+    "palmyra-x4-us": {
+      "defaults": {
+        "name": "Palmyra X4 (US)",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 122880
       }
     },
     "palmyra-x5": {
       "defaults": {
         "name": "Palmyra X5",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 1040000
+      }
+    },
+    "palmyra-x5-us": {
+      "defaults": {
+        "name": "Palmyra X5 (US)",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 1040000
       }

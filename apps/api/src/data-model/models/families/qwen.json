@@ -2511,6 +2511,7 @@
         "openWeights": true,
         "description": "Open-weight sparse MoE (2.4T total, 95B active), the open-weight twin of Qwen3.8 Max for coding, research, complex reasoning, and agentic workflows",
         "contextWindow": 262144,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"

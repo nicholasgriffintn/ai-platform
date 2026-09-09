@@ -44,6 +44,24 @@
         }
       }
     },
+    "mercury-2-5": {
+      "defaults": {
+        "name": "Mercury 2.5",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 260000,
+        "maxTokens": 65536,
+        "releaseDate": "September 8, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "mercury-2-5-preview": {
       "defaults": {
         "name": "Mercury 2.5 Preview",

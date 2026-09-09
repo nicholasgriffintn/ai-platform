@@ -305,7 +305,9 @@
       "defaults": {
         "name": "Nemotron 3 Super 120B A12B",
         "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
-        "releaseDate": "March 11, 2026"
+        "contextWindow": 262144,
+        "releaseDate": "March 11, 2026",
+        "supportsResponseFormat": false
       }
     },
     "nemotron-3-super-free": {
