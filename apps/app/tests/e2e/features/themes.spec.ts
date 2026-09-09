@@ -1,8 +1,8 @@
-import { THEMES } from "@ngriffin_uk/polychat-library-chat";
+import { THEMES } from "@ngriffin_uk/polychat-library-chat/theme";
 
 import { expect, test } from "../fixtures/polychat-test";
 import { ThemePage } from "../page-objects/ThemePage";
-import { relativeLuminance } from "../support/colour";
+import { contrastRatio, relativeLuminance } from "../support/colour";
 
 test.describe("Device theme preferences", () => {
   test.use({ persona: "pro" });
@@ -25,6 +25,9 @@ test.describe("Device theme preferences", () => {
       await expect(themes.card(theme.label)).toContainText(theme.themeColor);
       expect(await themes.selectedCardOutline(theme.label)).toMatchObject({ style: "solid" });
       expect((await themes.selectedCardOutline(theme.label)).width).toBeGreaterThanOrEqual(2);
+      await expect(themes.cardDescription(theme.label, theme.description)).toBeVisible();
+      await expect(themes.cardComposerMock(theme.label)).toBeVisible();
+      await expect(themes.cardRoleChips(theme.label)).toHaveCount(6);
 
       const colours = await themes.themeCardColours(theme.label);
       const background = relativeLuminance(colours.background);
@@ -42,6 +45,89 @@ test.describe("Device theme preferences", () => {
       expect(frames.length).toBeGreaterThan(0);
       expect(frames, `Visible reload frames for ${theme.id}`).toEqual(frames.map(() => theme.id));
     }
+  });
+
+  test("resolves one selection highlight token across the shell, the composer and settings inputs", async ({
+    appPage,
+    homePage,
+    page,
+    profilePage,
+  }) => {
+    const themes = new ThemePage(page);
+
+    test.slow();
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT OSS 120B");
+    await homePage.sendMessageAndRequireCompletion("Paint something worth selecting");
+    await homePage.waitForChatResponse(0);
+
+    const userBubble = homePage.getLatestUserMessage();
+    let lastThemeId = "";
+
+    for (const theme of THEMES) {
+      await appPage.openSettings("Pro");
+      await appPage.openThemeOptions();
+      await page.getByRole("menuitemradio", { name: theme.label, exact: true }).click();
+      await appPage.closeSettings();
+      await expect(themes.root).toHaveAttribute("data-polychat-theme", theme.id);
+      lastThemeId = theme.id;
+
+      const shellHighlight = await themes.highlightChannels(themes.root);
+      const selectionText = await themes.selectionTextChannels(themes.root);
+
+      expect(
+        await themes.highlightChannels(homePage.chatInput),
+        `Composer highlight in ${theme.id}`,
+      ).toEqual(shellHighlight);
+      expect(
+        await themes.highlightChannels(userBubble),
+        `User bubble highlight in ${theme.id}`,
+      ).toEqual(shellHighlight);
+      expect(
+        await themes.primaryActionChannels(themes.root),
+        `Highlight is not the primary colour in ${theme.id}`,
+      ).not.toEqual(shellHighlight);
+      expect(
+        contrastRatio(shellHighlight, selectionText),
+        `Selected text contrast in ${theme.id}`,
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(shellHighlight, await themes.canvasChannels(themes.root)),
+        `Highlight against the canvas in ${theme.id}`,
+      ).toBeGreaterThanOrEqual(1.5);
+    }
+
+    await profilePage.openTab("customisation", "Customise Chat");
+    await expect(themes.root).toHaveAttribute("data-polychat-theme", lastThemeId);
+    expect(
+      await themes.highlightChannels(page.getByLabel("Nickname", { exact: true })),
+      "Settings input highlight",
+    ).toEqual(await themes.highlightChannels(themes.root));
+  });
+
+  test("carries a theme chosen from the sidebar into Customisation and keeps its house type", async ({
+    appPage,
+    homePage,
+    page,
+    profilePage,
+  }) => {
+    const themes = new ThemePage(page);
+
+    await homePage.navigate("/chat");
+    await appPage.openSettings("Pro");
+    await appPage.selectTheme("Fern");
+    await expect(themes.root).toHaveAttribute("data-polychat-theme", "fern");
+    await appPage.closeSettings();
+    await profilePage.openTab("customisation", "Customise Chat");
+    await expect(themes.option("Fern")).toBeChecked();
+    await expect(themes.root).toHaveAttribute("data-polychat-theme", "fern");
+    expect(await themes.themeNameFontFamily("Fern")).toContain("Fraunces");
+    expect(await themes.appearanceCaptionFontFamily("Fern")).toContain("IBM Plex Mono");
+    await themes.select("Plum");
+    await homePage.navigate("/chat");
+    await appPage.openSettings("Pro");
+    await appPage.openThemeOptions();
+    await expect(page.getByRole("menuitemradio", { name: "Plum", exact: true })).toBeChecked();
   });
 
   test("remembers the day and night pair across appearance changes, reloads and explicit themes", async ({

@@ -2,7 +2,10 @@ import { PolychatApi } from "../fixtures/polychat-api";
 import { expect, provisionPersonaSession, test } from "../fixtures/polychat-test";
 import { createSilentWavFixture, TEXT_MESSAGE_CASES } from "../fixtures/test-data";
 import { HomePage } from "../page-objects";
-import { isChatRunRecoveryRequest } from "../support/chat-run-requests";
+import {
+  isChatRunRecoveryRequest,
+  trackChatRunRecoveryRequests,
+} from "../support/chat-run-requests";
 import { E2E_APP_BASE_URL } from "../support/environment";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
@@ -274,7 +277,12 @@ test.describe("Temporary storage as free", () => {
   test.use({ persona: "free" });
 
   test("does not create an API conversation row", async ({ homePage, page, polychatApi }) => {
+    const recoveryRequests = trackChatRunRecoveryRequests(page);
+
     await homePage.navigate("/chat");
+    await expect(
+      page.getByText("Stored history is part of Pro. This stays on this device.", { exact: true }),
+    ).toBeVisible();
     await homePage.selectModel(TEXT_MODEL);
 
     const request = await homePage.sendMessageAndRequireCompletion(
@@ -285,6 +293,30 @@ test.describe("Temporary storage as free", () => {
     await homePage.waitForChatResponse(0);
     await expect.poll(() => polychatApi.conversationStatus(conversationId)).toBe(401);
     await expect(page.getByRole("button", { name: "Browse conversation threads" })).toHaveCount(0);
+    expect(recoveryRequests).toEqual([]);
+    expect((await polychatApi.getAccountUsageBalance()).credit_micros.reserved).toBe(0);
+  });
+});
+
+test.describe("Temporary storage as logged-out", () => {
+  test.use({ persona: "logged-out" });
+
+  test("explains device-only retention and never replays a server run", async ({
+    homePage,
+    page,
+  }) => {
+    const recoveryRequests = trackChatRunRecoveryRequests(page);
+
+    await homePage.navigate("/chat");
+    await expect(
+      page.getByText("Not signed in, so this stays on this device.", { exact: true }),
+    ).toBeVisible();
+    await homePage.selectModel(TEXT_MODEL);
+    await homePage.sendMessage("Keep this signed-out release conversation on the device");
+    await homePage.waitForChatResponse(0);
+    await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+    await expect(page.getByRole("button", { name: "Browse conversation threads" })).toHaveCount(0);
+    expect(recoveryRequests).toEqual([]);
   });
 });
 
@@ -726,6 +758,24 @@ test.describe("Pro message attachments", () => {
     expect(maximumConcurrentReplayRequests).toBeLessThanOrEqual(1);
   });
 
+  test("stops a recovered run from the refreshed page", async ({ homePage, page }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+    await homePage.sendMessageAndRequireCompletion(
+      "Recover this interrupted stream before stopping it from a refreshed page",
+    );
+
+    await page.reload();
+    await expect(homePage.getLatestUserMessage()).toContainText("from a refreshed page");
+    await homePage.stopResponseButton.click();
+    await expect(page.getByText("Task cancelled", { exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(homePage.stopResponseButton).toBeHidden({ timeout: 15_000 });
+    await expect(page.getByText("Stop requested", { exact: true })).toHaveCount(0);
+    await expect(homePage.chatInput).toBeEditable();
+  });
+
   test("cancels one run idempotently and stops detached recovery", async ({
     homePage,
     page,
@@ -876,7 +926,9 @@ test.describe("Pro message attachments", () => {
     expect(threadRequests).toHaveLength(0);
 
     await homePage.shareConversation();
-    await expect(page.getByLabel("Share link")).toHaveValue(/\/s\//);
+    const shareLink = await homePage.readShareLink();
+
+    expect(shareLink).toMatch(new RegExp(`^${E2E_APP_BASE_URL}/s/[A-Za-z0-9_-]+$`));
     await homePage.stopSharingConversation();
     await homePage.startThreadFromLatestAssistantMessage();
     await expect(homePage.originalConversationButton).toBeVisible();
@@ -1102,6 +1154,63 @@ test.describe("Cold conversation history as pro", () => {
     await page.keyboard.press("Escape");
     await expect(page.getByRole("menu")).toHaveCount(0);
     await expect(options).toBeFocused();
+  });
+});
+
+test.describe("Model tiers as free", () => {
+  test.use({ persona: "free" });
+
+  test("sends the chosen tier instead of an explicit model", async ({ homePage }) => {
+    await homePage.navigate("/chat");
+    await homePage.waitForPersonaReady("free");
+    await homePage.selectModelTier("Ultra");
+
+    const request = await homePage.sendMessageAndRequireCompletion(
+      "Answer this release check at the Ultra tier",
+    );
+
+    expect(request.model_tier).toBe("ultra");
+    expect(request.model).toBeUndefined();
+    expect(request.models).toBeUndefined();
+    await homePage.waitForChatResponse(0);
+    await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+  });
+});
+
+test.describe("Run context as pro", () => {
+  test.use({ persona: "pro" });
+
+  test("reports run usage and settlement in the run context panel", async ({ homePage }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+    await homePage.sendMessage("Report the run context for this release check");
+    await homePage.waitForChatResponse(0);
+    await homePage.waitForResponseText(/E2E response:/);
+
+    const runContext = await homePage.openRunContext();
+
+    await expect(runContext.getByText("Run context", { exact: true })).toBeVisible();
+    await expect(runContext.getByText(/^(?:Step|Attempt) \d/)).toBeVisible();
+    await expect(runContext.getByRole("heading", { name: "Usage and settlement" })).toBeVisible();
+    await expect(runContext).toContainText(/Provider measurement: \S/);
+    await expect(runContext).toContainText(/Reserved estimate: \S/);
+    await expect(runContext).toContainText(/Recorded consumption: \S/);
+    await expect(runContext).toContainText(/Settlement: \S/);
+  });
+
+  test("keeps the temporary storage notice hidden while the session resolves", async ({
+    homePage,
+    page,
+  }) => {
+    const temporaryNotice = await homePage.watchForText("Temporary. Nothing here is kept.");
+
+    await homePage.navigate("/chat");
+    await homePage.waitForPersonaReady("pro");
+    await expect(homePage.chatInput).toBeEditable();
+    await expect(page.getByText("Temporary. Nothing here is kept.", { exact: true })).toHaveCount(
+      0,
+    );
+    expect(await temporaryNotice.wasSeen()).toBe(false);
   });
 });
 

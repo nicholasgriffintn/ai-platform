@@ -144,6 +144,8 @@ test.describe("Project task evidence", () => {
     await expect(
       reopenedTasks.plan.getByRole("link", { name: `Run ${detail.task.runId}`, exact: true }),
     ).toBeVisible();
+    await expect(reopenedTasks.plan.getByText("Executing", { exact: true })).toHaveCount(1);
+    await expect(reopenedTasks.plan.getByText(/1 attempt\b/)).toHaveCount(1);
     await reopenedTasks.answerQuestions();
     const workbench = new WorkbenchPage(reopenedPage);
 

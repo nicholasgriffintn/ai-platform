@@ -37,6 +37,11 @@
       "types": "./dist/attachments.d.ts",
       "import": "./dist/attachments.js"
     },
+    "./theme": {
+      "polychat-source": "./src/theme.ts",
+      "types": "./dist/theme.d.ts",
+      "import": "./dist/theme.js"
+    },
     "./threading": {
       "polychat-source": "./src/threading.ts",
       "types": "./dist/threading.d.ts",

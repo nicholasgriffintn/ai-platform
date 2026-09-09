@@ -272,6 +272,79 @@ test.describe("Work experience", () => {
       });
     });
 
+    test("recovers an interrupted project run after a refresh and reopens it from the sidebar", async ({
+      homePage,
+      page,
+      workPage,
+    }) => {
+      await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+      const workspaceId = workPage.currentWorkspaceId();
+      const projectId = workPage.currentProjectId();
+
+      await workPage.openNewProjectConversation();
+      await homePage.selectModel("GPT OSS 120B");
+      const request = await homePage.sendMessageAndRequireCompletion(
+        "Recover this interrupted stream inside the project conversation",
+      );
+      const conversationId = homePage.completionIdFromRequest(request);
+      const conversationPath = `/work/${workspaceId}/projects/${projectId}/chat/${conversationId}`;
+
+      await expect(homePage.getLatestAssistantMessage()).toContainText("recovery data so far");
+      await page.waitForURL(`**${conversationPath}`);
+      await page.reload();
+
+      expect(new URL(page.url()).pathname).toBe(conversationPath);
+      await expect(homePage.getLatestUserMessage()).toContainText(
+        "inside the project conversation",
+      );
+      await expect(homePage.stopResponseButton).toBeVisible();
+      await expect(homePage.getLatestAssistantMessage()).toContainText(
+        "the interrupted stream completed",
+        { timeout: 20_000 },
+      );
+      await expect(homePage.stopResponseButton).toBeHidden();
+      await expect(homePage.chatInput).toBeEditable();
+
+      await workPage.navigate(`/work/${workspaceId}/projects/${projectId}`);
+      await homePage.openConversation(/Recover this interrupted stream|Release validation chat/);
+
+      expect(new URL(page.url()).pathname).toBe(conversationPath);
+      await homePage.reload();
+
+      expect(new URL(page.url()).pathname).toBe(conversationPath);
+      await expect(homePage.getLatestUserMessage()).toContainText(
+        "inside the project conversation",
+      );
+      await expect(homePage.getLatestAssistantMessage()).toContainText(
+        "the interrupted stream completed",
+      );
+    });
+
+    test("separates task notification registration from the browser permission", async ({
+      context,
+      page,
+      workPage,
+    }) => {
+      await context.grantPermissions(["notifications"]);
+      await workPage.open();
+      const notifications = page
+        .getByRole("heading", { name: "Task notifications", exact: true })
+        .locator("xpath=ancestor::div[1]");
+
+      await expect(notifications).toContainText(
+        "Allow browser notifications to hear about task changes when Polychat is closed.",
+      );
+      await expect(
+        page.getByRole("switch", { name: "Task notifications", exact: true }),
+      ).not.toBeChecked();
+      await expect(
+        page.getByRole("switch", { name: "Decisions and approvals", exact: true }),
+      ).toBeDisabled();
+      await expect(
+        page.getByRole("button", { name: "Retry registration", exact: true }),
+      ).toHaveCount(0);
+    });
+
     test("offers Fast processing inside a Work conversation", async ({ homePage, workPage }) => {
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
       const projectId = workPage.currentProjectId();

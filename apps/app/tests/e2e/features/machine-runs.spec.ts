@@ -1,4 +1,4 @@
-import { machineRunSnapshotSchema } from "@ngriffin_uk/polychat-schemas";
+import { machineListResponseSchema, machineRunSnapshotSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { expect, provisionPersonaSession, test } from "../fixtures/polychat-test";
 import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
@@ -145,5 +145,83 @@ test.describe("Machine execution authority and lifecycle", () => {
     expect((await page.request.get(`${path}/${id}`)).status()).toBe(404);
     await page.request.delete(`${E2E_API_BASE_URL}/machines/${machineId}`, { headers });
     expect((await page.request.get(`${path}/${id}`)).status()).toBe(404);
+  });
+});
+
+test.describe("Advertised machine discovery", () => {
+  test.use({ persona: "pro" });
+
+  test("shares runtime metadata with another session without exposing an endpoint", async ({
+    browser,
+    page,
+  }) => {
+    const machineId = crypto.randomUUID();
+    const headers = { origin: E2E_APP_BASE_URL };
+    const machinesPath = `${E2E_API_BASE_URL}/machines`;
+    const heartbeat = await page.request.post(`${machinesPath}/heartbeat`, {
+      headers,
+      data: {
+        machineId,
+        label: "Studio desktop",
+        platform: "macos",
+        appVersion: "0.1.0",
+        capabilities: ["model-relay"],
+        runtimes: [
+          {
+            kind: "model",
+            vendor: "ollama",
+            readiness: { status: "ready", version: "test", checkedAt: new Date().toISOString() },
+            models: [
+              {
+                nativeId: "studio-model",
+                displayName: "Studio model",
+                contextTokens: 8192,
+                capabilities: { tools: false, vision: false, thinking: false },
+                loaded: false,
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    expect(heartbeat.ok(), await heartbeat.text()).toBe(true);
+    const session = (await page.context().cookies()).find((cookie) => cookie.name === "session");
+
+    if (!session) {
+      throw new Error("The signed-in persona has no session cookie to share");
+    }
+
+    const second = await browser.newContext();
+
+    try {
+      await second.addCookies([session]);
+      const listResponse = await second.request.get(machinesPath, { headers });
+
+      expect(listResponse.ok(), await listResponse.text()).toBe(true);
+      const payload = await listResponse.text();
+
+      expect(payload).not.toMatch(/"url"\s*:/);
+      const machines = machineListResponseSchema.parse(JSON.parse(payload));
+      const advertised = machines.find((machine) => machine.machineId === machineId);
+
+      expect(advertised?.label).toBe("Studio desktop");
+      expect(advertised?.runtimes[0]?.models[0]).toMatchObject({
+        nativeId: "studio-model",
+        displayName: "Studio model",
+        contextTokens: 8192,
+      });
+
+      const forgotten = await page.request.delete(`${machinesPath}/${machineId}`, { headers });
+
+      expect(forgotten.ok(), await forgotten.text()).toBe(true);
+      const afterRemoval = machineListResponseSchema.parse(
+        await (await second.request.get(machinesPath, { headers })).json(),
+      );
+
+      expect(afterRemoval.some((machine) => machine.machineId === machineId)).toBe(false);
+    } finally {
+      await second.close();
+    }
   });
 });

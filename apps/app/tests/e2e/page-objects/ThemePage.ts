@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
-import { renderedColourChannels } from "../support/colour";
+import { customPropertyColourChannels, renderedColourChannels } from "../support/colour";
 import { chooseDropdownOption } from "../support/dropdown";
 import { BasePage } from "./BasePage";
 
@@ -69,6 +69,48 @@ export class ThemePage extends BasePage {
       .evaluateAll((elements) =>
         elements.map((element) => element.getAttribute("data-polychat-theme")),
       );
+  }
+
+  cardDescription(name: string, description: string) {
+    return this.card(name).getByText(description, { exact: true });
+  }
+
+  cardComposerMock(name: string) {
+    return this.card(name).getByText("What’s on your mind?", { exact: true });
+  }
+
+  cardRoleChips(name: string) {
+    return this.card(name).locator("span.h-4.w-4.rounded");
+  }
+
+  themeNameFontFamily(name: string) {
+    return this.card(name)
+      .getByText(name, { exact: true })
+      .first()
+      .evaluate((element) => getComputedStyle(element).fontFamily);
+  }
+
+  appearanceCaptionFontFamily(name: string) {
+    return this.card(name)
+      .locator(".polychat-eyebrow")
+      .first()
+      .evaluate((element) => getComputedStyle(element).fontFamily);
+  }
+
+  highlightChannels(locator: Locator) {
+    return customPropertyColourChannels(locator, "--polychat-highlight");
+  }
+
+  selectionTextChannels(locator: Locator) {
+    return customPropertyColourChannels(locator, "--polychat-text");
+  }
+
+  canvasChannels(locator: Locator) {
+    return customPropertyColourChannels(locator, "--polychat-canvas");
+  }
+
+  primaryActionChannels(locator: Locator) {
+    return customPropertyColourChannels(locator, "--polychat-human-action");
   }
 
   async themeCardColours(name: string) {

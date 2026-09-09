@@ -19,7 +19,7 @@
 - [ ] Stop Ollama mid-session and probe again; confirm the state returns to not running rather than staying ready.
 - [ ] In the running window's developer tools, attempt `fetch("http://127.0.0.1:11434/api/tags")` and any external origin; confirm the content security policy blocks both, so loopback is reachable only through the Rust command.
 - [ ] Restart the application and confirm the endpoint list, including anything added or forgotten, comes back as it was left.
-- [ ] Add a plain HTTP agent runtime on a network address and confirm it is refused for wanting HTTPS or a pairing secret; add the same address over HTTPS and confirm it is accepted.
+- [x] Add a plain HTTP agent runtime on a network address and confirm it is refused for wanting HTTPS or a pairing secret; add the same address over HTTPS and confirm it is accepted.
 - [x] Add an address that is not loopback while claiming loopback and confirm it is refused before anything is stored.
 - [ ] Send a prompt, close the window, reopen it and confirm the exchange is still there under that model.
 - [ ] Confirm a cancelled run still stores whatever text arrived before it stopped, rather than discarding it or storing nothing.

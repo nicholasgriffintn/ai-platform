@@ -8,13 +8,13 @@
 
 ## Verify
 
-- [ ] Point a real Slack app's Events request URL at the route and confirm the `url_verification` handshake is accepted.
-- [ ] Post in a bound Slack channel and confirm the reply arrives in that channel, not in a DM.
+- [x] Point a real Slack app's Events request URL at the route and confirm the `url_verification` handshake is accepted.
+- [x] Post in a bound Slack channel and confirm the reply arrives in that channel, not in a DM.
 - [x] Post in the same channel as a second person and confirm both messages continue one conversation.
 - [x] Post in a Slack channel that has no binding and confirm nothing is queued and no reply appears.
 - [ ] Register a Telegram webhook with a secret token, send a message, and confirm the reply arrives in that chat.
 - [x] Disconnect a binding, send another message, and confirm the queued task is skipped rather than answered.
-- [ ] Confirm inbound SMS still works exactly as before.
+- [x] Confirm inbound SMS still works exactly as before.
 
 **Stop and report if:** a reply reaches a channel with no binding, a message answered before its signature was verified, or one person's Slack message opens a conversation under another account.
 

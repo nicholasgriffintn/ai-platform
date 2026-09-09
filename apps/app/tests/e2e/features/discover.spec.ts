@@ -79,4 +79,44 @@ test.describe("Signed-in tour placement", () => {
     await expect(page).toHaveURL(/\/discover$/);
     await expect(discover.sectionLinks).toHaveCount(6);
   });
+
+  test("lists the whole Discover segment beside the catalogue and reaches it from the tour", async ({
+    page,
+  }) => {
+    const discover = new DiscoverPage(page);
+
+    await discover.navigate("/models");
+    for (const name of ["Tour", "Models", "Capabilities", "Pets", "Pricing"]) {
+      await expect(
+        discover.primaryNavigation.getByRole("link", { name, exact: true }),
+      ).toBeVisible();
+    }
+
+    await expect(
+      discover.primaryNavigation.getByRole("link", { name: "Models", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+    await expect(
+      discover.primaryNavigation.getByRole("link", { name: "Pricing", exact: true }),
+    ).not.toHaveAttribute("aria-current", "page");
+
+    await discover.navigate("/discover");
+    await discover.section("models").getByRole("link", { name: "Browse the catalogue" }).click();
+    await expect(page).toHaveURL(/\/models$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Every model, one perch");
+  });
+
+  test("resolves every built-in pet sheet on the public pets page", async ({ page }) => {
+    const discover = new DiscoverPage(page);
+
+    await discover.navigate("/pets");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("The Polychat pets");
+
+    const sheets = await discover.petSheetDimensions();
+
+    expect(sheets).toHaveLength(9);
+    for (const sheet of sheets) {
+      expect(sheet.label, "Every pet sprite is labelled").not.toBe("");
+      expect({ ...sheet, label: undefined }).toMatchObject({ width: 1536, height: 2288 });
+    }
+  });
 });

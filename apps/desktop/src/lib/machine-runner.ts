@@ -1,7 +1,7 @@
 import type { DesktopBackend, DesktopRun } from "@ngriffin_uk/polychat-library-chat";
-import { waitForSyncEvent } from "@ngriffin_uk/polychat-library-client";
 import type { MachineRunClient } from "@ngriffin_uk/polychat-library-client/machine-runs";
 import { delay } from "@ngriffin_uk/polychat-library-client/machine-runs";
+import { waitForSyncEvent } from "@ngriffin_uk/polychat-library-client/sync";
 import type { MachineRunClaim, MachineRunUpdate } from "@ngriffin_uk/polychat-schemas";
 import { buildDeviceSyncTopic } from "@ngriffin_uk/polychat-schemas";
 

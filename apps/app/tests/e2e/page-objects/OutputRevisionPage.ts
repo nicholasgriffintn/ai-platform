@@ -6,6 +6,10 @@ export class OutputRevisionPage extends BasePage {
     return this.page.getByRole("region", { name: "Revision history", exact: true });
   }
 
+  get provenance() {
+    return this.page.getByRole("region", { name: "Output provenance", exact: true });
+  }
+
   async compare(revision: number) {
     await chooseDropdownOption(
       this.history.getByLabel("Compare with"),

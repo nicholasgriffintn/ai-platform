@@ -63,6 +63,13 @@ test.describe("Documents as finished work", () => {
     const editor = page.getByRole("textbox", { name: "Document content" });
 
     await expect(editor).toHaveValue(/The first draft, as written\./);
+
+    const main = page.getByRole("main");
+
+    await expect(main.getByText("Approved launch summary", { exact: true })).toBeVisible();
+    await expect(main.getByText("release", { exact: true })).toBeVisible();
+    await expect(main.getByText("Words:", { exact: true })).toBeVisible();
+    await expect(main.getByText("1min", { exact: true })).toBeVisible();
     await editor.fill("# Launch week brief\n\nThe edited draft, as revised.");
     const saved = page.waitForResponse(
       (response) =>

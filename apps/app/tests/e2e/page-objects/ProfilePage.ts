@@ -378,6 +378,58 @@ export class ProfilePage extends BasePage {
     await this.page.getByText("Settings saved successfully!", { exact: true }).waitFor();
   }
 
+  petPreview(name: string) {
+    return this.page.getByRole("img", { name, exact: true });
+  }
+
+  async petSpriteMetrics(sprite: Locator) {
+    await this.waitForElement(sprite);
+
+    return sprite.evaluate((element) => {
+      const style = getComputedStyle(element);
+      const [sheetWidth = "", sheetHeight = ""] = style.backgroundSize.split(" ");
+      const box = element.getBoundingClientRect();
+
+      return {
+        width: box.width,
+        height: box.height,
+        bottom: box.bottom,
+        sheetWidth: Number.parseFloat(sheetWidth),
+        sheetHeight: Number.parseFloat(sheetHeight),
+      };
+    });
+  }
+
+  async petSpriteMotion(sprite: Locator) {
+    await this.waitForElement(sprite);
+
+    return sprite.evaluate((element) => {
+      const style = getComputedStyle(element);
+
+      return {
+        playState: style.animationPlayState,
+        row: Number.parseFloat(style.getPropertyValue("--polychat-pet-row")),
+      };
+    });
+  }
+
+  async setPetAnimation(enabled: boolean) {
+    await this.openTab("pets", "Your pet");
+    const toggle = this.page.getByLabel("Animate your pet", { exact: true });
+
+    await this.waitForElement(toggle);
+    if ((await toggle.isChecked()) === enabled) {
+      return;
+    }
+
+    const updated = this.waitForSettingsUpdate();
+
+    await this.page.getByText("Animate your pet", { exact: true }).click();
+    if (!(await updated).ok()) {
+      throw new Error("Pet animation preference could not be saved");
+    }
+  }
+
   async selectPresetPet(name: string) {
     await this.openTab("pets", "Your pet");
     const response = this.waitForSettingsUpdate();

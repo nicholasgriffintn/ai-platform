@@ -4,6 +4,18 @@ export function isChatRunRecoveryRequest(url: string): boolean {
   return /\/chat\/runs\/[^/]+\/(?:events|snapshot)$/.test(new URL(url).pathname);
 }
 
+export function trackChatRunRecoveryRequests(page: Page): string[] {
+  const requests: string[] = [];
+
+  page.on("request", (request) => {
+    if (isChatRunRecoveryRequest(request.url())) {
+      requests.push(new URL(request.url()).pathname);
+    }
+  });
+
+  return requests;
+}
+
 export function trackCompletionRequests(page: Page): string[] {
   const requests: string[] = [];
 

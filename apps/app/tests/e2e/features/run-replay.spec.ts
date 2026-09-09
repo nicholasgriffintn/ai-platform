@@ -110,4 +110,60 @@ test.describe("Authoritative run replay", () => {
     expect(reset.events).toEqual([]);
     expect(reset.snapshot).toEqual(final);
   });
+
+  test("loses no event at a snapshot boundary taken while the run streams", async ({
+    homePage,
+    page,
+    polychatApi,
+  }) => {
+    const runs = new ChatRunApi(page.request);
+
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT OSS 120B");
+    const request = await homePage.sendMessageAndRequireCompletion(
+      "Recover this interrupted stream to verify snapshot boundaries",
+    );
+    const conversationId = homePage.completionIdFromRequest(request);
+    const run = (await polychatApi.getConversation(conversationId)).latest_run;
+
+    if (!run) {
+      throw new Error("Expected an accepted stored run");
+    }
+
+    const boundaries: { cursor: number; sequences: number[] }[] = [];
+
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      const boundary = await runs.snapshot(run.id);
+      const replay = await runs.events(run.id, boundary.cursor);
+
+      expect(replay.resetRequired).toBe(false);
+      expect(replay.fromCursor).toBe(boundary.cursor);
+      boundaries.push({
+        cursor: boundary.cursor,
+        sequences: replay.events.map((event) => event.sequence),
+      });
+
+      if (!(await homePage.stopResponseButton.isVisible())) {
+        break;
+      }
+    }
+
+    await expect(homePage.stopResponseButton).toBeHidden({ timeout: 15_000 });
+    const complete = await runs.events(run.id, 0);
+    const timeline = complete.events.map((event) => event.sequence);
+
+    expect(complete.resetRequired).toBe(false);
+    expect(boundaries.length).toBeGreaterThan(0);
+    expect(timeline).toEqual([...new Set(timeline)].sort((left, right) => left - right));
+    expect(boundaries.map(({ cursor }) => cursor)).toEqual(
+      boundaries.map(({ cursor }) => cursor).sort((left, right) => left - right),
+    );
+
+    for (const boundary of boundaries) {
+      const remaining = timeline.filter((sequence) => sequence > boundary.cursor);
+
+      expect(boundary.sequences.every((sequence) => sequence > boundary.cursor)).toBe(true);
+      expect(remaining.slice(0, boundary.sequences.length)).toEqual(boundary.sequences);
+    }
+  });
 });

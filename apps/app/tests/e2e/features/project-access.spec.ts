@@ -7,6 +7,7 @@ import { OutputApi } from "../fixtures/output-api";
 import { provisionPersonaBrowserContext } from "../fixtures/persona-provisioning";
 import { PolychatApi } from "../fixtures/polychat-api";
 import { expect, test } from "../fixtures/polychat-test";
+import { ProjectTaskApi } from "../fixtures/project-task-api";
 import { WorkPage } from "../page-objects/WorkPage";
 import { requireSuccessfulResponse } from "../support/api-response";
 import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";

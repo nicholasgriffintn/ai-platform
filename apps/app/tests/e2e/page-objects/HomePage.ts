@@ -952,6 +952,13 @@ export class HomePage extends BasePage {
       .waitFor();
   }
 
+  async readShareLink(): Promise<string> {
+    return this.page
+      .getByRole("dialog", { name: "Manage Shared Conversation" })
+      .getByLabel("Share link")
+      .inputValue();
+  }
+
   async stopSharingConversation() {
     const dialog = this.page.getByRole("dialog", { name: "Manage Shared Conversation" });
 
@@ -979,6 +986,59 @@ export class HomePage extends BasePage {
   async returnToOriginalConversation() {
     await this.clickElement(this.originalConversationButton);
     await this.page.getByRole("region", { name: "Conversation messages" }).waitFor();
+  }
+
+  async openRunContext() {
+    await this.clickElement(this.page.getByRole("button", { name: "View run context" }));
+    const panel = this.page.getByRole("dialog", { name: "Run context" });
+
+    await this.waitForElement(panel);
+
+    return panel;
+  }
+
+  async watchForText(text: string) {
+    const key = `polychatTextSighting${Math.random().toString(36).slice(2)}`;
+
+    await this.page.addInitScript(
+      ({ needle, storeKey }) => {
+        const sighting = { seen: false };
+
+        Reflect.set(window, storeKey, sighting);
+
+        const check = () => {
+          if (document.body?.textContent?.includes(needle)) {
+            sighting.seen = true;
+          }
+        };
+
+        const observe = () => {
+          check();
+          new MutationObserver(check).observe(document.body, {
+            characterData: true,
+            childList: true,
+            subtree: true,
+          });
+        };
+
+        if (document.body) {
+          observe();
+
+          return;
+        }
+
+        document.addEventListener("DOMContentLoaded", observe);
+      },
+      { needle: text, storeKey: key },
+    );
+
+    return {
+      wasSeen: () =>
+        this.page.evaluate(
+          (storeKey) => Boolean((Reflect.get(window, storeKey) as { seen?: boolean })?.seen),
+          key,
+        ),
+    };
   }
 
   async openConversationThreads() {

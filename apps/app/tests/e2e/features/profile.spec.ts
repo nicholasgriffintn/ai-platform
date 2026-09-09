@@ -261,6 +261,106 @@ test.describe("Account-owned resources", () => {
     expect(result.recreated.name).toBe("release-skill-lifecycle");
   });
 
+  test("renders every preset pet on one baseline from the polychat sprite grid", async ({
+    page,
+    profilePage,
+  }) => {
+    await profilePage.openTab("pets", "Your pet");
+
+    const metrics = [];
+
+    for (const name of ["Pip", "Ash", "Wisp"]) {
+      metrics.push(await profilePage.petSpriteMetrics(profilePage.petPreview(name)));
+    }
+
+    const [first] = metrics;
+
+    if (!first) {
+      throw new Error("No preset pet previews were measured");
+    }
+
+    for (const metric of metrics) {
+      expect(metric.width).toBeCloseTo(first.width, 1);
+      expect(metric.height).toBeCloseTo(first.height, 1);
+      expect(metric.bottom).toBeCloseTo(first.bottom, 1);
+      expect(metric.sheetWidth / metric.width).toBeCloseTo(8, 2);
+      expect(metric.sheetHeight / metric.height).toBeCloseTo(11, 2);
+      expect(metric.height / metric.width).toBeCloseTo(208 / 192, 2);
+    }
+
+    await expect(page.getByRole("button", { name: /^Pip/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  test("stops the pet's idle loop while a response streams and holds it still when animation is off", async ({
+    homePage,
+    page,
+    profilePage,
+  }) => {
+    await profilePage.setPetAnimation(true);
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT-5.5");
+
+    const perch = page.getByRole("link", { name: /^Pip\./ });
+    const sprite = perch.locator(".polychat-pet");
+
+    await expect(perch).toHaveAccessibleName(/Ready when you are/);
+    expect(await profilePage.petSpriteMotion(sprite)).toEqual({ playState: "running", row: 0 });
+
+    await homePage.sendMessage("Recover this interrupted stream");
+    await expect(perch).toHaveAccessibleName(/Reading it over|Answering|Running /, {
+      timeout: 15_000,
+    });
+    await expect
+      .poll(async () => (await profilePage.petSpriteMotion(sprite)).row, { timeout: 10_000 })
+      .not.toBe(0);
+    await homePage.waitForChatResponse(0);
+
+    await profilePage.setPetAnimation(false);
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT-5.5");
+    expect(await profilePage.petSpriteMotion(sprite)).toEqual({ playState: "paused", row: 0 });
+    await homePage.sendMessage("Recover this interrupted stream");
+    await expect(perch).toHaveAccessibleName(/Reading it over|Answering|Running /, {
+      timeout: 15_000,
+    });
+    expect(await profilePage.petSpriteMotion(sprite)).toEqual({ playState: "paused", row: 0 });
+  });
+
+  test("answers a retired profile tab query without inventing a surface", async ({
+    page,
+    profilePage,
+  }) => {
+    await profilePage.openAccount();
+
+    const navigation = page.getByRole("navigation", { name: "Account settings" });
+
+    await expect(navigation.locator("p")).toHaveText([
+      "Account",
+      "Appearance and pet",
+      "Models and keys",
+      "Advanced",
+    ]);
+    await expect(navigation.getByRole("button", { name: "Account", exact: true })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+
+    for (const retired of ["sources", "tasks"]) {
+      await page.goto(`/profile?tab=${retired}`, { waitUntil: "domcontentloaded" });
+      await expect(
+        page.getByText("Selected tab content not found.", { exact: true }),
+      ).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Profile", exact: true })).toBeVisible();
+      await expect(page).toHaveURL(new RegExp(`\\?tab=${retired}$`));
+      await expect(
+        navigation.getByRole("button", { name: "Account", exact: true }),
+      ).not.toHaveAttribute("aria-current", "page");
+    }
+  });
+
   test("applies and removes a model-maker pet rule with a deliberate fallback", async ({
     homePage,
     page,

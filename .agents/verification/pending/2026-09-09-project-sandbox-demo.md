@@ -8,7 +8,7 @@
 ## Verify
 
 - [ ] Send a project coding request with automatic output length and observe a sandbox tool call.
-- [ ] Set an explicit output limit and confirm it is honoured within model capacity.
+- [x] Set an explicit output limit and confirm it is honoured within model capacity.
 - [ ] Complete a sandbox review and inspect its proof and validation output.
 
 **Stop and report if:** A sandbox completion contains empty content and no tool calls.

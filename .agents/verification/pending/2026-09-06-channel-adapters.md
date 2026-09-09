@@ -14,7 +14,7 @@
 - [x] Disconnect a binding and confirm it stops resolving.
 - [x] Replay a captured Slack request an hour later and confirm it is refused on its timestamp.
 - [x] Send a Slack request signed with the wrong secret and confirm it is refused.
-- [ ] Confirm inbound SMS still works exactly as before.
+- [x] Confirm inbound SMS still works exactly as before.
 
 **Stop and report if:** a request with a wrong or missing signature reaches a conversation, or a binding is created by someone who could not otherwise write to that project.
 

@@ -1,5 +1,22 @@
 import { expect, test } from "../fixtures/polychat-test";
+import { E2E_APP_BASE_URL } from "../support/environment";
+import {
+  collectPageDiagnostics,
+  computedDurationsInSeconds,
+  describeFontResponses,
+} from "../support/page-diagnostics";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
+
+const PUBLIC_SURFACES = [
+  "/",
+  "/discover",
+  "/models",
+  "/pricing",
+  "/downloads",
+  "/terms",
+  "/privacy",
+];
+const SIDEBAR_DRAWER_SELECTOR = '[role="dialog"][aria-label="Conversations"]';
 
 test.describe("Application experience", () => {
   test.describe("response policy and keyboard access", () => {
@@ -207,6 +224,136 @@ test.describe("Application experience", () => {
       await expect(drawer).toBeHidden();
       await expect(page.getByRole("button", { name: "Show sidebar" })).toBeVisible();
       await expect(homePage.chatInput).toBeEditable();
+    });
+
+    test("dismisses the mobile sidebar from the keyboard and leaves no hidden residue", async ({
+      appPage,
+      homePage,
+      page,
+    }) => {
+      await homePage.navigate("/chat");
+      await expect(homePage.chatInput).toBeEditable();
+
+      await appPage.toggleSidebar();
+      const drawer = page.getByRole("dialog", { name: "Conversations" });
+
+      await expect(drawer).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(drawer).toBeHidden();
+
+      const trigger = page.getByRole("button", { name: "Show sidebar" });
+
+      await expect(trigger).toBeVisible();
+      await trigger.focus();
+      await expect(trigger).toBeFocused();
+      await expect(page.locator("[inert]")).toHaveCount(0);
+      await expect(page.locator('#main-content[aria-hidden="true"]')).toHaveCount(0);
+      await expect(homePage.chatInput).toBeEditable();
+    });
+  });
+
+  test.describe("reduced motion", () => {
+    test.use({
+      persona: "pro",
+      reducedMotion: "reduce",
+      viewport: { width: 390, height: 844 },
+    });
+
+    test("opens and dismisses the mobile sidebar with motion removed", async ({
+      appPage,
+      homePage,
+      page,
+    }) => {
+      await homePage.navigate("/chat");
+      await expect(homePage.chatInput).toBeEditable();
+
+      await appPage.toggleSidebar();
+      const drawer = page.getByRole("dialog", { name: "Conversations" });
+
+      await expect(drawer).toBeVisible();
+
+      const durations = await computedDurationsInSeconds(page, SIDEBAR_DRAWER_SELECTOR);
+
+      expect(durations.transition.length).toBeGreaterThan(0);
+      for (const duration of [...durations.transition, ...durations.animation]) {
+        expect(duration).toBeLessThan(0.001);
+      }
+
+      await page.keyboard.press("Escape");
+      await expect(drawer).toBeHidden();
+      await expect(page.getByRole("button", { name: "Show sidebar" })).toBeVisible();
+      await expect(homePage.chatInput).toBeEditable();
+    });
+  });
+
+  test.describe("shared modules and typefaces", () => {
+    test.use({ persona: "logged-out" });
+
+    test("loads every public surface without a failed chunk or a module error", async ({
+      homePage,
+      page,
+    }) => {
+      test.slow();
+      const diagnostics = collectPageDiagnostics(page);
+
+      for (const surface of PUBLIC_SURFACES) {
+        const response = await homePage.navigate(surface);
+
+        expect(response?.status(), `${surface} responded`).toBeLessThan(400);
+        await expect(page.locator("#main-content")).toBeVisible();
+      }
+
+      expect(diagnostics.failedModuleRequests).toEqual([]);
+      expect(diagnostics.moduleErrors).toEqual([]);
+    });
+
+    test("serves the house typefaces from this origin and never from a font CDN", async ({
+      homePage,
+      page,
+    }) => {
+      const diagnostics = collectPageDiagnostics(page);
+
+      await homePage.navigate("/discover");
+      const heading = page.getByRole("heading", { name: "What Polychat is for" });
+
+      await expect(heading).toBeVisible();
+      await expect(heading).toHaveCSS("font-family", /Fraunces/);
+      await page.waitForFunction(() => document.fonts.status === "loaded");
+
+      expect(diagnostics.fontCdnRequests).toEqual([]);
+      expect(diagnostics.fontPolicyViolations).toEqual([]);
+
+      const fonts = describeFontResponses(diagnostics.fontResponses);
+
+      expect(fonts.length).toBeGreaterThan(0);
+      for (const font of fonts) {
+        expect(font).toEqual({ origin: E2E_APP_BASE_URL, status: 200 });
+      }
+    });
+  });
+
+  test.describe("product switching", () => {
+    test.use({ persona: "pro" });
+
+    test("switches between Chat and Work without a module resolution failure", async ({
+      appPage,
+      homePage,
+      page,
+    }) => {
+      await homePage.navigate("/chat");
+      await expect(homePage.chatInput).toBeEditable();
+      const diagnostics = collectPageDiagnostics(page);
+
+      await appPage.switchProduct("Work");
+      await expect(page).toHaveURL(/\/work$/);
+      await expect(page.getByRole("link", { name: /Release Workspace/ }).first()).toBeVisible();
+
+      await appPage.switchProduct("Chat");
+      await expect(page).toHaveURL(/\/chat$/);
+      await expect(homePage.chatInput).toBeEditable();
+
+      expect(diagnostics.failedModuleRequests).toEqual([]);
+      expect(diagnostics.moduleErrors).toEqual([]);
     });
   });
 });
