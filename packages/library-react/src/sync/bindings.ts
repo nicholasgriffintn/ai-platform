@@ -10,7 +10,11 @@ import {
   conversationDelegationsQueryKey,
   conversationHandlesQueryKey,
 } from "../hooks/useDelegations.js";
-import { projectTasksQueryKey, TASK_ATTENTION_QUERY_KEY } from "../hooks/useProjectTasks.js";
+import {
+  projectTaskDetailQueryPrefix,
+  projectTasksQueryKey,
+  TASK_ATTENTION_QUERY_KEY,
+} from "../hooks/useProjectTasks.js";
 import { projectWorkbenchRunsQueryKey } from "../hooks/useProjectWorkbenchRuns.js";
 import { TASK_QUERY_KEYS } from "../hooks/useTasks.js";
 import { TRAINING_QUERY_KEYS } from "../hooks/useTraining.js";
@@ -93,6 +97,7 @@ export const SYNC_BINDINGS: SyncBinding[] = [
 
       if (projectId) {
         invalidate(context, projectTasksQueryKey(projectId));
+        invalidate(context, projectTaskDetailQueryPrefix(projectId));
       }
 
       invalidate(context, TASK_ATTENTION_QUERY_KEY);

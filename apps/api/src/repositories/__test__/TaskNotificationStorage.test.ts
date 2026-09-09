@@ -16,7 +16,10 @@ let repository: TaskNotificationRepository;
 beforeAll(async () => {
   const database = await runtime.getD1Database("DB");
   const migration = await readFile(
-    new URL("../../../migrations/0027_clean_nightcrawler.sql", import.meta.url),
+    new URL(
+      "../../../migrations/0025_conversation_runs_and_task_notifications.sql",
+      import.meta.url,
+    ),
     "utf8",
   );
 

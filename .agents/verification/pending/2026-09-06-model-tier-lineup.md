@@ -2,7 +2,7 @@
 
 - **Change:** Chat requests without a model now carry an optional `model_tier` (`low`, `medium`, `high`, `ultra`) instead of `model_router_mode`; the API resolves a fixed per-tier lineup against the account's executable models and applies the candidate's reasoning effort. Projects store `default_model_tier` (nullable) instead of `default_router_mode`. System tasks (titling, compaction, housekeeping, reading, guardrails, completions) resolve their own lineups. `/models` shows the lineup above the catalogue.
 - **Surfaces:** API, web, iOS, sandbox (coding role of the project tier).
-- **Prerequisites:** D1 migrations `0029_add_project_default_model_tier`, `0030_map_project_default_model_tier` and `0031_drop_project_default_router_mode` applied with `--remote` on preview and production before deploying the API.
+- **Prerequisites:** D1 migration `0027_project_default_model_tier` applied with `--remote` on preview and production before deploying the API.
 - **Risk if wrong:** Requests without a model fail validation, project tier preferences are lost, or a Free account receives no chat model.
 - **Commits:** pending.
 

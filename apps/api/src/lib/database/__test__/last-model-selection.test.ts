@@ -39,7 +39,7 @@ describe("last-used model persistence", () => {
       );
       db.exec(
         readFileSync(
-          new URL("../../../../migrations/0050_brave_goblin_queen.sql", import.meta.url),
+          new URL("../../../../migrations/0042_user_last_model_selection.sql", import.meta.url),
           "utf8",
         ),
       );

@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "e34d0503-c4e1-4c38-80e3-3a13f03ef23b",
-  "prevId": "48fbfbbc-9d97-4f2d-8d44-50b379f0c203",
+  "id": "326e4930-ffd0-4733-bff2-838922bd8515",
+  "prevId": "af73b219-f461-4a39-b937-7cb195198828",
   "tables": {
     "activity_record": {
       "name": "activity_record",
@@ -114,6 +114,11 @@
         "activity_record_group_id_idx": {
           "name": "activity_record_group_id_idx",
           "columns": ["group_id"],
+          "isUnique": false
+        },
+        "activity_record_operational_idx": {
+          "name": "activity_record_operational_idx",
+          "columns": ["capability_id", "status", "updated_at"],
           "isUnique": false
         }
       },
@@ -3862,6 +3867,21 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "coding_environment_cache": {
+          "name": "coding_environment_cache",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coding_cache_generation": {
+          "name": "coding_cache_generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         },
         "coding_timeout_seconds": {
           "name": "coding_timeout_seconds",

@@ -7,6 +7,7 @@ ALTER TABLE `shared_teammates` RENAME COLUMN `agent_id` TO `teammate_id`;--> sta
 ALTER TABLE `teammate_installs` RENAME COLUMN `shared_agent_id` TO `shared_teammate_id`;--> statement-breakpoint
 ALTER TABLE `teammate_installs` RENAME COLUMN `agent_id` TO `teammate_id`;--> statement-breakpoint
 ALTER TABLE `teammate_ratings` RENAME COLUMN `shared_agent_id` TO `shared_teammate_id`;--> statement-breakpoint
+ALTER TABLE `teammates` ADD `kind` text DEFAULT 'colleague' NOT NULL;--> statement-breakpoint
 DROP INDEX IF EXISTS `agents_user_id_idx`;--> statement-breakpoint
 DROP INDEX IF EXISTS `agents_owner_scope_idx`;--> statement-breakpoint
 DROP INDEX IF EXISTS `shared_agents_agent_id_idx`;--> statement-breakpoint

@@ -23,6 +23,7 @@ class OpenAIResponsesToolBuilder {
   private readonly options: OptionBag;
   private readonly tools: any[] = [];
   private readonly responseFunctionTools: any[];
+  private readonly hostedShellTool: Record<string, any> | undefined;
 
   constructor(
     private readonly params: ChatCompletionParameters,
@@ -31,6 +32,7 @@ class OpenAIResponsesToolBuilder {
   ) {
     this.options = readOptionBag(params.tool_options);
     this.responseFunctionTools = this.convertFunctionToolsToResponsesTools(functionTools);
+    this.hostedShellTool = this.buildHostedShellTool();
   }
 
   build(): any[] {
@@ -59,6 +61,7 @@ class OpenAIResponsesToolBuilder {
   private addCodeInterpreter() {
     if (
       this.modelConfig.supportsCodeExecution &&
+      !this.usesOpenAIManagedShellContainer() &&
       hasAnyEnabledTool(this.params.enabled_tools, "code_execution", "code_interpreter")
     ) {
       const codeInterpreterOptions = readRecordOption(this.options, "code_interpreter");
@@ -149,24 +152,38 @@ class OpenAIResponsesToolBuilder {
   }
 
   private addHostedShell() {
+    if (this.hostedShellTool) {
+      this.tools.push(this.hostedShellTool);
+    }
+  }
+
+  private buildHostedShellTool(): Record<string, any> | undefined {
     if (
       !this.modelConfig.supportsHostedShell ||
       !hasAnyEnabledTool(this.params.enabled_tools, "hosted_shell", "shell")
     ) {
-      return;
+      return undefined;
     }
 
     const shellOptions = readRecordOption(this.options, "shell");
 
-    this.tools.push(
-      shellOptions.type === "shell"
-        ? shellOptions
-        : {
-            ...shellOptions,
-            type: "shell",
-            environment: shellOptions.environment || { type: "container_auto" },
-          },
-    );
+    return shellOptions.type === "shell"
+      ? shellOptions
+      : {
+          ...shellOptions,
+          type: "shell",
+          environment: shellOptions.environment || { type: "container_auto" },
+        };
+  }
+
+  private usesOpenAIManagedShellContainer(): boolean {
+    if (!this.hostedShellTool) {
+      return false;
+    }
+
+    const environment = this.hostedShellTool.environment;
+
+    return !isRecord(environment) || environment.type !== "local";
   }
 
   private addToolSearch() {

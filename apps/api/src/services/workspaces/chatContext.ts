@@ -1,7 +1,5 @@
 import {
   PROJECT_TASK_TOOL_IDS,
-  projectCodingEnvironmentSchema,
-  resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicyCreatesCommit,
   type ChatHostedToolSettings,
   type RecipeConnectorProvider,
@@ -14,12 +12,14 @@ import {
   RECIPE_LOOKUP_TOOL,
   RECIPE_SETUP_TOOL,
 } from "~/services/apps/recipes/catalog";
-import { run_sandbox_task } from "~/services/functions/definitions/sandbox";
 import { resolveProjectSkillGrants } from "~/services/skills/scope";
 import type { CoreChatOptions } from "~/types";
-import { safeParseJson } from "~/utils/json";
 
 import { resolveChatProjectAccess } from "./chatProjectAccess";
+import {
+  PROJECT_CODING_TOOL_IDS,
+  resolveProjectCodingEnvironment,
+} from "./projectCodingEnvironment";
 import { resolveProjectRecipeConnectorScope } from "./projectRecipeConnectorScope";
 import { resolveProjectTools } from "./projectTools";
 
@@ -32,8 +32,6 @@ export interface ProjectChatContext {
   toolOptions?: ChatHostedToolSettings;
   sandboxOptions?: SandboxRequestOptions;
 }
-
-const PROJECT_CODING_TOOL_IDS = [run_sandbox_task.name];
 
 export function applyProjectCodingEnvironment(
   options: Pick<CoreChatOptions, "options">,
@@ -72,23 +70,11 @@ export async function resolveProjectChatContext(
   const projectId = project.id;
   const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
   const projectTools = resolveProjectTools(capabilities);
-  const codingEnvironment = projectCodingEnvironmentSchema.safeParse({
-    installationId: project.coding_installation_id,
-    repository: project.coding_repository,
-    promptStrategy: project.coding_prompt_strategy,
-    deliveryPolicy: resolveSandboxDeliveryPolicy(
-      project.coding_delivery_policy ? safeParseJson(project.coding_delivery_policy) : null,
-    ),
-    environmentSetup: project.coding_environment_setup
-      ? safeParseJson(project.coding_environment_setup)
-      : undefined,
-    timeoutSeconds: project.coding_timeout_seconds,
-    inspectionWindowSeconds: project.coding_inspection_window_seconds,
-  });
+  const codingEnvironment = resolveProjectCodingEnvironment(project);
   const toolIds = [
     ...projectTools.enabledTools,
     ...PROJECT_TASK_TOOL_IDS,
-    ...(project.coding_enabled === 1 && codingEnvironment.success ? PROJECT_CODING_TOOL_IDS : []),
+    ...(codingEnvironment ? PROJECT_CODING_TOOL_IDS : []),
   ];
   const recipeId = options.options?.recipe?.id;
   const hasRecipe =
@@ -115,20 +101,19 @@ export async function resolveProjectChatContext(
     enabledSkillIds: resolveProjectSkillGrants(capabilities),
     connectorProviders: resolveProjectRecipeConnectorScope(capabilities).providers,
     toolOptions: projectTools.toolOptions,
-    sandboxOptions:
-      project.coding_enabled === 1 && codingEnvironment.success
-        ? {
-            enabled: true,
-            installationId: codingEnvironment.data.installationId,
-            repo: codingEnvironment.data.repository,
-            taskType: "feature-implementation",
-            promptStrategy: codingEnvironment.data.promptStrategy,
-            deliveryPolicy: codingEnvironment.data.deliveryPolicy,
-            shouldCommit: sandboxDeliveryPolicyCreatesCommit(codingEnvironment.data.deliveryPolicy),
-            environmentSetup: codingEnvironment.data.environmentSetup,
-            timeoutSeconds: codingEnvironment.data.timeoutSeconds,
-            inspectionWindowSeconds: codingEnvironment.data.inspectionWindowSeconds,
-          }
-        : undefined,
+    sandboxOptions: codingEnvironment
+      ? {
+          enabled: true,
+          installationId: codingEnvironment.installationId,
+          repo: codingEnvironment.repository,
+          taskType: "feature-implementation",
+          promptStrategy: codingEnvironment.promptStrategy,
+          deliveryPolicy: codingEnvironment.deliveryPolicy,
+          shouldCommit: sandboxDeliveryPolicyCreatesCommit(codingEnvironment.deliveryPolicy),
+          environmentSetup: codingEnvironment.environmentSetup,
+          timeoutSeconds: codingEnvironment.timeoutSeconds,
+          inspectionWindowSeconds: codingEnvironment.inspectionWindowSeconds,
+        }
+      : undefined,
   };
 }

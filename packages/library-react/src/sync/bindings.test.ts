@@ -87,4 +87,15 @@ describe("sync bindings", () => {
 
     expect(invalidatedKeys).toContainEqual(["project-tasks", "project-1"]);
   });
+
+  it("refreshes an open task detail when its project task changes", () => {
+    const { context, invalidatedKeys } = createContext();
+
+    applySyncEvent(
+      context,
+      buildEvent("project_task.changed", { projectId: "project-1", taskId: "task-1" }),
+    );
+
+    expect(invalidatedKeys).toContainEqual(["project-task", "project-1"]);
+  });
 });

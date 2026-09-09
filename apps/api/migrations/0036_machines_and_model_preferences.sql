@@ -24,4 +24,5 @@ ALTER TABLE `usage_event` ADD `site` text;--> statement-breakpoint
 ALTER TABLE `user_settings` ADD `default_model_tier` text;--> statement-breakpoint
 ALTER TABLE `user_settings` ADD `default_model_id` text;--> statement-breakpoint
 ALTER TABLE `user_settings` ADD `default_compute_site` text;--> statement-breakpoint
-ALTER TABLE `user_settings` ADD `onboarding_seen` text DEFAULT '[]' NOT NULL;
+ALTER TABLE `user_settings` ADD `onboarding_seen` text DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE `user_settings` ADD `advertise_machines` integer DEFAULT true;

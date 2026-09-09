@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c4c11741-6a59-4956-9c51-e9dccf0b61a5",
-  "prevId": "250fb39e-7dc8-497c-a7fe-166ca945f847",
+  "id": "a9f2287a-58f8-4a58-a2ee-06160f45370d",
+  "prevId": "191ead38-a3e5-43ce-9113-18570e1ea07a",
   "tables": {
     "activity_record": {
       "name": "activity_record",
@@ -148,371 +148,6 @@
           "columnsFrom": ["conversation_id"],
           "columnsTo": ["id"],
           "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "agent_installs": {
-      "name": "agent_installs",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "shared_agent_id": {
-          "name": "shared_agent_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "agent_id": {
-          "name": "agent_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        }
-      },
-      "indexes": {
-        "agent_installs_shared_agent_id_idx": {
-          "name": "agent_installs_shared_agent_id_idx",
-          "columns": ["shared_agent_id"],
-          "isUnique": false
-        },
-        "agent_installs_user_id_idx": {
-          "name": "agent_installs_user_id_idx",
-          "columns": ["user_id"],
-          "isUnique": false
-        },
-        "agent_installs_agent_id_idx": {
-          "name": "agent_installs_agent_id_idx",
-          "columns": ["agent_id"],
-          "isUnique": false
-        },
-        "agent_installs_unique_idx": {
-          "name": "agent_installs_unique_idx",
-          "columns": ["shared_agent_id", "user_id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "agent_installs_shared_agent_id_shared_agents_id_fk": {
-          "name": "agent_installs_shared_agent_id_shared_agents_id_fk",
-          "tableFrom": "agent_installs",
-          "tableTo": "shared_agents",
-          "columnsFrom": ["shared_agent_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "agent_installs_user_id_user_id_fk": {
-          "name": "agent_installs_user_id_user_id_fk",
-          "tableFrom": "agent_installs",
-          "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "agent_installs_agent_id_agents_id_fk": {
-          "name": "agent_installs_agent_id_agents_id_fk",
-          "tableFrom": "agent_installs",
-          "tableTo": "agents",
-          "columnsFrom": ["agent_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "agent_ratings": {
-      "name": "agent_ratings",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "shared_agent_id": {
-          "name": "shared_agent_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "rating": {
-          "name": "rating",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "review": {
-          "name": "review",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        }
-      },
-      "indexes": {
-        "agent_ratings_shared_agent_id_idx": {
-          "name": "agent_ratings_shared_agent_id_idx",
-          "columns": ["shared_agent_id"],
-          "isUnique": false
-        },
-        "agent_ratings_user_id_idx": {
-          "name": "agent_ratings_user_id_idx",
-          "columns": ["user_id"],
-          "isUnique": false
-        },
-        "agent_ratings_rating_idx": {
-          "name": "agent_ratings_rating_idx",
-          "columns": ["rating"],
-          "isUnique": false
-        },
-        "agent_ratings_unique_idx": {
-          "name": "agent_ratings_unique_idx",
-          "columns": ["shared_agent_id", "user_id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "agent_ratings_shared_agent_id_shared_agents_id_fk": {
-          "name": "agent_ratings_shared_agent_id_shared_agents_id_fk",
-          "tableFrom": "agent_ratings",
-          "tableTo": "shared_agents",
-          "columnsFrom": ["shared_agent_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "agent_ratings_user_id_user_id_fk": {
-          "name": "agent_ratings_user_id_user_id_fk",
-          "tableFrom": "agent_ratings",
-          "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "agents": {
-      "name": "agents",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "owner_scope_type": {
-          "name": "owner_scope_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'user'"
-        },
-        "owner_scope_id": {
-          "name": "owner_scope_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
-        },
-        "derived_from_agent_id": {
-          "name": "derived_from_agent_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
-        },
-        "avatar_url": {
-          "name": "avatar_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "servers": {
-          "name": "servers",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "model": {
-          "name": "model",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "temperature": {
-          "name": "temperature",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "max_steps": {
-          "name": "max_steps",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "system_prompt": {
-          "name": "system_prompt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "few_shot_examples": {
-          "name": "few_shot_examples",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "enabled_tools": {
-          "name": "enabled_tools",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "skill_ids": {
-          "name": "skill_ids",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "mode": {
-          "name": "mode",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        }
-      },
-      "indexes": {
-        "agents_user_id_idx": {
-          "name": "agents_user_id_idx",
-          "columns": ["user_id"],
-          "isUnique": false
-        },
-        "agents_owner_scope_idx": {
-          "name": "agents_owner_scope_idx",
-          "columns": ["owner_scope_type", "owner_scope_id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "agents_user_id_user_id_fk": {
-          "name": "agents_user_id_user_id_fk",
-          "tableFrom": "agents",
-          "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -3127,6 +2762,203 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "memory_document": {
+      "name": "memory_document",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "scope_type": {
+          "name": "scope_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "scope_id": {
+          "name": "scope_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "memory_document_scope_name_idx": {
+          "name": "memory_document_scope_name_idx",
+          "columns": ["scope_type", "scope_id", "name"],
+          "isUnique": true,
+          "where": "\"memory_document\".\"deleted_at\" IS NULL"
+        },
+        "memory_document_scope_idx": {
+          "name": "memory_document_scope_idx",
+          "columns": ["scope_type", "scope_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "memory_document_created_by_user_id_fk": {
+          "name": "memory_document_created_by_user_id_fk",
+          "tableFrom": "memory_document",
+          "tableTo": "user",
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "memory_document_scope_type_check": {
+          "name": "memory_document_scope_type_check",
+          "value": "\"memory_document\".\"scope_type\" IN ('personal', 'project')"
+        }
+      }
+    },
+    "memory_document_revision": {
+      "name": "memory_document_revision",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "change_note": {
+          "name": "change_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "memory_document_revision_document_revision_idx": {
+          "name": "memory_document_revision_document_revision_idx",
+          "columns": ["document_id", "revision"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "memory_document_revision_document_id_memory_document_id_fk": {
+          "name": "memory_document_revision_document_id_memory_document_id_fk",
+          "tableFrom": "memory_document_revision",
+          "tableTo": "memory_document",
+          "columnsFrom": ["document_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "memory_document_revision_created_by_user_id_fk": {
+          "name": "memory_document_revision_created_by_user_id_fk",
+          "tableFrom": "memory_document_revision",
+          "tableTo": "user",
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "memory_syntheses": {
       "name": "memory_syntheses",
       "columns": {
@@ -5094,6 +4926,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "origin_conversation_id": {
+          "name": "origin_conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "goal_id": {
           "name": "goal_id",
           "type": "text",
@@ -5210,6 +5049,11 @@
           "name": "project_task_run_idx",
           "columns": ["run_id"],
           "isUnique": false
+        },
+        "project_task_origin_conversation_idx": {
+          "name": "project_task_origin_conversation_idx",
+          "columns": ["origin_conversation_id"],
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -5263,6 +5107,15 @@
           "tableFrom": "project_task",
           "tableTo": "conversation",
           "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "project_task_origin_conversation_id_conversation_id_fk": {
+          "name": "project_task_origin_conversation_id_conversation_id_fk",
+          "tableFrom": "project_task",
+          "tableTo": "conversation",
+          "columnsFrom": ["origin_conversation_id"],
           "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
@@ -5686,8 +5539,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "shared_agents": {
-      "name": "shared_agents",
+    "shared_teammates": {
+      "name": "shared_teammates",
       "columns": {
         "id": {
           "name": "id",
@@ -5696,8 +5549,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "agent_id": {
-          "name": "agent_id",
+        "teammate_id": {
+          "name": "teammate_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -5811,55 +5664,55 @@
         }
       },
       "indexes": {
-        "shared_agents_agent_id_idx": {
-          "name": "shared_agents_agent_id_idx",
-          "columns": ["agent_id"],
+        "shared_teammates_teammate_id_idx": {
+          "name": "shared_teammates_teammate_id_idx",
+          "columns": ["teammate_id"],
           "isUnique": false
         },
-        "shared_agents_user_id_idx": {
-          "name": "shared_agents_user_id_idx",
+        "shared_teammates_user_id_idx": {
+          "name": "shared_teammates_user_id_idx",
           "columns": ["user_id"],
           "isUnique": false
         },
-        "shared_agents_category_idx": {
-          "name": "shared_agents_category_idx",
+        "shared_teammates_category_idx": {
+          "name": "shared_teammates_category_idx",
           "columns": ["category"],
           "isUnique": false
         },
-        "shared_agents_featured_idx": {
-          "name": "shared_agents_featured_idx",
+        "shared_teammates_featured_idx": {
+          "name": "shared_teammates_featured_idx",
           "columns": ["is_featured"],
           "isUnique": false
         },
-        "shared_agents_public_idx": {
-          "name": "shared_agents_public_idx",
+        "shared_teammates_public_idx": {
+          "name": "shared_teammates_public_idx",
           "columns": ["is_public"],
           "isUnique": false
         },
-        "shared_agents_usage_idx": {
-          "name": "shared_agents_usage_idx",
+        "shared_teammates_usage_idx": {
+          "name": "shared_teammates_usage_idx",
           "columns": ["usage_count"],
           "isUnique": false
         },
-        "shared_agents_rating_idx": {
-          "name": "shared_agents_rating_idx",
+        "shared_teammates_rating_idx": {
+          "name": "shared_teammates_rating_idx",
           "columns": ["rating_average"],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "shared_agents_agent_id_agents_id_fk": {
-          "name": "shared_agents_agent_id_agents_id_fk",
-          "tableFrom": "shared_agents",
-          "tableTo": "agents",
-          "columnsFrom": ["agent_id"],
+        "shared_teammates_teammate_id_teammates_id_fk": {
+          "name": "shared_teammates_teammate_id_teammates_id_fk",
+          "tableFrom": "shared_teammates",
+          "tableTo": "teammates",
+          "columnsFrom": ["teammate_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "shared_agents_user_id_user_id_fk": {
-          "name": "shared_agents_user_id_user_id_fk",
-          "tableFrom": "shared_agents",
+        "shared_teammates_user_id_user_id_fk": {
+          "name": "shared_teammates_user_id_user_id_fk",
+          "tableFrom": "shared_teammates",
           "tableTo": "user",
           "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
@@ -6967,6 +6820,379 @@
           "columnsFrom": ["project_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "teammate_installs": {
+      "name": "teammate_installs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shared_teammate_id": {
+          "name": "shared_teammate_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "teammate_id": {
+          "name": "teammate_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "teammate_installs_shared_teammate_id_idx": {
+          "name": "teammate_installs_shared_teammate_id_idx",
+          "columns": ["shared_teammate_id"],
+          "isUnique": false
+        },
+        "teammate_installs_user_id_idx": {
+          "name": "teammate_installs_user_id_idx",
+          "columns": ["user_id"],
+          "isUnique": false
+        },
+        "teammate_installs_teammate_id_idx": {
+          "name": "teammate_installs_teammate_id_idx",
+          "columns": ["teammate_id"],
+          "isUnique": false
+        },
+        "teammate_installs_unique_idx": {
+          "name": "teammate_installs_unique_idx",
+          "columns": ["shared_teammate_id", "user_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "teammate_installs_shared_teammate_id_shared_teammates_id_fk": {
+          "name": "teammate_installs_shared_teammate_id_shared_teammates_id_fk",
+          "tableFrom": "teammate_installs",
+          "tableTo": "shared_teammates",
+          "columnsFrom": ["shared_teammate_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "teammate_installs_user_id_user_id_fk": {
+          "name": "teammate_installs_user_id_user_id_fk",
+          "tableFrom": "teammate_installs",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "teammate_installs_teammate_id_teammates_id_fk": {
+          "name": "teammate_installs_teammate_id_teammates_id_fk",
+          "tableFrom": "teammate_installs",
+          "tableTo": "teammates",
+          "columnsFrom": ["teammate_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "teammate_ratings": {
+      "name": "teammate_ratings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shared_teammate_id": {
+          "name": "shared_teammate_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rating": {
+          "name": "rating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "review": {
+          "name": "review",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "teammate_ratings_shared_teammate_id_idx": {
+          "name": "teammate_ratings_shared_teammate_id_idx",
+          "columns": ["shared_teammate_id"],
+          "isUnique": false
+        },
+        "teammate_ratings_user_id_idx": {
+          "name": "teammate_ratings_user_id_idx",
+          "columns": ["user_id"],
+          "isUnique": false
+        },
+        "teammate_ratings_rating_idx": {
+          "name": "teammate_ratings_rating_idx",
+          "columns": ["rating"],
+          "isUnique": false
+        },
+        "teammate_ratings_unique_idx": {
+          "name": "teammate_ratings_unique_idx",
+          "columns": ["shared_teammate_id", "user_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "teammate_ratings_shared_teammate_id_shared_teammates_id_fk": {
+          "name": "teammate_ratings_shared_teammate_id_shared_teammates_id_fk",
+          "tableFrom": "teammate_ratings",
+          "tableTo": "shared_teammates",
+          "columnsFrom": ["shared_teammate_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "teammate_ratings_user_id_user_id_fk": {
+          "name": "teammate_ratings_user_id_user_id_fk",
+          "tableFrom": "teammate_ratings",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "teammates": {
+      "name": "teammates",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "owner_scope_type": {
+          "name": "owner_scope_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'user'"
+        },
+        "owner_scope_id": {
+          "name": "owner_scope_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "derived_from_teammate_id": {
+          "name": "derived_from_teammate_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'colleague'"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "servers": {
+          "name": "servers",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "model": {
+          "name": "model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "temperature": {
+          "name": "temperature",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "max_steps": {
+          "name": "max_steps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "system_prompt": {
+          "name": "system_prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "few_shot_examples": {
+          "name": "few_shot_examples",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "enabled_tools": {
+          "name": "enabled_tools",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "skill_ids": {
+          "name": "skill_ids",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "mode": {
+          "name": "mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "teammates_user_id_idx": {
+          "name": "teammates_user_id_idx",
+          "columns": ["user_id"],
+          "isUnique": false
+        },
+        "teammates_owner_scope_idx": {
+          "name": "teammates_owner_scope_idx",
+          "columns": ["owner_scope_type", "owner_scope_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "teammates_user_id_user_id_fk": {
+          "name": "teammates_user_id_user_id_fk",
+          "tableFrom": "teammates",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },

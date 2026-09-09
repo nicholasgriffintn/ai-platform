@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "af73b219-f461-4a39-b937-7cb195198828",
-  "prevId": "e34d0503-c4e1-4c38-80e3-3a13f03ef23b",
+  "id": "94722bd0-df89-4b79-b52d-09fc49593473",
+  "prevId": "326e4930-ffd0-4733-bff2-838922bd8515",
   "tables": {
     "activity_record": {
       "name": "activity_record",
@@ -114,6 +114,11 @@
         "activity_record_group_id_idx": {
           "name": "activity_record_group_id_idx",
           "columns": ["group_id"],
+          "isUnique": false
+        },
+        "activity_record_operational_idx": {
+          "name": "activity_record_operational_idx",
+          "columns": ["capability_id", "status", "updated_at"],
           "isUnique": false
         }
       },
@@ -1734,6 +1739,116 @@
         }
       },
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "conversation_user_state": {
+      "name": "conversation_user_state",
+      "columns": {
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_pinned": {
+          "name": "is_pinned",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "is_unread": {
+          "name": "is_unread",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "snoozed_until": {
+          "name": "snoozed_until",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "snoozed_next_response_at": {
+          "name": "snoozed_next_response_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "conversation_user_state_pinned_idx": {
+          "name": "conversation_user_state_pinned_idx",
+          "columns": ["user_id", "is_pinned"],
+          "isUnique": false
+        },
+        "conversation_user_state_unread_idx": {
+          "name": "conversation_user_state_unread_idx",
+          "columns": ["user_id", "is_unread"],
+          "isUnique": false
+        },
+        "conversation_user_state_snooze_idx": {
+          "name": "conversation_user_state_snooze_idx",
+          "columns": ["user_id", "snoozed_until"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "conversation_user_state_conversation_id_conversation_id_fk": {
+          "name": "conversation_user_state_conversation_id_conversation_id_fk",
+          "tableFrom": "conversation_user_state",
+          "tableTo": "conversation",
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "conversation_user_state_user_id_user_id_fk": {
+          "name": "conversation_user_state_user_id_user_id_fk",
+          "tableFrom": "conversation_user_state",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "conversation_user_state_conversation_id_user_id_pk": {
+          "columns": ["conversation_id", "user_id"],
+          "name": "conversation_user_state_conversation_id_user_id_pk"
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     },

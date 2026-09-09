@@ -1,1 +1,0 @@
-ALTER TABLE `agents` ADD `kind` text DEFAULT 'colleague' NOT NULL;

@@ -23,8 +23,11 @@ export function ShortcutTooltip({
   const { isVisible, ...hoverProps } = useDelayedHover({ delayMs: 500, disabled });
 
   return (
-    <span className={cn("relative inline-flex", className)} {...hoverProps}>
-      <span aria-describedby={disabled ? undefined : tooltipId} className="inline-flex">
+    <span className={cn("relative inline-flex max-w-full", className)} {...hoverProps}>
+      <span
+        aria-describedby={disabled ? undefined : tooltipId}
+        className="inline-flex max-w-full min-w-0"
+      >
         {children}
       </span>
       {!disabled ? (

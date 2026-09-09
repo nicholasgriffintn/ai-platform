@@ -389,7 +389,7 @@ test.describe("Account-owned resources", () => {
     await homePage.selectModel("GPT OSS 120B");
     await homePage.sendMessageAndRequireCompletion("Create usage for the task-list check");
     await homePage.waitForChatResponse(0);
-    await profilePage.openTab("tasks", "Attention");
+    await profilePage.openAccountPage("/chat/attention", "Attention");
 
     await expect(page.getByText(/usage_rollup/i)).toHaveCount(0);
     await expect(page.getByText(/realtime_reconciliation/i)).toHaveCount(0);

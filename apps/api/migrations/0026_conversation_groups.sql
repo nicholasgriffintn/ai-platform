@@ -24,6 +24,4 @@ CREATE TABLE `conversation_group_membership` (
 	FOREIGN KEY (`assigned_by_user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE INDEX `conversation_group_membership_group_idx` ON `conversation_group_membership` (`group_id`);--> statement-breakpoint
-DROP TABLE `conversation_label`;--> statement-breakpoint
-DROP TABLE `conversation_label_assignment`;
+CREATE INDEX `conversation_group_membership_group_idx` ON `conversation_group_membership` (`group_id`);

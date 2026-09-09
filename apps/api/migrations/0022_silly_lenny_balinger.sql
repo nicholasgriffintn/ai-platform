@@ -1,1 +1,0 @@
-ALTER TABLE `project` ADD `coding_environment_setup` text;

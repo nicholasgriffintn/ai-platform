@@ -3,7 +3,6 @@ import type { ConversationHandle } from "@ngriffin_uk/polychat-schemas";
 
 interface ConversationHandleSettingsProps {
   handles: ConversationHandle[];
-  isLoading: boolean;
   isRevoking: boolean;
   hasError: boolean;
   onRevoke: (id: string) => void;
@@ -11,7 +10,6 @@ interface ConversationHandleSettingsProps {
 
 export function ConversationHandleSettings({
   handles,
-  isLoading,
   isRevoking,
   hasError,
   onRevoke,
@@ -29,11 +27,7 @@ export function ConversationHandleSettings({
           Conversation access could not be updated. Try again.
         </p>
       )}
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading access…</p>
-      ) : handles.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No active delegate handles.</p>
-      ) : (
+      {handles.length > 0 && (
         <ul className="space-y-2" aria-label="Active conversation handles">
           {handles.map((handle) => (
             <li

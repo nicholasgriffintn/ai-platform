@@ -1,6 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
+  "id": "98ea5ee9-3b86-4899-a50b-c22d4b93299a",
+  "prevId": "c7b22c4a-655b-40cf-8316-ae00c736b568",
   "tables": {
     "activity_record": {
       "name": "activity_record",
@@ -2760,6 +2762,203 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "memory_document": {
+      "name": "memory_document",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "scope_type": {
+          "name": "scope_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "scope_id": {
+          "name": "scope_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "memory_document_scope_name_idx": {
+          "name": "memory_document_scope_name_idx",
+          "columns": ["scope_type", "scope_id", "name"],
+          "isUnique": true,
+          "where": "\"memory_document\".\"deleted_at\" IS NULL"
+        },
+        "memory_document_scope_idx": {
+          "name": "memory_document_scope_idx",
+          "columns": ["scope_type", "scope_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "memory_document_created_by_user_id_fk": {
+          "name": "memory_document_created_by_user_id_fk",
+          "tableFrom": "memory_document",
+          "tableTo": "user",
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "memory_document_scope_type_check": {
+          "name": "memory_document_scope_type_check",
+          "value": "\"memory_document\".\"scope_type\" IN ('personal', 'project')"
+        }
+      }
+    },
+    "memory_document_revision": {
+      "name": "memory_document_revision",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "change_note": {
+          "name": "change_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "memory_document_revision_document_revision_idx": {
+          "name": "memory_document_revision_document_revision_idx",
+          "columns": ["document_id", "revision"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "memory_document_revision_document_id_memory_document_id_fk": {
+          "name": "memory_document_revision_document_id_memory_document_id_fk",
+          "tableFrom": "memory_document_revision",
+          "tableTo": "memory_document",
+          "columnsFrom": ["document_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "memory_document_revision_created_by_user_id_fk": {
+          "name": "memory_document_revision_created_by_user_id_fk",
+          "tableFrom": "memory_document_revision",
+          "tableTo": "user",
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "memory_syntheses": {
       "name": "memory_syntheses",
       "columns": {
@@ -3105,6 +3304,80 @@
           "columnsFrom": ["run_id"],
           "columnsTo": ["id"],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "message_user_state": {
+      "name": "message_user_state",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "saved_at": {
+          "name": "saved_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "message_user_state_user_message_idx": {
+          "name": "message_user_state_user_message_idx",
+          "columns": ["user_id", "message_id"],
+          "isUnique": true
+        },
+        "message_user_state_user_saved_idx": {
+          "name": "message_user_state_user_saved_idx",
+          "columns": ["user_id", "saved_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "message_user_state_user_id_user_id_fk": {
+          "name": "message_user_state_user_id_user_id_fk",
+          "tableFrom": "message_user_state",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -4520,6 +4793,14 @@
           "notNull": true,
           "autoincrement": false
         },
+        "excluded": {
+          "name": "excluded",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
         "configuration": {
           "name": "configuration",
           "type": "text",
@@ -4727,6 +5008,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "origin_conversation_id": {
+          "name": "origin_conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "goal_id": {
           "name": "goal_id",
           "type": "text",
@@ -4843,6 +5131,11 @@
           "name": "project_task_run_idx",
           "columns": ["run_id"],
           "isUnique": false
+        },
+        "project_task_origin_conversation_idx": {
+          "name": "project_task_origin_conversation_idx",
+          "columns": ["origin_conversation_id"],
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -4896,6 +5189,15 @@
           "tableFrom": "project_task",
           "tableTo": "conversation",
           "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "project_task_origin_conversation_id_conversation_id_fk": {
+          "name": "project_task_origin_conversation_id_conversation_id_fk",
+          "tableFrom": "project_task",
+          "tableTo": "conversation",
+          "columnsFrom": ["origin_conversation_id"],
           "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
@@ -6850,6 +7152,14 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'colleague'"
+        },
+        "workspace_default": {
+          "name": "workspace_default",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         },
         "name": {
           "name": "name",
@@ -9333,12 +9643,11 @@
   "views": {},
   "enums": {},
   "_meta": {
+    "schemas": {},
     "tables": {},
     "columns": {}
   },
   "internal": {
     "indexes": {}
-  },
-  "id": "f7001563-127c-4b20-9f8a-aacd9543ea50",
-  "prevId": "dbad559b-2b7a-4cf0-99d9-475cdc77086f"
+  }
 }

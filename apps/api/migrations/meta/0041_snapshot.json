@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3b0e4ad7-372f-4c18-b216-0d62ff33a3fc",
-  "prevId": "582048ef-67f8-4c79-843b-1add5bf7a8aa",
+  "id": "72650280-457a-4355-b979-401f4c83824c",
+  "prevId": "866695d2-03e3-4276-ba22-b29c37b58145",
   "tables": {
     "activity_record": {
       "name": "activity_record",
@@ -1396,6 +1396,14 @@
           "notNull": false,
           "autoincrement": false
         },
+        "permission_mode": {
+          "name": "permission_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'auto_accept_edits'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "text",
@@ -1682,6 +1690,95 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "conversation_handle": {
+      "name": "conversation_handle",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "delegation_id": {
+          "name": "delegation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "granted_by": {
+          "name": "granted_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "granted_at": {
+          "name": "granted_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "conversation_handle_delegation_idx": {
+          "name": "conversation_handle_delegation_idx",
+          "columns": ["delegation_id"],
+          "isUnique": true
+        },
+        "conversation_handle_conversation_idx": {
+          "name": "conversation_handle_conversation_idx",
+          "columns": ["conversation_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "conversation_handle_conversation_id_conversation_id_fk": {
+          "name": "conversation_handle_conversation_id_conversation_id_fk",
+          "tableFrom": "conversation_handle",
+          "tableTo": "conversation",
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "conversation_handle_delegation_id_delegation_id_fk": {
+          "name": "conversation_handle_delegation_id_delegation_id_fk",
+          "tableFrom": "conversation_handle",
+          "tableTo": "delegation",
+          "columnsFrom": ["delegation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "conversation_run": {
       "name": "conversation_run",
       "columns": {
@@ -1726,6 +1823,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "trigger": {
+          "name": "trigger",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'user'"
         },
         "status": {
           "name": "status",
@@ -2153,6 +2258,163 @@
           "name": "conversation_user_state_conversation_id_user_id_pk"
         }
       },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "delegation": {
+      "name": "delegation",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "parent_conversation_id": {
+          "name": "parent_conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "child_conversation_id": {
+          "name": "child_conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "parent_run_id": {
+          "name": "parent_run_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "depth": {
+          "name": "depth",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "teammate_id": {
+          "name": "teammate_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "goal": {
+          "name": "goal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "wait_for": {
+          "name": "wait_for",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "max_credit_micros": {
+          "name": "max_credit_micros",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "max_steps": {
+          "name": "max_steps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deadline": {
+          "name": "deadline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'queued'"
+        },
+        "result_json": {
+          "name": "result_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "delegation_parent_conversation_idx": {
+          "name": "delegation_parent_conversation_idx",
+          "columns": ["parent_conversation_id"],
+          "isUnique": false
+        },
+        "delegation_child_conversation_idx": {
+          "name": "delegation_child_conversation_idx",
+          "columns": ["child_conversation_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "delegation_parent_conversation_id_conversation_id_fk": {
+          "name": "delegation_parent_conversation_id_conversation_id_fk",
+          "tableFrom": "delegation",
+          "tableTo": "conversation",
+          "columnsFrom": ["parent_conversation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "delegation_child_conversation_id_conversation_id_fk": {
+          "name": "delegation_child_conversation_id_conversation_id_fk",
+          "tableFrom": "delegation",
+          "tableTo": "conversation",
+          "columnsFrom": ["child_conversation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "delegation_parent_run_id_conversation_run_id_fk": {
+          "name": "delegation_parent_run_id_conversation_run_id_fk",
+          "tableFrom": "delegation",
+          "tableTo": "conversation_run",
+          "columnsFrom": ["parent_run_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
@@ -4931,6 +5193,14 @@
           "autoincrement": false,
           "default": 900
         },
+        "coding_inspection_window_seconds": {
+          "name": "coding_inspection_window_seconds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
         "flow": {
           "name": "flow",
           "type": "text",
@@ -5093,6 +5363,81 @@
           "columnsFrom": ["created_by"],
           "columnsTo": ["id"],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "project_environment_variable": {
+      "name": "project_environment_variable",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_value": {
+          "name": "encrypted_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "project_environment_variable_name_idx": {
+          "name": "project_environment_variable_name_idx",
+          "columns": ["project_id", "name"],
+          "isUnique": true
+        },
+        "project_environment_variable_project_idx": {
+          "name": "project_environment_variable_project_idx",
+          "columns": ["project_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "project_environment_variable_project_id_project_id_fk": {
+          "name": "project_environment_variable_project_id_project_id_fk",
+          "tableFrom": "project_environment_variable",
+          "tableTo": "project",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -9581,6 +9926,14 @@
         },
         "tracking_enabled": {
           "name": "tracking_enabled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": true
+        },
+        "advertise_machines": {
+          "name": "advertise_machines",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,

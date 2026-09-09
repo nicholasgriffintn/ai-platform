@@ -151,13 +151,44 @@ describe("current OpenAI model capabilities", () => {
       expect(modelConfig, `${modelId} is missing from the catalogue`).toBeDefined();
       expect(body.tools, modelId).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ type: "code_interpreter" }),
           expect.objectContaining({ type: "shell" }),
           expect.objectContaining({ type: "computer" }),
         ]),
       );
       expect(modelConfig.supportsToolSearch, modelId).toBe(true);
     }
+  });
+
+  it("lets an OpenAI-managed shell container supersede code interpreter", () => {
+    const body = buildOpenAIResponsesBody(
+      {
+        ...baseParams,
+        enabled_tools: ["code_execution", "hosted_shell"],
+        reasoning_effort: "medium",
+      },
+      getProviderModels("openai")["gpt-5.6"],
+    );
+
+    expect(body.tools).toEqual([
+      expect.objectContaining({ type: "shell", environment: { type: "container_auto" } }),
+    ]);
+    expect(body.include ?? []).not.toContain("code_interpreter_call.outputs");
+  });
+
+  it("keeps code interpreter alongside a locally executed shell", () => {
+    const body = buildOpenAIResponsesBody(
+      {
+        ...baseParams,
+        enabled_tools: ["code_execution", "hosted_shell"],
+        tool_options: { shell: { environment: { type: "local" } } },
+      },
+      getProviderModels("openai")["gpt-5.6"],
+    );
+
+    expect(body.tools).toEqual([
+      expect.objectContaining({ type: "code_interpreter" }),
+      expect.objectContaining({ type: "shell", environment: { type: "local" } }),
+    ]);
   });
 
   it("exposes Fast processing only on supported OpenAI models", () => {

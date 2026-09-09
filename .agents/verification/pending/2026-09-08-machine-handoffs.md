@@ -2,7 +2,7 @@
 
 - **Change:** Web and iOS send text turns through the authenticated desktop relay and display the returned reply. Remove the unconsumed handoff queue and its placeholder replies.
 - **Surfaces:** Web and iOS chat, desktop discovery and execution, API machine routes.
-- **Prerequisites:** Configure `MACHINE_RUN_COORDINATOR` and its Durable Object migration from the API example configuration. Database migration `0049_melted_freak` removes the unused handoff queue; it has not been applied to an existing database by this audit.
+- **Prerequisites:** Configure `MACHINE_RUN_COORDINATOR` and its Durable Object migration from the API example configuration. The unused handoff queue table was removed from the pending migration set before it reached preview or production, so no database change is required.
 - **Risk if wrong:** A model appears selectable but cannot reply, output is lost on reload, or another account can access the run.
 
 ## Verify

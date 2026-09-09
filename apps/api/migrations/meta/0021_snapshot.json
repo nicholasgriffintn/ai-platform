@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "48fbfbbc-9d97-4f2d-8d44-50b379f0c203",
+  "id": "af73b219-f461-4a39-b937-7cb195198828",
   "prevId": "11f1d66d-4464-4e27-b6b3-5ba1777d8476",
   "tables": {
     "activity_record": {
@@ -3855,6 +3855,28 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "coding_environment_setup": {
+          "name": "coding_environment_setup",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coding_environment_cache": {
+          "name": "coding_environment_cache",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coding_cache_generation": {
+          "name": "coding_cache_generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         },
         "coding_timeout_seconds": {
           "name": "coding_timeout_seconds",

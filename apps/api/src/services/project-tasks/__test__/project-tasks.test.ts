@@ -74,6 +74,7 @@ function createContext(
     teammate?: Record<string, unknown> | null;
     activeCount?: number;
     boardTasks?: unknown[];
+    project?: Record<string, unknown>;
   } = {},
 ) {
   const task = { ...baseTask, ...overrides.task };
@@ -110,6 +111,7 @@ function createContext(
             workspace_id: "workspace-1",
             name: "Pricing",
             flow: overrides.flow ?? null,
+            ...overrides.project,
           }),
           getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
           getMembership: vi.fn().mockImplementation(async (_workspaceId, userId: number) => {
@@ -702,6 +704,43 @@ describe("resolveTaskRuntime", () => {
     });
 
     expect(runtime.model).toBe("gpt-5");
+  });
+
+  it("gives a coding project's task the sandbox tool", async () => {
+    const { context } = createContext({
+      project: {
+        coding_enabled: 1,
+        coding_installation_id: 4242,
+        coding_repository: "nicholasgriffintn/polychat",
+      },
+    });
+    const runtime = await resolveTaskRuntime({ context, task: baseTask, flow: null });
+
+    expect(runtime.enabledTools).toContain("run_sandbox_task");
+  });
+
+  it("withholds the sandbox tool when the project has no coding environment", async () => {
+    const { context } = createContext();
+    const runtime = await resolveTaskRuntime({ context, task: baseTask, flow: null });
+
+    expect(runtime.enabledTools).not.toContain("run_sandbox_task");
+  });
+
+  it("lets a task forbid the sandbox tool its coding project offers", async () => {
+    const { context } = createContext({
+      project: {
+        coding_enabled: 1,
+        coding_installation_id: 4242,
+        coding_repository: "nicholasgriffintn/polychat",
+      },
+    });
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: { ...baseTask, constraints: { forbiddenTools: ["run_sandbox_task"], notes: "" } },
+      flow: null,
+    });
+
+    expect(runtime.enabledTools).not.toContain("run_sandbox_task");
   });
 
   it("asks for no extra approvals when the task has no stage", async () => {

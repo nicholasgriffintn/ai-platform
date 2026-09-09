@@ -152,211 +152,162 @@
     {
       "idx": 21,
       "version": "6",
-      "when": 1788577351124,
-      "tag": "0021_tearful_jetstream",
+      "when": 1788580428615,
+      "tag": "0021_project_coding_environment",
       "breakpoints": true
     },
     {
       "idx": 22,
       "version": "6",
-      "when": 1788578456244,
-      "tag": "0022_silly_lenny_balinger",
+      "when": 1788609299693,
+      "tag": "0022_activity_record_operational_index",
       "breakpoints": true
     },
     {
       "idx": 23,
       "version": "6",
-      "when": 1788580428615,
-      "tag": "0023_material_storm",
+      "when": 1788609676949,
+      "tag": "0023_conversation_user_state",
       "breakpoints": true
     },
     {
       "idx": 24,
       "version": "6",
-      "when": 1788609299693,
-      "tag": "0024_pale_mathemanic",
+      "when": 1788615219308,
+      "tag": "0024_mobile_push_devices",
       "breakpoints": true
     },
     {
       "idx": 25,
       "version": "6",
-      "when": 1788609676949,
-      "tag": "0025_illegal_guardsmen",
+      "when": 1788628612152,
+      "tag": "0025_conversation_runs_and_task_notifications",
       "breakpoints": true
     },
     {
       "idx": 26,
       "version": "6",
-      "when": 1788615219308,
-      "tag": "0026_wild_rawhide_kid",
+      "when": 1788639077730,
+      "tag": "0026_conversation_groups",
       "breakpoints": true
     },
     {
       "idx": 27,
       "version": "6",
-      "when": 1788628612152,
-      "tag": "0027_clean_nightcrawler",
+      "when": 1788653788216,
+      "tag": "0027_project_default_model_tier",
       "breakpoints": true
     },
     {
       "idx": 28,
       "version": "6",
-      "when": 1788639077730,
-      "tag": "0028_free_toro",
+      "when": 1788689087295,
+      "tag": "0028_rename_agents_to_teammates",
       "breakpoints": true
     },
     {
       "idx": 29,
       "version": "6",
-      "when": 1788653786935,
-      "tag": "0029_add_project_default_model_tier",
+      "when": 1788693256070,
+      "tag": "0029_project_task_origin_conversation",
       "breakpoints": true
     },
     {
       "idx": 30,
       "version": "6",
-      "when": 1788653787453,
-      "tag": "0030_map_project_default_model_tier",
+      "when": 1788695653879,
+      "tag": "0030_rename_podcasts_to_recordings",
       "breakpoints": true
     },
     {
       "idx": 31,
       "version": "6",
-      "when": 1788653788216,
-      "tag": "0031_drop_project_default_router_mode",
+      "when": 1788696491634,
+      "tag": "0031_memory_documents",
       "breakpoints": true
     },
     {
       "idx": 32,
       "version": "6",
-      "when": 1788689087294,
-      "tag": "0032_light_the_enforcers",
+      "when": 1788697277550,
+      "tag": "0032_message_user_state",
       "breakpoints": true
     },
     {
       "idx": 33,
       "version": "6",
-      "when": 1788689087295,
-      "tag": "0033_rename_agents_to_teammates",
+      "when": 1788697622508,
+      "tag": "0033_capability_exclusions_and_default_teammates",
       "breakpoints": true
     },
     {
       "idx": 34,
       "version": "6",
-      "when": 1788693256070,
-      "tag": "0034_huge_reaper",
+      "when": 1788698128964,
+      "tag": "0034_channel_bindings",
       "breakpoints": true
     },
     {
       "idx": 35,
       "version": "6",
-      "when": 1788695653879,
-      "tag": "0035_rename_podcasts_to_recordings",
+      "when": 1788698984977,
+      "tag": "0035_teammate_feedback",
       "breakpoints": true
     },
     {
       "idx": 36,
       "version": "6",
-      "when": 1788696491634,
-      "tag": "0036_simple_kat_farrell",
+      "when": 1788806746773,
+      "tag": "0036_machines_and_model_preferences",
       "breakpoints": true
     },
     {
       "idx": 37,
       "version": "6",
-      "when": 1788697277550,
-      "tag": "0037_cool_senator_kelly",
+      "when": 1788822266508,
+      "tag": "0037_delegations",
       "breakpoints": true
     },
     {
       "idx": 38,
       "version": "6",
-      "when": 1788697622508,
-      "tag": "0038_nervous_reptil",
+      "when": 1788824071686,
+      "tag": "0038_project_environment_variables",
       "breakpoints": true
     },
     {
       "idx": 39,
       "version": "6",
-      "when": 1788698128964,
-      "tag": "0039_wonderful_korath",
+      "when": 1788825051178,
+      "tag": "0039_project_coding_inspection_window",
       "breakpoints": true
     },
     {
       "idx": 40,
       "version": "6",
-      "when": 1788698984977,
-      "tag": "0040_quick_tiger_shark",
+      "when": 1788826387496,
+      "tag": "0040_conversation_permission_mode",
       "breakpoints": true
     },
     {
       "idx": 41,
       "version": "6",
-      "when": 1788806345155,
-      "tag": "0041_big_amphibian",
+      "when": 1788828275409,
+      "tag": "0041_conversation_handles",
       "breakpoints": true
     },
     {
       "idx": 42,
       "version": "6",
-      "when": 1788806746773,
-      "tag": "0042_rapid_ghost_rider",
+      "when": 1788897394728,
+      "tag": "0042_user_last_model_selection",
       "breakpoints": true
     },
     {
       "idx": 43,
       "version": "6",
-      "when": 1788822266508,
-      "tag": "0043_steady_mulholland_black",
-      "breakpoints": true
-    },
-    {
-      "idx": 44,
-      "version": "6",
-      "when": 1788824071686,
-      "tag": "0044_typical_the_watchers",
-      "breakpoints": true
-    },
-    {
-      "idx": 45,
-      "version": "6",
-      "when": 1788825051178,
-      "tag": "0045_nebulous_nighthawk",
-      "breakpoints": true
-    },
-    {
-      "idx": 46,
-      "version": "6",
-      "when": 1788826387496,
-      "tag": "0046_closed_slayback",
-      "breakpoints": true
-    },
-    {
-      "idx": 47,
-      "version": "6",
-      "when": 1788828275409,
-      "tag": "0047_shocking_snowbird",
-      "breakpoints": true
-    },
-    {
-      "idx": 48,
-      "version": "6",
-      "when": 1788833313664,
-      "tag": "0048_striped_kronos",
-      "breakpoints": true
-    },
-    {
-      "idx": 49,
-      "version": "6",
-      "when": 1788895582852,
-      "tag": "0049_melted_freak",
-      "breakpoints": true
-    },
-    {
-      "idx": 50,
-      "version": "6",
-      "when": 1788897394728,
-      "tag": "0050_brave_goblin_queen",
+      "when": 1788897394729,
+      "tag": "0043_backfill_plan_pricing",
       "breakpoints": true
     }
   ]

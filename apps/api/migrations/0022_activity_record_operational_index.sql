@@ -1,0 +1,1 @@
+CREATE INDEX `activity_record_operational_idx` ON `activity_record` (`capability_id`,`status`,`updated_at`);

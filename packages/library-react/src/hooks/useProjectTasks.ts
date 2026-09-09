@@ -27,8 +27,10 @@ import { liveOrPoll } from "../sync/live-or-poll.js";
 
 export const projectTasksQueryKey = (projectId: string) => ["project-tasks", projectId] as const;
 export const TASK_ATTENTION_QUERY_KEY = ["task-attention"] as const;
+export const projectTaskDetailQueryPrefix = (projectId: string) =>
+  ["project-task", projectId] as const;
 export const projectTaskDetailQueryKey = (projectId: string, taskId: string) =>
-  ["project-task", projectId, taskId] as const;
+  [...projectTaskDetailQueryPrefix(projectId), taskId] as const;
 
 const IDLE_REFETCH_MS = 30_000;
 const ACTIVE_REFETCH_MS = 2_000;
@@ -61,15 +63,15 @@ export function useProjectTask(projectId: string, taskId: string) {
     queryKey: projectTaskDetailQueryKey(projectId, taskId),
     queryFn: () => getProjectTask(projectId, taskId),
     enabled: Boolean(projectId && taskId) && isAuthenticated && isPro,
-    refetchInterval: (query) =>
-      liveOrPoll(
-        query,
-        (currentQuery) =>
-          projectTasksRefetchInterval(
-            currentQuery.state.data ? [currentQuery.state.data.task] : undefined,
-          ),
-        "project_task.changed",
-      ),
+    refetchInterval: (query) => {
+      const task = query.state.data?.task;
+
+      if (hasWorkInFlight(task ? [task] : undefined)) {
+        return ACTIVE_REFETCH_MS;
+      }
+
+      return liveOrPoll(query, IDLE_REFETCH_MS, "project_task.changed");
+    },
     refetchIntervalInBackground: true,
   });
 }

@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "98ea5ee9-3b86-4899-a50b-c22d4b93299a",
-  "prevId": "c7b22c4a-655b-40cf-8316-ae00c736b568",
+  "id": "56c6efa5-5a4c-485f-b800-6dc1d081752f",
+  "prevId": "4c8d4a05-9bd1-41b6-b746-34a63a6edd0e",
   "tables": {
     "activity_record": {
       "name": "activity_record",
@@ -848,6 +848,118 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "channel_binding": {
+      "name": "channel_binding",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "channel": {
+          "name": "channel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "scope_type": {
+          "name": "scope_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "scope_id": {
+          "name": "scope_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "teammate_id": {
+          "name": "teammate_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "enabled": {
+          "name": "enabled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "channel_binding_channel_external_idx": {
+          "name": "channel_binding_channel_external_idx",
+          "columns": ["channel", "external_id"],
+          "isUnique": true
+        },
+        "channel_binding_scope_idx": {
+          "name": "channel_binding_scope_idx",
+          "columns": ["scope_type", "scope_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "channel_binding_teammate_id_teammates_id_fk": {
+          "name": "channel_binding_teammate_id_teammates_id_fk",
+          "tableFrom": "channel_binding",
+          "tableTo": "teammates",
+          "columnsFrom": ["teammate_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "channel_binding_created_by_user_id_fk": {
+          "name": "channel_binding_created_by_user_id_fk",
+          "tableFrom": "channel_binding",
+          "tableTo": "user",
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "composio_connector_session": {
       "name": "composio_connector_session",
       "columns": {
@@ -1270,6 +1382,20 @@
           "notNull": false,
           "autoincrement": false
         },
+        "model_id": {
+          "name": "model_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "model_tier": {
+          "name": "model_tier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "text",
@@ -1601,6 +1727,14 @@
           "notNull": true,
           "autoincrement": false
         },
+        "trigger": {
+          "name": "trigger",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'user'"
+        },
         "status": {
           "name": "status",
           "type": "text",
@@ -1648,6 +1782,13 @@
         },
         "retry_json": {
           "name": "retry_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provenance_json": {
+          "name": "provenance_json",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -2020,6 +2161,163 @@
           "name": "conversation_user_state_conversation_id_user_id_pk"
         }
       },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "delegation": {
+      "name": "delegation",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "parent_conversation_id": {
+          "name": "parent_conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "child_conversation_id": {
+          "name": "child_conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "parent_run_id": {
+          "name": "parent_run_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "depth": {
+          "name": "depth",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "teammate_id": {
+          "name": "teammate_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "goal": {
+          "name": "goal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "wait_for": {
+          "name": "wait_for",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "max_credit_micros": {
+          "name": "max_credit_micros",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "max_steps": {
+          "name": "max_steps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deadline": {
+          "name": "deadline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'queued'"
+        },
+        "result_json": {
+          "name": "result_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "delegation_parent_conversation_idx": {
+          "name": "delegation_parent_conversation_idx",
+          "columns": ["parent_conversation_id"],
+          "isUnique": false
+        },
+        "delegation_child_conversation_idx": {
+          "name": "delegation_child_conversation_idx",
+          "columns": ["child_conversation_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "delegation_parent_conversation_id_conversation_id_fk": {
+          "name": "delegation_parent_conversation_id_conversation_id_fk",
+          "tableFrom": "delegation",
+          "tableTo": "conversation",
+          "columnsFrom": ["parent_conversation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "delegation_child_conversation_id_conversation_id_fk": {
+          "name": "delegation_child_conversation_id_conversation_id_fk",
+          "tableFrom": "delegation",
+          "tableTo": "conversation",
+          "columnsFrom": ["child_conversation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "delegation_parent_run_id_conversation_run_id_fk": {
+          "name": "delegation_parent_run_id_conversation_run_id_fk",
+          "tableFrom": "delegation",
+          "tableTo": "conversation_run",
+          "columnsFrom": ["parent_run_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
@@ -2762,6 +3060,110 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "machine": {
+      "name": "machine",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "machine_id": {
+          "name": "machine_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "platform": {
+          "name": "platform",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "app_version": {
+          "name": "app_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "runtimes": {
+          "name": "runtimes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "capabilities": {
+          "name": "capabilities",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "machine_user_idx": {
+          "name": "machine_user_idx",
+          "columns": ["user_id", "last_seen_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "machine_user_id_user_id_fk": {
+          "name": "machine_user_id_user_id_fk",
+          "tableFrom": "machine",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "machine_user_id_machine_id_pk": {
+          "columns": ["user_id", "machine_id"],
+          "name": "machine_user_id_machine_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "memory_document": {
       "name": "memory_document",
       "columns": {
@@ -3217,6 +3619,13 @@
         },
         "usage": {
           "name": "usage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provenance_json": {
+          "name": "provenance_json",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -4849,6 +5258,81 @@
           "columnsFrom": ["created_by"],
           "columnsTo": ["id"],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "project_environment_variable": {
+      "name": "project_environment_variable",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_value": {
+          "name": "encrypted_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "project_environment_variable_name_idx": {
+          "name": "project_environment_variable_name_idx",
+          "columns": ["project_id", "name"],
+          "isUnique": true
+        },
+        "project_environment_variable_project_idx": {
+          "name": "project_environment_variable_project_idx",
+          "columns": ["project_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "project_environment_variable_project_id_project_id_fk": {
+          "name": "project_environment_variable_project_id_project_id_fk",
+          "tableFrom": "project_environment_variable",
+          "tableTo": "project",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -6909,6 +7393,96 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "teammate_feedback": {
+      "name": "teammate_feedback",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "teammate_id": {
+          "name": "teammate_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "verdict": {
+          "name": "verdict",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "teammate_feedback_teammate_idx": {
+          "name": "teammate_feedback_teammate_idx",
+          "columns": ["teammate_id"],
+          "isUnique": false
+        },
+        "teammate_feedback_user_conversation_idx": {
+          "name": "teammate_feedback_user_conversation_idx",
+          "columns": ["user_id", "teammate_id", "conversation_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "teammate_feedback_teammate_id_teammates_id_fk": {
+          "name": "teammate_feedback_teammate_id_teammates_id_fk",
+          "tableFrom": "teammate_feedback",
+          "tableTo": "teammates",
+          "columnsFrom": ["teammate_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "teammate_feedback_user_id_user_id_fk": {
+          "name": "teammate_feedback_user_id_user_id_fk",
+          "tableFrom": "teammate_feedback",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "teammate_installs": {
       "name": "teammate_installs",
       "columns": {
@@ -8416,6 +8990,27 @@
           "autoincrement": false,
           "default": false
         },
+        "vendor_units": {
+          "name": "vendor_units",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "site": {
+          "name": "site",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "raw": {
           "name": "raw",
           "type": "text",
@@ -9155,6 +9750,27 @@
           "notNull": false,
           "autoincrement": false
         },
+        "default_model_tier": {
+          "name": "default_model_tier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "default_model_id": {
+          "name": "default_model_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "default_compute_site": {
+          "name": "default_compute_site",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "pet_source": {
           "name": "pet_source",
           "type": "text",
@@ -9195,8 +9811,24 @@
           "autoincrement": false,
           "default": "'{\"families\":{},\"providers\":{}}'"
         },
+        "onboarding_seen": {
+          "name": "onboarding_seen",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
         "tracking_enabled": {
           "name": "tracking_enabled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": true
+        },
+        "advertise_machines": {
+          "name": "advertise_machines",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,

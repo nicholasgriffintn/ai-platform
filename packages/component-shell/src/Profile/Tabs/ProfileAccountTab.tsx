@@ -16,6 +16,9 @@ export function ProfileAccountTab() {
   const usageBalance = useUsageBalance(isAuthenticated);
   const handles = useConversationHandles(isAuthenticated);
   const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
+  const activeHandles = handles.data?.handles ?? [];
+  const hasConversationAccess =
+    activeHandles.length > 0 || handles.isError || handles.revoke.isError;
 
   return (
     <ProfileTab title="Account">
@@ -26,10 +29,9 @@ export function ProfileAccountTab() {
         usageBalance={usageBalance.data}
         onSignIn={() => setShowLoginModal(true)}
       />
-      {isAuthenticated && (
+      {isAuthenticated && hasConversationAccess && (
         <ConversationHandleSettings
-          handles={handles.data?.handles ?? []}
-          isLoading={handles.isLoading}
+          handles={activeHandles}
           isRevoking={handles.revoke.isPending}
           hasError={handles.isError || handles.revoke.isError}
           onRevoke={handles.revoke.mutate}

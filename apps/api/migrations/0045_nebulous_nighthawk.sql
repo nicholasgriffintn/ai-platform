@@ -1,1 +1,0 @@
-ALTER TABLE `project` ADD `coding_inspection_window_seconds` integer DEFAULT 0 NOT NULL;

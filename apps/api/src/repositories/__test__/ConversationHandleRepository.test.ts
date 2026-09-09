@@ -16,7 +16,7 @@ let repository: ConversationHandleRepository;
 beforeAll(async () => {
   const database = await runtime.getD1Database("DB");
   const migration = await readFile(
-    new URL("../../../migrations/0047_shocking_snowbird.sql", import.meta.url),
+    new URL("../../../migrations/0041_conversation_handles.sql", import.meta.url),
     "utf8",
   );
 

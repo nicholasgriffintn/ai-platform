@@ -53,7 +53,11 @@ const HOW_IT_WORKS = [
 ];
 
 function comparePlansByPrice(a: Plan, b: Plan): number {
-  return (a.price ?? 0) - (b.price ?? 0);
+  return (
+    (a.price ?? 0) - (b.price ?? 0) ||
+    (a.included_credits ?? 0) - (b.included_credits ?? 0) ||
+    a.id.localeCompare(b.id)
+  );
 }
 
 function describePlanAllowance(plan: Plan): string[] {

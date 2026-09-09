@@ -11,6 +11,10 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Teammate } from "~/lib/database/schema";
 import { resolveProjectSkillGrants } from "~/services/skills/scope";
 import { assertTeammateAvailableToWorkspace } from "~/services/teammates/access";
+import {
+  PROJECT_CODING_TOOL_IDS,
+  resolveProjectCodingEnvironment,
+} from "~/services/workspaces/projectCodingEnvironment";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import { toStringArray } from "~/utils/arrays";
 import { intersectEnabledTools, intersectGrantedIds } from "~/utils/enabledTools";
@@ -103,6 +107,8 @@ export async function resolveTaskRuntime(params: {
   const configuredTools = teammate
     ? intersectEnabledTools(projectTools, teammate.enabled_tools)
     : projectTools;
+  const project = await context.repositories.workspaces.getProject(task.projectId);
+  const codingTools = resolveProjectCodingEnvironment(project) ? PROJECT_CODING_TOOL_IDS : [];
 
   return {
     stage,
@@ -110,7 +116,7 @@ export async function resolveTaskRuntime(params: {
     model: task.runner?.model ?? teammate?.model ?? null,
     mode: stage?.mode ?? task.runner?.mode ?? teammate?.mode ?? DEFAULT_TASK_MODE,
     enabledTools: withoutForbiddenTools(
-      [...new Set([...configuredTools, ...PROJECT_TASK_TOOL_IDS])],
+      [...new Set([...configuredTools, ...PROJECT_TASK_TOOL_IDS, ...codingTools])],
       task.constraints?.forbiddenTools,
     ),
     skillIds: intersectGrantedIds(projectSkillIds, resolveRequestedSkillIds(stage, teammate)),

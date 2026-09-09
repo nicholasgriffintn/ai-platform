@@ -59,7 +59,11 @@ export class ProfilePage extends BasePage {
   }
 
   async openTab(tab: string, heading: string) {
-    await this.navigate(`/profile?tab=${tab}`);
+    await this.openAccountPage(`/profile?tab=${tab}`, heading);
+  }
+
+  async openAccountPage(path: string, heading: string) {
+    await this.navigate(path);
     await this.page.getByRole("heading", { name: heading, exact: true }).first().waitFor();
     await this.page
       .getByText("Loading profile data...", { exact: true })
@@ -339,7 +343,7 @@ export class ProfilePage extends BasePage {
   }
 
   async createAndDeleteSource(title: string, content: string) {
-    await this.openTab("sources", "Files");
+    await this.openAccountPage("/chat/files/given", "Files");
     await this.page.getByRole("button", { name: "Add source" }).click();
     const addSource = this.page.getByRole("dialog", { name: "Add source" });
 
@@ -391,7 +395,7 @@ export class ProfilePage extends BasePage {
     sourceTitle: string,
     content: string,
   ) {
-    await this.openTab("sources", "Files");
+    await this.openAccountPage("/chat/files/given", "Files");
     await this.page.getByRole("button", { name: "Create collection" }).click();
     const collectionDialog = this.page.getByRole("dialog", { name: "Create collection" });
 

@@ -21,7 +21,7 @@ let tasks: TaskRepository;
 beforeAll(async () => {
   const database = await runtime.getD1Database("DB");
   const migration = await readFile(
-    new URL("../../../migrations/0043_steady_mulholland_black.sql", import.meta.url),
+    new URL("../../../migrations/0037_delegations.sql", import.meta.url),
     "utf8",
   );
 

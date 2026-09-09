@@ -1,1 +1,0 @@
-ALTER TABLE `project` DROP COLUMN `default_router_mode`;
