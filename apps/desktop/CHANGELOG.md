@@ -1,5 +1,11 @@
 # @assistant/desktop
 
+## 0.2.1
+
+### Patch Changes
+
+- 6b0147c: chore: trigger build
+
 ## 0.2.0
 
 ### Minor Changes
