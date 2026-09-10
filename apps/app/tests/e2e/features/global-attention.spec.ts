@@ -58,7 +58,7 @@ test.describe("Attention across every authorised workspace", () => {
     expect(rendered.filter((title) => occurredAt.has(title))).toHaveLength(5);
     const order = rendered.map((title) => occurredAt.get(title) ?? "");
 
-    expect(order).toEqual([...order].sort().reverse());
+    expect(order).toEqual([...order].sort((left, right) => right.localeCompare(left)));
 
     await attention.item(review.objective).click();
     await page.waitForURL(`**/projects/${projectId}/tasks/${review.id}`);
