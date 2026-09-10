@@ -19,7 +19,7 @@ on:
         required: true
       APPLE_CERTIFICATE_PASSWORD:
         description: Passphrase for the exported certificate.
-        required: true
+        required: false
       APPLE_SIGNING_IDENTITY:
         description: Full identity name, beginning Developer ID Application.
         required: true
