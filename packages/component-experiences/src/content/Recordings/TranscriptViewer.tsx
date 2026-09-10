@@ -74,7 +74,7 @@ export function TranscriptViewer({
       <div className="space-y-3">
         {transcript.segments.map((segment, index) => (
           <div
-            key={index}
+            key={`${segment.start ?? ""}-${segment.end ?? ""}-${segment.text}`}
             className={`rounded-lg border p-3 ${speakerColors[getSegmentSpeaker(segment.speaker, index)] || "border-border bg-surface-elevated"}`}
           >
             <div className="mb-1 flex items-center justify-between">

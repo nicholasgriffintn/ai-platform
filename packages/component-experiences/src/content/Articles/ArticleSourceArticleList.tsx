@@ -210,27 +210,25 @@ export function ArticleSourceArticleList({
                                       Citations
                                     </h6>
                                     <ul className="list-none space-y-1.5 pl-0 text-xs">
-                                      {articleData.analysis.citations.map(
-                                        (citation: string, i: number) => (
-                                          <li
-                                            key={`citation-${article.id}-${i}`}
-                                            className="rounded border border-border bg-surface p-2 break-all"
+                                      {articleData.analysis.citations.map((citation: string) => (
+                                        <li
+                                          key={`${article.id}-${citation}`}
+                                          className="rounded border border-border bg-surface p-2 break-all"
+                                        >
+                                          <a
+                                            href={citation}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center text-active-work hover:underline"
                                           >
-                                            <a
-                                              href={citation}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className="inline-flex items-center text-active-work hover:underline"
-                                            >
-                                              <span className="truncate">{citation}</span>
-                                              <ExternalLink
-                                                size={10}
-                                                className="ml-1 flex-shrink-0"
-                                              />
-                                            </a>
-                                          </li>
-                                        ),
-                                      )}
+                                            <span className="truncate">{citation}</span>
+                                            <ExternalLink
+                                              size={10}
+                                              className="ml-1 flex-shrink-0"
+                                            />
+                                          </a>
+                                        </li>
+                                      ))}
                                     </ul>
                                   </div>
                                 )}
@@ -265,9 +263,9 @@ export function ArticleSourceArticleList({
                                         </span>
                                         <ul className="mt-1 list-disc space-y-1 pl-4">
                                           {articleData.analysis.verifiedQuotes.missingQuotes.map(
-                                            (quote: string, i: number) => (
+                                            (quote: string) => (
                                               <li
-                                                key={`missing-quote-${article.id}-${i}`}
+                                                key={`${article.id}-${quote}`}
                                                 className="mt-1 rounded border border-border bg-surface p-2 text-foreground"
                                               >
                                                 "{quote}"

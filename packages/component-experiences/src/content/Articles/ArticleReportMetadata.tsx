@@ -70,9 +70,9 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
                 <div className="space-y-2">
                   <span className="mb-1 block text-sm font-medium text-foreground">Citations:</span>
                   <ul className="list-none space-y-1.5 pl-0 text-sm">
-                    {report.content.report.citations.map((citation: string, i: number) => (
+                    {report.content.report.citations.map((citation: string) => (
                       <li
-                        key={`citation-${report.id}-${i}`}
+                        key={`${report.id}-${citation}`}
                         className="rounded border border-border bg-surface p-2 break-all"
                       >
                         <a
@@ -119,9 +119,9 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
                         <span className="font-medium text-foreground">Missing Quotes:</span>
                         <ul className="mt-2 list-disc space-y-1.5 pl-5">
                           {report.content.report.verifiedQuotes.missingQuotes.map(
-                            (quote: string, i: number) => (
+                            (quote: string) => (
                               <li
-                                key={`missing-quote-${report.id}-${i}`}
+                                key={`${report.id}-${quote}`}
                                 className="rounded border border-border bg-surface-elevated p-2 text-foreground"
                               >
                                 "{quote}"
