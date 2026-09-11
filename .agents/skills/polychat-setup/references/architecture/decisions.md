@@ -1,8 +1,8 @@
 # Architecture decisions
 
-Read the relevant record before changing a durable boundary. These are consolidated decisions, not an implementation changelog; [context](context.md) describes the current code.
+Read the relevant record before changing any durable boundary.
 
-## Platform and product shape
+## Platform
 
 - [0001: Keep implementation behind app and package boundaries](decisions/0001-app-and-package-boundaries.md)
 - [0002: Share one runtime across Chat and Work](decisions/0002-chat-and-work-share-one-runtime.md)
@@ -11,7 +11,7 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0031: Run workspace tasks through Vite+](decisions/0031-run-workspace-tasks-through-vite-plus.md)
 - [0032: Ship shared packages as preserved modules](decisions/0032-ship-shared-packages-as-preserved-modules.md)
 
-## Running a turn
+## Turn execution
 
 - [0005: Run one turn engine and separate it from transport](decisions/0005-one-turn-engine-separate-from-transport.md)
 - [0006: Persist run identity and an ordered event journal](decisions/0006-persist-run-identity-and-ordered-events.md)
@@ -29,10 +29,9 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0015: Hire teammates from roles and call them teammates everywhere](decisions/0015-teammates-hired-from-roles.md)
 - [0016: Keep meta tools in the meta scope](decisions/0016-meta-tools-belong-to-the-meta-scope.md)
 - [0017: Bind connector execution to exact local authority](decisions/0017-bind-connector-execution-to-local-authority.md)
-- [0035: Resolve model tiers once, on the server](decisions/0035-resolve-model-tiers-on-the-server.md)
 - [0039: Set permission mode on the conversation](decisions/0039-set-permission-mode-on-the-conversation.md)
 
-## Work
+## Work orchestration
 
 - [0018: Run project tasks through governed flows](decisions/0018-project-tasks-run-through-governed-flows.md)
 - [0040: Delegate to a teammate in its own conversation](decisions/0040-delegate-to-a-teammate-in-its-own-conversation.md)
@@ -41,15 +40,12 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0021: Separate personal conversation state from project groups](decisions/0021-separate-conversation-state-from-project-groups.md)
 - [0022: Meter vendor units, admit against credits and settle once](decisions/0022-meter-vendor-units-and-settle-once.md)
 
-## Coding runs
+## Clients, runtime and lifecycle
 
 - [0023: Present coding work inside project conversations](decisions/0023-present-coding-work-in-project-conversations.md)
 - [0024: Declare sandbox delivery, environment and services explicitly](decisions/0024-declare-sandbox-delivery-environment-and-services.md)
 - [0025: Gate sandbox previews through current project authority](decisions/0025-gate-sandbox-previews-through-project-authority.md)
 - [0026: Snapshot output provenance and append safe restores](decisions/0026-output-provenance-and-safe-restores.md)
-
-## Clients
-
 - [0027: Name themes and ship a house type pairing through tokens](decisions/0027-named-themes-and-house-type.md)
 - [0028: Give the desktop shell a core that owns egress and one shared navigation shell](decisions/0028-desktop-core-owns-egress.md)
 - [0029: Separate model runtimes from agent runtimes](decisions/0029-separate-model-and-agent-runtimes.md)
@@ -58,11 +54,9 @@ Read the relevant record before changing a durable boundary. These are consolida
 - [0034: Advertise machines through a control plane that never carries content](decisions/0034-advertise-machines-through-a-control-plane-that-never-carries-content.md)
 - [0036: Reach a device runtime only after someone connects it](decisions/0036-reach-a-device-runtime-only-after-someone-connects-it.md)
 - [0038: Spawn only programs the core was compiled knowing](decisions/0038-spawn-only-compiled-agent-programs.md)
-- [0041: Carry live updates on one per-user socket](decisions/0041-carry-live-updates-on-one-per-user-socket.md)
+- [0041: Carry live updates on one-per-user socket](decisions/0041-carry-live-updates-on-one-per-user-socket.md)
 - [0042: An agent session is a long-lived handle, not a one-shot process](decisions/0042-an-agent-session-is-a-long-lived-handle.md)
 
-## Maintaining these records
+## Maintenance
 
-Records 0001–0030 were renumbered contiguously when 44 earlier records were consolidated into these 30; earlier numbers do not map onto them and are not referenced anywhere. New numbers may be reserved by active work. Do not reuse a retired number.
-
-Add a record only for a durable trade-off that code alone cannot explain. State the problem, the decision, its status and its consequences, then update this index. Merge a record into an existing one rather than adding a second account of the same boundary. Keep rollout plans, copied schemas and unimplemented proposals out of these files.
+Add records only for durable, user-visible trade-offs. Keep this file as the index; keep rationales in individual ADR files.

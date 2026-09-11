@@ -1,73 +1,45 @@
 # Agent instructions
 
-Polychat is a pnpm monorepo: personal **Chat**, collaborative **Work**, a Hono API on Cloudflare Workers, React Router web, Tauri desktop, native iOS, and optional sandbox and training Workers.
-
-Read [architecture context](.agents/skills/polychat-setup/references/architecture/context.md) for cross-app work. Use [polychat-setup](.agents/skills/polychat-setup/SKILL.md) for setup, deployment and operational guidance. Follow the user's instructions over these repository defaults.
+Polychat is a pnpm monorepo: Chat, Work, API, web, desktop, optional sandbox/training workers, and iOS.
+Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops reference and keep the repository root `AGENTS.md` contract current.
 
 ## Boundaries
 
-- Keep routes and pages as orchestration. Extract parsing, state machines, timers, retries and substantial logic into existing services, hooks or libraries.
-- Search before adding helpers. Put generic utilities in shared `src/lib` or `src/utils` modules, not feature, route, service or test files. Fix types at their source; do not cast around errors.
-- Keep wire contracts in `packages/schemas`; build it before validating consumers. Consider every client when a contract changes.
-- Keep `component-*` packages independent of routers, stores and API clients. Hosts provide data and typed actions. `component-shell` is the one existing exception; do not add another.
-- Authorise Work through current server-side workspace membership. Project IDs and creator fields are not proof of access. Keep configuration, enablement and execution authority separate.
-- Enforce validation and security at actual I/O boundaries. Cover personal and project scope, reverse operations and failure states; fix insecure code you touch or state the limitation.
-- Generate database changes from `apps/api/src/lib/database/schema.ts` with `db:generate`; use `cf-typegen` for Cloudflare types. Never hand-edit generated output.
-- Add dependencies only when necessary and agreed, using pnpm and its lockfile. Reserve `scripts/` for reusable automation.
+- Keep routes and page files orchestration-only. Move parsing, state machines, timers, retries, and durable logic into services, hooks, or shared libs.
+- Keep shared helpers in shared utility modules (`src/lib`, `src/utils`); avoid duplicating generic utility logic in feature files.
+- Keep wire contracts in `packages/schemas` and validate against all consumers.
+- Keep API/package boundaries in place. Avoid coupling `component-*` packages to routers, stores, or API clients except `component-shell`.
+- Keep authority checks at I/O boundaries. Verify personal vs project scope, reversibility, and owner permissions on every boundary.
+- Use `pnpm` for dependency updates and lockfile updates only when necessary.
 
 ## Operational limits
 
-- Do not run git or PR commands unless asked. Keep the shared checkout's branch unchanged; use a dedicated worktree for task branches. Use the configured bot identity and short conventional commits, and obtain authority before rewriting state or merging.
-- Deploy scripts publish live Workers. Use them only when deployment is requested, never as build checks.
-- Only `db:migrate:local` is safe unprompted. Preview and production migrations use `--remote` and require explicit authority.
-- Treat `models:sync`, `connectors:sync`, `db:seed:preview` and remote studio operations as external actions. `db:studio:local` and `db:seed:local` are local, but `db:seed:local` drops every table first, so confirm before running it.
-- Never print or copy secrets from ignored configuration into chat or tracked files. Use example files for variable names.
-- Do not start dev servers for routine validation. When runtime validation is necessary, explain why, use the documented command, and stop the server before finishing. If startup fails, report it instead of inventing alternate ports or flags.
+- Do not run git/PR commands unless requested by the user.
+- Use remote migrations only with explicit user authority; do not run remote writes as routine validation.
+- Deploy commands publish to production only when explicitly requested.
+- Avoid local/dev server startup unless required for runtime validation.
+- Never copy or echo ignored secrets into chat, commands, or tracked files.
 
 ## Models and providers
 
-Add model and provider icons through `packages/component-models/src/ModelIcon`: reuse artwork where possible, otherwise source it from svgl and register it in `Icons/`, `iconLoaders.ts` and `iconDefinitions.ts`. Model patterns are lowercase substrings, longer matches first; provider keys are exact lowercase IDs, including aliases.
+- Register model/provider icons through `packages/component-models/src/ModelIcon` using the documented icon registries.
+- Use model patterns as lowercase substring matches; provider keys are exact lowercase IDs (including aliases).
 
 ## Validation
 
-**Run root `pnpm typecheck` and root `pnpm check` before every commit. Narrow checks do not replace them.** A filtered typecheck compiles one package against its dependencies' published types, so it misses errors that only appear when a dependent is rebuilt from source; scoped `oxlint` only sees the paths you name. Both routinely pass while the root run fails, and skipping them is the most common way a change reaches CI broken.
+Run these before every commit:
 
 ```sh
 pnpm typecheck
 pnpm check
 ```
 
-**Read the exit code, not the output.** Piping a command into `tail` or `head` replaces its exit status with the pager's, so a failing run looks like a passing one:
+Use narrower checks for iteration, then finish with the full pair above.
 
-```sh
-pnpm typecheck > /tmp/tc.log 2>&1; echo "TYPECHECK=$?"   # correct
-pnpm typecheck 2>&1 | tail -20                            # wrong, always reports success
-```
+## Completion format
 
-`pnpm check` is `lint` then `format:check`. It reports warnings and errors together and only **errors** fail it — grep for `: error` rather than reading the tail. `pnpm exec oxlint --fix <paths>` resolves most stylistic ones.
+When you close a change, include:
 
-Use the narrower checks below as the fast inner loop while iterating, then run the root pair before committing. `release:check` stays a CI workflow; do not run it locally.
-
-```sh
-pnpm exec vp run --filter=@ngriffin_uk/polychat-schemas build
-pnpm --filter @assistant/api typecheck
-pnpm --filter @assistant/app typecheck
-pnpm --filter @assistant/app check
-pnpm --filter @assistant/api test <path>
-pnpm exec oxlint <changed dirs>
-pnpm exec oxfmt --check <changed dirs>
-```
-
-Vite+ runs workspace tasks. Package builds are `build` tasks declared in each package's `vite.config.ts` through `@ngriffin_uk/polychat-config/tasks`, not package.json scripts, so reach them with `vp run` rather than `pnpm --filter`. Everything else remains a package.json script. `vp run` orders tasks by the workspace dependency graph and replays cached results, so repeating a build or typecheck without source changes is close to free.
-
-Only `@assistant/app` has a workspace `check` script. Other workspaces use root oxlint and oxfmt with their own typecheck and tests. Model catalogue files are excluded from lint and format; preserve their conventions and typecheck them. Use `pnpm test:mobile` for iOS.
-
-Add tests for observable behaviour, authority, validation, persistence, state transitions or real regressions. Extend nearby suites; avoid tests of static copy, CSS, delegation or framework guarantees. Preserve complete Playwright journeys and mock only outbound third parties; follow [E2E guidance](.agents/skills/polychat-setup/references/testing/e2e.md).
-
-For documentation-only edits, check local links, referenced commands and deleted paths. No dev server or application test suite is needed.
-
-## Completion
-
-Keep prose concise and in British English. Document durable behaviour in the setup references, vocabulary and module ownership in architecture context, and consequential trade-offs in a [decision record](.agents/skills/polychat-setup/references/architecture/decisions.md). Do not turn those files into changelogs or duplicate code catalogues; merge into an existing record rather than adding a second account of the same boundary.
-
-Record behaviour requiring human or operator checks in [verification](.agents/skills/polychat-setup/references/verification.md); documentation-only edits need no item. Report affected surfaces, validation or blockers, and residual risks. Include `Compliance:`, `Validation:` and `Residual risks:` in the final response.
+- `Compliance:` whether the task met this contract
+- `Validation:` commands run and result
+- `Residual risks:` concise list or `none`
