@@ -80,7 +80,7 @@
     "idb": "8.0.3",
     "isbot": "5.2.2",
     "lucide-react": "1.39.0",
-    "posthog-js": "1.426.2",
+    "posthog-js": "1.427.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-markdown": "10.1.0",
