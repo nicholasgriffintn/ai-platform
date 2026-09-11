@@ -51,7 +51,7 @@
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-react": "workspace:^",
-    "lucide-react": "1.39.0",
+    "lucide-react": "1.41.0",
     "sonner": "2.0.8",
     "virtua": "0.51.0"
   },

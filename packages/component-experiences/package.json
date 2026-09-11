@@ -59,7 +59,7 @@
     "@strudel/tonal": "1.2.6",
     "@strudel/transpiler": "1.2.6",
     "@strudel/webaudio": "1.3.0",
-    "lucide-react": "1.39.0",
+    "lucide-react": "1.41.0",
     "sonner": "2.0.8"
   },
   "devDependencies": {
